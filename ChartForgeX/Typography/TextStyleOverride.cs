@@ -158,6 +158,9 @@ public sealed class TextStyleOverride {
     /// <summary>Transforms text according to this override.</summary>
     public string TransformText(string text, System.Globalization.CultureInfo? culture = null) => TextCaseTransformer.Apply(text, TextCase ?? TextCaseTransform.None, culture);
 
+    /// <summary>Creates an independent copy of the optional typography values.</summary>
+    public TextStyleOverride Clone() => (TextStyleOverride)MemberwiseClone();
+
     internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveEmphasisWeight(FontWeight, fallback);
 
     internal TextStyleOverride WithDefaultFontWeight(int weight) {
@@ -173,6 +176,9 @@ public sealed class TextStyleOverride {
         copy.FontFamily = family;
         return copy;
     }
+
+    /// <summary>The family <see cref="FontFamily"/> would hold after assigning <paramref name="family"/>: trimmed, or null when blank.</summary>
+    internal static string? NormalizeFontFamily(string? family) => OptionalText(family);
 
     private static string? OptionalText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
 

@@ -3,6 +3,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Themes;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -29,7 +30,7 @@ internal static partial class SmokeTests {
         secondary.Series[0].UseSecondaryYAxis();
         var secondarySvg = secondary.ToSvg();
         Assert(secondarySvg.Contains(">generic-secondary</text>", StringComparison.Ordinal), "Secondary y-axis ticks should fall back to the generic value formatter when the axis has no dedicated formatter.");
-        Assert(secondarySvg.Contains("data-cfx-role=\"secondary-y-axis-tick\"", StringComparison.Ordinal) && secondarySvg.Contains("font-weight=\"650\"", StringComparison.Ordinal) && secondarySvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Secondary SVG axis ticks should honor the shared tick-label typography style.");
+        Assert(secondarySvg.Contains("data-cfx-role=\"axis-secondary-y-label\"", StringComparison.Ordinal) && secondarySvg.Contains("font-weight=\"650\"", StringComparison.Ordinal) && secondarySvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Secondary SVG axis ticks should honor the shared tick-label typography style.");
         var secondaryPng = secondary.ToPng();
         secondary.WithValueFormatter(_ => "changed-secondary");
         Assert(!secondaryPng.AsSpan().SequenceEqual(secondary.ToPng()), "Secondary PNG ticks should use the same generic formatter fallback as SVG output.");
@@ -48,33 +49,33 @@ internal static partial class SmokeTests {
     private static void PrimaryYAxisFormattingReservesPngPlotSpace() {
         var shortChart = FormattedAxisChart(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
         var longChart = FormattedAxisChart(value => "$" + value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " milliseconds");
-        var shortPixels = ReadPngRgba(shortChart.ToPng(), out var width, out _);
-        var longPixels = ReadPngRgba(longChart.ToPng(), out _, out _);
-        var shortAxis = FindNearColorBounds(shortPixels, width, 255, 0, 255, 4);
-        var longAxis = FindNearColorBounds(longPixels, width, 255, 0, 255, 4);
+        var shortAxis = PreparedAxis(shortChart);
+        var longAxis = PreparedAxis(longChart);
+        Assert(longAxis.Start.X > shortAxis.Start.X + 20, "Long primary y-axis labels should reserve more plot space with the same shared native geometry.");
+        var longPng = longChart.ToPng();
+        longChart.Options.YAxis.ShowLine = false;
+        Assert(!longPng.AsSpan().SequenceEqual(longChart.ToPng()), "The configured axis rule should paint native raster pixels at its measured position.");
 
-        Assert(!shortAxis.IsEmpty && !longAxis.IsEmpty, "PNG y-axis reserve proof should find both configured axis rules.");
-        Assert(longAxis.Left > shortAxis.Left + 20, "Long primary y-axis labels should move the PNG plot right even when no secondary axis is present.");
-
-        var serifFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("serif", out _);
-        var monospaceFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("monospace", out _);
-        if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
-            const string sample = "MMMMMMMMiiiiiiii";
-            var serifChart = FormattedAxisChart(_ => sample).WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily("serif").WithItalic());
-            var monospaceChart = FormattedAxisChart(_ => sample).WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily("monospace").WithItalic());
-            var serifPixels = ReadPngRgba(serifChart.ToPng(), out var styledWidth, out _);
-            var monospacePixels = ReadPngRgba(monospaceChart.ToPng(), out _, out _);
-            var serifAxis = FindNearColorBounds(serifPixels, styledWidth, 255, 0, 255, 4);
-            var monospaceAxis = FindNearColorBounds(monospacePixels, styledWidth, 255, 0, 255, 4);
-            var fontSize = serifChart.Options.Theme.TickLabelFontSize;
-            var expectedSerifLeft = Math.Max(40, Math.Ceiling(RgbaCanvas.MeasureTextWidthWithFont(sample, fontSize, serifFont, italic: true)) + 54);
-            var expectedMonospaceLeft = Math.Max(40, Math.Ceiling(RgbaCanvas.MeasureTextWidthWithFont(sample, fontSize, monospaceFont, italic: true)) + 54);
-            Assert(!serifAxis.IsEmpty && !monospaceAxis.IsEmpty, "PNG y-axis reserve proof should find both styled axis rules.");
-            Assert(Math.Abs(serifAxis.Left - expectedSerifLeft) <= 3 && Math.Abs(monospaceAxis.Left - expectedMonospaceLeft) <= 3,
-                "PNG y-axis reserve should match the resolved family-specific italic metrics even when two platform fonts happen to have similar widths.");
+        const string sample = "MMMMMMMMiiiiiiii";
+        foreach (var family in new[] { "serif", "monospace" }) {
+            var chart = FormattedAxisChart(_ => sample).WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily(family).WithItalic());
+            var context = VisualExportRequest.ForChart(chart).Context;
+            var scene = chart.Prepare(context).Scene;
+            var rule = scene.Nodes.OfType<VisualSceneLine>().Single(node => node.Role == "axis-y");
+            var ticks = scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-y-label").ToArray();
+            Assert(ticks.Length > 0 && ticks.All(tick => tick.Text.Style.Font.Family == family && tick.Text.Style.Font.Italic),
+                "Axis labels should retain the requested font family and italic style in the shared prepared run.");
+            var widest = ticks.Max(tick => tick.Text.Metrics.Width);
+            Assert(Math.Abs(rule.Start.X - chart.Options.Padding.Left - context.Theme.Spacing - widest) < .001,
+                "Axis reservation should use the actual retained font metrics rather than a renderer-specific fixed gutter.");
+            Assert(ticks.All(tick => tick.X + tick.Text.Metrics.Width <= rule.Start.X - context.Theme.Spacing + .001),
+                "Prepared tick ink should fit completely within the measured strip beside the plot.");
+            Assert(chart.ToPng().Length > 64, "Font-specific axis strips should render native PNG output.");
         }
-    }
 
+        static VisualSceneLine PreparedAxis(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes
+            .OfType<VisualSceneLine>().Single(node => node.Role == "axis-y");
+    }
     private static Chart FormattedAxisChart(Func<double, string> formatter) {
         var theme = ChartTheme.ReportLight();
         theme.Axis = ChartColor.FromHex("#FF00FF");

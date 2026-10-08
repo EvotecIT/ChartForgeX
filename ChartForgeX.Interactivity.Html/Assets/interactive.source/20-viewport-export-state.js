@@ -11,11 +11,33 @@
     root.dataset.cfxZoom = state.zoom.toFixed(3);
     root.dataset.cfxPanX = state.panX.toFixed(1);
     root.dataset.cfxPanY = state.panY.toFixed(1);
+    syncResetControl(root);
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
     stage.style.setProperty('--cfx-zoom', state.zoom);
     stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
+  };
+  // The reset control is contextual: it exists only while the reader has changed the view.
+  const viewChanged = (root) => {
+    const state = getState(root);
+    if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
+    if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
+    return root.querySelector('.cfx-selected,.cfx-series-muted,[data-cfx-muted="true"]') !== null;
+  };
+  const syncResetControl = (root) => {
+    const reset = root.querySelector('[data-cfx-reset]');
+    if (!reset) return;
+    const changed = viewChanged(root);
+    if (!changed && document.activeElement === reset) {
+      // Keep keyboard focus inside the chart instead of dropping it to the document when the control hides.
+      if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+      try { root.focus({ preventScroll: true }); } catch { root.focus(); }
+    }
+    const stage = root.querySelector('.cfx-stage');
+    // Align with the visible stage edge, excluding its right border and any reserved scrollbar gutter.
+    if (changed && stage) reset.style.right = (8 + Math.max(0, stage.offsetWidth - stage.clientWidth - stage.clientLeft)) + 'px';
+    reset.hidden = !changed;
   };
   const sameGroup = (root, peer) => root !== peer && root.dataset.cfxInteractionGroup && root.dataset.cfxInteractionGroup === peer.dataset.cfxInteractionGroup;
   const emitHostEvent = (root, name, detail) => {
@@ -41,6 +63,7 @@
     root.dataset.cfxBrush = '';
     root.dataset.cfxMode = '';
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+    syncResetControl(root);
   };
   const storeInteractionState = (root, snapshot) => {
     try {
@@ -96,6 +119,7 @@
     }
     applySelectionSetByTargets(root, snapshot.selectedTargets || [], true);
     renderCompare(root);
+    syncResetControl(root);
     storeInteractionState(root, snapshot);
     if (emit !== false) emitHostEvent(root, 'cfxstateapplied', { snapshot });
     if (sync !== false) emitSync(root, { action: 'state', state: snapshot });

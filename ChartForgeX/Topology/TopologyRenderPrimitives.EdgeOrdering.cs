@@ -33,7 +33,7 @@ internal static partial class TopologyRenderPrimitives {
             .ToList();
     }
 
-    private static Dictionary<TopologyEdge, int> EdgeRenderOrderMap(TopologyChart chart, TopologyRenderOptions options) {
+    internal static Dictionary<TopologyEdge, int> EdgeRenderOrderMap(TopologyChart chart, TopologyRenderOptions options) {
         var orders = new Dictionary<TopologyEdge, int>();
         foreach (var item in OrderedEdgesForRendering(chart, options)) {
             if (!orders.ContainsKey(item.Edge)) orders.Add(item.Edge, item.RenderOrder);

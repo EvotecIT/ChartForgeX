@@ -23,8 +23,8 @@ internal readonly struct ResolvedTypeface {
 }
 
 internal static class TypographyFontResolver {
-    /// <summary>Maps CSS role weights to the discrete weight values accepted by a complete font specification.</summary>
-    internal static int FontSpecWeight(int weight) => Math.Max(100, Math.Min(900, (int)Math.Round(weight / 100.0) * 100));
+    /// <summary>Bounds a CSS role weight without quantizing the request to the available face weights.</summary>
+    internal static int FontSpecWeight(int weight) => Math.Max(1, Math.Min(1000, weight));
     /// <summary>Applies text language after face selection, preserving weight, slant and fallback families.</summary>
     internal static ResolvedTypeface WithLanguage(ResolvedTypeface face, string? tag) =>
         tag == null ? face : new ResolvedTypeface(face.Font?.WithLanguage(tag == "normal" ? null : tag), face.SynthesizeBold, face.SynthesizeItalic, face.Path);
@@ -40,6 +40,9 @@ internal static class TypographyFontResolver {
     private const int MaximumCachedFamilies = 256;
     private static readonly object CacheLock = new();
     private static int _cacheVersion;
+    // Read without the cache lock: every text measurement checks it, and parallel renders contended on that lock. The
+    // version only changes inside the lock, with a full fence, after the caches it guards are cleared.
+    internal static int CacheVersion => System.Threading.Volatile.Read(ref _cacheVersion);
     private static readonly System.Collections.Generic.Dictionary<string, ResolvedTypeface> FamilyCache = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
@@ -57,8 +60,8 @@ internal static class TypographyFontResolver {
     }
 
     /// <summary>
-    /// Resolves a CSS family stack at any CSS weight from 1 through 1000 (SVG and HTML output use
-    /// values such as 650 or 850 that <see cref="FontSpec.Weight"/> does not accept).
+    /// Resolves a CSS family stack at any weight from 1 through 1000, including values such as 650 or 850.
+    /// The closest available face is selected without changing the requested style weight.
     /// </summary>
     internal static ResolvedTypeface ResolveFace(string? family, int weight, bool italic) {
         family = string.IsNullOrWhiteSpace(family) ? "sans-serif" : family!.Trim();
@@ -152,8 +155,10 @@ internal static class TypographyFontResolver {
             var name = FamilyName(parts[index]);
             if (name.Length == 0 || IsPlatformAlias(name) || IsGenericFamily(name)) continue;
             var face = FontRegistry.Find(name, weight, italic) ?? InstalledFontCatalog.Find(name, weight, italic);
-            if (face != null && (!string.Equals(face.Path, resolved.Path, StringComparison.OrdinalIgnoreCase) ||
-                face.CollectionIndex != resolved.Font?.CollectionIndex) && !families.Contains(name)) families.Add(name);
+            if (face != null && (face.MemoryFont != null
+                ? !ReferenceEquals(face.MemoryFont.Root, resolved.Font?.Root)
+                : !string.Equals(face.Path, resolved.Path, StringComparison.OrdinalIgnoreCase) || face.CollectionIndex != resolved.Font?.CollectionIndex)
+                && !families.Contains(name)) families.Add(name);
         }
 
         return families.Count == 0 || resolved.Font == null
@@ -164,7 +169,7 @@ internal static class TypographyFontResolver {
     private static string FamilyName(string part) => part.Trim().Trim('"', '\'').Trim();
 
     private static bool TryLoad(InstalledFontFace? face, int weight, bool italic, out ResolvedTypeface resolved, string? selectedFamily = null) {
-        var loaded = face == null ? null : TrueTypeFont.TryLoadFromPath(face.Path, face.CollectionIndex);
+        var loaded = face?.LoadFont();
         if (loaded != null) loaded = loaded.WithSelectedFamily(selectedFamily ?? face!.Family);
         resolved = loaded != null && loaded.IsTextFace ? new ResolvedTypeface(loaded, weight >= 600 && face!.Weight < 600, italic && !face!.Italic, face!.Path) : default;
         return loaded != null && loaded.IsTextFace;
@@ -190,7 +195,7 @@ internal static class TypographyFontResolver {
     internal static void ClearCache() {
         lock (CacheLock) {
             FamilyCache.Clear();
-            _cacheVersion++;
+            System.Threading.Interlocked.Increment(ref _cacheVersion);
         }
 
         FontFallbackChain.Reset();

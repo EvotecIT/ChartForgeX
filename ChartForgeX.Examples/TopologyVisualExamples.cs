@@ -38,8 +38,7 @@ internal static partial class TopologyVisualExamples {
             .WithFitContentToViewport();
         var forceGraphOptions = new TopologyRenderOptions { IncludeLegend = true }
             .WithForceGraphStyle()
-            .WithHtmlForceGraphControls()
-            .WithFitContentToViewport();
+            .WithHtmlForceGraphControls();
         var topologyExplorerOptions = new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, CardSubtitleMode = TopologyCardSubtitleMode.Chip, IncludeDirectionMarkers = false, IncludeEdgeLabelBackplates = false, LegendMode = TopologyLegendMode.Merge }
             .WithMonitoringDashboardStyle()
             .WithSelectedGroup("APAC")
@@ -89,15 +88,13 @@ internal static partial class TopologyVisualExamples {
         var relationshipRadialOptions = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = true }
             .WithForceGraphStyle()
             .WithHtmlForceGraphControls()
-            .WithRelationshipRadialFocus("application-03", maxDepth: 2, maxFanout: 9)
-            .WithFitContentToViewport();
+            .WithRelationshipRadialFocus("application-03", maxDepth: 2, maxFanout: 9);
         relationshipRadialOptions.IncludeEdgeLabels = true;
         SaveTopology(target, artifacts, "visual-relationship-radial-ego-graph", BuildRelationshipRadialEgoGraph(), "Relationship Radial Ego Graph", "Selected application relationship graph with the root in the center, direct conversations around it, second-hop conversations farther out, and capped expansion for large networks.", relationshipRadialOptions);
         var largeRelationshipRadialOptions = new TopologyRenderOptions { IncludeLegend = false }
             .WithForceGraphStyle()
             .WithHtmlForceGraphControls()
-            .WithRelationshipRadialFocus("app-root", maxDepth: 2, maxFanout: 40)
-            .WithFitContentToViewport();
+            .WithRelationshipRadialFocus("app-root", maxDepth: 2, maxFanout: 40);
         SaveTopology(target, artifacts, "visual-relationship-radial-500-ego-graph", BuildLargeRelationshipRadialEgoGraph(), "Relationship Radial 500 Ego Graph", "Large 500-node relationship ego graph: all nodes remain present as dots, first-hop conversations spread around the root, second-hop conversations fan out farther, and HTML focus reveals labels on demand.", largeRelationshipRadialOptions);
         SaveTopology(target, artifacts, "visual-subnets-site-links-map", BuildSubnetsSiteLinksMap(), "Subnets and Site Links Map", "Subnet-to-site mapping topology with overlapping/orphan subnet states, bridgehead mapping, site links, and route labels.", tileSubtitleOptions);
         SaveTopology(target, artifacts, "visual-dc-connectivity-map", BuildDcConnectivityMap(), "Domain Controller Connectivity", "Selected-object connectivity topology for domain controllers, connection objects, service checks, and partner health.");

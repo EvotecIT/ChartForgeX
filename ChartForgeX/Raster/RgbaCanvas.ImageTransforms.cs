@@ -12,9 +12,10 @@ internal sealed partial class RgbaCanvas {
         double c,
         double d,
         double e,
-        double f) {
+        double f,
+        double opacity = 1) {
         if (rgba == null) throw new ArgumentNullException(nameof(rgba));
-        if (sourceWidth <= 0 || sourceHeight <= 0) return;
+        if (sourceWidth <= 0 || sourceHeight <= 0 || opacity <= 0) return;
         if (rgba.Length < sourceWidth * sourceHeight * 4) throw new ArgumentException("RGBA buffer is smaller than the requested source dimensions.", nameof(rgba));
         var determinant = a * d - b * c;
         if (double.IsNaN(determinant) || double.IsInfinity(determinant) || Math.Abs(determinant) < 0.000000001) return;
@@ -39,6 +40,7 @@ internal sealed partial class RgbaCanvas {
             var sourceY = (-b * translatedX + a * translatedY) / determinant;
             if (sourceX < 0 || sourceY < 0 || sourceX >= sourceWidth || sourceY >= sourceHeight) continue;
             var color = SampleImageFiltered(rgba, sourceWidth, sourceHeight, sourceX - 0.5, sourceY - 0.5, footprintX, footprintY);
+            if (opacity < 1) color = color.WithAlpha((byte)Math.Round(color.A * opacity));
             if (color.A > 0) BlendPixel(targetX, targetY, color);
         }
     }

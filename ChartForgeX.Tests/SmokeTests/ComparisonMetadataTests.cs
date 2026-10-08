@@ -11,7 +11,7 @@ internal static partial class SmokeTests {
                 new ChartErrorBar(2, 58, 49, 66)
             })
             .ToSvg();
-        Assert(error.Contains("data-cfx-role=\"error-bar\" data-cfx-series=\"0\" data-cfx-point=\"1\" data-cfx-x=\"2\" data-cfx-value=\"58\" data-cfx-lower=\"49\" data-cfx-upper=\"66\"", System.StringComparison.Ordinal), "Error bars should expose x, value, lower, and upper metadata.");
+        CartesianMetadata(CartesianPoint(error, 0, 1), ("x", "2"), ("value", "58"), ("lower", "49"), ("upper", "66"));
 
         var bubble = Chart.Create()
             .AddBubble("Reach", new[] {
@@ -19,7 +19,7 @@ internal static partial class SmokeTests {
                 new ChartBubble(2, 58, 24)
             })
             .ToSvg();
-        Assert(bubble.Contains("data-cfx-role=\"bubble\" data-cfx-series=\"0\" data-cfx-point=\"1\" data-cfx-x=\"2\" data-cfx-y=\"58\" data-cfx-size=\"24\"", System.StringComparison.Ordinal), "Bubbles should expose x, y, and size metadata.");
+        CartesianMetadata(CartesianPoint(bubble, 0, 1), ("x", "2"), ("y", "58"), ("size", "24"));
 
         var dumbbell = Chart.Create()
             .AddDumbbell("Before/after", new[] {
@@ -27,7 +27,7 @@ internal static partial class SmokeTests {
                 new ChartDumbbell(2, 38, 58)
             })
             .ToSvg();
-        Assert(dumbbell.Contains("data-cfx-role=\"dumbbell\" data-cfx-series=\"0\" data-cfx-point=\"1\" data-cfx-x=\"2\" data-cfx-start=\"38\" data-cfx-end=\"58\" data-cfx-delta=\"20\"", System.StringComparison.Ordinal), "Dumbbells should expose x, start, end, and delta metadata.");
+        CartesianMetadata(CartesianPoint(dumbbell, 0, 1), ("x", "2"), ("start", "38"), ("end", "58"), ("delta", "20"));
 
         var rangeBand = Chart.Create()
             .AddRangeBand("Forecast", new[] {
@@ -36,7 +36,8 @@ internal static partial class SmokeTests {
                 new ChartRangeBand(3, 51, 72)
             })
             .ToSvg();
-        Assert(rangeBand.Contains("data-cfx-role=\"range-band\" data-cfx-series=\"0\" data-cfx-interval-count=\"3\"", System.StringComparison.Ordinal), "Range bands should expose interval count metadata.");
+        Assert(System.Xml.Linq.XDocument.Parse(rangeBand).Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "point") == 3, "Range bands should retain all three source intervals.");
+        CartesianMetadata(CartesianPoint(rangeBand, 0, 2), ("x", "3"), ("lower", "51"), ("upper", "72"));
 
         var rangeArea = Chart.Create()
             .AddRangeArea("Prediction", new[] {
@@ -45,6 +46,7 @@ internal static partial class SmokeTests {
                 new ChartRangeBand(3, 51, 72)
             })
             .ToSvg();
-        Assert(rangeArea.Contains("data-cfx-role=\"range-area-series\" data-cfx-series=\"0\" data-cfx-interval-count=\"3\"", System.StringComparison.Ordinal), "Range areas should expose interval count metadata.");
+        Assert(System.Xml.Linq.XDocument.Parse(rangeArea).Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "point") == 3, "Range areas should retain all three source intervals.");
+        CartesianMetadata(CartesianPoint(rangeArea, 0, 2), ("x", "3"), ("lower", "51"), ("upper", "72"));
     }
 }

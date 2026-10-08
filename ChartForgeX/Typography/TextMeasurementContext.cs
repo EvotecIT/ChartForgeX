@@ -1,28 +1,24 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Typography;
 
 /// <summary>Resolves a font once for a sequence of layout measurements.</summary>
 internal sealed class TextMeasurementContext {
-    private readonly TrueTypeFont? _font;
-    private readonly TrueTypeFont? _boldFont;
-    private readonly string _family;
+    private readonly FontSpec _font;
     private readonly TextMeasurementMode _mode;
-    private readonly Dictionary<(string Text, double Size, bool Bold), double> _widths = new();
-    private readonly object _gate = new();
-    private const int MaximumCachedWidths = 4096;
+    private static readonly LabelPlacementService Service = new();
 
-    internal TextMeasurementContext(string family, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
+    internal TextMeasurementContext(string family, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate)
+        : this(new FontSpec { Family = family }, mode) { }
+
+    internal TextMeasurementContext(FontSpec font, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
         if (mode != TextMeasurementMode.PortableEstimate && mode != TextMeasurementMode.InstalledFonts)
             throw new ArgumentOutOfRangeException(nameof(mode));
-        _family = family;
+        _font = (font ?? throw new ArgumentNullException(nameof(font))).Clone();
         _mode = mode;
-        if (mode == TextMeasurementMode.PortableEstimate) return;
-        // The faces the PNG renderers draw this stack with; emphasized text draws the real bold face when one is installed.
-        _font = TypographyFontResolver.ResolveFace(family, 400, italic: false).Font;
-        _boldFont = TypographyFontResolver.ResolveThemeBoldFont(family);
     }
 
     internal double Measure(string value, double size, bool bold) {
@@ -30,15 +26,10 @@ internal sealed class TextMeasurementContext {
         // Preserve portable layout's historical estimate unless font-dependent
         // geometry is explicitly requested. Do not probe the host in this mode.
         if (_mode == TextMeasurementMode.PortableEstimate) return value.Length * size * (bold ? 0.62 : 0.56);
-        var key = (value, size, bold);
-        lock (_gate) {
-            if (_widths.TryGetValue(key, out var cached)) return cached;
-            var face = bold && _boldFont != null ? _boldFont : _font;
-            var width = TextLayoutEngine.MeasureWidth(value,
-                new TextStyle { Font = new FontSpec { Family = _family, Weight = bold && _boldFont == null ? 700 : 400 }, FontSize = size }, face);
-            // A render owns this cache; cap it for scenes with many unique labels.
-            if (_widths.Count < MaximumCachedWidths) _widths.Add(key, width);
-            return width;
-        }
+        var font = _font.Clone(); font.Weight = bold ? 700 : 400;
+        return Service.Measure(value, new TextStyle { Font = font, FontSize = size }).Width;
     }
+
+    internal double MeasureLineHeight(double size, bool bold) => _mode == TextMeasurementMode.PortableEstimate
+        ? size * 1.5 : new VisualSceneTextFace(_font, bold ? 700 : 400).Prepare("Ag", size).Metrics.LineHeight;
 }

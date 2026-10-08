@@ -57,7 +57,7 @@ internal static partial class SmokeTests {
         Assert(!html.Contains("data-cfx-scenario-step-control=\"link\"", StringComparison.Ordinal), "Scenario panels should hide copy-link controls until query-string scenario state is enabled.");
         Assert(html.Contains(">Failover flow</div>", StringComparison.Ordinal), "Scenario panels should server-render the active scenario title before JavaScript updates run.");
         Assert(html.Contains("data-cfx-scenario-step-id=\"emea-hub\"", StringComparison.Ordinal), "Scenario panels should server-render active route steps before JavaScript updates run.");
-        Assert(html.Contains("data-cfx-scenario-step-index=\"1\" role=\"button\" tabindex=\"0\"", StringComparison.Ordinal), "Scenario panel steps should be directly keyboard-focusable.");
+        Assert(SvgHasAttributes(html, "data-cfx-scenario-step-index=\"1\" role=\"button\" tabindex=\"0\""), "Scenario panel steps should be directly keyboard-focusable.");
         Assert(html.Contains("data-cfx-scenario-color=\"#2563EB\"", StringComparison.Ordinal), "Scenario picker controls should expose scenario accent colors.");
         Assert(html.Contains("data-cfx-scenario-label=\"Primary flow\"", StringComparison.Ordinal), "Scenario picker controls should expose scenario labels for host event payloads.");
         Assert(html.Contains("data-cfx-scenario-description=\"Nominal request path\"", StringComparison.Ordinal), "Scenario picker controls should expose scenario descriptions for host event payloads.");

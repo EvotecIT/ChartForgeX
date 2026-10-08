@@ -7,6 +7,53 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartHeatmapSurface {
+    /// <summary>Resolves numeric cells from the shared prepared theme without a renderer-specific theme path.</summary>
+    internal static ChartColor CellColor(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max) =>
+        CellBlend(chart, colors, high, value, min, max).Color;
+
+    internal static ChartColorBlend CellBlend(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max,
+        SvgColorRole highRole = SvgColorRole.Series) => chart.Options.HeatmapRelativeScale && value == 0 && min >= 0
+            ? ZeroBlend(colors) : ColorBlend(chart, colors, high, value, min, max, highRole);
+
+    internal static ChartColor Color(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max) =>
+        ColorBlend(chart, colors, high, value, min, max).Color;
+
+    internal static ChartColorBlend ColorBlend(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max,
+        SvgColorRole highRole = SvgColorRole.Series) {
+        var ratio = Ratio(chart, value, min, max);
+        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic)
+            return SemanticBlend(colors.Status.Critical.Fill, colors.Status.Medium.Fill, colors.Status.Pass.Fill, ratio);
+        if (!high.HasValue && colors.SequentialRamp.Count > 0) return RampBlend(colors.SequentialRamp, ratio);
+        return new ChartColorBlend(colors.Surface, SvgColorRole.Surface, high ?? colors.Palette[0], highRole, .18 + ratio * .82);
+    }
+
+    internal static ChartColor MapColor(Chart chart, VisualThemeColors colors, ChartColor? pointColor, ChartColor? highColor, double value, double min, double max) =>
+        MapBlend(chart, colors, pointColor, highColor, value, min, max).Color;
+
+    internal static ChartColorBlend MapBlend(Chart chart, VisualThemeColors colors, ChartColor? pointColor, ChartColor? highColor,
+        double value, double min, double max, SvgColorRole highRole = SvgColorRole.Series) => pointColor.HasValue
+            ? ChartColorBlend.Solid(pointColor.Value, SvgColorRole.Series)
+            : chart.Options.MapColorScale?.BlendFor(value, min, max) ?? ColorBlend(chart, colors, highColor, value, min, max, highRole);
+
+    internal static ChartColor MapNoDataColor(Chart chart, VisualThemeColors colors) =>
+        MapNoDataBlend(chart, colors).Color;
+
+    internal static ChartColorBlend MapNoDataBlend(Chart chart, VisualThemeColors colors) => chart.Options.MapColorScale?.NoDataColor is ChartColor color
+        ? ChartColorBlend.Solid(color, SvgColorRole.Ramp) : new ChartColorBlend(colors.Surface, SvgColorRole.Surface, colors.Border, SvgColorRole.Grid, .46);
+
+    internal static ChartColor CalendarColor(VisualThemeColors colors, ChartColor? high, double value, double min, double max) => CalendarBlend(colors, high, value, min, max).Color;
+
+    internal static ChartColorBlend CalendarBlend(VisualThemeColors colors, ChartColor? high, double value, double min, double max,
+        SvgColorRole highRole = SvgColorRole.Series) {
+        var ratio = CalendarRatio(value, min, max);
+        return !high.HasValue && colors.SequentialRamp.Count > 0 ? RampBlend(colors.SequentialRamp, ratio)
+            : new ChartColorBlend(colors.Surface, SvgColorRole.Surface, high ?? colors.Palette[0], highRole, .30 + ratio * .70);
+    }
+
+    internal static ChartColor ZeroColor(VisualThemeColors colors) => ZeroBlend(colors).Color;
+    internal static ChartColorBlend ZeroBlend(VisualThemeColors colors) => new(colors.Surface, SvgColorRole.Surface, colors.MutedForeground, SvgColorRole.Text, .14);
+    internal static ChartColor CalendarEmptyColor(VisualThemeColors colors) => CalendarEmptyBlend(colors).Color;
+    internal static ChartColorBlend CalendarEmptyBlend(VisualThemeColors colors) => new(colors.Surface, SvgColorRole.Surface, colors.MutedForeground, SvgColorRole.Text, .30);
     public static double CategoricalLabelFontSize(double configuredSize) => Math.Max(8, configuredSize);
 
     // Auto categorical labels keep the configured size in both renderers; Always may explicitly fit smaller text.
@@ -15,18 +62,18 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>
     /// Returns the colour of a matrix or hexbin heatmap cell. In a count heatmap (<see cref="ChartOptions.HeatmapRelativeScale"/>)
-    /// a zero means nothing happened, so it takes the neutral <see cref="ZeroColor"/> instead of the weakest ramp step.
-    /// Maps keep using <see cref="Color"/>, where zero can be a real magnitude.
+    /// a zero means nothing happened, so it takes the neutral <see cref="ZeroColor(Chart)"/> instead of the weakest ramp step.
+    /// Maps keep using <see cref="Color(Chart, ChartColor?, double, double, double)"/>, where zero can be a real magnitude.
     /// </summary>
     public static ChartColor CellColor(Chart chart, ChartColor? highColor, double value, double min, double max) => CellBlend(chart, highColor, value, min, max).Color;
 
-    /// <summary>Returns the colour of a matrix or hexbin heatmap cell as a blend, for SVG colour variables (see <see cref="CellColor"/>).</summary>
+    /// <summary>Returns the colour of a matrix or hexbin heatmap cell as a blend, for SVG colour variables (see <see cref="CellColor(Chart, ChartColor?, double, double, double)"/>).</summary>
     public static ChartColorBlend CellBlend(Chart chart, ChartColor? highColor, double value, double min, double max) =>
-        chart.Options.HeatmapRelativeScale && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max);
+        (chart.Options.HeatmapRelativeScale || chart.Options.Theme.UseGraphiteLayout) && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max);
 
     /// <summary>
     /// Returns whether a matrix or hexbin heatmap cell is strong, so the text on it takes the surface colour
-    /// (<see cref="ChartMarkText"/>). It follows the branches of <see cref="CellBlend"/> and depends on where the value sits
+    /// (<see cref="ChartMarkText"/>). It follows the branches of <see cref="CellBlend(Chart, ChartColor?, double, double, double)"/> and depends on where the value sits
     /// on the scale, never on the colour of the cell in one theme: semantic cells are status colours, so strong; a neutral
     /// zero is weak; a ramp cell is strong from <see cref="StrongRampRatio"/> of the ramp, where token ramps (weakest step
     /// nearest the surface) have moved far enough from the surface in light and dark themes alike; a tint of a series
@@ -48,11 +95,11 @@ internal static class ChartHeatmapSurface {
 
     public static ChartColor Color(Chart chart, ChartColor? highColor, double value, double min, double max) => ColorBlend(chart, highColor, value, min, max).Color;
 
-    /// <summary>Returns <see cref="Color"/> as a blend of its theme, series, or ramp colours.</summary>
+    /// <summary>Returns <see cref="Color(Chart, ChartColor?, double, double, double)"/> as a blend of its theme, series, or ramp colours.</summary>
     public static ChartColorBlend ColorBlend(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(chart, value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticBlend(chart, ratio);
-        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
+        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return chart.Options.Theme.UseGraphiteLayout ? ChartColorBlend.Solid(ramp[Math.Max(1, Math.Min(ramp.Length - 1, (int)Math.Ceiling(ratio * (ramp.Length - 1))))], SvgColorRole.Ramp) : RampBlend(ramp, ratio);
         return new ChartColorBlend(chart.Options.Theme.PlotBackground, SvgColorRole.Surface, highColor ?? chart.Options.Theme.Palette[0], SvgColorRole.Series, 0.18 + ratio * 0.82);
     }
 
@@ -142,9 +189,13 @@ internal static class ChartHeatmapSurface {
 
     private static ChartColorBlend SemanticBlend(Chart chart, double ratio) {
         var t = chart.Options.Theme;
-        if (ratio < 0.60) return new ChartColorBlend(t.Negative, SvgColorRole.Status, t.Warning, SvgColorRole.Status, ratio / 0.60 * 0.42);
-        if (ratio < 0.80) return new ChartColorBlend(t.Warning, SvgColorRole.Status, t.Positive, SvgColorRole.Status, (ratio - 0.60) / 0.20 * 0.5);
-        return new ChartColorBlend(t.Warning, SvgColorRole.Status, t.Positive, SvgColorRole.Status, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
+        return SemanticBlend(t.Negative, t.Warning, t.Positive, ratio);
+    }
+
+    private static ChartColorBlend SemanticBlend(ChartColor negative, ChartColor warning, ChartColor positive, double ratio) {
+        if (ratio < 0.60) return new ChartColorBlend(negative, SvgColorRole.Status, warning, SvgColorRole.Status, ratio / 0.60 * 0.42);
+        if (ratio < 0.80) return new ChartColorBlend(warning, SvgColorRole.Status, positive, SvgColorRole.Status, (ratio - 0.60) / 0.20 * 0.5);
+        return new ChartColorBlend(warning, SvgColorRole.Status, positive, SvgColorRole.Status, 0.65 + (ratio - 0.80) / 0.20 * 0.35);
     }
 
     /// <summary>
@@ -192,7 +243,7 @@ internal static class ChartHeatmapSurface {
 
     public static ChartColor CalendarColor(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) => CalendarBlend(chart, series, pointColor, value, min, max).Color;
 
-    /// <summary>Returns <see cref="CalendarColor"/> as a blend of its ramp, series, and surface colours.</summary>
+    /// <summary>Returns <see cref="CalendarColor(Chart, ChartSeries, ChartColor?, double, double, double)"/> as a blend of its ramp, series, and surface colours.</summary>
     public static ChartColorBlend CalendarBlend(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {
         var ratio = CalendarRatio(value, min, max);
         if (!pointColor.HasValue && !series.Color.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
@@ -203,13 +254,13 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>
     /// Returns the colour of a zero count: the surface behind the cells, shifted a little towards the muted text colour so
-    /// the cell stays visible without reading as activity. It differs from <see cref="CalendarEmptyColor"/>, which marks
+    /// the cell stays visible without reading as activity. It differs from <see cref="CalendarEmptyColor(Chart)"/>, which marks
     /// days without data.
     /// </summary>
     public static ChartColor ZeroColor(Chart chart) => ZeroBlend(chart).Color;
 
-    /// <summary>Returns <see cref="ZeroColor"/> as a blend of the backdrop and the muted text colour.</summary>
-    public static ChartColorBlend ZeroBlend(Chart chart) => TowardsMutedText(chart, 0.14);
+    /// <summary>Returns <see cref="ZeroColor(Chart)"/> as a blend of the backdrop and the muted text colour.</summary>
+    public static ChartColorBlend ZeroBlend(Chart chart) => chart.Options.Theme.UseGraphiteLayout ? ChartColorBlend.Solid(chart.Options.Theme.Neutral3, SvgColorRole.Surface) : TowardsMutedText(chart, 0.14);
 
     /// <summary>
     /// Returns the colour of a calendar day without data: the surface behind the cells shifted further towards the muted
@@ -217,7 +268,7 @@ internal static class ChartHeatmapSurface {
     /// </summary>
     public static ChartColor CalendarEmptyColor(Chart chart) => CalendarEmptyBlend(chart).Color;
 
-    /// <summary>Returns <see cref="CalendarEmptyColor"/> as a blend of the backdrop and the muted text colour.</summary>
+    /// <summary>Returns <see cref="CalendarEmptyColor(Chart)"/> as a blend of the backdrop and the muted text colour.</summary>
     public static ChartColorBlend CalendarEmptyBlend(Chart chart) => TowardsMutedText(chart, 0.30);
 
     /// <summary>Blends the backdrop towards the muted text colour, by <paramref name="share"/> of its opacity, into an opaque colour.</summary>

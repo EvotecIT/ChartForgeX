@@ -40,18 +40,31 @@ public static partial class GalleryWriter {
     }
 
     private readonly struct AssetDimensions {
-        public AssetDimensions(int width, int height) {
-            Width = width;
-            Height = height;
+        public AssetDimensions(double width, double height) {
+            if (width <= 0 || height <= 0 || !double.IsFinite(width) || !double.IsFinite(height) ||
+                width > int.MaxValue || height > int.MaxValue) {
+                Width = Height = 0;
+                LogicalWidth = LogicalHeight = 0;
+                return;
+            }
+            LogicalWidth = width;
+            LogicalHeight = height;
+            // Preserve integer fields used by existing gallery health and baseline consumers.
+            Width = (int)Math.Round(width);
+            Height = (int)Math.Round(height);
         }
 
         public int Width { get; }
 
         public int Height { get; }
+
+        public double LogicalWidth { get; }
+
+        public double LogicalHeight { get; }
     }
 
     private readonly struct ComparisonAsset {
-        public ComparisonAsset(string name, AssetDimensions svgDimensions, AssetDimensions pngDimensions, long svgBytes, long pngBytes, SvgHealth svgHealth, PngHealth pngHealth, HtmlHealth htmlHealth, bool htmlRequired) {
+        public ComparisonAsset(string name, AssetDimensions svgDimensions, AssetDimensions pngDimensions, long svgBytes, long pngBytes, SvgHealth svgHealth, PngHealth pngHealth, HtmlHealth htmlHealth, bool htmlRequired, LayoutProvenance layout) {
             Name = name;
             SvgDimensions = svgDimensions;
             PngDimensions = pngDimensions;
@@ -61,9 +74,12 @@ public static partial class GalleryWriter {
             PngHealth = pngHealth;
             HtmlHealth = htmlHealth;
             HtmlRequired = htmlRequired;
+            Layout = layout;
         }
 
         public string Name { get; }
+
+        public LayoutProvenance Layout { get; }
 
         public AssetDimensions SvgDimensions { get; }
 
@@ -85,17 +101,22 @@ public static partial class GalleryWriter {
 
         public int PngScale {
             get {
-                if (SvgDimensions.Width <= 0 || SvgDimensions.Height <= 0 || PngDimensions.Width <= 0 || PngDimensions.Height <= 0) return 0;
-                if (PngDimensions.Width % SvgDimensions.Width != 0 || PngDimensions.Height % SvgDimensions.Height != 0) return 0;
-                var widthScale = PngDimensions.Width / SvgDimensions.Width;
-                var heightScale = PngDimensions.Height / SvgDimensions.Height;
-                return widthScale == heightScale ? widthScale : 0;
+                var width = SvgDimensions.LogicalWidth;
+                var height = SvgDimensions.LogicalHeight;
+                if (width <= 0 || height <= 0 || PngDimensions.Width <= 0 || PngDimensions.Height <= 0) return 0;
+                // ceil(logical * scale) == pixels requires scale > (pixels - 1) / logical.
+                // Start with the smallest common positive integer and verify both allocations exactly.
+                var lowerBound = Math.Max((PngDimensions.Width - 1d) / width, (PngDimensions.Height - 1d) / height);
+                if (lowerBound >= int.MaxValue) return 0;
+                var scale = Math.Max(1, (int)Math.Floor(lowerBound) + 1);
+                return Math.Ceiling(width * scale) == PngDimensions.Width &&
+                    Math.Ceiling(height * scale) == PngDimensions.Height ? scale : 0;
             }
         }
 
         public bool HasMatchingDimensions =>
-            SvgDimensions.Width > 0 &&
-            SvgDimensions.Height > 0 &&
+            SvgDimensions.LogicalWidth > 0 &&
+            SvgDimensions.LogicalHeight > 0 &&
             PngScale >= 1;
 
         public string[] Warnings {
@@ -190,12 +211,13 @@ public static partial class GalleryWriter {
     }
 
     private readonly struct HtmlHealth {
-        public HtmlHealth(long bytes, bool hasDocumentShell, bool hasViewport, bool hasInlineSvg, bool hasSurfaceGradient, bool hasTextPolish, bool hasExpectedOverflow, bool hasPrintCss) {
+        public HtmlHealth(long bytes, bool hasDocumentShell, bool hasViewport, bool hasInlineSvg, bool hasSurfaceGradient, bool hasTextPolish, bool hasExpectedOverflow, bool hasPrintCss, bool hasFlatSurface = false) {
             Bytes = bytes;
             HasDocumentShell = hasDocumentShell;
             HasViewport = hasViewport;
             HasInlineSvg = hasInlineSvg;
             HasSurfaceGradient = hasSurfaceGradient;
+            HasFlatSurface = hasFlatSurface;
             HasTextPolish = hasTextPolish;
             HasExpectedOverflow = hasExpectedOverflow;
             HasPrintCss = hasPrintCss;
@@ -210,6 +232,7 @@ public static partial class GalleryWriter {
         public bool HasInlineSvg { get; }
 
         public bool HasSurfaceGradient { get; }
+        public bool HasFlatSurface { get; }
 
         public bool HasTextPolish { get; }
 
@@ -217,7 +240,7 @@ public static partial class GalleryWriter {
 
         public bool HasPrintCss { get; }
 
-        public bool IsHealthy => Bytes > 0 && HasDocumentShell && HasViewport && HasInlineSvg && HasSurfaceGradient && HasTextPolish && HasExpectedOverflow && HasPrintCss;
+        public bool IsHealthy => Bytes > 0 && HasDocumentShell && HasViewport && HasInlineSvg && (HasSurfaceGradient || HasFlatSurface) && HasTextPolish && HasExpectedOverflow && HasPrintCss;
     }
 
     private readonly struct PngContentBounds {

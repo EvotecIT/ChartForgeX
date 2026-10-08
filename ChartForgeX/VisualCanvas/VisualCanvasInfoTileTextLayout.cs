@@ -95,7 +95,7 @@ internal static class VisualCanvasInfoTileTextLayout {
         var iconX = x + padX;
         var iconY = y + (height - iconBox) / 2;
         var textX = iconX + iconBox + 22;
-        var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartValues.Count > 0;
+        var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartSampleCount > 0;
         var chartWidth = hasMiniChart ? Math.Min(width * 0.24, Math.Max(82, width * 0.20)) : 0;
         var chartX = x + width - padX - chartWidth;
         var chartY = y + Math.Max(24, height * 0.30);

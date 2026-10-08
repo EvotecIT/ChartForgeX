@@ -7,8 +7,11 @@ public sealed partial class Chart {
     /// <summary>
     /// Adds a Gantt task with a start date, end date, progress value, and optional dependency.
     /// </summary>
-    public Chart AddGanttTask(string name, DateTime start, DateTime end, double progress = 0, int dependsOn = -1, ChartColor? color = null) =>
+    public Chart AddGanttTask(string name, DateTime start, DateTime end, double progress = 0, int dependsOn = -1, ChartColor? color = null) {
         AddGanttRange(name, start.ToOADate(), end.ToOADate(), progress, dependsOn, false, color);
+        Options.XAxis.UseTimeScaleByDefault();
+        return this;
+    }
 
     /// <summary>
     /// Adds a Gantt task with numeric start and end schedule values.
@@ -19,8 +22,11 @@ public sealed partial class Chart {
     /// <summary>
     /// Adds a Gantt milestone at the specified date.
     /// </summary>
-    public Chart AddGanttMilestone(string name, DateTime when, int dependsOn = -1, ChartColor? color = null) =>
+    public Chart AddGanttMilestone(string name, DateTime when, int dependsOn = -1, ChartColor? color = null) {
         AddGanttRange(name, when.ToOADate(), when.ToOADate(), 1, dependsOn, true, color);
+        Options.XAxis.UseTimeScaleByDefault();
+        return this;
+    }
 
     /// <summary>
     /// Adds a Gantt milestone at the specified numeric schedule value.

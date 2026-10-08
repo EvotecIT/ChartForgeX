@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
 
@@ -32,7 +33,7 @@ internal readonly struct ChartWordCloudTerm {
 }
 
 internal static class ChartWordCloudLayout {
-    public static List<ChartWordCloudTerm> Compute(Chart chart, ChartRect plot) {
+    public static List<ChartWordCloudTerm> Compute(Chart chart, ChartRect plot, Func<int, string, double, TextMetrics>? measure = null) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.WordCloud);
         if (series == null || series.Points.Count == 0) return new List<ChartWordCloudTerm>();
         var valuesQuery = series.Points
@@ -52,8 +53,9 @@ internal static class ChartWordCloudLayout {
         var safePlot = new ChartRect(
             plot.X + edgePadding,
             plot.Y + edgePadding,
-            Math.Max(1, plot.Width - edgePadding * 2),
-            Math.Max(1, plot.Height - edgePadding * 2));
+            Math.Max(0, plot.Width - edgePadding * 2),
+            Math.Max(0, plot.Height - edgePadding * 2));
+        if (safePlot.Width <= 0 || safePlot.Height <= 0) return new List<ChartWordCloudTerm>();
         var placed = new List<ChartWordCloudTerm>();
         var bounds = new List<ChartRect>();
         foreach (var item in values) {
@@ -62,13 +64,17 @@ internal static class ChartWordCloudLayout {
             var preferredFontSize = minFontSize + Math.Sqrt(Math.Max(0, ratio)) * (maxFontSize - minFontSize);
             var angle = angles[item.Index % angles.Length];
             for (var scale = 1.0; scale >= 0.42; scale -= 0.08) {
-                var fontSize = Math.Max(10, preferredFontSize * scale);
-                var width = EstimateWidth(text, fontSize);
-                var height = fontSize * 1.16;
+                var fontSize = Math.Max(minFontSize, preferredFontSize * scale);
+                var metrics = measure?.Invoke(item.Index, text, fontSize);
+                var width = metrics?.Width ?? EstimateWidth(text, fontSize);
+                var height = metrics?.Height ?? fontSize * 1.16;
                 var collisionPadding = 8.0 / density;
                 var collisionWidth = RotatedWidth(width, height, angle) + collisionPadding;
                 var collisionHeight = RotatedHeight(width, height, angle) + collisionPadding;
-                if (!TryPlace(safePlot, bounds, collisionWidth, collisionHeight, density, out var x, out var y)) continue;
+                if (!TryPlace(safePlot, bounds, collisionWidth, collisionHeight, density, out var x, out var y)) {
+                    if (fontSize <= minFontSize) break;
+                    continue;
+                }
                 placed.Add(new ChartWordCloudTerm(item.Index, text, item.Point.Y, x, y, width, height, fontSize, angle));
                 bounds.Add(new ChartRect(x - collisionWidth / 2, y - collisionHeight / 2, collisionWidth, collisionHeight));
                 break;
@@ -79,11 +85,11 @@ internal static class ChartWordCloudLayout {
     }
 
     public static double EdgePadding(ChartRect plot) =>
-        Math.Min(
+        Math.Min(Math.Min(plot.Width, plot.Height) / 2, Math.Min(
             ChartVisualPrimitives.WordCloudEdgePaddingMax,
             Math.Max(
                 ChartVisualPrimitives.WordCloudEdgePaddingMin,
-                Math.Min(plot.Width, plot.Height) * ChartVisualPrimitives.WordCloudEdgePaddingFactor));
+                Math.Min(plot.Width, plot.Height) * ChartVisualPrimitives.WordCloudEdgePaddingFactor)));
 
     private static bool TryPlace(ChartRect plot, List<ChartRect> bounds, double width, double height, double density, out double x, out double y) {
         var cx = plot.Left + plot.Width / 2;

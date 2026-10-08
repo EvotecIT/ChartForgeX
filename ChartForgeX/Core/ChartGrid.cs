@@ -15,7 +15,7 @@ public sealed partial class ChartGrid {
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
     private int _columns = 2;
-    private int _gap = 18;
+    private int _gap = 16;
     private int _padding = 24;
     private int _pngOutputScale = 1;
     private ChartSize? _panelSize;
@@ -296,7 +296,7 @@ public sealed partial class ChartGrid {
         var primaryCompatible = new List<Chart>();
         var secondaryCompatible = new List<Chart>();
         foreach (var chart in _charts) {
-            ChartGuards.RenderCompatibility(chart);
+            ChartGuards.RenderCompatibility(chart, preparing: true);
             if (UsesPrimaryCartesianYAxis(chart)) {
                 var range = ChartRange.FromChart(chart, false);
                 if (range.MinY < primaryMinimum) primaryMinimum = range.MinY;
@@ -338,7 +338,7 @@ public sealed partial class ChartGrid {
         var maximum = double.NegativeInfinity;
         var compatible = new List<Chart>();
         foreach (var chart in _charts) {
-            ChartGuards.RenderCompatibility(chart);
+            ChartGuards.RenderCompatibility(chart, preparing: true);
             if (!ChartSeriesKindTraits.UsesCartesianXAxis(chart)) continue;
             var range = ChartRange.FromChart(chart, false);
             if (range.MinX < minimum) minimum = range.MinX;

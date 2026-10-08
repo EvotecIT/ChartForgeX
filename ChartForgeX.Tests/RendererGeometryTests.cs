@@ -91,8 +91,9 @@ public sealed class RendererGeometryTests {
             var expected = SvgRasterizer.Rasterize(svg, actual.Width, actual.Height);
             foreach (var point in new[] { (62, 132), (296, 132), (65, 222) }) {
                 var offset = (point.Item2 * density * actual.Width + point.Item1 * density) * 4;
-                // Interior pixels test the tint, independently of font or curved-edge coverage.
-                Assert.Equal(new byte[] { 230, 230, 255, 255 }, expected.Image.Pixels.Skip(offset).Take(4).ToArray());
+                // Premultiplied sRGB mixing retains the accent's alpha in the 10% tint.
+                // Interior pixels avoid font/edge coverage; white-backed byte compositing resolves to 242.
+                Assert.Equal(new byte[] { 242, 242, 255, 255 }, expected.Image.Pixels.Skip(offset).Take(4).ToArray());
                 Assert.Equal(expected.Image.Pixels.Skip(offset).Take(4).ToArray(), actual.Pixels.Skip(offset).Take(4).ToArray());
             }
         }

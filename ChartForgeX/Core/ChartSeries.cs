@@ -9,6 +9,7 @@ namespace ChartForgeX.Core;
 /// </summary>
 public sealed class ChartSeries {
     private double _strokeWidth = 3;
+    internal bool HasExplicitStrokeWidth { get; private set; }
     private ChartAxisSide _yAxis = ChartAxisSide.Primary;
     private ChartDataLabelPlacement? _dataLabelPlacement;
     private ChartFillPattern _fillPattern = ChartFillPattern.None;
@@ -69,6 +70,24 @@ public sealed class ChartSeries {
     /// <summary>Gets the source index represented by each retained point after explicit decimation.</summary>
     public IReadOnlyList<int> SourcePointIndices { get; private set; } = Array.Empty<int>();
 
+    // A regression's fitted endpoints do not replace its source observations in detached alternatives.
+    internal IReadOnlyList<ChartPoint> TrendSourcePoints { get; private set; } = Array.Empty<ChartPoint>();
+    internal IReadOnlyList<double> BoxPlotSourceSamples { get; private set; } = Array.Empty<double>();
+
+    internal void SetBoxPlotSourceSamples(IReadOnlyList<double> samples) {
+        var snapshot = new double[samples.Count];
+        for (var index = 0; index < snapshot.Length; index++) snapshot[index] = samples[index];
+        BoxPlotSourceSamples = Array.AsReadOnly(snapshot);
+        SourcePointCount = snapshot.Length;
+    }
+
+    internal void SetTrendSourcePoints(IReadOnlyList<ChartPoint> points) {
+        var snapshot = new ChartPoint[points.Count];
+        for (var index = 0; index < snapshot.Length; index++) snapshot[index] = points[index];
+        TrendSourcePoints = Array.AsReadOnly(snapshot);
+        SourcePointCount = snapshot.Length;
+    }
+
     /// <summary>Gets whether this series renders fewer points than its source sequence.</summary>
     public bool IsDecimated => DecimationMode.HasValue && Points.Count < SourcePointCount;
 
@@ -76,6 +95,10 @@ public sealed class ChartSeries {
     /// Gets or sets the series color. When null, the chart theme palette is used.
     /// </summary>
     public ChartColor? Color { get; set; }
+
+    /// <summary>Gets or sets the semantic colour role; explicit colours still take precedence.</summary>
+    public ChartSeriesState StateRole { get => _stateRole; set { if (!Enum.IsDefined(typeof(ChartSeriesState), value)) throw new ArgumentOutOfRangeException(nameof(value)); _stateRole = value; } }
+    private ChartSeriesState _stateRole;
 
     /// <summary>
     /// Gets optional point-level colors. Null entries fall back to the series color or theme palette.
@@ -216,6 +239,7 @@ public sealed class ChartSeries {
             ChartGuards.Finite(value, nameof(value));
             if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Stroke width must be greater than zero.");
             _strokeWidth = value;
+            HasExplicitStrokeWidth = true;
         }
     }
 

@@ -20,10 +20,10 @@ internal sealed class ChartStateCategoryLegend {
     private readonly ChartColor _fallback;
     private readonly Chart _chart;
 
-    public ChartStateCategoryLegend(Chart chart) {
+    public ChartStateCategoryLegend(Chart chart, ChartColor? fallback = null) {
         _chart = chart;
         foreach (var category in chart.Options.StateCategories) _categories[category.Key] = category;
-        _fallback = chart.Options.Theme.MutedText;
+        _fallback = fallback ?? chart.Options.Theme.MutedText;
         Categories = new List<ChartStateCategory>(chart.Options.StateCategories);
     }
 
@@ -41,6 +41,7 @@ internal sealed class ChartStateCategoryLegend {
 
     /// <summary>Wraps and budgets legend rows through the shared legend policy.</summary>
     public IReadOnlyList<ChartStateCategoryLegendItem> Layout(Func<string, double> measure, double left, double width, double availableHeight) {
+        if (!ChartLegendVisibility.ForEntries(_chart, Categories.Count)) return Array.Empty<ChartStateCategoryLegendItem>();
         var rows = new List<List<(ChartStateCategory Category, double Width)>>();
         var row = new List<(ChartStateCategory Category, double Width)>();
         var rowWidth = 0.0;

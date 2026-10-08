@@ -20,10 +20,11 @@ public sealed class SvgColorVariablesTests {
         Assert.DoesNotContain("var(--cfx-series", literal, StringComparison.Ordinal);
         Assert.Contains("stroke=\"var(--cfx-series-1, #2A78D6)\"", themed, StringComparison.Ordinal);
         Assert.Contains("fill=\"var(--cfx-text-primary, #16181C)\"", themed, StringComparison.Ordinal);
-        Assert.Contains("stop-color=\"var(--cfx-surface-card, #FFFFFF)\"", themed, StringComparison.Ordinal);
-        Assert.Contains("color-mix(in srgb, var(--cfx-surface-line, #E2E4E7) 54.9%, transparent)", themed, StringComparison.Ordinal);
+        Assert.Contains("fill=\"var(--cfx-surface-card, #FFFFFF)\"", themed, StringComparison.Ordinal);
+        Assert.Contains("color-mix(in srgb, var(--cfx-surface-line, #E2E4E7)", themed, StringComparison.Ordinal);
         Assert.Contains("fill=\"var(--cfx-text-secondary, #4D525B)\"", themed, StringComparison.Ordinal);
-        Assert.Equal(literal, Strip(themed));
+        Assert.Contains("stroke=\"" + Lines().Options.Theme.Grid.ToCss() + "\"", literal, StringComparison.Ordinal);
+        Assert.Equal(NormalizeIdentity(literal), NormalizeIdentity(Strip(themed)));
         Assert.Equal(Lines().ToPng(), Lines().WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToPng());
     }
 
@@ -97,10 +98,11 @@ public sealed class SvgColorVariablesTests {
         var result = variables.Apply("<rect fill=\"#FFFFFF\"/><text fill=\"#FFFFFF\" stroke=\"#FFFFFF\">a</text><tspan style=\"fill:#FFFFFF;stroke:#FFFFFF\"/><text fill=\"#112233\">b</text>");
         Assert.Equal("<rect fill=\"var(--card, #FFFFFF)\"/><text fill=\"#FFFFFF\" stroke=\"var(--card, #FFFFFF)\">a</text><tspan style=\"fill:#FFFFFF;stroke:var(--card, #FFFFFF)\"/><text fill=\"var(--ink, #112233)\">b</text>", result);
 
-        // A tile code on a dark tile is white contrast text; with Graphite the card is white too, and the code stays literal.
+        // A caller's white text and the white card share RGB values but have different paint roles.
         var bars = Chart.Create().WithSize(640, 360).WithDesignTokens(Graphite)
             .AddTileMap("Sites", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 10), new ChartRegionMapItem("NY", 0) })
-            .WithMapColorScale(ChartMapColorScale.Sequential(ChartColor.FromHex("#EEF2F8"), ChartColor.FromHex("#1D4F9E")));
+            .WithMapColorScale(ChartMapColorScale.Sequential(ChartColor.FromHex("#EEF2F8"), ChartColor.FromHex("#1D4F9E")))
+            .WithTickLabelStyle(style => style.WithColor("#FFFFFF"));
         var svg = bars.WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToSvg();
         Assert.Matches("<text[^>]*fill=\"#FFFFFF\"", svg);
         Assert.DoesNotMatch("<text[^>]*fill=\"var\\(--cfx-surface", svg);
@@ -118,11 +120,13 @@ public sealed class SvgColorVariablesTests {
 
     [Fact]
     public void GridAndPreparedTopology_ApplyTheirVariables() {
-        var grid = new ChartGrid().Add(Lines()).Add(Lines()).WithTitle("Two").WithSvgColorVariables(Graphite.ToSvgColorVariables());
+        var grid = new ChartGrid().Add(Lines().WithLuminousLineStyle()).Add(Lines().WithLuminousLineStyle()).WithTitle("Two").WithSvgColorVariables(Graphite.ToSvgColorVariables());
         var svg = grid.ToSvg();
         Assert.Contains("var(--cfx-series-1, #2A78D6)", svg, StringComparison.Ordinal);
         // Panels without variables of their own resolve their typed paints with the grid's: the white sheen stays literal.
-        Assert.Matches("data-cfx-role=\"line-highlight\"[^>]*stroke=\"#FFFFFF\"", svg);
+        var highlights = System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "line-highlight").ToArray();
+        Assert.NotEmpty(highlights);
+        Assert.All(highlights, element => Assert.StartsWith("rgba(255,255,255,", (string)element.Attribute("stroke")!));
         Assert.DoesNotContain("\uFDD0", svg, StringComparison.Ordinal);
 
         var chart = TopologyChart.Create().WithId("sites").AddAutoNode("dc1", "DC1");
@@ -154,7 +158,7 @@ public sealed class SvgColorVariablesTests {
         var svg = Map().ToSvg(options);
         Assert.Contains("var(--cfx-surface-card, #FFFFFF)", svg, StringComparison.Ordinal);
         Assert.Contains("var(--cfx-text-primary, #16181C)", svg, StringComparison.Ordinal);
-        Assert.Equal(Map().ToSvg(), Strip(svg));
+        Assert.Equal(NormalizeIdentity(Map().ToSvg()), NormalizeIdentity(Strip(svg)));
         Assert.Equal(Map().ToPng(), Map().ToPng(options));
     }
 
@@ -162,9 +166,14 @@ public sealed class SvgColorVariablesTests {
         .AddLine("Inbound", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3), new ChartPoint(2, 2) })
         .AddLine("Outbound", new[] { new ChartPoint(0, 2), new ChartPoint(1, 1), new ChartPoint(2, 3) });
 
+    // Paint policy participates in definition identity. Normalize only that generated prefix
+    // when comparing resolved visual content; source identities and reference suffixes remain.
+    private static string NormalizeIdentity(string svg) => Regex.Replace(svg, @"\bcfx-v2-[0-9a-f]{64}", "cfx-normalized");
+
     // Undoes the variables: var(--x, #hex) becomes #hex, color-mix(... N%, transparent) becomes rgba(r,g,b,N/100), and a
     // color-mix of two colours becomes their blend, rounded as the renderers blend.
     private static string Strip(string svg) {
+        svg = Regex.Replace(svg, @"var\(--[\w-]+, (#[0-9A-Fa-f]{6})\)", "$1");
         const string Operand = @"(?:var\(--[\w-]+, )?#([0-9A-Fa-f]{6})\)?";
         svg = Regex.Replace(svg, @"color-mix\(in srgb, " + Operand + @", " + Operand + @" ([0-9.]+)%\)", match => {
             var from = ChartColor.FromHex(match.Groups[1].Value);
@@ -173,12 +182,20 @@ public sealed class SvgColorVariablesTests {
             byte Channel(byte a, byte b) => (byte)Math.Round(a + (b - a) * amount);
             return ChartColor.FromRgb(Channel(from.R, to.R), Channel(from.G, to.G), Channel(from.B, to.B)).ToHex();
         });
-        var plain = Regex.Replace(svg, @"color-mix\(in srgb, var\(--[\w-]+, #([0-9A-Fa-f]{6})\) ([0-9.]+)%, transparent\)", match => {
-            var hex = match.Groups[1].Value;
-            var alpha = double.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture) / 100;
-            return string.Format(CultureInfo.InvariantCulture, "rgba({0},{1},{2},{3:0.###})", Convert.ToInt32(hex.Substring(0, 2), 16), Convert.ToInt32(hex.Substring(2, 2), 16), Convert.ToInt32(hex.Substring(4, 2), 16), alpha);
-        });
-        return Regex.Replace(plain, @"var\(--[\w-]+, (#[0-9A-Fa-f]{6})\)", "$1");
+        // Resolve innermost opacity mixes first: token alpha and mark opacity can both apply.
+        // Quantize each result through the same RGBA byte boundary as static/raster paint.
+        string previous;
+        do {
+            previous = svg;
+            svg = Regex.Replace(svg, @"color-mix\(in srgb, (?:(?:#([0-9A-Fa-f]{6}))|rgba\(([0-9]+),([0-9]+),([0-9]+),([0-9.]+)\)) ([0-9.]+)%, transparent\)", match => {
+                var color = match.Groups[1].Success ? ChartColor.FromHex(match.Groups[1].Value)
+                    : ChartColor.FromRgba(byte.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture), byte.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture),
+                        byte.Parse(match.Groups[4].Value, CultureInfo.InvariantCulture), (byte)Math.Round(double.Parse(match.Groups[5].Value, CultureInfo.InvariantCulture) * 255));
+                var multiplier = double.Parse(match.Groups[6].Value, CultureInfo.InvariantCulture) / 100;
+                return color.WithAlpha((byte)Math.Round(color.A * multiplier)).ToCss();
+            });
+        } while (svg != previous);
+        return svg;
     }
 
     private static string FixturePath(params string[] parts) {

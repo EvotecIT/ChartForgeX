@@ -73,8 +73,9 @@ link Bob: Dashboard @ https://example.com/bob";
             "Mermaid sequence conversion should order same-line notes and inclusive block boundaries by source column as well as line.");
 
         var visual = document.ToVisualArtifact();
-        Assert(visual.Metadata["mermaid.activations"] == "2" && visual.Regions.Single(region => region.Id == "Bob").Href == "https://example.com/bob",
-            "Mermaid participant links should reach the host-inspectable visual region contract.");
+        Assert(visual.Metadata["mermaid.activations"] == "2" && System.Xml.Linq.XDocument.Parse(visual.ToSvg()).Descendants()
+            .Any(element => element.Name.LocalName == "a" && (string?)element.Attribute("href") == "https://example.com/bob"),
+            "Mermaid participant links should reach the native sequence preview without requiring eager source-artifact geometry.");
         var envelope = visual.ToInterchangeEnvelope();
         var bobNode = envelope.Nodes.Single(node => node.Label == "Bob");
         var activation = envelope.Annotations.Single(annotation => annotation.Kind == "SequenceActivation");

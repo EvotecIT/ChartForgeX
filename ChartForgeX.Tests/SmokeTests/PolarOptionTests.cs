@@ -4,6 +4,7 @@ using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Svg;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -20,16 +21,13 @@ internal static partial class SmokeTests {
             });
 
         var svg = chart.ToSvg();
-        var points = SvgDocument.Parse(svg).Root.FindByTag("circle")
-            .Where(element => element.GetAttribute("data-cfx-role") == "polar-point")
+        var points = PreparedFamily(chart).Scene.Nodes.OfType<VisualSceneEllipse>()
+            .Where(element => element.Role == "polar-point")
             .ToArray();
         Assert(points.Length == 3, "Polar charts should render one marker per angle/radius point.");
-        var x0 = PolarCoordinate(points[0], "cx");
-        var y0 = PolarCoordinate(points[0], "cy");
-        var x1 = PolarCoordinate(points[1], "cx");
-        var y1 = PolarCoordinate(points[1], "cy");
-        var x2 = PolarCoordinate(points[2], "cx");
-        var y2 = PolarCoordinate(points[2], "cy");
+        var x0 = points[0].Cx; var y0 = points[0].Cy;
+        var x1 = points[1].Cx; var y1 = points[1].Cy;
+        var x2 = points[2].Cx; var y2 = points[2].Cy;
         Assert(x0 > x1 && x1 > x2, "Polar angles should control horizontal position instead of becoming evenly spaced radar categories.");
         Assert(y1 < y0 && Math.Abs(y0 - y2) < 0.01, "Polar angles should use standard counter-clockwise radian coordinates.");
         Assert(svg.Contains("data-cfx-role=\"polar-line\"", StringComparison.Ordinal), "Polar charts should render an ordered polar line.");
@@ -69,21 +67,23 @@ internal static partial class SmokeTests {
         Assert(formattedSvg.Contains(">r20</text>", StringComparison.Ordinal), "Polar radius labels should honor y-axis formatting.");
 
         var centered = PolarSample().WithAxes(false).WithGrid(false).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Center);
-        var centeredSvg = SvgDocument.Parse(centered.ToSvg());
-        var centeredPoint = centeredSvg.Root.FindByTag("circle").First(element => element.GetAttribute("data-cfx-role") == "polar-point");
-        var centeredLabel = centeredSvg.Root.FindByTag("text").First(element => element.GetAttribute("data-cfx-role") == "polar-data-label");
-        Assert(IsClose(PolarCoordinate(centeredPoint, "cx"), PolarCoordinate(centeredLabel, "x")) && IsClose(PolarCoordinate(centeredPoint, "cy"), PolarCoordinate(centeredLabel, "y")), "Center polar labels should stay on their marks.");
+        var centeredPrepared = PreparedFamily(centered);
+        var centeredPoint = centeredPrepared.Scene.Nodes.OfType<VisualSceneEllipse>().First(element => element.Role == "polar-point");
+        var centeredLabel = MapTextBounds(FamilyLabels(centeredPrepared, "polar-data-label").First());
+        Assert(IsClose(centeredPoint.Cx, centeredLabel.Left + centeredLabel.Width / 2) && IsClose(centeredPoint.Cy, centeredLabel.Top + centeredLabel.Height / 2), "Center polar labels should stay on their marks.");
 
         var below = PolarSample().WithAxes(false).WithGrid(false).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Center);
         below.Series[0].WithDataLabelPlacement(ChartDataLabelPlacement.Below);
-        var belowSvg = SvgDocument.Parse(below.ToSvg());
-        var belowPoint = belowSvg.Root.FindByTag("circle").First(element => element.GetAttribute("data-cfx-role") == "polar-point");
-        var belowLabel = belowSvg.Root.FindByTag("text").First(element => element.GetAttribute("data-cfx-role") == "polar-data-label");
-        Assert(PolarCoordinate(belowLabel, "y") > PolarCoordinate(belowPoint, "cy") + 15, "Series-level polar label placement should override the chart-level placement.");
+        var belowPrepared = PreparedFamily(below);
+        var belowPoint = belowPrepared.Scene.Nodes.OfType<VisualSceneEllipse>().First(element => element.Role == "polar-point");
+        var belowLabel = MapTextBounds(FamilyLabels(belowPrepared, "polar-data-label").First());
+        Assert(belowLabel.Top > belowPoint.Cy, "Series-level polar label placement should override the chart-level placement.");
         Assert(!centered.ToPng().SequenceEqual(below.ToPng()), "PNG polar labels should honor the same placement override as SVG.");
 
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddPolar("Negative", new[] { new ChartPoint(0, -1) }).ToSvg(), "Polar charts should reject negative radii instead of folding them across the origin.");
-        AssertThrows<InvalidOperationException>(() => Chart.Create().AddPolar("Zero", new[] { new ChartPoint(0, 0) }).ToPng(), "Polar charts should require at least one positive radius.");
+        var zero = PreparedFamily(Chart.Create().AddPolar("Zero", new[] { new ChartPoint(0, 0) }));
+        Assert(FamilyGroups(zero, "polar-point-source").Single().Metadata["data-cfx-value"] == "0", "Zero radius remains a truthful observation at the origin.");
+        Assert(zero.ToPng().Length > 64, "Zero-radius data remains exportable.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().ConfigureYAxis(axis => axis.Minimum = -10).AddPolar("Bad axis", new[] { new ChartPoint(0, 0), new ChartPoint(1, 10) }).ToSvg(), "Polar charts should reject negative radial-axis minima so zero remains at the origin.");
     }
 

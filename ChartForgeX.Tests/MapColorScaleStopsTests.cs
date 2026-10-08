@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -50,12 +51,14 @@ public sealed class MapColorScaleStopsTests {
     [InlineData(60, 0)]
     public void Legend_WhenTheMidpointSitsAtAnEnd_SpacesSwatchesEvenlyAndLabelsThatEnd(double midpoint, int labelledStep) {
         var chart = Map("tile-map", ChartMapColorScale.Diverging(Low, Neutral, High, midpoint).WithValueRange(60, 110).WithLabels("60", "Target", "110"));
-        var svg = XDocument.Parse(chart.ToSvg());
-        var steps = ByRole(svg, "tile-map-scale-step");
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
+        var steps = ByRole(svg, "map-scale-step");
         Assert.Equal(7, steps.Length);
-        Assert.Equal(7, steps.Select(step => (string?)step.Attribute("data-cfx-value")).Distinct().Count());
+        Assert.Equal(7, ByRole(svg, "map-scale-step-source").Select(step => (string?)step.Attribute("data-cfx-value")).Distinct().Count());
         var step = steps[labelledStep];
-        Assert.Equal(Number(step, "x") + Number(step, "width") / 2, Number(ByRole(svg, "tile-map-scale-midpoint-label").Single(), "x"), 3);
+        var caption = Assert.Single(prepared.Regions, region => region.Role == "map-scale-midpoint-label").Bounds;
+        Assert.InRange(Number(step, "x") + Number(step, "width") / 2, caption.Left, caption.Right);
         Assert.Equal("#F1F5F9", (string?)step.Attribute("fill"));
     }
 
@@ -85,22 +88,24 @@ public sealed class MapColorScaleStopsTests {
     [InlineData("region-map")]
     public void Legend_ShowsOneSwatchPerStopAndPutsTheMidpointLabelUnderTheMidpointStop(string role) {
         var chart = Map(role, ChartMapColorScale.Diverging(Low, Neutral, High, 2).WithValueRange(-4, 8).WithLabels("-4", "2", "8"));
-        var svg = XDocument.Parse(chart.ToSvg());
-        var steps = ByRole(svg, role + "-scale-step");
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
+        var steps = ByRole(svg, "map-scale-step");
         Assert.Equal(new[] { "#7F1D1D", "#DC2626", "#FCA5A5", "#F1F5F9", "#93C5FD", "#2563EB", "#1E3A8A" }, steps.Select(step => (string?)step.Attribute("fill")).ToArray());
-        Assert.Equal(new[] { "-4", "-2", "0", "2", "4", "6", "8" }, steps.Select(step => (string?)step.Attribute("data-cfx-value")).ToArray());
+        Assert.Equal(new[] { "-4", "-2", "0", "2", "4", "6", "8" }, ByRole(svg, "map-scale-step-source").Select(step => (string?)step.Attribute("data-cfx-value")).ToArray());
 
         var midpointStep = steps[3];
         var centre = Number(midpointStep, "x") + Number(midpointStep, "width") / 2;
-        Assert.Equal(centre, Number(ByRole(svg, role + "-scale-midpoint-label").Single(), "x"), 3);
+        var caption = Assert.Single(prepared.Regions, region => region.Role == "map-scale-midpoint-label").Bounds;
+        Assert.InRange(centre, caption.Left, caption.Right);
         Assert.NotEqual(Map(role, ChartMapColorScale.Diverging(Low[0], Neutral, High[2], 2).WithValueRange(-4, 8)).ToPng(), chart.ToPng());
     }
 
     [Fact]
     public void Legend_KeepsFiveSwatchesForThreeColoursAndSamplesVeryLongRamps() {
-        Assert.Equal(5, ByRole(XDocument.Parse(Map("tile-map", ChartMapColorScale.Diverging(Low[0], Neutral, High[2])).ToSvg()), "tile-map-scale-step").Length);
+        Assert.Equal(5, ByRole(Literal(Map("tile-map", ChartMapColorScale.Diverging(Low[0], Neutral, High[2]))), "map-scale-step").Length);
         var ramp = Enumerable.Range(0, 15).Select(i => ChartColor.FromRgb((byte)(i * 17), 40, 120)).ToArray();
-        var steps = ByRole(XDocument.Parse(Map("tile-map", ChartMapColorScale.Sequential(ramp)).ToSvg()), "tile-map-scale-step");
+        var steps = ByRole(Literal(Map("tile-map", ChartMapColorScale.Sequential(ramp))), "map-scale-step");
         Assert.Equal(11, steps.Length);
         Assert.Equal(ramp[0].ToHex(), (string?)steps[0].Attribute("fill"));
         Assert.Equal(ramp[14].ToHex(), (string?)steps[10].Attribute("fill"));
@@ -115,6 +120,7 @@ public sealed class MapColorScaleStopsTests {
     }
 
     private static double Number(XElement element, string attribute) => double.Parse((string)element.Attribute(attribute)!, CultureInfo.InvariantCulture);
+    private static XDocument Literal(Chart chart) => XDocument.Parse(chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(new VisualSvgOptions()));
 
     private static XElement[] ByRole(XDocument svg, string role) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 }

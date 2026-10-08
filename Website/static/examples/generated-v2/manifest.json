@@ -1,0 +1,3524 @@
+{
+  "schemaVersion": 1,
+  "matrixScope": "selected",
+  "pipeline": "model-to-prepared-scene-to-svg-or-raster",
+  "chartKinds": [
+    "Area",
+    "Bar",
+    "BoxPlot",
+    "Bubble",
+    "Bullet",
+    "CalendarHeatmap",
+    "Candlestick",
+    "Circle",
+    "Donut",
+    "DottedMap",
+    "Dumbbell",
+    "ErrorBar",
+    "Funnel",
+    "Gantt",
+    "GanttLane",
+    "Gauge",
+    "Heatmap",
+    "HexbinHeatmap",
+    "HorizontalBar",
+    "LayeredRadial",
+    "Line",
+    "Lollipop",
+    "Ohlc",
+    "Pictorial",
+    "Pie",
+    "Polar",
+    "PolarArea",
+    "ProgressBar",
+    "Radar",
+    "RadialBar",
+    "RangeArea",
+    "RangeBand",
+    "RangeBar",
+    "RegionMap",
+    "Sankey",
+    "Scatter",
+    "Slope",
+    "StackedArea",
+    "StateTimeline",
+    "StepArea",
+    "StepLine",
+    "Sunburst",
+    "TileMap",
+    "Timeline",
+    "Tree",
+    "Treemap",
+    "TrendLine",
+    "Waterfall",
+    "WordCloud"
+  ],
+  "fonts": [
+    {
+      "file": "fonts/Carlito-Regular.ttf",
+      "sha256": "F6418F708BAEDE9789DAEF5D458C0F53D2A888AF9820E8062934E504FEDC6595"
+    },
+    {
+      "file": "fonts/Carlito-Bold.ttf",
+      "sha256": "BB5D20F79B82599EC72983597437373A80F2D2085FA91FC144FD74E876A594DB"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "cartesian-wide-light",
+      "family": "cartesian",
+      "title": "Checks over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Line",
+        "Area",
+        "Bar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "cartesian-wide-light.csharp.txt",
+      "svg": "cartesian-wide-light.svg",
+      "png": "cartesian-wide-light.png",
+      "html": "cartesian-wide-light.html",
+      "thumbnail": "cartesian-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 39
+    },
+    {
+      "id": "cartesian-compact-light",
+      "family": "cartesian",
+      "title": "Checks over the reporting period",
+      "variant": "compact",
+      "seriesKinds": [
+        "Line",
+        "Area",
+        "Bar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "cartesian-compact-light.csharp.txt",
+      "svg": "cartesian-compact-light.svg",
+      "png": "cartesian-compact-light.png",
+      "html": "cartesian-compact-light.html",
+      "thumbnail": "cartesian-compact-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "semanticRegions": 39
+    },
+    {
+      "id": "cartesian-explicit-status-light",
+      "family": "cartesian",
+      "title": "Checks over the reporting period",
+      "variant": "explicit-status",
+      "seriesKinds": [
+        "Line",
+        "Area",
+        "Bar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "cartesian-explicit-status-light.csharp.txt",
+      "svg": "cartesian-explicit-status-light.svg",
+      "png": "cartesian-explicit-status-light.png",
+      "html": "cartesian-explicit-status-light.html",
+      "thumbnail": "cartesian-explicit-status-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 39
+    },
+    {
+      "id": "cartesian-wide-dark",
+      "family": "cartesian",
+      "title": "Checks over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Line",
+        "Area",
+        "Bar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "cartesian-wide-dark.csharp.txt",
+      "svg": "cartesian-wide-dark.svg",
+      "png": "cartesian-wide-dark.png",
+      "html": "cartesian-wide-dark.html",
+      "thumbnail": "cartesian-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 39
+    },
+    {
+      "id": "cartesian-compact-dark",
+      "family": "cartesian",
+      "title": "Checks over the reporting period",
+      "variant": "compact",
+      "seriesKinds": [
+        "Line",
+        "Area",
+        "Bar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "cartesian-compact-dark.csharp.txt",
+      "svg": "cartesian-compact-dark.svg",
+      "png": "cartesian-compact-dark.png",
+      "html": "cartesian-compact-dark.html",
+      "thumbnail": "cartesian-compact-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "semanticRegions": 39
+    },
+    {
+      "id": "cartesian-explicit-status-dark",
+      "family": "cartesian",
+      "title": "Checks over the reporting period",
+      "variant": "explicit-status",
+      "seriesKinds": [
+        "Line",
+        "Area",
+        "Bar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "cartesian-explicit-status-dark.csharp.txt",
+      "svg": "cartesian-explicit-status-dark.svg",
+      "png": "cartesian-explicit-status-dark.png",
+      "html": "cartesian-explicit-status-dark.html",
+      "thumbnail": "cartesian-explicit-status-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 39
+    },
+    {
+      "id": "donut-wide-light",
+      "family": "donut",
+      "title": "Findings by category",
+      "variant": "wide",
+      "seriesKinds": [
+        "Donut"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "donut-wide-light.csharp.txt",
+      "svg": "donut-wide-light.svg",
+      "png": "donut-wide-light.png",
+      "html": "donut-wide-light.html",
+      "thumbnail": "donut-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    },
+    {
+      "id": "donut-compact-light",
+      "family": "donut",
+      "title": "Findings by category",
+      "variant": "compact",
+      "seriesKinds": [
+        "Donut"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "donut-compact-light.csharp.txt",
+      "svg": "donut-compact-light.svg",
+      "png": "donut-compact-light.png",
+      "html": "donut-compact-light.html",
+      "thumbnail": "donut-compact-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    },
+    {
+      "id": "donut-explicit-status-light",
+      "family": "donut",
+      "title": "Findings by category",
+      "variant": "explicit-status",
+      "seriesKinds": [
+        "Donut"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "donut-explicit-status-light.csharp.txt",
+      "svg": "donut-explicit-status-light.svg",
+      "png": "donut-explicit-status-light.png",
+      "html": "donut-explicit-status-light.html",
+      "thumbnail": "donut-explicit-status-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    },
+    {
+      "id": "donut-wide-dark",
+      "family": "donut",
+      "title": "Findings by category",
+      "variant": "wide",
+      "seriesKinds": [
+        "Donut"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "donut-wide-dark.csharp.txt",
+      "svg": "donut-wide-dark.svg",
+      "png": "donut-wide-dark.png",
+      "html": "donut-wide-dark.html",
+      "thumbnail": "donut-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    },
+    {
+      "id": "donut-compact-dark",
+      "family": "donut",
+      "title": "Findings by category",
+      "variant": "compact",
+      "seriesKinds": [
+        "Donut"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "donut-compact-dark.csharp.txt",
+      "svg": "donut-compact-dark.svg",
+      "png": "donut-compact-dark.png",
+      "html": "donut-compact-dark.html",
+      "thumbnail": "donut-compact-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    },
+    {
+      "id": "donut-explicit-status-dark",
+      "family": "donut",
+      "title": "Findings by category",
+      "variant": "explicit-status",
+      "seriesKinds": [
+        "Donut"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "donut-explicit-status-dark.csharp.txt",
+      "svg": "donut-explicit-status-dark.svg",
+      "png": "donut-explicit-status-dark.png",
+      "html": "donut-explicit-status-dark.html",
+      "thumbnail": "donut-explicit-status-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    },
+    {
+      "id": "topology-feasibility-light",
+      "family": "topology",
+      "title": "Service request route",
+      "variant": "feasibility",
+      "seriesKinds": [],
+      "theme": "light",
+      "width": 640,
+      "height": 400,
+      "naturalAspect": 1.6,
+      "compact": false,
+      "source": "topology-feasibility-light.csharp.txt",
+      "svg": "topology-feasibility-light.svg",
+      "png": "topology-feasibility-light.png",
+      "html": "topology-feasibility-light.html",
+      "thumbnail": "topology-feasibility-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "topology-feasibility-dark",
+      "family": "topology",
+      "title": "Service request route",
+      "variant": "feasibility",
+      "seriesKinds": [],
+      "theme": "dark",
+      "width": 640,
+      "height": 400,
+      "naturalAspect": 1.6,
+      "compact": false,
+      "source": "topology-feasibility-dark.csharp.txt",
+      "svg": "topology-feasibility-dark.svg",
+      "png": "topology-feasibility-dark.png",
+      "html": "topology-feasibility-dark.html",
+      "thumbnail": "topology-feasibility-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "sequence-feasibility-light",
+      "family": "sequence",
+      "title": "Client and server exchange",
+      "variant": "feasibility",
+      "seriesKinds": [],
+      "theme": "light",
+      "width": 640,
+      "height": 400,
+      "naturalAspect": 1.6,
+      "compact": false,
+      "source": "sequence-feasibility-light.csharp.txt",
+      "svg": "sequence-feasibility-light.svg",
+      "png": "sequence-feasibility-light.png",
+      "html": "sequence-feasibility-light.html",
+      "thumbnail": "sequence-feasibility-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "sequence-feasibility-dark",
+      "family": "sequence",
+      "title": "Client and server exchange",
+      "variant": "feasibility",
+      "seriesKinds": [],
+      "theme": "dark",
+      "width": 640,
+      "height": 400,
+      "naturalAspect": 1.6,
+      "compact": false,
+      "source": "sequence-feasibility-dark.csharp.txt",
+      "svg": "sequence-feasibility-dark.svg",
+      "png": "sequence-feasibility-dark.png",
+      "html": "sequence-feasibility-dark.html",
+      "thumbnail": "sequence-feasibility-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "family-line-wide-light",
+      "family": "line",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Line"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-line-wide-light.csharp.txt",
+      "svg": "family-line-wide-light.svg",
+      "png": "family-line-wide-light.png",
+      "html": "family-line-wide-light.html",
+      "thumbnail": "family-line-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-line-wide-dark",
+      "family": "line",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-line-wide-dark.csharp.txt",
+      "svg": "family-line-wide-dark.svg",
+      "png": "family-line-wide-dark.png",
+      "html": "family-line-wide-dark.html",
+      "thumbnail": "family-line-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-step-line-wide-light",
+      "family": "step-line",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "StepLine"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-step-line-wide-light.csharp.txt",
+      "svg": "family-step-line-wide-light.svg",
+      "png": "family-step-line-wide-light.png",
+      "html": "family-step-line-wide-light.html",
+      "thumbnail": "family-step-line-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-step-line-wide-dark",
+      "family": "step-line",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "StepLine"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-step-line-wide-dark.csharp.txt",
+      "svg": "family-step-line-wide-dark.svg",
+      "png": "family-step-line-wide-dark.png",
+      "html": "family-step-line-wide-dark.html",
+      "thumbnail": "family-step-line-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-area-wide-light",
+      "family": "area",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Area"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-area-wide-light.csharp.txt",
+      "svg": "family-area-wide-light.svg",
+      "png": "family-area-wide-light.png",
+      "html": "family-area-wide-light.html",
+      "thumbnail": "family-area-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-area-wide-dark",
+      "family": "area",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Area"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-area-wide-dark.csharp.txt",
+      "svg": "family-area-wide-dark.svg",
+      "png": "family-area-wide-dark.png",
+      "html": "family-area-wide-dark.html",
+      "thumbnail": "family-area-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-step-area-wide-light",
+      "family": "step-area",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "StepArea"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-step-area-wide-light.csharp.txt",
+      "svg": "family-step-area-wide-light.svg",
+      "png": "family-step-area-wide-light.png",
+      "html": "family-step-area-wide-light.html",
+      "thumbnail": "family-step-area-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-step-area-wide-dark",
+      "family": "step-area",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "StepArea"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-step-area-wide-dark.csharp.txt",
+      "svg": "family-step-area-wide-dark.svg",
+      "png": "family-step-area-wide-dark.png",
+      "html": "family-step-area-wide-dark.html",
+      "thumbnail": "family-step-area-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-scatter-wide-light",
+      "family": "scatter",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-wide-light.csharp.txt",
+      "svg": "family-scatter-wide-light.svg",
+      "png": "family-scatter-wide-light.png",
+      "html": "family-scatter-wide-light.html",
+      "thumbnail": "family-scatter-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-scatter-wide-dark",
+      "family": "scatter",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-wide-dark.csharp.txt",
+      "svg": "family-scatter-wide-dark.svg",
+      "png": "family-scatter-wide-dark.png",
+      "html": "family-scatter-wide-dark.html",
+      "thumbnail": "family-scatter-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-bubble-wide-light",
+      "family": "bubble",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-wide-light.csharp.txt",
+      "svg": "family-bubble-wide-light.svg",
+      "png": "family-bubble-wide-light.png",
+      "html": "family-bubble-wide-light.html",
+      "thumbnail": "family-bubble-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 15
+    },
+    {
+      "id": "family-bubble-wide-dark",
+      "family": "bubble",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-wide-dark.csharp.txt",
+      "svg": "family-bubble-wide-dark.svg",
+      "png": "family-bubble-wide-dark.png",
+      "html": "family-bubble-wide-dark.html",
+      "thumbnail": "family-bubble-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 15
+    },
+    {
+      "id": "family-error-bar-wide-light",
+      "family": "error-bar",
+      "title": "Delivery time distribution",
+      "variant": "wide",
+      "seriesKinds": [
+        "ErrorBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-error-bar-wide-light.csharp.txt",
+      "svg": "family-error-bar-wide-light.svg",
+      "png": "family-error-bar-wide-light.png",
+      "html": "family-error-bar-wide-light.html",
+      "thumbnail": "family-error-bar-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-error-bar-wide-dark",
+      "family": "error-bar",
+      "title": "Delivery time distribution",
+      "variant": "wide",
+      "seriesKinds": [
+        "ErrorBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-error-bar-wide-dark.csharp.txt",
+      "svg": "family-error-bar-wide-dark.svg",
+      "png": "family-error-bar-wide-dark.png",
+      "html": "family-error-bar-wide-dark.html",
+      "thumbnail": "family-error-bar-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-candlestick-wide-light",
+      "family": "candlestick",
+      "title": "Daily market prices",
+      "variant": "wide",
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-candlestick-wide-light.csharp.txt",
+      "svg": "family-candlestick-wide-light.svg",
+      "png": "family-candlestick-wide-light.png",
+      "html": "family-candlestick-wide-light.html",
+      "thumbnail": "family-candlestick-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-candlestick-wide-dark",
+      "family": "candlestick",
+      "title": "Daily market prices",
+      "variant": "wide",
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-candlestick-wide-dark.csharp.txt",
+      "svg": "family-candlestick-wide-dark.svg",
+      "png": "family-candlestick-wide-dark.png",
+      "html": "family-candlestick-wide-dark.html",
+      "thumbnail": "family-candlestick-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-range-band-wide-light",
+      "family": "range-band",
+      "title": "Expected operating ranges",
+      "variant": "wide",
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-band-wide-light.csharp.txt",
+      "svg": "family-range-band-wide-light.svg",
+      "png": "family-range-band-wide-light.png",
+      "html": "family-range-band-wide-light.html",
+      "thumbnail": "family-range-band-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-range-band-wide-dark",
+      "family": "range-band",
+      "title": "Expected operating ranges",
+      "variant": "wide",
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-band-wide-dark.csharp.txt",
+      "svg": "family-range-band-wide-dark.svg",
+      "png": "family-range-band-wide-dark.png",
+      "html": "family-range-band-wide-dark.html",
+      "thumbnail": "family-range-band-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-range-area-wide-light",
+      "family": "range-area",
+      "title": "Expected operating ranges",
+      "variant": "wide",
+      "seriesKinds": [
+        "RangeArea"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-area-wide-light.csharp.txt",
+      "svg": "family-range-area-wide-light.svg",
+      "png": "family-range-area-wide-light.png",
+      "html": "family-range-area-wide-light.html",
+      "thumbnail": "family-range-area-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-range-area-wide-dark",
+      "family": "range-area",
+      "title": "Expected operating ranges",
+      "variant": "wide",
+      "seriesKinds": [
+        "RangeArea"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-area-wide-dark.csharp.txt",
+      "svg": "family-range-area-wide-dark.svg",
+      "png": "family-range-area-wide-dark.png",
+      "html": "family-range-area-wide-dark.html",
+      "thumbnail": "family-range-area-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-bar-wide-light",
+      "family": "bar",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Bar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bar-wide-light.csharp.txt",
+      "svg": "family-bar-wide-light.svg",
+      "png": "family-bar-wide-light.png",
+      "html": "family-bar-wide-light.html",
+      "thumbnail": "family-bar-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-bar-wide-dark",
+      "family": "bar",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Bar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bar-wide-dark.csharp.txt",
+      "svg": "family-bar-wide-dark.svg",
+      "png": "family-bar-wide-dark.png",
+      "html": "family-bar-wide-dark.html",
+      "thumbnail": "family-bar-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-lollipop-wide-light",
+      "family": "lollipop",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Lollipop"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-lollipop-wide-light.csharp.txt",
+      "svg": "family-lollipop-wide-light.svg",
+      "png": "family-lollipop-wide-light.png",
+      "html": "family-lollipop-wide-light.html",
+      "thumbnail": "family-lollipop-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-lollipop-wide-dark",
+      "family": "lollipop",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Lollipop"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-lollipop-wide-dark.csharp.txt",
+      "svg": "family-lollipop-wide-dark.svg",
+      "png": "family-lollipop-wide-dark.png",
+      "html": "family-lollipop-wide-dark.html",
+      "thumbnail": "family-lollipop-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-dumbbell-wide-light",
+      "family": "dumbbell",
+      "title": "Before and after comparison",
+      "variant": "wide",
+      "seriesKinds": [
+        "Dumbbell"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-dumbbell-wide-light.csharp.txt",
+      "svg": "family-dumbbell-wide-light.svg",
+      "png": "family-dumbbell-wide-light.png",
+      "html": "family-dumbbell-wide-light.html",
+      "thumbnail": "family-dumbbell-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-dumbbell-wide-dark",
+      "family": "dumbbell",
+      "title": "Before and after comparison",
+      "variant": "wide",
+      "seriesKinds": [
+        "Dumbbell"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-dumbbell-wide-dark.csharp.txt",
+      "svg": "family-dumbbell-wide-dark.svg",
+      "png": "family-dumbbell-wide-dark.png",
+      "html": "family-dumbbell-wide-dark.html",
+      "thumbnail": "family-dumbbell-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-range-bar-wide-light",
+      "family": "range-bar",
+      "title": "Expected operating ranges",
+      "variant": "wide",
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-wide-light.csharp.txt",
+      "svg": "family-range-bar-wide-light.svg",
+      "png": "family-range-bar-wide-light.png",
+      "html": "family-range-bar-wide-light.html",
+      "thumbnail": "family-range-bar-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-range-bar-wide-dark",
+      "family": "range-bar",
+      "title": "Expected operating ranges",
+      "variant": "wide",
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-wide-dark.csharp.txt",
+      "svg": "family-range-bar-wide-dark.svg",
+      "png": "family-range-bar-wide-dark.png",
+      "html": "family-range-bar-wide-dark.html",
+      "thumbnail": "family-range-bar-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-box-plot-wide-light",
+      "family": "box-plot",
+      "title": "Delivery time distribution",
+      "variant": "wide",
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-box-plot-wide-light.csharp.txt",
+      "svg": "family-box-plot-wide-light.svg",
+      "png": "family-box-plot-wide-light.png",
+      "html": "family-box-plot-wide-light.html",
+      "thumbnail": "family-box-plot-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-box-plot-wide-dark",
+      "family": "box-plot",
+      "title": "Delivery time distribution",
+      "variant": "wide",
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-box-plot-wide-dark.csharp.txt",
+      "svg": "family-box-plot-wide-dark.svg",
+      "png": "family-box-plot-wide-dark.png",
+      "html": "family-box-plot-wide-dark.html",
+      "thumbnail": "family-box-plot-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-horizontal-bar-wide-light",
+      "family": "horizontal-bar",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "HorizontalBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-horizontal-bar-wide-light.csharp.txt",
+      "svg": "family-horizontal-bar-wide-light.svg",
+      "png": "family-horizontal-bar-wide-light.png",
+      "html": "family-horizontal-bar-wide-light.html",
+      "thumbnail": "family-horizontal-bar-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-horizontal-bar-wide-dark",
+      "family": "horizontal-bar",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "HorizontalBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-horizontal-bar-wide-dark.csharp.txt",
+      "svg": "family-horizontal-bar-wide-dark.svg",
+      "png": "family-horizontal-bar-wide-dark.png",
+      "html": "family-horizontal-bar-wide-dark.html",
+      "thumbnail": "family-horizontal-bar-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-heatmap-wide-light",
+      "family": "heatmap",
+      "title": "Service coverage matrix",
+      "variant": "wide",
+      "seriesKinds": [
+        "Heatmap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-heatmap-wide-light.csharp.txt",
+      "svg": "family-heatmap-wide-light.svg",
+      "png": "family-heatmap-wide-light.png",
+      "html": "family-heatmap-wide-light.html",
+      "thumbnail": "family-heatmap-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "family-heatmap-wide-dark",
+      "family": "heatmap",
+      "title": "Service coverage matrix",
+      "variant": "wide",
+      "seriesKinds": [
+        "Heatmap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-heatmap-wide-dark.csharp.txt",
+      "svg": "family-heatmap-wide-dark.svg",
+      "png": "family-heatmap-wide-dark.png",
+      "html": "family-heatmap-wide-dark.html",
+      "thumbnail": "family-heatmap-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "family-hexbin-heatmap-wide-light",
+      "family": "hexbin-heatmap",
+      "title": "Service coverage matrix",
+      "variant": "wide",
+      "seriesKinds": [
+        "HexbinHeatmap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-hexbin-heatmap-wide-light.csharp.txt",
+      "svg": "family-hexbin-heatmap-wide-light.svg",
+      "png": "family-hexbin-heatmap-wide-light.png",
+      "html": "family-hexbin-heatmap-wide-light.html",
+      "thumbnail": "family-hexbin-heatmap-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "family-hexbin-heatmap-wide-dark",
+      "family": "hexbin-heatmap",
+      "title": "Service coverage matrix",
+      "variant": "wide",
+      "seriesKinds": [
+        "HexbinHeatmap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-hexbin-heatmap-wide-dark.csharp.txt",
+      "svg": "family-hexbin-heatmap-wide-dark.svg",
+      "png": "family-hexbin-heatmap-wide-dark.png",
+      "html": "family-hexbin-heatmap-wide-dark.html",
+      "thumbnail": "family-hexbin-heatmap-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "family-calendar-heatmap-wide-light",
+      "family": "calendar-heatmap",
+      "title": "Daily activity",
+      "variant": "wide",
+      "seriesKinds": [
+        "CalendarHeatmap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-calendar-heatmap-wide-light.csharp.txt",
+      "svg": "family-calendar-heatmap-wide-light.svg",
+      "png": "family-calendar-heatmap-wide-light.png",
+      "html": "family-calendar-heatmap-wide-light.html",
+      "thumbnail": "family-calendar-heatmap-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 137
+    },
+    {
+      "id": "family-calendar-heatmap-wide-dark",
+      "family": "calendar-heatmap",
+      "title": "Daily activity",
+      "variant": "wide",
+      "seriesKinds": [
+        "CalendarHeatmap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-calendar-heatmap-wide-dark.csharp.txt",
+      "svg": "family-calendar-heatmap-wide-dark.svg",
+      "png": "family-calendar-heatmap-wide-dark.png",
+      "html": "family-calendar-heatmap-wide-dark.html",
+      "thumbnail": "family-calendar-heatmap-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 137
+    },
+    {
+      "id": "family-dotted-map-wide-light",
+      "family": "dotted-map",
+      "title": "Regional service routes",
+      "variant": "wide",
+      "seriesKinds": [
+        "DottedMap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-dotted-map-wide-light.csharp.txt",
+      "svg": "family-dotted-map-wide-light.svg",
+      "png": "family-dotted-map-wide-light.png",
+      "html": "family-dotted-map-wide-light.html",
+      "thumbnail": "family-dotted-map-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 10
+    },
+    {
+      "id": "family-dotted-map-wide-dark",
+      "family": "dotted-map",
+      "title": "Regional service routes",
+      "variant": "wide",
+      "seriesKinds": [
+        "DottedMap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-dotted-map-wide-dark.csharp.txt",
+      "svg": "family-dotted-map-wide-dark.svg",
+      "png": "family-dotted-map-wide-dark.png",
+      "html": "family-dotted-map-wide-dark.html",
+      "thumbnail": "family-dotted-map-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 10
+    },
+    {
+      "id": "family-tile-map-wide-light",
+      "family": "tile-map",
+      "title": "Regional observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "TileMap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-tile-map-wide-light.csharp.txt",
+      "svg": "family-tile-map-wide-light.svg",
+      "png": "family-tile-map-wide-light.png",
+      "html": "family-tile-map-wide-light.html",
+      "thumbnail": "family-tile-map-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 102
+    },
+    {
+      "id": "family-tile-map-wide-dark",
+      "family": "tile-map",
+      "title": "Regional observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "TileMap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-tile-map-wide-dark.csharp.txt",
+      "svg": "family-tile-map-wide-dark.svg",
+      "png": "family-tile-map-wide-dark.png",
+      "html": "family-tile-map-wide-dark.html",
+      "thumbnail": "family-tile-map-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 102
+    },
+    {
+      "id": "family-region-map-wide-light",
+      "family": "region-map",
+      "title": "Regional observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "RegionMap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-region-map-wide-light.csharp.txt",
+      "svg": "family-region-map-wide-light.svg",
+      "png": "family-region-map-wide-light.png",
+      "html": "family-region-map-wide-light.html",
+      "thumbnail": "family-region-map-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 51
+    },
+    {
+      "id": "family-region-map-wide-dark",
+      "family": "region-map",
+      "title": "Regional observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "RegionMap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-region-map-wide-dark.csharp.txt",
+      "svg": "family-region-map-wide-dark.svg",
+      "png": "family-region-map-wide-dark.png",
+      "html": "family-region-map-wide-dark.html",
+      "thumbnail": "family-region-map-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 51
+    },
+    {
+      "id": "family-gauge-wide-light",
+      "family": "gauge",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "Gauge"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-gauge-wide-light.csharp.txt",
+      "svg": "family-gauge-wide-light.svg",
+      "png": "family-gauge-wide-light.png",
+      "html": "family-gauge-wide-light.html",
+      "thumbnail": "family-gauge-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 9
+    },
+    {
+      "id": "family-gauge-wide-dark",
+      "family": "gauge",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "Gauge"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-gauge-wide-dark.csharp.txt",
+      "svg": "family-gauge-wide-dark.svg",
+      "png": "family-gauge-wide-dark.png",
+      "html": "family-gauge-wide-dark.html",
+      "thumbnail": "family-gauge-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 9
+    },
+    {
+      "id": "family-circle-wide-light",
+      "family": "circle",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "Circle"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-circle-wide-light.csharp.txt",
+      "svg": "family-circle-wide-light.svg",
+      "png": "family-circle-wide-light.png",
+      "html": "family-circle-wide-light.html",
+      "thumbnail": "family-circle-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "family-circle-wide-dark",
+      "family": "circle",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "Circle"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-circle-wide-dark.csharp.txt",
+      "svg": "family-circle-wide-dark.svg",
+      "png": "family-circle-wide-dark.png",
+      "html": "family-circle-wide-dark.html",
+      "thumbnail": "family-circle-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "family-radial-bar-wide-light",
+      "family": "radial-bar",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-bar-wide-light.csharp.txt",
+      "svg": "family-radial-bar-wide-light.svg",
+      "png": "family-radial-bar-wide-light.png",
+      "html": "family-radial-bar-wide-light.html",
+      "thumbnail": "family-radial-bar-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "radial.text-overflow"
+      ],
+      "semanticRegions": 14
+    },
+    {
+      "id": "family-radial-bar-wide-dark",
+      "family": "radial-bar",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-bar-wide-dark.csharp.txt",
+      "svg": "family-radial-bar-wide-dark.svg",
+      "png": "family-radial-bar-wide-dark.png",
+      "html": "family-radial-bar-wide-dark.html",
+      "thumbnail": "family-radial-bar-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "radial.text-overflow"
+      ],
+      "semanticRegions": 14
+    },
+    {
+      "id": "family-layered-radial-wide-light",
+      "family": "layered-radial",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "LayeredRadial"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-layered-radial-wide-light.csharp.txt",
+      "svg": "family-layered-radial-wide-light.svg",
+      "png": "family-layered-radial-wide-light.png",
+      "html": "family-layered-radial-wide-light.html",
+      "thumbnail": "family-layered-radial-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "radial.text-overflow"
+      ],
+      "semanticRegions": 8
+    },
+    {
+      "id": "family-layered-radial-wide-dark",
+      "family": "layered-radial",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "LayeredRadial"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-layered-radial-wide-dark.csharp.txt",
+      "svg": "family-layered-radial-wide-dark.svg",
+      "png": "family-layered-radial-wide-dark.png",
+      "html": "family-layered-radial-wide-dark.html",
+      "thumbnail": "family-layered-radial-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "radial.text-overflow"
+      ],
+      "semanticRegions": 8
+    },
+    {
+      "id": "family-bullet-wide-light",
+      "family": "bullet",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "Bullet"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bullet-wide-light.csharp.txt",
+      "svg": "family-bullet-wide-light.svg",
+      "png": "family-bullet-wide-light.png",
+      "html": "family-bullet-wide-light.html",
+      "thumbnail": "family-bullet-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 15
+    },
+    {
+      "id": "family-bullet-wide-dark",
+      "family": "bullet",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "Bullet"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bullet-wide-dark.csharp.txt",
+      "svg": "family-bullet-wide-dark.svg",
+      "png": "family-bullet-wide-dark.png",
+      "html": "family-bullet-wide-dark.html",
+      "thumbnail": "family-bullet-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 15
+    },
+    {
+      "id": "family-waterfall-wide-light",
+      "family": "waterfall",
+      "title": "Changes in available capacity",
+      "variant": "wide",
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-waterfall-wide-light.csharp.txt",
+      "svg": "family-waterfall-wide-light.svg",
+      "png": "family-waterfall-wide-light.png",
+      "html": "family-waterfall-wide-light.html",
+      "thumbnail": "family-waterfall-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-waterfall-wide-dark",
+      "family": "waterfall",
+      "title": "Changes in available capacity",
+      "variant": "wide",
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-waterfall-wide-dark.csharp.txt",
+      "svg": "family-waterfall-wide-dark.svg",
+      "png": "family-waterfall-wide-dark.png",
+      "html": "family-waterfall-wide-dark.html",
+      "thumbnail": "family-waterfall-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-radar-wide-light",
+      "family": "radar",
+      "title": "Directional observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radar-wide-light.csharp.txt",
+      "svg": "family-radar-wide-light.svg",
+      "png": "family-radar-wide-light.png",
+      "html": "family-radar-wide-light.html",
+      "thumbnail": "family-radar-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "semanticRegions": 25
+    },
+    {
+      "id": "family-radar-wide-dark",
+      "family": "radar",
+      "title": "Directional observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radar-wide-dark.csharp.txt",
+      "svg": "family-radar-wide-dark.svg",
+      "png": "family-radar-wide-dark.png",
+      "html": "family-radar-wide-dark.html",
+      "thumbnail": "family-radar-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "semanticRegions": 25
+    },
+    {
+      "id": "family-funnel-wide-light",
+      "family": "funnel",
+      "title": "Request conversion stages",
+      "variant": "wide",
+      "seriesKinds": [
+        "Funnel"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-funnel-wide-light.csharp.txt",
+      "svg": "family-funnel-wide-light.svg",
+      "png": "family-funnel-wide-light.png",
+      "html": "family-funnel-wide-light.html",
+      "thumbnail": "family-funnel-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "family-funnel-wide-dark",
+      "family": "funnel",
+      "title": "Request conversion stages",
+      "variant": "wide",
+      "seriesKinds": [
+        "Funnel"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-funnel-wide-dark.csharp.txt",
+      "svg": "family-funnel-wide-dark.svg",
+      "png": "family-funnel-wide-dark.png",
+      "html": "family-funnel-wide-dark.html",
+      "thumbnail": "family-funnel-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "family-timeline-wide-light",
+      "family": "timeline",
+      "title": "Service delivery schedule",
+      "variant": "wide",
+      "seriesKinds": [
+        "Timeline"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-timeline-wide-light.csharp.txt",
+      "svg": "family-timeline-wide-light.svg",
+      "png": "family-timeline-wide-light.png",
+      "html": "family-timeline-wide-light.html",
+      "thumbnail": "family-timeline-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 15
+    },
+    {
+      "id": "family-timeline-wide-dark",
+      "family": "timeline",
+      "title": "Service delivery schedule",
+      "variant": "wide",
+      "seriesKinds": [
+        "Timeline"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-timeline-wide-dark.csharp.txt",
+      "svg": "family-timeline-wide-dark.svg",
+      "png": "family-timeline-wide-dark.png",
+      "html": "family-timeline-wide-dark.html",
+      "thumbnail": "family-timeline-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 15
+    },
+    {
+      "id": "family-gantt-wide-light",
+      "family": "gantt",
+      "title": "Service delivery schedule",
+      "variant": "wide",
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-gantt-wide-light.csharp.txt",
+      "svg": "family-gantt-wide-light.svg",
+      "png": "family-gantt-wide-light.png",
+      "html": "family-gantt-wide-light.html",
+      "thumbnail": "family-gantt-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-gantt-wide-dark",
+      "family": "gantt",
+      "title": "Service delivery schedule",
+      "variant": "wide",
+      "seriesKinds": [
+        "Gantt"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-gantt-wide-dark.csharp.txt",
+      "svg": "family-gantt-wide-dark.svg",
+      "png": "family-gantt-wide-dark.png",
+      "html": "family-gantt-wide-dark.html",
+      "thumbnail": "family-gantt-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-sankey-wide-light",
+      "family": "sankey",
+      "title": "Requests across processing stages",
+      "variant": "wide",
+      "seriesKinds": [
+        "Sankey"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sankey-wide-light.csharp.txt",
+      "svg": "family-sankey-wide-light.svg",
+      "png": "family-sankey-wide-light.png",
+      "html": "family-sankey-wide-light.html",
+      "thumbnail": "family-sankey-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-sankey-wide-dark",
+      "family": "sankey",
+      "title": "Requests across processing stages",
+      "variant": "wide",
+      "seriesKinds": [
+        "Sankey"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sankey-wide-dark.csharp.txt",
+      "svg": "family-sankey-wide-dark.svg",
+      "png": "family-sankey-wide-dark.png",
+      "html": "family-sankey-wide-dark.html",
+      "thumbnail": "family-sankey-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-tree-wide-light",
+      "family": "tree",
+      "title": "Allocation by team",
+      "variant": "wide",
+      "seriesKinds": [
+        "Tree"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-tree-wide-light.csharp.txt",
+      "svg": "family-tree-wide-light.svg",
+      "png": "family-tree-wide-light.png",
+      "html": "family-tree-wide-light.html",
+      "thumbnail": "family-tree-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 6
+    },
+    {
+      "id": "family-tree-wide-dark",
+      "family": "tree",
+      "title": "Allocation by team",
+      "variant": "wide",
+      "seriesKinds": [
+        "Tree"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-tree-wide-dark.csharp.txt",
+      "svg": "family-tree-wide-dark.svg",
+      "png": "family-tree-wide-dark.png",
+      "html": "family-tree-wide-dark.html",
+      "thumbnail": "family-tree-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 6
+    },
+    {
+      "id": "family-sunburst-wide-light",
+      "family": "sunburst",
+      "title": "Allocation by team",
+      "variant": "wide",
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sunburst-wide-light.csharp.txt",
+      "svg": "family-sunburst-wide-light.svg",
+      "png": "family-sunburst-wide-light.png",
+      "html": "family-sunburst-wide-light.html",
+      "thumbnail": "family-sunburst-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "semanticRegions": 6
+    },
+    {
+      "id": "family-sunburst-wide-dark",
+      "family": "sunburst",
+      "title": "Allocation by team",
+      "variant": "wide",
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sunburst-wide-dark.csharp.txt",
+      "svg": "family-sunburst-wide-dark.svg",
+      "png": "family-sunburst-wide-dark.png",
+      "html": "family-sunburst-wide-dark.html",
+      "thumbnail": "family-sunburst-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "semanticRegions": 6
+    },
+    {
+      "id": "family-pie-wide-light",
+      "family": "pie",
+      "title": "Observations by category",
+      "variant": "wide",
+      "seriesKinds": [
+        "Pie"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-pie-wide-light.csharp.txt",
+      "svg": "family-pie-wide-light.svg",
+      "png": "family-pie-wide-light.png",
+      "html": "family-pie-wide-light.html",
+      "thumbnail": "family-pie-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 12
+    },
+    {
+      "id": "family-pie-wide-dark",
+      "family": "pie",
+      "title": "Observations by category",
+      "variant": "wide",
+      "seriesKinds": [
+        "Pie"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-pie-wide-dark.csharp.txt",
+      "svg": "family-pie-wide-dark.svg",
+      "png": "family-pie-wide-dark.png",
+      "html": "family-pie-wide-dark.html",
+      "thumbnail": "family-pie-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 12
+    },
+    {
+      "id": "family-donut-wide-light",
+      "family": "donut",
+      "title": "Observations by category",
+      "variant": "wide",
+      "seriesKinds": [
+        "Donut"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-donut-wide-light.csharp.txt",
+      "svg": "family-donut-wide-light.svg",
+      "png": "family-donut-wide-light.png",
+      "html": "family-donut-wide-light.html",
+      "thumbnail": "family-donut-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    },
+    {
+      "id": "family-donut-wide-dark",
+      "family": "donut",
+      "title": "Observations by category",
+      "variant": "wide",
+      "seriesKinds": [
+        "Donut"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-donut-wide-dark.csharp.txt",
+      "svg": "family-donut-wide-dark.svg",
+      "png": "family-donut-wide-dark.png",
+      "html": "family-donut-wide-dark.html",
+      "thumbnail": "family-donut-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    },
+    {
+      "id": "family-stacked-area-wide-light",
+      "family": "stacked-area",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "StackedArea"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-stacked-area-wide-light.csharp.txt",
+      "svg": "family-stacked-area-wide-light.svg",
+      "png": "family-stacked-area-wide-light.png",
+      "html": "family-stacked-area-wide-light.html",
+      "thumbnail": "family-stacked-area-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 25
+    },
+    {
+      "id": "family-stacked-area-wide-dark",
+      "family": "stacked-area",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "StackedArea"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-stacked-area-wide-dark.csharp.txt",
+      "svg": "family-stacked-area-wide-dark.svg",
+      "png": "family-stacked-area-wide-dark.png",
+      "html": "family-stacked-area-wide-dark.html",
+      "thumbnail": "family-stacked-area-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 25
+    },
+    {
+      "id": "family-slope-wide-light",
+      "family": "slope",
+      "title": "Before and after comparison",
+      "variant": "wide",
+      "seriesKinds": [
+        "Slope"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-slope-wide-light.csharp.txt",
+      "svg": "family-slope-wide-light.svg",
+      "png": "family-slope-wide-light.png",
+      "html": "family-slope-wide-light.html",
+      "thumbnail": "family-slope-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-slope-wide-dark",
+      "family": "slope",
+      "title": "Before and after comparison",
+      "variant": "wide",
+      "seriesKinds": [
+        "Slope"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-slope-wide-dark.csharp.txt",
+      "svg": "family-slope-wide-dark.svg",
+      "png": "family-slope-wide-dark.png",
+      "html": "family-slope-wide-dark.html",
+      "thumbnail": "family-slope-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-treemap-wide-light",
+      "family": "treemap",
+      "title": "Allocation by team",
+      "variant": "wide",
+      "seriesKinds": [
+        "Treemap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-treemap-wide-light.csharp.txt",
+      "svg": "family-treemap-wide-light.svg",
+      "png": "family-treemap-wide-light.png",
+      "html": "family-treemap-wide-light.html",
+      "thumbnail": "family-treemap-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "family-treemap-wide-dark",
+      "family": "treemap",
+      "title": "Allocation by team",
+      "variant": "wide",
+      "seriesKinds": [
+        "Treemap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-treemap-wide-dark.csharp.txt",
+      "svg": "family-treemap-wide-dark.svg",
+      "png": "family-treemap-wide-dark.png",
+      "html": "family-treemap-wide-dark.html",
+      "thumbnail": "family-treemap-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 4
+    },
+    {
+      "id": "family-pictorial-wide-light",
+      "family": "pictorial",
+      "title": "Completed assessments",
+      "variant": "wide",
+      "seriesKinds": [
+        "Pictorial"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-pictorial-wide-light.csharp.txt",
+      "svg": "family-pictorial-wide-light.svg",
+      "png": "family-pictorial-wide-light.png",
+      "html": "family-pictorial-wide-light.html",
+      "thumbnail": "family-pictorial-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 9
+    },
+    {
+      "id": "family-pictorial-wide-dark",
+      "family": "pictorial",
+      "title": "Completed assessments",
+      "variant": "wide",
+      "seriesKinds": [
+        "Pictorial"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-pictorial-wide-dark.csharp.txt",
+      "svg": "family-pictorial-wide-dark.svg",
+      "png": "family-pictorial-wide-dark.png",
+      "html": "family-pictorial-wide-dark.html",
+      "thumbnail": "family-pictorial-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 9
+    },
+    {
+      "id": "family-progress-bar-wide-light",
+      "family": "progress-bar",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "ProgressBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-progress-bar-wide-light.csharp.txt",
+      "svg": "family-progress-bar-wide-light.svg",
+      "png": "family-progress-bar-wide-light.png",
+      "html": "family-progress-bar-wide-light.html",
+      "thumbnail": "family-progress-bar-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 9
+    },
+    {
+      "id": "family-progress-bar-wide-dark",
+      "family": "progress-bar",
+      "title": "Capacity and completion",
+      "variant": "wide",
+      "seriesKinds": [
+        "ProgressBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-progress-bar-wide-dark.csharp.txt",
+      "svg": "family-progress-bar-wide-dark.svg",
+      "png": "family-progress-bar-wide-dark.png",
+      "html": "family-progress-bar-wide-dark.html",
+      "thumbnail": "family-progress-bar-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 9
+    },
+    {
+      "id": "family-word-cloud-wide-light",
+      "family": "word-cloud",
+      "title": "Topics in observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "WordCloud"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-word-cloud-wide-light.csharp.txt",
+      "svg": "family-word-cloud-wide-light.svg",
+      "png": "family-word-cloud-wide-light.png",
+      "html": "family-word-cloud-wide-light.html",
+      "thumbnail": "family-word-cloud-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-word-cloud-wide-dark",
+      "family": "word-cloud",
+      "title": "Topics in observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "WordCloud"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-word-cloud-wide-dark.csharp.txt",
+      "svg": "family-word-cloud-wide-dark.svg",
+      "png": "family-word-cloud-wide-dark.png",
+      "html": "family-word-cloud-wide-dark.html",
+      "thumbnail": "family-word-cloud-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-ohlc-wide-light",
+      "family": "ohlc",
+      "title": "Daily market prices",
+      "variant": "wide",
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-ohlc-wide-light.csharp.txt",
+      "svg": "family-ohlc-wide-light.svg",
+      "png": "family-ohlc-wide-light.png",
+      "html": "family-ohlc-wide-light.html",
+      "thumbnail": "family-ohlc-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-ohlc-wide-dark",
+      "family": "ohlc",
+      "title": "Daily market prices",
+      "variant": "wide",
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-ohlc-wide-dark.csharp.txt",
+      "svg": "family-ohlc-wide-dark.svg",
+      "png": "family-ohlc-wide-dark.png",
+      "html": "family-ohlc-wide-dark.html",
+      "thumbnail": "family-ohlc-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-polar-area-wide-light",
+      "family": "polar-area",
+      "title": "Observations by category",
+      "variant": "wide",
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-area-wide-light.csharp.txt",
+      "svg": "family-polar-area-wide-light.svg",
+      "png": "family-polar-area-wide-light.png",
+      "html": "family-polar-area-wide-light.html",
+      "thumbnail": "family-polar-area-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 6
+    },
+    {
+      "id": "family-polar-area-wide-dark",
+      "family": "polar-area",
+      "title": "Observations by category",
+      "variant": "wide",
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-area-wide-dark.csharp.txt",
+      "svg": "family-polar-area-wide-dark.svg",
+      "png": "family-polar-area-wide-dark.png",
+      "html": "family-polar-area-wide-dark.html",
+      "thumbnail": "family-polar-area-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 6
+    },
+    {
+      "id": "family-trend-line-wide-light",
+      "family": "trend-line",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Scatter",
+        "TrendLine"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-trend-line-wide-light.csharp.txt",
+      "svg": "family-trend-line-wide-light.svg",
+      "png": "family-trend-line-wide-light.png",
+      "html": "family-trend-line-wide-light.html",
+      "thumbnail": "family-trend-line-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "family-trend-line-wide-dark",
+      "family": "trend-line",
+      "title": "Observations over the reporting period",
+      "variant": "wide",
+      "seriesKinds": [
+        "Scatter",
+        "TrendLine"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-trend-line-wide-dark.csharp.txt",
+      "svg": "family-trend-line-wide-dark.svg",
+      "png": "family-trend-line-wide-dark.png",
+      "html": "family-trend-line-wide-dark.html",
+      "thumbnail": "family-trend-line-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "family-polar-wide-light",
+      "family": "polar",
+      "title": "Directional observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-wide-light.csharp.txt",
+      "svg": "family-polar-wide-light.svg",
+      "png": "family-polar-wide-light.png",
+      "html": "family-polar-wide-light.html",
+      "thumbnail": "family-polar-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-polar-wide-dark",
+      "family": "polar",
+      "title": "Directional observations",
+      "variant": "wide",
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-wide-dark.csharp.txt",
+      "svg": "family-polar-wide-dark.svg",
+      "png": "family-polar-wide-dark.png",
+      "html": "family-polar-wide-dark.html",
+      "thumbnail": "family-polar-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-state-timeline-wide-light",
+      "family": "state-timeline",
+      "title": "Service delivery schedule",
+      "variant": "wide",
+      "seriesKinds": [
+        "StateTimeline"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-state-timeline-wide-light.csharp.txt",
+      "svg": "family-state-timeline-wide-light.svg",
+      "png": "family-state-timeline-wide-light.png",
+      "html": "family-state-timeline-wide-light.html",
+      "thumbnail": "family-state-timeline-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-state-timeline-wide-dark",
+      "family": "state-timeline",
+      "title": "Service delivery schedule",
+      "variant": "wide",
+      "seriesKinds": [
+        "StateTimeline"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-state-timeline-wide-dark.csharp.txt",
+      "svg": "family-state-timeline-wide-dark.svg",
+      "png": "family-state-timeline-wide-dark.png",
+      "html": "family-state-timeline-wide-dark.html",
+      "thumbnail": "family-state-timeline-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-gantt-lane-wide-light",
+      "family": "gantt-lane",
+      "title": "Service delivery schedule",
+      "variant": "wide",
+      "seriesKinds": [
+        "GanttLane"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-gantt-lane-wide-light.csharp.txt",
+      "svg": "family-gantt-lane-wide-light.svg",
+      "png": "family-gantt-lane-wide-light.png",
+      "html": "family-gantt-lane-wide-light.html",
+      "thumbnail": "family-gantt-lane-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-gantt-lane-wide-dark",
+      "family": "gantt-lane",
+      "title": "Service delivery schedule",
+      "variant": "wide",
+      "seriesKinds": [
+        "GanttLane"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-gantt-lane-wide-dark.csharp.txt",
+      "svg": "family-gantt-lane-wide-dark.svg",
+      "png": "family-gantt-lane-wide-dark.png",
+      "html": "family-gantt-lane-wide-dark.html",
+      "thumbnail": "family-gantt-lane-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "chart-grid-wide-light",
+      "family": "chart-grid",
+      "title": "Requests and capacity",
+      "variant": "wide",
+      "seriesKinds": [
+        "Line",
+        "Bar",
+        "Area"
+      ],
+      "theme": "light",
+      "width": 960,
+      "height": 700,
+      "naturalAspect": 1.3714285714285714,
+      "compact": false,
+      "source": "chart-grid-wide-light.csharp.txt",
+      "svg": "chart-grid-wide-light.svg",
+      "png": "chart-grid-wide-light.png",
+      "html": "chart-grid-wide-light.html",
+      "thumbnail": "chart-grid-wide-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow"
+      ],
+      "semanticRegions": 60
+    },
+    {
+      "id": "topology-expanded-light",
+      "family": "topology",
+      "title": "Service request topology",
+      "variant": "expanded",
+      "seriesKinds": [],
+      "theme": "light",
+      "width": 960,
+      "height": 600,
+      "naturalAspect": 1.6,
+      "compact": false,
+      "source": "topology-expanded-light.csharp.txt",
+      "svg": "topology-expanded-light.svg",
+      "png": "topology-expanded-light.png",
+      "html": "topology-expanded-light.html",
+      "thumbnail": "topology-expanded-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "flow-expanded-light",
+      "family": "flow",
+      "title": "Assessment workflow",
+      "variant": "expanded",
+      "seriesKinds": [],
+      "theme": "light",
+      "width": 900,
+      "height": 600,
+      "naturalAspect": 1.5,
+      "compact": false,
+      "source": "flow-expanded-light.csharp.txt",
+      "svg": "flow-expanded-light.svg",
+      "png": "flow-expanded-light.png",
+      "html": "flow-expanded-light.html",
+      "thumbnail": "flow-expanded-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "topology.content-fitted"
+      ],
+      "semanticRegions": 14
+    },
+    {
+      "id": "sequence-expanded-light",
+      "family": "sequence",
+      "title": "Request processing sequence",
+      "variant": "expanded",
+      "seriesKinds": [],
+      "theme": "light",
+      "width": 960,
+      "height": 760,
+      "naturalAspect": 1.263157894736842,
+      "compact": false,
+      "source": "sequence-expanded-light.csharp.txt",
+      "svg": "sequence-expanded-light.svg",
+      "png": "sequence-expanded-light.png",
+      "html": "sequence-expanded-light.html",
+      "thumbnail": "sequence-expanded-light.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    },
+    {
+      "id": "chart-grid-wide-dark",
+      "family": "chart-grid",
+      "title": "Requests and capacity",
+      "variant": "wide",
+      "seriesKinds": [
+        "Line",
+        "Bar",
+        "Area"
+      ],
+      "theme": "dark",
+      "width": 960,
+      "height": 700,
+      "naturalAspect": 1.3714285714285714,
+      "compact": false,
+      "source": "chart-grid-wide-dark.csharp.txt",
+      "svg": "chart-grid-wide-dark.svg",
+      "png": "chart-grid-wide-dark.png",
+      "html": "chart-grid-wide-dark.html",
+      "thumbnail": "chart-grid-wide-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow"
+      ],
+      "semanticRegions": 60
+    },
+    {
+      "id": "topology-expanded-dark",
+      "family": "topology",
+      "title": "Service request topology",
+      "variant": "expanded",
+      "seriesKinds": [],
+      "theme": "dark",
+      "width": 960,
+      "height": 600,
+      "naturalAspect": 1.6,
+      "compact": false,
+      "source": "topology-expanded-dark.csharp.txt",
+      "svg": "topology-expanded-dark.svg",
+      "png": "topology-expanded-dark.png",
+      "html": "topology-expanded-dark.html",
+      "thumbnail": "topology-expanded-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 17
+    },
+    {
+      "id": "flow-expanded-dark",
+      "family": "flow",
+      "title": "Assessment workflow",
+      "variant": "expanded",
+      "seriesKinds": [],
+      "theme": "dark",
+      "width": 900,
+      "height": 600,
+      "naturalAspect": 1.5,
+      "compact": false,
+      "source": "flow-expanded-dark.csharp.txt",
+      "svg": "flow-expanded-dark.svg",
+      "png": "flow-expanded-dark.png",
+      "html": "flow-expanded-dark.html",
+      "thumbnail": "flow-expanded-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "topology.content-fitted"
+      ],
+      "semanticRegions": 14
+    },
+    {
+      "id": "sequence-expanded-dark",
+      "family": "sequence",
+      "title": "Request processing sequence",
+      "variant": "expanded",
+      "seriesKinds": [],
+      "theme": "dark",
+      "width": 960,
+      "height": 760,
+      "naturalAspect": 1.263157894736842,
+      "compact": false,
+      "source": "sequence-expanded-dark.csharp.txt",
+      "svg": "sequence-expanded-dark.svg",
+      "png": "sequence-expanded-dark.png",
+      "html": "sequence-expanded-dark.html",
+      "thumbnail": "sequence-expanded-dark.thumbnail.svg",
+      "thumbnailWidth": 640,
+      "thumbnailHeight": 400,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "semanticRegions": 14
+    }
+  ]
+}

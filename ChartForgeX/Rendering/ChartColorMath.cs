@@ -4,6 +4,15 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartColorMath {
+    /// <summary>Interpolates RGBA paints in premultiplied sRGB, matching CSS color-mix().</summary>
+    internal static ChartColor BlendPremultiplied(ChartColor from, ChartColor to, double amount) {
+        amount = Clamp01(amount);
+        var a = from.A * (1 - amount); var b = to.A * amount; var alpha = a + b;
+        if (alpha <= 0) return ChartColor.Transparent;
+        byte Channel(byte first, byte second) => (byte)Math.Round((first * a + second * b) / alpha);
+        return ChartColor.FromRgba(Channel(from.R, to.R), Channel(from.G, to.G), Channel(from.B, to.B), (byte)Math.Round(alpha));
+    }
+
     public static ChartColor Blend(ChartColor a, ChartColor b, double amount) {
         amount = Clamp01(amount);
         var r = (byte)Math.Round(a.R + (b.R - a.R) * amount);
@@ -23,6 +32,10 @@ internal static class ChartColorMath {
 
     public static ChartColor TextOnBackground(ChartColor background, double lightThreshold = 0.54) =>
         RelativeLuminance(background) > lightThreshold ? ChartColor.FromRgb(15, 23, 42) : ChartColor.White;
+
+    /// <summary>Chooses opaque black or white by WCAG contrast, guaranteeing at least 4.5:1 on an opaque fill.</summary>
+    public static ChartColor AccessibleTextOnBackground(ChartColor background) =>
+        ContrastRatio(ChartColor.Black, background) >= ContrastRatio(ChartColor.White, background) ? ChartColor.Black : ChartColor.White;
 
     /// <summary>Returns the WCAG 2 contrast ratio (1 to 21) of two opaque colours; alpha is ignored.</summary>
     public static double ContrastRatio(ChartColor first, ChartColor second) {

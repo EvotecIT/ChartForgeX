@@ -69,7 +69,9 @@ internal static partial class SmokeTests {
         Assert(curatedSvg.Contains("data-cfx-density=\"1.6\"", StringComparison.Ordinal), "Word cloud SVG output should expose configured layout density.");
         Assert(curatedSvg.Contains("data-cfx-maximum-terms=\"3\"", StringComparison.Ordinal), "Word cloud SVG output should expose configured term limits.");
         Assert(CountOccurrences(curatedSvg, "data-cfx-role=\"word-cloud-term\"") == 3, "Word cloud term limits should render only the highest-weight terms.");
-        Assert(!curatedSvg.Contains("data-cfx-text=\"Charts\"", StringComparison.Ordinal), "Word cloud term limits should omit lower-weight terms.");
+        var curatedPrepared = PreparedFamily(curated);
+        Assert(!System.Linq.Enumerable.Any(FamilyGroups(curatedPrepared, "word-cloud-term"), term => term.Metadata["data-cfx-text"] == "Charts"), "Word cloud term limits should omit lower-weight painted terms.");
+        Assert(System.Linq.Enumerable.Any(FamilyGroups(curatedPrepared, "word-cloud-source"), term => term.Metadata["data-cfx-text"] == "Charts"), "Omitted word-cloud terms should remain available as source data.");
         Assert(curated.ToPng().Length > 64, "Word cloud term limits and density should render PNG output.");
     }
 }

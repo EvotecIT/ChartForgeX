@@ -19,9 +19,9 @@ public sealed class StateTimelineAxisContractTests {
         var model = ChartStateTimelineModel.Build(chart);
         Assert.Equal(new[] { value }, model.Ticks);
         var svg = XDocument.Parse(chart.ToSvg());
-        var label = svg.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "state-timeline-tick-label");
+        var label = svg.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "schedule-tick-label");
         Assert.Equal("Maintenance", label.Value);
-        Assert.Equal("#E01234", (string?)label.Attribute("fill"));
+        Assert.Equal("#E01234", (string?)label.RenderedAttribute("fill"));
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -61,7 +61,7 @@ public sealed class StateTimelineAxisContractTests {
             .WithXLabels(new[] { new ChartAxisLabel(start, "Start") })
             .AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, start.AddMinutes(1), "up") });
         Assert.Contains("Start", XDocument.Parse(chart.ToSvg()).Descendants()
-            .Where(e => (string?)e.Attribute("data-cfx-role") == "state-timeline-tick-label")
+            .Where(e => (string?)e.Attribute("data-cfx-role") == "schedule-tick-label")
             .Select(e => e.Value));
     }
 
@@ -71,9 +71,9 @@ public sealed class StateTimelineAxisContractTests {
         var start = new DateTime(2026, 10, 25, 0, 30, 0, DateTimeKind.Utc);
         var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale(zone)
             .AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, start.AddHours(1), "up") });
-        var segment = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "state-segment");
-        Assert.Contains("+02:00", (string?)segment.Attribute("data-cfx-start"));
-        Assert.Contains("+01:00", (string?)segment.Attribute("data-cfx-end"));
+        var segment = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "state-timeline-segment");
+        Assert.Contains("+02:00", (string?)segment.Attribute("data-cfx-meta-start"));
+        Assert.Contains("+01:00", (string?)segment.Attribute("data-cfx-meta-end"));
     }
 
     [Theory]
@@ -90,9 +90,9 @@ public sealed class StateTimelineAxisContractTests {
     [InlineData(3000000, 3000000.01)]
     public void NumericFallbackMetadataPreservesEndpoints(double start, double end) {
         var chart = Chart.Create().WithSize(720, 300).AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(start, end, "up") });
-        var segment = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "state-segment");
-        Assert.Equal(start.ToString("G17", System.Globalization.CultureInfo.InvariantCulture), (string?)segment.Attribute("data-cfx-start"));
-        Assert.Equal(end.ToString("G17", System.Globalization.CultureInfo.InvariantCulture), (string?)segment.Attribute("data-cfx-end"));
+        var segment = XDocument.Parse(chart.ToSvg()).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "state-timeline-segment");
+        Assert.Equal(start, double.Parse((string)segment.Attribute("data-cfx-start")!, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(end, double.Parse((string)segment.Attribute("data-cfx-end")!, System.Globalization.CultureInfo.InvariantCulture));
         Assert.NotEmpty(chart.ToPng());
     }
 }

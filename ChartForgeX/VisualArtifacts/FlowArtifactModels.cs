@@ -85,7 +85,7 @@ public enum FlowArtifactConnectorKind {
 /// <summary>
 /// Represents a product-neutral workflow or process flow artifact.
 /// </summary>
-public sealed class FlowArtifact {
+public sealed partial class FlowArtifact {
     private string _id = string.Empty;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;

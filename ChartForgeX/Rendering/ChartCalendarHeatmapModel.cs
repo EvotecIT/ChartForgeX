@@ -231,21 +231,24 @@ internal sealed class ChartCalendarHeatmapModel {
     /// font size, so SVG and PNG choose the same labels.
     /// </summary>
     public IEnumerable<(DateTime Month, double X)> MonthLabels(ChartCalendarLayout layout) {
-        double Measure(string text) => text.Length * Chart.Options.Theme.TickLabelFontSize * 0.62;
+        return MonthLabels(layout, text => text.Length * Chart.Options.Theme.TickLabelFontSize * 0.62);
+    }
+
+    internal IEnumerable<(DateTime Month, double X)> MonthLabels(ChartCalendarLayout layout, Func<string, double> measure) {
         var first = new DateTime(MinDate.Year, MinDate.Month, 1);
         var month = first.AddMonths(1);
         var lastRight = double.NegativeInfinity;
         var nextX = layout.X0 + Math.Max(0, Column(month)) * (layout.Cell + layout.Gap);
-        if (month > MaxDate || nextX >= layout.X0 + Measure(MonthName(first)) + 6) {
+        if (month > MaxDate || nextX >= layout.X0 + measure(MonthName(first)) + 6) {
             yield return (first, layout.X0);
-            lastRight = layout.X0 + Measure(MonthName(first));
+            lastRight = layout.X0 + measure(MonthName(first));
         }
 
         while (month <= MaxDate) {
             var x = layout.X0 + Math.Max(0, Column(month)) * (layout.Cell + layout.Gap);
             if (x >= lastRight + 6) {
                 yield return (month, x);
-                lastRight = x + Measure(MonthName(month));
+                lastRight = x + measure(MonthName(month));
             }
 
             month = month.AddMonths(1);

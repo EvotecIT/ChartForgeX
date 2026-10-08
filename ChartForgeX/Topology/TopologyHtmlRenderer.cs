@@ -329,8 +329,9 @@ public sealed partial class TopologyHtmlRenderer {
             .Replace(".cfx-topology-scenario-panel", "." + cssPrefix + "-scenario-panel")
             .Replace(".cfx-topology-selection-panel", "." + cssPrefix + "-selection-panel")
             .Replace(".cfx-topology-force-controls", "." + cssPrefix + "-force-controls")
-            .Replace(".cfx-topology__edge", "." + cssPrefix + "__edge")
-            .Replace(".cfx-topology__node-card", "." + cssPrefix + "__node-card")
+            .Replace(".cfx-topology__edge--premium-layer", "[data-cfx-role^='topology-edge-line-']")
+            .Replace(".cfx-topology__edge", "[data-cfx-role='topology-edge-line']")
+            .Replace(".cfx-topology__node-card", "[data-cfx-role='topology-node-surface']")
             .Replace(".cfx-topology-html-", "." + cssPrefix + "-html-");
     }
 

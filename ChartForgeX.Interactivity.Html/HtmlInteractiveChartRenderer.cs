@@ -4,14 +4,14 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Html;
-using ChartForgeX.Svg;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Renders a ChartForgeX chart as a self-contained interactive HTML document.
 /// </summary>
-public sealed class HtmlInteractiveChartRenderer {
+public sealed partial class HtmlInteractiveChartRenderer {
     /// <summary>
     /// Renders the specified chart to a complete interactive HTML document.
     /// </summary>
@@ -32,7 +32,7 @@ public sealed class HtmlInteractiveChartRenderer {
 
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets);
-        writer.StartElement("main").Attribute("class", "cfx-shell").EndStartElement().Line()
+        writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", chart.Options.Theme.UseGraphiteLayout ? "background:" + chart.Options.Theme.Background.ToCss() + ";color:" + chart.Options.Theme.Text.ToCss() + ";font-family:" + chart.Options.Theme.FontFamily : null).EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
         HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets);
@@ -119,15 +119,19 @@ public sealed class HtmlInteractiveChartRenderer {
         if (options == null) throw new ArgumentNullException(nameof(options));
         var scope = options.IdScope ?? options.Interaction.ChartId ?? Slugify(ChartTitle(chart, titleFallback));
         var chartId = options.Interaction.ChartId ?? scope;
+        var request = VisualExportRequest.ForChart(chart);
+        var prepared = chart.Prepare(request.Context);
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
+            .Attribute("data-cfx-look", chart.Options.Theme.UseGraphiteLayout ? "graphite" : null)
             .Attribute("role", "group")
             .Attribute("aria-label", ChartTitle(chart, titleFallback))
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-cfx-chart-id", chartId)
+            .Attribute("data-cfx-prepared-chart", PreparedChartMetadata(chart, prepared))
             .Attribute("data-cfx-interaction-features", options.Interaction.Features.ToString())
             .Attribute("data-cfx-interaction-group", options.Interaction.GroupName)
             .Attribute("data-cfx-scenario-count", options.Interaction.Scenarios.Count)
@@ -136,18 +140,24 @@ public sealed class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-scenario-playback", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "idle" : null)
             .Attribute("data-cfx-scenario-playback-delay", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "900" : null)
             .Attribute("data-cfx-responsive-layout", options.ResponsiveLayout.ToString().ToLowerInvariant())
-            .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px")
-            .EndStartElement().Line()
-            .StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", "Chart controls").EndStartElement()
-            .RawTrusted(BuildToolbar(options))
-            .EndElement().Line();
+            .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart))
+            .EndStartElement().Line();
+        var toolbar = BuildToolbar(options);
+        if (toolbar.Length > 0) {
+            writer.StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", "Chart controls").EndStartElement()
+                .RawTrusted(toolbar)
+                .EndElement().Line();
+        }
+
         if (scenarioControls) {
             writer.RawTrusted(BuildScenarioControls(options));
             writer.RawTrusted(BuildScenarioPanel(options));
         }
 
-        writer.StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
-            .RawTrusted(new SvgChartRenderer().RenderForInteraction(chart, scope)).Line()
+        writer.StartElement("div").Attribute("class", "cfx-frame").EndStartElement().Line()
+            .RawTrusted(BuildResetControl(options))
+            .StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
+            .RawTrusted(prepared.ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope), chart.Options.SvgColorVariables))).Line()
             .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-crosshair").BooleanAttribute("hidden").EndStartElement().Line()
             .StartElement("span").Attribute("class", "cfx-crosshair__line cfx-crosshair__line--x").EndStartElement().EndElement()
@@ -156,6 +166,7 @@ public sealed class HtmlInteractiveChartRenderer {
             .EndElement().Line()
             .RawTrusted(BuildRevealLayer(options))
             .RawTrusted(BuildCompareTray(options))
+            .EndElement().Line()
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .EndElement();
@@ -391,10 +402,25 @@ public sealed class HtmlInteractiveChartRenderer {
             AppendToolbarButton(writer, "PNG", ("data-cfx-export", "png"), ("title", "Download PNG"));
         }
 
-        if (options.IncludeResetButton) {
-            AppendToolbarButton(writer, "Reset", ("data-cfx-reset", "true"));
-        }
+        return writer.Build();
+    }
 
+    /// <summary>
+    /// Builds the contextual reset control. It starts hidden; the runtime reveals it only while the view
+    /// differs from its initial state, so the chart carries no permanent control chrome.
+    /// </summary>
+    private static string BuildResetControl(HtmlChartInteractionOptions options) {
+        if (!options.IncludeResetButton) return string.Empty;
+        var writer = new HtmlMarkupWriter();
+        writer.StartElement("button")
+            .Attribute("class", "cfx-reset")
+            .Attribute("type", "button")
+            .Attribute("data-cfx-reset", "true")
+            .BooleanAttribute("hidden")
+            .EndStartElement()
+            .Text("Reset view")
+            .EndElement()
+            .Line();
         return writer.Build();
     }
 

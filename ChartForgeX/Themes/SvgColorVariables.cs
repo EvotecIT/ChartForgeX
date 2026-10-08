@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using ChartForgeX.Primitives;
 
@@ -38,23 +39,25 @@ namespace ChartForgeX.Themes;
 /// surface tokens share a colour in one theme, the one added first names it.
 /// </para>
 /// </remarks>
-public sealed class SvgColorVariables {
+public sealed partial class SvgColorVariables {
     private static readonly Regex VariableName = new("^--[A-Za-z0-9_-]+$", RegexOptions.CultureInvariant);
     private const string Paint = @"#[0-9A-Fa-f]{6}(?![0-9A-Fa-f])|rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*[0-9]*\.?[0-9]+\s*)?\)";
-    private static readonly Regex StartTag = new(@"<(?<tag>[A-Za-z][\w:.-]*)(?<attrs>(?:[^<>""']|""[^""]*""|'[^']*')*)>", RegexOptions.CultureInvariant);
-    private static readonly Regex StyleElement = new(@"(?<open><style\b(?:[^<>""']|""[^""]*""|'[^']*')*>)(?<css>.*?)(?<close></style>)", RegexOptions.CultureInvariant | RegexOptions.Singleline);
+    // Compiled: Apply scans every tag of finished, often very large, markup. Compilation does not change what matches.
+    private static readonly Regex StartTag = new(@"<(?<tag>[A-Za-z][\w:.-]*)(?<attrs>(?:[^<>""']|""[^""]*""|'[^']*')*)>", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly Regex StyleElement = new(@"(?<open><style\b(?:[^<>""']|""[^""]*""|'[^']*')*>)(?<css>.*?)(?<close></style>)", RegexOptions.CultureInvariant | RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex PaintAttribute = new(
         @"(?<lead>(?<![\w:-])(?:fill|stroke|stop-color|flood-color|lighting-color|color)\s*=\s*"")(?<value>" + Paint + @")(?="")",
-        RegexOptions.CultureInvariant);
-    private static readonly Regex StyleAttribute = new(@"(?<open>(?<![\w:-])style\s*=\s*"")(?<css>[^""]*)(?<close>"")", RegexOptions.CultureInvariant);
+        RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly Regex StyleAttribute = new(@"(?<open>(?<![\w:-])style\s*=\s*"")(?<css>[^""]*)(?<close>"")", RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private static readonly Regex PaintDeclaration = new(
         @"(?<lead>(?<![\w-])(?<property>fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*)(?<value>" + Paint + @")(?=\s*(?:[;}]|!important|$))",
-        RegexOptions.CultureInvariant);
+        RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private readonly List<SvgColorVariable> _variables = new();
     private readonly Dictionary<int, SvgColorVariable> _any = new();
     private readonly Dictionary<int, SvgColorVariable> _text = new();
     private readonly Dictionary<long, SvgColorVariable> _byRole = new();
+    private readonly Dictionary<long, SvgColorVariable> _markInk = new();
 
     /// <summary>Gets the variables in the order they were added.</summary>
     public IReadOnlyList<SvgColorVariable> Variables => _variables.AsReadOnly();
@@ -85,8 +88,37 @@ public sealed class SvgColorVariables {
     /// <summary>Creates an independent copy.</summary>
     public SvgColorVariables Clone() {
         var copy = new SvgColorVariables();
-        foreach (var variable in _variables) copy.Add(variable.Name, variable.Color, variable.Role);
+        copy._variables.AddRange(_variables);
+        foreach (var entry in _any) copy._any.Add(entry.Key, entry.Value);
+        foreach (var entry in _text) copy._text.Add(entry.Key, entry.Value);
+        foreach (var entry in _byRole) copy._byRole.Add(entry.Key, entry.Value);
+        foreach (var entry in _markInk) copy._markInk.Add(entry.Key, entry.Value);
         return copy;
+    }
+
+    /// <summary>
+    /// Adds the contrasting text property paired with a filled mark. The renderer selects this property by the fill,
+    /// so black or white text follows that mark when the host switches themes, without changing unrelated text.
+    /// </summary>
+    /// <param name="name">The CSS custom property for the ink, for example <c>--cfx-series-1-ink</c>.</param>
+    /// <param name="fill">The opaque mark colour in this theme.</param>
+    /// <param name="ink">The contrasting text colour in this theme.</param>
+    /// <param name="fillRole">The role of the filled mark.</param>
+    /// <returns>The same instance.</returns>
+    /// <exception cref="ArgumentException">The property name is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The role is not defined.</exception>
+    public SvgColorVariables AddInk(string name, ChartColor fill, ChartColor ink, SvgColorRole fillRole) {
+        if (name == null || !VariableName.IsMatch(name)) throw new ArgumentException("Invalid CSS custom property name.", nameof(name));
+        if (!Enum.IsDefined(typeof(SvgColorRole), fillRole)) throw new ArgumentOutOfRangeException(nameof(fillRole));
+        var variable = new SvgColorVariable(name, ink, SvgColorRole.Text);
+        _variables.Add(variable);
+        _markInk[RoleKey(fillRole, Rgb(fill.R, fill.G, fill.B))] = variable;
+        return this;
+    }
+
+    internal bool TryInk(ChartColor fill, SvgColorRole role, out string paint) {
+        paint = string.Empty;
+        return _markInk.TryGetValue(RoleKey(role, Rgb(fill.R, fill.G, fill.B)), out var variable) && TryWrite(variable, 1, out paint);
     }
 
     /// <summary>
@@ -98,8 +130,106 @@ public sealed class SvgColorVariables {
     public string Apply(string svg) {
         if (svg == null) throw new ArgumentNullException(nameof(svg));
         if (_any.Count == 0) return svg;
-        var result = StyleElement.Replace(svg, match => match.Groups["open"].Value + Declarations(match.Groups["css"].Value, textElement: false) + match.Groups["close"].Value);
-        return StartTag.Replace(result, ReplaceTag);
+        var result = svg.IndexOf("<style", StringComparison.Ordinal) < 0 ? svg
+            : StyleElement.Replace(svg, match => match.Groups["open"].Value + Declarations(match.Groups["css"].Value, textElement: false) + match.Groups["close"].Value);
+        return ReplaceTags(result);
+    }
+
+    /// <summary>
+    /// Replaces the paints of every start tag, as <c>StartTag.Replace(svg, ReplaceTag)</c> does. Start tags are found by a
+    /// scanner that follows the pattern exactly for ASCII tag names (markup with any other tag-name character takes the
+    /// pattern itself), only tags whose attributes could hold a mapped paint are rebuilt, and the markup is copied once,
+    /// only when a tag changed.
+    /// </summary>
+    private string ReplaceTags(string svg) {
+        StringBuilder? builder = null;
+        var copied = 0;
+        var position = 0;
+        while (true) {
+            var open = svg.IndexOf('<', position);
+            if (open < 0) break;
+            var outcome = ReadStartTag(svg, open, out var nameEnd, out var close);
+            if (outcome == TagScan.Unsupported) return ReplaceTagsWithPattern(svg);
+            if (outcome == TagScan.NoTag) {
+                position = open + 1;
+                continue;
+            }
+
+            position = close + 1;
+            if (!MayHoldPaint(svg, nameEnd, close - nameEnd)) continue;
+            var replaced = ReplaceTag(svg.Substring(open + 1, nameEnd - open - 1), svg.Substring(nameEnd, close - nameEnd));
+            var length = close + 1 - open;
+            if (replaced.Length == length && string.CompareOrdinal(replaced, 0, svg, open, length) == 0) continue;
+            builder ??= new StringBuilder(svg.Length + svg.Length / 8);
+            builder.Append(svg, copied, open - copied).Append(replaced);
+            copied = close + 1;
+        }
+
+        if (builder == null) return svg;
+        builder.Append(svg, copied, svg.Length - copied);
+        return builder.ToString();
+    }
+
+    private enum TagScan { NoTag, Tag, Unsupported }
+
+    // Matches StartTag at open: '<', an ASCII letter, name characters, then attribute text of characters other than
+    // <>"' and quoted strings, up to '>'. A failed match is final at this '<' (the pattern cannot backtrack into a
+    // different split), so scanning resumes at the next character, as the pattern's search does.
+    private static TagScan ReadStartTag(string svg, int open, out int nameEnd, out int close) {
+        nameEnd = close = -1;
+        var i = open + 1;
+        if (i >= svg.Length || !(svg[i] is >= 'A' and <= 'Z' or >= 'a' and <= 'z')) return TagScan.NoTag;
+        i++;
+        while (i < svg.Length && svg[i] is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9' or '_' or ':' or '.' or '-') i++;
+        // \w also matches non-ASCII letters and digits; leave such names to the pattern.
+        if (i < svg.Length && svg[i] >= 0x80) return TagScan.Unsupported;
+        nameEnd = i;
+        while (i < svg.Length) {
+            var c = svg[i];
+            if (c == '>') {
+                close = i;
+                return TagScan.Tag;
+            }
+
+            if (c == '<') return TagScan.NoTag;
+            if (c is '"' or '\'') {
+                var end = svg.IndexOf(c, i + 1);
+                if (end < 0) return TagScan.NoTag;
+                i = end + 1;
+                continue;
+            }
+
+            i++;
+        }
+
+        return TagScan.NoTag;
+    }
+
+    // A paint attribute name contains "fill", "stroke" or "color" and a style attribute "style"; a mappable paint value
+    // starts with '#' or "rgb". Attributes with neither cannot change.
+    private static bool MayHoldPaint(string svg, int start, int length) {
+        if (length == 0) return false;
+        if (svg.IndexOf('#', start, length) < 0 && svg.IndexOf("rgb", start, length, StringComparison.Ordinal) < 0) return false;
+        return svg.IndexOf("fill", start, length, StringComparison.Ordinal) >= 0 || svg.IndexOf("stroke", start, length, StringComparison.Ordinal) >= 0
+            || svg.IndexOf("color", start, length, StringComparison.Ordinal) >= 0 || svg.IndexOf("style", start, length, StringComparison.Ordinal) >= 0;
+    }
+
+    private string ReplaceTagsWithPattern(string svg) {
+        StringBuilder? builder = null;
+        var copied = 0;
+        for (var match = StartTag.Match(svg); match.Success; match = match.NextMatch()) {
+            var attrs = match.Groups["attrs"];
+            if (!MayHoldPaint(svg, attrs.Index, attrs.Length)) continue;
+            var replaced = ReplaceTag(match.Groups["tag"].Value, attrs.Value);
+            if (replaced.Length == match.Length && string.CompareOrdinal(replaced, 0, svg, match.Index, match.Length) == 0) continue;
+            builder ??= new StringBuilder(svg.Length + svg.Length / 8);
+            builder.Append(svg, copied, match.Index - copied).Append(replaced);
+            copied = match.Index + match.Length;
+        }
+
+        if (builder == null) return svg;
+        builder.Append(svg, copied, svg.Length - copied);
+        return builder.ToString();
     }
 
     /// <summary>
@@ -109,16 +239,17 @@ public sealed class SvgColorVariables {
     internal bool TryPaint(ChartColor color, SvgColorRole role, out string paint) {
         paint = string.Empty;
         if (color.A == 0) return false;
-        var key = Rgb(color.R, color.G, color.B);
-        if (!(role != SvgColorRole.Any && _byRole.TryGetValue(RoleKey(role, key), out var variable)) &&
-            !(role == SvgColorRole.Text ? _text : _any).TryGetValue(key, out variable)) return false;
-        return TryWrite(variable, color.A / 255.0, out paint);
+        return TryVariable(color, role, out var variable) && TryWrite(variable, color.A / 255.0, out paint);
     }
 
-    private string ReplaceTag(Match match) {
-        var attrs = match.Groups["attrs"].Value;
-        if (attrs.Length == 0) return match.Value;
-        var tag = match.Groups["tag"].Value;
+    internal bool TryVariable(ChartColor color, SvgColorRole role, out SvgColorVariable variable) {
+        var key = Rgb(color.R, color.G, color.B);
+        if (!(role != SvgColorRole.Any && _byRole.TryGetValue(RoleKey(role, key), out variable)) &&
+            !(role == SvgColorRole.Text ? _text : _any).TryGetValue(key, out variable)) return false;
+        return true;
+    }
+
+    private string ReplaceTag(string tag, string attrs) {
         var text = tag is "text" or "tspan" or "textPath";
         attrs = PaintAttribute.Replace(attrs, paint => ReplacePaint(paint, text && IsFill(paint.Value)));
         attrs = StyleAttribute.Replace(attrs, style => style.Groups["open"].Value + Declarations(style.Groups["css"].Value, text) + style.Groups["close"].Value);

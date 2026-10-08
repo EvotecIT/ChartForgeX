@@ -3,6 +3,7 @@ using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -100,25 +101,28 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Series data-label styling should still render labels.");
         Assert(svg.Contains("fill=\"#DC2626\"", StringComparison.Ordinal), "Series data-label styles should override chart-level label color.");
-        Assert(svg.Contains("font-weight=\"900\"", StringComparison.Ordinal) && svg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), "Series data-label styles should override label weight and decoration.");
+        var labels = FamilyLabels(PreparedFamily(chart), "data-label");
+        Assert(labels.Length == 4 && labels.All(label => label.Text.Style.Font.Weight == 900 && label.Text.Style.Underline
+            && label.Text.Style.FontSize == 13), "Series data-label styles should override weight, decoration and size in the shared text snapshot.");
         Assert(chart.ToPng().Length > 64, "Series data-label styles should render PNG output.");
         AssertThrows<ArgumentNullException>(() => chart.Series[0].WithDataLabelStyle(null!), "Series data-label style callbacks should reject null callbacks.");
         AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithDataLabelStyle(style => style.WithFontSize(0)), "Series data-label styles should reject invalid font sizes.");
     }
 
     private static void SpecializedSeriesDataLabelStylesOverrideChartDefaults() {
-        var pie = Chart.Create()
+        var pie = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 280)
             .WithDataLabels()
             .WithDataLabelStyle(style => style.WithColor("#64748b"))
             .AddPie("Slices", Points(70, 30));
         pie.Series[0].WithDataLabelStyle(style => style.WithColor("#0f766e").WithWeight("900").WithUnderline().WithFontSize(14));
-        var pieSvg = pie.ToSvg();
+        var pieSvg = PreparedFamily(pie).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions());
         Assert(pieSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Pie data labels should render with series styles enabled.");
-        Assert(pieSvg.Contains("fill=\"#0F766E\"", StringComparison.Ordinal) && pieSvg.Contains("font-weight=\"900\"", StringComparison.Ordinal) && pieSvg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), "Pie labels should honor per-series data-label style overrides.");
+        var pieLabels = FamilyLabels(PreparedFamily(pie), "data-label");
+        Assert(pieLabels.Length == 2 && pieLabels.All(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#0F766E")) && label.Text.Style.Font.Weight == 900 && label.Text.Style.Underline), "Pie labels should honor per-series color, weight and underline in the shared text snapshot.");
         Assert(pie.ToPng().Length > 64, "Pie series data-label styles should render PNG output.");
 
-        var heatmap = Chart.Create()
+        var heatmap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(460, 300)
             .WithDataLabels()
             .WithDataLabelStyle(style => style.WithColor("#64748b"))
@@ -128,34 +132,34 @@ internal static partial class SmokeTests {
         Assert(heatmapSvg.Contains("fill=\"#DC2626\"", StringComparison.Ordinal) && heatmapSvg.Contains("font-weight=\"900\"", StringComparison.Ordinal), "Heatmap cell labels should honor per-series data-label style overrides.");
         Assert(heatmap.ToPng().Length > 64, "Heatmap series data-label styles should render PNG output.");
 
-        var radar = Chart.Create()
+        var radar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(460, 320)
             .WithXLabels("Reach", "Depth", "Trust")
             .WithDataLabels()
             .WithDataLabelStyle(style => style.WithColor("#64748b"))
             .AddRadar("Current", Points(92, 74, 88));
         radar.Series[0].WithDataLabelStyle(style => style.WithColor("#7c3aed").WithWeight("900"));
-        Assert(radar.ToSvg().Contains("fill=\"#7C3AED\"", StringComparison.Ordinal), "Radar data labels should honor per-series data-label color overrides.");
+        Assert(FamilyLabels(PreparedFamily(radar), "radar-data-label").Any(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#7C3AED"))), "Radar data labels should honor per-series data-label color overrides.");
         Assert(radar.ToPng().Length > 64, "Radar series data-label styles should render PNG output.");
 
-        var regularPolarArea = Chart.Create()
+        var regularPolarArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(460, 320)
             .WithLegend(false)
             .WithDataLabels()
             .AddPolarArea("Polar", Points(92, 74, 88))
             .ToPng();
-        var polarArea = Chart.Create()
+        var polarArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(460, 320)
             .WithLegend(false)
             .WithDataLabels()
             .AddPolarArea("Polar", Points(92, 74, 88));
         polarArea.Series[0].WithDataLabelStyle(style => style.WithColor("#0f766e").WithFontFamily("monospace").WithWeight("normal").WithItalic().WithUnderline().WithFontSize(16));
-        var polarAreaSvg = polarArea.ToSvg();
+        var polarAreaSvg = PreparedFamily(polarArea).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions());
         var polarAreaPng = polarArea.ToPng();
         Assert(polarAreaSvg.Contains("fill=\"#0F766E\"", StringComparison.Ordinal) && polarAreaSvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Polar-area labels should honor per-series data-label style overrides.");
         Assert(!regularPolarArea.SequenceEqual(polarAreaPng), "Polar-area PNG labels should render and position with resolved series text styling.");
 
-        var waterfall = Chart.Create()
+        var waterfall = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelStyle(style => style.WithColor("#64748b"))
@@ -166,7 +170,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PointDataLabelStylesOverrideSeriesDefaults() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .WithDataLabels()
             .AddBar("Styled labels", Points(12, 44, 26));
@@ -177,18 +181,20 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         Assert(svg.Contains("fill=\"#123456\"", StringComparison.Ordinal), "Point data-label styles should override series label color.");
         Assert(svg.Contains("fill=\"#654321\"", StringComparison.Ordinal), "Unstyled point labels should continue using the series label style.");
-        Assert(svg.Contains("text-decoration=\"underline\"", StringComparison.Ordinal), "Point data-label styles should include decoration overrides.");
+        var styledLabel = FamilyLabels(PreparedFamily(chart), "data-label").Single(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#123456")));
+        Assert(styledLabel.Text.Style.Underline && styledLabel.Text.Style.Font.Weight == 900 && styledLabel.Text.Style.FontSize == 14,
+            "Point data-label styles should include decoration, weight and size overrides in the shared text snapshot.");
         Assert(chart.ToPng().Length > 64, "Point data-label styles should render PNG output.");
 
         chart.Series[0].UseSeriesDataLabelStyle(1);
         Assert(!chart.ToSvg().Contains("fill=\"#123456\"", StringComparison.Ordinal), "Clearing a point label style should restore series-level label styling.");
 
-        var pie = Chart.Create()
+        var pie = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 280)
             .WithDataLabels()
             .AddPie("Slices", Points(70, 30));
         pie.Series[0].WithPointDataLabelStyle(1, style => style.WithColor("#0f3d5e").WithWeight("900"));
-        Assert(pie.ToSvg().Contains("fill=\"#0F3D5E\"", StringComparison.Ordinal), "Pie slice labels should honor point-level data-label style overrides.");
+        Assert(FamilyLabels(PreparedFamily(pie), "data-label").Any(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#0F3D5E"))), "Pie slice labels should honor point-level data-label style overrides.");
         Assert(pie.ToPng().Length > 64, "Pie point data-label styles should render PNG output.");
 
         AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithPointDataLabelStyle(-1, _ => { }), "Point data-label styles should reject negative indexes.");
@@ -198,34 +204,47 @@ internal static partial class SmokeTests {
     }
 
     private static void PointColorsOverrideSeriesColorForBars() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddBar("Scores", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         chart.Series[0].WithPointColor(1, "#F97316");
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal), "Bar points should still render when point colors are configured.");
-        Assert(svg.Contains("seriesFill0-point1", StringComparison.Ordinal) && svg.Contains("data-cfx-color=\"#F97316\"", StringComparison.Ordinal), "Bar points should honor point-specific fill colors in SVG.");
+        Assert(CartesianPoint(svg, 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "bar" && element.Attribute("fill") != null),
+            "The authored bar point should retain a native filled mark.");
+        var nativeBar = PreparedFamily(chart).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(mark => mark.Role == "bar").ElementAt(1);
+        Assert(nativeBar.Fill!.Value.Equals(ChartColor.FromHex("#F97316")),
+            "The orange point override should determine that native flat bar rather than the teal series color.");
         Assert(chart.ToPng().Length > 64, "Bar point colors should render PNG output.");
 
-        var horizontal = Chart.Create()
+        var horizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .WithXLabels("A", "B", "C")
             .AddHorizontalBar("Scores", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         horizontal.Series[0].WithPointColor(2, ChartColor.FromHex("#8B5CF6"));
         var horizontalSvg = horizontal.ToSvg();
-        Assert(horizontalSvg.Contains("seriesFill0-point2", StringComparison.Ordinal) && horizontalSvg.Contains("data-cfx-color=\"#8B5CF6\"", StringComparison.Ordinal), "Horizontal bar points should honor point-specific fill colors in SVG.");
+        Assert(CartesianPoint(horizontalSvg, 0, 2).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "horizontal-bar" && element.Attribute("fill") != null),
+            "The authored horizontal bar point should retain a native filled mark.");
+        var nativeHorizontalBar = PreparedFamily(horizontal).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(mark => mark.Role == "horizontal-bar").ElementAt(2);
+        Assert(nativeHorizontalBar.Fill!.Value.Equals(ChartColor.FromHex("#8B5CF6")),
+            "The purple horizontal point override should determine that native flat observation.");
         Assert(horizontal.ToPng().Length > 64, "Horizontal bar point colors should render PNG output.");
 
-        var funnel = Chart.Create()
+        var funnel = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .WithXLabels("Visit", "Qualify", "Close")
             .AddFunnel("Pipeline", Points(120, 74, 32));
         funnel.Series[0].WithPointColor(1, "#E11D48");
         var funnelSvg = funnel.ToSvg();
-        Assert(funnelSvg.Contains("funnelPointFill1", StringComparison.Ordinal) && funnelSvg.Contains("stop-color=\"#E11D48\"", StringComparison.Ordinal), "Funnel segments should honor point-specific colors in SVG.");
+        var funnelPoint = System.Xml.Linq.XDocument.Parse(funnelSvg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "funnel-stage"
+            && (string?)element.Attribute("data-cfx-point") == "1");
+        Assert(funnelPoint.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "funnel-segment" && (string?)element.Attribute("fill") == "#E11D48"),
+            "The authored funnel stage should use its point-specific color in SVG.");
+        Assert(PreparedFamily(funnel).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().Where(node => node.Role == "funnel-segment").ElementAt(1).Fill!.Value.Equals(ChartColor.FromHex("#E11D48")),
+            "The same funnel stage should retain its point-specific color for native raster rendering.");
         Assert(funnel.ToPng().Length > 64, "Funnel point colors should render PNG output.");
 
-        var treemap = Chart.Create()
+        var treemap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddTreemap("Spend", new[] {
                 new ChartTreemapItem("Core", 48),
@@ -233,24 +252,32 @@ internal static partial class SmokeTests {
                 new ChartTreemapItem("Long tail", 12)
             });
         treemap.Series[0].WithPointColor(1, "#8B5CF6");
-        Assert(treemap.ToSvg().Contains("treemapFillSeries0Point1", StringComparison.Ordinal), "Treemap tiles should honor point-specific colors in SVG.");
+        var treemapTile = System.Xml.Linq.XDocument.Parse(treemap.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile"
+            && (string?)element.Attribute("data-cfx-point") == "1");
+        Assert(treemapTile.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile-mark" && (string?)element.Attribute("fill") == "#8B5CF6"),
+            "The authored treemap tile should use its point-specific color in SVG.");
+        Assert(PreparedFamily(treemap).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Any(node => node.Role == "treemap-tile-mark" && node.Fill!.Value.Equals(ChartColor.FromHex("#8B5CF6"))),
+            "Native treemap geometry should retain the authored purple point color.");
         Assert(treemap.ToPng().Length > 64, "Treemap point colors should render PNG output.");
 
-        var scatter = Chart.Create()
+        var scatter = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddScatter("Observed", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         scatter.Series[0].WithPointColor(1, "#0EA5E9");
         Assert(scatter.ToSvg().Contains("fill=\"#0EA5E9\"", StringComparison.Ordinal), "Scatter markers should honor point-specific colors in SVG.");
         Assert(scatter.ToPng().Length > 64, "Scatter point colors should render PNG output.");
 
-        var line = Chart.Create()
+        var line = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddLine("Trend", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         line.Series[0].WithPointColor(2, "#DB2777");
-        Assert(line.ToSvg().Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal) && line.ToSvg().Contains("fill=\"#DB2777\"", StringComparison.Ordinal), "Line markers should honor point-specific colors in SVG.");
+        Assert(CartesianPoint(line.ToSvg(), 0, 2).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "marker"
+            && (string?)element.Attribute("fill") == "#DB2777"), "The authored line observation should retain its point-specific marker color in SVG.");
+        Assert(PreparedFamily(line).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneEllipse>().Single(node => node.Role == "marker").Fill!.Value.Equals(ChartColor.FromHex("#DB2777")),
+            "The same line observation should retain its point-specific color for native raster rendering.");
         Assert(line.ToPng().Length > 64, "Line marker point colors should render PNG output.");
 
-        var lollipop = Chart.Create()
+        var lollipop = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddLollipop("Coverage", Points(12, 44, 26), ChartColor.FromHex("#14B8A6"));
         lollipop.Series[0].WithPointColor(1, "#F59E0B");
@@ -258,7 +285,7 @@ internal static partial class SmokeTests {
         Assert(lollipopSvg.Contains("data-cfx-role=\"lollipop-marker\"", StringComparison.Ordinal) && lollipopSvg.Contains("fill=\"#F59E0B\"", StringComparison.Ordinal), "Lollipop markers should honor point-specific colors in SVG.");
         Assert(lollipop.ToPng().Length > 64, "Lollipop point colors should render PNG output.");
 
-        var bubble = Chart.Create()
+        var bubble = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddBubble("Risk", new[] {
                 new ChartBubble(1, 18, 8),
@@ -266,10 +293,17 @@ internal static partial class SmokeTests {
                 new ChartBubble(3, 26, 14)
             }, ChartColor.FromHex("#14B8A6"));
         bubble.Series[0].WithPointColor(1, "#7C3AED");
-        Assert(bubble.ToSvg().Contains("stroke=\"#7C3AED\"", StringComparison.Ordinal), "Bubble markers should honor point-specific colors in SVG.");
+        var bubbleColor = ChartColor.FromHex("#7C3AED");
+        Assert(CartesianPoint(bubble.ToSvg(), 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "bubble"
+            && (string?)element.Attribute("stroke") == ChartColorMath.WithOpacity(bubbleColor, ChartVisualPrimitives.BubbleStrokeOpacity).ToCss()),
+            "The authored bubble observation should retain its point-specific stroke and style opacity in SVG.");
+        var nativeBubble = PreparedFamily(bubble).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneEllipse>().Where(node => node.Role == "bubble").ElementAt(1);
+        Assert(nativeBubble.Fill!.Value.Equals(ChartColorMath.WithOpacity(bubbleColor, ChartVisualPrimitives.BubbleFillOpacity))
+            && nativeBubble.Stroke!.Value.Equals(ChartColorMath.WithOpacity(bubbleColor, ChartVisualPrimitives.BubbleStrokeOpacity)),
+            "Native bubble paint should use the authored point color for both translucent fill and stroke.");
         Assert(bubble.ToPng().Length > 64, "Bubble point colors should render PNG output.");
 
-        var errorBar = Chart.Create()
+        var errorBar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddErrorBar("Confidence", new[] {
                 new ChartErrorBar(1, 42, 35, 51),
@@ -279,7 +313,7 @@ internal static partial class SmokeTests {
         Assert(errorBar.ToSvg().Contains("stroke=\"#DC2626\"", StringComparison.Ordinal) && errorBar.ToSvg().Contains("fill=\"#DC2626\"", StringComparison.Ordinal), "Error-bar marks should honor point-specific colors in SVG.");
         Assert(errorBar.ToPng().Length > 64, "Error-bar point colors should render PNG output.");
 
-        var rangeBar = Chart.Create()
+        var rangeBar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddRangeBar("Observed", new[] {
                 new ChartInterval(1, 20, 42),
@@ -289,7 +323,7 @@ internal static partial class SmokeTests {
         Assert(rangeBar.ToSvg().Contains("data-cfx-role=\"range-bar\"", StringComparison.Ordinal) && rangeBar.ToSvg().Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Range-bar intervals should honor point-specific colors in SVG.");
         Assert(rangeBar.ToPng().Length > 64, "Range-bar point colors should render PNG output.");
 
-        var dumbbell = Chart.Create()
+        var dumbbell = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddDumbbell("Before/after", new[] {
                 new ChartDumbbell(1, 32, 44),
@@ -299,42 +333,46 @@ internal static partial class SmokeTests {
         Assert(dumbbell.ToSvg().Contains("data-cfx-role=\"dumbbell-end\"", StringComparison.Ordinal) && dumbbell.ToSvg().Contains("fill=\"#0EA5E9\"", StringComparison.Ordinal), "Dumbbell comparison marks should honor point-specific colors in SVG.");
         Assert(dumbbell.ToPng().Length > 64, "Dumbbell point colors should render PNG output.");
 
-        var boxPlot = Chart.Create()
+        var boxPlot = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddBoxPlot("Latency", new[] {
                 new ChartBoxPlot(1, 18, 24, 31, 38, 48),
                 new ChartBoxPlot(2, 42, 56, 64, 82, 104)
             }, ChartColor.FromHex("#14B8A6"));
         boxPlot.Series[0].WithPointColor(1, "#8B5CF6");
-        Assert(boxPlot.ToSvg().Contains("data-cfx-role=\"box-body\"", StringComparison.Ordinal) && boxPlot.ToSvg().Contains("fill=\"#8B5CF6\"", StringComparison.Ordinal), "Box-plot summaries should honor point-specific colors in SVG.");
+        Assert(CartesianPoint(boxPlot.ToSvg(), 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "boxplot-body"
+            && (string?)element.Attribute("stroke") == "#8B5CF6"), "Box-plot summaries should honor point-specific colors in SVG.");
+        Assert(PreparedFamily(boxPlot).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(node => node.Role == "boxplot-body").ElementAt(1).Stroke!.Value.Equals(ChartColor.FromHex("#8B5CF6")),
+            "Native box-plot outlines should retain the authored observation color.");
         Assert(boxPlot.ToPng().Length > 64, "Box-plot point colors should render PNG output.");
 
         var candles = new[] {
             new ChartCandlestick(1, 42, 51, 35, 48),
             new ChartCandlestick(2, 58, 66, 49, 54)
         };
-        var candlestick = Chart.Create()
+        var candlestick = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddCandlestick("Windows", candles);
         candlestick.Series[0].WithPointColor(1, "#DB2777");
         Assert(candlestick.ToSvg().Contains("data-cfx-role=\"candlestick-body\"", StringComparison.Ordinal) && candlestick.ToSvg().Contains("stroke=\"#DB2777\"", StringComparison.Ordinal), "Candlestick windows should allow point colors to override semantic rising/falling colors in SVG.");
         Assert(candlestick.ToPng().Length > 64, "Candlestick point colors should render PNG output.");
 
-        var ohlc = Chart.Create()
+        var ohlc = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddOhlc("Windows", candles);
         ohlc.Series[0].WithPointColor(1, "#9333EA");
         Assert(ohlc.ToSvg().Contains("data-cfx-role=\"ohlc-stem\"", StringComparison.Ordinal) && ohlc.ToSvg().Contains("stroke=\"#9333EA\"", StringComparison.Ordinal), "OHLC windows should allow point colors to override semantic rising/falling colors in SVG.");
         Assert(ohlc.ToPng().Length > 64, "OHLC point colors should render PNG output.");
 
-        var slope = Chart.Create()
+        var slope = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddSlope("Before/after", 24, 52, ChartColor.FromHex("#14B8A6"));
         slope.Series[0].WithPointColor(1, "#E11D48");
-        Assert(slope.ToSvg().Contains("data-cfx-role=\"slope-end\"", StringComparison.Ordinal) && slope.ToSvg().Contains("fill=\"#E11D48\"", StringComparison.Ordinal), "Slope endpoint markers should honor point-specific colors in SVG.");
+        Assert(CartesianPoint(slope.ToSvg(), 0, 1).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "slope-marker"
+            && (string?)element.Attribute("fill") == "#E11D48"), "Slope endpoint markers should honor point-specific colors in SVG.");
         Assert(slope.ToPng().Length > 64, "Slope endpoint point colors should render PNG output.");
 
-        var pointLegend = Chart.Create()
+        var pointLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(520, 320)
             .WithPointLegend()
             .WithLegendPosition(ChartLegendPosition.Right)
@@ -342,16 +380,22 @@ internal static partial class SmokeTests {
             .AddBar("Severity", Points(8, 32, 84), ChartColor.FromHex("#2563EB"));
         pointLegend.Series[0].WithPointColor(1, "#F97316");
         var pointLegendSvg = pointLegend.ToSvg();
-        Assert(pointLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Severity\" data-cfx-series-key=\"Severity\" data-cfx-point=\"1\"", StringComparison.Ordinal), "Point legends should expose item-level and semantic series metadata.");
+        Assert(System.Xml.Linq.XDocument.Parse(pointLegendSvg).Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "legend-entry"
+            && (string?)element.Attribute("data-cfx-series-key") == "Severity" && (string?)element.Attribute("data-cfx-source-id") == "legend-series-0-point-1"),
+            "Point legends should retain the exact observation identity and semantic series key.");
         Assert(pointLegendSvg.Contains(">High</text>", StringComparison.Ordinal) && pointLegendSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Point legends should use x-axis labels and point colors.");
         Assert(pointLegend.ToPng().Length > 64, "Point legends should render PNG output.");
 
-        var aggregateLineLegend = Chart.Create()
+        var aggregateLineLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+            .WithLegend(true)
             .WithSize(520, 320)
             .WithPointLegend()
             .AddLine("Latency", Points(12, 18, 15), ChartColor.FromHex("#2563EB"));
         var aggregateLineLegendSvg = aggregateLineLegend.ToSvg();
-        Assert(aggregateLineLegendSvg.Contains("data-cfx-role=\"legend-item\" data-cfx-series=\"0\" data-cfx-series-name=\"Latency\" data-cfx-series-key=\"Latency\"", StringComparison.Ordinal) && !aggregateLineLegendSvg.Contains("data-cfx-series-name=\"Latency\" data-cfx-series-key=\"Latency\" data-cfx-point=", StringComparison.Ordinal), "Aggregate line geometry should fall back to a series legend instead of advertising point-level muting.");
+        var lineLegendEntry = System.Xml.Linq.XDocument.Parse(aggregateLineLegendSvg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "legend-entry");
+        Assert((string?)lineLegendEntry.Attribute("data-cfx-source-id") == "legend-series-0"
+            && (string?)lineLegendEntry.Attribute("data-cfx-series-key") == "Latency" && !lineLegendEntry.DescendantsAndSelf().Any(element => element.Attribute("data-cfx-point") != null),
+            "Aggregate line geometry should retain one series legend identity instead of advertising point-level muting.");
         Assert(aggregateLineLegend.ToPng().Length > 64, "Aggregate line point-legend fallback should preserve PNG parity.");
 
         chart.Series[0].UseSeriesColor(1);
@@ -372,7 +416,7 @@ internal static partial class SmokeTests {
             }, ChartColor.FromHex("#14B8A6"));
         dotted.Series[0].WithPointColor(1, "#E11D48");
         var dottedSvg = dotted.ToSvg();
-        Assert(dottedSvg.Contains("data-cfx-role=\"dotted-map-point\" data-cfx-point=\"1\"", StringComparison.Ordinal) && dottedSvg.Contains("fill=\"#E11D48\"", StringComparison.Ordinal), "Dotted map points should honor point-specific colors in SVG.");
+        Assert(MapMarkers(PreparedFamily(dotted))[1].Fill.Equals(ChartColor.FromHex("#E11D48")) && dottedSvg.Contains("#E11D48", StringComparison.Ordinal), "Dotted map points should honor point-specific colors in both prepared paint and SVG.");
         Assert(dotted.ToPng().Length > 64, "Dotted map point colors should render PNG output.");
 
         var calendar = Chart.Create()
@@ -432,7 +476,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SpecializedDataLabelPlacementCanBeConfigured() {
-        var pie = Chart.Create()
+        var pie = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 280)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Outside)
@@ -442,7 +486,7 @@ internal static partial class SmokeTests {
         Assert(pieSvg.Contains("data-cfx-role=\"data-label-connector\"", StringComparison.Ordinal), "Pie outside labels should render connector lines.");
         Assert(pie.ToPng().Length > 64, "Pie outside label placement should render PNG output.");
 
-        var heatmap = Chart.Create()
+        var heatmap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(460, 300)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Right)
@@ -453,16 +497,16 @@ internal static partial class SmokeTests {
         Assert(heatmapSvg.Contains(">Styled</text>", StringComparison.Ordinal), "Heatmap side label lanes should not steal space from row labels.");
         Assert(heatmap.ToPng().Length > 64, "Heatmap side label placement should render PNG output.");
 
-        var radar = Chart.Create()
+        var radar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(460, 320)
             .WithXLabels("Reach", "Depth", "Trust")
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Below)
             .AddRadar("Current", Points(92, 74, 88));
-        Assert(radar.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Radar labels should render when below placement is configured.");
+        Assert(FamilyLabels(PreparedFamily(radar), "radar-data-label").Length == 3, "Radar labels should render for each point when below placement is configured.");
         Assert(radar.ToPng().Length > 64, "Radar below label placement should render PNG output.");
 
-        var bubble = Chart.Create()
+        var bubble = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Center)
@@ -473,7 +517,7 @@ internal static partial class SmokeTests {
         Assert(bubble.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Bubble labels should render when center placement is configured.");
         Assert(bubble.ToPng().Length > 64, "Bubble center label placement should render PNG output.");
 
-        var errorBar = Chart.Create()
+        var errorBar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Right)
@@ -484,7 +528,7 @@ internal static partial class SmokeTests {
         Assert(errorBar.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Error-bar labels should render when side placement is configured.");
         Assert(errorBar.ToPng().Length > 64, "Error-bar side label placement should render PNG output.");
 
-        var rangeBand = Chart.Create()
+        var rangeBand = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Below)
@@ -495,7 +539,7 @@ internal static partial class SmokeTests {
         Assert(rangeBand.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Range-band labels should render when below placement is configured.");
         Assert(rangeBand.ToPng().Length > 64, "Range-band below label placement should render PNG output.");
 
-        var rangeArea = Chart.Create()
+        var rangeArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Left)
@@ -506,7 +550,7 @@ internal static partial class SmokeTests {
         Assert(rangeArea.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Range-area labels should render when side placement is configured.");
         Assert(rangeArea.ToPng().Length > 64, "Range-area side label placement should render PNG output.");
 
-        var waterfall = Chart.Create()
+        var waterfall = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
@@ -514,7 +558,7 @@ internal static partial class SmokeTests {
         Assert(waterfall.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Waterfall labels should render when inside placement is configured.");
         Assert(waterfall.ToPng().Length > 64, "Waterfall inside label placement should render PNG output.");
 
-        var rangeBar = Chart.Create()
+        var rangeBar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Center)
@@ -525,7 +569,7 @@ internal static partial class SmokeTests {
         Assert(rangeBar.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Range-bar labels should render when center placement is configured.");
         Assert(rangeBar.ToPng().Length > 64, "Range-bar center label placement should render PNG output.");
 
-        var dumbbell = Chart.Create()
+        var dumbbell = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Right)
@@ -536,7 +580,7 @@ internal static partial class SmokeTests {
         Assert(dumbbell.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Dumbbell labels should render when side placement is configured.");
         Assert(dumbbell.ToPng().Length > 64, "Dumbbell side label placement should render PNG output.");
 
-        var boxPlot = Chart.Create()
+        var boxPlot = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Left)
@@ -551,7 +595,7 @@ internal static partial class SmokeTests {
             new ChartCandlestick(1, 42, 51, 35, 48),
             new ChartCandlestick(2, 58, 66, 49, 54)
         };
-        var candlestick = Chart.Create()
+        var candlestick = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Right)
@@ -559,7 +603,7 @@ internal static partial class SmokeTests {
         Assert(candlestick.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Candlestick labels should render when side placement is configured.");
         Assert(candlestick.ToPng().Length > 64, "Candlestick side label placement should render PNG output.");
 
-        var ohlc = Chart.Create()
+        var ohlc = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Above)

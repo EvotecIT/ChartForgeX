@@ -72,8 +72,8 @@ public sealed class ChartGridPaginationTests {
         Assert.Equal(21, pages[0].Grid.TitleStyle.FontSize);
         Assert.Equal(2, grid.PanelSpans[6].ColumnSpan);
         Assert.Equal("Fleet", grid.Title);
-        Assert.NotEmpty(new PngChartGridRenderer().Render(last));
-        var svg = XDocument.Parse(new SvgChartGridRenderer().Render(last));
+        Assert.NotEmpty(last.ToPng());
+        var svg = XDocument.Parse(last.ToSvg());
         Assert.NotNull(svg.Root);
         Assert.Equal("1024", svg.Root!.Attribute("width")!.Value);
     }

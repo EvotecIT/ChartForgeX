@@ -8,10 +8,37 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyDenseRoutePlanner {
     private const int MaximumReroutes = 64;
 
+    // A boundary corridor can either keep its searched trunk or open inward lanes. Compare the completed native
+    // plans, including bounded overlap repair: local lane clearance alone cannot predict the resulting crossings.
+    private static void ArrangeLanes(Scene scene, List<Request> requests, List<PlannedRoute> routes,
+        List<List<ChartPoint>> fixedRoutes, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse, GridBuffers buffers) {
+        var boundary = routes.Any(route => route.Points.Any(point => Math.Abs(point.X - scene.Region.Left) < 0.01 ||
+            Math.Abs(point.X - scene.Region.Right) < 0.01 || Math.Abs(point.Y - scene.Region.Top) < 0.01 || Math.Abs(point.Y - scene.Region.Bottom) < 0.01));
+        var searched = boundary ? routes.Select(route => new List<ChartPoint>(route.Points)).ToList() : null;
+        SeparateLanes(scene, routes, fixedRoutes);
+        RepairLaneOverlaps(scene, requests, routes, fixedRoutes, sideUse, buffers);
+        if (searched == null) return;
+        var preferred = routes.Select(route => route.Points).ToList();
+        var before = PlanQuality(routes, fixedRoutes);
+        for (var i = 0; i < routes.Count; i++) routes[i].Points = searched[i];
+        SeparateLanes(scene, routes, fixedRoutes, keepBoundaryRuns: true);
+        RepairLaneOverlaps(scene, requests, routes, fixedRoutes, sideUse, buffers, keepBoundaryRuns: true);
+        var after = PlanQuality(routes, fixedRoutes);
+        if (after.Shared < before.Shared - 0.01 || Math.Abs(after.Shared - before.Shared) <= 0.01 && after.Cost < before.Cost) return;
+        for (var i = 0; i < routes.Count; i++) routes[i].Points = preferred[i];
+    }
+
+    private static (double Shared, double Cost) PlanQuality(List<PlannedRoute> routes, List<List<ChartPoint>> fixedRoutes) {
+        var interaction = TotalInteraction(routes, fixedRoutes);
+        var cost = routes.Sum(route => RouteLength(route.Points) + Math.Max(0, route.Points.Count - 2) * BendPenalty) +
+            interaction.Crossings * CrossingCost + interaction.Shared * SharedRunCost;
+        return (routes.Sum(route => ResidualOverlap(route, routes, fixedRoutes)), cost);
+    }
+
     // A different search can leave a tight corridor whose lane pass cannot separate every route. Repair only that
     // observed residual, keeping the complete before/after geometry so a local reroute cannot worsen another pair.
     private static void RepairLaneOverlaps(Scene scene, List<Request> requests, List<PlannedRoute> routes,
-        List<List<ChartPoint>> fixedRoutes, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse) {
+        List<List<ChartPoint>> fixedRoutes, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse, GridBuffers buffers, bool keepBoundaryRuns = false) {
         var attempts = 0;
         foreach (var route in routes.OrderByDescending(item => ResidualOverlap(item, routes, fixedRoutes)).ThenBy(item => item.Request.Order)) {
             if (attempts >= 8) break;
@@ -20,13 +47,13 @@ internal static partial class TopologyDenseRoutePlanner {
             var originals = routes.Select(item => new List<ChartPoint>(item.Points)).ToList();
             var before = TotalInteraction(routes, fixedRoutes);
             var occupied = fixedRoutes.Concat(routes.Where(item => !ReferenceEquals(item, route)).Select(item => item.Points)).ToList();
-            var grid = Grid.Create(scene, requests, occupied);
+            var grid = Grid.Create(scene, requests, occupied, buffers);
             if (grid == null) continue;
             foreach (var points in occupied) grid.Record(points, 1);
             var candidate = Search(grid, route.Request, sideUse, sharedRunCost: 4);
             if (candidate == null || TouchesObstacle(scene, candidate)) continue;
             route.Points = candidate.Points;
-            SeparateLanes(scene, routes, fixedRoutes);
+            SeparateLanes(scene, routes, fixedRoutes, keepBoundaryRuns);
             var after = TotalInteraction(routes, fixedRoutes);
             // A few explicit crossings are easier to follow than a long overdrawn relationship. Keep that exchange
             // bounded: clear at least 6px of ambiguous corridor and introduce at most four crossings in a repair.
@@ -126,6 +153,9 @@ internal static partial class TopologyDenseRoutePlanner {
     }
 
     private static (int Crossings, double Shared) Interaction(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) {
+        // Routes whose boxes are more than the 2 px sharing tolerance apart can neither cross nor share a corridor, and the
+        // pairwise loop below would add nothing but zeros; most pairs of a dense plan are like that.
+        if (Apart(first, second)) return (0, 0.0);
         HashSet<(long X, long Y)>? crossings = null;
         var shared = 0.0;
         for (var i = 0; i + 1 < first.Count; i++) {
@@ -150,6 +180,26 @@ internal static partial class TopologyDenseRoutePlanner {
             }
         }
         return (crossings?.Count ?? 0, shared);
+    }
+
+    private static bool Apart(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) {
+        if (first.Count < 2 || second.Count < 2) return true;
+        Bounds(first, out var left, out var top, out var right, out var bottom);
+        Bounds(second, out var otherLeft, out var otherTop, out var otherRight, out var otherBottom);
+        const double Margin = 4;
+        return otherLeft > right + Margin || otherRight < left - Margin || otherTop > bottom + Margin || otherBottom < top - Margin;
+    }
+
+    private static void Bounds(IReadOnlyList<ChartPoint> points, out double left, out double top, out double right, out double bottom) {
+        left = top = double.PositiveInfinity;
+        right = bottom = double.NegativeInfinity;
+        for (var i = 0; i < points.Count; i++) {
+            var point = points[i];
+            if (point.X < left) left = point.X;
+            if (point.X > right) right = point.X;
+            if (point.Y < top) top = point.Y;
+            if (point.Y > bottom) bottom = point.Y;
+        }
     }
 
     private static bool AtEnd(ChartPoint point, IReadOnlyList<ChartPoint> route) =>

@@ -201,7 +201,8 @@ public static partial class GalleryWriter {
             ReadSvgHealth(svgFileName),
             ReadPngHealth(pngFileName),
             ReadHtmlHealth(Path.Combine(output, name + ".html")),
-            !File.Exists(Path.Combine(output, name + ".static-only")));
+            !File.Exists(Path.Combine(output, name + ".static-only")),
+            ReadLayoutProvenance(name, svgFileName));
     }
 
     private static void WriteComparisonManifest(string output, ComparisonAsset[] pairs, int matchingPairs, BaselineSummary baseline) {
@@ -229,7 +230,9 @@ public static partial class GalleryWriter {
                 htmlRequiresDocumentShell = true,
                 htmlRequiresViewport = true,
                 htmlRequiresInlineSvg = true,
-                htmlRequiresSurfaceGradient = true,
+                htmlRequiresSurfaceGradient = false,
+                htmlRequiresSurfaceTreatment = true,
+                htmlAllowsFlatSurface = true,
                 htmlRequiresTextPolish = true,
                 htmlRequiresExpectedOverflow = true,
                 htmlRequiresPrintCss = true,
@@ -238,11 +241,14 @@ public static partial class GalleryWriter {
             comparisonModes = new[] { "side-by-side", "center-wipe", "preset-wipe" },
             charts = pairs.Select(pair => new {
                 name = pair.Name,
+                layout = new { heightMode = pair.Layout.HeightMode, frameFontRequest = pair.Layout.FrameFontRequest, frameFontFingerprint = pair.Layout.FrameFontFingerprint },
                 dimensionsMatch = pair.HasMatchingDimensions,
                 warnings = pair.Warnings,
                 svg = new {
                     width = pair.SvgDimensions.Width,
                     height = pair.SvgDimensions.Height,
+                    logicalWidth = pair.SvgDimensions.LogicalWidth,
+                    logicalHeight = pair.SvgDimensions.LogicalHeight,
                     bytes = pair.SvgBytes,
                     visualNodes = pair.SvgHealth.VisualNodes,
                     textNodes = pair.SvgHealth.TextNodes,
@@ -287,6 +293,7 @@ public static partial class GalleryWriter {
                     hasViewport = pair.HtmlHealth.HasViewport,
                     hasInlineSvg = pair.HtmlHealth.HasInlineSvg,
                     hasSurfaceGradient = pair.HtmlHealth.HasSurfaceGradient,
+                    hasFlatSurface = pair.HtmlHealth.HasFlatSurface,
                     hasTextPolish = pair.HtmlHealth.HasTextPolish,
                     hasExpectedOverflow = pair.HtmlHealth.HasExpectedOverflow,
                     hasPrintCss = pair.HtmlHealth.HasPrintCss,
@@ -296,100 +303,6 @@ public static partial class GalleryWriter {
         };
         var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
         File.WriteAllText(Path.Combine(output, ComparisonManifestFileName), System.Text.Json.JsonSerializer.Serialize(manifest, options));
-    }
-
-    private static BaselineSummary ReadBaselineSummary(string output, ComparisonAsset[] pairs) {
-        var baselineFile = FindVisualBaselineFile(output);
-        if (baselineFile.Length == 0) return default;
-        try {
-            using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(baselineFile));
-            var baselineCharts = document.RootElement.GetProperty("charts").EnumerateArray().ToArray();
-            var generated = pairs.ToDictionary(pair => pair.Name, StringComparer.OrdinalIgnoreCase);
-            var expected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var matches = 0;
-            var warnings = 0;
-            foreach (var baselineChart in baselineCharts) {
-                var name = baselineChart.GetProperty("name").GetString() ?? string.Empty;
-                if (!expected.Add(name) || !generated.TryGetValue(name, out var actual)) {
-                    warnings++;
-                    continue;
-                }
-
-                var width = baselineChart.GetProperty("width").GetInt32();
-                var height = baselineChart.GetProperty("height").GetInt32();
-                var svgBaseline = baselineChart.GetProperty("svg");
-                var pngBaseline = baselineChart.GetProperty("png");
-                var minVisualNodes = svgBaseline.GetProperty("minVisualNodes").GetInt32();
-                var maxClippedTextNodes = ReadBaselineInt32(svgBaseline, "maxClippedTextNodes", int.MaxValue);
-                var maxNearEdgeTextNodes = ReadBaselineInt32(svgBaseline, "maxNearEdgeTextNodes", int.MaxValue);
-                var minVisiblePixels = pngBaseline.GetProperty("minVisiblePixels").GetInt64();
-                var minTransparentPixels = ReadBaselineInt64(pngBaseline, "minTransparentPixels", 0);
-                var minDistinctColors = pngBaseline.GetProperty("minDistinctColors").GetInt32();
-                var outputScale = ReadBaselineInt32(pngBaseline, "outputScale", actual.PngScale);
-                var maxEdgeInkPixels = ReadBaselineInt64(pngBaseline, "maxEdgeInkPixels", long.MaxValue);
-                if (actual.SvgDimensions.Width == width &&
-                    actual.SvgDimensions.Height == height &&
-                    actual.PngScale == outputScale &&
-                    actual.PngDimensions.Width == width * outputScale &&
-                    actual.PngDimensions.Height == height * outputScale &&
-                    actual.SvgHealth.VisualNodes >= minVisualNodes &&
-                    actual.SvgHealth.ClippedTextNodes <= maxClippedTextNodes &&
-                    actual.SvgHealth.NearEdgeTextNodes <= maxNearEdgeTextNodes &&
-                    actual.PngHealth.VisiblePixels >= minVisiblePixels &&
-                    actual.PngHealth.TransparentPixels >= minTransparentPixels &&
-                    actual.PngHealth.DistinctColors >= minDistinctColors &&
-                    actual.PngHealth.EdgeInkPixels <= maxEdgeInkPixels) {
-                    matches++;
-                } else {
-                    warnings++;
-                }
-            }
-
-            foreach (var pair in pairs) {
-                if (!expected.Contains(pair.Name)) warnings++;
-            }
-
-            return new BaselineSummary(true, matches, warnings);
-        } catch (IOException) {
-        } catch (UnauthorizedAccessException) {
-        } catch (System.Text.Json.JsonException) {
-        } catch (InvalidOperationException) {
-        } catch (KeyNotFoundException) {
-        }
-
-        return new BaselineSummary(true, 0, pairs.Length);
-    }
-
-    private static int ReadBaselineInt32(System.Text.Json.JsonElement element, string name, int fallback) {
-        return element.TryGetProperty(name, out var value) &&
-            value.ValueKind == System.Text.Json.JsonValueKind.Number &&
-            value.TryGetInt32(out var number)
-                ? number
-                : fallback;
-    }
-
-    private static long ReadBaselineInt64(System.Text.Json.JsonElement element, string name, long fallback) {
-        return element.TryGetProperty(name, out var value) &&
-            value.ValueKind == System.Text.Json.JsonValueKind.Number &&
-            value.TryGetInt64(out var number)
-                ? number
-                : fallback;
-    }
-
-    private static string FindVisualBaselineFile(string output) {
-        var directory = new DirectoryInfo(Path.GetFullPath(output));
-        while (directory != null) {
-            var candidate = Path.Combine(directory.FullName, VisualBaselineFileName);
-            if (File.Exists(candidate)) return candidate;
-            directory = directory.Parent;
-        }
-
-        return string.Empty;
-    }
-
-    private static string FormatBaselinePill(BaselineSummary baseline) {
-        if (!baseline.IsPresent) return "<span class=\"pill warn\">no baseline</span>";
-        return "<span class=\"pill " + (baseline.IsClean ? "ok" : "warn") + "\">" + baseline.ChartMatches.ToString(System.Globalization.CultureInfo.InvariantCulture) + " baseline passes</span><span class=\"pill " + (baseline.Warnings == 0 ? "ok" : "warn") + "\">" + baseline.Warnings.ToString(System.Globalization.CultureInfo.InvariantCulture) + " baseline warnings</span>";
     }
 
     private static void AppendComparisonStyle(System.Text.StringBuilder sb) {
@@ -477,16 +390,21 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
     private static AssetDimensions ReadSvgDimensions(string fileName) {
         try {
             var svg = File.ReadAllText(Path.GetFullPath(fileName));
-            var width = ReadSvgNumericAttribute(svg, "width");
-            var height = ReadSvgNumericAttribute(svg, "height");
+            var rootStart = svg.IndexOf("<svg", StringComparison.OrdinalIgnoreCase);
+            if (rootStart < 0) return default;
+            var rootEnd = svg.IndexOf('>', rootStart);
+            if (rootEnd < 0) return default;
+            var root = svg.Substring(rootStart, rootEnd - rootStart + 1);
+            var width = ReadSvgNumericAttribute(root, "width");
+            var height = ReadSvgNumericAttribute(root, "height");
             if (width > 0 && height > 0) return new AssetDimensions(width, height);
-            var viewBox = ReadSvgAttribute(svg, "viewBox");
+            var viewBox = ReadSvgAttribute(root, "viewBox");
             if (!string.IsNullOrWhiteSpace(viewBox)) {
                 var parts = viewBox.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 4 &&
                     double.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var viewWidth) &&
                     double.TryParse(parts[3], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var viewHeight)) {
-                    return new AssetDimensions((int)Math.Round(viewWidth), (int)Math.Round(viewHeight));
+                    return new AssetDimensions(viewWidth, viewHeight);
                 }
             }
         } catch (IOException) {
@@ -532,12 +450,12 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
     private static string FormatSvgMarkerRadius(double radius) =>
         radius > 0 ? radius.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "px" : "n/a";
 
-    private static int ReadSvgNumericAttribute(string svg, string name) {
+    private static double ReadSvgNumericAttribute(string svg, string name) {
         var value = ReadSvgAttribute(svg, name);
         if (string.IsNullOrWhiteSpace(value)) return 0;
         var digits = new string(value.TakeWhile(ch => char.IsDigit(ch) || ch == '.').ToArray());
         return double.TryParse(digits, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number)
-            ? (int)Math.Round(number)
+            ? number
             : 0;
     }
 
@@ -592,6 +510,8 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
             var png = File.ReadAllBytes(Path.GetFullPath(fileName));
             var dimensions = ReadPngDimensions(fileName);
             if (dimensions.Width <= 0 || dimensions.Height <= 0) return default;
+            var frameAllowance = ReadPngFrameAllowance(fileName, dimensions);
+            var hostAllowance = ReadPngHostAllowance(fileName, dimensions);
             var idat = new List<byte>();
             var offset = 8;
             while (offset + 8 <= png.Length) {
@@ -620,6 +540,7 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
             var edgeColors = new List<int>();
             var cornerColors = new Dictionary<int, int>();
             var edgeBand = PngEdgeBandSize(dimensions);
+            var edgeSampleBand = Math.Max(edgeBand, PngEdgeCornerSampleSize);
             var pixelColors = new int[dimensions.Width * dimensions.Height];
             var rawOffset = 0;
             for (var y = 0; y < dimensions.Height; y++) {
@@ -635,7 +556,12 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
                     var key = PngColorKey(r, g, b, a);
                     pixelColors[y * dimensions.Width + x / 4] = key;
                     if (colors.Count < 4096) colors.Add(key);
-                    TrackPngEdgeSamples(dimensions, x / 4, y, edgeBand, key, cornerColors, edgeColors);
+                    var isEdgeSample = x / 4 < edgeSampleBand || y < edgeSampleBand ||
+                        x / 4 >= dimensions.Width - edgeSampleBand || y >= dimensions.Height - edgeSampleBand;
+                    var edgeSample = isEdgeSample ? frameAllowance?.NormalizeEdgeSample(x / 4, y, key) ?? key : key;
+                    if ((x / 4 < edgeBand || y < edgeBand || x / 4 >= dimensions.Width - edgeBand || y >= dimensions.Height - edgeBand) &&
+                        hostAllowance?.Includes(x / 4, y, key) == true) edgeSample = 0;
+                    TrackPngEdgeSamples(dimensions, x / 4, y, edgeBand, edgeSample, cornerColors, edgeColors);
                 }
 
                 var swap = previous;
@@ -646,7 +572,9 @@ figure{margin:0;background:var(--frame);border:1px solid #1f2937;border-radius:8
             var edgeBackground = DominantPngCornerColor(cornerColors);
             var visualBackground = DominantPngVisibleColor(pixelColors, edgeBackground);
             var foreground = CountPngForeground(pixelColors, dimensions, visualBackground, out var contentBounds);
-            var edgeInkPixels = IsFullBleedVisualCanvasPng(fileName) ? 0 : CountPngEdgeInk(edgeColors, edgeBackground);
+            var edgeInkPixels = IsFullBleedVisualCanvasPng(fileName) ? 0 :
+                hostAllowance != null ? edgeColors.LongCount(color => (color & 255) > PngEdgeInkTolerance) :
+                CountPngEdgeInk(edgeColors, edgeBackground, HasDeclaredTransparentPngPerimeter(fileName, dimensions));
             var transparentPixels = (long)dimensions.Width * dimensions.Height - visiblePixels;
             return new PngHealth(visiblePixels, transparentPixels, foreground, contentBounds, colors.Count, edgeInkPixels, edgeColors.Count);
         } catch (IOException) {

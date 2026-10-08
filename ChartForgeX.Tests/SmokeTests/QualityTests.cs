@@ -4,6 +4,7 @@ using System.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
 namespace ChartForgeX.Tests;
@@ -192,7 +193,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PngRendersReportChrome() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(360, 220)
             .WithTitle("Chrome")
             .WithSubtitle("Subtitle")
@@ -212,7 +213,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PngOutlineFontsUseEmSizedText() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(360, 150)
             .WithTitle("ChartForgeX")
             .AddLine("Hidden", Points(1, 1), ChartColor.Transparent);
@@ -227,136 +228,6 @@ internal static partial class SmokeTests {
         Assert(!bounds.IsEmpty, "PNG outline font rendering should draw the title text.");
         Assert(bounds.Width >= 124, $"PNG outline title text should use CSS-like em sizing. Actual width: {bounds.Width}.");
         Assert(bounds.Height >= 18, $"PNG outline title text should not collapse below the requested title size. Actual height: {bounds.Height}.");
-    }
-
-    private static void PngRendererUsesEmphasizedReportText() {
-        var root = FindRepositoryRoot();
-        var canvas = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "RgbaCanvas.cs"));
-        var renderer = string.Join("\n", Directory.EnumerateFiles(Path.Combine(root, "ChartForgeX", "Raster"), "PngChartRenderer*.cs", SearchOption.TopDirectoryOnly)
-            .OrderBy(file => file, StringComparer.Ordinal)
-            .Select(File.ReadAllText));
-        Assert(canvas.Contains("DrawTextEmphasized", StringComparison.Ordinal), "PNG raster canvas should expose an emphasized text path for SVG font-weight parity.");
-        Assert(canvas.Contains("MeasureTextEmphasizedWidth", StringComparison.Ordinal), "PNG raster canvas should measure emphasized text with its extra painted width.");
-        Assert(canvas.Contains("SampleImageBilinear", StringComparison.Ordinal), "PNG raster canvas should scale composed grid panels with bilinear sampling instead of nearest-neighbor aliasing.");
-        Assert(renderer.Contains("DrawTextEmphasized", StringComparison.Ordinal), "PNG chart renderer should use emphasized text for report-grade title, legend, and data labels.");
-        Assert(renderer.Contains("EstimatePngEmphasizedTextWidth", StringComparison.Ordinal), "PNG chart renderer should center and clamp emphasized labels using emphasized text width.");
-        Assert(renderer.Contains("TextFontSizeForEmphasizedWidth", StringComparison.Ordinal), "PNG chart renderer should size emphasized labels using emphasized width so future long labels fit.");
-        Assert(renderer.Contains("FitReadablePngLabelFontSize", StringComparison.Ordinal), "PNG chart renderer should shrink clamped readable labels before positioning them.");
-        Assert(renderer.Contains("TrimReadablePngLabelToWidth", StringComparison.Ordinal), "PNG chart renderer should shorten readable labels that cannot fit after shrinking.");
-        Assert(renderer.Contains("DrawReadablePngLabelCentered", StringComparison.Ordinal), "PNG chart renderer should share centered bounded readable label placement for rectangular chart surfaces.");
-        Assert(renderer.Contains("DrawPngTextEmphasizedCenteredX", StringComparison.Ordinal), "PNG chart renderer should share centered emphasized text placement for center labels.");
-        Assert(renderer.Contains("double maxWidth", StringComparison.Ordinal), "PNG centered emphasized text should support bounded fitting for center labels.");
-        Assert(renderer.Contains("PngLegendLabel", StringComparison.Ordinal), "PNG chart renderer should draw and measure bounded legend labels consistently.");
-        Assert(renderer.Contains("TrimPngLabelToWidth", StringComparison.Ordinal), "PNG chart renderer should trim regular-weight text such as subtitles after fitting font size.");
-        var pngAxes = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Axes.cs"));
-        var pngText = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Text.cs"));
-        Assert(pngAxes.Contains("DrawPngXAxisTitle", StringComparison.Ordinal), "PNG chart renderer should share bounded x-axis title placement.");
-        Assert(pngAxes.Contains("TrimReadablePngLabelToWidth(chart.YAxisTitle", StringComparison.Ordinal), "PNG chart renderer should trim y-axis titles after fitting font size.");
-        Assert(pngAxes.Contains("DrawPngTextStyledRotated", StringComparison.Ordinal) && pngText.Contains("PngUnderlineStyle(style), PngStrikethroughStyle(style), baselineOffset", StringComparison.Ordinal), "PNG rotated axis text should carry the complete italic, decoration, baseline, and casing contract into the rotation buffer.");
-        Assert(pngAxes.Contains("EstimatePngStyledTextWidth(FormatYAxisValue", StringComparison.Ordinal) && pngAxes.Contains("EstimatePngStyledTextWidth(FormatSecondaryValue", StringComparison.Ordinal), "PNG axis reserves should measure primary and secondary labels with the resolved tick style.");
-        var pngCartesian = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
-        var pngPie = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Pie.cs"));
-        var pngMap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.DottedMap.cs"));
-        var pngHeatmap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Heatmap.cs"));
-        Assert(pngCartesian.Contains("TextStyleOverride? style = null", StringComparison.Ordinal) && pngCartesian.Contains("EstimatePngStyledTextWidth(fittedLabel, fittedFontSize, style", StringComparison.Ordinal), "PNG collision reservations should use the same resolved style metrics as data-label drawing.");
-        Assert(pngText.Contains("FitReadablePngLabel(label, fontSize", StringComparison.Ordinal) && pngText.Contains("EstimatePngStyledTextHeight", StringComparison.Ordinal), "PNG readable-label fitting should account for styled font width and height.");
-        Assert(pngPie.Contains("out label, out fontSize, style", StringComparison.Ordinal) && pngPie.Contains("EstimatePngStyledTextWidth(label, fontSize, style", StringComparison.Ordinal), "PNG pie label fitting and collision candidates should use resolved data-label metrics.");
-        Assert(pngMap.Contains("EstimatePngStyledTextWidth(label, fontSize, style", StringComparison.Ordinal) && pngMap.Contains("EstimatePngStyledTextBoundsHeight(fontSize, style)", StringComparison.Ordinal), "PNG map label collision boxes should match resolved data-label bounds.");
-        Assert(pngHeatmap.Contains("EstimatePngStyledTextBoundsHeight(dataFontSize, dataStyle)", StringComparison.Ordinal), "PNG heatmap fitting and side-label reserves should use resolved data-label bounds.");
-        var svgHelpers = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Helpers.cs"));
-        Assert(svgHelpers.Contains("TrimSvgLabelToWidth", StringComparison.Ordinal), "SVG chart renderer should share bounded label trimming for long formatter output.");
-        Assert(svgHelpers.Contains("TextFontSizeForSvgWidth", StringComparison.Ordinal), "SVG chart renderer should shrink labels before trimming when chart surfaces are constrained.");
-        Assert(svgHelpers.Contains("DrawSvgTextCenteredX", StringComparison.Ordinal), "SVG chart renderer should share centered bounded label placement for specialized chart surfaces.");
-        Assert(svgHelpers.Contains("DrawSvgTextLeft", StringComparison.Ordinal), "SVG chart renderer should share left-aligned bounded label placement for header text.");
-        Assert(svgHelpers.Contains("DrawSvgXAxisTitle", StringComparison.Ordinal), "SVG chart renderer should share bounded x-axis title placement.");
-        Assert(svgHelpers.Contains("DrawSvgYAxisTitle", StringComparison.Ordinal), "SVG chart renderer should share bounded y-axis title placement.");
-    }
-
-    private static void PngChartRendererUsesThemeSizedText() {
-        var root = FindRepositoryRoot();
-        var rendererFiles = Directory.EnumerateFiles(Path.Combine(root, "ChartForgeX", "Raster"), "PngChartRenderer*.cs", SearchOption.TopDirectoryOnly).ToArray();
-        foreach (var file in rendererFiles) {
-            var source = File.ReadAllText(file);
-            Assert(!source.Contains("DrawTextTiny", StringComparison.Ordinal), "PNG chart renderers should use theme-sized outline text instead of tiny text calls: " + Path.GetRelativePath(root, file));
-        }
-    }
-
-    private static void PngAndSvgStrokePrimitivesStayAligned() {
-        var root = FindRepositoryRoot();
-        var primitives = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartVisualPrimitives.cs"));
-        var svg = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.cs")) + File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.LineStyling.cs")) + File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.CartesianMarks.cs"));
-        var svgRadar = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Radar.cs"));
-        var svgRadial = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.RadialBar.cs"));
-        var svgPolar = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.PolarArea.cs"));
-        var svgTimeline = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Timeline.cs"));
-        var svgGantt = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Gantt.cs"));
-        var svgSankey = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Sankey.cs"));
-        var svgFunnel = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Funnel.cs"));
-        var svgTreemap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Treemap.cs"));
-        var svgHeatmap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Heatmap.cs"));
-        var svgTree = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Tree.cs"));
-        var treeLayout = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Rendering", "ChartTreeLayout.cs"));
-        var svgBullet = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Bullet.cs"));
-        var svgRangeBand = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.RangeBand.cs"));
-        var svgRangeArea = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.RangeArea.cs"));
-        var svgWaterfall = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Svg", "SvgChartRenderer.Waterfall.cs"));
-        var canvas = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "RgbaCanvas.cs")) + File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "RgbaCanvas.Polyline.cs"));
-        var png = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.cs"));
-        var cartesian = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Cartesian.cs"));
-        var radar = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Radar.cs"));
-        var radial = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.RadialBar.cs"));
-        var polar = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.PolarArea.cs"));
-        var timeline = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Timeline.cs"));
-        var gantt = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Gantt.cs"));
-        var sankey = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Sankey.cs"));
-        var funnel = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Funnel.cs"));
-        var treemap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Treemap.cs"));
-        var heatmap = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Heatmap.cs"));
-        var tree = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Tree.cs"));
-        var bullet = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Bullet.cs"));
-        var rangeBand = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.RangeBand.cs"));
-        var rangeArea = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.RangeArea.cs"));
-        var waterfall = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Waterfall.cs"));
-        var legend = File.ReadAllText(Path.Combine(root, "ChartForgeX", "Raster", "PngChartRenderer.Legend.cs"));
-        Assert(primitives.Contains("StrokeHaloOpacity", StringComparison.Ordinal) && primitives.Contains("LineAmbientHaloOpacity", StringComparison.Ordinal) && primitives.Contains("LineHighlightOpacity", StringComparison.Ordinal) && primitives.Contains("CardSurfaceInset", StringComparison.Ordinal) && primitives.Contains("CardInnerHighlightOpacity", StringComparison.Ordinal) && primitives.Contains("PlotInnerHighlightOpacity", StringComparison.Ordinal) && primitives.Contains("SvgGuideStrokeClass", StringComparison.Ordinal) && primitives.Contains("SvgPremiumStrokeClass", StringComparison.Ordinal) && primitives.Contains("SvgCardShadowKeyYOffset", StringComparison.Ordinal) && primitives.Contains("PngCardShadowYOffset", StringComparison.Ordinal) && primitives.Contains("PngTextHaloOuterOpacity", StringComparison.Ordinal) && primitives.Contains("MarkerStrokeWidth", StringComparison.Ordinal) && primitives.Contains("RadarOutlineStrokeWidth", StringComparison.Ordinal) && primitives.Contains("TreemapTileBorderOpacity", StringComparison.Ordinal) && primitives.Contains("OhlcStrokeWidth", StringComparison.Ordinal) && primitives.Contains("WaterfallConnectorStrokeWidth", StringComparison.Ordinal), "Shared visual primitive constants should define stroke halo, line lighting, card shell, card shadow, text halo, marker, radial, flow, finance, range, and tile contracts.");
-        Assert(canvas.Contains("DrawLine(double x0, double y0, double x1, double y1, ChartColor color, double thickness)", StringComparison.Ordinal), "PNG canvas should preserve fractional stroke widths for SVG/PNG parity.");
-        Assert(canvas.Contains("DrawArc(double cx, double cy, double radius, double startAngle, double endAngle, ChartColor color, double thickness)", StringComparison.Ordinal), "PNG canvas should preserve fractional arc widths for SVG/PNG parity.");
-        Assert(canvas.Contains("StrokeRoundedRect(double x, double y, double width, double height, double radius, ChartColor color, double thickness", StringComparison.Ordinal), "PNG canvas should preserve fractional rounded-rectangle stroke widths for SVG/PNG parity.");
-        Assert(svg.Contains("ChartVisualPrimitives.AxisStrokeWidth", StringComparison.Ordinal) && png.Contains("ChartVisualPrimitives.AxisStrokeWidth", StringComparison.Ordinal), "SVG and PNG axes should use the same shared stroke widths.");
-        Assert(svg.Contains("ChartVisualPrimitives.AnnotationLineStrokeWidth", StringComparison.Ordinal) && png.Contains("ChartVisualPrimitives.AnnotationLineStrokeWidth", StringComparison.Ordinal), "SVG and PNG annotation lines should share overlay stroke width.");
-        Assert(svgBullet.Contains("ChartVisualPrimitives.BulletAxisStrokeWidth", StringComparison.Ordinal) && bullet.Contains("ChartVisualPrimitives.BulletAxisStrokeWidth", StringComparison.Ordinal), "SVG and PNG bullet axes should share tick stroke width.");
-        Assert(svg.Contains("LineVisualStyle", StringComparison.Ordinal) && cartesian.Contains("LineVisualStyle", StringComparison.Ordinal), "SVG and PNG line strokes should use the same reusable chart line style.");
-        Assert(primitives.Contains("LineAmbientHaloOpacity", StringComparison.Ordinal) && primitives.Contains("LineHighlightOpacity", StringComparison.Ordinal), "Shared visual primitive constants should preserve default premium line lighting tokens.");
-        Assert(svg.Contains("ChartVisualPrimitives.MarkerStrokeWidth", StringComparison.Ordinal) && cartesian.Contains("ChartVisualPrimitives.PngMarkerOutlineRadiusExtra", StringComparison.Ordinal), "SVG and PNG markers should use the same shared marker outline contract.");
-        Assert(svg.Contains("chart.Options.Theme.MarkerRadius", StringComparison.Ordinal) && cartesian.Contains("chart.Options.Theme.MarkerRadius", StringComparison.Ordinal), "SVG and PNG line markers should use theme marker radius.");
-        Assert(svgRadar.Contains("ChartVisualPrimitives.RadarOutlineStrokeWidth", StringComparison.Ordinal) && radar.Contains("ChartVisualPrimitives.RadarOutlineStrokeWidth", StringComparison.Ordinal), "SVG and PNG radar outlines should share stroke width.");
-        Assert(svgRadar.Contains("ChartVisualPrimitives.RadarRingOpacity", StringComparison.Ordinal) && radar.Contains("ChartVisualPrimitives.RadarRingOpacity", StringComparison.Ordinal), "SVG and PNG radar grids should share opacity.");
-        Assert(svgRadial.Contains("ChartVisualPrimitives.RadialTrackOpacity", StringComparison.Ordinal) && radial.Contains("ChartVisualPrimitives.RadialTrackOpacity", StringComparison.Ordinal), "SVG and PNG radial tracks should share opacity.");
-        Assert(!radial.Contains("DrawRadialBarEndpoint", StringComparison.Ordinal), "PNG radial bars should rely on arc caps instead of drawing a second endpoint marker.");
-        Assert(svgPolar.Contains("ChartVisualPrimitives.SliceSeparatorStrokeWidth", StringComparison.Ordinal) && polar.Contains("ChartVisualPrimitives.SliceSeparatorStrokeWidth", StringComparison.Ordinal), "SVG and PNG polar/pie slice separators should share stroke width.");
-        Assert(svgTimeline.Contains("ChartVisualPrimitives.TimelineRowGridOpacity", StringComparison.Ordinal) && timeline.Contains("ChartVisualPrimitives.TimelineRowGridOpacity", StringComparison.Ordinal), "SVG and PNG timelines should share row grid opacity.");
-        Assert(svgTimeline.Contains("ChartVisualPrimitives.TimelineItemBorderStrokeWidth", StringComparison.Ordinal) && timeline.Contains("ChartVisualPrimitives.TimelineItemBorderStrokeWidth", StringComparison.Ordinal), "SVG and PNG timeline items should share border stroke width.");
-        Assert(svgGantt.Contains("ChartVisualPrimitives.GanttTaskBorderOpacity", StringComparison.Ordinal) && gantt.Contains("ChartVisualPrimitives.GanttTaskBorderOpacity", StringComparison.Ordinal), "SVG and PNG Gantt tasks should share border opacity.");
-        Assert(svgGantt.Contains("ChartVisualPrimitives.GanttTaskBorderStrokeWidth", StringComparison.Ordinal) && gantt.Contains("ChartVisualPrimitives.GanttTaskBorderStrokeWidth", StringComparison.Ordinal), "SVG and PNG Gantt tasks should share border stroke width.");
-        Assert(svgGantt.Contains("ChartVisualPrimitives.GanttDependencyStrokeWidth", StringComparison.Ordinal) && gantt.Contains("ChartVisualPrimitives.GanttDependencyStrokeWidth", StringComparison.Ordinal), "SVG and PNG Gantt dependencies should share stroke width.");
-        Assert(svgGantt.Contains("ChartVisualPrimitives.GanttTodayStrokeWidth", StringComparison.Ordinal) && gantt.Contains("ChartVisualPrimitives.GanttTodayStrokeWidth", StringComparison.Ordinal), "SVG and PNG Gantt today markers should share stroke width.");
-        Assert(svgSankey.Contains("ChartVisualPrimitives.SankeyLinkFillOpacity", StringComparison.Ordinal) && sankey.Contains("ChartVisualPrimitives.SankeyLinkFillOpacity", StringComparison.Ordinal), "SVG and PNG Sankey links should share fill opacity.");
-        Assert(svgSankey.Contains("ChartVisualPrimitives.SankeyNodeBorderStrokeWidth", StringComparison.Ordinal) && sankey.Contains("ChartVisualPrimitives.SankeyNodeBorderStrokeWidth", StringComparison.Ordinal), "SVG and PNG Sankey nodes should share border stroke width.");
-        Assert(svgFunnel.Contains("ChartVisualPrimitives.FunnelSegmentStrokeWidth", StringComparison.Ordinal) && funnel.Contains("ChartVisualPrimitives.FunnelSegmentStrokeWidth", StringComparison.Ordinal), "SVG and PNG funnel segments should share stroke width.");
-        Assert(svgTreemap.Contains("ChartVisualPrimitives.TreemapTileBorderOpacity", StringComparison.Ordinal) && treemap.Contains("ChartVisualPrimitives.TreemapTileBorderOpacity", StringComparison.Ordinal), "SVG and PNG treemap tiles should share border opacity.");
-        Assert(svgTreemap.Contains("ChartVisualPrimitives.TreemapTileBorderStrokeWidth", StringComparison.Ordinal) && treemap.Contains("ChartVisualPrimitives.TreemapTileBorderStrokeWidth", StringComparison.Ordinal), "SVG and PNG treemap tiles should share border stroke width.");
-        Assert(svgHeatmap.Contains("ChartVisualPrimitives.HeatmapCellBorderOpacity", StringComparison.Ordinal) && heatmap.Contains("ChartVisualPrimitives.HeatmapCellBorderOpacity", StringComparison.Ordinal), "SVG and PNG heatmap cells should share border opacity.");
-        Assert(svgHeatmap.Contains("ChartVisualPrimitives.HeatmapCellBorderStrokeWidth", StringComparison.Ordinal) && heatmap.Contains("ChartVisualPrimitives.HeatmapCellBorderStrokeWidth", StringComparison.Ordinal), "SVG and PNG heatmap cells should share border stroke width.");
-        Assert(treeLayout.Contains("ChartVisualPrimitives.TreeNodeMinWidth", StringComparison.Ordinal) && svgTree.Contains("ChartTreeLayout.Build", StringComparison.Ordinal) && tree.Contains("ChartTreeLayout.Build", StringComparison.Ordinal), "SVG and PNG tree layouts should share readable node sizing.");
-        Assert(svgTree.Contains("ChartVisualPrimitives.TreeNodeLabelMinFontSize", StringComparison.Ordinal) && tree.Contains("ChartVisualPrimitives.TreeNodeLabelMinFontSize", StringComparison.Ordinal) && svgTree.Contains("ChartLabelWrapping.BalancedTwoLine", StringComparison.Ordinal) && tree.Contains("ChartLabelWrapping.BalancedTwoLine", StringComparison.Ordinal), "SVG and PNG tree labels should share readability sizing and wrapping.");
-        Assert(svgTree.Contains("ChartVisualPrimitives.TreeNodeBorderOpacity", StringComparison.Ordinal) && tree.Contains("ChartVisualPrimitives.TreeNodeBorderOpacity", StringComparison.Ordinal), "SVG and PNG tree nodes should share border opacity.");
-        Assert(svgTree.Contains("ChartVisualPrimitives.TreeNodeBorderStrokeWidth", StringComparison.Ordinal) && tree.Contains("ChartVisualPrimitives.TreeNodeBorderStrokeWidth", StringComparison.Ordinal), "SVG and PNG tree nodes should share border stroke width.");
-        Assert(!tree.Contains("(int)Math.Round(width)", StringComparison.Ordinal), "PNG tree links should not quantize hierarchy stroke widths.");
-        Assert(svgTree.Contains("ChartVisualPrimitives.TreeLinkStrokeOpacity", StringComparison.Ordinal) && tree.Contains("ChartVisualPrimitives.TreeLinkStrokeOpacity", StringComparison.Ordinal), "SVG and PNG tree links should share stroke opacity.");
-        Assert(tree.Contains("ChartVisualPrimitives.TreeLinkCurveSegments", StringComparison.Ordinal), "PNG tree links should use the shared curve segment count to resemble SVG Bezier links.");
-        Assert(svgRangeBand.Contains("ChartVisualPrimitives.RangeBandBoundaryStrokeWidth", StringComparison.Ordinal) && rangeBand.Contains("ChartVisualPrimitives.RangeBandBoundaryStrokeWidth", StringComparison.Ordinal), "SVG and PNG range bands should share boundary stroke width.");
-        Assert(svgRangeArea.Contains("ChartVisualPrimitives.RangeAreaMidlineStrokeWidth", StringComparison.Ordinal) && rangeArea.Contains("ChartVisualPrimitives.RangeAreaMidlineStrokeWidth", StringComparison.Ordinal), "SVG and PNG range areas should share midline stroke width.");
-        Assert(svgWaterfall.Contains("ChartVisualPrimitives.WaterfallConnectorStrokeWidth", StringComparison.Ordinal) && waterfall.Contains("ChartVisualPrimitives.WaterfallConnectorStrokeWidth", StringComparison.Ordinal), "SVG and PNG waterfall connectors should share stroke width.");
     }
 
     private static void PngFontPathFallsBackGracefully() {
@@ -454,7 +325,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PngSurfacesUseRoundedCorners() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(160, 100)
             .AddLine("Invisible", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }, ChartColor.Transparent);
         chart.Options.ShowAxes = false;
@@ -464,8 +335,12 @@ internal static partial class SmokeTests {
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
-        Assert(CountAlphaInRect(pixels, width, 15, 15, 1, 1) == 0, "PNG card corners should stay transparent outside the rounded radius.");
-        Assert(CountAlphaInRect(pixels, width, 32, 15, 1, 1) > 0, "PNG card top edge should still render after applying rounded corners.");
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var card = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "frame-card");
+        Assert(card.Radius > 0, "The common frame should retain the theme's rounded card geometry.");
+        Assert(CountAlphaInRect(pixels, width, 0, 0, 1, 1) == 0, "PNG card corners should stay transparent outside the rounded radius.");
+        Assert(CountAlphaInRect(pixels, width, width / 2, (int)Math.Ceiling(card.Bounds.Top + 1), 1, 1) > 0,
+            "PNG card top edge should paint at its declared native bounds after applying rounded corners and shadow room.");
     }
 
     private static void PngAnnotationsUseReadableRasterStyling() {
@@ -474,6 +349,9 @@ internal static partial class SmokeTests {
             .WithPadding(20, 20, 20, 24)
             .AddLine("Hidden", new[] { new ChartPoint(1, 0), new ChartPoint(3, 20) }, ChartColor.Transparent)
             .AddHorizontalLine(10, "target", ChartColor.FromRgb(251, 191, 36));
+        // Fix the coordinate domain: automatic nice domains may expand beyond the data.
+        chart.Options.YAxis.Minimum = 0;
+        chart.Options.YAxis.Maximum = 20;
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;
@@ -484,11 +362,16 @@ internal static partial class SmokeTests {
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
         var dashedSamples = CountTransparentSamplesOnRow(pixels, width, 88, 20, 220);
         var lineSamples = 220 - dashedSamples;
-        var pillAlpha = CountAlphaInRect(pixels, width, 172, 68, 68, 24);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var plate = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "annotation-label-backplate");
+        var label = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "annotation-label");
+        var pillAlpha = CountAlphaInRect(pixels, width, (int)Math.Ceiling(plate.Bounds.Left), (int)Math.Ceiling(plate.Bounds.Top),
+            Math.Max(1, (int)Math.Floor(plate.Bounds.Width) - 1), Math.Max(1, (int)Math.Floor(plate.Bounds.Height) - 1));
 
         Assert(lineSamples > 20, "PNG annotation line should render visible dash segments.");
         Assert(dashedSamples > 20, "PNG annotation line should preserve transparent gaps between dash segments.");
         Assert(pillAlpha > 300, "PNG annotation labels should render with a readable filled pill.");
+        Assert(ChartColorMath.ContrastRatio(plate.Fill!.Value, label.Color) >= 4.5, "Annotation text should contrast with its actual tinted backplate.");
     }
 
     private static void PngPieLikeChartsUseReadableDetails() {
@@ -522,13 +405,18 @@ internal static partial class SmokeTests {
         chart.Options.ShowLegend = false;
         chart.Options.ShowPlotBackground = false;
 
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
+        Assert(labels.Length > 0 && labels.All(label => label.Stroke.HasValue && label.Stroke.Value.A > 0 && label.StrokeWidth > 0),
+            "Visible line data labels should retain opaque native glyph outlines.");
         var pixels = ReadPngRgba(chart.ToPng(), out _, out _);
-        var haloPixels = CountNearColor(pixels, 255, 255, 255, 16);
+        var stroke = labels[0].Stroke!.Value;
+        var haloPixels = CountNearColor(pixels, stroke.R, stroke.G, stroke.B, 32);
         Assert(haloPixels > 20, $"PNG data labels should render a light halo so labels stay readable over plotted marks. Actual halo pixels: {haloPixels}.");
     }
 
     private static void PngReadableLabelsFitInsidePlotBounds() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(180, 120)
             .WithPadding(24, 16, 18, 24)
             .WithDataLabels()
@@ -542,15 +430,32 @@ internal static partial class SmokeTests {
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
-        var labelPixels = CountNearColor(pixels, 15, 23, 42, 32);
-        var rightEdgeLabelPixels = CountNearColorInRect(pixels, width, width - 4, 0, 4, height, 15, 23, 42, 32);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var label = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "data-label");
+        chart.WithDataLabels(false);
+        var plain = ReadPngRgba(chart.ToPng(), out _, out _);
+        var labelPixels = 0;
+        var rightEdgeLabelPixels = 0;
+        var measured = label.Text.Metrics;
+        for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) {
+            var offset = (y * width + x) * 4;
+            if (pixels.AsSpan(offset, 4).SequenceEqual(plain.AsSpan(offset, 4))) continue;
+            labelPixels++;
+            if (x >= width - 4) rightEdgeLabelPixels++;
+            Assert(x >= Math.Floor(label.X) - 1 && x <= Math.Ceiling(label.X + measured.Width) + 1
+                && y >= Math.Floor(label.Baseline - label.Text.Ascent) - 1 && y <= Math.Ceiling(label.Baseline - label.Text.Ascent + measured.Height) + 1,
+                "Native fitted text ink should stay within the prepared label bounds.");
+        }
+        Assert(label.Text.Lines.Any(line => line.Text.EndsWith("…", StringComparison.Ordinal)), "Long formatter text should be visibly shortened.");
+        Assert(prepared.Regions.Any(region => region.Role == "point" && region.Label?.Contains("Extremely long remediation status label that must fit", StringComparison.Ordinal) == true),
+            "Fitting should preserve the complete source text in detached point semantics.");
 
         Assert(labelPixels > 8, "PNG readable labels should remain visible after fitting long formatter output.");
         Assert(rightEdgeLabelPixels == 0, $"PNG readable labels should fit before clamping instead of being clipped at the canvas edge. Actual right-edge label pixels: {rightEdgeLabelPixels}.");
     }
 
     private static void PngHeatmapsRenderCellValueLabels() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(720, 420)
             .WithPadding(70, 44, 52, 72)
             .WithDataLabels()
@@ -564,15 +469,51 @@ internal static partial class SmokeTests {
         chart.Options.ShowLegend = false;
         chart.Options.ShowPlotBackground = false;
 
-        var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
-        var darkTextPixels = CountNearColor(pixels, 15, 23, 42, 24);
-        var lightTextPixels = CountNearColor(pixels, 255, 255, 255, 80);
-        var scaleNegativePixels = CountNearColorInRect(pixels, width, width - 230, height - 160, 210, 130, 239, 68, 68, 24);
-        var scalePositivePixels = CountNearColorInRect(pixels, width, width - 230, height - 160, 210, 130, 16, 185, 129, 44);
-
-        Assert(darkTextPixels > 20, "PNG heatmap labels should render dark text on light cells.");
-        Assert(lightTextPixels > 20, "PNG heatmap labels should render light text on dark cells.");
-        Assert(scaleNegativePixels > 8 && scalePositivePixels > 8, "PNG heatmaps should render the heat scale legend.");
+        chart.Options.ShowAxes = false;
+        var prepared = PreparedFamily(chart);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
+        var cells = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-cell-shape").ToArray();
+        Assert(labels.Length == 6 && cells.Length == 6, "Enabled heatmap values should produce one native label per cell.");
+        var pixels = ReadPngRgba(prepared.ToPng(), out var pixelWidth, out var pixelHeight);
+        for (var index = 0; index < labels.Length; index++) {
+            var label = labels[index]; var ink = label.Color; var fill = cells[index].Fill!.Value;
+            Assert(ChartColorMath.ContrastRatio(ink, fill) >= 4.5, "Heatmap ink should meet the common accessible contrast policy.");
+            var line = label.Text.Lines.Single();
+            var left = Math.Max(0, (int)Math.Floor(label.LineLeft(line)));
+            var right = Math.Min(pixelWidth, (int)Math.Ceiling(label.LineLeft(line) + line.Width));
+            var top = Math.Max(0, (int)Math.Floor(label.Baseline - label.Text.Ascent));
+            var bottom = Math.Min(pixelHeight, (int)Math.Ceiling(label.Baseline - label.Text.Ascent + label.Text.Metrics.Height));
+            var dr = ink.R - fill.R; var dg = ink.G - fill.G; var db = ink.B - fill.B;
+            var distance = dr * dr + dg * dg + db * db;
+            var inkPixels = 0;
+            for (var y = top; y < bottom; y++) for (var x = left; x < right; x++) {
+                var offset = (y * pixelWidth + x) * 4;
+                if (pixels[offset + 3] == 0) continue;
+                // Supersampling blends edge pixels with the cell. Verify visible coverage of the
+                // actual resolved ink in this label's geometry, without requiring solid glyph cores.
+                var coverage = ((pixels[offset] - fill.R) * dr + (pixels[offset + 1] - fill.G) * dg + (pixels[offset + 2] - fill.B) * db) / (double)distance;
+                if (coverage < .25 || coverage > 1.01) continue;
+                if (Math.Abs(pixels[offset] - (fill.R + coverage * dr)) <= 6 &&
+                    Math.Abs(pixels[offset + 1] - (fill.G + coverage * dg)) <= 6 &&
+                    Math.Abs(pixels[offset + 2] - (fill.B + coverage * db)) <= 6) inkPixels++;
+            }
+            Assert(inkPixels >= 8, $"Heatmap label {index} should have visible resolved ink within its measured native bounds. Actual pixels: {inkPixels}.");
+        }
+        Assert(!prepared.Scene.Nodes.Any(node => node.Role == "heatmap-scale-step"), "Explicit legend suppression should hide the continuous heatmap scale.");
+        chart.Options.ShowLegend = true;
+        var withScale = PreparedFamily(chart);
+        var scaleRegions = withScale.Regions.Where(region => region.Role == "heatmap-scale-step").ToArray();
+        var scale = scaleRegions.Select(region => withScale.Scene.Nodes.OfType<VisualSceneRectangle>()
+            .Single(node => node.Bounds.Equals(region.Bounds))).ToArray();
+        Assert(scale.Length == 5 && scale.Select(node => node.Fill!.Value).Distinct().Count() >= 2,
+            "The enabled semantic scale should retain visibly distinct range paints.");
+        var scalePixels = ReadPngRgba(withScale.ToPng(), out var width, out _);
+        foreach (var swatch in scale) {
+            var fill = swatch.Fill!.Value;
+            Assert(CountNearColorInRect(scalePixels, width, (int)Math.Floor(swatch.Bounds.Left), (int)Math.Floor(swatch.Bounds.Top),
+                (int)Math.Ceiling(swatch.Bounds.Width), (int)Math.Ceiling(swatch.Bounds.Height), fill.R, fill.G, fill.B, 12) > 8,
+                "Each retained semantic scale paint should appear at its native PNG swatch bounds.");
+        }
     }
 
     private static void PngTimelinesRenderReadableRasterDetails() {
@@ -606,14 +547,14 @@ internal static partial class SmokeTests {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-gallery-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
-            var alpha = Chart.Create().WithSize(320, 180).WithTitle("Alpha & Beta").AddLine("Values", Points(1, 2, 3));
+            var alpha = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 180).WithTitle("Alpha & Beta").AddLine("Values", Points(1, 2, 3));
             File.WriteAllText(Path.Combine(output, "alpha.html"), alpha.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha.svg"), alpha.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha.png"), alpha.ToPng());
             File.WriteAllText(Path.Combine(output, "alpha 2.html"), alpha.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha 2.svg"), alpha.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha 2.png"), alpha.ToPng());
-            var zeta = Chart.Create().WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3));
+            var zeta = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3));
             File.WriteAllText(Path.Combine(output, "zeta.html"), zeta.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "zeta.svg"), zeta.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "zeta.png"), zeta.ToPng());
@@ -623,7 +564,7 @@ internal static partial class SmokeTests {
             File.WriteAllBytes(Path.Combine(output, "dashboard-chart-portfolio-grid.png"), alpha.ToPng());
             File.WriteAllText(Path.Combine(output, "travel-dotted-map-dark.html"), "<!doctype html><title>Travel Dotted Map</title><svg></svg>");
             File.WriteAllText(Path.Combine(output, "report.html"), "<!doctype html><title>Report</title><svg></svg>");
-            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "var chart = Chart.Create().WithTitle(\"Alpha & Beta\");");
+            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTitle(\"Alpha & Beta\");");
             File.WriteAllText(Path.Combine(output, "visual-baseline.json"), "{\"version\":1,\"charts\":[{\"name\":\"alpha\",\"width\":320,\"height\":180,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}},{\"name\":\"zeta\",\"width\":640,\"height\":360,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}}]}");
 
             GalleryWriter.Write(output);
@@ -711,7 +652,7 @@ internal static partial class SmokeTests {
             Assert(comparison.Contains(".wipe-frame>.wipe-25:checked~.media", StringComparison.Ordinal), "Comparison page should avoid flex-stretching wipe labels at wide viewport sizes.");
             Assert(comparison.Contains("SVG 25%", StringComparison.Ordinal) && comparison.Contains("SVG 75%", StringComparison.Ordinal), "Comparison page should offer fixed wipe positions without requiring JavaScript.");
             Assert(comparison.Contains("clip-path:inset(0 calc(100% - var(--wipe)) 0 0)", StringComparison.Ordinal), "Comparison page should keep SVG and PNG framed together while moving the wipe split.");
-            Assert(comparison.Contains("C# example code", StringComparison.Ordinal) && comparison.Contains("var chart = Chart.Create().WithTitle(&quot;Alpha &amp; Beta&quot;);", StringComparison.Ordinal), "Comparison page should carry readable C# source snippets when examples provide them.");
+            Assert(comparison.Contains("C# example code", StringComparison.Ordinal) && comparison.Contains("var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTitle(&quot;Alpha &amp; Beta&quot;);", StringComparison.Ordinal), "Comparison page should carry readable C# source snippets when examples provide them.");
             Assert(comparison.Contains(".pair{display:grid;grid-template-columns:repeat(2", StringComparison.Ordinal), "Comparison page should avoid squeezing SVG, PNG, and wipe panes into three narrow columns.");
             Assert(comparison.Contains("href=\"catalog.html\"", StringComparison.Ordinal), "Comparison page should link the grouped catalog page.");
             Assert(comparison.Contains("href=\"quality-dashboard.html\"", StringComparison.Ordinal), "Comparison page should link the artifact quality dashboard.");
@@ -742,7 +683,11 @@ internal static partial class SmokeTests {
             Assert(manifest.Contains("\"svgMinimumStrokeWidth\": 0.75", StringComparison.Ordinal), "Comparison manifest should describe the minimum readable SVG stroke threshold.");
             Assert(manifest.Contains("\"svgMinimumMarkerRadius\": 3", StringComparison.Ordinal), "Comparison manifest should describe the minimum readable SVG marker threshold.");
             Assert(manifest.Contains("\"pngDistinctColors\": 8", StringComparison.Ordinal) && manifest.Contains("\"pngEdgeInkPixels\": 0", StringComparison.Ordinal), "Comparison manifest should describe PNG health thresholds.");
-            Assert(manifest.Contains("\"htmlRequiresSurfaceGradient\": true", StringComparison.Ordinal) && manifest.Contains("\"htmlRequiresPrintCss\": true", StringComparison.Ordinal), "Comparison manifest should describe HTML polish health thresholds.");
+            Assert(manifest.Contains("\"htmlRequiresSurfaceGradient\": false", StringComparison.Ordinal)
+                && manifest.Contains("\"htmlRequiresSurfaceTreatment\": true", StringComparison.Ordinal)
+                && manifest.Contains("\"htmlAllowsFlatSurface\": true", StringComparison.Ordinal)
+                && manifest.Contains("\"htmlRequiresPrintCss\": true", StringComparison.Ordinal),
+                "Comparison manifest should require a styled HTML surface and print CSS while accepting native flat surfaces.");
             Assert(manifest.Contains("\"htmlMayBeExplicitlyOmitted\": true", StringComparison.Ordinal) && manifest.Contains("\"required\": false", StringComparison.Ordinal), "Comparison manifests should allow explicitly marked standalone SVG/PNG artifacts without weakening HTML checks for normal chart outputs.");
             Assert(manifest.Contains("\"center-wipe\"", StringComparison.Ordinal), "Comparison manifest should describe available parity review modes.");
             Assert(manifest.Contains("\"preset-wipe\"", StringComparison.Ordinal), "Comparison manifest should describe script-free preset wipe review.");
@@ -760,7 +705,8 @@ internal static partial class SmokeTests {
             Assert(manifest.Contains("\"visiblePixels\":", StringComparison.Ordinal) && manifest.Contains("\"foregroundPixels\":", StringComparison.Ordinal) && manifest.Contains("\"edgeInkPixels\":", StringComparison.Ordinal), "Comparison manifest should include PNG visibility, foreground, and edge statistics.");
             Assert(manifest.Contains("\"contentBounds\":", StringComparison.Ordinal), "Comparison manifest should include PNG content bounds.");
             Assert(manifest.Contains("\"distinctColors\":", StringComparison.Ordinal), "Comparison manifest should include PNG color diversity statistics.");
-            Assert(manifest.Contains("\"html\":", StringComparison.Ordinal) && manifest.Contains("\"hasSurfaceGradient\": true", StringComparison.Ordinal) && manifest.Contains("\"hasPrintCss\": true", StringComparison.Ordinal), "Comparison manifest should include HTML polish statistics.");
+            Assert(manifest.Contains("\"html\":", StringComparison.Ordinal) && manifest.Contains("\"hasSurfaceGradient\": true", StringComparison.Ordinal)
+                && manifest.Contains("\"hasPrintCss\": true", StringComparison.Ordinal), "Comparison manifest should report the Light theme's gradient HTML surface and print statistics.");
             Assert(manifest.Contains("\"healthy\": true", StringComparison.Ordinal), "Comparison manifest should flag healthy PNG artifacts.");
         } finally {
             Directory.Delete(output, true);

@@ -445,7 +445,7 @@ line [25, 50, 80]";
 
         var svg = document.ToSvg(new MermaidXYChartRenderOptions { Id = "ticket-trend" });
         var png = document.ToPng(new MermaidXYChartRenderOptions { Id = "ticket-trend" });
-        Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal) && svg.Contains("data-cfx-role=\"line-marker\"", StringComparison.Ordinal), "Mermaid XY chart SVG rendering should emit ChartForgeX bar and line marks.");
+        Assert(svg.Contains("data-cfx-role=\"bar\"", StringComparison.Ordinal) && svg.Contains("data-cfx-role=\"line\"", StringComparison.Ordinal), "Mermaid XY chart SVG rendering should emit ChartForgeX bar and line marks.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid XY chart PNG rendering should emit a valid PNG.");
     }
 
@@ -571,7 +571,17 @@ ticks 5";
 
         var svg = document.ToSvg(new MermaidRadarRenderOptions { Id = "capability-radar" });
         var png = document.ToPng(new MermaidRadarRenderOptions { Id = "capability-radar" });
-        Assert(svg.Contains("data-cfx-role=\"radar-chart\"", StringComparison.Ordinal), "Mermaid radar SVG rendering should emit ChartForgeX radar marks.");
+        var radarPrepared = PreparedFamily(chart);
+        var areas = radarPrepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().Where(path => path.Role == "radar-area").ToArray();
+        Assert(areas.Length == 2 && areas.All(path => path.Close && path.Commands.Count == 3), "Mermaid radar curves should produce two closed native three-axis polygons.");
+        var marks = radarPrepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneEllipse>().Where(mark => mark.Role == "radar-point").ToArray();
+        Assert(marks.Length == 6 && marks.All(mark => mark.Rx > 0 && mark.Ry > 0), "Mermaid radar should retain a visible native marker for each curve/axis value.");
+        var sourcePoints = FamilyGroups(radarPrepared, "radar-point-source");
+        Assert(sourcePoints.Select(point => FamilyNumber(point, "data-cfx-value")).SequenceEqual(new[] { 70d, 65, 82, 90, 88, 92 }), "Native radar source groups should retain Mermaid curve values in source order.");
+        var svgRoot = System.Xml.Linq.XDocument.Parse(svg);
+        Assert(svgRoot.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radar-area") == 2 &&
+            svgRoot.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radar-point") == 6,
+            "Mermaid SVG should serialize the native radar polygons and markers.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid radar PNG rendering should emit a valid PNG.");
     }
 

@@ -116,7 +116,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("cfx-hovered", StringComparison.Ordinal) && html.Contains("cfx-hover-related", StringComparison.Ordinal), "Interactive HTML should include reusable hover spotlight styling and behavior.");
         Assert(html.Contains("cfx-series-muted", StringComparison.Ordinal), "Interactive HTML should include legend-toggle behavior.");
         Assert(html.Contains("const setSeriesMuted = (root, target, muted)", StringComparison.Ordinal), "Interactive HTML should target semantic SVG series metadata for legend toggles.");
-        Assert(html.Contains("data-cfx-series-name=\"Passed\"", StringComparison.Ordinal) && html.Contains("data-cfx-series-key=\"Passed\"", StringComparison.Ordinal), "Interactive legends should expose a stable semantic series identity by default.");
+        Assert(html.Contains("&quot;name&quot;:&quot;Passed&quot;", StringComparison.Ordinal) && html.Contains("&quot;key&quot;:&quot;Passed&quot;", StringComparison.Ordinal), "Interactive hosts should retain stable semantic series identity in their detached metadata.");
         Assert(html.Contains("const resolveSeriesTarget = (root, target)", StringComparison.Ordinal) && html.Contains("if (!target || !target.seriesKey) return null", StringComparison.Ordinal), "Grouped charts should synchronize legend state only when a semantic series identity resolves in the peer chart.");
         Assert(html.Contains("target.point === undefined || data.cfxPoint === String(target.point)", StringComparison.Ordinal), "Point legends should mute or isolate one point instead of the complete containing series.");
         Assert(html.Contains("const toggleSeriesFocus = (root, item, emit, sync)", StringComparison.Ordinal) && html.Contains("cfx-series-isolated-out", StringComparison.Ordinal), "Interactive HTML should let users isolate one series from reusable legend metadata.");
@@ -151,15 +151,15 @@ internal static partial class SmokeTests {
         keyedChart.Series[0].WithInteractionKey("result.passed");
         AssertThrows<ArgumentException>(() => keyedChart.Series[0].WithInteractionKey("0"), "Digits-only interaction keys should remain reserved for local scenario ordinals.");
         var keyedHtml = keyedChart.ToInteractiveHtmlFragmentWithoutAssets();
-        Assert(keyedHtml.Contains("data-cfx-series-name=\"Passed\" data-cfx-series-key=\"result.passed\"", StringComparison.Ordinal), "Interactive series should support stable keys that are independent from display names.");
+        Assert(keyedHtml.Contains("&quot;name&quot;:&quot;Passed&quot;", StringComparison.Ordinal) && keyedHtml.Contains("&quot;key&quot;:&quot;result.passed&quot;", StringComparison.Ordinal), "Interactive series should support stable keys that are independent from display names.");
         keyedChart.WithLegend(false);
         var legendFreeKeyedHtml = keyedChart.ToInteractiveHtmlFragmentWithoutAssets();
-        Assert(legendFreeKeyedHtml.Contains("data-cfx-series-key-0=\"result.passed\"", StringComparison.Ordinal) && legendFreeKeyedHtml.Contains("data-cfx-series-name-0=\"Passed\"", StringComparison.Ordinal), "Legend-free charts should preserve ordinal-to-semantic series identity on the SVG root.");
+        Assert(legendFreeKeyedHtml.Contains("&quot;key&quot;:&quot;result.passed&quot;", StringComparison.Ordinal) && legendFreeKeyedHtml.Contains("&quot;name&quot;:&quot;Passed&quot;", StringComparison.Ordinal), "Legend-free charts should preserve semantic series identity in host metadata.");
         Assert(html.Contains("svg.getAttribute('data-cfx-series-key-' + data.cfxSeries)", StringComparison.Ordinal) && html.Contains("svg.getAttribute('data-cfx-series-name-' + data.cfxSeries)", StringComparison.Ordinal), "Interactive charts should resolve semantic series identity without requiring a rendered legend.");
         keyedChart.Series[0].UseAutomaticInteractionKey();
-        Assert(keyedChart.ToSvg().Contains("data-cfx-series-key-0=\"Passed\"", StringComparison.Ordinal), "Interactive series should restore display-name identity when an explicit key is cleared.");
+        Assert(keyedChart.ToSvg().Contains("data-cfx-series-key=\"Passed\"", StringComparison.Ordinal), "Interactive series should restore display-name identity when an explicit key is cleared.");
         var numericNameChart = Chart.Create().WithSize(320, 220).AddLine("0", ChartPoints.FromValues(1, 2));
-        Assert(numericNameChart.ToSvg().Contains("data-cfx-series-key-0=\"series:0\"", StringComparison.Ordinal), "Automatic semantic identity should namespace digits-only display names away from local series ordinals.");
+        Assert(numericNameChart.ToSvg().Contains("data-cfx-series-key=\"series:0\"", StringComparison.Ordinal), "Automatic semantic identity should namespace digits-only display names away from local series ordinals.");
         Assert(html.Contains("'cfxhover'", StringComparison.Ordinal) && html.Contains("'cfxhoverclear'", StringComparison.Ordinal), "Interactive HTML should publish host events for hover and hover clear.");
         Assert(html.Contains("action: 'hover'", StringComparison.Ordinal) && html.Contains("action: 'hover-clear'", StringComparison.Ordinal), "Interactive HTML should synchronize hover spotlight state across grouped charts.");
         Assert(html.Contains("applyHoverByTarget(root, detail.target)", StringComparison.Ordinal), "Interactive HTML should apply synchronized hover state by stable target metadata.");
@@ -216,7 +216,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("action: 'crosshair'", StringComparison.Ordinal) && html.Contains("action: 'lasso'", StringComparison.Ordinal) && html.Contains("action: 'series-focus'", StringComparison.Ordinal) && html.Contains("action: 'compare'", StringComparison.Ordinal), "Interactive HTML should synchronize crosshair hover, lasso selections, one-series focus, and compare markers across grouped charts.");
         Assert(html.Contains("if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter", StringComparison.Ordinal) && html.Contains("{ series: localSeries, seriesKey: target.seriesKey, label: target.label }", StringComparison.Ordinal), "Synchronized series toggles and isolation should resolve semantic targets in peers that do not render legends.");
         Assert(html.Contains("if (target) setSeriesIsolation(root, target, detail.isolated === true)", StringComparison.Ordinal) && !html.Contains("target || detail.isolated !== true", StringComparison.Ordinal), "Unmatched synchronized series focus should not clear an unrelated peer's local isolation state.");
-        Assert(html.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-reset=\"true\">Reset</button>", StringComparison.Ordinal), "Interactive HTML should include a reset control by default.");
+        Assert(html.Contains("<button class=\"cfx-reset\" type=\"button\" data-cfx-reset=\"true\" hidden>Reset view</button>", StringComparison.Ordinal), "Interactive HTML should include a contextual reset control that starts hidden by default.");
+        Assert(!SampleChart().ToInteractiveHtmlPage().Contains("class=\"cfx-toolbar\"", StringComparison.Ordinal), "Report-review charts without zoom, pan, brush, or export should not render permanent toolbar chrome.");
         Assert(html.Contains("<svg", StringComparison.Ordinal), "Interactive HTML should embed the static SVG output.");
         Assert(html.Contains("aria-live=\"polite\"", StringComparison.Ordinal), "Interactive tooltips should expose polite assistive announcements.");
         Assert(html.Contains("const seriesLabel = (node) =>", StringComparison.Ordinal) && html.Contains("push('Series', seriesLabel(node))", StringComparison.Ordinal), "Interactive labels and tooltip metadata should resolve real series names from rendered legends instead of exposing numeric series indexes.");
@@ -257,7 +258,7 @@ internal static partial class SmokeTests {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;
         });
-        Assert(!noReset.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-reset=\"true\">Reset</button>", StringComparison.Ordinal), "Interactive HTML should allow reset controls to be suppressed.");
+        Assert(!noReset.Contains("data-cfx-reset=\"true\"", StringComparison.Ordinal), "Interactive HTML should allow reset controls to be suppressed.");
         Assert(!noReset.Contains("data-cfx-zoom=\"in\"", StringComparison.Ordinal), "Interactive HTML should hide zoom controls when zoom is disabled.");
         Assert(!noReset.Contains("data-cfx-mode-button=\"pan\"", StringComparison.Ordinal), "Interactive HTML should hide pan controls when pan is disabled.");
         Assert(!noReset.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal), "Interactive HTML should hide brush controls when brush is disabled.");

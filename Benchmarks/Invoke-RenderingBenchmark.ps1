@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Rendering', 'Decimation', 'Topology')]
+    [ValidateSet('Rendering', 'Decimation', 'Topology', 'Charts', 'Scenes')]
     [string] $Suite = 'Rendering',
 
     [ValidateRange(0, 100)]
@@ -13,6 +13,9 @@ param(
 
     [string] $BaselineAssemblyPath,
 
+    [ValidateSet('Phase2', 'Phase3', 'All')]
+    [string] $SceneGroup = 'Phase2',
+
     [switch] $Plan,
 
     [switch] $SkipBuild
@@ -20,6 +23,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+if ($Suite -ne 'Scenes' -and $SceneGroup -ne 'Phase2') { throw '-SceneGroup is supported only by the Scenes suite.' }
 
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $projectPath = Join-Path $repositoryRoot 'ChartForgeX\ChartForgeX.csproj'
@@ -41,15 +45,23 @@ if (-not (Test-Path -LiteralPath $assemblyPath -PathType Leaf)) {
 }
 
 $variables = @{ AssemblyPath = $assemblyPath }
-if ($Suite -eq 'Topology') {
+if ($Suite -in 'Topology', 'Charts', 'Scenes') {
     if ([string]::IsNullOrWhiteSpace($BaselineAssemblyPath)) { $BaselineAssemblyPath = $assemblyPath }
     $variables.BaselineAssemblyPath = (Resolve-Path -LiteralPath $BaselineAssemblyPath).Path
     $fixtureOutput = Join-Path ([IO.Path]::GetFullPath($OutputRoot)) 'fixtures'
-    & dotnet build (Join-Path $PSScriptRoot 'Topology/TopologyBenchmarkFixtures.csproj') -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath"
-    if ($LASTEXITCODE -ne 0) { throw 'The topology benchmark fixture build failed.' }
-    $variables.FixtureAssemblyPath = Join-Path $fixtureOutput 'TopologyBenchmarkFixtures.dll'
+    $fixtureName = if ($Suite -eq 'Topology') { 'TopologyBenchmarkFixtures' } else { 'ChartBenchmarkFixtures' }
+    $fixtureFolder = if ($Suite -eq 'Scenes') { 'Charts' } else { $Suite }
+    & dotnet build (Join-Path $PSScriptRoot "$fixtureFolder/$fixtureName.csproj") -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath"
+    if ($LASTEXITCODE -ne 0) { throw "The $Suite benchmark fixture build failed." }
+    $variables.FixtureAssemblyPath = Join-Path $fixtureOutput "$fixtureName.dll"
+    if ($Suite -eq 'Scenes') {
+        $variables.SceneGroup = $SceneGroup
+        $variables.TokenPath = Join-Path $repositoryRoot 'ChartForgeX/Themes/Tokens/evotec.chartforgex.tokens.json'
+        $variables.FontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Regular.ttf'
+        $variables.BoldFontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Bold.ttf'
+    }
 } elseif (-not [string]::IsNullOrWhiteSpace($BaselineAssemblyPath)) {
-    throw '-BaselineAssemblyPath is supported by the Topology suite.'
+    throw '-BaselineAssemblyPath is supported by the Topology, Charts and Scenes suites.'
 }
 
 Import-Module PSPublishModule -MinimumVersion 3.0.72 -Force -ErrorAction Stop

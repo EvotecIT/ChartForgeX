@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Topology;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
@@ -18,18 +19,16 @@ public static partial class VisualArtifactInterchangeMapping {
     /// <returns>A portable semantic envelope. Unsupported visual kinds retain common metadata and use their separately rendered SVG fallback.</returns>
     public static VisualArtifactInterchangeEnvelope ToInterchangeEnvelope(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
+        if (artifact.Model is ChartForgeX.Rendering.PreparedVisual prepared)
+            return FromPreparedArtifact(artifact, prepared);
         var envelope = Common(artifact, out var artifactMetadataKeys);
         switch (artifact.Model) {
             case TopologyChart topology:
-                MapTopology(
-                    envelope,
-                    artifact,
+                return FromMutablePreparedArtifact(artifact, VisualArtifactRendering.PrepareTopologyArtifact(artifact,
                     VisualArtifactRendering.TopologyModel(artifact, topology),
-                    VisualArtifactRendering.TopologyOptions(artifact, renderOptions));
-                break;
+                    VisualArtifactRendering.TopologyOptions(artifact, renderOptions)).Visual);
             case FlowArtifact flow:
-                MapFlow(envelope, flow, artifactMetadataKeys);
-                break;
+                return FromMutablePreparedArtifact(artifact, flow.Prepare(ChartForgeX.Rendering.VisualExportRequest.ForFlow(flow).Context), flow.Metadata);
             case SequenceArtifact sequence:
                 MapSequence(envelope, sequence, artifactMetadataKeys);
                 break;
@@ -65,16 +64,6 @@ public static partial class VisualArtifactInterchangeMapping {
         return envelope;
     }
 
-    private static void MapTopology(
-        VisualArtifactInterchangeEnvelope envelope,
-        VisualArtifact artifact,
-        TopologyChart topology,
-        TopologyRenderOptions? renderOptions) {
-        var options = topology.ResolveRenderOptions(renderOptions).CloneForRendering();
-        var prepared = PrepareValidatedTopology(topology, options, detachOmittedSourceGroups: options.View != null);
-        MapPreparedTopology(envelope, artifact, prepared, options);
-    }
-
     internal static VisualArtifactInterchangeEnvelope FromPreparedTopology(TopologyChart prepared, TopologyRenderOptions options) {
         var artifact = VisualArtifact.Create(string.IsNullOrWhiteSpace(prepared.Id) ? "topology" : prepared.Id!, VisualArtifactKind.Topology, prepared);
         artifact.Accessibility.Name = prepared.Accessibility.Name;
@@ -83,7 +72,6 @@ public static partial class VisualArtifactInterchangeMapping {
         artifact.Accessibility.IsDecorative = prepared.Accessibility.IsDecorative;
         var envelope = Common(artifact, out _);
         MapPreparedTopology(envelope, artifact, prepared, options);
-        envelope.Validate();
         return envelope;
     }
 
@@ -95,7 +83,7 @@ public static partial class VisualArtifactInterchangeMapping {
             ids.AddNode(node.Id);
             foreach (var port in node.Ports) ids.AddPort(node.Id, port.Id);
         }
-        foreach (var edge in prepared.Edges) ids.AddEdge(edge.Id);
+        var edgeIds = prepared.Edges.Select(edge => ids.AddEdgeOccurrence(edge.Id)).ToArray();
         if (!string.IsNullOrWhiteSpace(prepared.Id)) {
             string preparedId = prepared.Id!;
             envelope.Id = BoundedGeneratedId(preparedId, !string.IsNullOrWhiteSpace(options.View?.Id) ? "topology-view" : "topology");
@@ -139,16 +127,18 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         for (var index = 0; index < prepared.Edges.Count; index++) {
             TopologyEdge edge = prepared.Edges[index];
-            envelope.Edges.Add(MapEdge(
+            var mappedEdge = MapEdge(
                 edge,
-                ids.Edge(edge.Id),
+                edgeIds[index],
                 ids.Node(edge.SourceNodeId),
                 ids.Node(edge.TargetNodeId),
                 ids.OptionalPort(edge.SourceNodeId, edge.SourcePortId),
                 ids.OptionalPort(edge.TargetNodeId, edge.TargetPortId),
                 index,
                 ids,
-                options));
+                options);
+            if (!string.Equals(edge.Id, mappedEdge.Id, StringComparison.Ordinal)) TrySetBoundedExtension(mappedEdge.Extensions, ProjectedSourceIdExtension, edge.Id);
+            envelope.Edges.Add(mappedEdge);
         }
         foreach (var scenario in prepared.Scenarios) {
             VisualArtifactInterchangeScenario? mappedScenario = MapScenario(scenario, ids);
@@ -157,90 +147,7 @@ public static partial class VisualArtifactInterchangeMapping {
         if (projectedSourceIds.Count > 0) AddProjectedSourceIds(envelope, projectedSourceIds);
     }
 
-    private static void MapFlow(VisualArtifactInterchangeEnvelope envelope, FlowArtifact flow, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
-        envelope.Id = BoundedGeneratedId(flow.Id, "flow");
-        envelope.Title = flow.Title;
-        envelope.Subtitle = flow.Subtitle;
-        envelope.Flow = new VisualArtifactInterchangeFlowArtifact {
-            LayoutMode = flow.LayoutMode,
-            LayoutDirection = flow.Direction
-        };
-        envelope.Family = VisualArtifactInterchangeFamily.Flow;
-        CopyMissing(flow.Metadata, envelope.Extensions, artifactMetadataKeys);
-
-        var flowTopology = flow.ToTopologyChart();
-        var prepared = PrepareValidatedTopology(flowTopology, new TopologyRenderOptions { IncludeLegend = false }, detachOmittedSourceGroups: false);
-        envelope.Width = prepared.Viewport.Width;
-        envelope.Height = prepared.Viewport.Height;
-        var preparedGroups = GroupsById(prepared.Groups);
-        var preparedNodes = NodesById(prepared.Nodes);
-        var ids = new InterchangeIdScope();
-        foreach (var lane in flow.Lanes) ids.AddGroup(lane.Id);
-        foreach (var step in flow.Steps) ids.AddNode(step.Id);
-        foreach (var connector in flow.Connectors) ids.AddEdge(connector.Id);
-
-        foreach (var lane in flow.Lanes) {
-            preparedGroups.TryGetValue(lane.Id, out var preparedGroup);
-            var group = new VisualArtifactInterchangeGroup {
-                Id = ids.Group(lane.Id),
-                Role = VisualArtifactInterchangeGroupRole.FlowLane,
-                Kind = "FlowLane",
-                Label = lane.Label,
-                Status = lane.Status.ToString(),
-                Color = lane.Color,
-                X = preparedGroup?.X,
-                Y = preparedGroup?.Y,
-                Width = preparedGroup?.Width,
-                Height = preparedGroup?.Height
-            };
-            Copy(lane.Metadata, group.Extensions);
-            envelope.Groups.Add(group);
-        }
-
-        foreach (var step in flow.Steps) {
-            preparedNodes.TryGetValue(step.Id, out var preparedNode);
-            var node = new VisualArtifactInterchangeNode {
-                Id = ids.Node(step.Id),
-                Role = VisualArtifactInterchangeNodeRole.FlowStep,
-                Kind = step.Kind.ToString(),
-                Label = step.Label,
-                Subtitle = step.Subtitle,
-                GroupId = ids.OptionalGroup(step.LaneId),
-                Status = step.Status.ToString(),
-                IconId = step.Icon,
-                Symbol = step.Symbol,
-                Badge = step.Badge,
-                Color = step.Color,
-                X = preparedNode?.X,
-                Y = preparedNode?.Y,
-                Width = preparedNode?.Width ?? step.Width,
-                Height = preparedNode?.Height ?? step.Height,
-                Flow = new VisualArtifactInterchangeFlowNode { Kind = step.Kind }
-            };
-            Copy(step.Metadata, node.Extensions);
-            envelope.Nodes.Add(node);
-        }
-
-        for (var index = 0; index < flow.Connectors.Count; index++) {
-            var connector = flow.Connectors[index];
-            var edge = new VisualArtifactInterchangeEdge {
-                Id = ids.Edge(connector.Id),
-                Role = VisualArtifactInterchangeEdgeRole.FlowConnector,
-                Kind = connector.Kind.ToString(),
-                SourceId = ids.Node(connector.SourceId),
-                TargetId = ids.Node(connector.TargetId),
-                Label = connector.Label,
-                Status = connector.Status.ToString(),
-                Color = connector.Color,
-                Order = index,
-                Flow = new VisualArtifactInterchangeFlowEdge { Kind = connector.Kind, Direction = connector.Direction }
-            };
-            Copy(connector.Metadata, edge.Extensions);
-            envelope.Edges.Add(edge);
-        }
-    }
-
-    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys) {
+    private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys, VisualArtifactSize? preparedSize = null) {
         envelope.Family = VisualArtifactInterchangeFamily.Sequence;
         envelope.Sequence = new VisualArtifactInterchangeSequenceArtifact();
         var ids = new InterchangeIdScope();
@@ -249,7 +156,7 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Id = BoundedGeneratedId(sequence.Id, "sequence");
         envelope.Title = sequence.Title;
         envelope.Subtitle = sequence.Subtitle;
-        VisualArtifactSize naturalSize = SequenceArtifactRendering.CalculateNaturalSize(sequence);
+        VisualArtifactSize naturalSize = preparedSize ?? SequenceArtifactRendering.CalculateNaturalSize(sequence);
         envelope.Width = naturalSize.Width;
         envelope.Height = naturalSize.Height;
         CopyMissing(sequence.Metadata, envelope.Extensions, artifactMetadataKeys);
@@ -394,18 +301,6 @@ public static partial class VisualArtifactInterchangeMapping {
         return mapped;
     }
 
-    private static TopologyChart PrepareValidatedTopology(TopologyChart topology, TopologyRenderOptions options, bool detachOmittedSourceGroups) {
-        var validator = new TopologyChartValidator();
-        var sourceValidation = validator.ValidateScenarioReferences(topology);
-        if (!sourceValidation.IsValid) throw new TopologyValidationException(sourceValidation);
-
-        var prepared = TopologyLayoutEngine.Prepare(topology, options.View, options);
-        if (detachOmittedSourceGroups) TopologyLayoutEngine.DetachOmittedSourceGroups(topology, prepared);
-        var preparedValidation = validator.Validate(prepared, validateScenarioReferences: false, options);
-        if (!preparedValidation.IsValid) throw new TopologyValidationException(preparedValidation);
-        return prepared;
-    }
-
     private static VisualArtifactInterchangeNode MapNode(
         TopologyNode node,
         string id,
@@ -504,21 +399,24 @@ public static partial class VisualArtifactInterchangeMapping {
         };
         Copy(scenario.Metadata, mapped.Extensions);
         foreach (var step in scenario.Steps) {
-            string targetId;
+            IEnumerable<string> targetIds;
             if (step.Kind == TopologyScenarioStepKind.Node) {
-                if (!ids.TryNode(step.Id, out targetId)) continue;
+                if (!ids.TryNode(step.Id, out var nodeId)) continue;
+                targetIds = new[] { nodeId };
             } else {
-                if (!ids.TryEdge(step.Id, out targetId)) continue;
+                targetIds = ids.EdgeOccurrences(step.Id);
             }
-            var mappedStep = new VisualArtifactInterchangeScenarioStep {
-                TargetId = targetId,
-                Kind = step.Kind,
-                Label = step.Label,
-                Description = step.Description,
-                DurationMilliseconds = step.DurationMilliseconds
-            };
-            Copy(step.Metadata, mappedStep.Extensions);
-            mapped.Steps.Add(mappedStep);
+            foreach (var targetId in targetIds) {
+                var mappedStep = new VisualArtifactInterchangeScenarioStep {
+                    TargetId = targetId,
+                    Kind = step.Kind,
+                    Label = step.Label,
+                    Description = step.Description,
+                    DurationMilliseconds = step.DurationMilliseconds
+                };
+                Copy(step.Metadata, mappedStep.Extensions);
+                mapped.Steps.Add(mappedStep);
+            }
         }
         return mapped.Steps.Count == 0 ? null : mapped;
     }
@@ -535,18 +433,6 @@ public static partial class VisualArtifactInterchangeMapping {
         var parts = new List<string>();
         foreach (var point in edge.Waypoints) parts.Add(InvariantNumber(point.X) + "," + InvariantNumber(point.Y));
         return string.Join(";", parts);
-    }
-
-    private static Dictionary<string, TopologyGroup> GroupsById(IEnumerable<TopologyGroup> groups) {
-        var result = new Dictionary<string, TopologyGroup>(StringComparer.Ordinal);
-        foreach (var group in groups) result[group.Id] = group;
-        return result;
-    }
-
-    private static Dictionary<string, TopologyNode> NodesById(IEnumerable<TopologyNode> nodes) {
-        var result = new Dictionary<string, TopologyNode>(StringComparer.Ordinal);
-        foreach (var node in nodes) result[node.Id] = node;
-        return result;
     }
 
     private static Dictionary<string, string> Copy(IEnumerable<KeyValuePair<string, string>> source, IDictionary<string, string> target) {
@@ -638,6 +524,7 @@ public static partial class VisualArtifactInterchangeMapping {
         private readonly Dictionary<string, string> _groups = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _nodes = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _edges = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, List<string>> _edgeOccurrences = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _scenarios = new(StringComparer.Ordinal);
         private readonly HashSet<string> _usedScenarios = new(StringComparer.Ordinal);
         private readonly Dictionary<string, Dictionary<string, string>> _ports = new(StringComparer.Ordinal);
@@ -651,6 +538,14 @@ public static partial class VisualArtifactInterchangeMapping {
             return allocated;
         }
         public string AddEdge(string sourceId) => Add(_edges, sourceId, "edge");
+        public string AddEdgeOccurrence(string sourceId) {
+            string allocated = Allocate(sourceId, "edge");
+            if (!_edges.ContainsKey(sourceId)) _edges.Add(sourceId, allocated);
+            if (!_edgeOccurrences.TryGetValue(sourceId, out var occurrences)) _edgeOccurrences.Add(sourceId, occurrences = new List<string>());
+            occurrences.Add(allocated);
+            return allocated;
+        }
+        public IEnumerable<string> EdgeOccurrences(string sourceId) => _edgeOccurrences.TryGetValue(sourceId, out var occurrences) ? occurrences : Array.Empty<string>();
         public string AddScenario(string sourceId) {
             string allocated = AllocateLocal(_usedScenarios, sourceId, "scenario");
             _scenarios.Add(sourceId, allocated);

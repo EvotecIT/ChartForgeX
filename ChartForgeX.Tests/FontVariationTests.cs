@@ -241,11 +241,11 @@ public sealed class FontVariationTests {
         WithRegisteredFont(_ => {
             var grid = new ChartGrid { Title = "HHHH" }; grid.Add(Chart.Create());
             grid.TitleStyle.WithFontFamily("CFX Variation").WithVariation("wght", 650).WithOpenTypeLanguage("TRK");
-            var svg = new SvgChartGridRenderer().Render(grid); Assert.Contains("font-variation-settings:", svg); Assert.Contains("font-language-override:", svg);
+            var svg = grid.ToSvg(); Assert.Contains("font-variation-settings:", svg); Assert.Contains("font-language-override:", svg);
             Assert.Contains("font-variation-settings:", new HtmlChartGridRenderer().RenderFragment(grid));
-            Assert.NotEmpty(new PngChartGridRenderer().Render(grid));
+            Assert.NotEmpty(grid.ToPng());
             var chart = Chart.Create().WithSize(360, 260).WithDataLabels().WithDataLabelStyle(s => s.WithFontFamily("CFX Variation").WithVariation("wdth", 125)).AddRadialBar("HHHH", new[] { new ChartPoint(0, 40) });
-            Assert.Contains("font-variation-settings:", new SvgChartRenderer().Render(chart)); Assert.NotEmpty(new PngChartRenderer().Render(chart));
+            Assert.Contains("font-variation-settings:", chart.ToSvg()); Assert.NotEmpty(chart.ToPng());
         });
     }
     private static void WithRegisteredFont(Action<string> action) {

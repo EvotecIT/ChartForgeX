@@ -22,12 +22,12 @@ public sealed class MermaidReviewRegressionTests {
         var first = Number(edges[0], "data-route-start-y");
         var second = Number(edges[1], "data-route-start-y");
         Assert.True(Math.Abs(first - second) >= 16, "Different UML source markers must not cover each other.");
-        var multiplicity = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-endpoint-label" && element.Value == "1");
+        var multiplicity = svg.Descendants().Single(element => element.Name.LocalName == "text" && element.AncestorsAndSelf().Any(owner => (string?)owner.Attribute("data-cfx-role") == "topology-endpoint-label") && element.Value == "1");
         foreach (var edge in edges) {
             var dx = Number(multiplicity, "x") - Number(edge, "data-route-start-x");
             var dy = Number(multiplicity, "y") - Number(edge, "data-route-start-y");
             Assert.True(Math.Sqrt(dx * dx + dy * dy) >= 20, "A multiplicity must not cover a neighboring relationship marker.");
-            var path = edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-path");
+            var path = edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
             AssertPathAvoidsLabel(path, multiplicity, 9.5);
         }
     }
@@ -46,9 +46,9 @@ public sealed class MermaidReviewRegressionTests {
         Assert.False(result.HasErrors);
         var artifact = result.Artifact!;
         var svg = XDocument.Parse(artifact.ToSvg());
-        var body = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node-body" && (string?)element.Attribute("data-node-id") == "User");
-        var path = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-path");
-        foreach (var label in body.Elements().Where(element => element.Name.LocalName == "text")) {
+        var body = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node" && (string?)element.Attribute("data-node-id") == "User");
+        var path = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
+        foreach (var label in body.Descendants().Where(element => element.Name.LocalName == "text" && element.Ancestors().Any(owner => (string?)owner.Attribute("data-cfx-role") == "topology-node-label"))) {
             AssertPathAvoidsLabel(path, label, 12);
         }
         var chart = Assert.IsType<TopologyChart>(artifact.Model);
@@ -91,7 +91,7 @@ public sealed class MermaidReviewRegressionTests {
         var artifact = Assert.IsType<VisualArtifact>(result.Artifact);
         var svg = XDocument.Parse(artifact.ToSvg());
         var envelope = artifact.ToInterchangeEnvelope();
-        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-endpoint-label").ToArray();
+        var labels = svg.Descendants().Where(element => element.Name.LocalName == "text" && element.AncestorsAndSelf().Any(owner => (string?)owner.Attribute("data-cfx-role") == "topology-endpoint-label")).ToArray();
         Assert.Equal(2, labels.Length);
         var image = RasterImageDecoder.Decode(artifact.ToPng());
         foreach (var label in labels) {
@@ -133,9 +133,9 @@ public sealed class MermaidReviewRegressionTests {
                 chart.Edges[0].Routing = routing;
                 chart.Edges[0].Direction = VisualLinkDirection.Forward;
                 var svg = XDocument.Parse(chart.ToSvg());
-                var path = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-path");
-                var actor = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node-body" && (string?)element.Attribute("data-node-id") == "actor");
-                foreach (var label in actor.Elements().Where(element => element.Name.LocalName == "text")) AssertPathAvoidsLabel(path, label, 12);
+                var path = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
+                var actor = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node" && (string?)element.Attribute("data-node-id") == "actor");
+                foreach (var label in actor.Descendants().Where(element => element.Name.LocalName == "text" && element.Ancestors().Any(owner => (string?)owner.Attribute("data-cfx-role") == "topology-node-label"))) AssertPathAvoidsLabel(path, label, 12);
                 var points = Assert.Single(ChartMapPathParser.ParseSubpaths(path.Attribute("d")!.Value, 1)).Points;
                 AssertApproachHitsSurface(chart.Nodes[incoming ? 1 : 0], points[0], points[1]);
                 AssertApproachHitsSurface(chart.Nodes[incoming ? 0 : 1], points[^1], points[^2]);

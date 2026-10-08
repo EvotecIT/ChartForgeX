@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Typography;
@@ -9,7 +10,11 @@ namespace ChartForgeX.Topology;
 /// </summary>
 public sealed class TopologyRenderOptions {
     internal TextMeasurementContext? TextMeasurement { get; set; }
-    /// <summary>Gets or sets the text-width policy. Portable estimates preserve host-independent geometry; installed-font measurement is opt-in.</summary>
+    internal double ResolvedIconLabelFontSize { get; set; } = 10.5;
+    internal double ResolvedEdgeLabelScale { get; set; } = 1;
+    // Native badges retain their resolved face without changing portable diagram-layout estimates.
+    internal Func<string, double>? ResolvedBadgeTextWidth { get; set; }
+    /// <summary>Gets or sets the text-width policy. Portable estimates preserve host-independent geometry by default; installed-font measurement is opt-in.</summary>
     public TextMeasurementMode TextMeasurementMode { get; set; } = TextMeasurementMode.PortableEstimate;
     private ChartLineVisualStyle? _edgeVisualStyle;
     private TopologyLayoutPreset _layoutPreset;

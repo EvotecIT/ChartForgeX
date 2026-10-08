@@ -3,6 +3,8 @@ using System.Globalization;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using System.Linq;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -23,12 +25,14 @@ internal static partial class SmokeTests {
                     .WithSeparators(3, ChartColor.White, 2)));
 
         var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"layered-radial-chart\"", StringComparison.Ordinal), "Layered radial charts should expose a chart role marker.");
+        var prepared = PreparedFamily(chart);
+        Assert(FamilyGroups(prepared, "layered-radial-point").Length == 3, "Layered radial charts should retain each independent layer source.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"layered-radial-layer\"") == 3, "Layered radial charts should render one path per layer.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"layered-radial-separator\"") == 3, "Layered radial layers should render configured separators.");
         Assert(svg.Contains("data-cfx-label=\"Current\"", StringComparison.Ordinal), "Layered radial layers should expose labels.");
-        Assert(svg.Contains("data-cfx-percent=\"0.459\"", StringComparison.Ordinal), "Layered radial layers should expose computed ratios.");
-        Assert(svg.Contains("stroke-linecap=\"butt\"", StringComparison.Ordinal), "Layered radial layers should support butt caps.");
+        var layers = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "layered-radial-layer").ToArray();
+        Assert(IsClose(layers[2].Sweep / layers[0].Sweep, 1240d / 2700), "Layered radial geometry should use full computed ratios.");
+        Assert(layers[0].Outer > layers[1].Outer && layers[1].Outer - layers[1].Inner < layers[2].Outer - layers[2].Inner, "Layered radial geometry should preserve independently configured radii and widths.");
         Assert(svg.Contains(">1240 kcal</text>", StringComparison.Ordinal), "Layered radial charts should render the configured center value.");
         Assert(chart.ToPng().Length > 64, "Layered radial charts should render PNG output.");
     }

@@ -11,12 +11,21 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
-  const isInteractiveTarget = (node) => (node.dataset ? node.dataset.cfxRole : '') === 'legend-item' || !node.closest('[data-cfx-role="legend-item"]');
+  const isInteractiveTarget = (node) => {
+    if ((node.dataset || {}).cfxRole === 'legend-item') return true;
+    if (node.closest('[data-cfx-role="legend-item"]')) return false;
+    // Prepared marks carry their source identity on a containing semantic group.
+    // Bind that group once instead of also binding its labels, decorations and individual shapes.
+    const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node]');
+    return !owner;
+  };
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
     // Only the renderer-owned cell link is a mark's alternate keyboard target.
     const link = node.parentElement;
-    return link && link.matches('a[data-cfx-role="heatmap-cell-link"][href]') ? link : node;
+    if (link && link.matches('a[data-cfx-role="heatmap-cell-link"][href]')) return link;
+    // Prepared marks put identity on the outer group and their cell link inside it.
+    return Array.from(node.children).find((child) => child.matches('a[data-cfx-role="heatmap-cell-link"][href]')) || node;
   };
   const seriesLegend = (node) => {
     const data = node.dataset || {};
@@ -53,6 +62,7 @@
   };
   const sourcePointIndex = (node) => {
     const data = node.dataset || {};
+    if (data.cfxSourcePoint !== undefined) return data.cfxSourcePoint;
     if (data.cfxPoint === undefined || data.cfxSeries === undefined) return data.cfxPoint;
     const svg = node.closest('svg');
     const sourceIndices = svg ? svg.getAttribute('data-cfx-series-source-indices-' + data.cfxSeries) : '';
@@ -87,6 +97,7 @@
     return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
   };
   const applyRenderedTargetContract = (root) => {
+    prepareChartTargets(root);
     Array.from(root.querySelectorAll(renderedTargetSelector)).filter(isInteractiveTarget).forEach((node) => {
       if (node.closest('defs')) return;
       const kind = renderedTargetKind(node);
@@ -163,6 +174,36 @@
     return rows;
   };
   const renderTip = (tip, node) => {
+    if ((node.dataset || {}).cfxRole === 'legend-item') return renderLegendTip(tip, node);
+    const root = node.closest && node.closest('[data-cfx-look="graphite"]');
+    const svg = node.closest && node.closest('svg');
+    if (root && svg && node.dataset.cfxX !== undefined && node.dataset.cfxY !== undefined) {
+      const points = new Map();
+      svg.querySelectorAll('[data-cfx-point][data-cfx-x][data-cfx-y]').forEach((point) => {
+        if (point.dataset.cfxX !== node.dataset.cfxX || points.has(point.dataset.cfxSeries)) return;
+        const index = point.dataset.cfxSeries;
+        const paint = getComputedStyle(point);
+        const colour = paint.fill && paint.fill !== 'none' ? paint.fill : paint.stroke;
+        points.set(index, { index, name: svg.getAttribute('data-cfx-series-name-' + index) || seriesLabel(point), state: svg.getAttribute('data-cfx-series-state-' + index) || 'none', value: Number(point.dataset.cfxY), colour });
+      });
+      const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };
+      const rows = Array.from(points.values()).sort((a, b) => (priority[b.state] || 0) - (priority[a.state] || 0) || b.value - a.value);
+      if (rows.length) {
+        tip.replaceChildren();
+        const header = document.createElement('div');
+        header.className = 'cfx-tooltip__title'; header.textContent = node.dataset.cfxXLabel || node.dataset.cfxX; tip.appendChild(header);
+        const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
+        rows.forEach((row) => {
+          const name = document.createElement('dt'); const value = document.createElement('dd');
+          name.textContent = row.name; value.textContent = row.value.toLocaleString(undefined, { maximumFractionDigits: 12 });
+          const swatch = document.createElement('span'); swatch.className = 'cfx-tooltip__swatch';
+          swatch.style.backgroundColor = row.colour; swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);
+          if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
+          list.appendChild(name); list.appendChild(value);
+        });
+        tip.appendChild(list); return true;
+      }
+    }
     const label = text(node);
     if (!label) return false;
     tip.replaceChildren();

@@ -100,12 +100,12 @@ public sealed class TextLanguageTests {
     [Fact]
     public void ChartAndPaginatedGridExportTheExplicitLanguage() {
         var chart = Chart.Create().WithTitle("бб").WithTitleStyle(s => s.WithOpenTypeLanguage("SRB"));
-        var svg = new SvgChartRenderer().Render(chart);
+        var svg = chart.ToSvg();
         Assert.Contains("font-language-override:'SRB '", svg);
         var grid = new ChartGrid { Title = "бб" }; grid.TitleStyle.WithOpenTypeLanguage("BGR"); grid.Add(chart);
         var page = Assert.Single(grid.Paginate(1));
         Assert.Equal("BGR ", page.Grid.TitleStyle.OpenTypeLanguageTag);
-        Assert.Contains("font-language-override:'BGR '", new SvgChartGridRenderer().Render(page.Grid));
+        Assert.Contains("font-language-override:'BGR '", page.Grid.ToSvg());
     }
 
     [Fact]
@@ -114,18 +114,29 @@ public sealed class TextLanguageTests {
         File.WriteAllBytes(path, Bytes());
         try {
             FontRegistry.Register("CFX Language Fitting", path);
-            var chart = Chart.Create().WithSize(400, 300).WithXLabels("бббббб").WithXAxisLabelAngle(0)
+            const string sourceLabel = "бббббб";
+            var chart = Chart.Create().WithSize(360, 600).WithXLabels(sourceLabel).WithXAxisLabelAngle(0)
                 .WithTickLabelStyle(s => s.WithFontFamily("CFX Language Fitting").WithFontSize(100).WithWeight("400"))
-                .AddBar("Value", new[] { new ChartPoint(0, 1) });
-            XElement Label() => XDocument.Parse(new SvgChartRenderer().Render(chart)).Descendants()
-                .Single(e => (string?)e.Attribute("data-cfx-role") == "x-axis-label");
-            var before = Label();
+                .AddBar("Value", new[] { new ChartPoint(1, 1) });
+            chart.Options.YAxis.Visible = false;
             chart.Options.TickLabelStyle.WithOpenTypeLanguage("BGR");
-            var selected = Label();
-            var beforeSize = double.Parse(before.Attribute("font-size")!.Value, System.Globalization.CultureInfo.InvariantCulture);
-            var selectedSize = double.Parse(selected.Attribute("font-size")!.Value, System.Globalization.CultureInfo.InvariantCulture);
-            Assert.True(selectedSize < beforeSize, "Wider localized glyphs must use a smaller fitted size.");
-            Assert.True(Font().WithLanguage("BGR ").Measure(selected.Value, selectedSize) <= Font().Measure(before.Value, beforeSize) + 1);
+            var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 600))));
+            var document = XDocument.Parse(prepared.ToSvg());
+            var selected = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "axis-x-label")
+                .Elements().Single(e => e.Name.LocalName == "text");
+            var axis = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "axis-x");
+            double Number(XElement element, string attribute) => double.Parse(element.Attribute(attribute)!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            var left = Number(axis, "x1");
+            var right = Number(axis, "x2");
+            var selectedSize = Number(selected, "font-size");
+            var localizedFont = Font().WithLanguage("BGR ");
+            Assert.True(localizedFont.Measure(sourceLabel, selectedSize) > right - left, "The fixture must require fitting.");
+            var displayedWidth = localizedFont.Measure(selected.Value, selectedSize);
+            Assert.True(Number(selected, "x") >= left - 1 && Number(selected, "x") + displayedWidth <= right + 1,
+                "The visible label must fit its axis strip using localized glyph advances.");
+            Assert.Contains("font-language-override:'BGR '", selected.Attribute("style")!.Value);
+            Assert.Equal(100d, chart.Options.TickLabelStyle.FontSize);
+            Assert.Contains(prepared.Regions, region => region.Role == "axis-x-label" && region.Label == sourceLabel + " (1)");
         } finally { FontRegistry.Clear(); File.Delete(path); }
     }
 
@@ -149,8 +160,8 @@ public sealed class TextLanguageTests {
             FontRegistry.Register("CFX Language Grid", path);
             var grid = new ChartGrid { Title = "бббббб" }; grid.Add(Chart.Create().WithSize(400, 300));
             grid.TitleStyle.WithFontFamily("CFX Language Grid").WithFontSize(100).WithWeight("400").WithOpenTypeLanguage("BGR");
-            var doc = XDocument.Parse(new SvgChartGridRenderer().Render(grid));
-            var header = doc.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "grid-title");
+            var doc = XDocument.Parse(grid.ToSvg());
+            var header = doc.Descendants().First(e => (string?)e.Attribute("data-cfx-role") == "frame-heading");
             var width = double.Parse(doc.Root!.Attribute("width")!.Value, System.Globalization.CultureInfo.InvariantCulture) - grid.Padding * 2;
             Assert.True(Font().WithLanguage("BGR ").Measure(header.Value, 100) <= width, "Localized header must be trimmed using shaped widths.");
         } finally { FontRegistry.Clear(); File.Delete(path); }
@@ -179,12 +190,12 @@ public sealed class TextLanguageTests {
         var grid = new ChartGrid { Title = "Language", Subtitle = "Forms" }; grid.Add(Chart.Create());
         grid.TitleStyle.WithWeight(weight).WithOpenTypeLanguage(language);
         grid.SubtitleStyle.WithWeight(weight).WithOpenTypeLanguage(language);
-        Assert.Contains("font-weight=\"" + weight + "\"", new SvgChartGridRenderer().Render(grid));
+        Assert.Contains("font-weight=\"" + weight + "\"", grid.ToSvg());
         var chart = Chart.Create().WithSize(360, 260).WithDataLabels()
             .WithDataLabelStyle(s => s.WithWeight(weight).WithOpenTypeLanguage(language))
             .AddRadialBar("Language", new[] { new ChartPoint(0, 40) });
-        Assert.Contains("font-weight=\"" + weight + "\"", new SvgChartRenderer().Render(chart));
-        Assert.NotEmpty(new PngChartRenderer().Render(chart));
+        Assert.Contains("font-weight=\"" + weight + "\"", chart.ToSvg());
+        Assert.NotEmpty(chart.ToPng());
     }
 
     [Fact]

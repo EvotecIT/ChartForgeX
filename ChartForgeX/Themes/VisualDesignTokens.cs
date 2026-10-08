@@ -130,12 +130,22 @@ public sealed partial class VisualDesignTokens {
         StrokeWidth = StrokeWidth,
         Status = Status.Clone(),
         SequentialRamp = SequentialRamp,
-        DivergingRamp = DivergingRamp
+        DivergingRamp = DivergingRamp,
+        UseGraphiteLayout = UseGraphiteLayout, Muted = Muted, Grid = Grid, Axis = Axis,
+        Info = Info, Quiet = Quiet, QuietLine = QuietLine, Neutral = Neutral, Neutral2 = Neutral2, Neutral3 = Neutral3
     };
 
     /// <summary>Applies the shared tokens to a chart renderer theme.</summary>
     public ChartTheme ApplyTo(ChartTheme theme) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
+        if (theme.UseGraphiteLayout && !UseGraphiteLayout) {
+            var classic = ChartTheme.Light();
+            theme.WithTypography(classic.TitleFontSize, classic.SubtitleFontSize, classic.TickLabelFontSize, classic.AxisTitleFontSize, classic.LegendFontSize, classic.DataLabelFontSize);
+            theme.ShadowOpacity = classic.ShadowOpacity;
+            theme.MarkerRadius = classic.MarkerRadius;
+        }
+        theme.UseGraphiteLayout = UseGraphiteLayout;
+        theme.FlatMarks = UseGraphiteLayout;
         theme.Background = Background;
         theme.CardBackground = ElevatedSurface;
         theme.PlotBackground = Surface;
@@ -154,6 +164,25 @@ public sealed partial class VisualDesignTokens {
         theme.CornerRadius = CornerRadius;
         theme.PlotCornerRadius = Math.Max(0, CornerRadius * 0.72);
         theme.StrokeWidth = StrokeWidth;
+        theme.Text2 = MutedForeground;
+        theme.MutedText = Muted ?? theme.MutedText;
+        theme.Grid = Grid ?? theme.Grid;
+        theme.Axis = Axis ?? theme.Axis;
+        theme.Info = Info ?? theme.Info;
+        theme.Quiet = Quiet ?? theme.Quiet;
+        theme.QuietLine = QuietLine ?? theme.QuietLine;
+        theme.Neutral = Neutral ?? theme.Neutral;
+        theme.Neutral2 = Neutral2 ?? theme.Neutral2;
+        theme.Neutral3 = Neutral3 ?? theme.Neutral3;
+        if (UseGraphiteLayout) {
+            theme.UseGraphiteLayout = true;
+            theme.FlatMarks = true;
+            theme.PlotBorder = ChartColor.Transparent;
+            theme.PlotCornerRadius = 0;
+            theme.ShadowOpacity = 0;
+            theme.WithTypography(17, 13.5, 12, 12, 13, 12);
+            theme.MarkerRadius = 3;
+        }
         return theme;
     }
 

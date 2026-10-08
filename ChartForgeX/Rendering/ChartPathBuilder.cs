@@ -50,4 +50,19 @@ internal static class ChartPathBuilder {
                 p2.Y));
         }
     }
+    internal static ChartPath RoundedRectangle(ChartRect bounds, double radius) {
+        radius = Math.Min(radius, Math.Min(bounds.Width, bounds.Height) / 2);
+        if (radius <= 0) return new ChartPath(new[] { ChartPathCommand.MoveTo(bounds.Left, bounds.Top), ChartPathCommand.LineTo(bounds.Right, bounds.Top), ChartPathCommand.LineTo(bounds.Right, bounds.Bottom), ChartPathCommand.LineTo(bounds.Left, bounds.Bottom) });
+        const double k = .5522847498307936;
+        var r = radius; var c = r * k;
+        var x = bounds.Left; var y = bounds.Top; var right = bounds.Right; var bottom = bounds.Bottom;
+        return new ChartPath(new[] {
+            ChartPathCommand.MoveTo(x + r, y), ChartPathCommand.LineTo(right - r, y),
+            ChartPathCommand.CubicTo(right - r + c, y, right, y + r - c, right, y + r), ChartPathCommand.LineTo(right, bottom - r),
+            ChartPathCommand.CubicTo(right, bottom - r + c, right - r + c, bottom, right - r, bottom), ChartPathCommand.LineTo(x + r, bottom),
+            ChartPathCommand.CubicTo(x + r - c, bottom, x, bottom - r + c, x, bottom - r), ChartPathCommand.LineTo(x, y + r),
+            ChartPathCommand.CubicTo(x, y + r - c, x + r - c, y, x + r, y)
+        });
+    }
+
 }

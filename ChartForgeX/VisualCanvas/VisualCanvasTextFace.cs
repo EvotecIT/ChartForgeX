@@ -50,7 +50,7 @@ internal readonly struct VisualCanvasTextFace {
             var registered = FontRegistry.Find(part.Trim().Trim('\"', '\''), weight, italic: false);
             if (string.IsNullOrWhiteSpace(part)) continue;
             if (registered != null) {
-                var font = TrueTypeFont.TryLoadFromPath(registered.Path, registered.CollectionIndex);
+                var font = registered.LoadFont();
                 if (font != null && font.IsTextFace) return new(new ResolvedTypeface(font, weight >= 600 && registered.Weight < 600, false, registered.Path));
             }
             // An earlier unregistered family may be installed on the drawing host. It must keep

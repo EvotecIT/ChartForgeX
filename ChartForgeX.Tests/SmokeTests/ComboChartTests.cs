@@ -6,7 +6,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void ComboHelpersRenderMixedSeries() {
-        var areaCombo = Chart.Create()
+        var areaCombo = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .WithXLabels("Q1", "Q2", "Q3")
             .AddColumnAreaCombo(
@@ -25,7 +25,7 @@ internal static partial class SmokeTests {
         Assert(areaSvg.Contains("data-cfx-role=\"area\"", StringComparison.Ordinal), "Column-area combos should render an area path.");
         Assert(areaCombo.ToPng().Length > 64, "Column-area combos should render PNG output.");
 
-        var scatterCombo = Chart.Create()
+        var scatterCombo = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(640, 360)
             .AddScatterLineCombo(
                 "Observed",
@@ -39,7 +39,10 @@ internal static partial class SmokeTests {
         Assert(scatterCombo.Series.Count == 2, "Scatter-line combos should add exactly two series.");
         Assert(scatterCombo.Series[0].Kind == ChartSeriesKind.Scatter, "Scatter-line combos should add scatter points first.");
         Assert(scatterCombo.Series[1].Kind == ChartSeriesKind.Line, "Scatter-line combos should add a line overlay.");
-        Assert(CountOccurrences(scatterSvg, "data-cfx-role=\"scatter-point\"") == 3, "Scatter-line combos should render one marker per scatter point.");
+        var scatterMarks = System.Xml.Linq.XDocument.Parse(scatterSvg).Descendants()
+            .Where(element => element.Name.LocalName == "ellipse" && (string?)element.Attribute("data-cfx-role") == "marker"
+                && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-series") == "0")).ToArray();
+        Assert(scatterMarks.Length == 3, "Scatter-line combos should render one native marker for each scatter observation.");
         Assert(CountOccurrences(scatterSvg, "data-cfx-role=\"line\"") == 1, "Scatter-line combos should render one line overlay.");
         Assert(scatterCombo.ToPng().Length > 64, "Scatter-line combos should render PNG output.");
     }

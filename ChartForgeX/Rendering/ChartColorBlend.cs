@@ -11,6 +11,9 @@ namespace ChartForgeX.Rendering;
 internal readonly struct ChartColorBlend {
     private readonly ChartColor? _result;
     private readonly bool _solid;
+    private readonly ChartColor? _contrastFill;
+    private readonly SvgColorRole? _contrastRole;
+    private readonly SvgPaint? _contrastSource;
 
     /// <summary>Describes a blend of <paramref name="from"/> towards <paramref name="to"/> by <paramref name="amount"/>.</summary>
     /// <param name="from">The colour at amount 0.</param>
@@ -26,6 +29,9 @@ internal readonly struct ChartColorBlend {
         ToRole = toRole;
         Amount = amount;
         _result = result;
+        _contrastFill = null;
+        _contrastRole = null;
+        _contrastSource = null;
     }
 
     public ChartColor From { get; }
@@ -45,7 +51,9 @@ internal readonly struct ChartColorBlend {
     /// Gets the SVG paint of the blend; a <see cref="Solid"/> colour is its role's paint, which also maps translucent
     /// colours (a mix only maps opaque operands).
     /// </summary>
-    public SvgPaint Paint => _solid && FromRole.HasValue ? SvgPaint.Of(Color, FromRole.Value) : SvgPaint.Mix(Color, From, FromRole, To, ToRole, Amount);
+    public SvgPaint Paint => _contrastSource.HasValue ? SvgPaint.Contrast(_contrastFill!.Value, _contrastSource.Value) :
+        _contrastFill.HasValue ? SvgPaint.Contrast(_contrastFill.Value, _contrastRole!.Value) :
+        _solid && FromRole.HasValue ? SvgPaint.Of(Color, FromRole.Value) : SvgPaint.Mix(Color, From, FromRole, To, ToRole, Amount);
 
     /// <summary>
     /// Gets the SVG paint of the blend with its literal written opaque, for paints whose opacity is set separately
@@ -60,6 +68,22 @@ internal readonly struct ChartColorBlend {
 
     /// <summary>A colour that is not a blend: <paramref name="color"/> written for <paramref name="role"/>.</summary>
     public static ChartColorBlend Solid(ChartColor color, SvgColorRole role) => new(color, role);
+
+    /// <summary>Opaque contrasting ink paired to a mark's fill for SVG theme switching.</summary>
+    public static ChartColorBlend Contrast(ChartColor fill, SvgColorRole role) => new(fill, role, contrast: true);
+
+    /// <summary>Contrasting ink that retains the filled mark's complete token blend for theme rebinding.</summary>
+    internal static ChartColorBlend Contrast(ChartColorBlend fill) => new(fill);
+
+    private ChartColorBlend(ChartColorBlend fill) : this(ChartColorMath.AccessibleTextOnBackground(fill.Color), SvgColorRole.Text) {
+        _contrastFill = fill.Color;
+        _contrastSource = fill.Paint;
+    }
+
+    private ChartColorBlend(ChartColor fill, SvgColorRole role, bool contrast) : this(ChartColorMath.AccessibleTextOnBackground(fill), role) {
+        _contrastFill = fill;
+        _contrastRole = role;
+    }
 
     private ChartColorBlend(ChartColor color, SvgColorRole role) : this(color, role, color, role, 0, color) => _solid = true;
 }

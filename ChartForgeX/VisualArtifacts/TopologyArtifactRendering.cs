@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Topology;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
@@ -32,50 +33,31 @@ public static class TopologyArtifactRendering {
         artifact.HasModelAccessibilitySnapshot = true;
 
         var prepared = RefreshRegions(artifact, topology, null);
-        artifact.NaturalSize = new VisualArtifactSize(prepared.Viewport.Width, prepared.Viewport.Height);
+        artifact.NaturalSize = new VisualArtifactSize(prepared.Width, prepared.Height);
         artifact.TopologyNaturalSizeSnapshot = artifact.NaturalSize;
         return artifact;
     }
 
-    internal static TopologyChart RefreshRegions(VisualArtifact artifact, TopologyChart topology, TopologyRenderOptions? renderOptions) {
-        // Preparing writes the text measurement onto the options, so the chart's stored options are copied first.
-        renderOptions ??= topology.DefaultRenderOptions?.CloneForRendering() ?? new TopologyRenderOptions();
-        var prepared = TopologyLayoutEngine.Prepare(topology, renderOptions.View, renderOptions);
-        artifact.Regions.Clear();
-        foreach (var group in prepared.Groups) artifact.Regions.Add(Region(group.Id, "topology-group", group.Label, group.X, group.Y, group.Width, group.Height, group.Href, group.Tooltip));
-        foreach (var node in prepared.Nodes) artifact.Regions.Add(Region(node.Id, "topology-node", node.Label, node.X, node.Y, node.Width, node.Height, node.Href, node.Tooltip));
-        foreach (var edge in prepared.Edges) {
-            var region = new VisualArtifactRegion {
-                Id = edge.Id,
-                Kind = "topology-edge",
-                Label = string.IsNullOrWhiteSpace(edge.Label) ? EdgeLabel(edge) : edge.Label!,
-                Href = SafeHref(edge.Href),
-                AlternativeText = edge.Tooltip
-            };
-            region.Metadata["source"] = edge.SourceNodeId;
-            region.Metadata["target"] = edge.TargetNodeId;
-            artifact.Regions.Add(region);
-        }
+    internal static PreparedTopology RefreshRegions(VisualArtifact artifact, TopologyChart topology, TopologyRenderOptions? renderOptions) {
+        var prepared = topology.Prepare(renderOptions);
+        RefreshRegions(artifact, prepared);
         return prepared;
     }
 
-    private static string EdgeLabel(TopologyEdge edge) {
-        return edge.Direction switch {
-            VisualLinkDirection.Forward => edge.SourceNodeId + " to " + edge.TargetNodeId,
-            VisualLinkDirection.Backward => edge.TargetNodeId + " to " + edge.SourceNodeId,
-            VisualLinkDirection.Bidirectional => edge.SourceNodeId + " to " + edge.TargetNodeId + " and " + edge.TargetNodeId + " to " + edge.SourceNodeId,
-            _ => edge.SourceNodeId + " and " + edge.TargetNodeId
-        };
-    }
-
-    private static VisualArtifactRegion Region(string id, string kind, string label, double x, double y, double width, double height, string? href, string? alternativeText) {
-        return new VisualArtifactRegion {
-            Id = id,
-            Kind = kind,
-            Label = label,
-            Bounds = width > 0 && height > 0 ? new ChartRect(x, y, width, height) : null,
-            Href = SafeHref(href),
-            AlternativeText = alternativeText
-        };
+    internal static void RefreshRegions(VisualArtifact artifact, PreparedTopology prepared) {
+        var semantic = prepared.ToInterchangeEnvelope();
+        artifact.Regions.Clear();
+        foreach (var source in prepared.Visual.Regions) {
+            var node = semantic.Nodes.FirstOrDefault(item => item.Id == source.Id);
+            var group = semantic.Groups.FirstOrDefault(item => item.Id == source.Id);
+            var edge = semantic.Edges.FirstOrDefault(item => item.Id == source.Id);
+            var region = new VisualArtifactRegion {
+                Id = source.Id, Kind = source.Role, Label = source.Label ?? string.Empty, Bounds = source.Bounds,
+                Href = SafeHref(node?.Href ?? group?.Href ?? edge?.Href),
+                AlternativeText = node?.Tooltip ?? group?.Tooltip ?? edge?.Tooltip ?? source.Label
+            };
+            if (edge != null) { region.Metadata["source"] = edge.SourceId; region.Metadata["target"] = edge.TargetId; }
+            artifact.Regions.Add(region);
+        }
     }
 }

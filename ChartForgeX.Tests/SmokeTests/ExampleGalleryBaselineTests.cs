@@ -10,7 +10,7 @@ internal static partial class SmokeTests {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-gallery-baseline-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
-            var chart = Chart.Create().WithSize(320, 180).WithTitle("Alpha").AddLine("Values", Points(1, 2, 3));
+            var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 180).WithTitle("Alpha").AddLine("Values", Points(1, 2, 3));
             File.WriteAllText(Path.Combine(output, "alpha.html"), chart.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha.svg"), chart.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha.png"), chart.ToPng());

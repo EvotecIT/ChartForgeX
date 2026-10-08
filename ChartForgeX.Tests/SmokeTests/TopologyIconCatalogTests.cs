@@ -114,8 +114,8 @@ internal static partial class SmokeTests {
 
         var svg = palette.ToSvg(renderOptions);
         Assert(svg.Contains("data-node-icon-artwork=\"svg\"", StringComparison.Ordinal), "SVG palette nodes should expose artwork type metadata.");
-        Assert(svg.Contains("data-cfx-role=\"topology-icon-artwork\"", StringComparison.Ordinal), "SVG renderer should embed trusted artwork fragments.");
-        Assert(svg.Contains("<rect x=\"7\" y=\"10\" width=\"13\"", StringComparison.Ordinal), "SVG renderer should include the vendor artwork fragment instead of only the fallback glyph.");
+        Assert(svg.Contains("data-cfx-role=\"topology-node-artwork\"", StringComparison.Ordinal), "SVG renderer should embed trusted artwork fragments.");
+        Assert(svg.Contains("href=\"data:image/png;base64,", StringComparison.Ordinal), "SVG should embed the detached vendor artwork shared with native PNG output.");
         Assert(!svg.Contains(">ADF<", StringComparison.Ordinal), "Artwork-backed icons should not fall back to compact text symbols in SVG.");
 
         var html = palette.ToInteractiveHtmlPage(renderOptions);
@@ -349,7 +349,7 @@ internal static partial class SmokeTests {
             IncludeLegend = false
         });
         Assert(svg.Contains("data-node-icon-artwork=\"svg\"", StringComparison.Ordinal), "Curated sidecar artwork should render through the SVG palette.");
-        Assert(svg.Contains("data-cfx-role=\"topology-icon-artwork\"", StringComparison.Ordinal), "Curated artwork-backed icons should render as SVG artwork rather than shape-only fallback nodes.");
+        Assert(svg.Contains("data-cfx-role=\"topology-node-artwork\"", StringComparison.Ordinal), "Curated artwork-backed icons should render as SVG artwork rather than shape-only fallback nodes.");
     }
 
     private static void TopologyDefaultAdCatalogExposesAdvancedDirectoryAliases() {

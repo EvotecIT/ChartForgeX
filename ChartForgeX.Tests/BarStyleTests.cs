@@ -47,7 +47,7 @@ public sealed class BarStyleTests {
         Assert.NotEmpty(ByRole(XDocument.Parse(histogram.ToSvg()), "bar"));
         Assert.All(ByRole(XDocument.Parse(histogram.ToSvg()), "bar"), bar => Assert.DoesNotContain("url(", (string?)bar.Attribute("fill"), StringComparison.Ordinal));
 
-        var solid = XDocument.Parse(Chart.Create().WithSize(480, 300).AddBar("Count", Values(3, 7), Blue).ToSvg());
+        var solid = XDocument.Parse(Chart.Create().WithSize(480, 300).WithBarStyle(ChartBarStyle.Solid).AddBar("Count", Values(3, 7), Blue).ToSvg());
         Assert.All(ByRole(solid, "bar"), bar => Assert.StartsWith("url(", (string?)bar.Attribute("fill"), StringComparison.Ordinal));
         Assert.NotEmpty(ByRole(solid, "bar-highlight"));
     }

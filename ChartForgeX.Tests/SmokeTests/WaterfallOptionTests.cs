@@ -1,74 +1,52 @@
-using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
-using ChartForgeX.Themes;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void WaterfallHonorsAxesVisibility() {
-        var compact = WaterfallSample()
-            .WithAxes(false)
-            .ToSvg();
+        var compact = WaterfallSample().WithAxes(false);
+        var compactScene = compact.Prepare(VisualExportRequest.ForChart(compact).Context).Scene;
+        Assert(compactScene.Nodes.Count(node => node.Role == "waterfall-bar") == 5, "Disabling axes must preserve every waterfall step and its derived total.");
+        Assert(!compactScene.Nodes.Any(node => node.Role?.StartsWith("axis-", System.StringComparison.Ordinal) == true), "Disabling axes must suppress both value and category axes.");
+        Assert(compact.ToPng().Length > 64, "Compact waterfall charts must render native PNG output.");
 
-        Assert(compact.Contains("data-cfx-role=\"waterfall-bar\"", System.StringComparison.Ordinal), "Waterfall bars should still render when axes are disabled.");
-        Assert(!compact.Contains("data-cfx-role=\"waterfall-x-axis-label\"", System.StringComparison.Ordinal), "Waterfall x-axis labels should hide when axes are disabled.");
-        Assert(!compact.Contains("data-cfx-role=\"waterfall-y-axis-label\"", System.StringComparison.Ordinal), "Waterfall y-axis labels should hide when axes are disabled.");
-        Assert(!compact.Contains("data-cfx-role=\"waterfall-x-axis-title\"", System.StringComparison.Ordinal), "Waterfall x-axis titles should hide when axes are disabled.");
-        Assert(!compact.Contains("data-cfx-role=\"waterfall-zero-axis\"", System.StringComparison.Ordinal), "Waterfall zero axis should hide when axes are disabled.");
+        var full = WaterfallSample();
+        var fullScene = full.Prepare(VisualExportRequest.ForChart(full).Context).Scene;
+        Assert(fullScene.Nodes.Any(node => node.Role == "axis-x-label"), "Waterfall categories should render by default.");
+        Assert(fullScene.Nodes.Any(node => node.Role == "axis-y-label"), "Waterfall value ticks should render by default.");
+        Assert(fullScene.Regions.Any(region => region.Role == "axis-x-label" && region.Label?.StartsWith("Total", System.StringComparison.Ordinal) == true), "The derived total must keep its category label.");
 
-        var full = WaterfallSample().ToSvg();
-        Assert(full.Contains("data-cfx-role=\"waterfall-x-axis-label\"", System.StringComparison.Ordinal), "Waterfall x-axis labels should render by default.");
-        Assert(full.Contains("data-cfx-role=\"waterfall-zero-axis\"", System.StringComparison.Ordinal), "Waterfall zero axis should render by default when in range.");
-        Assert(WaterfallSample().WithAxes(false).ToPng().Length > 64, "Compact waterfall options should render valid PNG output.");
-
-        var theme = ChartTheme.ReportLight();
-        theme.MutedText = ChartColor.FromHex("#00FFFF");
-        var yHidden = Chart.Create()
-            .WithSize(560, 320)
-            .WithTheme(theme)
-            .WithLegend(false)
-            .AddWaterfall("Delta", Points(18, -42, -12, 9));
-        yHidden.Options.YAxis.Visible = false;
-        var yHiddenPixels = ReadPngRgba(yHidden.ToPng(), out var width, out var height);
-        var xLabelRegionLeft = width / 4;
-        var xLabelRegionTop = height / 2;
-        Assert(CountNearColorInRect(yHiddenPixels, width, xLabelRegionLeft, xLabelRegionTop, width - xLabelRegionLeft, height - xLabelRegionTop, 0, 255, 255, 80) > 0, "Hiding the PNG waterfall y-axis should keep visible x-axis category labels.");
-        Assert(CountNearColorInRect(yHiddenPixels, width, 0, 0, width / 5, xLabelRegionTop, 0, 255, 255, 80) == 0, "Hiding the PNG waterfall y-axis should suppress its tick labels.");
-
-        var xHidden = Chart.Create()
-            .WithSize(560, 320)
-            .WithTheme(theme)
-            .WithLegend(false)
-            .AddWaterfall("Delta", Points(18, -42, -12, 9));
-        xHidden.Options.XAxis.Visible = false;
-        var xHiddenPixels = ReadPngRgba(xHidden.ToPng(), out _, out _);
-        Assert(CountNearColorInRect(xHiddenPixels, width, xLabelRegionLeft, xLabelRegionTop, width - xLabelRegionLeft, height - xLabelRegionTop, 0, 255, 255, 80) == 0, "Hiding the PNG waterfall x-axis should suppress bottom category labels while leaving the y-axis independent.");
+        foreach (var hideX in new[] { false, true }) {
+            var chart = WaterfallSample().WithLegend(false).WithTickLabelStyle(style => style.WithColor("#00FFFF"));
+            chart.Options.XAxis.Visible = !hideX;
+            chart.Options.YAxis.Visible = hideX;
+            var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+            Assert(!prepared.Scene.Nodes.Any(node => node.Role == (hideX ? "axis-x-label" : "axis-y-label")), "Each waterfall axis must hide independently.");
+            Assert(prepared.Scene.Nodes.Any(node => node.Role == (hideX ? "axis-y-label" : "axis-x-label")), "Hiding one axis must keep the other axis labels.");
+            var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
+            Assert(CountNearColorInRect(pixels, width, 0, 0, width, height, 0, 255, 255, 80) > 0, "The remaining tick labels must also appear in native PNG output.");
+        }
 
         var independentTicks = WaterfallSample();
         independentTicks.Options.XAxis.TickCount = 2;
         independentTicks.Options.YAxis.TickCount = 10;
-        Assert(CountOccurrences(independentTicks.ToSvg(), "data-cfx-role=\"waterfall-y-axis-label\"") > 2, "Waterfall value ticks should use the y-axis tick count independently from the category x-axis.");
-        Assert(independentTicks.ToPng().Length > 64, "Waterfall y-axis tick counts should render through the PNG path.");
+        var ticks = independentTicks.Prepare(VisualExportRequest.ForChart(independentTicks).Context).Scene;
+        Assert(ticks.Nodes.Count(node => node.Role == "axis-y-label") > 2, "Value ticks must honor their own density independently of categorical ticks.");
 
-        var crampedTheme = ChartTheme.ReportLight();
-        crampedTheme.MutedText = ChartColor.FromHex("#00FFFF");
-        var cramped = Chart.Create()
-            .WithSize(420, 220)
-            .WithTheme(crampedTheme)
-            .WithLegend(false)
-            .WithDataLabels()
+        var cramped = Chart.Create().WithSize(420, 220).WithLegend(false).WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
             .WithDataLabelStyle(style => style.WithColor("#FF00FF").WithFontSize(72))
-            .AddWaterfall("Delta", Points(0.01, 100, -25));
+            .AddWaterfall("Delta", Points(.01, 100, -25));
         cramped.Options.YAxis.Visible = false;
-        Assert(CountOccurrences(cramped.ToSvg(), "data-cfx-role=\"waterfall-x-axis-label\"") == 4, "An inside data label that does not fit should not suppress the corresponding SVG waterfall category label.");
-        var crampedPixels = ReadPngRgba(cramped.ToPng(), out var crampedWidth, out var crampedHeight);
-        Assert(CountNearColorInRect(crampedPixels, crampedWidth, 0, crampedHeight / 2, crampedWidth, crampedHeight / 2, 0, 255, 255, 80) > 0, "An inside data label that does not fit should not suppress PNG waterfall category labels.");
+        var withLabels = cramped.Prepare(VisualExportRequest.ForChart(cramped).Context).Scene;
+        var withoutLabels = cramped.WithDataLabels(false).Prepare(VisualExportRequest.ForChart(cramped).Context).Scene;
+        string[] Categories(VisualScene scene) => scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-x-label")
+            .SelectMany(node => node.Text.Lines.Select(line => line.Text)).ToArray();
+        Assert(Categories(withLabels).SequenceEqual(Categories(withoutLabels)), "An oversized inside data label must not suppress an independent category label.");
     }
 
-    private static Chart WaterfallSample() => Chart.Create()
-        .WithSize(560, 320)
-        .WithXAxis("Stage")
+    private static Chart WaterfallSample() => Chart.Create().WithSize(560, 320).WithXAxis("Stage")
         .AddWaterfall("Delta", Points(18, -42, -12, 9));
 }

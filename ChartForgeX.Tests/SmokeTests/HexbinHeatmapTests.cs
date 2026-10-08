@@ -21,9 +21,10 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-column-count=\"3\"", System.StringComparison.Ordinal), "Hexbin heatmaps should expose column-count metadata.");
         Assert(svg.Contains("data-cfx-min=\"68\"", System.StringComparison.Ordinal) && svg.Contains("data-cfx-max=\"96\"", System.StringComparison.Ordinal), "Hexbin heatmaps should expose value-range metadata.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"hexbin-cell\"") == 6, "Hexbin heatmaps should render one hexagon per row/column value.");
-        Assert(svg.Contains("data-cfx-role=\"hexbin-heatmap-row-label\"", System.StringComparison.Ordinal), "Hexbin heatmaps should render row labels.");
-        Assert(svg.Contains("data-cfx-role=\"hexbin-heatmap-column-label\"", System.StringComparison.Ordinal), "Hexbin heatmaps should render column labels.");
-        Assert(svg.Contains("<title>11:00, Wed: 96%, positive</title>", System.StringComparison.Ordinal), "Hexbin cells should expose native SVG hover titles.");
+        Assert(svg.Contains("data-cfx-role=\"heatmap-row-label\"", System.StringComparison.Ordinal), "Hexbin heatmaps should render shared matrix row labels.");
+        Assert(svg.Contains("data-cfx-role=\"heatmap-column-label\"", System.StringComparison.Ordinal), "Hexbin heatmaps should render shared matrix column labels.");
+        var last = FamilyMetadata(svg, "hexbin-cell", ("series", "1"), ("point", "2"), ("value", "96"), ("status", "positive"));
+        Assert(last.Tooltip() == "11:00, Wed: 96%", "Hexbin cells should expose native SVG hover titles while retaining semantic status metadata.");
         Assert(chart.ToPng().Length > 64, "Hexbin heatmaps should render PNG output.");
         AssertThrows<System.ArgumentException>(() => Chart.Create().AddHexbinHeatmapRow("Empty", System.Array.Empty<ChartForgeX.Primitives.ChartPoint>()), "Hexbin heatmaps should reject empty row inputs.");
     }

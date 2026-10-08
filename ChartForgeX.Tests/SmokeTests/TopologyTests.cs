@@ -20,20 +20,9 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("<title>AMER Hub (Healthy)</title>", StringComparison.Ordinal), "Topology SVG should emit native SVG tooltips.");
         Assert(svg.Contains("data-node-kind=\"Hub\"", StringComparison.Ordinal), "Topology SVG should expose generic node kinds.");
         Assert(svg.Contains("data-cfx-status=\"Critical\"", StringComparison.Ordinal), "Topology SVG should expose health status metadata.");
-        Assert(svg.Contains("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal), "Topology SVG should render the legend.");
+        Assert(svg.Contains("data-cfx-role=\"legend-entry\"", StringComparison.Ordinal), "Topology SVG should render the legend.");
         var png = CreateSampleTopologyChart().ToPng();
         Assert(png.Length > 64 && png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71, "Topology renderer should emit a valid PNG image.");
-    }
-
-    private static void TopologySvgRendererUsesSvgMarkupEngine() {
-        var source = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX", "Topology", "TopologySvgRenderer.cs"));
-        Assert(source.Contains("SvgDocument.Create", StringComparison.Ordinal), "Topology SVG root markup should be built through the SVG document engine.");
-        Assert(source.Contains("new SvgElement(\"defs\")", StringComparison.Ordinal), "Topology SVG defs should be built through the SVG element engine.");
-        Assert(source.Contains("new SvgElement(\"g\")", StringComparison.Ordinal), "Topology SVG edge and label groups should be built through the SVG element engine.");
-        Assert(source.Contains("SvgPathDataBuilder", StringComparison.Ordinal), "Topology edge paths should use the shared SVG path data builder.");
-        Assert(!source.Contains("AppendLine(\"<svg", StringComparison.Ordinal), "Topology SVG renderer should not hand-build the root svg element with raw string concatenation.");
-        Assert(!source.Contains("Raw(BuildBodyMarkup", StringComparison.Ordinal), "Topology SVG body layers should be attached as SVG element children instead of a raw body markup handoff.");
-        Assert(!source.Contains("BuildBodyMarkup", StringComparison.Ordinal), "Topology SVG body composition should remain in the SVG element tree.");
     }
 
     private static void TopologyDefaultLegendIsProductNeutral() {
@@ -48,7 +37,8 @@ internal static partial class SmokeTests {
     }
 
     private static void TopologyLegendGrowsForDomainSpecificItems() {
-        var chart = CreateSampleTopologyChart();
+        var chart = TopologyChart.Create().WithViewport(420, 500, 20).WithTitle("Legend rows")
+            .AddNode("one", "One", 40, 80);
         chart.Legend = TopologyLegend.Default()
             .AddNodeKind("Hub site", TopologyNodeKind.Hub, symbol: "H")
             .AddNodeKind("Branch site", TopologyNodeKind.Branch, symbol: "B")
@@ -58,7 +48,9 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-legend-kind=\"node\"", StringComparison.Ordinal), "Topology legend should render explicit node-kind items.");
         Assert(svg.Contains("data-legend-kind=\"edge\"", StringComparison.Ordinal), "Topology legend should render explicit edge-kind items.");
-        Assert(svg.Contains("height=\"136\"", StringComparison.Ordinal), "Topology legend should grow when caller-added legend items need another row.");
+        var legendLabels = TopologyRoleTexts(svg, "legend-label");
+        Assert(legendLabels.Length == chart.Legend.Items.Count && legendLabels.Select(element => (string?)element.Attribute("y")).Distinct().Count() > 1,
+            "Topology legend should wrap caller-added items into multiple measured rows without dropping their labels.");
         Assert(chart.ToPng().Length > 64, "Topology PNG legend should render caller-added legend items.");
     }
 
@@ -91,8 +83,10 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(svg.Contains("viewBox=\"0 0 500 180\"", StringComparison.Ordinal), "Topology renderer should expand the viewport horizontally when manual content exceeds the original width.");
-        Assert(svg.Contains("x=\"20\" y=\"92\" width=\"120\" height=\"64\"", StringComparison.Ordinal), "Topology renderer should shift negative or title-overlapping manual content into the safe report area.");
-        Assert(svg.Contains("x=\"360\" y=\"92\" width=\"120\" height=\"64\"", StringComparison.Ordinal), "Topology renderer should preserve deterministic spacing while fitting wide manual content.");
+        var left = TopologySurfaceBounds(svg, "node", "left"); var right = TopologySurfaceBounds(svg, "node", "right");
+        Assert(left.X == 20 && left.Y > 20 && left.Width == 120 && left.Height == 64, "Topology renderer should shift negative or title-overlapping manual content into the shared frame content area.");
+        Assert(right.X - left.X == 340 && right.Y == left.Y && right.Width == left.Width, "Topology renderer should preserve deterministic spacing while fitting wide manual content.");
+        Assert(chart.Nodes[0].X == -40 && chart.Nodes[0].Y == 20, "Convenience export must preserve authored coordinates.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should use the same fitted topology layout.");
     }
 
@@ -142,9 +136,9 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(svg.Contains("data-layout-direction=\"LeftToRight\"", StringComparison.Ordinal), "Topology SVG should expose layout direction for host adapters.");
-        Assert(svg.Contains("id=\"layer-flow-node-namespace\"", StringComparison.Ordinal), "Layered left-to-right topology should render the first layer.");
-        Assert(svg.Contains("id=\"layer-flow-node-service\"", StringComparison.Ordinal), "Layered left-to-right topology should render the middle layer.");
-        Assert(svg.Contains("id=\"layer-flow-node-database\"", StringComparison.Ordinal), "Layered left-to-right topology should render the last layer.");
+        Assert(TopologyEntity(svg, "node", "namespace").Descendants().Any(), "Layered left-to-right topology should render the first layer.");
+        Assert(TopologyEntity(svg, "node", "service").Descendants().Any(), "Layered left-to-right topology should render the middle layer.");
+        Assert(TopologyEntity(svg, "node", "database").Descendants().Any(), "Layered left-to-right topology should render the last layer.");
         Assert(svg.Contains("x=\"24\"", StringComparison.Ordinal), "Layered left-to-right topology should start inside the left viewport padding.");
         Assert(svg.Contains("x=\"456\"", StringComparison.Ordinal), "Layered left-to-right topology should place the final layer near the right viewport padding.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Layered left-to-right topology should render as PNG.");
@@ -176,12 +170,12 @@ internal static partial class SmokeTests {
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-layout-mode=\"DenseGrouped\"", StringComparison.Ordinal), "Dense grouped topology should expose the layout mode for host adapters.");
-        Assert(svg.Contains("id=\"dense-grouped-group-amer\"", StringComparison.Ordinal), "Dense grouped topology should render the first group panel.");
-        Assert(svg.Contains("id=\"dense-grouped-group-emea\"", StringComparison.Ordinal), "Dense grouped topology should render the middle group panel.");
-        Assert(svg.Contains("id=\"dense-grouped-group-apac\"", StringComparison.Ordinal), "Dense grouped topology should render the final group panel.");
+        Assert(TopologyEntity(svg, "group", "amer").Descendants().Any(), "Dense grouped topology should render the first group panel.");
+        Assert(TopologyEntity(svg, "group", "emea").Descendants().Any(), "Dense grouped topology should render the middle group panel.");
+        Assert(TopologyEntity(svg, "group", "apac").Descendants().Any(), "Dense grouped topology should render the final group panel.");
         Assert(svg.Contains("data-group-layout-policy=\"Auto\"", StringComparison.Ordinal), "Dense grouped topology should expose the group layout policy for host adapters.");
         Assert(svg.Contains("data-group-applied-layout-policy=\"HubAndBranch\"", StringComparison.Ordinal), "Dense grouped topology should expose the applied auto-resolved group layout policy.");
-        Assert(!svg.Contains("x=\"0\" y=\"0\"", StringComparison.Ordinal), "Dense grouped layout should move unset groups and nodes away from the origin.");
+        Assert(chart.Groups.All(group => { var bounds = TopologySurfaceBounds(svg, "group", group.Id); return bounds.X > 0 && bounds.Y > 0; }), "Dense grouped layout should move each unset group away from the origin.");
         Assert(svg.Contains("data-route-fallback-reason=\"none\"", StringComparison.Ordinal), "Dense grouped site-link routes should have a clear route in the packed layout.");
         Assert(chart.ToPng(options).Length > 64, "Dense grouped topology should render as PNG.");
     }
@@ -210,13 +204,13 @@ internal static partial class SmokeTests {
         }
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
-        Assert(svg.Contains("data-group-id=\"pair\" data-group-layout-policy=\"PairRows\" data-group-applied-layout-policy=\"PairRows\"", StringComparison.Ordinal), "Dense grouped layout should expose pair-row group policies.");
-        Assert(svg.Contains("data-group-id=\"dots\" data-group-layout-policy=\"CollapsedDots\" data-group-applied-layout-policy=\"CollapsedDots\"", StringComparison.Ordinal), "Dense grouped layout should expose collapsed-dot group policies.");
-        Assert(svg.Contains("data-group-id=\"mesh\" data-group-layout-policy=\"MiniMesh\" data-group-applied-layout-policy=\"MiniMesh\"", StringComparison.Ordinal), "Dense grouped layout should expose mini-mesh group policies.");
-        Assert(svg.Contains("data-node-id=\"dot-0\" data-node-kind=\"Branch\" data-node-display-mode=\"Dot\"", StringComparison.Ordinal), "Collapsed dense groups should force compact dot nodes.");
-        Assert(svg.Contains("data-node-id=\"mesh-0\" data-node-kind=\"Server\" data-node-display-mode=\"Tile\"", StringComparison.Ordinal), "Mini-mesh dense groups should preserve tile rendering while changing placement.");
-        Assert(svg.Contains("cfx-topology__node-dot", StringComparison.Ordinal), "Collapsed dense groups should render dot glyphs.");
-        Assert(!svg.Contains("x=\"0\" y=\"0\"", StringComparison.Ordinal), "Dense group policy layout should move unset groups and nodes away from the origin.");
+        Assert(SvgHasAttributes(svg, "data-group-id=\"pair\" data-group-layout-policy=\"PairRows\" data-group-applied-layout-policy=\"PairRows\""), "Dense grouped layout should expose pair-row group policies.");
+        Assert(SvgHasAttributes(svg, "data-group-id=\"dots\" data-group-layout-policy=\"CollapsedDots\" data-group-applied-layout-policy=\"CollapsedDots\""), "Dense grouped layout should expose collapsed-dot group policies.");
+        Assert(SvgHasAttributes(svg, "data-group-id=\"mesh\" data-group-layout-policy=\"MiniMesh\" data-group-applied-layout-policy=\"MiniMesh\""), "Dense grouped layout should expose mini-mesh group policies.");
+        Assert(SvgHasAttributes(svg, "data-node-id=\"dot-0\" data-node-kind=\"Branch\" data-node-display-mode=\"Dot\""), "Collapsed dense groups should force compact dot nodes.");
+        Assert(SvgHasAttributes(svg, "data-node-id=\"mesh-0\" data-node-kind=\"Server\" data-node-display-mode=\"Tile\""), "Mini-mesh dense groups should preserve tile rendering while changing placement.");
+        Assert(TopologyHasDot(svg), "Collapsed dense groups should render dot glyphs.");
+        Assert(chart.Groups.All(group => { var bounds = TopologySurfaceBounds(svg, "group", group.Id); return bounds.X > 0 && bounds.Y > 0; }), "Dense group policy layout should move each unset group away from the origin.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }).Length > 64, "Dense grouped policies should render as PNG.");
     }
 
@@ -234,9 +228,9 @@ internal static partial class SmokeTests {
             .AddEdge("b-link", "left-hub", "right-hub", "backup", TopologyEdgeKind.Link, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
-        Assert(svg.Contains("data-source-port=\"Right\" data-target-port=\"Left\" data-route-lane=\"-9\"", StringComparison.Ordinal), "Dense grouped layout should assign outside-facing ports and a negative lane to the first repeated inter-group edge.");
-        Assert(svg.Contains("data-source-port=\"Right\" data-target-port=\"Left\" data-route-lane=\"9\"", StringComparison.Ordinal), "Dense grouped layout should assign outside-facing ports and a positive lane to the second repeated inter-group edge.");
-        Assert(svg.Contains("data-source-group-id=\"left\" data-target-group-id=\"right\"", StringComparison.Ordinal), "Dense grouped SVG edges should expose source and target group ids for host inspectors.");
+        Assert(SvgHasAttributes(svg, "data-source-port=\"Right\" data-target-port=\"Left\" data-route-lane=\"-9\""), "Dense grouped layout should assign outside-facing ports and a negative lane to the first repeated inter-group edge.");
+        Assert(SvgHasAttributes(svg, "data-source-port=\"Right\" data-target-port=\"Left\" data-route-lane=\"9\""), "Dense grouped layout should assign outside-facing ports and a positive lane to the second repeated inter-group edge.");
+        Assert(SvgHasAttributes(svg, "data-source-group-id=\"left\" data-target-group-id=\"right\""), "Dense grouped SVG edges should expose source and target group ids for host inspectors.");
         Assert(svg.Contains("data-edge-layout-inference=\"source-port target-port route-lane\"", StringComparison.Ordinal), "Dense grouped layout should expose inferred ports and route lanes separately from caller supplied values.");
         Assert(svg.Contains("data-route-candidate-count=\"", StringComparison.Ordinal), "Dense grouped inter-group routes should still expose obstacle-aware diagnostics.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }).Length > 64, "Dense grouped inter-group edge defaults should render as PNG.");
@@ -255,7 +249,7 @@ internal static partial class SmokeTests {
             .WithEdgeRouteLane("explicit", 42);
         var explicitSvg = explicitChart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
         Assert(explicitSvg.Contains("data-edge-layout-inference=\"none\"", StringComparison.Ordinal), "Dense grouped layout should not mark caller supplied ports or route lanes as inferred.");
-        Assert(explicitSvg.Contains("data-source-port=\"Bottom\" data-target-port=\"Top\" data-route-lane=\"42\"", StringComparison.Ordinal), "Dense grouped layout should preserve caller supplied inter-group edge ports and lanes.");
+        Assert(SvgHasAttributes(explicitSvg, "data-source-port=\"Bottom\" data-target-port=\"Top\" data-route-lane=\"42\""), "Dense grouped layout should preserve caller supplied inter-group edge ports and lanes.");
     }
 
     private static void TopologyEscapesTextAndSkipsUnsafeHref() {
@@ -307,7 +301,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-edge-line-style=\"Dotted\"", StringComparison.Ordinal), "Topology SVG should expose explicit edge line style hooks.");
         Assert(svg.Contains(">p95</text>", StringComparison.Ordinal), "Topology SVG should render tertiary edge labels.");
         Assert(svg.Contains("data-edge-muted=\"true\"", StringComparison.Ordinal), "Topology SVG should expose muted structural edge hooks.");
-        Assert(svg.Contains("cfx-topology__edge-wrap--muted", StringComparison.Ordinal), "Topology SVG should emit muted edge CSS hooks.");
+        Assert(TopologyEntity(svg, "edge", "api-sql").Attribute("class")!.Value.Contains("cfx-topology__edge--muted", StringComparison.Ordinal), "Topology SVG should emit muted edge CSS hooks on the muted relationship.");
         Assert(svg.Contains("data-cfx-meta-region-name=\"EU &amp; US\"", StringComparison.Ordinal), "Topology SVG should emit escaped group metadata attributes.");
         Assert(svg.Contains("data-cfx-meta-role-type=\"public &lt;api&gt;\"", StringComparison.Ordinal), "Topology SVG should emit escaped node metadata attributes.");
         Assert(svg.Contains("data-cfx-metric-latency-p95=\"42 ms\"", StringComparison.Ordinal), "Topology SVG should emit node metric attributes.");
@@ -457,7 +451,7 @@ internal static partial class SmokeTests {
             .AddEdge("left-right", "left", "right", "blocked", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
-        Assert(svg.Contains("data-edge-id=\"left-right\" data-label-x=\"240\" data-label-y=\"92\"", StringComparison.Ordinal), "Topology edge labels should move away from node boxes when their midpoint overlaps a node.");
+        Assert(SvgHasAttributes(svg, "data-edge-id=\"left-right\" data-label-x=\"240\" data-label-y=\"92\""), "Topology edge labels should move away from node boxes when their midpoint overlaps a node.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should use the same edge-label placement planner.");
     }
 
@@ -474,7 +468,10 @@ internal static partial class SmokeTests {
             .AddEdge("horizontal", "left", "right", null, TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.None, TopologyEdgeRouting.Straight);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
-        Assert(svg.Contains("data-edge-id=\"vertical\" data-label-x=\"260\" data-label-y=\"142\"", StringComparison.Ordinal), "Topology edge labels should avoid unrelated edge segments when selecting deterministic label positions.");
+        var envelope = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false }).ToInterchangeEnvelope();
+        var label = envelope.Edges.Single(edge => edge.Id == "vertical").ResolvedLabelBounds!.Value;
+        var foreignRoute = envelope.Edges.Single(edge => edge.Id == "horizontal").ResolvedRoute;
+        Assert(foreignRoute.All(point => point.Y == foreignRoute[0].Y) && (label.Bottom < foreignRoute[0].Y || label.Top > foreignRoute[0].Y), "Topology edge labels should avoid the complete unrelated horizontal route.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should share edge-aware topology label placement.");
     }
 
@@ -493,8 +490,11 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-edge-id=\"right-left\"", StringComparison.Ordinal), "Topology parallel edge test should render the reverse path.");
         Assert(svg.Contains("data-route-offset=\"-13\"", StringComparison.Ordinal), "Topology parallel edges should expose deterministic negative route offsets.");
         Assert(svg.Contains("data-route-offset=\"13\"", StringComparison.Ordinal), "Topology parallel edges should expose deterministic positive route offsets.");
-        Assert(svg.Contains("data-edge-id=\"left-right\" data-label-x=\"270\" data-label-y=\"149\"", StringComparison.Ordinal), "Topology parallel edge labels should follow the offset route instead of stacking on the center line.");
-        Assert(svg.Contains("data-edge-id=\"right-left\" data-label-x=\"270\" data-label-y=\"175\"", StringComparison.Ordinal), "Topology reverse parallel edge labels should be separated from the forward label.");
+        var edges = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false }).ToInterchangeEnvelope().Edges;
+        var forward = edges.Single(edge => edge.Id == "left-right"); var reverse = edges.Single(edge => edge.Id == "right-left");
+        var forwardLabel = forward.ResolvedLabelBounds!.Value; var reverseLabel = reverse.ResolvedLabelBounds!.Value;
+        Assert(forwardLabel.Bottom <= reverseLabel.Top || reverseLabel.Bottom <= forwardLabel.Top || forwardLabel.Right <= reverseLabel.Left || reverseLabel.Right <= forwardLabel.Left, "Parallel relationship labels should remain separate.");
+        Assert(Math.Abs(forwardLabel.Y + forwardLabel.Height / 2 - forward.ResolvedRoute[0].Y) <= 30 && Math.Abs(reverseLabel.Y + reverseLabel.Height / 2 - reverse.ResolvedRoute[0].Y) <= 30, "Each parallel label should remain associated with its own offset route.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should use the same deterministic parallel edge offsets.");
     }
 
@@ -514,7 +514,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-route-corridor=\"manual-waypoints\"", StringComparison.Ordinal), "Topology SVG should expose manual waypoints as the selected route corridor.");
         Assert(svg.Contains("data-route-fallback-reason=\"manual-waypoints\"", StringComparison.Ordinal), "Topology SVG should report manual waypoints as a host-selected route override.");
         Assert(svg.Contains("data-waypoint-count=\"2\"", StringComparison.Ordinal), "Topology SVG should expose waypoint counts as host interactivity hooks.");
-        Assert(svg.Contains("data-edge-id=\"left-right\" data-label-x=\"", StringComparison.Ordinal) && svg.Contains("data-label-y=\"180\"", StringComparison.Ordinal), "Topology edge labels should use the waypoint route midpoint when it is clear of other topology elements.");
+        Assert(Math.Abs(GetAttribute(svg, "data-edge-id=\"left-right\"", "data-label-y") - 180) < .001, "Topology edge labels should use the waypoint route midpoint when it is clear of other topology elements.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should render explicit edge waypoints.");
 
     }
@@ -531,7 +531,7 @@ internal static partial class SmokeTests {
             .WithEdgeLineStyle("left-right", TopologyEdgeLineStyle.Dashed);
 
         var straightSvg = straight.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
-        Assert(straightSvg.Contains("data-source-port=\"Right\" data-target-port=\"Left\" data-route-lane=\"0\"", StringComparison.Ordinal), "Topology SVG should expose explicit edge ports and lanes for host adapters.");
+        Assert(SvgHasAttributes(straightSvg, "data-source-port=\"Right\" data-target-port=\"Left\" data-route-lane=\"0\""), "Topology SVG should expose explicit edge ports and lanes for host adapters.");
         Assert(straightSvg.Contains("data-edge-line-style=\"Dashed\"", StringComparison.Ordinal), "Topology SVG should expose explicit edge line style metadata.");
         Assert(straightSvg.Contains("stroke-dasharray=\"8 5\"", StringComparison.Ordinal), "Explicit edge line style should override health-derived dash behavior.");
         Assert(straightSvg.Contains("d=\"M 207 152 L 333 152\"", StringComparison.Ordinal), "Straight topology edges should attach to the requested source and target ports.");
@@ -546,7 +546,7 @@ internal static partial class SmokeTests {
             .WithEdgePorts("source-target", TopologyEdgePort.Bottom, TopologyEdgePort.Top)
             .WithEdgeRouteLane("source-target", 24);
         var laneSvg = lane.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
-        Assert(laneSvg.Contains("data-source-port=\"Bottom\" data-target-port=\"Top\" data-route-lane=\"24\"", StringComparison.Ordinal), "Topology SVG should expose non-zero route lanes.");
+        Assert(SvgHasAttributes(laneSvg, "data-source-port=\"Bottom\" data-target-port=\"Top\" data-route-lane=\"24\""), "Topology SVG should expose non-zero route lanes.");
         Assert(laneSvg.Contains("d=\"M 140 151 L 140 216 L 380 216 L 380 233\"", StringComparison.Ordinal), "Orthogonal topology edges should use requested ports and deterministic route lanes.");
         Assert(lane.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should render ported orthogonal route lanes.");
         var obstacleAware = TopologyChart.Create()
@@ -641,20 +641,19 @@ internal static partial class SmokeTests {
         Assert(!svg.Contains(">142 ms<", StringComparison.Ordinal), "Metric-driven edge labels should replace the default edge label.");
         Assert(svg.Contains("cfx-topology--highlighted", StringComparison.Ordinal), "Topology render options should mark highlighted offenders.");
         Assert(svg.Contains("cfx-topology--dimmed", StringComparison.Ordinal), "Topology render options should dim non-highlighted elements.");
-        Assert(svg.Contains(".cfx-topology--highlighted:not(.cfx-topology__edge-wrap):not(.cfx-topology__edge-label)", StringComparison.Ordinal), "Topology selected/highlight shadows should not turn routes into oversized shadow blobs.");
-        Assert(svg.Contains(".cfx-topology--selected:not(.cfx-topology__edge-wrap):not(.cfx-topology__edge-label)", StringComparison.Ordinal), "Topology selected shadows should stay off edge wrappers and labels.");
-        Assert(svg.Contains("data-node-id=\"tr-branch\" data-node-kind=\"Branch\" data-node-display-mode=\"Card\" data-cfx-status=\"Critical\" data-cfx-selected=\"true\"", StringComparison.Ordinal), "Topology render options should mark selected nodes without filtering the chart.");
+        Assert(!svg.Contains("filter=", StringComparison.Ordinal), "Native highlight and selection paint should not add oversized shadows to routes.");
+        Assert(SvgHasAttributes(svg, "data-node-id=\"tr-branch\" data-node-kind=\"Branch\" data-node-display-mode=\"Card\" data-cfx-status=\"Critical\" data-cfx-selected=\"true\""), "Topology render options should mark selected nodes without filtering the chart.");
         Assert(svg.Contains("data-edge-id=\"emea-tr\"", StringComparison.Ordinal) && svg.Contains("data-cfx-selected=\"true\"", StringComparison.Ordinal), "Topology render options should mark selected edges without filtering the chart.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeGroups = false, IncludeNodeLabels = false, EdgeLabelMetricKey = "queue", HighlightStatuses = { TopologyHealthStatus.Critical } }).Length > 64, "Topology PNG should support dashboard perspective options.");
 
         var groupHighlight = chart.ToSvg(new TopologyRenderOptions { HighlightGroupIds = { "EMEA" } });
-        Assert(groupHighlight.Contains("id=\"site-topology-edge-emea-tr\" class=\"cfx-topology__edge-wrap cfx-topology__edge-wrap--critical cfx-topology--highlighted\"", StringComparison.Ordinal), "Topology group highlighting should keep connected edges visible.");
+        var highlightedEdge = System.Xml.Linq.XDocument.Parse(groupHighlight).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge" && (string?)element.Attribute("data-edge-id") == "emea-tr");
+        Assert(((string?)highlightedEdge.Attribute("class"))!.Contains("--highlighted", StringComparison.Ordinal), "Topology group highlighting should keep connected edges visible.");
 
         var nakedEdgeLabels = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false });
-        var labelStart = nakedEdgeLabels.IndexOf("data-cfx-role=\"topology-edge-label\" data-edge-id=\"amer-emea\"", StringComparison.Ordinal);
-        var labelEnd = nakedEdgeLabels.IndexOf("</g>", labelStart, StringComparison.Ordinal);
-        Assert(labelStart >= 0 && labelEnd > labelStart, "Topology render options should still render naked edge-label groups.");
-        Assert(!nakedEdgeLabels.Substring(labelStart, labelEnd - labelStart).Contains("<rect", StringComparison.Ordinal), "Topology render options should allow screenshot-style route labels without label backplates.");
+        var nakedLabel = System.Xml.Linq.XDocument.Parse(nakedEdgeLabels).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-label" && (string?)element.Attribute("data-edge-id") == "amer-emea");
+        Assert(nakedLabel.Descendants().Any(element => element.Name.LocalName == "text"), "Topology render options should still render naked edge-label text.");
+        Assert(!nakedLabel.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-label-surface"), "Topology render options should allow screenshot-style route labels without label backplates.");
     }
 
     private static void TopologyPresetsAndNodeDisplayModesRenderDenseViews() {
@@ -669,11 +668,11 @@ internal static partial class SmokeTests {
 
         var dots = chart.ToSvg(new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Dot, IncludeNodeLabels = false, IncludeLegend = false });
         Assert(dots.Contains("data-node-display-mode=\"Dot\"", StringComparison.Ordinal), "Topology dot mode should expose display-mode metadata.");
-        Assert(dots.Contains("cfx-topology__node-dot", StringComparison.Ordinal), "Topology dot mode should render dot nodes.");
+        Assert(TopologyHasDot(dots), "Topology dot mode should render dot nodes.");
         Assert(!dots.Contains("<rect class=\"cfx-topology__node-card\"", StringComparison.Ordinal), "Topology dot mode should avoid full node cards.");
         var tile = chart.ToSvg(new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeLegend = false });
         Assert(tile.Contains("data-node-display-mode=\"Tile\"", StringComparison.Ordinal), "Topology tile mode should expose display-mode metadata.");
-        Assert(tile.Contains("width=\"64\" height=\"46\"", StringComparison.Ordinal), "Topology tile mode should render compact icon tiles.");
+        Assert(SvgHasAttributes(tile, "width=\"64\" height=\"46\""), "Topology tile mode should render compact icon tiles.");
         Assert(!tile.Contains("topology-node-subtitle", StringComparison.Ordinal), "Topology tile subtitles should be opt-in for dense diagrams.");
         var tileSubtitles = chart.ToSvg(new TopologyRenderOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeLegend = false });
         Assert(tileSubtitles.Contains("data-cfx-role=\"topology-node-subtitle\"", StringComparison.Ordinal), "Topology tile mode should optionally render compact subtitle chips.");
@@ -697,13 +696,13 @@ internal static partial class SmokeTests {
             .WithNodeDisplay("cluster", TopologyNodeDisplayMode.Dot, "+12");
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
-        Assert(svg.Contains("data-node-id=\"hub\" data-node-kind=\"Hub\" data-node-display-mode=\"Card\"", StringComparison.Ordinal), "Topology nodes without overrides should use the render-option display mode.");
-        Assert(svg.Contains("data-node-id=\"cluster\" data-node-kind=\"Service\" data-node-display-mode=\"Dot\"", StringComparison.Ordinal), "Topology nodes should be able to override display mode individually.");
-        Assert(svg.Contains("data-node-id=\"queue\" data-node-kind=\"Service\" data-node-display-mode=\"Dot\"", StringComparison.Ordinal), "Topology nodes should be able to override display mode by node kind.");
+        Assert(SvgHasAttributes(svg, "data-node-id=\"hub\" data-node-kind=\"Hub\" data-node-display-mode=\"Card\""), "Topology nodes without overrides should use the render-option display mode.");
+        Assert(SvgHasAttributes(svg, "data-node-id=\"cluster\" data-node-kind=\"Service\" data-node-display-mode=\"Dot\""), "Topology nodes should be able to override display mode individually.");
+        Assert(SvgHasAttributes(svg, "data-node-id=\"queue\" data-node-kind=\"Service\" data-node-display-mode=\"Dot\""), "Topology nodes should be able to override display mode by node kind.");
         Assert(svg.Contains("data-node-badge=\"+12\"", StringComparison.Ordinal), "Topology nodes should emit safe badge metadata.");
         Assert(svg.Contains("data-node-badge=\"+\"", StringComparison.Ordinal), "Kind-based node display overrides should optionally apply a shared badge.");
         Assert(svg.Contains("data-cfx-role=\"topology-node-badge\"", StringComparison.Ordinal), "Topology SVG should render node badge overlays.");
-        Assert(svg.Contains("cfx-topology__node-dot", StringComparison.Ordinal), "Per-node dot display should render a compact marker without switching the whole chart to dots.");
+        Assert(TopologyHasDot(svg), "Per-node dot display should render a compact marker without switching the whole chart to dots.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should render mixed node display modes and badges.");
     }
 
@@ -717,7 +716,7 @@ internal static partial class SmokeTests {
             .AddEdge("api-sql", "api", "sql", "14 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward);
 
         var svg = chart.ToSvg(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto });
-        Assert(svg.Contains("data-cfx-role=\"topology-legend\"", StringComparison.Ordinal), "Topology auto legend should render when requested.");
+        Assert(svg.Contains("data-cfx-role=\"legend-entry\"", StringComparison.Ordinal), "Topology auto legend should render when requested.");
         Assert(svg.Contains(">API Service<", StringComparison.Ordinal), "Topology auto legend should include node symbols from chart data.");
         Assert(svg.Contains(">SQL Database<", StringComparison.Ordinal), "Topology auto legend should include database symbols from chart data.");
         Assert(svg.Contains(">Dependency<", StringComparison.Ordinal), "Topology auto legend should include used edge kinds.");

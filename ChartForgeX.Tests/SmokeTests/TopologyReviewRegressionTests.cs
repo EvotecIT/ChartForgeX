@@ -32,10 +32,11 @@ internal static partial class SmokeTests {
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeIconLabels = true };
         var svg = chart.ToSvg(options);
-        var badgeY = GetAttribute(svg, "data-cfx-role=\"topology-node-badge\"", "y");
+        var badgeY = GetAttribute(svg, "data-cfx-role=\"topology-node-badge-surface\"", "y");
+        var badgeHeight = GetAttribute(svg, "data-cfx-role=\"topology-node-badge-surface\"", "height");
         var plateY = GetAttribute(svg, "data-cfx-role=\"topology-node-icon-label\"", "y");
 
-        Assert(plateY >= badgeY + 19, "Icon label plates should stack below icon badges instead of sharing the badge slot.");
+        Assert(badgeHeight > 0 && plateY >= badgeY + badgeHeight, "Icon label plates should stack below icon badges instead of sharing the badge slot.");
         Assert(chart.ToPng(options).Length > 64, "Stacked icon labels and badges should render as PNG.");
     }
 
@@ -232,7 +233,14 @@ internal static partial class SmokeTests {
         var visibleIconLabel = TopologyRenderPrimitives.EdgeLabelLayouts(chart, new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = true, IncludeIconLabels = true }).Single();
 
         Assert(Math.Abs(hiddenIconLabel.CenterY - 150) < 0.01, "Hidden icon labels should not reserve edge-label obstacles.");
-        Assert(Math.Abs(visibleIconLabel.CenterY - 150) > 0.01, "Rendered icon-label plates should reserve edge-label obstacles.");
+        var owner = chart.Nodes.Single(node => node.Id == "owner");
+        var plateWidth = TopologyRenderPrimitives.IconLabelPlateWidth(owner);
+        var plateTop = TopologyRenderPrimitives.IconLabelPlateY(owner);
+        var plateHeight = TopologyRenderPrimitives.IconLabelPlateHeight();
+        Assert(visibleIconLabel.CenterX + visibleIconLabel.Width / 2 <= owner.X + owner.Width / 2 - plateWidth / 2 ||
+            visibleIconLabel.CenterX - visibleIconLabel.Width / 2 >= owner.X + owner.Width / 2 + plateWidth / 2 ||
+            visibleIconLabel.CenterY + visibleIconLabel.Height / 2 <= plateTop || visibleIconLabel.CenterY - visibleIconLabel.Height / 2 >= plateTop + plateHeight,
+            "Rendered icon-label plates should reserve edge-label obstacles on both axes.");
     }
 
     private static void TopologyHiddenNodesDoNotAffectViewportFitOrEdgeLabels() {
@@ -413,7 +421,7 @@ internal static partial class SmokeTests {
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, IncludeGeographicRegionHulls = true };
         var svg = chart.ToSvg(options);
-        var radius = GetAttribute(svg, "data-cfx-role=\"topology-geographic-region-hulls\"", "r");
+        var radius = GetAttribute(svg, "data-cfx-role=\"topology-geographic-hull\"", "rx");
 
         Assert(Math.Abs(radius - options.GeographicRegionHullMinRadius) < 0.01, "Hidden geographic anchor nodes should not enlarge rendered region hulls.");
         Assert(chart.ToPng(options).Length > 64, "Hidden geographic anchor nodes should not break PNG region hull rendering.");

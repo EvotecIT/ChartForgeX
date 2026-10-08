@@ -5,6 +5,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Markup;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
@@ -233,8 +234,14 @@ participant P10";
         VisualArtifactSize wideNaturalSize = wideArtifact.NaturalSize
             ?? throw new InvalidOperationException("Wide Mermaid sequence should expose calculated natural size.");
         VisualArtifactInterchangeEnvelope wideEnvelope = wideArtifact.ToInterchangeEnvelope();
-        Assert(wideNaturalSize.Width > 320 && wideEnvelope.Width == wideNaturalSize.Width && wideEnvelope.Height == wideNaturalSize.Height,
-            "Mermaid sequence JSON should preserve the calculated sequence layout dimensions used by SVG and PNG rendering.");
+        Assert(wideNaturalSize.Width == 320 && wideEnvelope.Width == wideNaturalSize.Width && wideEnvelope.Height == wideNaturalSize.Height,
+            "A lazy Mermaid sequence source envelope should retain its authored minimum dimensions.");
+        var wideSvg = System.Xml.Linq.XDocument.Parse(wideArtifact.ToSvg()).Root!;
+        var resolvedWidth = (double)wideSvg.Attribute("width")!; var resolvedHeight = (double)wideSvg.Attribute("height")!;
+        var prepared = wideDocument.ToSequenceArtifact().Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(resolvedWidth, resolvedHeight)), frame: new VisualFrame(showLegend: false)));
+        var preparedEnvelope = prepared.ToArtifact("wide-sequence", VisualArtifactKind.Sequence).ToInterchangeEnvelope();
+        Assert(resolvedWidth > 320 && preparedEnvelope.Width == resolvedWidth && preparedEnvelope.Height == resolvedHeight,
+            "Explicitly prepared Mermaid sequence handoff should retain the measured viewport used by static exports.");
     }
 
     private static void MermaidVisualMarkupParserMapsPieFencesToArtifacts() {

@@ -26,7 +26,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-layout-mode=\"ForceDirected\"", StringComparison.Ordinal), "Force graph style should still render through the force-directed topology mode.");
         Assert(svg.Contains("data-cfx-meta-layout-force-profile=\"RelationshipGraph\"", StringComparison.Ordinal), "Force graph style should expose the relationship graph solver profile in SVG metadata.");
         Assert(!svg.Contains("data-cfx-role=\"topology-edge-label\"", StringComparison.Ordinal), "Force graph static SVG should not paint every relationship label.");
-        Assert(svg.Contains("opacity=\"0.26\"", StringComparison.Ordinal), "Force graph static SVG should lower normal edge ink instead of drawing every edge at full emphasis.");
+        Assert(chart.Edges.Any(edge => TopologyEdgeLine(svg, edge.Id).RenderedColor("stroke").A == (byte)Math.Round(255 * .26)), "Force graph static SVG should lower normal edge ink instead of drawing every edge at full emphasis.");
         Assert(chart.ToPng(options).Length > 64, "Force graph style should preserve PNG output.");
     }
 

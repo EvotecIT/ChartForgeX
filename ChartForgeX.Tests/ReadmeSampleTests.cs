@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
+using ChartForgeX.Rendering;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -31,16 +32,16 @@ public sealed class ReadmeSampleTests {
             for (var i = 0; i < labels.Count; i++) Assert.Equal(labels[i].Value, series.Points[i].X);
         }
 
-        var svg = XDocument.Parse(chart.ToSvg());
-        var rendered = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "x-axis-label").ToArray();
-        Assert.Equal(new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }, rendered.Select(label => label.Value).ToArray());
-        var markers = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "line-marker").ToArray();
-        foreach (var label in rendered.Where(label => (string?)label.Attribute("text-anchor") == "middle")) {
-            var index = Array.IndexOf(rendered, label);
-            var marker = markers.First(candidate => (string?)candidate.Attribute("data-cfx-point") == index.ToString(CultureInfo.InvariantCulture));
-            Assert.Equal(Number(marker, "cx"), Number(label, "x"), 1);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var rendered = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-x-label").ToArray();
+        Assert.Equal(new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }, rendered.Select(label => Assert.Single(label.Text.Lines).Text));
+        var ticks = prepared.Regions.Where(region => region.Role == "axis-x-label").ToArray();
+        Assert.Equal(7, ticks.Length);
+        for (var index = 0; index < ticks.Length; index++) {
+            var point = Assert.Single(prepared.Regions, region => region.Id == "series-1-point-" + index);
+            Assert.Equal(point.Bounds.Left + point.Bounds.Width / 2, ticks[index].Bounds.Left, 6);
         }
+        Assert.Equal(prepared.ToSvg(), chart.ToSvg());
     }
 
-    private static double Number(XElement element, string name) => double.Parse((string)element.Attribute(name)!, CultureInfo.InvariantCulture);
 }

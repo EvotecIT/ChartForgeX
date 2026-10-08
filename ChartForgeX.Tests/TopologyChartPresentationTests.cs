@@ -31,8 +31,10 @@ public sealed class TopologyChartPresentationTests {
         fitted.PreserveNaturalSize = true;
         var stored = chart.ToVisualArtifact();
         stored.PreserveNaturalSize = true;
-        // Compare the same explicit output size: the stored tile options discover a different prepared height.
-        fitted.NaturalSize = stored.NaturalSize;
+        // A discovered size preserves the prepared layout; replacing it requests a new viewport.
+        // Give both artifacts the same actual replacement, distinct from either discovery snapshot.
+        var explicitSize = new VisualArtifactSize(stored.NaturalSize!.Value.Width + 20, stored.NaturalSize.Value.Height + 20);
+        fitted.NaturalSize = explicitSize; stored.NaturalSize = explicitSize;
         Assert.Equal(fitted.ToSvg(new VisualArtifactRenderOptions { Topology = Tiles }), stored.ToSvg());
         Assert.Equal(Chart().ToVisualArtifact().ToInterchangeJson(new VisualArtifactRenderOptions { Topology = Tiles }), chart.ToVisualArtifact().ToInterchangeJson());
         Assert.Equal(new HtmlInteractiveTopologyRenderer().RenderFragment(Chart(), Tiles), new HtmlInteractiveTopologyRenderer().RenderFragment(chart));
@@ -69,8 +71,8 @@ public sealed class TopologyChartPresentationTests {
 
         var sample = XDocument.Parse(chart.ToSvg()).Descendants()
             .Single(element => (string?)element.Attribute("data-legend-kind") == "edge")
-            .Elements().Single(element => element.Name.LocalName == "line");
-        Assert.Equal(expectedDash, (string?)sample.Attribute("stroke-dasharray"));
+            .Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-legend-edge");
+        Assert.Equal(expectedDash, (string?)sample.Attribute("stroke-dasharray") ?? "none");
         Assert.True(chart.ToPng().Length > 64);
     }
 
@@ -81,7 +83,7 @@ public sealed class TopologyChartPresentationTests {
 
         var sample = XDocument.Parse(chart.ToSvg()).Descendants()
             .Single(element => (string?)element.Attribute("data-legend-kind") == "edge")
-            .Elements().Single(element => element.Name.LocalName == "line");
+            .Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-legend-edge");
         Assert.Equal("8 5", (string?)sample.Attribute("stroke-dasharray"));
         Assert.Contains("\"lineStyle\":\"Dashed\"", chart.ToVisualArtifact().ToInterchangeJson().Replace(" ", string.Empty), StringComparison.Ordinal);
     }
@@ -93,8 +95,8 @@ public sealed class TopologyChartPresentationTests {
 
         var sample = XDocument.Parse(chart.ToSvg()).Descendants()
             .Single(element => (string?)element.Attribute("data-legend-kind") == "edge")
-            .Elements().Single(element => element.Name.LocalName == "line");
-        Assert.Equal("none", (string?)sample.Attribute("stroke-dasharray"));
+            .Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-legend-edge");
+        Assert.Equal("none", (string?)sample.Attribute("stroke-dasharray") ?? "none");
     }
 
     [Fact]
@@ -149,7 +151,7 @@ public sealed class TopologyChartPresentationTests {
 
     private static string[] NodeCaption(string svg, string nodeId) {
         var node = XDocument.Parse(svg).Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "topology-node" && (string?)element.Attribute("data-node-id") == nodeId);
-        return node.Descendants().Where(element => element.Name.LocalName == "text" && (string?)element.Attribute("font-size") == "11")
+        return node.Descendants().Where(element => element.Name.LocalName == "text" && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") == "topology-node-label"))
             .SelectMany(text => text.Elements().Any(child => child.Name.LocalName == "tspan") ? text.Elements().Where(child => child.Name.LocalName == "tspan").Select(child => child.Value) : new[] { text.Value })
             .ToArray();
     }

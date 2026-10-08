@@ -21,7 +21,8 @@ public sealed class TopologyRouteQualityTests {
         new object[] { "drill" },
         new object[] { "replication-76" },
         new object[] { "replication-121" },
-        new object[] { "replication-144" }
+        new object[] { "replication-144" },
+        new object[] { "replication-sites-60" }
     };
 
     [Theory]
@@ -110,6 +111,7 @@ public sealed class TopologyRouteQualityTests {
         "replication-76" => (ReplicationTopologyFixture.Create(3, 10), DenseRouteFixture.Options(legend: false)),
         "replication-121" => (ReplicationTopologyFixture.Create(5, 15), DenseRouteFixture.Options(legend: false)),
         "replication-144" => (ReplicationTopologyFixture.Create(6, 18), DenseRouteFixture.Options(legend: false)),
+        "replication-sites-60" => (DenseReplicationFixture.Sites60(), DenseReplicationFixture.Options()),
         _ => throw new ArgumentOutOfRangeException(nameof(fixture), fixture, "Unknown fixture.")
     };
 

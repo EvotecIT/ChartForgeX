@@ -70,7 +70,7 @@ public sealed partial class SvgVisualBlockRenderer {
         foreach (var segment in VisualBlockRendering.SegmentedProgressStripSegments(row, x, y, width, height)) {
             var role = segment.Filled ? "segmented-metric-segment-filled" : "segmented-metric-segment-empty";
             var color = segment.Filled ? accent : empty;
-            writer.StartElement("rect")
+            if (!theme.FlatMarks) writer.StartElement("rect")
                 .Attribute("data-cfx-role", "segmented-metric-segment-shadow")
                 .Attribute("data-cfx-index", segment.Index)
                 .Attribute("x", segment.X + 0.6)
@@ -92,7 +92,7 @@ public sealed partial class SvgVisualBlockRenderer {
                 .Attribute("stroke", segment.Filled ? accent.WithAlpha(120).ToCss() : emptyStroke.ToCss())
                 .Attribute("stroke-width", 0.8)
                 .EndEmptyElement().Line();
-            writer.StartElement("rect")
+            if (!theme.FlatMarks) writer.StartElement("rect")
                 .Attribute("data-cfx-role", "segmented-metric-segment-highlight")
                 .Attribute("data-cfx-index", segment.Index)
                 .Attribute("x", segment.X + 1)

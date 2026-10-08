@@ -35,18 +35,16 @@ internal readonly struct VisualMiniBar {
 }
 
 internal readonly struct VisualMiniSparkline {
-    public VisualMiniSparkline(ChartPoint[] points, ChartPoint[] area, ChartColor lineColor, ChartColor fillColor, double strokeWidth, double currentRadius) {
+    public VisualMiniSparkline(ChartPoint[] points, ChartColor lineColor, ChartColor fillColor, double strokeWidth, double currentRadius, bool showStart = true, bool showCurrent = true) {
         Points = points;
-        Area = area;
         LineColor = lineColor;
         FillColor = fillColor;
         StrokeWidth = strokeWidth;
         CurrentRadius = currentRadius;
+        ShowStart = showStart; ShowCurrent = showCurrent;
     }
 
     public ChartPoint[] Points { get; }
-
-    public ChartPoint[] Area { get; }
 
     public ChartColor LineColor { get; }
 
@@ -55,6 +53,9 @@ internal readonly struct VisualMiniSparkline {
     public double StrokeWidth { get; }
 
     public double CurrentRadius { get; }
+
+    public bool ShowStart { get; }
+    public bool ShowCurrent { get; }
 
     public ChartPoint Current => Points[Points.Length - 1];
 }

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Xml.Linq;
 using ChartForgeX.Topology;
 using Xunit;
 
@@ -499,13 +500,22 @@ public sealed class DenseTopologyLayoutTests {
             .AddNode("bottom", "D", 560, 320, width: 190, height: 30)
             .AddEdge("a-b", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = true };
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
-        var route = chart.Prepare(options).Analyze().Edges.Single();
-        var top = prepared.Viewport.Padding + 72;
-        var bottom = prepared.Viewport.Height - prepared.Viewport.Padding -
-            TopologyRenderPrimitives.LegendReservedHeight(prepared.Legend, prepared.Viewport);
-        Assert.NotEqual("maze", route.Corridor);
-        Assert.All(route.Points, point => Assert.InRange(point.Y, top, bottom));
+        var prepared = chart.Prepare(options);
+        var route = prepared.Analyze().Edges.Single();
+        var document = XDocument.Parse(prepared.ToSvg());
+        var topology = document.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology");
+        var clipReference = topology.Descendants().Select(element => (string?)element.Attribute("clip-path")).First(value => value != null)!;
+        var clipId = clipReference.Substring(5, clipReference.Length - 6);
+        var clip = document.Descendants().Single(element => element.Name.LocalName == "clipPath" && (string?)element.Attribute("id") == clipId)
+            .Elements().Single();
+        var left = (double)clip.Attribute("x")!; var top = (double)clip.Attribute("y")!;
+        var right = left + (double)clip.Attribute("width")!; var bottom = top + (double)clip.Attribute("height")!;
+        Assert.True(top > 0 && bottom < prepared.Height, "Measured headings and legend must reserve real content space.");
+        Assert.Contains(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "frame-heading");
+        Assert.Contains(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "legend-entry");
+        Assert.All(route.Points, point => { Assert.InRange(point.X, left, right); Assert.InRange(point.Y, top, bottom); });
+        Assert.Equal(0, route.ObstacleHits);
+        Assert.Equal(0, route.LabelObstacleHits);
     }
 
     [Fact]
@@ -531,7 +541,7 @@ public sealed class DenseTopologyLayoutTests {
         var chart = Sites(7, 5);
         var firstGroupNodes = chart.Nodes.Where(node => node.GroupId == chart.Groups[0].Id).ToArray();
         firstGroupNodes[0].Height = 96;
-        firstGroupNodes[1].Label = "A long controller name spanning three caption lines";
+        firstGroupNodes[1].Label = "WWW WWW WWW WWW WWW WWW WWW WWW WWW WWW WWW WWW";
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false,
             NodeDisplayMode = TopologyNodeDisplayMode.Tile, WrapNodeLabels = true, MaxNodeLabelLines = 3 };
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);

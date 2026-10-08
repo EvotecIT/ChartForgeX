@@ -15,12 +15,20 @@ public sealed partial class PngVisualBlockRenderer {
 
     internal RgbaImage RenderImage(IVisualBlock block) => RenderCanvas(block).ToImage();
 
-    internal RgbaCanvas RenderCanvas(IVisualBlock block) {
+    internal RgbaCanvas RenderCanvas(IVisualBlock block, int? outputScale = null) {
         VisualBlockRendering.Validate(block);
         var options = block.Options;
         var theme = options.Theme;
+        if (theme.UseGraphiteLayout) {
+            var scene = new SvgVisualBlockRenderer().RenderLabelScene(block);
+            var target = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
+            target.Clear(options.HostOwnsFrame || options.TransparentBackground || options.ShowCard && theme.UseCard ? ChartColor.Transparent : VisualBlockRendering.SurfaceBackground(options));
+            scene.PaintMarks(target);
+            scene.Paint(target);
+            return target;
+        }
         using var emphasis = RgbaCanvas.OpenEmphasisScope();
-        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), options.PngOutputScale);
+        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
         canvas.Clear(VisualBlockRendering.SurfaceBackground(options));
         if (options.ShowCard && theme.UseCard) {
             canvas.FillRoundedRectVerticalGradient(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
@@ -140,7 +148,7 @@ public sealed partial class PngVisualBlockRenderer {
         var footerHeight = hasAction ? Math.Min(46, Math.Max(36, options.Size.Height * 0.24)) : 0;
         var footerY = options.Size.Height - footerHeight;
         var detailBottom = hasAction ? footerY - 12 : options.Size.Height - options.Padding.Bottom;
-        var hasMicroVisual = card.MiniBars.Count > 0 || card.MiniSparkline.Count > 0;
+        var hasMicroVisual = card.MiniBars.Count > 0 || card.SparklineCount > 0;
         var heroMicroVisual = hasMicroVisual && card.MicroVisualPlacement == MetricCardMicroVisualPlacement.Hero;
         var valueInsetSurface = !hasMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset;
         var labelX = content.X;
@@ -203,7 +211,7 @@ public sealed partial class PngVisualBlockRenderer {
             microHeight = Math.Max(1, surfaceHeight - (microY - surfaceY) - 18);
         }
 
-        if (card.MiniSparkline.Count > 0) DrawMetricMiniSparkline(canvas, card, microX, microY, microWidth, microHeight);
+        if (card.SparklineCount > 0) DrawMetricMiniSparkline(canvas, card, microX, microY, microWidth, microHeight);
         else if (card.MiniBars.Count > 0) DrawMetricMiniBars(canvas, card, microX, microY, microWidth, microHeight);
         var detailsTop = heroMicroVisual ? microY + microHeight + 10 : content.Y + labelSize + valueSize + 24 + valueYOffset;
         DrawMetricDetails(canvas, card, content, detailsTop, detailBottom);
@@ -250,17 +258,23 @@ public sealed partial class PngVisualBlockRenderer {
 
     private static void DrawMetricMiniSparkline(RgbaCanvas canvas, MetricCard card, double x, double y, double width, double height) {
         var sparkline = VisualBlockRendering.CreateMiniSparkline(card, x, y, width, height);
-        var points = card.MiniSparklineStyle == MetricCardSparklineStyle.Line ? VisualBlockRendering.SmoothMiniSparklinePoints(sparkline) : sparkline.Points;
-        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Area) canvas.FillPolygon(sparkline.Area, sparkline.FillColor);
-        else if (card.SecondaryMiniSparkline.Count > 0) {
+        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Area) {
+            foreach (var segment in ChartPointSegments.Split(sparkline.Points)) canvas.FillPolygon(SparklineLayout.Area(segment, y + height), sparkline.FillColor);
+        } else if (card.SecondarySparklineCount > 0) {
             var secondary = VisualBlockRendering.CreateSecondaryMiniSparkline(card, x, y, width, height);
-            var secondaryPoints = VisualBlockRendering.SmoothMiniSparklinePoints(secondary);
-            canvas.DrawPolyline(secondaryPoints, secondary.LineColor, Math.Max(1.8, secondary.StrokeWidth * 0.72));
+            DrawSparklineSegments(canvas, secondary, smooth: true, Math.Max(1.8, secondary.StrokeWidth * 0.72));
         }
+        if (sparkline.Points.Length == 0) return;
+        DrawSparklineSegments(canvas, sparkline, card.MiniSparklineStyle == MetricCardSparklineStyle.Line, sparkline.StrokeWidth);
+        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Line && sparkline.ShowStart) canvas.DrawCircle(sparkline.Points[0].X, sparkline.Points[0].Y, sparkline.CurrentRadius * 0.82, sparkline.LineColor);
+        if (sparkline.ShowCurrent) canvas.DrawCircle(sparkline.Current.X, sparkline.Current.Y, sparkline.CurrentRadius, sparkline.LineColor);
+    }
 
-        canvas.DrawPolyline(points, sparkline.LineColor, sparkline.StrokeWidth);
-        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Line) canvas.DrawCircle(sparkline.Points[0].X, sparkline.Points[0].Y, sparkline.CurrentRadius * 0.82, sparkline.LineColor);
-        canvas.DrawCircle(sparkline.Current.X, sparkline.Current.Y, sparkline.CurrentRadius, sparkline.LineColor);
+    private static void DrawSparklineSegments(RgbaCanvas canvas, VisualMiniSparkline sparkline, bool smooth, double width) {
+        foreach (var segment in ChartPointSegments.Split(sparkline.Points)) {
+            if (segment.Count == 1) canvas.DrawCircle(segment[0].X, segment[0].Y, width / 2, sparkline.LineColor);
+            else canvas.DrawPolyline(smooth ? ChartPathBuilder.FromPoints(segment, ChartSeriesKind.Line, true).Flatten(5) : segment, sparkline.LineColor, width);
+        }
     }
 
     private static void DrawMetricDetails(RgbaCanvas canvas, MetricCard card, ChartRect content, double top, double bottom) {

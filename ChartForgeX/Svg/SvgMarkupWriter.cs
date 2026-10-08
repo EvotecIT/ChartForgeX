@@ -16,6 +16,11 @@ internal sealed class SvgMarkupWriter {
         _builder = new StringBuilder(Math.Max(16, capacity));
     }
 
+    /// <summary>Writes straight into <paramref name="target"/>; finish with <see cref="Complete"/> instead of <see cref="Build"/>.</summary>
+    public SvgMarkupWriter(StringBuilder target) {
+        _builder = target ?? throw new ArgumentNullException(nameof(target));
+    }
+
     public SvgMarkupWriter StartElement(string name) {
         EnsureNoPendingStartTag();
         ValidateName(name, nameof(name));
@@ -75,7 +80,8 @@ internal sealed class SvgMarkupWriter {
     public SvgMarkupWriter Attribute(string name, double value) {
         EnsureFinite(value, nameof(value));
         AppendAttributeName(name);
-        _builder.Append("=\"").Append(FormatNumber(value)).Append('"');
+        var isDataValue = name == "data-cfx-value" || name == "data-cfx-y" || name == "data-cfx-x" || name == "data-cfx-category" || name == "data-cfx-base";
+        _builder.Append("=\"").Append(isDataValue ? value.ToString("R", CultureInfo.InvariantCulture) : FormatNumber(value)).Append('"');
         return this;
     }
 
@@ -127,6 +133,12 @@ internal sealed class SvgMarkupWriter {
     }
 
     public string Build() {
+        Complete();
+        return _builder.ToString();
+    }
+
+    /// <summary>Checks that every element is closed, as <see cref="Build"/> does, without copying the markup.</summary>
+    public void Complete() {
         if (_pendingElement != null) {
             throw new InvalidOperationException("Cannot build SVG markup while a start tag is still open.");
         }
@@ -134,8 +146,6 @@ internal sealed class SvgMarkupWriter {
         if (_elements.Count != 0) {
             throw new InvalidOperationException("Cannot build SVG markup while elements are still open.");
         }
-
-        return _builder.ToString();
     }
 
     public override string ToString() => _builder.ToString();
@@ -176,8 +186,14 @@ internal sealed class SvgMarkupWriter {
         AppendEscapedText(_builder, value, escapeQuotes: true);
 
     private static void AppendEscapedText(StringBuilder builder, string value, bool escapeQuotes) {
+        var run = 0;
         for (var i = 0; i < value.Length; i++) {
             var ch = value[i];
+            // Characters written unchanged are copied in runs; every other character takes the cases below.
+            if (ch >= 0x20 && ch < 0x7F ? ch != '&' && ch != '<' && ch != '>' && (ch != '"' || !escapeQuotes)
+                : !escapeQuotes && ch is ('\t' or '\n' or '\r') || ch >= 0xA0 && ch < 0xD800 || ch >= 0xE000 && ch < 0xFDD0 || ch > 0xFDEF && ch < 0xFFFE) continue;
+            builder.Append(value, run, i - run);
+            run = i + 1;
             if (char.IsHighSurrogate(ch)) {
                 if (i + 1 < value.Length && char.IsLowSurrogate(value[i + 1])) {
                     var next = value[i + 1];
@@ -187,6 +203,7 @@ internal sealed class SvgMarkupWriter {
                         builder.Append('\uFFFD');
                     }
                     i++;
+                    run = i + 1;
                 } else {
                     builder.Append('\uFFFD');
                 }
@@ -197,6 +214,16 @@ internal sealed class SvgMarkupWriter {
                 continue;
             }
             switch (ch) {
+                // XML normalizes literal attribute whitespace; references preserve source alternatives exactly.
+                case '\t' when escapeQuotes:
+                    builder.Append("&#9;");
+                    break;
+                case '\n' when escapeQuotes:
+                    builder.Append("&#10;");
+                    break;
+                case '\r' when escapeQuotes:
+                    builder.Append("&#13;");
+                    break;
                 case '&':
                     builder.Append("&amp;");
                     break;
@@ -214,6 +241,8 @@ internal sealed class SvgMarkupWriter {
                     break;
             }
         }
+
+        builder.Append(value, run, value.Length - run);
     }
 
     internal static bool IsMarkupScalar(int scalar) =>
@@ -247,6 +276,7 @@ internal sealed class SvgMarkupWriter {
     }
 
     internal static void ValidateName(string name, string parameterName) {
+
         if (string.IsNullOrWhiteSpace(name)) {
             throw new ArgumentException("SVG element and attribute names cannot be empty.", parameterName);
         }

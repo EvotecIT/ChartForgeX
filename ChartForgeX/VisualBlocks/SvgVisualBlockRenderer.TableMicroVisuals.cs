@@ -1,6 +1,7 @@
 using System;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Svg;
 
 namespace ChartForgeX.VisualBlocks;
@@ -13,7 +14,7 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.StartElement("g")
             .Attribute("data-cfx-role", "table-cell-microvisual")
             .Attribute("data-cfx-kind", cell.MicroVisualKind.ToString())
-            .Attribute("data-cfx-values", cell.MicroVisualValues.Count)
+            .Attribute("data-cfx-values", cell.MicroVisualSampleCount)
             .EndStartElement().Line();
         if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.MiniBars) {
             var metrics = VisualBlockRendering.FitRepeatedItems(cell.MicroVisualValues.Count, width, cell.MicroVisualValues.Count > 8 ? 2.0 : 3.0, 2);
@@ -33,22 +34,23 @@ public sealed partial class SvgVisualBlockRenderer {
                     .EndEmptyElement().Line();
             }
         } else if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.Sparkline) {
-            var points = new string[cell.MicroVisualValues.Count];
-            var step = width / Math.Max(1, cell.MicroVisualValues.Count - 1);
-            for (var i = 0; i < cell.MicroVisualValues.Count; i++) {
-                var ratio = MicroVisualRatio(cell.MicroVisualValues[i], bounds);
-                points[i] = FormatPoint(x + i * step, y + height - ratio * height);
+            var projected = SparklineLayout.Project(cell.GetSparklineData(), new ChartRect(x, y, width, height));
+            foreach (var segment in ChartPointSegments.Split(projected)) {
+                var points = new string[segment.Count == 1 ? 2 : segment.Count];
+                for (var i = 0; i < points.Length; i++) {
+                    var point = segment[Math.Min(i, segment.Count - 1)];
+                    points[i] = FormatPoint(point.X, point.Y);
+                }
+                writer.StartElement("polyline")
+                    .Attribute("data-cfx-role", "table-cell-sparkline")
+                    .Attribute("points", string.Join(" ", points))
+                    .Attribute("fill", "none")
+                    .Attribute("stroke", color.ToCss())
+                    .Attribute("stroke-width", 2)
+                    .Attribute("stroke-linecap", "round")
+                    .Attribute("stroke-linejoin", "round")
+                    .EndEmptyElement().Line();
             }
-
-            writer.StartElement("polyline")
-                .Attribute("data-cfx-role", "table-cell-sparkline")
-                .Attribute("points", string.Join(" ", points))
-                .Attribute("fill", "none")
-                .Attribute("stroke", color.ToCss())
-                .Attribute("stroke-width", 2)
-                .Attribute("stroke-linecap", "round")
-                .Attribute("stroke-linejoin", "round")
-                .EndEmptyElement().Line();
         }
 
         writer.EndElement().Line();

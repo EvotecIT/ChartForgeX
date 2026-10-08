@@ -2,6 +2,7 @@ using System;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -20,14 +21,11 @@ public sealed partial class PngVisualBlockRenderer {
                 canvas.FillRoundedRect(x + i * (barWidth + gap), y + height - barHeight, barWidth, barHeight, Math.Min(3, barWidth * 0.45), color.WithAlpha(i == cell.MicroVisualValues.Count - 1 ? (byte)230 : (byte)135));
             }
         } else if (cell.MicroVisualKind == ChartTableCellMicroVisualKind.Sparkline) {
-            var points = new ChartPoint[cell.MicroVisualValues.Count];
-            var step = width / Math.Max(1, cell.MicroVisualValues.Count - 1);
-            for (var i = 0; i < cell.MicroVisualValues.Count; i++) {
-                var ratio = MicroVisualRatio(cell.MicroVisualValues[i], bounds);
-                points[i] = new ChartPoint(x + i * step, y + height - ratio * height);
+            var points = SparklineLayout.Project(cell.GetSparklineData(), new ChartRect(x, y, width, height));
+            foreach (var segment in ChartPointSegments.Split(points)) {
+                if (segment.Count == 1) canvas.DrawCircle(segment[0].X, segment[0].Y, 1, color);
+                else canvas.DrawPolyline(segment, color, 2);
             }
-
-            canvas.DrawPolyline(points, color, 2);
         }
     }
 

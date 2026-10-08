@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Xml.Linq;
+using ChartForgeX.Rendering;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
@@ -21,21 +23,20 @@ internal static partial class SmokeTests {
             .WithColumns(3)
             .WithGap(10)
             .WithPadding(10)
-            .WithPanelSize(300, 200)
+            .WithPanelSize(300, 200).WithPanelFit(ChartForgeX.Primitives.VisualPanelFit.Stretch)
             .Add(wide, 2)
             .Add(compact)
             .Add(compact);
 
         var html = grid.ToHtmlPage();
-        Assert(html.Contains("grid-column:span 2", StringComparison.Ordinal), "HTML grids should expose panel column spans.");
-        Assert(html.Contains("grid-auto-rows:var(--cfx-grid-panel-height,auto)", StringComparison.Ordinal), "HTML grids should define stable rows for fixed-height spanned panels.");
-        Assert(html.Contains("@media(max-width:900px){body{padding:16px}.chartforgex-grid-body{grid-template-columns:1fr;grid-auto-rows:auto}.chartforgex-grid-panel{grid-column:auto!important;grid-row:auto!important;min-height:0}", StringComparison.Ordinal), "HTML grids should collapse fixed panel heights on narrow screens so wide panels do not leave large blank sections.");
-        Assert(CountOccurrences(html, "<svg ") == 3, "Spanned HTML grids should still render every chart inline.");
-
-        var svg = grid.ToSvg();
-        Assert(svg.Contains("width=\"940\" height=\"430\"", StringComparison.Ordinal), "Spanned SVG grids should preserve composed grid dimensions.");
-        Assert(svg.Contains("width=\"610\" height=\"197\"", StringComparison.Ordinal), "Spanned SVG grids should fit wide charts into the wider panel area.");
-
+        Assert(CountOccurrences(html, "<svg ") == 1, "Spanned HTML grids should embed the same complete prepared comparison.");
+        var request = VisualExportRequest.ForGrid(grid);
+        var panels = grid.Prepare(request.Context).Regions.Where(region => region.Role == "panel").ToArray();
+        Assert(panels.Length == 3 && panels[0].Bounds.Width > panels[1].Bounds.Width * 1.9,
+            "A two-column stretch panel should occupy both columns and their intervening gap.");
+        var svg = XDocument.Parse(grid.ToSvg());
+        Assert(svg.Root!.Attribute("width")!.Value == "940" && svg.Root.Attribute("height")!.Value == "430",
+            "Spanned SVG grids should preserve the composed viewport dimensions.");
         var png = grid.ToPng();
         Assert(ReadBigEndianInt32(png, 16) == 940, "Spanned PNG grids should preserve composed grid width.");
         Assert(ReadBigEndianInt32(png, 20) == 430, "Spanned PNG grids should preserve composed grid height.");
@@ -56,16 +57,25 @@ internal static partial class SmokeTests {
             .WithPanelSize(260, 160)
             .Add(Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3)));
         var svg = grid.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"grid-title\"", StringComparison.Ordinal) && svg.Contains("fill=\"#BE123C\"", StringComparison.Ordinal), "SVG grid titles should honor grid title styles.");
-        Assert(svg.Contains("font-family=\"Georgia, serif\"", StringComparison.Ordinal), "SVG grid title styles should honor font families.");
-        Assert(svg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && svg.Contains("text-decoration=\"line-through\"", StringComparison.Ordinal) && svg.Contains("text-decoration-style=\"wavy\"", StringComparison.Ordinal) && svg.Contains("<tspan text-decoration=\"underline\" text-decoration-style=\"dotted\">STYLED GRID HEADER</tspan>", StringComparison.Ordinal), "SVG grid title styles should preserve independent underline and strikethrough patterns.");
-        Assert(svg.Contains("data-cfx-role=\"grid-subtitle\"", StringComparison.Ordinal) && svg.Contains("fill=\"#0E7490\"", StringComparison.Ordinal) && svg.Contains("baseline-shift=\"sub\"", StringComparison.Ordinal), "SVG grid subtitles should honor colors and script placement.");
-        Assert(svg.Contains(">STYLED GRID HEADER</tspan></text>", StringComparison.Ordinal) && svg.Contains(">grid-level typography", StringComparison.Ordinal), "SVG grid headers should materialize casing before fitting and trimming.");
+        var headings = XDocument.Parse(svg).Descendants().Where(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("frame-heading", StringComparison.Ordinal) == true).ToArray();
+        Assert(headings.SelectMany(element => element.Descendants()).Any(element => (string?)element.Attribute("fill") == "#BE123C" && (string?)element.Attribute("font-family") == "Georgia, serif"),
+            "Prepared grid headings should honor explicit colors and role fonts.");
+        var prepared = grid.Prepare(VisualExportRequest.ForGrid(grid).Context);
+        Assert(svg.Contains("font-style=\"italic\"", StringComparison.Ordinal)
+            && prepared.Scene.Nodes.OfType<VisualScenePath>().Any(node => node.Role == "text-decoration")
+            && prepared.Scene.Nodes.OfType<VisualSceneLine>().Any(node => node.Role == "text-decoration" && node.Dash != null),
+            "Prepared headings should paint both wavy strike geometry and dotted underline geometry in every backend.");
+        var headingText = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "frame-heading").ToArray();
+        Assert(headingText.Any(node => Math.Abs(node.Text.Size - 32 * .65) < .001)
+            && headingText.Any(node => Math.Abs(node.Text.Size - 15 * .65) < .001)
+            && headingText.All(node => node.Text.Style.Baseline == TextBaseline.Normal),
+            "Prepared headings should materialize script sizing and position once, without retaining a second backend baseline shift.");
+        Assert(string.Join(" ", headings.Select(element => element.Value)).Contains("STYLED GRID HEADER", StringComparison.Ordinal),
+            "Shared header measurement and painting should materialize title casing.");
         var html = grid.ToHtmlFragment();
-        Assert(html.Contains("text-decoration:line-through;text-decoration-style:wavy", StringComparison.Ordinal) && html.Contains("<span style=\"text-decoration:underline;text-decoration-style:dotted\">STYLED GRID HEADER</span>", StringComparison.Ordinal) && html.Contains("vertical-align:super", StringComparison.Ordinal), "HTML grid headers should preserve independent decoration patterns and baseline styling on inline text.");
-        Assert(html.Contains("STYLED GRID HEADER", StringComparison.Ordinal) && html.Contains("grid-level typography should match chart-level polish", StringComparison.Ordinal), "HTML grid headers should materialize casing transforms.");
-        Assert(ReadBigEndianInt32(grid.ToPng(), 16) > 0, "Styled grid headers should render PNG output.");
-
+        var inlineSvg = prepared.ToSvg(new VisualSvgOptions(colorVariables: grid.SvgColorVariables, responsive: true));
+        Assert(html.Contains(inlineSvg, StringComparison.Ordinal), "Static HTML should retain the exact prepared typography and layout with responsive export policy.");
+        Assert(ReadBigEndianInt32(grid.ToPng(), 16) > 0, "Styled grid headers should render native PNG output.");
         var panel = Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3));
         var regularRaster = ChartGrid.Create().WithTitle("Italic Grid Header").WithSubtitle("Italic Grid Subtitle").WithPanelSize(260, 160).Add(panel).ToPng();
         var italicRaster = ChartGrid.Create()

@@ -31,10 +31,14 @@ internal sealed class ChartHeatmapRowLayout {
     /// SVG and PNG place rows identically.
     /// </summary>
     public static ChartHeatmapRowLayout Build(Chart chart, IReadOnlyList<ChartSeries> rows, double plotHeight) {
-        var wanted = Measure(rows, chart.Options.Theme.TickLabelFontSize * 1.2 + 10, SeparatorHeight);
+        return Build(rows, plotHeight, chart.Options.Theme.TickLabelFontSize);
+    }
+
+    internal static ChartHeatmapRowLayout Build(IReadOnlyList<ChartSeries> rows, double plotHeight, double fontSize) {
+        var wanted = Measure(rows, fontSize * 1.2 + 10, SeparatorHeight);
         if (wanted.HeadersHeight <= plotHeight * MaximumHeaderShare || wanted.HeadersHeight <= 0) return wanted;
         var scale = plotHeight * MaximumHeaderShare / wanted.HeadersHeight;
-        return Measure(rows, (chart.Options.Theme.TickLabelFontSize * 1.2 + 10) * scale, SeparatorHeight * scale);
+        return Measure(rows, (fontSize * 1.2 + 10) * scale, SeparatorHeight * scale);
     }
 
     private static ChartHeatmapRowLayout Measure(IReadOnlyList<ChartSeries> rows, double headerHeight, double separatorHeight) {

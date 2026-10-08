@@ -2,9 +2,56 @@
 
 This is the central place for active follow-up work. Keep feature ideas here until they are implemented, removed, or promoted into focused reference documentation. Avoid adding separate roadmap or "next plan" documents unless the topic needs a durable technical specification.
 
+## Shared rendering migration: Phases 0–1
+
+Scope and later phases are defined in [the architecture](docs/v2/architecture.md). Consumer repositories remain read-only. Track implementation separately from validation and publication.
+
+- [x] Integrate main and label-placement on one implementation branch; pass 2,384 baseline tests and freeze the baseline assembly.
+- [x] Inventory all six current runtime APIs and map the five consumer areas to required retained capabilities.
+- [x] Close architecture, API conventions, versioned theme/interchange and migration documentation against the implemented proof.
+- [x] Implement shared prepared scene, frame/theme/text and selected Cartesian/donut compilers; pass focused contract tests.
+- [x] Prove tiny topology/sequence and generic static/semantic artifact handoff in focused tests; AOT/runtime qualification remains below.
+- [x] Close runtime gallery qualification: 56 proof cases, final SVG/native PNG inspection, 14 executed browser cases, compact/wide layout and pinned regular/bold font evidence.
+- [x] Pass focused/full quality, framework/package and AOT checks: 2,503 tests, 42 Mermaid conformance fixtures, 317 healthy visual pairs, six packages and isolated package consumption. Opaque viewport clearing preserves ordinary contour pixels across clipping, alpha, fractional sizes and raster density.
+- [x] Validate the consolidated review fixes: fractional raster allocation, semantic JSON export discovery, accessible model names with hidden headings, selection-only Reset visibility, fresh example output and exact-version package selection. Execute seven browser cases and the native AOT smoke.
+- [x] Confirm representative performance against the frozen baseline: 30 paired workloads within 10% elapsed/allocation, 756 retained samples and no failures. All 18 prepared-scene comparisons are faster; 12 unchanged-output comparisons preserve exact SVG/PNG bytes. Record the larger redesigned output payloads separately from timing gains.
+- [ ] Reassess Phases 0–1, settle one PR and clean task-owned disposable output.
+
+## Shared rendering migration: Phases 2–3
+
+All 49 chart kinds, ChartGrid, topology, flow and sequence compile into the shared native prepared scene. SVG and PNG consume the same measured geometry, text, paints and source semantics. The architecture and migration guide describe these contracts; the chart capability roadmap retains options that are not implemented. Consumer repositories remain read-only.
+
+- [x] Implement Cartesian/radial migration and shared formatting, sparse-data and axis-isolated stacking policies; qualify Phase 2 with 2,637 tests, 42 Mermaid fixtures, four target frameworks, 317 healthy visual pairs, native AOT and isolated package consumption. All 18 complete-export benchmark pairs pass the 10% elapsed/allocation gate.
+- [x] Implement native producers for the remaining chart families and diagrams; retire their replaced static rendering paths.
+- [x] Complete shared frame, theme, typography, paint, accessible source alternatives and semantic snapshot contracts needed by the migrated families.
+- [x] Complete independent contract reviews and reproduce their remediations, including typed paints, responsive topology, artwork, linked heatmap keyboard navigation, Flow lane/order semantics and animated topology natural sizing.
+- [x] Qualify integrated Phase 3: 3,009 tests, 42 Mermaid fixtures, four target frameworks without warnings, 317 healthy outputs, native AOT and isolated package consumption. All 24 complete-export benchmark pairs pass the 10% elapsed/allocation gate across 720 retained samples; larger SVG payloads remain a separate cost.
+- [x] Qualify the checked-in 122-artifact selected gallery for all 49 kinds in both themes, with final native output and two executed browser viewports; retain the full review matrix as private evidence.
+- [x] Close cross-platform CI findings: resolved-font topology symbols/badges, rotated heatmap labels, stack totals and endpoint callouts; qualify the consolidated corrections with 3,009 Windows and Linux tests, fresh native AOT, inspected light/dark artifacts and both benchmark groups.
+- [x] Preserve compact topology symbol readability across resolved fonts and make natural-height gallery baselines font-aware without relaxing fixed canvases or actual SVG/PNG allocation checks; pass 3,016 Windows/Linux tests and both 317-output baseline evaluators.
+- [x] Publish the dependent ready PR layers on one coordinated stack.
+- [ ] Settle validated feedback and current-head CI, merge the qualified stack and remove merged task worktrees.
+- [x] Record the Phases 2–3 reassessment and clean superseded task output; preserve open chart options and keep package extraction and consumer execution as separate gates.
+
+## Shared rendering migration: Phases 4–5
+
+- [ ] Close the public type/resource graph, removing core dispatch and options that require optional composition or animation types.
+- [ ] Extract VisualCanvas, ImageComposition, factual tiles/tables/lists, static composition grids and watermark decoration into ChartForgeX.Visuals. Preserve wallpaper layout, alpha, text, image fitting and existing effects through shared owners.
+- [ ] Extract VisualStory, TerminalStory, transcripts, motion timelines, animated topology and GIF/APNG encoding into ChartForgeX.Stories. Visuals and Stories remain peers depending on core; still wallpapers must not load Stories.
+- [ ] Remove decorative menus, checkboxes, navigation arrows and action buttons from static compositions after checking the retained-capability ledger. Preserve meaningful completion markers and progress handles.
+- [ ] Qualify isolated packed core-only, core+Visuals and core+Stories assets, including resources, dependencies, namespace/type moves and all four target frameworks.
+- [ ] Qualify adapter and consumer candidates in dependency order with saved-document, installed-module and wallpaper fixtures. Owner source and local packs do not establish downstream execution.
+- [ ] With separate release authority, publish and verify owner packages, then repin and release consumers against verified public three-part versions. Preserve package-only proof without temporary project references or copied owners.
+
 ## Rendering Pipeline
 
+- Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
+- Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
+
+SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
+
 - Continue reducing raw/string SVG render paths where shared writer or element-tree helpers make the renderer safer and easier to test.
+- Reduce repeated paint attributes and scoped-ID payload in dense prepared SVG while preserving complete source alternatives and embedding isolation; compare raw and compressed output sizes.
 - Keep path geometry helpers independent of SVG serialization so PNG parity remains intact.
 - Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
 - Dense polylines stroke about 1.3-1.7x slower than the old per-segment quads (thousands of points, with every scanline crossing many outline edges), while gridlines, axes, and topology edges are faster. If dense charts need it, skip join pieces whose outer wedge is under a sub-pixel and emit fill edges from the stroker without intermediate piece lists.
@@ -13,7 +60,7 @@ This is the central place for active follow-up work. Keep feature ideas here unt
 - Colour-font extensions: apply non-default COLR v1 paint variation when applications need it. Extend embedded bitmap decoding beyond PNG, JPEG, uncompressed RGB TIFF and horizontal raw EBDT images only with a concrete reference-font case; component EBDT images and scaled EBSC strikes retain outline fallback.
 - Use the PowerForge rendering benchmark history to establish tighter cross-platform CI thresholds only after enough runner evidence exists to avoid machine-specific gates.
 - Static SVG and PNG charts are drawn in one time zone (UTC or `ChartAxis.TimeZone`) and cannot follow the reader's zone; hosts with a local/UTC switch label them as fixed. Following the reader needs a browser-side redraw of time-axis ticks, labels, and tooltips (for example from the `data-cfx-start`/`data-cfx-end` instants) in `ChartForgeX.Interactivity.Html`.
-- Colour roles for SVG variables cover lines, bars, histograms, calendars, matrix and hexbin heatmaps with their cell text, state marks and Gantt lane labels, and topology tints, contrast white, and arrow and endpoint markers (keyed by status, muted, or explicit colour order). Still written as literal derived colours: the gradients of funnel, Sankey, tree, treemap, timeline, and Gantt task marks, and the card and plot surface gradients (whose blend depends on the surface luminance, so a drawn card differs between light and dark). The interactive graph explorer (`ChartForgeX.Interactivity.Html`) still names its arrow markers after the edge colour.
+- Graphite colour roles cover flat marks, surfaces, guides, ramps and readable ink across light/dark SVG switching. Continue extending variable mapping for the derived gradients in named effect themes; their surface blends can still require regeneration when switching themes. The interactive graph explorer (`ChartForgeX.Interactivity.Html`) still names its arrow markers after the edge colour.
 
 ## Interactivity
 

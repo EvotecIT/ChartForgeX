@@ -41,26 +41,33 @@ internal static partial class SmokeTests {
             .AddEdge("curve", "source", "target", routing: TopologyEdgeRouting.Curved)
             .WithEdgeEndpointLabels("curve", "out", "in");
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false };
-        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
-        var edge = chart.Edges.Single();
-        var points = TopologyRenderPrimitives.EdgePoints(chart, edge, nodes);
-        var rendered = TopologyRenderPrimitives.RenderedEdgeSamplePoints(chart, edge, nodes, points);
-        var expectedSource = TopologyRenderPrimitives.EdgeEndpointLabelPoint(chart, options, rendered[0], rendered[1], edge.SourceLabel!);
-        var expectedTarget = TopologyRenderPrimitives.EdgeEndpointLabelPoint(chart, options, rendered[rendered.Count - 1], rendered[rendered.Count - 2], edge.TargetLabel!);
-        Assert(rendered.Count > 2 && rendered[rendered.Count / 2].Y < points[0].Y - 20, "Standard curved topology routes should expose sampled raster geometry instead of collapsing to their straight chord.");
-        var diagnostics = TopologyLayoutDiagnostics.Analyze(chart, options).Edges.Single();
-        Assert(diagnostics.Points.Count == rendered.Count && diagnostics.Points[diagnostics.Points.Count / 2].Y < diagnostics.Points[0].Y - 20, "Public topology diagnostics should expose the sampled rendered curve rather than raw endpoints or control polygons.");
+        var prepared = chart.Prepare(options);
+        var envelope = prepared.ToInterchangeEnvelope();
+        var resolvedChart = TopologyLayoutEngine.Clone(chart);
+        foreach (var node in resolvedChart.Nodes) {
+            var resolved = envelope.Nodes.Single(item => item.Id == node.Id);
+            node.X = resolved.X!.Value; node.Y = resolved.Y!.Value; node.Width = resolved.Width!.Value; node.Height = resolved.Height!.Value;
+        }
+        options.TextMeasurement = new ChartForgeX.Typography.TextMeasurementContext(ChartForgeX.Rendering.VisualExportRequest.ForTopology(chart, options).Context.Font, options.TextMeasurementMode);
+        var edge = resolvedChart.Edges.Single();
+        var rendered = envelope.Edges.Single().ResolvedRoute.Select(point => new ChartForgeX.Primitives.ChartPoint(point.X, point.Y)).ToArray();
+        var expectedSource = TopologyRenderPrimitives.EdgeEndpointLabelPoint(resolvedChart, options, rendered[0], rendered[1], edge.SourceLabel!);
+        var expectedTarget = TopologyRenderPrimitives.EdgeEndpointLabelPoint(resolvedChart, options, rendered[rendered.Length - 1], rendered[rendered.Length - 2], edge.TargetLabel!);
+        Assert(rendered.Length > 2 && rendered[rendered.Length / 2].Y < rendered[0].Y - 20, "Standard curved topology routes should expose sampled raster geometry instead of collapsing to their straight chord.");
+        var diagnostics = prepared.Analyze().Edges.Single();
+        Assert(diagnostics.Points.Count > 2 && diagnostics.Points[diagnostics.Points.Count / 2].Y < diagnostics.Points[0].Y - 20, "Public topology diagnostics should expose the sampled rendered curve rather than raw endpoints or control polygons.");
+        Assert(Math.Abs((diagnostics.Points[diagnostics.Points.Count / 2].Y - diagnostics.Points[0].Y) - (rendered[rendered.Length / 2].Y - rendered[0].Y)) < .01, "Diagnostic and native samples should describe the same curve midpoint independently of sample density.");
 
-        var document = XDocument.Parse(chart.ToSvg(options));
+        var document = XDocument.Parse(prepared.ToSvg());
         var labels = document.Descendants().Where(element => string.Equals((string?)element.Attribute("data-cfx-role"), "topology-edge-endpoint-label", StringComparison.Ordinal)).ToDictionary(element => (string)element.Attribute("data-endpoint")!, StringComparer.Ordinal);
-        var sourceX = double.Parse(labels["source"].Attribute("x")!.Value, CultureInfo.InvariantCulture);
-        var sourceY = double.Parse(labels["source"].Attribute("y")!.Value, CultureInfo.InvariantCulture);
-        var targetX = double.Parse(labels["target"].Attribute("x")!.Value, CultureInfo.InvariantCulture);
-        var targetY = double.Parse(labels["target"].Attribute("y")!.Value, CultureInfo.InvariantCulture);
+        var sourceX = double.Parse(labels["source"].Attribute("data-label-x")!.Value, CultureInfo.InvariantCulture);
+        var sourceY = double.Parse(labels["source"].Attribute("data-label-y")!.Value, CultureInfo.InvariantCulture);
+        var targetX = double.Parse(labels["target"].Attribute("data-label-x")!.Value, CultureInfo.InvariantCulture);
+        var targetY = double.Parse(labels["target"].Attribute("data-label-y")!.Value, CultureInfo.InvariantCulture);
         Assert(Math.Abs(sourceX - expectedSource.X) < 0.01 && Math.Abs(sourceY - expectedSource.Y) < 0.01 && Math.Abs(targetX - expectedTarget.X) < 0.01 && Math.Abs(targetY - expectedTarget.Y) < 0.01, "SVG endpoint labels should use the same sampled curve tangents as raster routes and motion planning.");
 
-        var png = RasterImageDecoder.Decode(chart.ToPng(options));
-        var midpoint = rendered[rendered.Count / 2];
+        var png = RasterImageDecoder.Decode(prepared.ToPng());
+        var midpoint = rendered[rendered.Length / 2];
         Assert(CountAlphaInRect(png.Pixels, png.Width, (int)Math.Round(midpoint.X) - 3, (int)Math.Round(midpoint.Y) - 3, 7, 7) > 0, "PNG topology output should paint standard curved routes at the shared sampled midpoint.");
     }
 }

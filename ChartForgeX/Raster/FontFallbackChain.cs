@@ -214,8 +214,12 @@ internal sealed class FontFallbackChain {
         public FaceCandidate(InstalledFontFace face, string family) { _face = face; _family = family; }
 
         public bool CoversAll(IReadOnlyList<int> codePoints) {
-            _cmap ??= ReadCmap(_face.Path, _face.CollectionIndex) ?? FontCmap.Empty;
-            foreach (var cp in codePoints) if (_cmap.Map(cp) == 0) return false;
+            if (_face.MemoryFont != null) {
+                foreach (var cp in codePoints) if (!_face.MemoryFont.HasGlyph(cp)) return false;
+            } else {
+                _cmap ??= (_face.Path == null ? null : ReadCmap(_face.Path, _face.CollectionIndex)) ?? FontCmap.Empty;
+                foreach (var cp in codePoints) if (_cmap.Map(cp) == 0) return false;
+            }
             return Face != null;
         }
 
@@ -223,7 +227,7 @@ internal sealed class FontFallbackChain {
             get {
                 if (_loaded) return _font;
                 _loaded = true;
-                _font = TrueTypeFont.TryLoadFromPath(_face.Path, _face.CollectionIndex)?.WithSelectedFamily(_family);
+                _font = _face.LoadFont()?.WithSelectedFamily(_family);
                 return _font;
             }
         }

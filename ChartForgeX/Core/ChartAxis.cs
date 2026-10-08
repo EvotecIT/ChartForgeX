@@ -28,6 +28,7 @@ public sealed class ChartAxis {
     private double? _minimum;
     private double? _maximum;
     private ChartScaleKind _scale;
+    private bool _hasExplicitScale;
     private double _symmetricLogarithmThreshold = 1;
     private int _tickCount = 6;
     private ChartLabelDensity _labelDensity = ChartLabelDensity.Auto;
@@ -65,7 +66,13 @@ public sealed class ChartAxis {
             }
 
             _scale = value;
+            _hasExplicitScale = true;
         }
+    }
+
+    /// <summary>Lets a typed date builder select calendar ticks while preserving an authored axis scale and configuration.</summary>
+    internal void UseTimeScaleByDefault() {
+        if (!_hasExplicitScale) _scale = ChartScaleKind.Time;
     }
 
     /// <summary>Gets or sets the positive linear threshold used by symmetric logarithmic scaling.</summary>
@@ -108,10 +115,18 @@ public sealed class ChartAxis {
     public bool Visible { get; set; } = true;
 
     /// <summary>Gets or sets a value indicating whether the axis rule is visible.</summary>
-    public bool ShowLine { get; set; } = true;
+    public bool ShowLine { get => _showLine; set { _showLine = value; HasExplicitLine = true; } }
+    private bool _showLine = true;
+    internal bool HasExplicitLine { get; private set; }
 
     /// <summary>Gets or sets a formatter for generated labels.</summary>
-    public Func<double, string>? LabelFormatter { get; set; }
+    public Func<double, string>? LabelFormatter {
+        get => ValueFormat?.Callback;
+        set => ValueFormat = value == null ? null : ChartValueFormat.Custom(value);
+    }
+
+    /// <summary>Gets or sets the numeric display policy. Null uses the chart fallback or the scale-aware default for time axes.</summary>
+    public ChartValueFormat? ValueFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the display time zone for <see cref="ChartScaleKind.Time"/> axes. Axis values are UTC instants;
@@ -172,6 +187,9 @@ public sealed class ChartAxis {
 
     /// <summary>Sets the label formatter.</summary>
     public ChartAxis WithLabelFormatter(Func<double, string>? formatter) { LabelFormatter = formatter; return this; }
+
+    /// <summary>Sets the numeric display policy; null restores scale-aware automatic formatting.</summary>
+    public ChartAxis WithValueFormat(ChartValueFormat? format) { ValueFormat = format; return this; }
 
     private void ValidateLogarithmicBound(double? value, string parameterName) {
         if (Scale == ChartScaleKind.Logarithmic && value.HasValue && value.Value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Logarithmic axes require positive bounds.");

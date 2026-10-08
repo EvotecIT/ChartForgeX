@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Topology;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -257,6 +258,10 @@ public sealed class VisualArtifactInterchangeDetail {
 
 /// <summary>Represents one semantic edge, connector, or sequence message.</summary>
 public sealed class VisualArtifactInterchangeEdge {
+    /// <summary>Gets the resolved rendered polyline, including both endpoints, in envelope logical coordinates. Empty means geometry was not prepared; authored topology waypoints remain separate.</summary>
+    public List<VisualArtifactInterchangePoint> ResolvedRoute { get; } = new();
+    /// <summary>Gets or sets the measured visible edge-label extent in the prepared logical viewport; authored anchors and offsets remain independent.</summary>
+    public ChartRect? ResolvedLabelBounds { get; set; }
     /// <summary>Gets or sets the stable edge id.</summary>
     public string Id { get; set; } = string.Empty;
     /// <summary>Gets or sets the well-known edge role.</summary>

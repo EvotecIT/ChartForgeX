@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Tests;
@@ -25,17 +26,15 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-canvas-surface-style=\"PanelGrid\"", StringComparison.Ordinal), "Relationship overview topology should render a dashboard-style canvas surface.");
         Assert(svg.Contains("data-node-surface-style=\"AccentBand\"", StringComparison.Ordinal), "Relationship overview topology should render premium tinted node surfaces.");
-        Assert(svg.Contains("data-cfx-role=\"topology-node-accent-band\"", StringComparison.Ordinal), "Relationship overview topology should render node accent bands.");
-        Assert(svg.Contains(" Q ", StringComparison.Ordinal), "Relationship overview topology should round orthogonal edge bends.");
-        Assert(svg.Contains("M 2.2 1.6 L 7.4 5 L 2.2 8.4", StringComparison.Ordinal), "Relationship overview topology should use the polished chevron marker style.");
-        Assert(svg.Contains("markerUnits=\"userSpaceOnUse\"", StringComparison.Ordinal), "Topology direction markers should keep a stable visual size when interactive scenario emphasis increases route stroke width.");
+        Assert(svg.Contains("data-cfx-role=\"topology-node-accent\"", StringComparison.Ordinal), "Relationship overview topology should render native node accent bands.");
+        Assert(chart.Prepare(options).ToInterchangeEnvelope().Edges.Any(edge => edge.ResolvedRoute.Count > 4), "Relationship overview topology should retain sampled rounded orthogonal bends in the common scene and semantic geometry.");
+        var markers = TopologyEntity(svg, "edge", "domain-finding").Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-marker").ToArray();
+        Assert(markers.Length == 1 && (string?)markers[0].Attribute("fill") == "none" && markers[0].Attribute("d")!.Value.Count(character => character == 'L') == 2, "Relationship overview topology should use a native open chevron with two stroked arms.");
         Assert(svg.Contains("data-edge-color=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview topology should support explicit relationship colors independent from health status.");
-        Assert(svg.Contains("stroke=\"#DC2626\"", StringComparison.Ordinal), "Relationship overview edge colors should be used by the route renderer.");
-        Assert(svg.Contains("marker-end=\"url(#relationship-overview-arrow-color-1)\"", StringComparison.Ordinal) &&
-            System.Text.RegularExpressions.Regex.IsMatch(svg, "<marker id=\"relationship-overview-arrow-color-1\"[^>]*><path [^>]*stroke=\"#DC2626\""),
-            "Relationship overview direction markers should use the rendered edge color instead of only health status.");
+        Assert(TopologyEdgeLine(svg, "domain-finding").RenderedColor("stroke").ToHex() == "#DC2626", "Relationship overview edge colors should be used by the route renderer while retaining highlight opacity.");
+        Assert(markers[0].RenderedColor("stroke").ToHex() == "#DC2626", "Native direction markers should use the explicit relationship color.");
         Assert(svg.Contains(">Links<", StringComparison.Ordinal), "Relationship overview topology should preserve caller-shaped legends.");
-        Assert(svg.Contains("dominant-baseline=\"central\"", StringComparison.Ordinal), "Topology legend and fallback glyph symbols should use centered text baselines.");
+        Assert(TopologyRoleTexts(svg, "legend-label").Length == 3, "The common legend should render all caller-shaped relationship entries.");
         Assert(svg.Contains("stroke-dasharray=\"2 5\"", StringComparison.Ordinal), "Relationship overview legends should render caller-specified dotted line styles.");
         Assert(!svg.Contains("data-legend-kind=\"status\"", StringComparison.Ordinal), "Relationship overview legends should not auto-merge every inferred status when the caller supplied a focused legend.");
         Assert(svg.Contains("data-node-icon-id=\"chartforgex-identity-directory:certificate\"", StringComparison.Ordinal), "Relationship overview topology should keep reusable icon ids in SVG metadata.");
@@ -44,7 +43,10 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Confidence 92%<", StringComparison.Ordinal), "Topology node subtitles should preserve the first explicit subtitle line.");
         Assert(svg.Contains(">24 linked records<", StringComparison.Ordinal), "Topology node subtitles should render explicit second subtitle lines.");
         Assert(svg.Contains("data-edge-line-style=\"Dotted\"", StringComparison.Ordinal), "Relationship overview topology should keep typed dotted relationship links.");
-        Assert(svg.Contains("cfx-topology--selected", StringComparison.Ordinal), "Relationship overview preset should still support selected record highlighting.");
+        var selectedDomain = TopologyEntity(svg, "node", "domain");
+        Assert((string?)selectedDomain.Attribute("data-cfx-selected") == "true"
+            && selectedDomain.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-node-surface" && (double?)element.Attribute("stroke-width") > 2),
+            "Relationship overview preset should expose selected records and paint a stronger selection outline.");
         Assert(chart.ToPng(options).Length > 64, "Relationship overview topology should render multiline cards as PNG.");
     }
 

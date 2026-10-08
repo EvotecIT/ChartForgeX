@@ -19,12 +19,12 @@ public sealed class ChartDiscontinuityTests {
         chart.Series.Add(new ChartSeries("Observed", kind, new[] { new ChartPoint(0, 5), new ChartPoint(5, 5, true), new ChartPoint(10, 5, true) }) { Color = ChartColor.FromRgb(255, 0, 0) });
         chart.Series[0].WithSmooth(smooth).WithMarkerRadius(0);
         var svg = XDocument.Parse(chart.ToSvg());
-        var role = kind == ChartSeriesKind.Line ? "line" : kind == ChartSeriesKind.StepLine ? "step-line" : kind == ChartSeriesKind.Area ? "area-line" : "step-area-line";
+        var role = "line";
         var paths = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
         Assert.NotEmpty(paths);
         Assert.All(paths, element => {
             Assert.Equal(3, ((string)element.Attribute("d")!).Count(character => character == 'L'));
-            Assert.Equal("round", (string?)element.Attribute("stroke-linecap"));
+            Assert.Equal("round", element.AncestorsAndSelf().Attributes("stroke-linecap").FirstOrDefault()?.Value);
         });
         var image = PngReader.Decode(chart.ToPng());
         var red = 0;
@@ -53,12 +53,12 @@ public sealed class ChartDiscontinuityTests {
         }
         var chart = Create(true);
         var svg = XDocument.Parse(chart.ToSvg());
-        var role = kind == ChartSeriesKind.Line ? "line" : kind == ChartSeriesKind.StepLine ? "step-line" : kind == ChartSeriesKind.Area ? "area-line" : "step-area-line";
+        var role = "line";
         var paths = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
         Assert.NotEmpty(paths);
         Assert.All(paths, element => Assert.Equal(2, ((string)element.Attribute("d")!).Count(character => character == 'M')));
         if (kind == ChartSeriesKind.Area || kind == ChartSeriesKind.StepArea)
-            Assert.Equal(2, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == (kind == ChartSeriesKind.Area ? "area" : "step-area")));
+            Assert.Equal(2, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "area"));
         int RedPixelsAtCenter(byte[] png) {
             var image = PngReader.Decode(png);
             var count = 0;

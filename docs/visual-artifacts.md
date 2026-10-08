@@ -1,5 +1,15 @@
 # Visual Artifacts
 
+The [Graphite chart look specification](design/chart-look-spec.html) defines the shared light and dark colours, frame, typography, marks, legends, and interaction appearance. Open it with `#light` or `#dark` to inspect either theme.
+
+Generate the focused Graphite gallery into a review folder:
+
+```powershell
+dotnet run --project ChartForgeX.Examples -c Release -- --graphite-only --output ./graphite-review
+```
+
+`graphite-gallery.html` pairs SVG and PNG for both themes, including arc, needle and linear gauges, compact donut legends, flat temporal marks, and a mixed dashboard. `svg-png-comparison.html` and its JSON manifest report dimensions, text edges and raster health. The full quality loop accepts `-ExamplesOutput` and `-PackageOutput` when review artifacts belong outside the checkout. Inspect the gallery before using `-UpdateVisualBaseline`.
+
 Visual artifacts are reusable visual payloads that may be authored in code, Markdown, Mermaid, or future ChartForgeX fence languages. They are intentionally product-neutral. A report, dashboard, email, documentation generator, static site, or native host can decide how much of the artifact contract it wants to render.
 
 The core model lives in `ChartForgeX.VisualArtifacts` and keeps three ideas separate:

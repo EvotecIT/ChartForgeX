@@ -57,12 +57,13 @@ internal static partial class SmokeTests {
             .WithValueFormatter(value => "Total " + value.ToString("0", CultureInfo.InvariantCulture))
             .AddHorizontalBar("Passed", Points(10, 12, 11, 13, 12, 11, 10, 12, 11, 13, 12, 11, 10, 12, 11, 13))
             .AddHorizontalBar("Warnings", Points(2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3));
-        AssertUsefulSubset(horizontalStacked.ToSvg(), 16, "Dense horizontal stack total labels should avoid collisions.");
+        AssertUsefulStackTotalSubset(horizontalStacked.ToSvg(), 16, "Dense horizontal stack total labels should avoid collisions.");
         Assert(horizontalStacked.ToPng().Length > 64, "PNG horizontal stack total label collision avoidance should render valid output.");
     }
 
     private static void AssertUsefulStackTotalSubset(string svg, int itemCount, string message) {
-        var labelCount = CountOccurrences(svg, "data-cfx-role=\"stack-total-label\"");
-        Assert(labelCount > 0 && labelCount < itemCount, message);
+        var labelCount = System.Xml.Linq.XDocument.Parse(svg).Descendants().Count(e => (string?)e.Attribute("data-cfx-role") == "stack-total-label" && !e.AncestorsAndSelf().Any(a => (string?)a.Attribute("display") == "none"));
+        Assert(labelCount > 0 && labelCount <= itemCount, message);
+        Assert(Rendering.ChartLabelScene.Inspect(svg, Typography.FontSpec.SystemSans()).LabelLabel == 0, message);
     }
 }

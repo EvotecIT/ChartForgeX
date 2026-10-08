@@ -137,6 +137,9 @@ internal static partial class SmokeTests {
         return count;
     }
 
+    private static int CountVisibleDataLabels(string svg) => System.Xml.Linq.XDocument.Parse(svg).Descendants()
+        .Count(e => (string?)e.Attribute("data-cfx-role") == "data-label" && !e.AncestorsAndSelf().Any(a => (string?)a.Attribute("display") == "none"));
+
     private static string[] ExtractAttributeValues(string value, string prefix) {
         var values = new List<string>();
         var index = 0;
@@ -152,7 +155,8 @@ internal static partial class SmokeTests {
     }
 
     private static void AssertNoDuplicateIds(string markup, string context) {
-        var ids = ExtractAttributeValues(markup, "id=\"");
+        var ids = System.Text.RegularExpressions.Regex.Matches(markup, "\\sid=\"([^\"]*)\"")
+            .Cast<System.Text.RegularExpressions.Match>().Select(match => match.Groups[1].Value).ToArray();
         var duplicates = ids
             .GroupBy(id => id, StringComparer.Ordinal)
             .Where(group => group.Count() > 1)
@@ -303,14 +307,59 @@ internal static partial class SmokeTests {
     }
 
     private static double GetAttribute(string text, string marker, string attribute) {
-        var start = text.IndexOf(marker, StringComparison.Ordinal);
-        if (start < 0) throw new InvalidOperationException("Missing marker: " + marker);
-        var attributeMarker = " " + attribute + "=\"";
-        start = text.IndexOf(attributeMarker, start, StringComparison.Ordinal);
-        if (start < 0) throw new InvalidOperationException("Missing attribute: " + attribute);
-        start += attributeMarker.Length;
-        var end = text.IndexOf("\"", start, StringComparison.Ordinal);
-        return double.Parse(text.Substring(start, end - start), CultureInfo.InvariantCulture);
+        return double.Parse(GetStringAttribute(text, marker, attribute), CultureInfo.InvariantCulture);
+    }
+
+    private static string GetStringAttribute(string text, string marker, string attribute) {
+        var elements = ReadEmbeddedSvgs(text).SelectMany(document => document.Descendants());
+        var selectors = System.Text.RegularExpressions.Regex.Matches(marker, "([\\w:-]+)=\"([^\"]*)\"");
+        var tag = marker.StartsWith("<", StringComparison.Ordinal) ? marker.Substring(1).Split(' ', '>')[0] : null;
+        var matches = elements.Where(element =>
+            (tag == null || element.Name.LocalName == tag) && selectors.Cast<System.Text.RegularExpressions.Match>().All(selector => {
+                var name = selector.Groups[1].Value; var value = System.Net.WebUtility.HtmlDecode(selector.Groups[2].Value);
+                return name == "data-cfx-role" ? (string?)element.Attribute(name) == value
+                    : element.AncestorsAndSelf().Any(owner => (string?)owner.Attribute(name) == value);
+            })).ToArray();
+        var selected = matches.FirstOrDefault(element => element.Attribute(attribute) != null ||
+            element.Descendants().Any(child => child.Attribute(attribute) != null) ||
+            element.Ancestors().Any(owner => owner.Attribute(attribute) != null)) ?? matches.FirstOrDefault();
+        if (selected == null) throw new InvalidOperationException("Missing marker: " + marker);
+        var result = selected.Attribute(attribute);
+        if (attribute.StartsWith("data-", StringComparison.Ordinal))
+            result ??= selected.Ancestors().Select(owner => owner.Attribute(attribute)).FirstOrDefault(value => value != null);
+        result ??= selected.Descendants().Select(child => child.Attribute(attribute)).FirstOrDefault(value => value != null);
+        result ??= selected.Ancestors().Select(owner => owner.Attribute(attribute)).FirstOrDefault(value => value != null);
+        return result?.Value ?? throw new InvalidOperationException("Missing attribute: " + attribute + " on " + marker);
+    }
+
+    private static bool SvgHasAttributes(string svg, string attributes) {
+        var selectors = System.Text.RegularExpressions.Regex.Matches(attributes, "([\\w:-]+)=\"([^\"]*)\"");
+        if (selectors.Count == 0) throw new ArgumentException("Expected SVG attribute selectors.", nameof(attributes));
+        // This assertion also checks the HTML scenario controls surrounding an embedded SVG.
+        // HTML doctypes and void elements are not an XML document; inspect complete start tags.
+        return System.Text.RegularExpressions.Regex.Matches(svg, "<[A-Za-z][A-Za-z0-9:-]*(?:\\s+(?:\"[^\"]*\"|'[^']*'|[^'\">])*)?/?>")
+            .Cast<System.Text.RegularExpressions.Match>().Any(tag => {
+                var actual = System.Text.RegularExpressions.Regex.Matches(tag.Value, "\\s([\\w:-]+)=\"([^\"]*)\"")
+                    .Cast<System.Text.RegularExpressions.Match>().ToDictionary(match => match.Groups[1].Value,
+                        match => System.Net.WebUtility.HtmlDecode(match.Groups[2].Value), StringComparer.Ordinal);
+                return selectors.Cast<System.Text.RegularExpressions.Match>().All(selector => actual.TryGetValue(selector.Groups[1].Value, out var value)
+                    && value == System.Net.WebUtility.HtmlDecode(selector.Groups[2].Value));
+            });
+    }
+
+    private static IEnumerable<System.Xml.Linq.XDocument> ReadEmbeddedSvgs(string markup) {
+        var start = markup.IndexOf("<svg", StringComparison.Ordinal);
+        if (start < 0) throw new InvalidOperationException("Missing embedded SVG root.");
+        while (start >= 0) {
+            using var input = new StringReader(markup.Substring(start));
+            using var reader = System.Xml.XmlReader.Create(input, new System.Xml.XmlReaderSettings {
+                ConformanceLevel = System.Xml.ConformanceLevel.Fragment, DtdProcessing = System.Xml.DtdProcessing.Prohibit, XmlResolver = null
+            });
+            reader.MoveToContent();
+            using var subtree = reader.ReadSubtree();
+            yield return new System.Xml.Linq.XDocument(System.Xml.Linq.XElement.Load(subtree));
+            start = markup.IndexOf("<svg", start + 4, StringComparison.Ordinal);
+        }
     }
 
     private static DecodedPng DecodePng(byte[] png) {

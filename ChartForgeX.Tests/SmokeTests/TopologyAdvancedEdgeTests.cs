@@ -38,7 +38,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-source-marker=\"Circle\"", StringComparison.Ordinal) && svg.Contains("data-target-marker=\"Diamond\"", StringComparison.Ordinal), "SVG should preserve explicit endpoint markers.");
         Assert(svg.Contains("data-source-port-id=\"grpc\"", StringComparison.Ordinal) && svg.Contains("data-target-port-id=\"writer\"", StringComparison.Ordinal), "SVG should preserve named edge ports.");
         Assert(svg.Contains("data-cfx-role=\"topology-edge-endpoint-label\"", StringComparison.Ordinal), "SVG should render endpoint labels.");
-        Assert(svg.Contains("data-cfx-role=\"topology-node-detail-value\"", StringComparison.Ordinal), "SVG should render typed node details.");
+        Assert(TopologyRoleTexts(svg, "topology-node-detail").Any(text => text.Value.Contains("Region", StringComparison.Ordinal) && text.Value.Contains("EU", StringComparison.Ordinal)), "SVG should render the typed node detail key and value together.");
         Assert(svg.Contains("data-cfx-role=\"topology-layout-diagnostics\"", StringComparison.Ordinal), "SVG should render the optional layout diagnostic overlay.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50, "Advanced edge styling should preserve PNG output.");
         Assert(edge.Points.Count >= 2 && edge.Strategy.Length > 0, "Machine-readable diagnostics should expose prepared routes and router strategy.");
@@ -99,9 +99,14 @@ internal static partial class SmokeTests {
         Assert(orderingSvg.IndexOf(">low-source<", StringComparison.Ordinal) < orderingSvg.IndexOf(">high-source<", StringComparison.Ordinal), "Endpoint labels should follow the same routing-priority order as their routes and primary labels.");
         var orderingDocument = System.Xml.Linq.XDocument.Parse(orderingSvg);
         var lowRoute = orderingDocument.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "topology-edge", StringComparison.Ordinal) && string.Equals((string?)element.Attribute("data-edge-id"), "low", StringComparison.Ordinal));
-        Assert(string.Equals((string?)lowRoute.Attribute("opacity"), "0.28", StringComparison.Ordinal), "SVG edge routes outside an active highlight should retain the same dimming applied by PNG output.");
+        var lowLine = lowRoute.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
+        Assert(lowLine.RenderedColor("stroke").A == (byte)Math.Round(255 * .28), "SVG edge routes outside an active highlight should retain the same dimming applied by PNG output.");
         var highLabel = orderingDocument.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "topology-edge-label", StringComparison.Ordinal) && string.Equals((string?)element.Attribute("data-edge-id"), "high", StringComparison.Ordinal));
-        Assert(string.Equals((string?)highLabel.Attribute("opacity"), "0.25", StringComparison.Ordinal), "SVG edge-label groups should apply the edge's explicit opacity to labels, leaders, and backplates.");
+        var highText = highLabel.Descendants().Single(element => element.Name.LocalName == "text");
+        var highPlate = highLabel.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-label-surface");
+        Assert(highText.RenderedColor("fill").A == 64 && highPlate.RenderedColor("fill").A is > 0 and <= 64, "Native edge label ink and backplates should retain the explicit relationship opacity.");
+        var highEndpoint = orderingDocument.Descendants().Single(element => element.Name.LocalName == "text" && element.Value == "high-source");
+        Assert(highEndpoint.RenderedColor("fill").A == 64 && highEndpoint.RenderedColor("stroke").A == 64, "Endpoint label ink and its readability outline should retain the explicit relationship opacity.");
         byte[] selectedLowOpacity = orderingChart.ToPng(orderingOptions);
         orderingChart.Edges.Single(edgeItem => edgeItem.Id == "high").Opacity = 1D;
         byte[] selectedFullOpacity = orderingChart.ToPng(orderingOptions);
@@ -125,12 +130,17 @@ internal static partial class SmokeTests {
         var markersHidden = new TopologyRenderOptions { IncludeLegend = false, IncludeDirectionMarkers = false };
         var explicitMarkerSvg = explicitMarkerChart.ToSvg(markersHidden);
         var explicitMarkerPng = explicitMarkerChart.ToPng(markersHidden);
-        Assert(explicitMarkerSvg.Contains("marker-start=", StringComparison.Ordinal) && explicitMarkerSvg.Contains("marker-end=", StringComparison.Ordinal), "Explicit endpoint markers should remain visible when inferred direction markers are disabled.");
+        var explicitMarkers = TopologyEntity(explicitMarkerSvg, "edge", "explicit").Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "topology-marker").ToArray();
+        Assert(explicitMarkers.Length == 2 && explicitMarkers.Any(element => element.Name.LocalName == "ellipse")
+            && explicitMarkers.Any(element => element.Name.LocalName == "path" && element.Attribute("d") != null),
+            "Explicit circle and diamond endpoint markers should remain visible when inferred direction markers are disabled.");
         explicitMarkerChart.WithEdgeMarkers("explicit", null, null);
         explicitMarkerChart.Edges.Single().Direction = VisualLinkDirection.Forward;
         var inferredMarkerSvg = explicitMarkerChart.ToSvg(markersHidden);
         var inferredMarkerPng = explicitMarkerChart.ToPng(markersHidden);
-        Assert(!inferredMarkerSvg.Contains("marker-start=", StringComparison.Ordinal) && !inferredMarkerSvg.Contains("marker-end=", StringComparison.Ordinal), "Disabling direction markers should suppress only markers inferred from edge direction.");
+        Assert(!TopologyEntity(inferredMarkerSvg, "edge", "explicit").Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-marker"),
+            "Disabling direction markers should suppress only markers inferred from edge direction.");
         Assert(!explicitMarkerPng.SequenceEqual(inferredMarkerPng), "PNG output should preserve explicit endpoint markers independently of direction-marker visibility.");
 
         var wrapped = TopologyChart.Create()
@@ -141,12 +151,15 @@ internal static partial class SmokeTests {
         var wrappedOptions = new TopologyRenderOptions { IncludeLegend = false, WrapNodeLabels = true, MaxNodeLabelLines = 3, MaxNodeSubtitleLines = 3 };
         var wrappedDiagnostics = TopologyLayoutDiagnostics.Analyze(wrapped, wrappedOptions);
         Assert(wrappedDiagnostics.Nodes.Single().Bounds.Height > 82, "Detailed card layout should grow to reserve space for wrapped header text.");
-        var wrappedSvg = System.Xml.Linq.XDocument.Parse(wrapped.ToSvg(wrappedOptions));
-        var lastHeader = wrappedSvg.Descendants().Single(element => element.Value == "second subtitle");
-        var firstDetail = wrappedSvg.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "topology-node-detail-label", StringComparison.Ordinal));
+        var wrappedSvg = wrapped.ToSvg(wrappedOptions);
+        var lastHeader = TopologyRoleTexts(wrappedSvg, "topology-node-subtitle").Single(element => element.Value == "second subtitle");
+        var firstDetail = TopologyRoleTexts(wrappedSvg, "topology-node-detail").Single(element => element.Value == "Status Ready");
         var lastHeaderY = double.Parse(lastHeader.Attribute("y")!.Value, System.Globalization.CultureInfo.InvariantCulture);
         var firstDetailY = double.Parse(firstDetail.Attribute("y")!.Value, System.Globalization.CultureInfo.InvariantCulture);
         Assert(firstDetailY - 8 > lastHeaderY + 4, "Detailed card separators should start below every rendered title and subtitle line.");
+        var separator = TopologyEntity(wrappedSvg, "node", "wrapped").Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node-detail-separator");
+        Assert((double)separator.Attribute("y1")! > lastHeaderY + 4 && (double)separator.Attribute("y1")! < firstDetailY - 4,
+            "A visible native separator should sit between the final subtitle line and the first detail.");
         Assert(wrapped.ToPng(wrappedOptions).Length > 64, "Wrapped detailed cards should preserve PNG output parity.");
     }
 

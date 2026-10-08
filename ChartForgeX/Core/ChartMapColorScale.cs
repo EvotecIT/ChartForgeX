@@ -1,4 +1,6 @@
 using System;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
 
@@ -187,7 +189,10 @@ public sealed class ChartMapColorScale {
     /// <param name="sourceMinimum">The minimum source value when the scale has no explicit minimum.</param>
     /// <param name="sourceMaximum">The maximum source value when the scale has no explicit maximum.</param>
     /// <returns>The interpolated color.</returns>
-    public ChartColor ColorFor(double value, double sourceMinimum, double sourceMaximum) {
+    public ChartColor ColorFor(double value, double sourceMinimum, double sourceMaximum) => BlendFor(value, sourceMinimum, sourceMaximum).Color;
+
+    /// <summary>Resolves the same scale decision while retaining its stop provenance for prepared SVG.</summary>
+    internal ChartColorBlend BlendFor(double value, double sourceMinimum, double sourceMaximum) {
         var min = EffectiveMinimum(sourceMinimum);
         var max = EffectiveMaximum(sourceMaximum);
         if (max <= min + 0.000001) max = min + 1;
@@ -248,11 +253,12 @@ public sealed class ChartMapColorScale {
 
     // Measured from the first stop of the arm, so a one-step arm blends by the ratio itself, exactly as the two- and
     // three-colour scales always have (adding and subtracting the arm offset would change rounded channels).
-    private ChartColor Along(int from, int to, double ratio) {
+    private ChartColorBlend Along(int from, int to, double ratio) {
         var scaled = (to - from) * ratio;
         var step = (int)Math.Floor(scaled);
-        if (step >= to - from) return _colors[to];
-        return Blend(_colors[from + step], _colors[from + step + 1], scaled - step);
+        if (step >= to - from) return ChartColorBlend.Solid(_colors[to], SvgColorRole.Ramp);
+        var first = _colors[from + step]; var second = _colors[from + step + 1]; var amount = scaled - step;
+        return new ChartColorBlend(first, SvgColorRole.Ramp, second, SvgColorRole.Ramp, amount, Blend(first, second, amount));
     }
 
     /// <summary>

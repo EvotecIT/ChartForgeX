@@ -11,6 +11,36 @@ internal sealed partial class RgbaCanvas {
     private int _clipRight;
     private int _clipBottom;
     private List<PolygonClip>? _polygonClips;
+    private List<List<PolygonClip>>? _contourClips;
+
+    /// <summary>Temporarily applies a rectangular clip and restores the preceding clip on disposal.</summary>
+    internal IDisposable PushClipBounds(ChartRect bounds, bool intersect = true) {
+        var scope = new RectangleClipScope(this);
+        var hadClip = _hasClip;
+        var left = _clipLeft; var top = _clipTop; var right = _clipRight; var bottom = _clipBottom;
+        SetClipBounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+        if (intersect && hadClip) {
+            _clipLeft = Math.Max(_clipLeft, left); _clipTop = Math.Max(_clipTop, top);
+            _clipRight = Math.Min(_clipRight, right); _clipBottom = Math.Min(_clipBottom, bottom);
+        }
+        return scope;
+    }
+
+    private sealed class RectangleClipScope : IDisposable {
+        private RgbaCanvas? _canvas;
+        private readonly bool _hadClip;
+        private readonly int _left, _top, _right, _bottom;
+        internal RectangleClipScope(RgbaCanvas canvas) {
+            _canvas = canvas; _hadClip = canvas._hasClip;
+            _left = canvas._clipLeft; _top = canvas._clipTop; _right = canvas._clipRight; _bottom = canvas._clipBottom;
+        }
+        public void Dispose() {
+            if (_canvas == null) return;
+            _canvas._hasClip = _hadClip;
+            _canvas._clipLeft = _left; _canvas._clipTop = _top; _canvas._clipRight = _right; _canvas._clipBottom = _bottom;
+            _canvas = null;
+        }
+    }
 
     /// <summary>
     /// Restricts subsequent paint operations to pixels whose centers fall inside the supplied logical bounds.
@@ -38,11 +68,36 @@ internal sealed partial class RgbaCanvas {
         return new PolygonClipScope(this, _polygonClips.Count);
     }
 
+    /// <summary>Intersects an even-odd multi-contour clip, preserving holes and disconnected islands.</summary>
+    internal IDisposable PushContoursClip(IReadOnlyList<List<ChartPoint>> contours) {
+        var clip = new List<PolygonClip>();
+        foreach (var contour in contours) if (contour.Count >= 3) clip.Add(new PolygonClip(contour, _scale));
+        _contourClips ??= new List<List<PolygonClip>>();
+        _contourClips.Add(clip);
+        return new ContourClipScope(this, _contourClips.Count);
+    }
+
     private bool IsInsideClip(int x, int y) {
         if (_hasClip && (x < _clipLeft || x >= _clipRight || y < _clipTop || y >= _clipBottom)) return false;
-        if (_polygonClips == null) return true;
-        foreach (var clip in _polygonClips) if (!clip.Contains(x + 0.5, y + 0.5)) return false;
+        if (_polygonClips != null) foreach (var clip in _polygonClips) if (!clip.Contains(x + 0.5, y + 0.5)) return false;
+        if (_contourClips != null) foreach (var contours in _contourClips) {
+            var inside = false;
+            foreach (var contour in contours) if (contour.Contains(x + 0.5, y + 0.5)) inside = !inside;
+            if (!inside) return false;
+        }
         return true;
+    }
+
+    private sealed class ContourClipScope : IDisposable {
+        private RgbaCanvas? _canvas;
+        private readonly int _depth;
+        internal ContourClipScope(RgbaCanvas canvas, int depth) { _canvas = canvas; _depth = depth; }
+        public void Dispose() {
+            if (_canvas == null) return;
+            if (_canvas._contourClips == null || _canvas._contourClips.Count != _depth)
+                throw new InvalidOperationException("Contour clip scopes must be disposed in reverse order.");
+            _canvas._contourClips.RemoveAt(_depth - 1); _canvas = null;
+        }
     }
 
     private void PopPolygonClip(int depth) {

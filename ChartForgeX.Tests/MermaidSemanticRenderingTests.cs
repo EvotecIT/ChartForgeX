@@ -51,7 +51,9 @@ public sealed class MermaidSemanticRenderingTests {
         Assert.Contains("+string SentinelName", svg);
         Assert.Contains("+SentinelLogin() bool", svg);
         Assert.Contains("interface", svg);
-        Assert.Contains("marker-start", svg);
+        var relationship = Assert.Single(XDocument.Parse(svg).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-edge");
+        Assert.Equal("OpenTriangle", (string?)relationship.Attribute("data-source-marker"));
+        Assert.Contains(relationship.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-marker");
         Assert.NotEmpty(document.ToPng());
     }
 

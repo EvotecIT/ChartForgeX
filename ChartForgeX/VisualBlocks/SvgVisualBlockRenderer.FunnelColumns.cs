@@ -39,7 +39,7 @@ public sealed partial class SvgVisualBlockRenderer {
                     .Attribute("rx", Math.Min(4, layout.BarWidth * 0.48))
                     .Attribute("fill", color.ToCss())
                     .EndEmptyElement().Line();
-                writer.StartElement("rect")
+                if (!theme.FlatMarks) writer.StartElement("rect")
                     .Attribute("data-cfx-role", "segmented-metric-funnel-bar-highlight")
                     .Attribute("data-cfx-stage", stage.Index)
                     .Attribute("data-cfx-index", i)

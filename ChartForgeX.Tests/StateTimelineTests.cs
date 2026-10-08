@@ -18,25 +18,26 @@ public sealed class StateTimelineTests {
     public void ToSvg_LanesWithStates_RendersSegmentsSummaryLegendAndTimeTicks() {
         var svg = XDocument.Parse(CreateChart().ToSvg());
 
-        var segments = ByRole(svg, "state-segment");
+        var segments = ByRole(svg, "state-timeline-segment");
         Assert.Equal(6, segments.Length);
         Assert.Equal(new[] { "up", "down", "up", "up", "notObservable", "up" }, segments.Select(segment => (string)segment.Attribute("data-cfx-status")!).ToArray());
-        Assert.Equal(Down.ToCss(), (string)segments[1].Attribute("fill")!);
-        Assert.Contains("DC01 · Down · 2026-09-25 06:00 UTC – 2026-09-25 09:00 UTC (3h) · LDAP bind failed", segments[1].Elements().Single(child => child.Name.LocalName == "title").Value, StringComparison.Ordinal);
-        Assert.Equal(2, ByRole(svg, "state-segment-hatch").Length);
+        Assert.Equal(Down.ToCss(), (string)segments[1].RenderedAttribute("fill")!);
+        Assert.Contains("DC01 · Down · 2026-09-25 06:00 UTC – 2026-09-25 09:00 UTC (3h) · LDAP bind failed", segments[1].Tooltip(), StringComparison.Ordinal);
+        Assert.NotEmpty(ByRole(svg, "state-timeline-segment-shape-hatch"));
+        Assert.NotEmpty(ByRole(svg, "legend-swatch-hatch"));
 
-        Assert.Equal(new[] { "DC01", "DC02", "DC03" }, Texts(svg, "state-lane-label"));
-        Assert.Equal(new[] { "87.5%", "100%" }, Texts(svg, "state-lane-summary"));
-        Assert.Equal(new[] { "Available" }, Texts(svg, "state-summary-header"));
-        Assert.Equal(new[] { "Up", "Down", "Not observable" }, Texts(svg, "state-legend-label"));
-        Assert.Contains("06:00", Texts(svg, "state-timeline-tick-label"));
+        Assert.Equal(new[] { "DC01", "DC02", "DC03" }, Texts(svg, "schedule-row-label"));
+        Assert.Equal(new[] { "87.5%", "100%" }, Texts(svg, "lane-summary"));
+        Assert.Equal(new[] { "Available" }, Texts(svg, "lane-summary-header"));
+        Assert.Equal(new[] { "Up", "Down", "Not observable" }, Texts(svg, "legend-label"));
+        Assert.Contains("06:00", Texts(svg, "schedule-tick-label"));
         Assert.Contains(">UTC</text>", CreateChart().ToSvg(), StringComparison.Ordinal);
     }
 
     [Fact]
     public void ToSvg_UncoveredTime_LeavesGapBetweenSegments() {
         var svg = XDocument.Parse(CreateChart().ToSvg());
-        var lane = ByRole(svg, "state-segment").Where(segment => (string)segment.Attribute("data-cfx-series")! == "1").ToArray();
+        var lane = ByRole(svg, "state-timeline-segment").Where(segment => (string)segment.Attribute("data-cfx-series")! == "1").ToArray();
         Assert.Equal(2, lane.Length);
         var firstEnd = Number(lane[0], "x") + Number(lane[0], "width");
         Assert.True(Number(lane[1], "x") - firstEnd > 100, "Uncovered time between segments should stay empty.");
@@ -46,8 +47,8 @@ public sealed class StateTimelineTests {
     public void ToSvg_ContiguousBucketsInSameState_DrawAsOneRun() {
         var buckets = Enumerable.Range(0, 4).Select(index => new ChartStateTimelineSegment(Day.AddHours(index), Day.AddHours(index + 1), "up")).ToList();
         buckets.Add(new ChartStateTimelineSegment(Day.AddHours(4), Day.AddHours(5), "up", "patched"));
-        var chart = Chart.Create().WithSize(640, 240).WithStateCategories(new ChartStateCategory("up", "Up", Up)).AddStateTimelineLane("DC01", buckets);
-        var segments = ByRole(XDocument.Parse(chart.ToSvg()), "state-segment");
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 240).WithStateCategories(new ChartStateCategory("up", "Up", Up)).AddStateTimelineLane("DC01", buckets);
+        var segments = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment");
         Assert.Equal(2, segments.Length);
         Assert.Equal(new[] { "0", "4" }, segments.Select(segment => (string)segment.Attribute("data-cfx-point")!).ToArray());
     }
@@ -56,14 +57,14 @@ public sealed class StateTimelineTests {
     public void ToPng_StateColoursAndGapsMatchSvgGeometry() {
         var chart = CreateChart();
         var svg = XDocument.Parse(chart.ToSvg());
-        var down = ByRole(svg, "state-segment")[1];
+        var down = ByRole(svg, "state-timeline-segment")[1];
         var image = PngReader.Decode(chart.ToPng());
         var scale = image.Width / (double)chart.Options.Size.Width;
         var centerX = (Number(down, "x") + Number(down, "width") / 2) * scale;
         var centerY = (Number(down, "y") + Number(down, "height") / 2) * scale;
         Assert.True(IsClose(Pixel(image, centerX, centerY), Down), "The PNG down segment should use the caller's state colour.");
 
-        var gapLane = ByRole(svg, "state-segment").Where(segment => (string)segment.Attribute("data-cfx-series")! == "1").ToArray();
+        var gapLane = ByRole(svg, "state-timeline-segment").Where(segment => (string)segment.Attribute("data-cfx-series")! == "1").ToArray();
         var gapX = (Number(gapLane[0], "x") + Number(gapLane[0], "width") + 40) * scale;
         var gapY = (Number(gapLane[0], "y") + Number(gapLane[0], "height") / 2) * scale;
         Assert.False(IsClose(Pixel(image, gapX, gapY), Up), "The PNG gap should not be painted with a state colour.");
@@ -77,9 +78,9 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void ToSvg_UnregisteredState_UsesMutedColourAndRawKey() {
-        var chart = Chart.Create().WithSize(640, 240).AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(2), "pending") });
-        var segment = ByRole(XDocument.Parse(chart.ToSvg()), "state-segment").Single();
-        Assert.Equal(chart.Options.Theme.MutedText.ToCss(), (string)segment.Attribute("fill")!);
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 240).AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(2), "pending") });
+        var segment = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment").Single();
+        Assert.Equal(chart.Options.Theme.MutedText.ToCss(), (string)segment.RenderedAttribute("fill")!);
         Assert.Equal("DC01 · pending", (string)segment.Attribute("data-cfx-label")!);
     }
 
@@ -88,7 +89,7 @@ public sealed class StateTimelineTests {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus2", TimeSpan.FromHours(2), "Test +02", "Test +02");
         var chart = CreateChart().WithXAxisTimeScale(zone, true, "CEST");
         var svg = XDocument.Parse(chart.ToSvg());
-        Assert.Contains("2026-09-25 08:00 CEST", ByRole(svg, "state-segment")[1].Elements().Single(child => child.Name.LocalName == "title").Value, StringComparison.Ordinal);
+        Assert.Contains("2026-09-25 08:00 CEST", ByRole(svg, "state-timeline-segment")[1].Tooltip(), StringComparison.Ordinal);
         Assert.Contains("CEST", svg.ToString(), StringComparison.Ordinal);
     }
 
@@ -96,9 +97,9 @@ public sealed class StateTimelineTests {
     public void Validation_RejectsInvalidSegmentsStatesAndEmptyCharts() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStateTimelineSegment(Day, Day, "up"));
         Assert.Throws<ArgumentException>(() => new ChartStateTimelineSegment(Day, Day.AddHours(1), " "));
-        Assert.Throws<ArgumentException>(() => Chart.Create().WithStateCategories(new ChartStateCategory("up", "Up", Up), new ChartStateCategory("up", "Again", Down)));
-        Assert.Throws<ArgumentException>(() => Chart.Create().AddStateTimelineLane("DC01", new[] { default(ChartStateTimelineSegment) }));
-        var empty = Chart.Create().AddStateTimelineLane("DC01", Array.Empty<ChartStateTimelineSegment>());
+        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithStateCategories(new ChartStateCategory("up", "Up", Up), new ChartStateCategory("up", "Again", Down)));
+        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddStateTimelineLane("DC01", new[] { default(ChartStateTimelineSegment) }));
+        var empty = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddStateTimelineLane("DC01", Array.Empty<ChartStateTimelineSegment>());
         Assert.Throws<InvalidOperationException>(() => empty.ToSvg());
         Assert.Throws<InvalidOperationException>(() => empty.ToPng());
     }
@@ -108,11 +109,11 @@ public sealed class StateTimelineTests {
         var chart = CreateChart().AddStateTimelineLane("DC04", Array.Empty<ChartStateTimelineSegment>());
         chart.Options.XAxis.WithBounds(Day.AddHours(7).ToOADate(), Day.AddHours(20).ToOADate());
         var svg = XDocument.Parse(chart.ToSvg());
-        var track = ByRole(svg, "state-lane-track")[0];
-        var segments = ByRole(svg, "state-segment");
-        Assert.Equal(4, ByRole(svg, "state-lane-track").Length);
-        Assert.Equal(Number(track, "x"), Number(segments[0], "x"), 6);
-        Assert.All(segments, segment => Assert.True(Number(segment, "x") + Number(segment, "width") <= Number(track, "x") + Number(track, "width") + 0.001));
+        var lanes = Lanes(chart); var track = lanes[0].Bounds;
+        var segments = ByRole(svg, "state-timeline-segment");
+        Assert.Equal(4, lanes.Length);
+        Assert.Equal(track.Left, Number(segments[0], "x"), 3);
+        Assert.All(segments, segment => Assert.True(Number(segment, "x") + Number(segment, "width") <= track.Right + 0.001));
         Assert.DoesNotContain(segments, segment => (string)segment.Attribute("data-cfx-point")! == "0" && (string)segment.Attribute("data-cfx-series")! == "1");
     }
 
@@ -120,18 +121,19 @@ public sealed class StateTimelineTests {
     public void Render_LegendAndAxesDisabled_OmitsThemInSvgAndPng() {
         var chart = CreateChart().WithLegend(false).WithAxes(false);
         var svg = XDocument.Parse(chart.ToSvg());
-        Assert.Empty(ByRole(svg, "state-legend-label"));
-        Assert.Empty(ByRole(svg, "state-lane-label"));
-        Assert.Empty(ByRole(svg, "state-timeline-tick-label"));
+        Assert.Empty(ByRole(svg, "legend-label"));
+        Assert.Empty(ByRole(svg, "schedule-row-label"));
+        Assert.Empty(ByRole(svg, "schedule-tick-label"));
         Assert.NotEqual(CreateChart().ToPng(), chart.ToPng());
     }
 
     [Fact]
     public void Render_ManyLanes_KeepsBandsInsideTheirSlots() {
-        var chart = Chart.Create().WithSize(480, 240);
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(480, 240);
         for (var lane = 0; lane < 80; lane++) chart.AddStateTimelineLane("L" + lane.ToString(CultureInfo.InvariantCulture), new[] { new ChartStateTimelineSegment(Day, Day.AddHours(1), "up") });
-        var tracks = ByRole(XDocument.Parse(chart.ToSvg()), "state-lane-track");
-        for (var i = 1; i < tracks.Length; i++) Assert.True(Number(tracks[i], "y") >= Number(tracks[i - 1], "y") + Number(tracks[i - 1], "height"));
+        var tracks = Lanes(chart);
+        Assert.Equal(80, tracks.Length);
+        for (var i = 1; i < tracks.Length; i++) Assert.True(tracks[i].Bounds.Top >= tracks[i - 1].Bounds.Bottom);
         Assert.True(chart.ToPng().Length > 200);
     }
 
@@ -155,7 +157,7 @@ public sealed class StateTimelineTests {
     [Fact]
     public void ToInteractiveHtmlFragment_SegmentsExposeHoverTargets() {
         var html = CreateChart().ToInteractiveHtmlFragment();
-        Assert.Contains("data-cfx-role=\"state-segment\"", html, StringComparison.Ordinal);
+        Assert.Contains("data-cfx-role=\"state-timeline-segment\"", html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-status=\"down\"", html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-meta-duration=\"3h\"", html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-meta-detail=\"LDAP bind failed\"", html, StringComparison.Ordinal);
@@ -174,10 +176,10 @@ public sealed class StateTimelineTests {
         if (configureAxis) hidden.ConfigureXAxis(axis => axis.Visible = false);
         else hidden.Options.ShowXAxis = false;
         var svg = XDocument.Parse(hidden.ToSvg());
-        Assert.Empty(ByRole(svg, "state-timeline-tick-label"));
-        Assert.Empty(ByRole(svg, "state-timeline-axis"));
-        Assert.Empty(ByRole(svg, "state-timeline-x-axis-title"));
-        Assert.Equal(3, ByRole(svg, "state-lane-label").Length);
+        Assert.Empty(ByRole(svg, "schedule-tick-label"));
+        Assert.Empty(ByRole(svg, "schedule-axis"));
+        Assert.Empty(ByRole(svg, "schedule-x-axis-title"));
+        Assert.Equal(3, ByRole(svg, "schedule-row-label").Length);
         var bounds = new ChartForgeX.Primitives.ChartRect(0, 0, 600, 240);
         var a = ChartStateTimelineModel.Build(shown).PlotArea(bounds, 30, 30, 12, 20);
         var z = ChartStateTimelineModel.Build(hidden).PlotArea(bounds, 30, 30, 12, 20);
@@ -189,11 +191,11 @@ public sealed class StateTimelineTests {
     public void Render_SubSecondTicks_RemainDistinctAndExactLabelsWin()
     {
         var end = Day.AddMilliseconds(80);
-        var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 300).WithXAxisTimeScale()
             .WithStateCategories(new ChartStateCategory("up", "Up", Up))
             .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, end, "up") });
         var model = ChartStateTimelineModel.Build(chart);
-        var labels = Texts(XDocument.Parse(chart.ToSvg()), "state-timeline-tick-label");
+        var labels = Texts(XDocument.Parse(chart.ToSvg()), "schedule-tick-label");
         Assert.True(labels.Length > 1);
         Assert.Equal(labels.Length, labels.Distinct().Count());
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(Day.ToOADate(), "Start"));
@@ -206,9 +208,13 @@ public sealed class StateTimelineTests {
     {
         var chart = CreateChart();
         chart.Options.LaneSummaryHeader = "Very long summary header that must stay outside the lane plot";
-        var header = Texts(XDocument.Parse(chart.ToSvg()), "state-summary-header").Single();
+        var header = Texts(XDocument.Parse(chart.ToSvg()), "lane-summary-header").Single();
         Assert.NotEqual(chart.Options.LaneSummaryHeader, header);
-        Assert.True(header.Length < 25);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var column = Assert.Single(prepared.Regions, region => region.Role == "lane-summary-header");
+        var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "lane-summary-header");
+        Assert.Equal(chart.Options.LaneSummaryHeader, column.Label);
+        Assert.All(text.Text.Lines, line => Assert.True(line.Width <= column.Bounds.Width + .001));
     }
 
     [Fact]
@@ -216,9 +222,11 @@ public sealed class StateTimelineTests {
     {
         var chart = CreateChart();
         chart.WithGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
-        var lines = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-grid");
+        var lines = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-grid");
         Assert.NotEmpty(lines);
-        Assert.All(lines, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal(0.8, Number(line, "opacity")); Assert.Equal("4 6", (string?)line.Attribute("stroke-dasharray")); });
+        Assert.All(lines, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal("4 6", (string?)line.RenderedAttribute("stroke-dasharray")); });
+        var preparedGrid = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid");
+        Assert.All(preparedGrid, line => Assert.Equal((byte)204, line.Stroke!.Value.A));
         Assert.NotEqual(CreateChart().ToPng(), chart.ToPng());
     }
 
@@ -227,7 +235,9 @@ public sealed class StateTimelineTests {
     {
         var vertical = CreateChart().WithGridStyle(style => style.ShowVerticalLines = false);
         var global = CreateChart(); global.Options.ShowGrid = false;
-        Assert.Empty(ByRole(XDocument.Parse(vertical.ToSvg()), "state-timeline-grid"));
+        Assert.Empty(ByRole(XDocument.Parse(vertical.ToSvg()), "schedule-grid"));
+        Assert.NotEmpty(ByRole(XDocument.Parse(vertical.ToSvg()), "schedule-row-grid"));
+        vertical.WithGridStyle(style => style.ShowHorizontalLines = false);
         Assert.Equal(global.ToPng(), vertical.ToPng());
     }
 
@@ -236,11 +246,10 @@ public sealed class StateTimelineTests {
         var shown = CreateChart();
         var hidden = CreateChart().ConfigureYAxis(axis => axis.Visible = false);
         var svg = XDocument.Parse(hidden.ToSvg());
-        Assert.Empty(ByRole(svg, "state-lane-label"));
-        Assert.NotEmpty(ByRole(svg, "state-timeline-tick-label"));
-        var a = ByRole(XDocument.Parse(shown.ToSvg()), "state-lane-track")[0];
-        var b = ByRole(svg, "state-lane-track")[0];
-        Assert.True(Number(b, "x") < Number(a, "x"));
+        Assert.Empty(ByRole(svg, "schedule-row-label"));
+        Assert.NotEmpty(ByRole(svg, "schedule-tick-label"));
+        var a = Lanes(shown)[0].Bounds; var b = Lanes(hidden)[0].Bounds;
+        Assert.True(b.Left < a.Left);
         Assert.NotEqual(shown.ToPng(), hidden.ToPng());
     }
 
@@ -248,18 +257,18 @@ public sealed class StateTimelineTests {
     public void Render_XAxisLineHidden_KeepsTickLabelsAndTitle() {
         var chart = CreateChart().ConfigureXAxis(axis => axis.ShowLine = false);
         var svg = XDocument.Parse(chart.ToSvg());
-        Assert.Empty(ByRole(svg, "state-timeline-axis"));
-        Assert.NotEmpty(ByRole(svg, "state-timeline-tick-label"));
+        Assert.Empty(ByRole(svg, "schedule-axis"));
+        Assert.NotEmpty(ByRole(svg, "schedule-tick-label"));
         Assert.NotEqual(CreateChart().ToPng(), chart.ToPng());
     }
 
     [Fact]
     public void Render_SubSecondSegment_MetadataRetainsEndpointsAndDuration() {
         var end = Day.AddMilliseconds(80);
-        var chart = Chart.Create().WithSize(720, 300).WithXAxisTimeScale()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 300).WithXAxisTimeScale()
             .WithStateCategories(new ChartStateCategory("up", "Up", Up))
             .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, end, "up") });
-        var segment = ByRole(XDocument.Parse(chart.ToSvg()), "state-segment").Single();
+        var segment = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment").Single();
         Assert.NotEqual((string?)segment.Attribute("data-cfx-start"), (string?)segment.Attribute("data-cfx-end"));
         Assert.Equal("80ms", (string?)segment.Attribute("data-cfx-meta-duration"));
     }
@@ -269,8 +278,8 @@ public sealed class StateTimelineTests {
         var auto = CreateChart().WithSize(390, 300);
         var all = CreateChart().WithSize(390, 300);
         all.Options.XAxisLabelDensity = ChartLabelDensity.All;
-        var a = Texts(XDocument.Parse(auto.ToSvg()), "state-timeline-tick-label");
-        var b = Texts(XDocument.Parse(all.ToSvg()), "state-timeline-tick-label");
+        var a = Texts(XDocument.Parse(auto.ToSvg()), "schedule-tick-label");
+        var b = Texts(XDocument.Parse(all.ToSvg()), "schedule-tick-label");
         Assert.True(a.Length >= 2 && a.Length < b.Length);
         Assert.Equal(b[0], a[0]);
         Assert.Equal(b[b.Length - 1], a[a.Length - 1]);
@@ -279,9 +288,9 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_DefaultDateTimeLane_UsesDistinctCalendarLabelsWithoutMutatingAxis() {
-        var chart = Chart.Create().WithSize(720, 300)
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 300)
             .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
-        var labels = Texts(XDocument.Parse(chart.ToSvg()), "state-timeline-tick-label");
+        var labels = Texts(XDocument.Parse(chart.ToSvg()), "schedule-tick-label");
         Assert.True(labels.Length > 1);
         Assert.Equal(labels.Length, labels.Distinct().Count());
         Assert.Contains(labels, label => label.Contains(":"));
@@ -295,22 +304,24 @@ public sealed class StateTimelineTests {
         var normal = CreateChart();
         var rotated = CreateChart().ConfigureXAxis(axis => axis.LabelAngle = angle);
         var svg = XDocument.Parse(rotated.ToSvg());
-        Assert.All(ByRole(svg, "state-timeline-tick-label"), label => Assert.Contains("rotate(" + angle.ToString(CultureInfo.InvariantCulture), (string?)label.Attribute("transform") ?? ""));
-        Assert.True(Number(ByRole(svg, "state-lane-track")[0], "y") < Number(ByRole(XDocument.Parse(normal.ToSvg()), "state-lane-track")[0], "y"));
+        Assert.All(ByRole(svg, "schedule-tick-label"), label => Assert.Contains("rotate(" + angle.ToString(CultureInfo.InvariantCulture), (string?)label.RenderedAttribute("transform") ?? ""));
+        Assert.True(Lanes(rotated).Last().Bounds.Bottom < Lanes(normal).Last().Bounds.Bottom);
         Assert.NotEqual(normal.ToPng(), rotated.ToPng());
     }
 
     [Fact]
     public void Render_DefaultDateTimeLane_SvgEndpointAnchorsMatchActualTextEdges() {
-        var chart = Chart.Create().WithSize(720, 300)
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 300)
             .AddStateTimelineLane("Default DateTime lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
         var svg = XDocument.Parse(chart.ToSvg());
-        var track = ByRole(svg, "state-lane-track").Single();
-        var labels = ByRole(svg, "state-timeline-tick-label");
-        Assert.Equal("start", (string?)labels[0].Attribute("text-anchor"));
-        Assert.Equal(Number(track, "x") + ChartVisualPrimitives.DataLabelPlotInset, Number(labels[0], "x"), 3);
-        Assert.Equal("end", (string?)labels[labels.Length - 1].Attribute("text-anchor"));
-        Assert.Equal(Number(track, "x") + Number(track, "width") - ChartVisualPrimitives.DataLabelPlotInset, Number(labels[labels.Length - 1], "x"), 3);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var plot = prepared.Regions.Single(region => region.Role == "schedule-plot").Bounds;
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "schedule-tick-label").ToArray();
+        Assert.True(labels.Length >= 2);
+        Assert.All(labels, label => Assert.All(label.Text.Lines, line => {
+            Assert.InRange(label.LineLeft(line), plot.Left - .001, plot.Right);
+            Assert.InRange(label.LineLeft(line) + line.Width, plot.Left, plot.Right + .001);
+        }));
     }
 
     [Theory]
@@ -318,15 +329,17 @@ public sealed class StateTimelineTests {
     [InlineData(720, 400)]
     public void Render_ManyStateCategories_BudgetsLegendAndKeepsVisibleLane(int width, int height) {
         var states = Enumerable.Range(0, 40).Select(i => new ChartStateCategory("s" + i, "Long category " + i, Up)).ToArray();
-        var chart = Chart.Create().WithSize(width, height).WithStateCategories(states)
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(width, height).WithStateCategories(states)
             .AddStateTimelineLane("Lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "s0") });
         var svg = XDocument.Parse(chart.ToSvg());
-        var overflow = ByRole(svg, "legend-overflow").Single();
-        Assert.True(int.Parse((string)overflow.Attribute("data-cfx-omitted")!, CultureInfo.InvariantCulture) > 0);
-        var track = ByRole(svg, "state-lane-track").Single();
-        Assert.True(Number(track, "height") >= 18);
-        Assert.All(ByRole(svg, "state-legend-swatch"), item => Assert.InRange(Number(item, "y"), Number(track, "y") + Number(track, "height"), height - 10));
-        Assert.True(Number(overflow, "y") > Number(track, "y") + Number(track, "height"));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var overflow = prepared.Regions.Single(region => region.Id == "legend-overflow");
+        Assert.Contains("more entries", overflow.Label);
+        Assert.NotEmpty(ByRole(svg, "legend-entry-omitted"));
+        var track = Lanes(chart).Single().Bounds;
+        Assert.True(track.Height >= 18);
+        Assert.All(ByRole(svg, "state-legend-swatch"), item => Assert.InRange(Number(item, "y"), track.Bottom, height - 10));
+        Assert.True(overflow.Bounds.Top >= track.Bottom);
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -341,7 +354,7 @@ public sealed class StateTimelineTests {
         var model = ChartStateTimelineModel.Build(chart);
         Assert.Equal(bound, maximum ? model.Max : model.Min);
         Assert.True(model.Max > model.Min);
-        Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "state-segment"));
+        Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment"));
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -354,9 +367,9 @@ public sealed class StateTimelineTests {
         chart.Options.XAxis.LabelFormatter = _ => "T";
         chart.Options.AxisTitleStyle.FontSize = 42;
         var svg = XDocument.Parse(chart.ToSvg());
-        var tick = ByRole(svg, "state-timeline-tick-label")[0];
-        var title = ByRole(svg, "state-timeline-x-axis-title").Single();
-        var legend = ByRole(svg, "state-legend-label")[0];
+        var tick = ByRole(svg, "schedule-tick-label")[0];
+        var title = ByRole(svg, "schedule-x-axis-title").Single();
+        var legend = ByRole(svg, "legend-label")[0];
         Assert.True(Number(tick, "y") + Number(tick, "font-size") * 0.2 < Number(title, "y") - Number(title, "font-size"));
         Assert.True(Number(title, "y") + Number(title, "font-size") * 0.2 < Number(legend, "y") - Number(legend, "font-size") * 0.6);
         Assert.NotEmpty(chart.ToPng());
@@ -367,8 +380,8 @@ public sealed class StateTimelineTests {
         var chart = CreateChart().WithSize(390, 400).WithAxes(false);
         chart.Options.LegendStyle.FontSize = 32;
         var svg = XDocument.Parse(chart.ToSvg());
-        var bottom = ByRole(svg, "state-lane-track").Max(e => Number(e, "y") + Number(e, "height"));
-        var first = ByRole(svg, "state-legend-label")[0];
+        var bottom = Lanes(chart).Max(region => region.Bounds.Bottom);
+        var first = ByRole(svg, "legend-label")[0];
         Assert.True(Number(first, "y") - Number(first, "font-size") * 0.6 > bottom);
         Assert.NotEmpty(chart.ToPng());
     }
@@ -401,7 +414,7 @@ public sealed class StateTimelineTests {
 
     private static Chart CreateChart() {
         // Tall enough for three readable lanes below the summary header and above the axis, its title, and the legend.
-        var chart = Chart.Create().WithSize(720, 360).WithXAxisTimeScale(showTimeZone: true)
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 360).WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(
                 new ChartStateCategory("up", "Up", Up),
                 new ChartStateCategory("down", "Down", Down),
@@ -420,11 +433,15 @@ public sealed class StateTimelineTests {
         return chart;
     }
 
-    private static XElement[] ByRole(XDocument svg, string role) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
+    private static XElement[] ByRole(XDocument svg, string role) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role
+        && (role != "state-timeline-segment" || element.Descendants().Any(child => (string?)child.Attribute("data-cfx-role") == "state-timeline-segment-shape"))).ToArray();
 
     private static string[] Texts(XDocument svg, string role) => ByRole(svg, role).Select(element => element.Value).ToArray();
 
-    private static double Number(XElement element, string attribute) => double.Parse((string)element.Attribute(attribute)!, CultureInfo.InvariantCulture);
+    private static VisualSemanticRegion[] Lanes(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context)
+        .Regions.Where(region => region.Role == "schedule-lane").ToArray();
+
+    private static double Number(XElement element, string attribute) => double.Parse((string)element.RenderedAttribute(attribute)!, CultureInfo.InvariantCulture);
 
     private static (byte R, byte G, byte B) Pixel(RgbaImage image, double x, double y) {
         var offset = ((int)y * image.Width + (int)x) * 4;

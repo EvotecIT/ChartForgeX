@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Core;
 
@@ -32,26 +33,67 @@ public sealed class ChartHistogramBinLayout {
     /// <summary>Gets the number of bins.</summary>
     public int Count { get; }
 
-    /// <summary>Gets the requested bin width. The final bin may be narrower when a remainder exists.</summary>
+    /// <summary>Gets the bin width. Only exact data-bounded layouts can have a narrower final bin.</summary>
     public double Width { get; }
 
-    /// <summary>Creates an equal-width layout with an exact bin count.</summary>
-    public static ChartHistogramBinLayout FromCount(double minimum, double maximum, int binCount) {
+    /// <summary>Creates the requested count of equal-width bins with boundaries aligned to a nice decimal step where possible.</summary>
+    public static ChartHistogramBinLayout FromCount(double minimum, double maximum, int binCount) => FromCount(minimum, maximum, binCount, true);
+
+    /// <summary>Creates bins with rounded, aligned bounds, or preserves exact data bounds when <paramref name="roundBounds"/> is false.</summary>
+    /// <param name="minimum">The lowest data value.</param>
+    /// <param name="maximum">The highest data value.</param>
+    /// <param name="binCount">The requested count; constant data uses one bin.</param>
+    /// <param name="roundBounds">Whether to align to multiples of a 1, 2, 2.5, 5 or 10 decimal step. A single bin crossing zero preserves the data bounds because no zero-aligned interval can cover both signs.</param>
+    /// <returns>A reusable bin layout.</returns>
+    public static ChartHistogramBinLayout FromCount(double minimum, double maximum, int binCount, bool roundBounds) {
         ValidateRange(minimum, maximum);
         if (binCount < 1) throw new ArgumentOutOfRangeException(nameof(binCount), binCount, "Histogram bin count must be at least one.");
-        if (minimum == maximum) return new ChartHistogramBinLayout(minimum, maximum, 1, 0);
+        if (minimum == maximum) {
+            if (!roundBounds) return new ChartHistogramBinLayout(minimum, maximum, 1, 0);
+            return FromWidth(minimum, maximum, ChartNiceNumbers.Step(Math.Max(1, Math.Abs(minimum) * 0.1)), true);
+        }
 
         var width = (maximum - minimum) / binCount;
+        if (roundBounds && binCount == 1 && minimum < 0 && maximum > 0)
+            return new ChartHistogramBinLayout(minimum, maximum, 1, width);
+        if (roundBounds) {
+            width = ChartNiceNumbers.Step(width);
+            // Reconstructing an aligned decimal boundary as a double can move it inward by an ULP.
+            // Preserve the actual source endpoint when that happens; GetIndex retains strict bounds.
+            var alignedMinimum = Math.Min(minimum, Math.Floor(NormalizeNearInteger(minimum / width)) * width);
+            // Alignment can add a partial interval below the data; increase the step until the requested count covers it.
+            for (var attempt = 0; attempt < 8 && alignedMinimum + binCount * width < maximum; attempt++) {
+                width = ChartNiceNumbers.Step(width * 1.01);
+                alignedMinimum = Math.Min(minimum, Math.Floor(NormalizeNearInteger(minimum / width)) * width);
+            }
+            minimum = alignedMinimum;
+            maximum = minimum + binCount * width;
+            ValidateRange(minimum, maximum);
+        }
         ValidateRepresentableBounds(minimum, maximum, binCount, width, nameof(binCount), binCount);
         return new ChartHistogramBinLayout(minimum, maximum, binCount, width);
     }
 
-    /// <summary>Creates a layout that preserves the requested width and uses a shorter final bin for any remainder.</summary>
-    public static ChartHistogramBinLayout FromWidth(double minimum, double maximum, double binWidth) {
+    /// <summary>Preserves the requested width and aligns all boundaries to its multiples, extending the domain to cover the data.</summary>
+    public static ChartHistogramBinLayout FromWidth(double minimum, double maximum, double binWidth) => FromWidth(minimum, maximum, binWidth, true);
+
+    /// <summary>Preserves the width, using aligned equal-width bins or exact bounds with a possible final remainder bin.</summary>
+    /// <param name="minimum">The lowest data value.</param>
+    /// <param name="maximum">The highest data value.</param>
+    /// <param name="binWidth">The caller's positive bin width.</param>
+    /// <param name="roundBounds">Whether to align bounds to multiples of the width.</param>
+    /// <returns>A reusable bin layout.</returns>
+    public static ChartHistogramBinLayout FromWidth(double minimum, double maximum, double binWidth, bool roundBounds) {
         ValidateRange(minimum, maximum);
         ChartGuards.Finite(binWidth, nameof(binWidth));
         if (binWidth <= 0) throw new ArgumentOutOfRangeException(nameof(binWidth), binWidth, "Histogram bin width must be greater than zero.");
-        if (minimum == maximum) return new ChartHistogramBinLayout(minimum, maximum, 1, binWidth);
+        if (roundBounds) {
+            var lower = Math.Min(minimum, Math.Floor(NormalizeNearInteger(minimum / binWidth)) * binWidth);
+            var upper = Math.Max(maximum, Math.Ceiling(NormalizeNearInteger(maximum / binWidth)) * binWidth);
+            if (upper <= lower) upper = lower + binWidth;
+            minimum = lower; maximum = upper;
+            ValidateRange(minimum, maximum);
+        } else if (minimum == maximum) return new ChartHistogramBinLayout(minimum, maximum, 1, binWidth);
 
         var quotient = NormalizeNearInteger((maximum - minimum) / binWidth);
         if (double.IsInfinity(quotient) || quotient > int.MaxValue) {

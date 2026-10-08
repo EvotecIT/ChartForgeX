@@ -6,7 +6,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
-using ChartForgeX.Svg;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Composition;
 using ChartForgeX.Topology;
@@ -103,7 +103,7 @@ public static partial class ChartExtensions {
     /// </summary>
     /// <param name="chart">The chart to render.</param>
     /// <returns>SVG markup.</returns>
-    public static string ToSvg(this Chart chart) => new SvgChartRenderer().Render(chart);
+    public static string ToSvg(this Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg();
 
     /// <summary>
     /// Renders a chart to SVG markup with an additional deterministic ID scope.
@@ -111,7 +111,7 @@ public static partial class ChartExtensions {
     /// <param name="chart">The chart to render.</param>
     /// <param name="idScope">A caller-provided scope used to keep SVG element IDs unique when embedding multiple SVGs in one document.</param>
     /// <returns>SVG markup.</returns>
-    public static string ToSvg(this Chart chart, string idScope) => new SvgChartRenderer().Render(chart, idScope);
+    public static string ToSvg(this Chart chart, string idScope) => chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope ?? throw new ArgumentNullException(nameof(idScope))), chart.Options.SvgColorVariables));
 
     /// <summary>
     /// Renders a chart to a standalone HTML fragment containing inline SVG.
@@ -140,14 +140,14 @@ public static partial class ChartExtensions {
     /// </summary>
     /// <param name="chart">The chart to render.</param>
     /// <returns>A PNG image.</returns>
-    public static byte[] ToPng(this Chart chart) => new PngChartRenderer().Render(chart);
+    public static byte[] ToPng(this Chart chart) { var request = VisualExportRequest.ForChart(chart); return chart.Prepare(request.Context).ToPng(request.RasterOptions); }
 
     /// <summary>
     /// Resolves the font that would be used when rendering the chart to PNG.
     /// </summary>
     /// <param name="chart">The chart to inspect.</param>
     /// <returns>The PNG font resolution details.</returns>
-    public static PngFontInfo GetPngFontInfo(this Chart chart) => PngChartRenderer.GetFontInfo(chart);
+    public static PngFontInfo GetPngFontInfo(this Chart chart) { var font = VisualExportRequest.ForChart(chart).Context.Font; return TrueTypeFont.ResolveInfo(font.FilePath, font.CollectionIndex, font.FaceName, font.Family); }
 
     /// <summary>
     /// Saves a chart as an SVG file.
@@ -175,7 +175,7 @@ public static partial class ChartExtensions {
     /// </summary>
     /// <param name="grid">The chart grid to render.</param>
     /// <returns>SVG markup.</returns>
-    public static string ToSvg(this ChartGrid grid) => new SvgChartGridRenderer().Render(grid);
+    public static string ToSvg(this ChartGrid grid) => grid.Prepare(VisualExportRequest.ForGrid(grid).Context).ToSvg();
 
     /// <summary>
     /// Renders a chart grid to SVG markup with an additional deterministic ID scope.
@@ -183,7 +183,7 @@ public static partial class ChartExtensions {
     /// <param name="grid">The chart grid to render.</param>
     /// <param name="idScope">A caller-provided scope used to keep SVG element IDs unique when embedding multiple SVG grids in one document.</param>
     /// <returns>SVG markup.</returns>
-    public static string ToSvg(this ChartGrid grid, string idScope) => new SvgChartGridRenderer().Render(grid, idScope);
+    public static string ToSvg(this ChartGrid grid, string idScope) => grid.Prepare(VisualExportRequest.ForGrid(grid).Context).ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope ?? throw new ArgumentNullException(nameof(idScope))), grid.SvgColorVariables));
 
     /// <summary>
     /// Renders a chart grid to a standalone HTML fragment containing inline SVG charts.
@@ -212,7 +212,7 @@ public static partial class ChartExtensions {
     /// </summary>
     /// <param name="grid">The chart grid to render.</param>
     /// <returns>A PNG image.</returns>
-    public static byte[] ToPng(this ChartGrid grid) => new PngChartGridRenderer().Render(grid);
+    public static byte[] ToPng(this ChartGrid grid) { var request = VisualExportRequest.ForGrid(grid); return grid.Prepare(request.Context).ToPng(request.RasterOptions); }
 
     /// <summary>
     /// Saves a chart grid as an SVG file.

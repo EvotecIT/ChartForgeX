@@ -23,9 +23,38 @@ ChartForgeX renders polished charts, animated visual stories, visual blocks, top
 
 ## What It Does
 
+Cartesian series are clipped to the plot rectangle in SVG and PNG. Markers whose centers are inside the plot retain their radius at its edge. Use `chart.WithPlotClipping(false)` when a report intentionally needs series overflow.
+
+Automatic linear domains use evenly spaced round ticks; explicit axis bounds remain authoritative. Histogram counts use equal-width bins aligned to multiples of a nice decimal step (1, 2, 2.5, 5 or 10 times a power of ten). `ChartHistogramBinLayout.FromWidth` preserves the chosen width and extends both edges to its multiples. Use the overload with `roundBounds: false` for exact data-bounded intervals, including a shorter final remainder bin. A single requested bin spanning negative and positive values needs two aligned bins because zero is a boundary.
+
+PNG chart grids and mixed visual grids render their children at the density of the destination panel. A 2x dashboard therefore retains the text and line detail of its charts and scorecards rendered alone at 2x, including panels enlarged by the grid layout.
+
+SVG layout and PNG drawing resolve the same font-family stack and requested role weight, including map route and region labels. Register fonts with `FontRegistry` to use the same faces on different rendering hosts; the renderers use the existing dependency-free font reader and shaper.
+
+Charts and topology share measured label placement across SVG and PNG. Labels try ordered positions, shorten plain text with an ellipsis, then drop when no collision-free position fits. Axis labels thin while retaining their tick positions. Hidden values remain in accessible names and `data-cfx-*` metadata. See [measured label placement](docs/label-placement.md) for priorities, deliberate labels inside their own marks, font fallback and the reusable `LabelPlacementService` API.
+
 ChartForgeX turns .NET data into deterministic static visuals: charts, chart grids, visual blocks, visual canvases, topology diagrams, and map-backed report graphics. It is meant for generated reports, documentation, email, static websites, dashboards, wallpapers, social preview images, Office-style generators, and other hosts that need polished output without a JavaScript chart dependency.
 
 The core package renders SVG, script-free static HTML, PNG, GIF, JPEG, BMP, PPM, and TIFF without runtime package dependencies. Optional browser behavior lives in adapter packages, so a static report can stay static while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.
+
+## Shared prepared rendering
+
+The prepared pipeline lays out a supported chart once, then exports SVG and native PNG from the same detached scene. The shared context controls its logical size, frame, canonical light/dark palette and typography. The initial route supports selected Cartesian and pie/donut options plus small topology/sequence diagrams; unsupported options fail explicitly while the existing exporters remain available.
+
+```csharp
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)),
+    themeMode: VisualThemeMode.Dark,
+    frame: new VisualFrame("Checks over time", showLegend: true));
+var prepared = chart.Prepare(context);
+string svg = prepared.ToSvg("report-checks");
+byte[] png = prepared.ToPng();
+```
+
+See the [architecture and phase boundaries](docs/v2/architecture.md), [API conventions](docs/v2/api-conventions.md), [consumer migration guide](docs/v2/migration.md) and [family capability roadmap](docs/v2/chart-capabilities.csv). Generate the isolated review catalog with `dotnet run --project ChartForgeX.Examples -c Release -- --v2-only --output <directory>`.
 
 ## Visual Tour
 
@@ -146,6 +175,8 @@ Example cards link HTML, SVG, PNG, and C# snippets when a checked source sample 
 
 The release quality loop compares every generated SVG/PNG pair, including the full topology catalog, against the shared numeric visual baseline. It also renders real host-sized fixtures at high PNG density: a 1920x1080 desktop wallpaper, 1200x630 social preview, compact email grid, report strip, and transparent overlay. Dimension, readability, renderer-health, and alpha regressions fail the build.
 
+Fixed canvases retain exact baseline dimensions on every platform. Reviewed content-sized gallery exports record their outer frame's resolved font bytes and face selection. Their natural height may differ when the same font request resolves to different fonts; widths, PNG scale and allocation, readability, clipping, visibility and edge-ink checks remain enforced. Missing font provenance keeps the height comparison strict.
+
 For explicit 1k, 5k, and 10k browser scale fixtures, run:
 
 ```powershell
@@ -238,6 +269,8 @@ report.SaveSvg("cpu-by-site.svg");
 record CpuSample(string Site, double Minute, double Cpu);
 ```
 
+Legends with a single entry are hidden by default. Use `chart.WithLegend(true)` or assign `chart.Options.ShowLegend = true` to display one explicitly. Pie and donut names and percentages share one legend item, with the percentage directly after the name. Gauge swatches use the drawn value color.
+
 Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, radial-bar, and state-timeline legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
 
 For larger reports, apply shared axes to the whole grid, then paginate before rendering:
@@ -274,16 +307,19 @@ var chart = Chart.Create()
     .WithSubtitle("Dependency-free SVG, HTML, and PNG chart rendering")
     .WithXAxis("Run")
     .WithYAxis("Checks")
-    .WithDesignTokens(VisualDesignTokens.Dark())
+    .WithDesignTokens(VisualDesignTokens.GraphiteDark())
     .WithAccessibility(accessibility => accessibility.WithTextAlternative(
         "Domain security checks",
         "Passed checks rise during the week while warnings and failures decline.",
         "en"))
     .WithSize(1180, 640)
     .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-    .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230))
-    .AddSmoothLine("Warnings", Points(120, 138, 132, 110, 98, 86, 72), ChartColor.FromRgb(251, 191, 36))
-    .AddSmoothLine("Failed", Points(22, 30, 28, 21, 18, 15, 13), ChartColor.FromRgb(248, 113, 113));
+    .AddLine("Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230))
+    .AddLine("Warnings", Points(120, 138, 132, 110, 98, 86, 72))
+    .AddLine("Failed", Points(22, 30, 28, 21, 18, 15, 13))
+    .WithSeriesState("Passed", ChartSeriesState.Quiet)
+    .WithSeriesState("Warnings", ChartSeriesState.Warning)
+    .WithSeriesState("Failed", ChartSeriesState.Danger);
 
 chart.SaveSvg("chart.svg");
 chart.SaveHtml("chart.html");
@@ -296,9 +332,37 @@ static IEnumerable<ChartPoint> Points(params double[] y) {
 }
 ```
 
+### Graphite themes and framing
+
+Charts and visual blocks use Graphite light by default. Graphite dark uses the same layout with lifted colours:
+
+```csharp
+var tokens = VisualDesignTokens.GraphiteDark();
+var chart = Chart.Create()
+    .WithDesignTokens(tokens)
+    .WithSvgColorVariables(tokens.ToSvgColorVariables())
+    .WithTitle("Check results")
+    .AddLine("Passed", Points(820, 940, 980))
+    .AddLine("Warnings", Points(120, 138, 131))
+    .AddLine("Failed", Points(22, 30, 27))
+    .WithSeriesState("Passed", ChartSeriesState.Quiet)
+    .WithSeriesState("Warnings", ChartSeriesState.Warning)
+    .WithSeriesState("Failed", ChartSeriesState.Danger);
+```
+
+State roles are explicit; series names do not change colours. Healthy and quiet lines draw underneath the other series. Ordinary series use the categorical palette. SVG custom properties follow the token roles, including contrasting ink on filled marks, so a host can change the light/dark properties without regenerating the chart.
+
+Graphite uses flat marks, straight 2 px lines, a marker on the last point, horizontal guides, and inline legends below the subtitle. Single-series legends are hidden. Donut and pie charts use a value-and-percentage list, with smaller slices combined into **Other** when more than six slices are present. Gauges, bullets, funnels and Sankey charts label their data directly.
+
+Use `.WithHostFrame()` when the embedding host provides the surface and padding. `ChartGrid` and `VisualGrid` use 16 px gaps and 15 px panel titles. Value labels use compact numbers; SVG accessible names and numeric `data-cfx-*` attributes retain the full values.
+
+Arc gauges support targets and optional semantic bands through `.WithGauge(...)`; `ChartGaugeForm.Needle` selects a needle. `.AddLinearGauge("Readiness", 87)` uses neutral bullet bands, a thin measure and a value triangle. The named `ChartTheme.Light()`, `Dark()`, `ReportLight()`, `ReportDark()` and other presets remain available. `ChartBarStyle.Solid` and `SegmentedCapsule` opt into the earlier effect styles.
+
+The [approved look specification](docs/design/chart-look-spec.html) shows both themes and the family geometry. See the [1.0 migration notes](docs/1.0-migration.md#graphite-default-look) for changed rendering defaults.
+
 ### Generated design tokens
 
-Hosts that generate design tokens (the HtmlForgeX design tokens 1.x — 1.1.0 adds optional `ramps` — with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and are never used for data series:
+Hosts that generate design tokens (the HtmlForgeX design tokens 1.x — 1.1.0 adds optional `ramps` — with `light` and `dark` objects holding `surface`, `text`, `chrome`, `accent`, `severity`, `outcome`, `state`, and `series`) can load them directly. Surfaces and text become the theme, `series` becomes the categorical palette in its fixed order, and severity, outcome, and state colours become `VisualDesignTokens.Status`. Status colours feed categorical families and explicitly declared series states; ordinary series keep the categorical palette:
 
 ```csharp
 var tokens = VisualDesignTokens.FromJsonFile("tokens.json", VisualThemeMode.Dark);
@@ -653,7 +717,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | KPI and radial visuals | `AddGauge`, `AddCircle`, `AddRadialBar`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolar`, `AddPolarArea` |
 | Hierarchy and flow | `AddFunnel`, `AddTreemap`, `AddSankey`, `ChartSankeyLink`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `AddPie`, `AddDonut` |
 | Pictorial and progress | `AddPictorial`, `ChartPictorialItem`, `ChartPictorialShape`, `ChartPictorialShape.Person`, `WithPictorialShape`, `WithPictorialColumns`, `WithPictorialMaximum`, `WithPictorialValuePerSymbol`, `WithPictorialValues`, `WithPictorialSymbolScale`, `WithPictorialEmptyOpacity`, `WithPictorialSvgPath`, `AddProgressBars`, `ChartProgressItem`, `WithProgressMaximum`, `WithProgressValues`, `WithProgressHandles`, `WithProgressBarThickness`, `WithProgressTrackOpacity` |
-| Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
+| Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `LabelPlacementService`, `LabelPlacementRequest`, `LabelCandidate`, `LabelObstacle`, `PlacedLabel`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
 | Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
 | Status over time | `AddStateTimelineLane`, `ChartStateTimelineSegment`, `AddGanttLane`, `ChartGanttLaneItem`, `WithStateCategories`, `ChartStateCategory`, `LaneSummaryHeader` |

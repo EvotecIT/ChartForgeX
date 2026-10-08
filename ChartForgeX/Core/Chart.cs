@@ -60,7 +60,7 @@ public sealed partial class Chart {
     /// <summary>
     /// Gets the chart options.
     /// </summary>
-    public ChartOptions Options { get; } = new();
+    public ChartOptions Options { get; private set; } = new();
 
     /// <summary>
     /// Gets the chart series.
@@ -656,7 +656,11 @@ public sealed partial class Chart {
     /// <param name="end">The range end date/time.</param>
     /// <param name="color">An optional item color.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddTimelineItem(string name, DateTime start, DateTime end, ChartColor? color = null) => AddTimelineRange(name, start.ToOADate(), end.ToOADate(), color);
+    public Chart AddTimelineItem(string name, DateTime start, DateTime end, ChartColor? color = null) {
+        AddTimelineRange(name, start.ToOADate(), end.ToOADate(), color);
+        Options.XAxis.UseTimeScaleByDefault();
+        return this;
+    }
 
     /// <summary>
     /// Adds a timeline range item with numeric bounds.

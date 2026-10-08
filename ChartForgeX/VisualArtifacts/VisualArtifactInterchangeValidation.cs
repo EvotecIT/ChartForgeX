@@ -154,6 +154,18 @@ internal static class VisualArtifactInterchangeValidation {
             if (edge.Order < 0) throw new ArgumentOutOfRangeException(nameof(envelope), edge.Order, "Edge order must not be negative.");
             Extensions(edge.Extensions, "edge extensions");
             Metrics(edge.Metrics, "edge metrics");
+            Count(edge.ResolvedRoute.Count, MaximumWaypointsPerEdge, "resolved route points");
+            if (edge.ResolvedRoute.Count == 1) throw new ArgumentException("A resolved route requires both endpoints.", nameof(envelope));
+            foreach (var point in edge.ResolvedRoute) {
+                if (point == null) throw new ArgumentException("Resolved route points must not be null.", nameof(envelope));
+                Finite(point.X, "resolved route x");
+                Finite(point.Y, "resolved route y");
+            }
+            if (edge.ResolvedLabelBounds.HasValue) {
+                var bounds = edge.ResolvedLabelBounds.Value;
+                Finite(bounds.X, "resolved label x"); Finite(bounds.Y, "resolved label y");
+                NonNegativeOptional(bounds.Width, "resolved label width"); NonNegativeOptional(bounds.Height, "resolved label height");
+            }
             ValidateEdgeSemantics(edge, nodeIds, envelope);
         }
 

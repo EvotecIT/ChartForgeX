@@ -25,12 +25,26 @@ AssertContains(chart.ToSvg(), "<svg", "SVG render failed.");
 AssertContains(chart.ToHtmlPage(), "<html", "HTML page render failed.");
 AssertPng(chart.ToPng(), "PNG render failed.");
 
+foreach (var theme in new[] { ChartTheme.GraphiteLight(), ChartTheme.GraphiteDark() }) {
+    var graphite = Chart.Create().WithSize(420, 300).WithTheme(theme).WithTitle("Graphite AOT")
+        .AddLinearGauge("Readiness", 87).WithGauge(options => { options.Target = 90; options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning)); });
+    AssertContains(graphite.ToSvg(), "data-cfx-role=\"gauge-value-marker\"", "Graphite gauge SVG failed.");
+    AssertPng(graphite.ToPng(), "Graphite gauge PNG failed.");
+    var graphiteHeatmap = Chart.Create().WithTheme(theme).WithXLabels("A", "B", "C")
+        .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapRow("Counts", new[] { 0d, 4, 8 });
+    AssertContains(graphiteHeatmap.WithSvgColorVariables((theme.Text.Equals(ChartTheme.GraphiteLight().Text)
+        ? VisualDesignTokens.GraphiteLight() : VisualDesignTokens.GraphiteDark()).ToSvgColorVariables()).ToSvg(), "ramps-sequential", "Graphite token mapping failed.");
+    AssertPng(graphiteHeatmap.ToPng(), "Graphite heatmap PNG failed.");
+}
+
 var grid = ChartGrid.Create()
     .WithTitle("AOT grid")
     .WithPanelSize(260, 180)
     .Add(chart)
     .Add(Chart.Create().WithSize(260, 180).WithXLabels("Ready", "Risk").AddDonut("Share", new[] { new ChartPoint(1, 72), new ChartPoint(2, 28) }));
-AssertContains(grid.ToSvg("aot-grid"), "data-cfx-role=\"grid-panel\"", "Grid SVG render failed.");
+var gridSvg = grid.ToSvg("aot-grid");
+AssertContains(gridSvg, "data-cfx-role=\"panel\"", "Grid SVG render failed.");
+AssertContains(gridSvg, "data-cfx-source-id=\"panel-1\"", "Grid SVG lost its second prepared panel.");
 AssertPng(grid.ToPng(), "Grid PNG render failed.");
 
 var metric = MetricCard.Create()
@@ -81,6 +95,8 @@ foreach (var source in mermaidSources) {
     var markup = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
     if (markup.HasErrors || markup.Artifacts.Count != 1) throw new InvalidOperationException("Mermaid markup AOT render failed.");
 }
+
+PreparedPipelineSmoke.Run();
 
 static void AssertContains(string text, string expected, string message) {
     if (!text.Contains(expected, StringComparison.Ordinal)) throw new InvalidOperationException(message);

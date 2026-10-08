@@ -49,7 +49,8 @@ public static partial class GalleryWriter {
         return colors.Count == 0 ? fallback : DominantPngCornerColor(colors);
     }
 
-    private static long CountPngEdgeInk(List<int> edgeColors, int background) {
+    private static long CountPngEdgeInk(List<int> edgeColors, int background, bool declaredTransparentPerimeter = false) {
+        if (declaredTransparentPerimeter) return edgeColors.LongCount(color => (color & 0xff) > PngEdgeInkTolerance);
         var count = 0L;
         var transparentCorner = (background & 0xff) == 0;
         if (transparentCorner) background = DominantPngVisibleColor(edgeColors, background);

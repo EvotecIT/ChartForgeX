@@ -21,23 +21,7 @@ internal static partial class SmokeTests {
                 new ChartRegionMapItem("Washington D.C.", 12)
             });
 
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"region-map\"", StringComparison.Ordinal), "Region maps should expose a role marker.");
-        Assert(svg.Contains("data-cfx-role=\"region-map\" data-cfx-map-kind=\"us-states\" data-cfx-label=\"Revenue\" data-cfx-region-count=\"51\" data-cfx-filled-region-count=\"4\" data-cfx-missing-region-count=\"47\"", StringComparison.Ordinal), "Region maps should expose reusable map definition metadata.");
-        Assert(svg.Contains("data-cfx-map-id=\"us-states\"", StringComparison.Ordinal), "Region maps should expose the source map definition ID.");
-        Assert(svg.Contains("data-cfx-min-value=\"12\" data-cfx-max-value=\"95\"", StringComparison.Ordinal), "Region map containers should expose the source value range.");
-        Assert(svg.Contains("Revenue by region region map for Revenue on United States states with 4 filled regions and 47 missing regions.", StringComparison.Ordinal), "Region map SVG descriptions should summarize the reusable map definition.");
-        Assert(svg.Contains("role=\"group\" aria-label=\"Revenue region map with 4 filled regions and 47 missing regions\"", StringComparison.Ordinal), "Region map containers should expose a useful group label.");
-        Assert(!svg.Contains("data-cfx-role=\"legend\"", StringComparison.Ordinal), "Region maps should not emit generic series legends.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"region-map-region\"") == 51, "Region maps should render every region in the definition.");
-        Assert(svg.Contains("data-cfx-region=\"CA\" data-cfx-region-name=\"California\" data-cfx-value=\"95\"", StringComparison.Ordinal), "Region maps should resolve full names through the map definition.");
-        Assert(svg.Contains("data-cfx-region=\"DC\" data-cfx-region-name=\"District of Columbia\" data-cfx-value=\"12\"", StringComparison.Ordinal), "Region maps should resolve custom aliases through the map definition.");
-        Assert(svg.Contains("<title>California (CA): 95</title>", StringComparison.Ordinal), "Region map regions should expose native SVG hover titles.");
-        Assert(svg.Contains("class=\"cfx-interactive-region\" data-cfx-role=\"region-map-region\"", StringComparison.Ordinal), "Region map regions should be named interactive SVG regions without a tab stop of their own.");
-        Assert(svg.Contains("data-cfx-role=\"region-map-scale-step\"", StringComparison.Ordinal), "Region maps should render a value scale.");
-        Assert(svg.Contains("data-cfx-role=\"region-map-scale-no-data\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Region maps should tag missing-data scale swatches as empty.");
-        Assert(svg.Contains("fill=\"#2E69EC\"", StringComparison.Ordinal), "Region maps should honor per-region colors inside the choropleth scale.");
-        Assert(chart.ToPng().Length > 64, "Region maps should render PNG output.");
+        AssertMapCatalogSources(PreparedFamily(chart), "region-map", 4, 47, 95);
         AssertThrows<ArgumentNullException>(() => Chart.Create().AddRegionMap("Bad", null!, new[] { new ChartRegionMapItem("CA", 1) }), "Region maps should reject missing definitions.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddRegionMap("Empty", definition, Array.Empty<ChartRegionMapItem>()), "Region maps should reject empty inputs.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddRegionMap("Bad", definition, new[] { new ChartRegionMapItem("ZZ", 1) }), "Region maps should reject regions outside the map definition.");
@@ -57,24 +41,7 @@ internal static partial class SmokeTests {
                 new ChartRegionMapItem("California", 5)
             });
 
-        var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"tile-map\"", StringComparison.Ordinal), "Tile maps should expose a role marker.");
-        Assert(svg.Contains("data-cfx-role=\"tile-map\" data-cfx-map-kind=\"us-states\" data-cfx-map-id=\"us-states\" data-cfx-label=\"Revenue\" data-cfx-region-count=\"51\" data-cfx-filled-region-count=\"5\" data-cfx-missing-region-count=\"46\"", StringComparison.Ordinal), "Tile maps should expose reusable map definition metadata.");
-        Assert(svg.Contains("data-cfx-map-id=\"us-states\"", StringComparison.Ordinal), "Tile maps should expose the source tile-map definition ID.");
-        Assert(svg.Contains("data-cfx-min-value=\"55\" data-cfx-max-value=\"100\"", StringComparison.Ordinal), "Tile map containers should expose the source value range.");
-        Assert(svg.Contains("Revenue by tile region tile map for Revenue on United States states with 5 filled regions and 46 missing regions.", StringComparison.Ordinal), "Tile map SVG descriptions should summarize the reusable tile definition.");
-        Assert(svg.Contains("role=\"group\" aria-label=\"Revenue tile map with 5 filled regions and 46 missing regions\"", StringComparison.Ordinal), "Tile map containers should expose a useful group label.");
-        Assert(!svg.Contains("data-cfx-role=\"legend\"", StringComparison.Ordinal), "Tile maps should not emit generic series legends.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"tile-map-region\"") == 51, "Tile maps should render every region in the definition.");
-        Assert(svg.Contains("data-cfx-region=\"CA\" data-cfx-region-name=\"California\" data-cfx-value=\"100\"", StringComparison.Ordinal), "Tile maps should resolve aliases and aggregate duplicate values.");
-        Assert(svg.Contains("<title>California (CA): 100</title>", StringComparison.Ordinal), "Tile map regions should expose native SVG hover titles.");
-        Assert(svg.Contains("class=\"cfx-interactive-region\" data-cfx-role=\"tile-map-region\"", StringComparison.Ordinal), "Tile map regions should be named interactive SVG regions without a tab stop of their own.");
-        Assert(svg.Contains("data-cfx-region=\"DC\" data-cfx-region-name=\"District of Columbia\" data-cfx-value=\"0\" data-cfx-empty=\"true\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Tile maps should expose empty status metadata for missing regions.");
-        Assert(svg.Contains("data-cfx-role=\"tile-map-label\"", StringComparison.Ordinal), "Tile maps should label tiles when there is enough room.");
-        Assert(svg.Contains("data-cfx-role=\"tile-map-scale-step\"", StringComparison.Ordinal), "Tile maps should render a value scale.");
-        Assert(svg.Contains("data-cfx-role=\"tile-map-scale-no-data\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Tile maps should tag missing-data scale swatches as empty.");
-        Assert(svg.Contains("fill=\"#2563EB\"", StringComparison.Ordinal), "Tile maps should honor per-region colors.");
-        Assert(chart.ToPng().Length > 64, "Tile maps should render PNG output.");
+        AssertMapCatalogSources(PreparedFamily(chart), "tile-map", 5, 46, 100);
         AssertThrows<ArgumentNullException>(() => Chart.Create().AddTileMap("Bad", null!, new[] { new ChartRegionMapItem("CA", 1) }), "Tile maps should reject missing definitions.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddTileMap("Empty", definition, Array.Empty<ChartRegionMapItem>()), "Tile maps should reject empty inputs.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddTileMap("Bad", definition, new[] { new ChartRegionMapItem("ZZ", 1) }), "Tile maps should reject regions outside the tile-map definition.");
@@ -104,26 +71,19 @@ internal static partial class SmokeTests {
             .WithMapColorScale(scale)
             .AddTileMap("Births", ChartTileMapCatalog.Get("us-states"), regions);
 
-        var regionSvg = region.ToSvg();
-        var tileSvg = tile.ToSvg();
-        Assert(regionSvg.Contains("data-cfx-map-color-scale=\"custom\"", StringComparison.Ordinal), "Region maps should expose that a custom color scale is active.");
-        Assert(tileSvg.Contains("data-cfx-map-color-scale=\"custom\"", StringComparison.Ordinal), "Tile maps should expose that a custom color scale is active.");
-        Assert(regionSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Region maps should render the low color from a diverging map scale.");
-        Assert(regionSvg.Contains("fill=\"#FFF7ED\"", StringComparison.Ordinal), "Region maps should render the midpoint color from a diverging map scale.");
-        Assert(regionSvg.Contains("fill=\"#065F46\"", StringComparison.Ordinal), "Region maps should render the high color from a diverging map scale.");
-        Assert(tileSvg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Tile maps should render the low color from a diverging map scale.");
-        Assert(tileSvg.Contains("fill=\"#FFF7ED\"", StringComparison.Ordinal), "Tile maps should render the midpoint color from a diverging map scale.");
-        Assert(tileSvg.Contains("fill=\"#065F46\"", StringComparison.Ordinal), "Tile maps should render the high color from a diverging map scale.");
-        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-midpoint-label\" data-cfx-value=\"50\"", StringComparison.Ordinal), "Region maps should expose custom midpoint legend labels.");
-        Assert(tileSvg.Contains("data-cfx-role=\"tile-map-scale-midpoint-label\" data-cfx-value=\"50\"", StringComparison.Ordinal), "Tile maps should expose custom midpoint legend labels.");
-        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-step\" data-cfx-value=\"100\" data-cfx-status=\"positive\"", StringComparison.Ordinal), "Custom map color scales should classify high range values against the configured scale.");
-        Assert(tileSvg.Contains("data-cfx-role=\"tile-map-scale-step\" data-cfx-value=\"100\" data-cfx-status=\"positive\"", StringComparison.Ordinal), "Custom tile-map color scales should classify high range values against the configured scale.");
-        Assert(regionSvg.Contains(">0</text>", StringComparison.Ordinal), "Region map scale legends should honor custom low labels.");
-        Assert(regionSvg.Contains("&gt;100</text>", StringComparison.Ordinal), "Region map scale legends should escape and honor custom high labels.");
-        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-no-data\" data-cfx-status=\"empty\"", StringComparison.Ordinal), "Region maps should still reserve missing-data swatches with custom scales.");
-        Assert(regionSvg.Contains("fill=\"#E5E7EB\"", StringComparison.Ordinal), "Region maps should honor custom no-data colors.");
-        Assert(region.ToPng().Length > 64, "Custom color-scaled region maps should render PNG output.");
-        Assert(tile.ToPng().Length > 64, "Custom color-scaled tile maps should render PNG output.");
+        foreach (var chart in new[] { region, tile }) {
+            var prepared = PreparedFamily(chart);
+            var marks = prepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneMark>().Where(mark => mark.Role is "region-map-region" or "tile-map-region").ToArray();
+            foreach (var color in new[] { "#F97316", "#FFF7ED", "#065F46" })
+                Assert(marks.Any(mark => mark.Fill.Equals(ChartColor.FromHex(color))), "Custom diverging endpoints and midpoint should reach the map marks.");
+            Assert(FamilyGroups(prepared, "map-scale").Single().Metadata["data-cfx-midpoint-value"] == "50", "Map scales should retain the configured midpoint value.");
+            Assert(prepared.Regions.Any(region => region.Role == "map-scale-midpoint-label" && region.Label!.Contains("50")), "Map scales should retain their midpoint caption.");
+            Assert(FamilyGroups(prepared, "map-scale-step-source").Last().Metadata["data-cfx-value"] == "100", "Map scales should retain the configured maximum.");
+            Assert(prepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Single(mark => mark.Role == "map-scale-no-data").Fill.Equals(ChartColor.FromHex("#E5E7EB")), "Missing data should retain its independent custom color.");
+            Assert(prepared.Regions.Any(region => region.Role == "map-scale-label" && region.Label!.Contains(">100")), "High endpoint captions should retain custom comparison text.");
+            Assert(chart.ToSvg().Contains("&gt;100", StringComparison.Ordinal), "SVG should escape custom endpoint captions.");
+            Assert(prepared.ToPng().Length > 64, "Custom map scales should render natively.");
+        }
         AssertThrows<ArgumentOutOfRangeException>(() => ChartMapColorScale.Sequential(ChartColor.White, ChartColor.Black).WithValueRange(10, 10), "Map color scale ranges should reject equal bounds.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartMapColorScale.Sequential(ChartColor.White, ChartColor.Black).WithMidpoint(double.NaN), "Map color scale midpoint values should reject non-finite values.");
     }
@@ -151,12 +111,12 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-label=\"Births\"", StringComparison.Ordinal), "Region heatmaps should render through the map series surface.");
-        Assert(svg.Contains("data-cfx-map-color-scale=\"custom\"", StringComparison.Ordinal), "Region heatmaps should activate their provided color scale.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"region-map-region\"") == 4, "Region heatmaps should render every custom region polygon.");
-        Assert(svg.Contains("data-cfx-region=\"A\" data-cfx-region-name=\"Alpha\" data-cfx-value=\"0\"", StringComparison.Ordinal), "Region heatmaps should preserve each polygon's own value.");
-        Assert(svg.Contains("data-cfx-region=\"D\" data-cfx-region-name=\"Delta\" data-cfx-value=\"10\"", StringComparison.Ordinal), "Region heatmaps should preserve the high polygon's own value.");
-        Assert(svg.Contains("data-cfx-region=\"A\"", StringComparison.Ordinal) && svg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Region heatmaps should color low-valued polygons with the low scale color.");
-        Assert(svg.Contains("data-cfx-region=\"D\"", StringComparison.Ordinal) && svg.Contains("fill=\"#065F46\"", StringComparison.Ordinal), "Region heatmaps should color high-valued polygons with the high scale color.");
+        var prepared = PreparedFamily(chart);
+        var sources = FamilyGroups(prepared, "region-map-region-source");
+        Assert(sources.Single(source => source.Metadata["data-cfx-region"] == "A").Metadata["data-cfx-value"] == "0" && sources.Single(source => source.Metadata["data-cfx-region"] == "D").Metadata["data-cfx-value"] == "10", "Region heatmaps should preserve each polygon's own value.");
+        var fills = prepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().Where(path => path.Role == "region-map-region").ToArray();
+        Assert(fills[0].Fill.Equals(ChartColor.FromHex("#F97316")) && fills[3].Fill.Equals(ChartColor.FromHex("#065F46")), "Region heatmaps should apply the configured low and high scale colors to their polygons.");
         Assert(chart.ToPng().Length > 64, "Region heatmaps should render PNG output.");
     }
 
@@ -205,15 +165,18 @@ internal static partial class SmokeTests {
 
         var regionSvg = region.ToSvg();
         var tileSvg = tile.ToSvg();
-        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-border\"", StringComparison.Ordinal), "Region heatmaps should support right-side scale legends for report maps.");
-        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-midpoint-label\" data-cfx-value=\"50\"", StringComparison.Ordinal), "Right-side region scale legends should expose midpoint labels.");
+        var regionPrepared = PreparedFamily(region);
+        var swatches = regionPrepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(node => node.Role == "map-scale-step").ToArray();
+        Assert(swatches.Length == 32 && swatches[0].Bounds.Top < swatches[^1].Bounds.Top && swatches[0].Bounds.Left == swatches[^1].Bounds.Left, "Right-side region scales should render a vertical color ramp.");
+        Assert(FamilyLabels(regionPrepared, "map-scale-label").Any(label => FamilyContent(label).Contains("50 median")), "Right-side region scales should preserve the configured midpoint caption.");
         Assert(!regionSvg.Contains("data-cfx-role=\"region-map-surface\"", StringComparison.Ordinal), "Report-style region maps should be able to suppress the map surface.");
         Assert(regionSvg.Contains("data-cfx-role=\"map-base-layer\"", StringComparison.Ordinal), "Report-style region maps should render context base geography behind data regions.");
         Assert(regionSvg.Contains("data-cfx-role=\"map-boundary-layer\"", StringComparison.Ordinal), "Report-style region maps should render boundary overlays above data regions.");
         Assert(regionSvg.Contains("stroke-width=\"0.42\"", StringComparison.Ordinal), "Report-style region maps should allow quiet internal region strokes.");
-        Assert(regionSvg.Contains("data-cfx-source-left=\"-12\" data-cfx-source-top=\"-72\" data-cfx-source-width=\"47\" data-cfx-source-height=\"38\"", StringComparison.Ordinal), "Report-style region maps should expose explicit coordinate framing metadata.");
+        var sourceFrame = FamilyGroups(regionPrepared, "region-map").Single();
+        Assert(FamilyNumber(sourceFrame, "data-cfx-source-left") == -12 && FamilyNumber(sourceFrame, "data-cfx-source-top") == -72 && FamilyNumber(sourceFrame, "data-cfx-source-width") == 47 && FamilyNumber(sourceFrame, "data-cfx-source-height") == 38, "Report-style region maps should expose explicit coordinate framing metadata.");
         Assert(regionSvg.IndexOf("data-cfx-role=\"map-base-layer\"", StringComparison.Ordinal) < regionSvg.IndexOf("data-cfx-role=\"region-map-region\"", StringComparison.Ordinal) && regionSvg.IndexOf("data-cfx-role=\"region-map-region\"", StringComparison.Ordinal) < regionSvg.IndexOf("data-cfx-role=\"map-boundary-layer\"", StringComparison.Ordinal), "Cartographic region-map layers should render base geography, data regions, then boundary overlays.");
-        Assert(tileSvg.Contains("data-cfx-role=\"tile-map-scale-border\"", StringComparison.Ordinal), "Tile heatmaps should support right-side scale legends for report maps.");
+        Assert(PreparedFamily(tile).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Count(node => node.Role == "map-scale-step") == 32, "Tile heatmaps should support the same vertical report scale.");
         Assert(!tileSvg.Contains("data-cfx-role=\"tile-map-surface\"", StringComparison.Ordinal), "Report-style tile maps should be able to suppress the map surface.");
         Assert(region.ToPng().Length > 64, "Report-style region heatmaps should render PNG output.");
         Assert(tile.ToPng().Length > 64, "Report-style tile heatmaps should render PNG output.");
@@ -607,7 +570,7 @@ internal static partial class SmokeTests {
             });
 
         var svg = chart.ToSvg();
-        Assert(!svg.Contains("data-cfx-role=\"region-map-scale-step\"", StringComparison.Ordinal), "Region maps should allow compact cards to hide scale legends.");
+        Assert(!svg.Contains("data-cfx-role=\"map-scale-step\"", StringComparison.Ordinal), "Region maps should allow compact cards to hide scale legends.");
         Assert(svg.Contains("data-cfx-role=\"region-map-region\"", StringComparison.Ordinal), "Region maps should still render regions when scale legends are hidden.");
         Assert(chart.ToPng().Length > 64, "Region maps without scale legends should render PNG output.");
     }
@@ -621,10 +584,10 @@ internal static partial class SmokeTests {
             });
 
         var svg = chart.ToSvg();
-        Assert(svg.Contains("data-cfx-role=\"region-map-label\" x=", StringComparison.Ordinal), "Region maps should render labels for regions that have enough room.");
+        Assert(FamilyLabels(PreparedFamily(chart), "region-map-label").Length > 0, "Region maps should render labels for regions that have enough room.");
         Assert(svg.Contains(">CA</text>", StringComparison.Ordinal), "Region maps should label large regions by default.");
         Assert(!svg.Contains(">DC</text>", StringComparison.Ordinal), "Region maps should avoid cramped labels for tiny regions.");
-        Assert(svg.Contains("<title>District of Columbia (DC): 42</title>", StringComparison.Ordinal), "Region maps should preserve tiny-region identity through hover titles.");
+        Assert(FamilyGroups(PreparedFamily(chart), "region-map-region-source").Any(source => source.Metadata["aria-label"] == "District of Columbia (DC): 42"), "Region maps should preserve tiny-region identity in semantic source summaries.");
         Assert(chart.ToPng().Length > 64, "Region maps with fitted labels should render PNG output.");
     }
 
@@ -638,7 +601,7 @@ internal static partial class SmokeTests {
             });
 
         var svg = chart.ToSvg();
-        Assert(!svg.Contains("data-cfx-role=\"tile-map-scale-step\"", StringComparison.Ordinal), "Tile maps should allow compact cards to hide scale legends.");
+        Assert(!svg.Contains("data-cfx-role=\"map-scale-step\"", StringComparison.Ordinal), "Tile maps should allow compact cards to hide scale legends.");
         Assert(svg.Contains("data-cfx-role=\"tile-map-region\"", StringComparison.Ordinal), "Tile maps should still render regions when scale legends are hidden.");
         Assert(chart.ToPng().Length > 64, "Tile maps without scale legends should render PNG output.");
     }
@@ -654,12 +617,14 @@ internal static partial class SmokeTests {
 
         var regionSvg = region.ToSvg();
         var tileSvg = tile.ToSvg();
-        Assert(!regionSvg.Contains("data-cfx-role=\"region-map-scale-no-data\"", StringComparison.Ordinal), "Complete region maps should not reserve a missing-data legend swatch.");
-        Assert(!tileSvg.Contains("data-cfx-role=\"tile-map-scale-no-data\"", StringComparison.Ordinal), "Complete tile maps should not reserve a missing-data legend swatch.");
-        Assert(CountOccurrences(regionSvg, "data-cfx-role=\"region-map-scale-step\"") == 5, "Region maps should render five value-colored scale steps.");
-        Assert(CountOccurrences(tileSvg, "data-cfx-role=\"tile-map-scale-step\"") == 5, "Tile maps should render five value-colored scale steps.");
-        Assert(regionSvg.Contains("data-cfx-role=\"region-map-scale-step\" data-cfx-value=\"10\" data-cfx-status=\"negative\"", StringComparison.Ordinal), "Region map scale steps should expose the low value as data, not as no-data.");
-        Assert(tileSvg.Contains("data-cfx-role=\"tile-map-scale-step\" data-cfx-value=\"10\" data-cfx-status=\"negative\"", StringComparison.Ordinal), "Tile map scale steps should expose the low value as data, not as no-data.");
+        Assert(!regionSvg.Contains("data-cfx-role=\"map-scale-no-data\"", StringComparison.Ordinal), "Complete region maps should not reserve a missing-data legend swatch.");
+        Assert(!tileSvg.Contains("data-cfx-role=\"map-scale-no-data\"", StringComparison.Ordinal), "Complete tile maps should not reserve a missing-data legend swatch.");
+        foreach (var chart in new[] { region, tile }) {
+            var prepared = PreparedFamily(chart);
+            Assert(prepared.Scene.Nodes.Count(node => node.Role == "map-scale-step") == 5, "Map scales should render five value-colored steps.");
+            Assert(FamilyGroups(prepared, "map-scale-step-source")[0].Metadata["data-cfx-value"] == "10", "The low data value should retain its numeric identity.");
+            Assert(!prepared.Scene.Nodes.Any(node => node.Role == "map-scale-no-data"), "Complete maps should omit the missing-data legend swatch.");
+        }
         Assert(region.ToPng().Length > 64, "Complete region map scale legends should render PNG output.");
         Assert(tile.ToPng().Length > 64, "Complete tile map scale legends should render PNG output.");
     }
@@ -680,27 +645,14 @@ internal static partial class SmokeTests {
                 new ChartRegionMapItem("NY", 82)
             });
 
-        var regionSvg = region.ToSvg();
-        var tileSvg = tile.ToSvg();
-        var regionWidth = GetAttribute(regionSvg, "<svg", "width");
-        var tileWidth = GetAttribute(tileSvg, "<svg", "width");
-        var regionHeight = GetAttribute(regionSvg, "<svg", "height");
-        var tileHeight = GetAttribute(tileSvg, "<svg", "height");
-        var regionNoDataX = GetAttribute(regionSvg, "data-cfx-role=\"region-map-scale-no-data\"", "x");
-        var tileNoDataX = GetAttribute(tileSvg, "data-cfx-role=\"tile-map-scale-no-data\"", "x");
-        var regionNoDataY = GetAttribute(regionSvg, "data-cfx-role=\"region-map-scale-no-data\"", "y");
-        var tileNoDataY = GetAttribute(tileSvg, "data-cfx-role=\"tile-map-scale-no-data\"", "y");
-        var regionScaleX = GetAttribute(regionSvg, "data-cfx-role=\"region-map-scale-step\"", "x");
-        var tileScaleX = GetAttribute(tileSvg, "data-cfx-role=\"tile-map-scale-step\"", "x");
-
-        Assert(regionNoDataX >= 0 && regionNoDataX < regionWidth, "Region map no-data scale swatches should remain inside compact SVG cards.");
-        Assert(tileNoDataX >= 0 && tileNoDataX < tileWidth, "Tile map no-data scale swatches should remain inside compact SVG cards.");
-        Assert(regionNoDataY >= 0 && regionNoDataY < regionHeight, "Region map no-data scale swatches should remain vertically inside compact SVG cards.");
-        Assert(tileNoDataY >= 0 && tileNoDataY < tileHeight, "Tile map no-data scale swatches should remain vertically inside compact SVG cards.");
-        Assert(regionNoDataX < regionScaleX, "Region map no-data swatches should not overlap the value scale start.");
-        Assert(tileNoDataX < tileScaleX, "Tile map no-data swatches should not overlap the value scale start.");
-        Assert(region.ToPng().Length > 64, "Compact region map no-data scale legends should render PNG output.");
-        Assert(tile.ToPng().Length > 64, "Compact tile map no-data scale legends should render PNG output.");
+        foreach (var chart in new[] { region, tile }) {
+            var prepared = PreparedFamily(chart);
+            var swatch = prepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Single(mark => mark.Role == "map-scale-no-data").Bounds;
+            Assert(swatch.Left >= 0 && swatch.Right <= prepared.Size.Width && swatch.Top >= 0 && swatch.Bottom <= prepared.Size.Height, "No-data scale swatches should remain inside compact cards.");
+            var steps = prepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(mark => mark.Role == "map-scale-step");
+            Assert(!steps.Any(step => MapOverlap(step.Bounds, swatch)), "No-data swatches should remain separate from the numeric value scale.");
+            Assert(prepared.ToPng().Length > 64, "Compact map scales should render natively.");
+        }
     }
 
     private static ChartRegionMapItem[] AllCatalogRegions() {

@@ -8,7 +8,7 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Creates common <see cref="ChartPoint"/> sequences for chart series.
 /// </summary>
-public static class ChartPoints {
+public static partial class ChartPoints {
     /// <summary>
     /// Creates one-based x/y points from y values.
     /// </summary>

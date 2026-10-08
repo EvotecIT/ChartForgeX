@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -23,6 +24,7 @@ internal static partial class VisualArtifactInterchangeJson {
         .LimitArray("items", VisualArtifactInterchangeValidation.MaximumLegendItems)
         .LimitArray("dashPattern", VisualArtifactInterchangeValidation.MaximumDashPatternValues)
         .LimitArray("waypoints", VisualArtifactInterchangeValidation.MaximumWaypointsPerEdge)
+        .LimitArray("resolvedRoute", VisualArtifactInterchangeValidation.MaximumWaypointsPerEdge)
         .LimitObject("extensions", VisualArtifactInterchangeValidation.MaximumExtensionEntries)
         .LimitDepth(MaximumJsonDepth)
         .RejectDuplicates();
@@ -231,6 +233,19 @@ internal static partial class VisualArtifactInterchangeJson {
             OptionalString(writer, "href", edge.Href);
             OptionalString(writer, "tooltip", edge.Tooltip);
             Number(writer, "order", edge.Order);
+            if (edge.ResolvedRoute.Count > 0) {
+                writer.Property("resolvedRoute");
+                writer.StartArray();
+                foreach (var point in edge.ResolvedRoute) Point(writer, point);
+                writer.EndArray();
+            }
+            if (edge.ResolvedLabelBounds.HasValue) {
+                var bounds = edge.ResolvedLabelBounds.Value;
+                writer.Property("resolvedLabelBounds"); writer.StartObject();
+                Number(writer, "x", bounds.X); Number(writer, "y", bounds.Y);
+                Number(writer, "width", bounds.Width); Number(writer, "height", bounds.Height);
+                writer.EndObject();
+            }
             TopologyEdge(writer, edge.Topology);
             FlowEdge(writer, edge.Flow);
             SequenceEdge(writer, edge.Sequence);
@@ -366,6 +381,11 @@ internal static partial class VisualArtifactInterchangeJson {
             edge.Topology = ReadTopologyEdge(item);
             edge.Flow = ReadFlowEdge(item);
             edge.Sequence = ReadSequenceEdge(item);
+            foreach (var point in OptionalArray(item, "resolvedRoute")) edge.ResolvedRoute.Add(ReadPoint(point.AsObject("resolved route point")));
+            var bounds = OptionalObject(item, "resolvedLabelBounds");
+            if (bounds != null) {
+                edge.ResolvedLabelBounds = new ChartRect(RequiredNumber(bounds, "x"), RequiredNumber(bounds, "y"), RequiredNumber(bounds, "width"), RequiredNumber(bounds, "height"));
+            }
             ReadExtensions(item, edge.Extensions);
             ReadMetrics(item, edge.Metrics);
             target.Add(edge);

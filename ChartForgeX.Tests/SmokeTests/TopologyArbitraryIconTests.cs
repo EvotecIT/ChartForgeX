@@ -74,12 +74,13 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-node-icon-artwork=\"image\"", StringComparison.Ordinal), "Relationship overview topology should expose arbitrary image artwork metadata.");
         Assert(svg.Contains("data-node-artwork-source=\"node\"", StringComparison.Ordinal), "Relationship overview topology should expose node-supplied artwork source metadata.");
         Assert(svg.Contains("data-node-artwork-source=\"icon\"", StringComparison.Ordinal), "Relationship overview topology should expose catalog-supplied artwork source metadata.");
-        Assert(svg.Contains("data-cfx-role=\"topology-icon-artwork\"", StringComparison.Ordinal), "Relationship overview topology should embed arbitrary icon artwork in SVG output.");
-        Assert(svg.Contains("<rect x=\"8\" y=\"10\" width=\"28\"", StringComparison.Ordinal), "Relationship overview topology should render caller-supplied endpoint artwork.");
+        Assert(svg.Contains("data-cfx-role=\"topology-node-artwork\"", StringComparison.Ordinal), "Relationship overview topology should embed arbitrary icon artwork in SVG output.");
+        Assert(System.Xml.Linq.XDocument.Parse(svg).Descendants().Any(element => element.Name.LocalName == "image" && (string?)element.Attribute("data-cfx-role") == "topology-node-artwork"
+            && ((string?)element.Attribute("href"))?.StartsWith("data:image/png;base64,", StringComparison.Ordinal) == true), "Relationship overview topology should embed detached caller artwork shared with PNG output.");
         Assert(svg.Contains("data-node-id=\"backdrop\"", StringComparison.Ordinal) && svg.Contains("data-node-display-mode=\"Artwork\"", StringComparison.Ordinal), "Relationship overview topology should support full-bounds artwork nodes.");
-        Assert(svg.Contains("width=\"260\" height=\"140\" viewBox=\"0 0 244 124\"", StringComparison.Ordinal), "Artwork display nodes should scale trusted SVG artwork to the full node bounds.");
+        Assert(SvgHasAttributes(svg, "data-cfx-role=\"topology-node-artwork\" width=\"260\" height=\"140\""), "Artwork display nodes should scale the detached artwork to the full node bounds.");
         Assert(svg.Contains("preserveAspectRatio=\"none\"", StringComparison.Ordinal), "Artwork display nodes should preserve caller-supplied preserveAspectRatio values.");
-        Assert(svg.Contains("href=\"data:image/png;base64,", StringComparison.Ordinal) && svg.Contains("width=\"32\" height=\"32\"", StringComparison.Ordinal), "Artwork display nodes should embed host-managed image href artwork.");
+        Assert(svg.Contains("href=\"data:image/png;base64,", StringComparison.Ordinal) && SvgHasAttributes(svg, "width=\"32\" height=\"32\""), "Artwork display nodes should embed host-managed image href artwork.");
         var overrideNodeTag = TopologyNodeStartTag(svg, "arbitrary-icon-topology", "override");
         Assert(overrideNodeTag.Contains("data-node-icon-id=\"access-sample:destination\"", StringComparison.Ordinal) && overrideNodeTag.Contains("data-node-artwork-source=\"node\"", StringComparison.Ordinal), "Node-supplied artwork should override catalog artwork while preserving icon metadata.");
         var clearedNodeTag = TopologyNodeStartTag(svg, "arbitrary-icon-topology", "cleared");
@@ -307,7 +308,8 @@ internal static partial class SmokeTests {
         var autoSvg = autoChart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(autoSvg.Contains("data-layout-mode=\"Layered\"", StringComparison.Ordinal), "Auto artwork nodes should participate in deterministic layout modes.");
         Assert(autoSvg.Contains("data-node-id=\"auto-art\"", StringComparison.Ordinal) && autoSvg.Contains("data-node-artwork-source=\"node\"", StringComparison.Ordinal), "Auto artwork nodes should preserve node-supplied artwork metadata after layout.");
-        Assert(autoSvg.Contains("width=\"112\" height=\"72\" viewBox=\"0 0 244 124\"", StringComparison.Ordinal), "Auto artwork nodes should render full-bounds SVG artwork after layout.");
+        var autoImage = TopologyEntity(autoSvg, "node", "auto-art").Descendants().Single(element => element.Name.LocalName == "image");
+        Assert((double?)autoImage.Attribute("width") == 112 && (double?)autoImage.Attribute("height") == 72 && autoImage.Attributes().Any(attribute => attribute.Name.LocalName == "href" && attribute.Value.StartsWith("data:image/png;base64,", StringComparison.Ordinal)), "Auto artwork nodes should render a detached native image covering their complete resolved bounds.");
 
         var inferredBackdropChart = TopologyChart.Create()
             .WithId("inferred-artwork-route")
@@ -340,21 +342,18 @@ internal static partial class SmokeTests {
     }
 
     private static string TopologyNodeStartTag(string svg, string chartId, string nodeId) {
-        var marker = "id=\"" + chartId + "-node-" + nodeId + "\"";
-        var start = svg.IndexOf(marker, StringComparison.Ordinal);
-        if (start < 0) return string.Empty;
-        while (start > 0 && svg[start] != '<') start--;
-        var end = svg.IndexOf('>', start);
-        return end < 0 ? string.Empty : svg.Substring(start, end - start + 1);
+        return TopologyEntityStartTag(svg, "node", nodeId);
     }
 
     private static string TopologyEdgeStartTag(string svg, string chartId, string edgeId) {
-        var marker = "id=\"" + chartId + "-edge-" + edgeId + "\"";
-        var start = svg.IndexOf(marker, StringComparison.Ordinal);
-        if (start < 0) return string.Empty;
-        while (start > 0 && svg[start] != '<') start--;
-        var end = svg.IndexOf('>', start);
-        return end < 0 ? string.Empty : svg.Substring(start, end - start + 1);
+        return TopologyEntityStartTag(svg, "edge", edgeId);
+    }
+
+    private static string TopologyEntityStartTag(string svg, string kind, string id) {
+        var element = System.Xml.Linq.XDocument.Parse(svg).Descendants().SingleOrDefault(candidate =>
+            (string?)candidate.Attribute("data-cfx-role") == "topology-" + kind && (string?)candidate.Attribute("data-" + kind + "-id") == id);
+        if (element == null) return string.Empty;
+        return new System.Xml.Linq.XElement(element.Name, element.Attributes()).ToString(System.Xml.Linq.SaveOptions.DisableFormatting);
     }
 
     private static int CountPixelsNear(byte[] rgba, int red, int green, int blue) {

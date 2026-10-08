@@ -4,6 +4,7 @@ using System.Reflection;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualBlocks;
@@ -12,27 +13,32 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void SvgSurfaceAndGuideStrokesStayPremiumAtAnyScale() {
-        var svg = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 260)
             .WithTitle("Premium scale")
             .WithSubtitle("Crisp at small and large sizes")
-            .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
-            .ToSvg();
+            .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235));
+        var prepared = PreparedFamily(chart);
+        var svg = prepared.ToSvg();
 
-        Assert(svg.Contains(".cfx-guide-stroke", StringComparison.Ordinal), "SVG stylesheet should define a guide-stroke class for crisp axes and grid lines.");
-        Assert(svg.Contains(".cfx-premium-stroke", StringComparison.Ordinal), "SVG stylesheet should define a premium-stroke class for non-scaling series lighting.");
-        Assert(svg.Contains("vector-effect:non-scaling-stroke", StringComparison.Ordinal), "SVG strokes should stay readable when charts are embedded very small or very large.");
-        Assert(svg.Contains(" text{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-synthesis:none}", StringComparison.Ordinal), "SVG text should request crisp browser rendering without relying on page-level CSS.");
-        Assert(CountOccurrences(svg, "font-synthesis:none") == 1, "SVG should emit shared embedded polish styles only once.");
-        Assert(svg.Contains("class=\"cfx-guide-stroke\"", StringComparison.Ordinal), "SVG axis and grid lines should opt into the shared guide-stroke class.");
-        Assert(svg.Contains("class=\"cfx-premium-stroke\"", StringComparison.Ordinal), "SVG line layers should opt into the shared premium-stroke class.");
-        Assert(svg.Contains("-cardSurface\"", StringComparison.Ordinal) && svg.Contains("-plotSurface\"", StringComparison.Ordinal), "SVG surfaces should define reusable card and plot gradients.");
-        Assert(svg.Contains("fill=\"url(#", StringComparison.Ordinal), "SVG card and plot surfaces should render through deterministic gradients.");
-        Assert(svg.Contains("data-cfx-role=\"card-inner-highlight\"", StringComparison.Ordinal), "SVG card surfaces should render a subtle inner highlight.");
-        Assert(svg.Contains("data-cfx-role=\"plot-inner-highlight\"", StringComparison.Ordinal), "SVG plot surfaces should render a subtle inner highlight.");
-        Assert(svg.Contains("x1=\"76.5\"", StringComparison.Ordinal) || svg.Contains("y1=\"", StringComparison.Ordinal) && svg.Contains(".5\"", StringComparison.Ordinal), "SVG guide strokes should snap thin horizontal or vertical guides to half-pixel centers.");
+        var elements = System.Xml.Linq.XDocument.Parse(svg).Descendants().ToArray();
+        var guides = elements.Where(element => (string?)element.Attribute("data-cfx-role") is "axis-x" or "axis-y" or "grid-x" or "grid-y").ToArray();
+        var nativeGuides = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role is "axis-x" or "axis-y" or "grid-x" or "grid-y").ToArray();
+        Assert(guides.Length > 0 && guides.Length == nativeGuides.Length && guides.Zip(nativeGuides, (element, line) =>
+            (string?)element.Attribute("data-cfx-role") == line.Role
+            && double.Parse(element.Attribute("stroke-width")!.Value, CultureInfo.InvariantCulture) == line.StrokeWidth
+            && line.StrokeWidth > 0 && line.Stroke!.Value.A > 0 && (string?)element.Attribute("stroke") == line.Stroke.Value.ToCss()).All(matches => matches),
+            "Native axes and grid lines should carry explicit visible guide paint and logical stroke width.");
+        Assert(elements.Any(element => (string?)element.Attribute("data-cfx-role") == "line"
+            && double.TryParse((string?)element.Attribute("stroke-width"), NumberStyles.Float, CultureInfo.InvariantCulture, out var width) && width > 0),
+            "Native line geometry should carry its resolved stroke instead of depending on page CSS.");
+        Assert(SvgHasAttributes(svg, "data-cfx-role=\"frame-card\"") && SvgHasAttributes(svg, "data-cfx-role=\"content-surface\""),
+            "Native SVG should retain the shared card and plot surfaces.");
+        Assert(elements.Where(element => element.Name.LocalName == "text").All(element => element.Attribute("font-family") != null
+            && element.Attribute("font-size") != null && element.Attribute("font-weight") != null),
+            "Native text should carry its resolved typography independently of the embedding page.");
 
-        var html = Chart.Create()
+        var html = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 260)
             .WithTitle("Premium HTML")
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
@@ -43,7 +49,7 @@ internal static partial class SmokeTests {
     }
 
     private static void StaticHtmlShellsSharePremiumPreviewPolish() {
-        var chart = Chart.Create()
+        var chart = Chart.Create().WithTheme(ChartTheme.Light())
             .WithSize(360, 220)
             .WithTitle("Shell chart")
             .AddSmoothLine("Values", Points(12, 22, 18), ChartColor.FromRgb(37, 99, 235));
@@ -55,7 +61,7 @@ internal static partial class SmokeTests {
             .WithColumns(2)
             .Add(chart)
             .Add(Chart.Create().WithSize(360, 220).WithTitle("Bars").AddBar("Values", Points(4, 7, 5)));
-        AssertPremiumHtmlShell(grid.ToHtmlPage(), centered: false, "chart grid HTML page");
+        AssertPremiumHtmlShell(grid.ToHtmlPage(), centered: true, "chart grid HTML page");
 
         var table = ChartTable.Create()
             .WithTitle("Shell visual block")
@@ -75,14 +81,14 @@ internal static partial class SmokeTests {
     }
 
     private static void SpecializedChartLayoutsKeepContentInsidePlotFrame() {
-        var bullet = Chart.Create()
+        var bulletChart = Chart.Create()
             .WithSize(920, 560)
             .WithTheme(ChartTheme.ReportDark())
             .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(52, 211, 153))
-            .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d }, ChartColor.FromRgb(96, 165, 250))
-            .ToSvg();
-        var bulletLabelX = double.Parse(GetStringAttribute(bullet, "data-cfx-role=\"bullet-row-label\"", "x"), CultureInfo.InvariantCulture);
-        Assert(bulletLabelX >= 90, "Bullet row labels should honor internal content padding instead of touching the plot frame.");
+            .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d }, ChartColor.FromRgb(96, 165, 250));
+        var bulletPrepared = PreparedFamily(bulletChart);
+        var bulletPadding = ChartForgeX.Rendering.VisualExportRequest.ForChart(bulletChart).Context.Layout.PaddingEdges;
+        Assert(FamilyLabels(bulletPrepared, "bullet-row-label").All(label => label.Text.Lines.All(line => label.LineLeft(line) >= bulletPadding.Left)), "Bullet row labels should honor the common frame padding.");
 
         var narrowBulletChart = Chart.Create()
             .WithSize(180, 140)
@@ -96,7 +102,7 @@ internal static partial class SmokeTests {
         Assert(valueX >= 0 && valueX + valueWidth <= 180, "Narrow bullet charts should keep bars inside the chart viewport after internal padding.");
         Assert(narrowBulletChart.ToPng().Length > 64, "Narrow bullet chart bounds should render in PNG output.");
 
-        var tree = Chart.Create()
+        var treeChart = Chart.Create()
             .WithSize(1040, 600)
             .WithTheme(ChartTheme.ReportLight())
             .AddTree("Control hierarchy", new[] {
@@ -109,31 +115,31 @@ internal static partial class SmokeTests {
                 new ChartTreeLink("Certificate lifecycle", "SAN inventory"),
                 new ChartTreeLink("DNS hygiene", "DNSSEC rollout"),
                 new ChartTreeLink("DNS hygiene", "Stale record cleanup")
-            })
-            .ToSvg();
-        var leftNodeX = double.Parse(GetStringAttribute(tree, "data-cfx-label=\"Security posture\"", "x"), CultureInfo.InvariantCulture);
-        var rightNodeX = double.Parse(GetStringAttribute(tree, "data-cfx-label=\"Stale record cleanup\"", "x"), CultureInfo.InvariantCulture);
-        var rightNodeWidth = double.Parse(GetStringAttribute(tree, "data-cfx-label=\"Stale record cleanup\"", "width"), CultureInfo.InvariantCulture);
-        Assert(leftNodeX >= 90, "Tree root nodes should keep left breathing room inside the plot frame.");
-        Assert(rightNodeX + rightNodeWidth <= 990, "Tree leaf nodes should keep right breathing room inside the plot frame.");
-        Assert(tree.Contains("data-cfx-role=\"tree-link-ambient-halo\"", StringComparison.Ordinal) && tree.Contains("data-cfx-role=\"tree-link-highlight\"", StringComparison.Ordinal), "Tree links should use the shared premium stroke layers instead of a single flat path.");
-        Assert(tree.Contains("class=\"cfx-premium-stroke\"", StringComparison.Ordinal), "Tree links should opt into the shared non-scaling premium stroke class.");
-        Assert(tree.Contains("data-cfx-role=\"tree-node-label\"", StringComparison.Ordinal) && tree.Contains("stroke-opacity=\"0.56\"", StringComparison.Ordinal), "Tree labels should use a softer surface-colored halo instead of heavy opposite-color outlines.");
+            });
+        var tree = PreparedFamily(treeChart);
+        var treePadding = ChartForgeX.Rendering.VisualExportRequest.ForChart(treeChart).Context.Layout.PaddingEdges;
+        var nodes = tree.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Where(node => node.Role == "tree-node-mark").ToArray();
+        Assert(nodes.Length == 10 && nodes.All(node => node.Bounds.Left >= treePadding.Left && node.Bounds.Right <= tree.Size.Width - treePadding.Right), "Every tree node should stay inside the common horizontal frame padding.");
+        var links = tree.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().Where(path => path.Role == "tree-link-path").ToArray();
+        Assert(links.Length == 9 && links.All(link => link.Commands.Any(command => command.Kind == ChartPathCommandKind.CubicTo)), "Tree relationships should retain their weighted curved native paths.");
+        Assert(FamilyLabels(tree, "tree-node-label").Length == nodes.Length, "Tree nodes should retain their fitted labels.");
+        Assert(tree.ToPng().Length > 64, "Fitted tree layout should render through the native painter.");
     }
 
     private static void SharedRoutePolishReachesTopologyAndMapOutputs() {
         var topology = CreateSampleTopologyChart().ToSvg();
-        Assert(topology.Contains("data-cfx-role=\"topology-edge-path-halo\"", StringComparison.Ordinal), "Topology routes should use the shared premium route halo layer.");
-        Assert(topology.Contains("data-cfx-role=\"topology-edge-path-highlight\"", StringComparison.Ordinal), "Topology routes should use the shared premium route highlight layer.");
-        Assert(topology.Contains("class=\"cfx-topology__edge cfx-premium-stroke", StringComparison.Ordinal), "Topology SVG routes should opt into the same premium stroke class as charts.");
+        Assert(topology.Contains("data-cfx-role=\"topology-edge-line-halo\"", StringComparison.Ordinal), "Topology routes should use the shared premium route halo layer.");
+        Assert(topology.Contains("data-cfx-role=\"topology-edge-line-highlight\"", StringComparison.Ordinal), "Topology routes should use the shared premium route highlight layer.");
+        Assert(TopologyEdgeLine(topology, "amer-emea").RenderedColor("stroke").A > 0, "Premium topology routes should retain a visible base stroke beneath the shared halo and highlight layers.");
         var cssColorTopology = CreateSampleTopologyChart().WithEdgeColor("amer-emea", "var(--directory-edge)").ToSvg();
-        Assert(cssColorTopology.Contains("stroke=\"var(--directory-edge)\"", StringComparison.Ordinal) && !cssColorTopology.Contains("stroke=\"#2563EB\"", StringComparison.Ordinal), "Topology SVG routes should preserve caller-supplied CSS edge colors instead of substituting the fallback accent.");
+        Assert(TopologyEdgeLine(cssColorTopology, "amer-emea").Attribute("stroke")!.Value.StartsWith("var(--directory-edge, ", StringComparison.Ordinal), "Topology SVG routes should preserve caller-supplied CSS edge colors with a concrete static fallback.");
         var cssColorLayeredTopology = CreateSampleTopologyChart().WithEdgeColor("amer-emea", "var(--directory-edge)").ToSvg(new TopologyRenderOptions().WithLuminousTopologyEdges());
-        Assert(cssColorLayeredTopology.Contains("data-cfx-role=\"topology-edge-path-halo\"", StringComparison.Ordinal) && cssColorLayeredTopology.Contains("data-cfx-role=\"topology-edge-path-highlight\"", StringComparison.Ordinal) && cssColorLayeredTopology.Contains("stroke=\"var(--directory-edge)\"", StringComparison.Ordinal), "Topology SVG routes should keep configured premium layers when caller edge colors use CSS syntax.");
+        Assert(cssColorLayeredTopology.Contains("data-cfx-role=\"topology-edge-line-halo\"", StringComparison.Ordinal) && cssColorLayeredTopology.Contains("data-cfx-role=\"topology-edge-line-highlight\"", StringComparison.Ordinal) && TopologyEdgeLine(cssColorLayeredTopology, "amer-emea").Attribute("stroke")!.Value.StartsWith("var(--directory-edge, ", StringComparison.Ordinal), "Topology SVG routes should keep configured premium layers when caller edge colors use CSS syntax.");
         var plainEdgeTopology = CreateSampleTopologyChart().ToSvg(new TopologyRenderOptions().WithPlainTopologyEdges());
-        Assert(!plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-path-halo\"", StringComparison.Ordinal) && !plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-path-highlight\"", StringComparison.Ordinal) && CountOccurrences(plainEdgeTopology, "data-cfx-role=\"topology-edge-path\"") == 2, "Topology edge polish should be configurable down to crisp single-stroke route lines.");
+        Assert(!plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-line-halo\"", StringComparison.Ordinal) && !plainEdgeTopology.Contains("data-cfx-role=\"topology-edge-line-highlight\"", StringComparison.Ordinal) && CountOccurrences(plainEdgeTopology, "data-cfx-role=\"topology-edge-line\"") == 2, "Topology edge polish should be configurable down to crisp single-stroke route lines.");
         var floatingLabelTopology = CreateSampleTopologyChart().ToSvg(new TopologyRenderOptions { VisualStyle = TopologyVisualStyle.MonitoringDashboard, IncludeEdgeLabelBackplates = false });
-        Assert(floatingLabelTopology.Contains("data-cfx-halo=\"true\"", StringComparison.Ordinal), "Topology floating edge labels should keep explicit readable halo metadata.");
+        var floatingText = System.Xml.Linq.XDocument.Parse(floatingLabelTopology).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-label-text").SelectMany(element => element.DescendantsAndSelf()).Where(element => element.Name.LocalName == "text").ToArray();
+        Assert(floatingText.Length > 0 && floatingText.All(element => element.Attribute("stroke") != null && (string?)element.Attribute("paint-order") == "stroke"), "Topology floating edge labels should paint readable glyph outlines.");
         Assert(CreateSampleTopologyChart().ToPng().Length > 64, "Premium topology route polish should render in PNG output.");
 
         var mapChart = Chart.Create()
@@ -226,8 +232,9 @@ internal static partial class SmokeTests {
         var transparentGridPixels = ReadPngRgba(transparentGrid.ToPng(), out var transparentGridWidth, out _);
         Assert(AlphaAt(transparentGridPixels, transparentGridWidth, 1, 1) == 0, "Transparent visual-grid sections should preserve transparent corners for overlay usage.");
 
-        var translucentTheme = ChartTheme.ReportLight();
+        var translucentTheme = ChartTheme.ReportLight().WithShadowOpacity(0);
         translucentTheme.Background = ChartColor.FromRgba(15, 23, 42, 96);
+        translucentTheme.CardBackground = ChartColor.Transparent;
         var chartGrid = ChartGrid.Create()
             .WithTheme(translucentTheme)
             .WithColumns(1)
@@ -245,30 +252,19 @@ internal static partial class SmokeTests {
         Assert(AlphaAt(visualGridPixels, visualGridWidth, 16, 16) == 96, "PNG visual grids should not compound translucent background alpha when adding polish.");
     }
 
-    private static void GuideStrokeCoordinatesSnapToNearestPixelCenter() {
-        var svgSnap = typeof(ChartForgeX.Svg.SvgChartRenderer).GetMethod("CrispStrokeCoordinate", BindingFlags.NonPublic | BindingFlags.Static);
-        var pngSnap = typeof(ChartForgeX.Raster.PngChartRenderer).GetMethod("CrispStrokeCoordinate", BindingFlags.NonPublic | BindingFlags.Static);
-        Assert(svgSnap != null && pngSnap != null, "Guide stroke snapping helpers should remain available for SVG and PNG renderers.");
-        if (svgSnap == null || pngSnap == null) throw new InvalidOperationException("Guide stroke snapping helpers were not found.");
-        Assert(Math.Abs((double)svgSnap.Invoke(null, new object[] { 100.9, 1.0 })! - 100.5) < 0.000001, "SVG odd-width guide strokes should snap to the nearest half-pixel center, not always upward.");
-        Assert(Math.Abs((double)svgSnap.Invoke(null, new object[] { 100.1, 1.0 })! - 100.5) < 0.000001, "SVG odd-width guide strokes should snap to the nearest half-pixel center from either side.");
-        Assert(Math.Abs((double)svgSnap.Invoke(null, new object[] { 100.0, 1.0 })! - 100.5) < 0.000001, "SVG integer guide strokes should snap to their own half-pixel center.");
-        Assert(Math.Abs((double)svgSnap.Invoke(null, new object[] { 101.0, 1.0 })! - 101.5) < 0.000001, "SVG integer guide strokes should not collapse with neighboring guide lines.");
-        Assert(Math.Abs((double)pngSnap.Invoke(null, new object[] { 100.9, 1.0 })! - 100.5) < 0.000001, "PNG guide strokes should use the same nearest half-pixel snapping.");
-        Assert(Math.Abs((double)pngSnap.Invoke(null, new object[] { 101.0, 1.0 })! - 101.5) < 0.000001, "PNG guide strokes should use non-banker half-pixel snapping at integer ties.");
-    }
-
     private static void FunnelZeroStageAvoidsFakeDropoffGuide() {
         var chart = Chart.Create()
             .WithSize(920, 560)
             .WithTheme(ChartTheme.ReportLight())
             .WithXLabels("Opened", "Deferred", "Closed")
-            .AddFunnel("Review flow", Points(100, 0, 18));
+            .AddFunnel("Review flow", Points(100, 0, 18)).WithDataLabels();
         var svg = chart.ToSvg("zero-stage-funnel");
-        Assert(svg.Contains("data-cfx-role=\"funnel-zero-label\"", StringComparison.Ordinal), "Zero-value funnel stages should render as an inline stage label.");
+        var prepared = PreparedFamily(chart);
+        Assert(FamilyLabels(prepared, "funnel-label").Any(label => FamilyContent(label) == "Deferred: 0"), "Zero-value funnel stages should retain a visible inline label.");
         Assert(!svg.Contains("data-cfx-role=\"funnel-zero-label-backdrop\"", StringComparison.Ordinal), "Zero-value funnel labels should avoid floating callout panels.");
         Assert(!svg.Contains("prev stage was 0", StringComparison.Ordinal), "Funnel stages after a zero stage should not show fake previous-stage drop-off text.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"funnel-dropoff-line\"") == 1, "Funnel drop-off guide lines should be omitted when the previous stage is zero.");
+        Assert(FamilyGroups(prepared, "funnel-stage")[2].Metadata["data-cfx-dropoff-defined"] == "false", "Funnel drop-off must remain undefined when its previous stage is zero.");
+        Assert(FamilyLabels(prepared, "funnel-ratio").Any(label => FamilyContent(label).Contains("No previous baseline")), "The undefined zero-stage baseline should have an honest visible caption.");
         Assert(chart.ToPng().Length > 64, "Zero-value funnel stage polish should render PNG output.");
     }
 
@@ -276,7 +272,8 @@ internal static partial class SmokeTests {
 
     private static void AssertPremiumHtmlShell(string html, bool centered, string label) {
         Assert(html.Contains("body{margin:0;min-height:100vh;min-height:100svh", StringComparison.Ordinal), label + " should use the shared viewport-safe body shell.");
-        Assert(html.Contains("linear-gradient(180deg", StringComparison.Ordinal), label + " should use the shared polished surface gradient.");
+        Assert(label == "chart grid HTML page" ? html.Contains("background:", StringComparison.Ordinal) && !html.Contains("linear-gradient(180deg", StringComparison.Ordinal)
+            : html.Contains("linear-gradient(180deg", StringComparison.Ordinal), label + " should use its shared flat or gradient page surface policy.");
         Assert(html.Contains("-webkit-font-smoothing:antialiased", StringComparison.Ordinal) && html.Contains("text-rendering:geometricPrecision", StringComparison.Ordinal), label + " should request browser text polish.");
         Assert(html.Contains("@media print{body{min-height:auto", StringComparison.Ordinal) && html.Contains("background:transparent", StringComparison.Ordinal), label + " should include shared print framing.");
         if (label == "chart HTML page" || label == "visual block HTML page") {

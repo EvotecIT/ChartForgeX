@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 using ChartForgeX.SvgRaster;
 using ChartForgeX.Typography;
 
@@ -23,8 +24,8 @@ internal static partial class SmokeTests {
             .WithAxisTitleStyle(style => style.WithFontFamily("serif").WithFontSize(32).WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithTextCase(TextCaseTransform.Uppercase));
         var styled = styledChart.ToSvg();
 
-        Assert(CountOccurrences(styled, "data-cfx-role=\"x-axis-label\"") < CountOccurrences(regular, "data-cfx-role=\"x-axis-label\""), "SVG tick density should measure resolved family, size, italic, and transformed casing before selecting labels.");
-        Assert(GetAttribute(styled, "data-cfx-role=\"x-axis-label\"", "y") < GetAttribute(regular, "data-cfx-role=\"x-axis-label\"", "y"), "SVG plot allocation should move upward to reserve a larger styled axis title.");
+        Assert(CountOccurrences(styled, "data-cfx-role=\"axis-x-label\"") < CountOccurrences(regular, "data-cfx-role=\"axis-x-label\""), "SVG tick density should measure resolved family, size, italic, and transformed casing before selecting labels.");
+        Assert(GetAttribute(styled, "data-cfx-role=\"axis-x-label\"", "y") < GetAttribute(regular, "data-cfx-role=\"axis-x-label\"", "y"), "SVG plot allocation should move upward to reserve a larger styled axis title.");
         Assert(styled.Contains(">DELIVERY STATUS</text>", StringComparison.Ordinal) && styled.Contains("font-size=\"32\"", StringComparison.Ordinal), "SVG axis titles should serialize their resolved text and size after layout.");
     }
 
@@ -40,20 +41,22 @@ internal static partial class SmokeTests {
             .WithSuperscript()
             .WithTextCase(TextCaseTransform.Uppercase));
 
-        var pie = Chart.Create().WithSize(560, 360).WithXLabels("north region", "south region").AddDonut("Coverage", Points(62, 38));
+        var pie = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 360).WithXLabels("north region", "south region").AddDonut("Coverage", Points(62, 38));
         var plainPiePng = pie.ToPng();
         ApplyLegendStyle(pie);
         var pieSvg = pie.ToSvg();
-        Assert(pieSvg.Contains("data-cfx-role=\"slice-legend-label\"", StringComparison.Ordinal) && pieSvg.Contains(">NORTH REGION</tspan>", StringComparison.Ordinal), "Pie, donut, and polar-area legends should apply legend casing before fitting.");
-        Assert(pieSvg.Contains("fill=\"#D946EF\"", StringComparison.Ordinal) && pieSvg.Contains("font-family=\"monospace\"", StringComparison.Ordinal) && pieSvg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && pieSvg.Contains("baseline-shift=\"super\"", StringComparison.Ordinal), "Custom slice legends should preserve the complete legend style in SVG.");
+        Assert(pieSvg.Contains("data-cfx-role=\"legend-label\"", StringComparison.Ordinal) && pieSvg.Contains(">NORTH REGION</text>", StringComparison.Ordinal), "Radial legends should apply legend casing before fitting.");
+        AssertNativeStyledText(pie, "legend-label", "NORTH REGION", 18 * .65, "#D946EF", "monospace", true);
         Assert(!plainPiePng.SequenceEqual(pie.ToPng()), "Custom slice legends should preserve the complete legend style in raster output.");
 
-        var radial = Chart.Create().WithSize(560, 360).WithXLabels("mail controls", "dns controls").AddRadialBar("Coverage", Points(82, 71));
+        var radial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 360).WithXLabels("mail controls", "dns controls").AddRadialBar("Coverage", Points(82, 71));
         var plainRadialPng = radial.ToPng();
         ApplyLegendStyle(radial);
         var radialSvg = radial.ToSvg();
-        Assert(radialSvg.Contains("data-cfx-role=\"radial-bar-legend-label\"", StringComparison.Ordinal) && radialSvg.Contains(">MAIL CONTROLS</tspan>", StringComparison.Ordinal), "Radial-bar legends should apply legend casing before fitting.");
-        Assert(radialSvg.Contains("fill=\"#D946EF\"", StringComparison.Ordinal) && radialSvg.Contains("text-decoration=\"line-through\"", StringComparison.Ordinal) && radialSvg.Contains("text-decoration-style=\"wavy\"", StringComparison.Ordinal), "Radial-bar legends should preserve color and independent decoration styles in SVG.");
+        Assert(radialSvg.Contains("data-cfx-role=\"legend-label\"", StringComparison.Ordinal) && radialSvg.Contains(">MAIL CONTROLS</text>", StringComparison.Ordinal), "Radial-bar legends should apply legend casing before fitting.");
+        AssertNativeStyledText(radial, "legend-label", "MAIL CONTROLS", 18 * .65, "#D946EF", "monospace", true);
+        Assert(PrepareForTypography(radial).Scene.Nodes.OfType<VisualScenePath>().Any(node => node.Role == "text-decoration"),
+            "Wavy legend strike decorations should be materialized as shared geometry.");
         Assert(!plainRadialPng.SequenceEqual(radial.ToPng()), "Radial-bar legends should preserve the complete legend style in raster output.");
     }
 
@@ -79,23 +82,25 @@ internal static partial class SmokeTests {
         var svg = heatmap.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"heatmap-row-label\"", StringComparison.Ordinal) && svg.Contains(">PRIMARY DOMAINS</text>", StringComparison.Ordinal), "Heatmap row axes should apply tick casing before fitting.");
         Assert(svg.Contains("data-cfx-role=\"heatmap-column-label\"", StringComparison.Ordinal) && svg.Contains(">MAIL AUTH</text>", StringComparison.Ordinal), "Heatmap column axes should apply tick casing before fitting.");
-        Assert(svg.Contains("fill=\"#D946EF\"", StringComparison.Ordinal) && svg.Contains("font-family=\"monospace\"", StringComparison.Ordinal) && svg.Contains("font-style=\"italic\"", StringComparison.Ordinal) && svg.Contains("text-decoration-style=\"dashed\"", StringComparison.Ordinal) && svg.Contains("baseline-shift=\"super\"", StringComparison.Ordinal), "Heatmap axes and scale labels should preserve the complete tick style in SVG.");
+        AssertNativeStyledText(heatmap, "heatmap-row-label", "PRIMARY DOMAINS", 17 * .65, "#D946EF", "monospace", true);
+        Assert(PrepareForTypography(heatmap).Scene.Nodes.OfType<VisualSceneLine>().Any(node => node.Role == "text-decoration" && node.Dash != null),
+            "Dashed tick underlines should be materialized as native geometry.");
         Assert(!plainPng.SequenceEqual(heatmap.ToPng()), "Heatmap row, column, and scale labels should preserve tick styles in raster output.");
 
         AssertSpecializedTickStyle(
             Chart.Create().WithSize(640, 360).AddCalendarHeatmap("Commits", new[] {
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 7),
                 new ChartCalendarHeatmapItem(new DateTime(2026, 2, 2), 12)
-            }), "calendar-heatmap-weekday-label", "MON");
+            }), "calendar-weekday", "MON");
         AssertSpecializedTickStyle(
             Chart.Create().WithSize(640, 360).WithXLabels("mail", "dns").AddHexbinHeatmapRow("primary domains", Points(82, 91)),
-            "hexbin-heatmap-row-label", "PRIMARY DOMAINS");
+            "heatmap-row-label", "PRIMARY DOMAINS");
         AssertSpecializedTickStyle(
             Chart.Create().WithSize(640, 360).AddTimelineItem("certificate renewal", new DateTime(2026, 1, 5), new DateTime(2026, 2, 5)),
-            "timeline-row-label", "CERTIFICATE RENEWAL");
+            "schedule-row-label", "CERTIFICATE RENEWAL");
         AssertSpecializedTickStyle(
             Chart.Create().WithSize(640, 360).WithGanttToday(new DateTime(2026, 1, 15)).AddGanttTask("inventory scope", new DateTime(2026, 1, 5), new DateTime(2026, 2, 5), 0.6),
-            "gantt-row-label", "INVENTORY SCOPE");
+            "schedule-row-label", "INVENTORY SCOPE");
         AssertSpecializedTickStyle(
             Chart.Create().WithSize(640, 360).WithXLabels("mail", "dns", "web").AddRadar("Coverage", Points(92, 81, 74)),
             "radar-axis-label", "MAIL");
@@ -107,7 +112,7 @@ internal static partial class SmokeTests {
             "progress-label", "MAIL AUTH");
         AssertSpecializedTickStyle(
             Chart.Create().WithSize(700, 420).AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 95) }),
-            "tile-map-scale-label", "LESS");
+            "map-scale-label", "LESS");
 
         static void AssertSpecializedTickStyle(Chart chart, string role, string expectedText) {
             var plain = chart.ToPng();
@@ -121,8 +126,8 @@ internal static partial class SmokeTests {
                 .WithSuperscript()
                 .WithTextCase(TextCaseTransform.Uppercase));
             var styled = chart.ToSvg();
-            Assert(styled.Contains("data-cfx-role=\"" + role + "\"", StringComparison.Ordinal) && styled.Contains(">" + expectedText + "</text>", StringComparison.Ordinal), role + " should apply transformed tick text.");
             Assert(styled.Contains("fill=\"#D946EF\"", StringComparison.Ordinal) && styled.Contains("font-family=\"monospace\"", StringComparison.Ordinal) && styled.Contains("font-style=\"italic\"", StringComparison.Ordinal), role + " should preserve tick color, family, and italic style in SVG.");
+            AssertNativeStyledText(chart, role, expectedText, 17 * .65, "#D946EF", "monospace", true, allowPrefix: true);
             Assert(!plain.SequenceEqual(chart.ToPng()), role + " should preserve tick styles in raster output.");
         }
     }
@@ -150,15 +155,27 @@ internal static partial class SmokeTests {
     private static void FunnelGalleryTextStaysReadable() {
         var svg = Chart.Create()
             .WithSize(920, 560)
+            .WithDataLabels()
             .WithXLabels("Opened", "Deferred", "Closed")
             .AddFunnel("Review flow", Points(100, 0, 18))
             .ToSvg();
         var document = XDocument.Parse(svg);
         var ns = document.Root!.Name.Namespace;
-        var funnelText = document.Descendants(ns + "text")
-            .Where(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("funnel-", StringComparison.Ordinal) == true)
-            .ToArray();
+        var funnelText = document.Descendants().Where(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("funnel-", StringComparison.Ordinal) == true)
+            .SelectMany(element => element.Elements(ns + "text")).ToArray();
         Assert(funnelText.Length > 0, "The zero-stage funnel regression should retain its accessible visible labels.");
         Assert(funnelText.All(element => double.Parse(element.Attribute("font-size")!.Value, CultureInfo.InvariantCulture) >= 8), "Funnel labels should never shrink below the gallery's readable SVG threshold.");
+    }
+
+    private static PreparedVisual PrepareForTypography(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+
+    private static void AssertNativeStyledText(Chart chart, string role, string expected, double size, string color,
+        string family, bool italic, bool allowPrefix = false) {
+        var nodes = PrepareForTypography(chart).Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == role).ToArray();
+        var matching = nodes.Where(node => node.Text.Lines.Any(line => allowPrefix ? line.Text.StartsWith(expected, StringComparison.Ordinal) : line.Text == expected)).ToArray();
+        Assert(matching.Length > 0, role + " should retain the transformed source text.");
+        Assert(matching.All(node => Math.Abs(node.Text.Size - size) < .001 && node.Color.ToCss() == color
+            && node.Text.Style.Font.Family == family && node.Text.Style.Font.Italic == italic
+            && node.Text.Style.Baseline == TextBaseline.Normal), role + " should retain resolved font, color and script size without a second baseline shift.");
     }
 }

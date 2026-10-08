@@ -39,10 +39,12 @@ internal static class ChartGuards {
         return points;
     }
 
-    public static void RenderCompatibility(Chart chart) {
+    // Native preparation represents supported empty/all-zero data with a no-data scene.
+    // The default retains the stricter preconditions of remaining legacy model callers.
+    public static void RenderCompatibility(Chart chart, bool preparing = false) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.ValidateHourWeekdayHeatmapOwnership();
-        ValidateRenderableChart(chart);
+        ValidateRenderableChart(chart, preparing);
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
@@ -53,11 +55,11 @@ internal static class ChartGuards {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts support exactly one series.");
         }
 
-        if (ChartSeriesKindTraits.RequiresPositiveValues(exclusiveKinds[0]) && !chart.Series[0].Points.Any(point => point.Y > 0)) {
+        if (!preparing && ChartSeriesKindTraits.RequiresPositiveValues(exclusiveKinds[0]) && !chart.Series[0].Points.Any(point => point.Y > 0)) {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts require at least one positive value.");
         }
 
-        if (exclusiveKinds[0] == ChartSeriesKind.Waterfall && chart.Series[0].Points.Count == 0) {
+        if (!preparing && exclusiveKinds[0] == ChartSeriesKind.Waterfall && chart.Series[0].Points.Count == 0) {
             throw new InvalidOperationException("Waterfall charts require at least one value.");
         }
 
@@ -67,7 +69,7 @@ internal static class ChartGuards {
                 .SelectMany(series => series.Points.Select(point => point.X))
                 .Distinct()
                 .Count();
-            if (categoryCount < 3) throw new InvalidOperationException("Radar charts require at least three categories.");
+            if (categoryCount < 3 && (!preparing || categoryCount > 0)) throw new InvalidOperationException("Radar charts require at least three categories.");
         }
 
         if (exclusiveKinds[0] == ChartSeriesKind.Polar) {
@@ -75,18 +77,18 @@ internal static class ChartGuards {
                 throw new InvalidOperationException("Polar charts require a non-negative radial-axis minimum.");
             }
 
-            if (!chart.Series.SelectMany(series => series.Points).Any(point => point.Y > 0)) {
+            if (!preparing && !chart.Series.SelectMany(series => series.Points).Any(point => point.Y > 0)) {
                 throw new InvalidOperationException("Polar charts require at least one positive radius.");
             }
         }
 
-        ValidateSpecializedShape(chart, exclusiveKinds[0]);
+        ValidateSpecializedShape(chart, exclusiveKinds[0], preparing);
     }
 
-    private static void ValidateRenderableChart(Chart chart) {
+    private static void ValidateRenderableChart(Chart chart, bool preparing) {
         for (var i = 0; i < chart.Series.Count; i++) {
             if (chart.Series[i] == null) throw new InvalidOperationException("Chart series collection must not contain null entries.");
-            ValidateSeriesShape(chart.Series[i]);
+            ValidateSeriesShape(chart.Series[i], preparing);
         }
 
         for (var i = 0; i < chart.Annotations.Count; i++) {
@@ -104,10 +106,14 @@ internal static class ChartGuards {
         }
     }
 
-    private static void ValidateSeriesShape(ChartSeries series) {
-        if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter)
-            throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, and scatter series.");
+    private static void ValidateSeriesShape(ChartSeries series, bool preparing) {
+        if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
+            && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea)
+            throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, stacked-area, range-band, range-area, and scatter series.");
         if (series.HistogramBinLayout != null) ValidateHistogramSeries(series);
+        // An empty tuple series is a native no-data scene; incomplete nonempty tuples
+        // still pass through the same canonical shape validation below.
+        if (preparing && series.Points.Count == 0) return;
         if (series.Kind == ChartSeriesKind.Bubble) {
             ValidateTupleSeries(series, 2, "Bubble");
             for (var i = 0; i + 1 < series.Points.Count; i += 2) {
@@ -186,31 +192,32 @@ internal static class ChartGuards {
         if (Math.Abs(first.X - second.X) > 0.000001) throw new InvalidOperationException(message);
     }
 
-    private static void ValidateSpecializedShape(Chart chart, ChartSeriesKind kind) {
+    private static void ValidateSpecializedShape(Chart chart, ChartSeriesKind kind, bool preparing) {
         if (kind == ChartSeriesKind.Heatmap || kind == ChartSeriesKind.HexbinHeatmap) {
             // Fully masked rows keep their position (for example a weekday with no samples) when the column span is known.
-            ValidateMinimumPointCount(chart.Series.Where(series => !series.HeatmapColumnCount.HasValue).ToArray(), kind, 1);
+            if (!preparing || chart.Series.Any(series => series.Points.Count > 0))
+                ValidateMinimumPointCount(chart.Series.Where(series => !series.HeatmapColumnCount.HasValue).ToArray(), kind, 1);
             // A categorical matrix may list entities nothing is known about, so it can be empty; a numeric one cannot.
-            if (!chart.Series.Any(series => series.Points.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
+            if (!preparing && !chart.Series.Any(series => series.Points.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
             if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
             if (chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
                 throw new InvalidOperationException("Relative (count) heatmaps use a neutral sequential scale; the semantic status scale is reserved for status data.");
             }
         }
         else if (kind == ChartSeriesKind.CalendarHeatmap) {
-            ValidateMinimumPointCount(chart.Series, kind, 1);
+            if (!preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
             ValidateNonNegativeValues(chart.Series[0], kind);
         }
-        else if (kind == ChartSeriesKind.DottedMap) ValidateMinimumPointCount(chart.Series, kind, 1);
+        else if (kind == ChartSeriesKind.DottedMap && !preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
         else if (kind == ChartSeriesKind.TileMap || kind == ChartSeriesKind.RegionMap) {
-            ValidateMinimumPointCount(chart.Series, kind, 1);
+            if (!preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
             ValidateNonNegativeValues(chart.Series[0], kind);
         }
         else if (kind == ChartSeriesKind.Gauge || kind == ChartSeriesKind.Circle) ValidateScalePair(chart.Series[0], kind.ToString());
-        else if (kind == ChartSeriesKind.RadialBar) ValidateRadialBar(chart.Series[0]);
-        else if (kind == ChartSeriesKind.LayeredRadial) ValidateLayeredRadial(chart.Series[0]);
+        else if (kind == ChartSeriesKind.RadialBar) ValidateRadialBar(chart.Series[0], preparing);
+        else if (kind == ChartSeriesKind.LayeredRadial) ValidateLayeredRadial(chart.Series[0], preparing);
         else if (kind == ChartSeriesKind.Polar) {
-            ValidateMinimumPointCount(chart.Series, kind, 1);
+            if (!preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
             foreach (var series in chart.Series) ValidateNonNegativeValues(series, kind);
         }
         else if (kind == ChartSeriesKind.Bullet) ValidateBullets(chart.Series);
@@ -218,9 +225,8 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.StateTimeline) ValidateStateTimeline(chart);
         else if (kind == ChartSeriesKind.GanttLane) ValidateGanttLanes(chart);
         else if (kind == ChartSeriesKind.Gantt) ValidateGantt(chart.Series);
-        else if (kind == ChartSeriesKind.Sankey) ValidateSankey(chart.Series[0]);
-        else if (kind == ChartSeriesKind.Tree) ValidateTree(chart.Series[0]);
-        else if (kind == ChartSeriesKind.Sunburst) ValidateTree(chart.Series[0]);
+        else if (kind == ChartSeriesKind.Sankey && (!preparing || chart.Series[0].Points.Count > 0)) ValidateSankey(chart.Series[0]);
+        else if ((kind == ChartSeriesKind.Tree || kind == ChartSeriesKind.Sunburst) && (!preparing || chart.Series[0].Points.Count > 0)) ValidateTree(chart.Series[0]);
         else if (kind == ChartSeriesKind.Funnel || kind == ChartSeriesKind.Treemap || kind == ChartSeriesKind.Pie || kind == ChartSeriesKind.Donut || kind == ChartSeriesKind.PolarArea || kind == ChartSeriesKind.Pictorial || kind == ChartSeriesKind.ProgressBar || kind == ChartSeriesKind.WordCloud) ValidateNonNegativeValues(chart.Series[0], kind);
     }
 
@@ -235,16 +241,17 @@ internal static class ChartGuards {
         if (series.Points[1].X <= series.Points[0].X) throw new InvalidOperationException(chartName + " chart maximum must be greater than minimum.");
     }
 
-    private static void ValidateRadialBar(ChartSeries series) {
-        if (series.Points.Count == 0) throw new InvalidOperationException("RadialBar charts require at least one value.");
+    private static void ValidateRadialBar(ChartSeries series, bool preparing) {
+        if (!preparing && series.Points.Count == 0) throw new InvalidOperationException("RadialBar charts require at least one value.");
         foreach (var point in series.Points) {
             if (point.Y < 0 || point.Y > 100) throw new InvalidOperationException("RadialBar chart values must be between zero and 100.");
         }
     }
 
-    private static void ValidateLayeredRadial(ChartSeries series) {
-        if (series.RadialLayers.Count == 0) throw new InvalidOperationException("LayeredRadial charts require at least one layer.");
+    private static void ValidateLayeredRadial(ChartSeries series, bool preparing) {
+        if (!preparing && series.RadialLayers.Count == 0) throw new InvalidOperationException("LayeredRadial charts require at least one layer.");
         foreach (var layer in series.RadialLayers) {
+            if (layer == null) throw new InvalidOperationException("LayeredRadial layers must not contain null entries.");
             if (layer.Maximum <= layer.Minimum) throw new InvalidOperationException("LayeredRadial layer maximum must be greater than minimum.");
         }
     }

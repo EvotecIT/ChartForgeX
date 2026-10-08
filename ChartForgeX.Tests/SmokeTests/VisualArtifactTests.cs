@@ -217,15 +217,34 @@ internal static partial class SmokeTests {
         scaleWatermark.Opacity = 1;
         var scaleOneOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 } };
         var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 } };
+        var scaleOnePlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
+        var scaleTwoPlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
         scaleOneOptions.Watermarks.Add(scaleWatermark);
         scaleTwoOptions.Watermarks.Add(scaleWatermark);
-        var scaleOnePlain = RasterImageDecoder.Decode(topology.ToPng(new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 1 }));
-        var scaleTwoPlain = RasterImageDecoder.Decode(topology.ToPng(new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 }));
         var scaleOneDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
         var scaleTwoDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
-        var scaleOneChanged = CountChangedPixels(scaleOnePlain, scaleOneDecorated);
-        var scaleTwoChanged = CountChangedPixels(scaleTwoPlain, scaleTwoDecorated);
-        Assert(scaleTwoChanged > scaleOneChanged * 3, "PNG watermark geometry should scale with topology output scale instead of shrinking relative to the rendered chart.");
+        Assert(scaleWatermark.Scale == 1 && scaleWatermark.FontSize == 20 && scaleWatermark.Opacity == 1
+            && scaleWatermark.Anchor == VisualCanvasAnchor.Center && scaleWatermark.OffsetX == 0 && scaleWatermark.OffsetY == 0,
+            "Artifact rendering should preserve the caller's watermark sizing and placement options.");
+        Assert(scaleTwoPlain.Width == scaleOnePlain.Width * 2 && scaleTwoPlain.Height == scaleOnePlain.Height * 2,
+            "Topology output scale should double both raster dimensions without changing the logical viewport.");
+        // Compare the artifact's logical-to-raster transform with an explicitly scaled watermark
+        // on that same pixel canvas. Host fonts can have different ink-area ratios at 20 and 40px.
+        var scaleOneExpected = VisualWatermarkRendering.ApplyToImage(scaleOnePlain, new[] { scaleWatermark });
+        RgbaImage scaleTwoExpected;
+        var originalWatermarkScale = scaleWatermark.Scale;
+        try {
+            scaleWatermark.Scale = originalWatermarkScale * 2;
+            scaleTwoExpected = VisualWatermarkRendering.ApplyToImage(scaleTwoPlain, new[] { scaleWatermark });
+        } finally { scaleWatermark.Scale = originalWatermarkScale; }
+        Assert(!scaleOnePlain.Pixels.SequenceEqual(scaleOneDecorated.Pixels) && !scaleTwoPlain.Pixels.SequenceEqual(scaleTwoDecorated.Pixels),
+            "Both output densities should paint a visible text watermark.");
+        Assert(scaleOneExpected.Width == scaleOneDecorated.Width && scaleOneExpected.Height == scaleOneDecorated.Height
+            && scaleOneExpected.Pixels.SequenceEqual(scaleOneDecorated.Pixels),
+            "Density-one artifact watermarking should match direct decoration of the same pixel canvas.");
+        Assert(scaleTwoExpected.Width == scaleTwoDecorated.Width && scaleTwoExpected.Height == scaleTwoDecorated.Height
+            && scaleTwoExpected.Pixels.SequenceEqual(scaleTwoDecorated.Pixels),
+            "Density-two artifact watermarking should match an explicitly doubled text watermark, including placement and alpha.");
 
         var wideTopology = TopologyChart.Create()
             .WithViewport(320, 180, 16)
@@ -235,7 +254,6 @@ internal static partial class SmokeTests {
             .AddNode("wide-right", "Right", 540, 58, groupId: "wide")
             .AddEdge("wide-edge", "wide-left", "wide-right");
         var fittedTopologyOptions = new TopologyRenderOptions { IncludeLegend = false }.WithFitContentToViewport();
-        var preparedWideTopology = TopologyLayoutEngine.Prepare(wideTopology, fittedTopologyOptions.View, fittedTopologyOptions);
         var fittedWatermark = VisualWatermark.FromImage(PngWriter.WriteRgba(new RgbaImage(1, 1, new byte[] { 255, 0, 255, 255 })), "image/png");
         fittedWatermark.Anchor = VisualCanvasAnchor.BottomRight;
         fittedWatermark.Padding = 4;
@@ -250,17 +268,23 @@ internal static partial class SmokeTests {
         wideArtifact.NaturalSize = new VisualArtifactSize(wideTopology.Viewport.Width, wideTopology.Viewport.Height);
         wideArtifact.PreserveNaturalSize = true;
         var wideDecorated = RasterImageDecoder.Decode(wideArtifact.ToPng(fittedArtifactOptions));
-        var fittedScale = Math.Min(wideDecorated.Width / preparedWideTopology.Viewport.Width, wideDecorated.Height / preparedWideTopology.Viewport.Height);
-        var fittedRight = preparedWideTopology.Viewport.Width * fittedScale;
-        var fittedBottom = preparedWideTopology.Viewport.Height * fittedScale;
-        var fittedCenterX = (int)Math.Round(fittedRight - (fittedWatermark.Padding + fittedWatermark.Width.Value / 2) * fittedScale);
-        var fittedCenterY = (int)Math.Round(fittedBottom - (fittedWatermark.Padding + fittedWatermark.Height.Value / 2) * fittedScale);
-        Assert(fittedBottom < wideDecorated.Height - 20, "The fitted topology fixture should expose a visible bottom letterbox for watermark alignment coverage.");
-        Assert(IsPixelNear(wideDecorated.Pixels, wideDecorated.Width, fittedCenterX, fittedCenterY, 255, 0, 255), "PNG watermarks should anchor inside the fitted SVG content extent rather than the destination letterbox.");
-        var justBelowFittedFrame = ((int)Math.Ceiling(fittedBottom + 2) * wideDecorated.Width + fittedCenterX) * 4;
-        Assert(wideDecorated.Pixels[justBelowFittedFrame] == widePlain.Pixels[justBelowFittedFrame] && wideDecorated.Pixels[justBelowFittedFrame + 1] == widePlain.Pixels[justBelowFittedFrame + 1] && wideDecorated.Pixels[justBelowFittedFrame + 2] == widePlain.Pixels[justBelowFittedFrame + 2] && wideDecorated.Pixels[justBelowFittedFrame + 3] == widePlain.Pixels[justBelowFittedFrame + 3], "Rotated PNG watermarks should be clipped at the fitted SVG content frame.");
-        var destinationBottom = ((wideDecorated.Height - 8) * wideDecorated.Width + wideDecorated.Width - 8) * 4;
-        Assert(wideDecorated.Pixels[destinationBottom] == widePlain.Pixels[destinationBottom] && wideDecorated.Pixels[destinationBottom + 1] == widePlain.Pixels[destinationBottom + 1] && wideDecorated.Pixels[destinationBottom + 2] == widePlain.Pixels[destinationBottom + 2] && wideDecorated.Pixels[destinationBottom + 3] == widePlain.Pixels[destinationBottom + 3], "Bottom-right watermark anchoring should not paint into fitted-content letterboxing.");
+        // Prepared topology already fits its content inside the exported SVG root. Its watermark
+        // anchors to that same full canvas; internal diagram fitting is not another image viewport.
+        var fittedCenterX = wideDecorated.Width - (int)(fittedWatermark.Padding + fittedWatermark.Width.Value / 2);
+        var fittedCenterY = wideDecorated.Height - (int)(fittedWatermark.Padding + fittedWatermark.Height.Value / 2);
+        Assert(IsPixelNear(wideDecorated.Pixels, wideDecorated.Width, fittedCenterX, fittedCenterY, 255, 0, 255),
+            "Native topology watermarks should use the same exported root canvas as SVG watermarks.");
+        Assert(widePlain.Width == wideDecorated.Width && widePlain.Height == wideDecorated.Height,
+            "Watermark decoration should preserve the prepared topology's output dimensions.");
+
+        // A genuinely letterboxed host image still clips the decoration to the fitted SVG root.
+        var letterboxed = VisualWatermarkRendering.ApplyToImage(new RgbaImage(320, 180, new byte[320 * 180 * 4]), wideArtifact,
+            "<svg width=\"640\" height=\"240\" viewBox=\"0 0 640 240\" preserveAspectRatio=\"xMidYMid meet\"></svg>", new[] { fittedWatermark });
+        Assert(IsPixelNear(letterboxed.Pixels, letterboxed.Width, 314, 144, 255, 0, 255),
+            "Letterboxed image watermarks should anchor to the centered fitted SVG extent.");
+        Assert(letterboxed.Pixels[(152 * letterboxed.Width + 314) * 4 + 3] == 0
+            && letterboxed.Pixels[(172 * letterboxed.Width + 312) * 4 + 3] == 0,
+            "Rotated watermark ink should remain clipped above the bottom letterbox.");
 
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/png\" onload=\"alert(1)"), "Image watermarks should reject attribute-breaking media types.");
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(pngBytes, "image/jpeg"), "Image watermarks should reject media types that do not match the bytes.");
@@ -279,17 +303,6 @@ internal static partial class SmokeTests {
         var renderedX = double.Parse(renderedMark.Attribute("x")!.Value, CultureInfo.InvariantCulture);
         Assert(renderedX > 300, "Watermark placement should follow current rendered dimensions when natural-size preservation is disabled.");
 
-        static int CountChangedPixels(RgbaImage plainImage, RgbaImage decoratedImage) {
-            Assert(plainImage.Width == decoratedImage.Width && plainImage.Height == decoratedImage.Height, "Compared watermark images should have matching dimensions.");
-            var changed = 0;
-            for (var index = 0; index < plainImage.Pixels.Length; index += 4) {
-                if (plainImage.Pixels[index] != decoratedImage.Pixels[index] ||
-                    plainImage.Pixels[index + 1] != decoratedImage.Pixels[index + 1] ||
-                    plainImage.Pixels[index + 2] != decoratedImage.Pixels[index + 2] ||
-                    plainImage.Pixels[index + 3] != decoratedImage.Pixels[index + 3]) changed++;
-            }
-            return changed;
-        }
     }
 
     private static void CompositeCfxSurfacesShareTheOfficeArtifactHandoff() {

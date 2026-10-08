@@ -1,0 +1,20 @@
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var model = CreateSequence();
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), VisualTheme.Graphite(), VisualThemeMode.Light,
+    new VisualFrame("Client and server exchange", "Product-neutral diagram semantics", showLegend: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+System.IO.File.WriteAllText("diagram.svg", prepared.ToSvg());
+System.IO.File.WriteAllBytes("diagram.png", prepared.ToPng());
+
+static SequenceArtifact CreateSequence() => SequenceArtifact.Create("session").WithSize(640, 400)
+        .AddParticipant("client", "Client").AddParticipant("server", "Server")
+        .AddMessage("client", "server", "Request\npayload")
+        .AddMessage("server", "client", "Response", SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return);

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
 using Xunit;
@@ -92,22 +93,26 @@ public sealed class ChartMarkStyleParityTests {
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public void PaletteSliceGradientChangesAcrossBothObjectAxes(int density) {
+    public void PaletteSliceKeepsItsCanonicalSolidPaintAcrossBothObjectAxes(int density) {
         var chart = ChartMarkParityFixture.Create("pie-full", 255, density);
-        var svg = XDocument.Parse(chart.ToSvg());
-        var slice = svg.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "pie-slice");
-        var coordinates = ((string)slice.Attribute("d")!).Split(' ');
-        var cx = double.Parse(coordinates[1], CultureInfo.InvariantCulture);
-        var cy = double.Parse(coordinates[2], CultureInfo.InvariantCulture);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var slice = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "pie-slice");
+        var cx = slice.Cx;
+        var cy = slice.Cy;
+        var color = chart.Options.Theme.Palette[0];
+        Assert.Equal(color, slice.Fill);
         var image = chart.ToRgbaImage();
         var reference = SvgRasterizer.Rasterize(chart.ToSvg(), image.Width, image.Height).Image;
         foreach (var offset in new[] { (-30, 0), (30, 0), (0, -30), (0, 30) }) {
             var x = (int)(cx * density) + offset.Item1 * density;
             var y = (int)(cy * density) + offset.Item2 * density;
             Assert.InRange(Math.Abs(Alpha(image, x, y) - Alpha(reference, x, y)), 0, 2);
+            var pixel = (y * image.Width + x) * 4;
+            Assert.Equal(color.R, image.Pixels[pixel]);
+            Assert.Equal(color.G, image.Pixels[pixel + 1]);
+            Assert.Equal(color.B, image.Pixels[pixel + 2]);
+            Assert.Equal(color.A, image.Pixels[pixel + 3]);
         }
-        Assert.True(Alpha(image, (int)(cx * density) - 30 * density, (int)(cy * density)) >
-            Alpha(image, (int)(cx * density) + 30 * density, (int)(cy * density)) + 15);
     }
 
     [Theory]

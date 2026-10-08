@@ -23,6 +23,7 @@ internal static partial class SmokeTests {
         Assert(canvas.Theme.Accent.ToHex() == tokens.Accent.ToHex() && canvas.Theme.FontFamily == tokens.FontFamily && canvas.BackgroundTop.ToHex() == tokens.Background.ToHex(), "VisualCanvas should receive the same brand and surface tokens.");
         Assert(topology.Theme != null && topology.Theme.Accent == tokens.Accent.ToCss() && topology.Theme.Healthy == tokens.Positive.ToCss() && topology.Theme.FontFamily == tokens.FontFamily, "Topology should receive the same brand, semantic, and typography tokens.");
         Assert(canvas.ToSvg().Contains("font-family=\"Aptos, sans-serif\"", StringComparison.Ordinal), "VisualCanvas SVG should use its shared token font instead of a renderer-local font stack.");
-        Assert(topology.ToSvg().Contains("font-family:Aptos, sans-serif", StringComparison.Ordinal), "Topology SVG should use the shared token font.");
+        var topologyLabels = TopologyRoleTexts(topology.ToSvg(), "topology-node-label");
+        Assert(topologyLabels.Length > 0 && System.Linq.Enumerable.All(topologyLabels, label => (string?)label.Attribute("font-family") == tokens.FontFamily), "Topology SVG should use the shared token font on rendered labels.");
     }
 }

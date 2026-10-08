@@ -5,6 +5,32 @@ using ChartForgeX.Themes;
 
 internal static class FoundationExamples {
     internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
+        LabelPlacementExamples.Write(output);
+        foreach (var dark in new[] { false, true }) {
+            var clipped = Chart.Create().WithTitle("Series at the plot boundary")
+                .WithSubtitle("Out-of-domain geometry is clipped; edge markers remain visible")
+                .WithSize(640, 400).WithTheme(dark ? ChartTheme.ReportDark() : ChartTheme.ReportLight())
+                .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithLegend(false)
+                .AddArea("Range", new[] { new ChartForgeX.Primitives.ChartPoint(-4, -4), new ChartForgeX.Primitives.ChartPoint(5, 16), new ChartForgeX.Primitives.ChartPoint(14, -4) })
+                .AddScatter("Edge", new[] { new ChartForgeX.Primitives.ChartPoint(0, 5), new ChartForgeX.Primitives.ChartPoint(10, 5) });
+            SaveChart(clipped, output, "foundation-plot-clipping-" + (dark ? "dark" : "light"), pngOutputScale);
+            var histogram = Chart.Create().WithTitle("Aligned histogram intervals")
+                .WithSize(640, 400).WithTheme(dark ? ChartTheme.ReportDark() : ChartTheme.ReportLight())
+                .WithDataLabels().AddHistogram("Measurements", new[] { 28d, 32d, 45d, 52d, 73d, 80d, 98d }, 3);
+            SaveChart(histogram, output, "foundation-histogram-rounding-" + (dark ? "dark" : "light"), pngOutputScale);
+            var map = Chart.Create().WithTitle("Map typography").WithSize(640, 400)
+                .WithTheme(dark ? ChartTheme.ReportDark() : ChartTheme.ReportLight()).WithLegend(false).WithDataLabels()
+                .WithMapViewport(ChartMapViewport.Europe())
+                .AddDottedMap("Places", new[] { new ChartMapPoint("Madrid", -3.7, 40.4), new ChartMapPoint("Warsaw", 21, 52.2) })
+                .AddMapRouteBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw");
+            SaveChart(map, output, "foundation-map-typography-" + (dark ? "dark" : "light"), pngOutputScale);
+            var typographyGrid = ChartGrid.Create().WithTitle("Dashboard typography").WithColumns(2)
+                .WithPngOutputScale(pngOutputScale).Add(map).Add(histogram);
+            var gridName = "foundation-dashboard-typography-" + (dark ? "dark" : "light");
+            typographyGrid.SaveSvg(Path.Combine(output, gridName + ".svg"));
+            typographyGrid.SavePng(Path.Combine(output, gridName + ".png"));
+            typographyGrid.SaveHtml(Path.Combine(output, gridName + ".html"));
+        }
         var samples = ChartDataset<FoundationSample>.From(new[] {
             new FoundationSample("Warsaw", 1, 18),
             new FoundationSample("Warsaw", 2, 42),

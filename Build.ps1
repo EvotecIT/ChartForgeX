@@ -10,6 +10,10 @@ param(
 
     [switch] $UpdateVisualBaseline,
 
+    [string] $ExamplesOutput,
+
+    [string] $PackageOutput,
+
     [ValidateRange(1, 86400)]
     [int] $DotNetCommandTimeoutSeconds = 900,
 
@@ -33,7 +37,8 @@ function Assert-VisualComparisonHealth {
     }
 
     if ($Comparison.healthySvgs -ne $Comparison.chartPairs -or $Comparison.healthyPngs -ne $Comparison.chartPairs -or $Comparison.healthyHtmls -ne $Comparison.chartPairs) {
-        throw "SVG/PNG/HTML comparison health is incomplete: $($Comparison.healthySvgs) SVG(s), $($Comparison.healthyPngs) PNG(s), $($Comparison.healthyHtmls) HTML(s), $($Comparison.chartPairs) chart pair(s). See $ComparisonManifest."
+        $unhealthy = @($Comparison.charts | Where-Object { -not $_.svg.healthy -or -not $_.png.healthy -or -not $_.html.healthy } | ForEach-Object { $_.name }) -join ', '
+        throw "SVG/PNG/HTML comparison health is incomplete: $($Comparison.healthySvgs) SVG(s), $($Comparison.healthyPngs) PNG(s), $($Comparison.healthyHtmls) HTML(s), $($Comparison.chartPairs) chart pair(s). Affected charts: $unhealthy. See $ComparisonManifest."
     }
 
     if ($Comparison.warnings -ne 0) {
@@ -49,8 +54,11 @@ function New-VisualBaseline {
     $updatedCharts = foreach ($chart in $Comparison.charts) {
         [ordered]@{
             name = $chart.name
+            layout = $chart.layout
             width = [int]$chart.svg.width
             height = [int]$chart.svg.height
+            logicalWidth = if ($chart.svg.PSObject.Properties.Name -contains 'logicalWidth') { [double]$chart.svg.logicalWidth } else { [double]$chart.svg.width }
+            logicalHeight = if ($chart.svg.PSObject.Properties.Name -contains 'logicalHeight') { [double]$chart.svg.logicalHeight } else { [double]$chart.svg.height }
             svg = [ordered]@{
                 minVisualNodes = [int][Math]::Max(2, [int][Math]::Floor([double]$chart.svg.visualNodes * 0.5))
                 maxClippedTextNodes = [int]$chart.svg.clippedTextNodes
@@ -109,7 +117,17 @@ function Assert-VisualBaseline {
 
         $actual = $generatedCharts[$expected.name]
         $expectedScale = if ($expected.png.PSObject.Properties.Name -contains 'outputScale') { [int]$expected.png.outputScale } else { 1 }
-        if ($actual.svg.width -ne $expected.width -or $actual.svg.height -ne $expected.height -or $actual.png.width -ne ($expected.width * $expectedScale) -or $actual.png.height -ne ($expected.height * $expectedScale)) {
+        $logicalWidth = if ($actual.svg.PSObject.Properties.Name -contains 'logicalWidth') { [double]$actual.svg.logicalWidth } else { [double]$actual.svg.width }
+        $logicalHeight = if ($actual.svg.PSObject.Properties.Name -contains 'logicalHeight') { [double]$actual.svg.logicalHeight } else { [double]$actual.svg.height }
+        # Old baselines constrain rounded SVG dimensions; allocation still uses the actual
+        # logical viewport. New baselines additionally retain its exact fractional dimensions.
+        $naturalHeight = $expected.layout.heightMode -eq 'natural' -and $actual.layout.heightMode -eq 'natural' -and
+            -not [string]::IsNullOrEmpty($expected.layout.frameFontFingerprint) -and -not [string]::IsNullOrEmpty($actual.layout.frameFontFingerprint) -and
+            $expected.layout.frameFontRequest -ceq $actual.layout.frameFontRequest -and $expected.layout.frameFontFingerprint -cne $actual.layout.frameFontFingerprint
+        $logicalDimensionsChanged = (($expected.PSObject.Properties.Name -contains 'logicalWidth') -and $logicalWidth -ne [double]$expected.logicalWidth) -or
+            (-not $naturalHeight -and ($expected.PSObject.Properties.Name -contains 'logicalHeight') -and $logicalHeight -ne [double]$expected.logicalHeight)
+        if ($actual.svg.width -ne $expected.width -or (-not $naturalHeight -and $actual.svg.height -ne $expected.height) -or $logicalDimensionsChanged -or
+            $actual.png.scale -ne $expectedScale -or $actual.png.width -ne [Math]::Ceiling($logicalWidth * $expectedScale) -or $actual.png.height -ne [Math]::Ceiling($logicalHeight * $expectedScale)) {
             throw "SVG/PNG baseline dimensions changed for $($expected.name). Expected $($expected.width)x$($expected.height) at PNG scale $expectedScale. See $ComparisonManifest."
         }
 
@@ -515,7 +533,7 @@ function Invoke-MermaidConformance {
     }
 
     Invoke-NodeCommand -FileName 'npm' -Arguments @('ci', '--ignore-scripts', '--no-audit', '--no-fund') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance restore' -TimeoutSeconds $TimeoutSeconds -Quiet
-    Invoke-NodeCommand -FileName 'npm' -Arguments @('run', 'validate') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance validation' -TimeoutSeconds $TimeoutSeconds
+    Invoke-NodeCommand -FileName 'node' -Arguments @('validate-mermaid.mjs') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance validation' -TimeoutSeconds $TimeoutSeconds
 }
 
 function Get-NativeAotRuntimeIdentifier {
@@ -656,8 +674,9 @@ try {
     }
 
     if (-not $SkipExamples) {
-        Invoke-DotNetCommand -Arguments @('run', '--project', $examples, '-c', $Configuration, '--no-build') -Description 'Example generation' -TimeoutSeconds $DotNetCommandTimeoutSeconds
-        $comparisonManifest = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output/svg-png-comparison.json"
+        $exampleOutput = if ($ExamplesOutput) { [System.IO.Path]::GetFullPath($ExamplesOutput) } else { Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output" }
+        Invoke-DotNetCommand -Arguments @('run', '--project', $examples, '-c', $Configuration, '--no-build', '--', '--output', $exampleOutput) -Description 'Example generation' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+        $comparisonManifest = Join-Path $exampleOutput 'svg-png-comparison.json'
         if (-not (Test-Path $comparisonManifest)) {
             throw "SVG/PNG comparison manifest was not generated: $comparisonManifest"
         }
@@ -670,20 +689,14 @@ try {
         }
 
         Assert-VisualBaseline -Comparison $comparison -VisualBaselinePath $visualBaselinePath -ComparisonManifest $comparisonManifest
-        $topologyOutput = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output/topology-demo"
+        $topologyOutput = Join-Path $exampleOutput 'topology-demo'
         Assert-TopologyVisualCoverage -TopologyOutput $topologyOutput -Comparison $comparison
-        $exampleOutput = Join-Path $root "ChartForgeX.Examples/bin/$Configuration/net8.0/output"
         Assert-PremiumSurfaceCoverage -Output $exampleOutput -Comparison $comparison
     }
 
     if (-not $SkipPack) {
-        $packageRoot = Join-Path $root "artifacts/packages/$Configuration"
-        if (Test-Path $packageRoot) {
-            Get-ChildItem $packageRoot -Filter 'ChartForgeX*.nupkg' -ErrorAction SilentlyContinue | Remove-Item -Force
-            Get-ChildItem $packageRoot -Filter 'ChartForgeX*.snupkg' -ErrorAction SilentlyContinue | Remove-Item -Force
-        } else {
-            New-Item -ItemType Directory -Path $packageRoot | Out-Null
-        }
+        $packageRoot = if ($PackageOutput) { [System.IO.Path]::GetFullPath($PackageOutput) } else { Join-Path $root "artifacts/packages/$Configuration" }
+        New-Item -ItemType Directory -Path $packageRoot -Force | Out-Null
 
         $packageProjects = @(
             [ordered]@{ Id = 'ChartForgeX'; Project = $library; Assembly = 'ChartForgeX'; Nuspec = 'ChartForgeX.nuspec'; DependencyIds = @(); RequiresDependencyFreeNuspec = $true },
@@ -695,14 +708,19 @@ try {
         )
 
         foreach ($packageProject in $packageProjects) {
+            $packageVersion = Invoke-DotNetCommand -Arguments @('msbuild', $packageProject.Project, '-nologo', '-getProperty:PackageVersion', "-p:Configuration=$Configuration") -Description "$($packageProject.Id) package-version evaluation" -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet -PassThruOutput
+            if ([string]::IsNullOrWhiteSpace($packageVersion)) {
+                throw "Package version is missing for $($packageProject.Project)."
+            }
+            $packageProject.Version = $packageVersion.Trim()
             Invoke-DotNetCommand -Arguments @('pack', $packageProject.Project, '-c', $Configuration, '--no-build', '--output', $packageRoot) -Description "$($packageProject.Id) package creation" -TimeoutSeconds $DotNetCommandTimeoutSeconds
         }
 
-        $packages = @(Get-ChildItem $packageRoot -Filter 'ChartForgeX*.nupkg' | Sort-Object Name)
+        $packages = @($packageProjects | ForEach-Object { Get-Item -LiteralPath (Join-Path $packageRoot "$($_.Id).$($_.Version).nupkg") -ErrorAction Stop })
         if ($packages.Count -ne $packageProjects.Count) {
             throw "Expected $($packageProjects.Count) packages, found $($packages.Count)."
         }
-        $symbolsPackages = @(Get-ChildItem $packageRoot -Filter 'ChartForgeX*.snupkg' | Sort-Object Name)
+        $symbolsPackages = @($packageProjects | ForEach-Object { Get-Item -LiteralPath (Join-Path $packageRoot "$($_.Id).$($_.Version).snupkg") -ErrorAction Stop })
         if ($symbolsPackages.Count -ne $packageProjects.Count) {
             throw "Expected $($packageProjects.Count) symbol packages, found $($symbolsPackages.Count)."
         }
@@ -712,11 +730,7 @@ try {
         $mermaidPackageVersion = $null
         $markupMermaidPackageVersion = $null
         foreach ($packageProject in $packageProjects) {
-            $packageVersion = Invoke-DotNetCommand -Arguments @('msbuild', $packageProject.Project, '-nologo', '-getProperty:PackageVersion', "-p:Configuration=$Configuration") -Description "$($packageProject.Id) package-version evaluation" -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet -PassThruOutput
-            if ([string]::IsNullOrWhiteSpace($packageVersion)) {
-                throw "Package version is missing for $($packageProject.Project)."
-            }
-
+            $packageVersion = $packageProject.Version
             $package = Get-Item (Join-Path $packageRoot "$($packageProject.Id).$packageVersion.nupkg")
             $symbolsPackage = Get-Item (Join-Path $packageRoot "$($packageProject.Id).$packageVersion.snupkg")
             if (-not $package) {
@@ -779,6 +793,9 @@ try {
         $consumerRoot = Join-Path ([System.IO.Path]::GetTempPath()) "ChartForgeX-package-consumer-$([Guid]::NewGuid().ToString('N'))"
         try {
             New-Item -ItemType Directory -Path $consumerRoot | Out-Null
+            $consumerFeed = Join-Path $consumerRoot 'packages'
+            New-Item -ItemType Directory -Path $consumerFeed | Out-Null
+            $packages | Copy-Item -Destination $consumerFeed
             Push-Location $consumerRoot
             try {
                 @'
@@ -798,7 +815,7 @@ try {
   </config>
   <packageSources>
     <clear />
-    <add key="local-chartforgex" value="$packageRoot" />
+    <add key="local-chartforgex" value="$consumerFeed" />
     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
   <packageSourceMapping>

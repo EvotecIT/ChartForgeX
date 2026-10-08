@@ -40,6 +40,7 @@
         hideTip(root, tip, false);
       });
       focusNode.addEventListener('click', (event) => {
+        event.stopPropagation();
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
           else toggleSeries(root, node);
@@ -50,6 +51,7 @@
         }
       });
       focusNode.addEventListener('keydown', (event) => {
+        event.stopPropagation();
         if (!hasFeature(root, 'KeyboardNavigation')) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();
@@ -198,6 +200,7 @@
         if (!drag || drag.id !== event.pointerId) return;
         if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
+          syncResetControl(root);
           const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
           const replaceSelection = !event.shiftKey;
           emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush });
@@ -225,6 +228,7 @@
       });
     }
     const reset = root.querySelector('[data-cfx-reset]');
+    if (reset) window.addEventListener('resize', () => syncResetControl(root));
     if (reset) reset.addEventListener('click', () => {
       resetViewport(root);
       emitHostEvent(root, 'cfxreset', {});
@@ -240,6 +244,7 @@
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
       publishCompare(root, true);
+      syncResetControl(root);
     });
   });
 })();

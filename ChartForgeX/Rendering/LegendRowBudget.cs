@@ -10,7 +10,11 @@ internal static class LegendRowBudget {
     private const double PortableLineHeightEm = 1.2;
 
     internal static List<T> Apply<T>(List<T> rows, Chart chart, Func<T, int> count, Func<int, T> summary, double? availableHeight = null, ChartLegendPosition? position = null) {
-        var maximumRows = MaximumRows(chart, availableHeight, position);
+        return Apply(rows, MaximumRows(chart, availableHeight, position), count, summary);
+    }
+
+    /// <summary>Applies the same overflow policy to rows whose height budget was measured by a prepared frame.</summary>
+    internal static List<T> Apply<T>(List<T> rows, int maximumRows, Func<T, int> count, Func<int, T> summary) {
         if (maximumRows <= 0) {
             rows.Clear();
             return rows;
@@ -29,7 +33,7 @@ internal static class LegendRowBudget {
         var rowHeight = RowHeight(chart);
         if (height < rowHeight) return 0;
         var fixedSpacing = IsHorizontal(position ?? chart.Options.LegendPosition)
-            ? Math.Min(18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, height - rowHeight))
+            ? Math.Min(chart.Options.Theme.UseGraphiteLayout ? 6 : 18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, height - rowHeight))
             : Math.Min(18, Math.Max(0, height - rowHeight));
         var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - fixedSpacing) / rowHeight));
         if (chart.Options.LegendMaximumRows.HasValue) maximumRows = Math.Min(maximumRows, chart.Options.LegendMaximumRows.Value);
