@@ -78,7 +78,7 @@ public enum VisualArtifactExportFormat {
 /// <summary>
 /// Describes one product-neutral visual artifact that can be rendered, inspected, exported, or handed to a host adapter.
 /// </summary>
-public sealed class VisualArtifact {
+public sealed partial class VisualArtifact {
     private string _id = string.Empty;
     private string _title = string.Empty;
     private string _subtitle = string.Empty;

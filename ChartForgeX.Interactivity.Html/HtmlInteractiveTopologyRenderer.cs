@@ -38,6 +38,53 @@ public sealed class HtmlInteractiveTopologyRenderer {
     /// <param name="externalAssets">Optional shared asset references; null inlines the runtime.</param>
     /// <returns>A complete HTML document.</returns>
     public string RenderPage(TopologyChart chart, TopologyRenderOptions? options, HtmlAssetReferences? externalAssets) {
+        return RenderPageCore(chart, options, externalAssets, null);
+    }
+
+    /// <summary>Renders a complete interactive page with producer-owned SVG over the adapter's prepared topology.</summary>
+    /// <param name="chart">The topology whose metadata, scenarios and HTML controls are rendered.</param>
+    /// <param name="renderSvg">Exports trusted SVG from the supplied detached topology, for example a script-free motion presentation.
+    /// The callback runs once after interactive scenario and graph-control policies are applied. Retain the supplied geometry,
+    /// topology metadata and SVG identity scope so browser controls target the same entities.</param>
+    /// <param name="options">Optional topology and HTML render options; caller-owned options are not modified.</param>
+    /// <param name="externalAssets">Optional shared interaction runtime references; null inlines the runtime.</param>
+    /// <returns>A complete HTML document whose viewport uses the prepared presentation's logical width.</returns>
+    public string RenderPresentationPage(TopologyChart chart, Func<PreparedTopology, string> renderSvg,
+        TopologyRenderOptions? options = null, HtmlAssetReferences? externalAssets = null) {
+        if (renderSvg == null) throw new ArgumentNullException(nameof(renderSvg));
+        return RenderPageCore(chart, options, externalAssets, renderSvg);
+    }
+
+    /// <summary>Renders a self-contained interactive fragment with producer-owned SVG over the adapter's prepared topology.</summary>
+    /// <param name="chart">The topology whose metadata, scenarios and HTML controls are rendered.</param>
+    /// <param name="renderSvg">Exports trusted SVG from the supplied detached topology. Preserve its geometry, topology metadata
+    /// and identity scope; the callback runs once after interactive scenario and graph-control policies are applied.</param>
+    /// <param name="options">Optional topology and HTML render options; caller-owned options are not modified.</param>
+    /// <returns>Interactive markup with inline CSS and JavaScript assets.</returns>
+    public string RenderPresentationFragment(TopologyChart chart, Func<PreparedTopology, string> renderSvg,
+        TopologyRenderOptions? options = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        if (renderSvg == null) throw new ArgumentNullException(nameof(renderSvg));
+        options = Prepare(options ?? chart.DefaultRenderOptions);
+        return _staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: true, renderSvg: renderSvg) + InteractionScriptTag(options);
+    }
+
+    /// <summary>Renders producer-owned topology SVG and interactive controls without CSS or JavaScript assets.</summary>
+    /// <param name="chart">The topology whose metadata, scenarios and HTML controls are rendered.</param>
+    /// <param name="renderSvg">Exports trusted SVG from the supplied detached topology. Preserve its geometry, topology metadata
+    /// and identity scope; the callback runs once after interactive scenario and graph-control policies are applied.</param>
+    /// <param name="options">Optional topology and HTML render options; caller-owned options are not modified.</param>
+    /// <returns>Interactive markup that expects the embedding host to register topology HTML assets.</returns>
+    public string RenderPresentationFragmentWithoutAssets(TopologyChart chart, Func<PreparedTopology, string> renderSvg,
+        TopologyRenderOptions? options = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        if (renderSvg == null) throw new ArgumentNullException(nameof(renderSvg));
+        options = Prepare(options ?? chart.DefaultRenderOptions);
+        return _staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, renderSvg: renderSvg);
+    }
+
+    private string RenderPageCore(TopologyChart chart, TopologyRenderOptions? options, HtmlAssetReferences? externalAssets,
+        Func<PreparedTopology, string>? renderSvg) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = Prepare(options ?? chart.DefaultRenderOptions);
         var theme = chart.Theme ?? TopologyTheme.Light();
@@ -49,7 +96,7 @@ public sealed class HtmlInteractiveTopologyRenderer {
         HtmlChartRenderer.WriteDocumentHead(writer, title, TopologyHtmlRenderer.BuildPageStyle(options, theme));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
-            .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, assetSource: "document")).Line()
+            .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, assetSource: "document", renderSvg: renderSvg)).Line()
             .RawTrusted(externalAssets == null ? InteractionScriptTag(options) : string.Empty);
         if (externalAssets != null) HtmlInteractiveAssetFiles.WriteScript(writer, externalAssets, HtmlInteractiveAssetFiles.TopologyScript(options), null);
         writer.Line()
