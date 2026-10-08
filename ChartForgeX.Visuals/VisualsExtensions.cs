@@ -174,10 +174,11 @@ public static partial class VisualsExtensions {
     }
 
     /// <summary>
-    /// Adds decoded RGBA pixels as an image layer to a visual canvas.
+    /// Adds an independent snapshot of decoded RGBA pixels as an image layer to a visual canvas.
     /// </summary>
     public static VisualCanvas AddRasterImage(this VisualCanvas canvas, double x, double y, double width, double height, RgbaImage image, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
-        return AddRenderedImage(canvas, x, y, width, height, image, RasterDataUri(image), fit, opacity);
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        return canvas.AddImage(image, x, y, width, height, opacity, fit);
     }
 
     /// <summary>
@@ -192,57 +193,55 @@ public static partial class VisualsExtensions {
     /// <summary>
     /// Decodes image bytes and adds them as an image layer to a visual canvas.
     /// </summary>
-    public static VisualCanvas AddImageBytes(this VisualCanvas canvas, double x, double y, double width, double height, byte[] data, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+    public static VisualCanvas AddImageBytes(this VisualCanvas canvas, double x, double y, double width, double height, byte[] data, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (data == null) throw new ArgumentNullException(nameof(data));
-        var image = RasterImageDecoder.Decode(data);
-        return AddRenderedImage(canvas, x, y, width, height, image, EmbeddedRasterDataUri(data, image, null), fit, opacity);
+        return canvas.AddImage(RasterImageDecoder.Decode(data, options), x, y, width, height, opacity, fit);
     }
 
     /// <summary>
     /// Decodes image bytes and adds them as an image layer using anchor-based placement.
     /// </summary>
-    public static VisualCanvas AddImageBytes(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, byte[] data, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+    public static VisualCanvas AddImageBytes(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, byte[] data, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         var bounds = canvas.ResolvePlacement(placement, width, height);
-        return canvas.AddImageBytes(bounds.X, bounds.Y, bounds.Width, bounds.Height, data, fit, opacity);
+        return canvas.AddImageBytes(bounds.X, bounds.Y, bounds.Width, bounds.Height, data, fit, opacity, options);
     }
 
     /// <summary>
     /// Decodes an image file and adds it as an image layer to a visual canvas.
     /// </summary>
-    public static VisualCanvas AddImageFile(this VisualCanvas canvas, double x, double y, double width, double height, string path, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+    public static VisualCanvas AddImageFile(this VisualCanvas canvas, double x, double y, double width, double height, string path, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (path == null) throw new ArgumentNullException(nameof(path));
-        var data = File.ReadAllBytes(path);
-        var image = RasterImageDecoder.Decode(data);
-        return AddRenderedImage(canvas, x, y, width, height, image, EmbeddedRasterDataUri(data, image, path), fit, opacity);
+        return canvas.AddImage(RasterImageDecoder.Read(path, options), x, y, width, height, opacity, fit);
     }
 
     /// <summary>
     /// Decodes an image file and adds it as an image layer using anchor-based placement.
     /// </summary>
-    public static VisualCanvas AddImageFile(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, string path, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+    public static VisualCanvas AddImageFile(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, string path, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         var bounds = canvas.ResolvePlacement(placement, width, height);
-        return canvas.AddImageFile(bounds.X, bounds.Y, bounds.Width, bounds.Height, path, fit, opacity);
+        return canvas.AddImageFile(bounds.X, bounds.Y, bounds.Width, bounds.Height, path, fit, opacity, options);
     }
 
     /// <summary>
     /// Decodes an image file and adds it as the content of a hero badge.
     /// </summary>
-    public static VisualCanvas AddHeroBadgeImageFile(this VisualCanvas canvas, double x, double y, double width, double height, string path, string symbol = "", ChartColor? accent = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain, double padding = 10, double opacity = 1) {
+    public static VisualCanvas AddHeroBadgeImageFile(this VisualCanvas canvas, double x, double y, double width, double height, string path, string symbol = "", ChartColor? accent = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain, double padding = 10, double opacity = 1, RasterDecodeOptions? options = null) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (path == null) throw new ArgumentNullException(nameof(path));
-        var data = File.ReadAllBytes(path);
-        var image = RasterImageDecoder.Decode(data);
-        return canvas.AddHeroBadge(x, y, width, height, symbol, accent, EmbeddedRasterDataUri(data, image, path), image.Pixels, image.Width, image.Height, fit, padding, opacity);
+        return canvas.AddHeroBadge(RasterImageDecoder.Read(path, options), x, y, width, height, symbol, accent, fit, padding, opacity);
     }
 
     /// <summary>
     /// Decodes an image file and adds it as the content of a hero badge using anchor-based placement.
     /// </summary>
-    public static VisualCanvas AddHeroBadgeImageFile(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, string path, string symbol = "", ChartColor? accent = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain, double padding = 10, double opacity = 1) {
+    public static VisualCanvas AddHeroBadgeImageFile(this VisualCanvas canvas, VisualCanvasPlacement placement, double width, double height, string path, string symbol = "", ChartColor? accent = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain, double padding = 10, double opacity = 1, RasterDecodeOptions? options = null) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         var bounds = canvas.ResolvePlacement(placement, width, height);
-        return canvas.AddHeroBadgeImageFile(bounds.X, bounds.Y, bounds.Width, bounds.Height, path, symbol, accent, fit, padding, opacity);
+        return canvas.AddHeroBadgeImageFile(bounds.X, bounds.Y, bounds.Width, bounds.Height, path, symbol, accent, fit, padding, opacity, options);
     }
 
     /// <summary>
@@ -341,13 +340,4 @@ public static partial class VisualsExtensions {
         return "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(svg);
     }
 
-    private static string RasterDataUri(RgbaImage image) => BinaryDataUri(PngWriter.WriteRgba(image), "image/png");
-
-    private static string EmbeddedRasterDataUri(byte[] data, RgbaImage image, string? path) {
-        var mimeType = RasterImageDecoder.MimeTypeFor(data, path);
-        if (mimeType == "image/png" || mimeType == "image/jpeg") return BinaryDataUri(data, mimeType);
-        return RasterDataUri(image);
-    }
-
-    private static string BinaryDataUri(byte[] data, string mimeType) => "data:" + mimeType + ";base64," + Convert.ToBase64String(data);
 }

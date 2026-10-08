@@ -12,15 +12,16 @@ internal readonly struct RasterFrameDelay {
     internal int Denominator { get; }
 
     internal static int GifCentiseconds(TimeSpan duration) {
-        if (duration <= TimeSpan.Zero || duration > TimeSpan.FromMilliseconds(655350)) {
-            throw new ArgumentOutOfRangeException(nameof(duration), duration, "GIF frame duration must be positive and at most 655.35 seconds.");
+        if (duration < TimeSpan.Zero || duration > TimeSpan.FromMilliseconds(655350)) {
+            throw new ArgumentOutOfRangeException(nameof(duration), duration, "GIF frame duration must be nonnegative and at most 655.35 seconds.");
         }
+        if (duration == TimeSpan.Zero) return 0;
         return Math.Max(1, (int)Math.Round(duration.TotalMilliseconds / 10, MidpointRounding.AwayFromZero));
     }
 
     internal static RasterFrameDelay Apng(TimeSpan duration) {
-        if (duration <= TimeSpan.Zero || duration > TimeSpan.FromSeconds(65535)) {
-            throw new ArgumentOutOfRangeException(nameof(duration), duration, "APNG frame duration must be positive and at most 65,535 seconds.");
+        if (duration < TimeSpan.Zero || duration > TimeSpan.FromSeconds(65535)) {
+            throw new ArgumentOutOfRangeException(nameof(duration), duration, "APNG frame duration must be nonnegative and at most 65,535 seconds.");
         }
         var divisor = GreatestCommonDivisor(duration.Ticks, TimeSpan.TicksPerSecond);
         var numerator = duration.Ticks / divisor;

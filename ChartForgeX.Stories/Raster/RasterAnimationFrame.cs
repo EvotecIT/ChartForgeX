@@ -6,12 +6,12 @@ namespace ChartForgeX.Raster;
 public readonly struct RasterAnimationFrame {
     /// <summary>Initializes a frame using a caller-owned RGBA pixel buffer.</summary>
     /// <param name="image">The complete canvas. All frames in an animation must have matching dimensions.</param>
-    /// <param name="duration">A positive display duration.</param>
+    /// <param name="duration">A nonnegative display duration. Zero preserves a container's zero frame delay.</param>
     /// <remarks>The pixel buffer is borrowed while encoding. Do not change it until the encoding call returns.</remarks>
     public RasterAnimationFrame(RgbaImage image, TimeSpan duration) {
         ValidateImage(image);
-        if (duration <= TimeSpan.Zero) {
-            throw new ArgumentOutOfRangeException(nameof(duration), duration, "Frame duration must be positive.");
+        if (duration < TimeSpan.Zero) {
+            throw new ArgumentOutOfRangeException(nameof(duration), duration, "Frame duration must be nonnegative.");
         }
         Image = image;
         Duration = duration;
@@ -20,7 +20,8 @@ public readonly struct RasterAnimationFrame {
     /// <summary>Gets the complete frame canvas.</summary>
     public RgbaImage Image { get; }
 
-    /// <summary>Gets the frame display duration before the next frame or playback completion.</summary>
+    /// <summary>Gets the nonnegative frame display duration before the next frame or playback completion.</summary>
+    /// <remarks>Zero is encoded as a zero delay without adding a minimum display duration.</remarks>
     public TimeSpan Duration { get; }
 
     internal static void ValidateImage(RgbaImage image) {

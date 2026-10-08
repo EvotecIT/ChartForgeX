@@ -41,7 +41,7 @@ public sealed partial class ImageComposition {
     /// <summary>Creates a transparent composition.</summary>
     public static ImageComposition CreateTransparent(int width, int height) => Create(width, height, ChartColor.Transparent);
 
-    /// <summary>Creates a composition initialized with decoded image pixels.</summary>
+    /// <summary>Creates a composition initialized with an independent copy of the supplied image pixels.</summary>
     public static ImageComposition FromImage(RgbaImage image) {
         var composition = CreateTransparent(image.Width, image.Height);
         // The canvas starts transparent, so the pixels can be copied instead of blended one by one.
@@ -49,27 +49,27 @@ public sealed partial class ImageComposition {
         return composition;
     }
 
-    /// <summary>Loads image bytes and creates a composition with the decoded pixels.</summary>
-    public static ImageComposition FromBytes(byte[] data) => FromImage(RasterImageDecoder.Decode(data));
+    /// <summary>Loads image bytes within the requested decode limits and creates a composition with the decoded pixels.</summary>
+    public static ImageComposition FromBytes(byte[] data, RasterDecodeOptions? options = null) => FromImage(RasterImageDecoder.Decode(data, options));
 
     /// <summary>Attempts to load image bytes and create a composition with the decoded pixels.</summary>
-    public static bool TryFromBytes(byte[]? data, out ImageComposition? composition) {
+    public static bool TryFromBytes(byte[]? data, out ImageComposition? composition, RasterDecodeOptions? options = null) {
         composition = null;
-        if (!RasterImageDecoder.TryDecode(data, out var image)) return false;
+        if (!RasterImageDecoder.TryDecode(data, options, out var image)) return false;
         composition = FromImage(image);
         return true;
     }
 
-    /// <summary>Loads an image file and creates a composition with the decoded pixels.</summary>
-    public static ImageComposition FromFile(string path) {
+    /// <summary>Reads an image file within the requested encoded-byte and pixel limits and creates a composition with the decoded pixels.</summary>
+    public static ImageComposition FromFile(string path, RasterDecodeOptions? options = null) {
         if (path == null) throw new ArgumentNullException(nameof(path));
-        return FromBytes(File.ReadAllBytes(path));
+        return FromImage(RasterImageDecoder.Read(path, options));
     }
 
     /// <summary>Attempts to load an image file and create a composition with the decoded pixels.</summary>
-    public static bool TryFromFile(string? path, out ImageComposition? composition) {
+    public static bool TryFromFile(string? path, out ImageComposition? composition, RasterDecodeOptions? options = null) {
         composition = null;
-        if (!RasterImageDecoder.TryRead(path, out var image)) return false;
+        if (!RasterImageDecoder.TryRead(path, options, out var image)) return false;
         composition = FromImage(image);
         return true;
     }
@@ -194,28 +194,28 @@ public sealed partial class ImageComposition {
         return DrawImage(image, bounds.X, bounds.Y, bounds.Width, bounds.Height, fit, opacity);
     }
 
-    /// <summary>Decodes and draws image bytes into an explicit destination rectangle.</summary>
-    public ImageComposition DrawImageBytes(byte[] data, double x, double y, double width, double height, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+    /// <summary>Decodes image bytes within the requested limits and draws them into an explicit destination rectangle.</summary>
+    public ImageComposition DrawImageBytes(byte[] data, double x, double y, double width, double height, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
         if (data == null) throw new ArgumentNullException(nameof(data));
-        return DrawImage(RasterImageDecoder.Decode(data), x, y, width, height, fit, opacity);
+        return DrawImage(RasterImageDecoder.Decode(data, options), x, y, width, height, fit, opacity);
     }
 
-    /// <summary>Decodes and draws image bytes using anchor-based placement.</summary>
-    public ImageComposition DrawImageBytes(byte[] data, VisualCanvasPlacement placement, double width, double height, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+    /// <summary>Decodes image bytes within the requested limits and draws them using anchor-based placement.</summary>
+    public ImageComposition DrawImageBytes(byte[] data, VisualCanvasPlacement placement, double width, double height, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
         if (data == null) throw new ArgumentNullException(nameof(data));
-        return DrawImage(RasterImageDecoder.Decode(data), placement, width, height, fit, opacity);
+        return DrawImage(RasterImageDecoder.Decode(data, options), placement, width, height, fit, opacity);
     }
 
-    /// <summary>Decodes and draws an image file into an explicit destination rectangle.</summary>
-    public ImageComposition DrawImageFile(string path, double x, double y, double width, double height, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+    /// <summary>Reads and decodes an image file within the requested limits and draws it into an explicit destination rectangle.</summary>
+    public ImageComposition DrawImageFile(string path, double x, double y, double width, double height, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
         if (path == null) throw new ArgumentNullException(nameof(path));
-        return DrawImageBytes(File.ReadAllBytes(path), x, y, width, height, fit, opacity);
+        return DrawImage(RasterImageDecoder.Read(path, options), x, y, width, height, fit, opacity);
     }
 
-    /// <summary>Decodes and draws an image file using anchor-based placement.</summary>
-    public ImageComposition DrawImageFile(string path, VisualCanvasPlacement placement, double width, double height, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1) {
+    /// <summary>Reads and decodes an image file within the requested limits and draws it using anchor-based placement.</summary>
+    public ImageComposition DrawImageFile(string path, VisualCanvasPlacement placement, double width, double height, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
         if (path == null) throw new ArgumentNullException(nameof(path));
-        return DrawImageBytes(File.ReadAllBytes(path), placement, width, height, fit, opacity);
+        return DrawImage(RasterImageDecoder.Read(path, options), placement, width, height, fit, opacity);
     }
 
     /// <summary>Draws a chart layer.</summary>

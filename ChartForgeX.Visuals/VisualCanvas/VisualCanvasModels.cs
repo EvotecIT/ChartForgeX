@@ -427,6 +427,7 @@ public sealed partial class VisualCanvas {
         AddHeroBadge(x, y, width, height, symbol, accent, null, null, 0, 0, VisualCanvasImageFit.Contain, 10, 1);
 
     /// <summary>Adds a central icon or logo badge with optional image content.</summary>
+    /// <remarks>Pixel arrays are borrowed. With paired imageHref and imageRgba inputs, the caller maintains SVG/PNG equivalence. An imageHref alone is never fetched for PNG output; use the typed RGBA overload for an independent bitmap snapshot.</remarks>
     public VisualCanvas AddHeroBadge(double x, double y, double width, double height, string symbol, ChartColor? accent, string? imageHref, byte[]? imageRgba = null, int imageSourceWidth = 0, int imageSourceHeight = 0, VisualCanvasImageFit imageFit = VisualCanvasImageFit.Contain, double imagePadding = 10, double imageOpacity = 1) {
         ValidateEnum(imageFit, nameof(imageFit));
         if (imageRgba != null && (imageSourceWidth <= 0 || imageSourceHeight <= 0)) throw new ArgumentOutOfRangeException(nameof(imageSourceWidth), "Hero badge image layers require positive imageSourceWidth and imageSourceHeight.");
@@ -454,7 +455,8 @@ public sealed partial class VisualCanvas {
         return AddHeroBadge(bounds.X, bounds.Y, bounds.Width, bounds.Height, symbol, accent, imageHref, imageRgba, imageSourceWidth, imageSourceHeight, imageFit, imagePadding, imageOpacity);
     }
 
-    /// <summary>Adds an image layer. SVG output uses <paramref name="href"/>; PNG output uses <paramref name="rgba"/> when supplied.</summary>
+    /// <summary>Adds an image layer from an SVG resource reference, borrowed RGBA pixels, or an explicit pair of vector and raster representations.</summary>
+    /// <remarks>RGBA-only input is embedded as PNG in SVG output. With both inputs, SVG uses <paramref name="href"/> and PNG uses <paramref name="rgba"/>; the caller maintains their equivalence. Href-only input is an SVG resource path and produces a PNG placeholder; renderers never fetch it. Use the typed RGBA overload for an independent bitmap snapshot.</remarks>
     public VisualCanvas AddImage(double x, double y, double width, double height, string? href = null, byte[]? rgba = null, int sourceWidth = 0, int sourceHeight = 0, double opacity = 1, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch) {
         if (rgba != null && (sourceWidth <= 0 || sourceHeight <= 0)) throw new ArgumentOutOfRangeException(nameof(sourceWidth), "RGBA image layers require positive sourceWidth and sourceHeight.");
         ValidateEnum(fit, nameof(fit));
@@ -728,9 +730,9 @@ public sealed class VisualCanvasImageLayer : VisualCanvasLayer {
     /// <param name="height">The rendered image height.</param>
     public VisualCanvasImageLayer(double x, double y, double width, double height) : base(x, y, width, height) { }
 
-    /// <summary>Gets or sets the SVG image href.</summary>
+    /// <summary>Gets or sets the SVG image href. Renderers do not fetch it for PNG output.</summary>
     public string Href { get => _href; set => _href = value ?? throw new ArgumentNullException(nameof(value)); }
-    /// <summary>Gets or sets optional source RGBA pixels for PNG output.</summary>
+    /// <summary>Gets or sets borrowed source RGBA pixels. SVG embeds them as PNG when Href is empty.</summary>
     public byte[]? Rgba { get; set; }
     /// <summary>Gets or sets the source bitmap width for PNG output.</summary>
     public int SourceWidth { get; set; }

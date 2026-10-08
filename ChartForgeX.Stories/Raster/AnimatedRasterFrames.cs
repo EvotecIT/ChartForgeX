@@ -63,8 +63,8 @@ internal sealed class AnimatedRasterFrames {
             frames,
             width,
             height,
-            ClampDelay(delayCentiseconds),
-            ClampDelay(finalDelayCentiseconds),
+            RasterFrameDelay.GifCentiseconds(TimeSpan.FromMilliseconds(delayCentiseconds * 10d)),
+            RasterFrameDelay.GifCentiseconds(TimeSpan.FromMilliseconds(finalDelayCentiseconds * 10d)),
             loop);
     }
 
@@ -97,7 +97,4 @@ internal sealed class AnimatedRasterFrames {
         }
         return new AnimatedRasterFrames(images, width, height, 1, 1, playCount, gifDelays, apngDelays);
     }
-
-    private static int ClampDelay(int delayCentiseconds) =>
-        Math.Max(1, Math.Min(65535, delayCentiseconds));
 }

@@ -22,7 +22,7 @@ internal static class ApngWriter {
         WriteRgba(stream, animation);
     }
 
-    public static void WriteRgba(Stream stream, AnimatedRasterFrames animation, CancellationToken cancellationToken = default) {
+    public static void WriteRgba(Stream stream, AnimatedRasterFrames animation, int pngCompressionLevel = 6, CancellationToken cancellationToken = default) {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
         if (animation == null) throw new ArgumentNullException(nameof(animation));
         WriteCore(
@@ -33,6 +33,7 @@ internal static class ApngWriter {
             animation.PlayCount,
             index => animation.Frames[index],
             animation.ApngDelayForFrame,
+            pngCompressionLevel,
             cancellationToken);
     }
 
@@ -54,7 +55,7 @@ internal static class ApngWriter {
         var delay = new RasterFrameDelay(Math.Max(1, Math.Min(65535, delayCentiseconds)), 100);
         var finalDelay = new RasterFrameDelay(Math.Max(1, Math.Min(65535, finalDelayCentiseconds)), 100);
         WriteCore(stream, width, height, frameCount, loop ? 0 : 1, renderFrame,
-            index => index == frameCount - 1 ? finalDelay : delay, default);
+            index => index == frameCount - 1 ? finalDelay : delay, 6, default);
     }
 
     private static void WriteCore(
@@ -65,6 +66,7 @@ internal static class ApngWriter {
         int playCount,
         Func<int, RgbaImage> renderFrame,
         Func<int, RasterFrameDelay> frameDelay,
+        int pngCompressionLevel,
         CancellationToken cancellationToken) {
         cancellationToken.ThrowIfCancellationRequested();
         stream.Write(Signature, 0, Signature.Length);
@@ -89,7 +91,7 @@ internal static class ApngWriter {
                 frame.Top,
                 delay.Numerator,
                 delay.Denominator);
-            var compressed = ZlibDeflate(RawFrame(frame));
+            var compressed = ZlibDeflate(RawFrame(frame), pngCompressionLevel);
             if (i == 0) WriteChunk(stream, "IDAT", compressed);
             else WriteFdat(stream, sequence++, compressed);
             previous = current;
@@ -155,11 +157,10 @@ internal static class ApngWriter {
         return raw;
     }
 
-    private static byte[] ZlibDeflate(byte[] data) {
+    private static byte[] ZlibDeflate(byte[] data, int pngCompressionLevel) {
         using var stream = new MemoryStream();
-        stream.WriteByte(0x78);
-        stream.WriteByte(0x9C);
-        using (var deflate = new DeflateStream(stream, CompressionLevel.Optimal, true)) {
+        PngWriter.WriteZlibHeader(stream, pngCompressionLevel);
+        using (var deflate = new DeflateStream(stream, PngWriter.ToCompressionLevel(pngCompressionLevel), true)) {
             deflate.Write(data, 0, data.Length);
         }
 
