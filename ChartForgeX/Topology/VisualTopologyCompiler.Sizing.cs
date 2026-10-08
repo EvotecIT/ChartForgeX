@@ -13,12 +13,12 @@ internal sealed partial class VisualTopologyCompiler {
         var probeHeight = _context.Layout.Size.Height + 4 * (typography.TitleSize + typography.SubtitleSize + _context.Theme.Spacing);
         var probeContext = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(_context.Layout.Size.Width, probeHeight), _context.Layout.PaddingEdges),
             _context.Theme, _context.ThemeMode, _context.Frame, _context.Font);
-        var probe = VisualFrameLayout.Build(new VisualSceneBuilder(probeContext.Layout.Size, probeContext.Font), probeContext, entries);
+        var probe = VisualFrameLayout.Build(new VisualSceneBuilder(probeContext.Layout.Size, probeContext.Font), probeContext, entries, FramePaints());
         var height = Math.Max(_context.Layout.Size.Height, probeHeight - probe.Height + 1);
         _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(_context.Layout.Size.Width, height), _context.Layout.PaddingEdges),
             _context.Theme, _context.ThemeMode, _context.Frame, _context.Font);
         _builder = new VisualSceneBuilder(_context.Layout.Size, _context.Font);
-        _plot = VisualFrameLayout.Build(_builder, _context, entries);
+        _plot = VisualFrameLayout.Build(_builder, _context, entries, FramePaints());
     }
 
     private void ResolveNaturalSize(IReadOnlyList<VisualLegendEntry> entries) {
@@ -39,7 +39,7 @@ internal sealed partial class VisualTopologyCompiler {
             _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), _context.Layout.PaddingEdges),
                 _context.Theme, _context.ThemeMode, _context.Frame, _context.Font);
             _builder = new VisualSceneBuilder(_context.Layout.Size, _context.Font);
-            _plot = VisualFrameLayout.Build(_builder, _context, entries);
+            _plot = VisualFrameLayout.Build(_builder, _context, entries, FramePaints());
             grew = true;
         }
         if (!grew) return;

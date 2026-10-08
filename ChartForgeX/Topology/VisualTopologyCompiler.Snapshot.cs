@@ -14,6 +14,7 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     internal VisualRenderContext Context => _context;
+    internal TopologyTheme? SvgTheme => _svgTheme?.Clone();
     internal string? SourceTitle => HeadingOrSource(_options.View?.Title, _source.Title);
     internal string? SourceSubtitle => HeadingOrSource(_options.View?.Subtitle, _source.Subtitle);
     internal TopologyLegend? FrameLegend => _legend == null ? null : TopologyLegend.Clone(_legend);

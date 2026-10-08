@@ -12,8 +12,10 @@ internal sealed partial class VisualTopologyCompiler {
         ChartColor accent, double scale, SvgColorRole role, SvgPaint sourcePaint, ChartColor baseColor, double opacity, ChartColor fallback) {
         var baseTint = ChartForgeX.Rendering.ChartColorMath.BlendPremultiplied(_colors.Background, baseColor, .10);
         var tint = ChartForgeX.Rendering.ChartColorMath.WithOpacity(baseTint, opacity);
-        var source = SourcePaint(node.Color ?? ResolveNodeIcon(node, _options)?.Color, baseColor, role, fallback: fallback);
-        var tintPaint = source.HasCssVariable ? SvgPaint.Mix(baseTint, SvgPaint.Of(_colors.Background, SvgColorRole.Surface), source, .10)
+        var authored = node.Color ?? ResolveNodeIcon(node, _options)?.Color;
+        var source = string.IsNullOrWhiteSpace(authored) ? sourcePaint : SourcePaint(authored, baseColor, role, fallback: fallback);
+        var background = BackgroundPaint(_colors.Background);
+        var tintPaint = source.HasCssVariable || background.HasCssVariable ? SvgPaint.Mix(baseTint, background, source, .10)
             : SvgPaint.Mix(baseTint, _colors.Background, SvgColorRole.Surface, baseColor, role, .10);
         var paint = new VisualScenePaintBinding(opacity == 1 ? tintPaint : tintPaint.WithOpacity(tint, opacity), sourcePaint);
         var center = Point(new ChartPoint(x, y));
