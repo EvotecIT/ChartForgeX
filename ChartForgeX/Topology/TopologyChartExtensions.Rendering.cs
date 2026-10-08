@@ -86,23 +86,24 @@ public static partial class TopologyChartExtensions {
 
     private static byte[] ToAnimatedRaster(TopologyChart chart, TopologyRenderOptions? options, AnimatedRasterFormat format) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        return AnimatedRasterEncoder.Encode(format, BuildMotionFrames(chart, options, format.GetDisplayName()));
+        var frames = BuildMotionFrames(chart, options, format, out var maximumEncodedBytes);
+        return AnimatedRasterEncoder.EncodeBounded(format, frames, maximumEncodedBytes);
     }
 
     private static void WriteAnimatedRasterCore(TopologyChart chart, Stream stream, TopologyRenderOptions? options, AnimatedRasterFormat format) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (stream == null) throw new ArgumentNullException(nameof(stream));
-        AnimatedRasterEncoder.Write(stream, format, BuildMotionFrames(chart, options, format.GetDisplayName()));
+        AnimatedRasterEncoder.Write(stream, format, BuildMotionFrames(chart, options, format, out _));
     }
 
     private static void SaveAnimatedRaster(TopologyChart chart, string path, TopologyRenderOptions? options, AnimatedRasterFormat format) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        var frames = BuildMotionFrames(chart, options, format.GetDisplayName());
+        var frames = BuildMotionFrames(chart, options, format, out _);
         using var stream = File.Create(path);
         AnimatedRasterEncoder.Write(stream, format, frames);
     }
 
-    private static AnimatedRasterFrames BuildMotionFrames(TopologyChart chart, TopologyRenderOptions? options, string formatName) {
+    private static AnimatedRasterFrames BuildMotionFrames(TopologyChart chart, TopologyRenderOptions? options, AnimatedRasterFormat format, out long maximumEncodedBytes) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var effective = chart.ResolveRenderOptions(options).CloneForRendering();
         var motion = (effective.Motion ?? TopologyMotionOptions.RoutePulse()).Clone();
@@ -115,9 +116,23 @@ public static partial class TopologyChartExtensions {
         var prepared = compiler.Compile();
         var motionOptions = effective.CloneForRendering(); motionOptions.Motion = motion;
         var plan = compiler.MotionPlan(motionOptions);
-        if (plan == null) throw new InvalidOperationException("Topology animated " + formatName + " export requires a motion route. Add scenario edge steps or use TopologyMotionOptions.RoutePulseForEdges(...).");
+        if (plan == null) throw new InvalidOperationException("Topology animated " + format.GetDisplayName() + " export requires a motion route. Add scenario edge steps or use TopologyMotionOptions.RoutePulseForEdges(...).");
         var delay = Math.Max(1, (int)Math.Round(100.0 / motion.FramesPerSecond));
         var frameCount = RasterFrameCount(motion, delay);
+        var raster = request.RasterOptions;
+        var allocation = VisualSceneRasterRenderer.CalculateAllocation(prepared.Size, raster.Scale, raster.Supersampling, raster.PixelBudget);
+        var width = allocation.PixelWidth / raster.Supersampling;
+        var height = allocation.PixelHeight / raster.Supersampling;
+        var encoderBytes = format == AnimatedRasterFormat.Gif
+            ? AnimatedRasterMemoryBudget.EncoderRetainedBytes(width, height, frameCount, format)
+            : AnimatedRasterMemoryBudget.ApngWorkingBytes(width, height);
+        // All topology frames are rendered before encoding. The canvas and encoder buffers occupy separate phases.
+        var retained = checked(AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(width, height, frameCount) +
+            Math.Max(AnimatedRasterMemoryBudget.RenderWorkingBytes(width, height, raster.Supersampling), encoderBytes));
+        maximumEncodedBytes = AnimatedRasterMemoryBudget.MaximumStreamedApngBytes(retained);
+        if (maximumEncodedBytes <= 0) {
+            throw new InvalidOperationException("Animated topology would exceed 256 MiB of sampled frames, render buffers, encoder buffers, and encoded output. Lower the size, scale, frame rate, or duration.");
+        }
         var frames = new List<RgbaImage>(frameCount);
         for (var frame = 0; frame < frameCount; frame++) {
             motion.Progress = RasterFrameProgress(motion, frame, frameCount);

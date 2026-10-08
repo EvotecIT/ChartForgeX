@@ -25,17 +25,16 @@ internal sealed class VisualStoryAnimatedRasterRenderer {
         EnsureEverySceneIsVisible(story, frameCount, delay, finalDelay, animation.TransitionSeconds);
         var outputWidth = checked((long)story.Width * animation.OutputScale);
         var outputHeight = checked((long)story.Height * animation.OutputScale);
-        var frameBytes = checked(outputWidth * outputHeight * 4);
-        var retainedScenes = checked(frameBytes * story.Scenes.Count);
+        var retainedScenes = AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(outputWidth, outputHeight, story.Scenes.Count);
         var fittedTerminalWorkingBytes = PngVisualStoryRenderer.MaximumFittedTerminalWorkingBytes(story, animation.OutputScale);
         var retained = format == AnimatedRasterFormat.Apng
             ? checked(
                 retainedScenes +
-                frameBytes * 2 +
+                AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(outputWidth, outputHeight, 2) +
                 AnimatedRasterMemoryBudget.ApngWorkingBytes(outputWidth, outputHeight) +
                 fittedTerminalWorkingBytes)
             : checked(
-                frameBytes * frameCount +
+                AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(outputWidth, outputHeight, frameCount) +
                 retainedScenes +
                 AnimatedRasterMemoryBudget.EncoderRetainedBytes(
                     outputWidth,

@@ -84,9 +84,14 @@ internal static class AnimatedRasterEncoder {
     internal static byte[] EncodeBoundedGif(
         AnimatedRasterFrames frames,
         long maximumEncodedBytes) {
+        return EncodeBounded(AnimatedRasterFormat.Gif, frames, maximumEncodedBytes);
+    }
+
+    /// <summary>Encodes retained frames into an output buffer sharing the animation memory budget.</summary>
+    internal static byte[] EncodeBounded(AnimatedRasterFormat format, AnimatedRasterFrames frames, long maximumEncodedBytes) {
         if (frames == null) throw new ArgumentNullException(nameof(frames));
         using var stream = new BoundedChunkStream(maximumEncodedBytes);
-        GifWriter.WriteRgba(stream, frames);
+        Write(stream, format, frames);
         return stream.ToArray();
     }
 }

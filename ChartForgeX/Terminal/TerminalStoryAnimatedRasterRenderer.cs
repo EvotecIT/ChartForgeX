@@ -20,18 +20,19 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
         }
         var outputWidth = checked((long)layout.Width * animation.OutputScale);
         var outputHeight = checked((long)layout.Height * animation.OutputScale);
-        var frameBytes = checked(outputWidth * outputHeight * 4);
+        var renderWorkingBytes = AnimatedRasterMemoryBudget.RenderWorkingBytes(outputWidth, outputHeight, 2);
         var retainedFrameBytes = format == AnimatedRasterFormat.Apng
             ? checked(
-                frameBytes * 2 +
-                AnimatedRasterMemoryBudget.ApngWorkingBytes(outputWidth, outputHeight))
+                AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(outputWidth, outputHeight, 2) +
+                AnimatedRasterMemoryBudget.ApngWorkingBytes(outputWidth, outputHeight) +
+                renderWorkingBytes)
             : checked(
-                frameBytes * frameCount +
-                AnimatedRasterMemoryBudget.EncoderRetainedBytes(
+                AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(outputWidth, outputHeight, frameCount) +
+                Math.Max(renderWorkingBytes, AnimatedRasterMemoryBudget.EncoderRetainedBytes(
                     outputWidth,
                     outputHeight,
                     frameCount,
-                    format));
+                    format)));
         if (retainedFrameBytes > AnimatedRasterMemoryBudget.MaximumRetainedBytes) {
             throw new InvalidOperationException(
                 "Animated terminal story would retain " + retainedFrameBytes +

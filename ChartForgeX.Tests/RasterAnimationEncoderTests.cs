@@ -69,6 +69,23 @@ public sealed class RasterAnimationEncoderTests {
         Assert.True(stream.CanWrite);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TinyGifFramesRespectRetainedCollectionOverheadBeforeAllocationOrWriting(bool writeToStream) {
+        using var cancellation = new CancellationTokenSource();
+        var frames = new RepeatedFrames(Frame(1, 1, 100), 4_000_000, cancellation);
+        using var stream = new MemoryStream();
+        var error = Assert.Throws<InvalidOperationException>(() => {
+            if (writeToStream) RasterAnimationEncoder.WriteTo(stream, frames, RasterAnimationFormat.Gif, cancellationToken: cancellation.Token);
+            else RasterAnimationEncoder.Encode(frames, RasterAnimationFormat.Gif, cancellationToken: cancellation.Token);
+        });
+        Assert.Contains("256 MiB", error.Message);
+        Assert.Equal(0, frames.LastRequestedIndex);
+        Assert.Equal(0, stream.Length);
+        Assert.False(cancellation.IsCancellationRequested);
+    }
+
     [Fact]
     public void GifRepresentableLimitsAndApngShortTimingAreExplicit() {
         var image = new RgbaImage(1, 1, new byte[4]);
@@ -139,5 +156,27 @@ public sealed class RasterAnimationEncoderTests {
             base.Write(buffer, offset, count);
             _cancellation.Cancel();
         }
+    }
+
+    private sealed class RepeatedFrames : IReadOnlyList<RasterAnimationFrame> {
+        private readonly RasterAnimationFrame _frame;
+        private readonly CancellationTokenSource _cancellation;
+        internal RepeatedFrames(RasterAnimationFrame frame, int count, CancellationTokenSource cancellation) {
+            _frame = frame; Count = count; _cancellation = cancellation;
+        }
+        public int Count { get; }
+        internal int LastRequestedIndex { get; private set; } = -1;
+        public RasterAnimationFrame this[int index] {
+            get {
+                LastRequestedIndex = index;
+                // Stop a regressed guard before the test can allocate and encode millions of indexed frames.
+                if (index > 0) _cancellation.Cancel();
+                return _frame;
+            }
+        }
+        public IEnumerator<RasterAnimationFrame> GetEnumerator() {
+            for (var index = 0; index < Count; index++) yield return this[index];
+        }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

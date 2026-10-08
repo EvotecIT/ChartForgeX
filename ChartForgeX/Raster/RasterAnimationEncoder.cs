@@ -78,7 +78,7 @@ public static class RasterAnimationEncoder {
             throw new ArgumentException("GIF canvas dimensions must fit unsigned 16-bit fields.", nameof(frames));
         }
         try {
-            workingBytes = checked((long)frames.Count * 48 + (format == RasterAnimationFormat.Gif
+            workingBytes = checked(AnimatedRasterMemoryBudget.TimedFrameDescriptorBytes(frames.Count, format) + (format == RasterAnimationFormat.Gif
                 ? AnimatedRasterMemoryBudget.EncoderRetainedBytes(width, height, frames.Count, AnimatedRasterFormat.Gif)
                 : AnimatedRasterMemoryBudget.ApngWorkingBytes(width, height)));
         } catch (OverflowException) {
