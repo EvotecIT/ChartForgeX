@@ -14,7 +14,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (source.Count < 2) throw new InvalidOperationException("A topology route requires both endpoints: " + edge.Id);
         var points = source.Select(Point).ToArray();
         var colorRole = edge.IsMuted ? SvgColorRole.Surface : !string.IsNullOrWhiteSpace(edge.Color) ? SvgColorRole.Any : SvgColorRole.Status;
-        var authoredColor = EdgeColor(edge, Theme(), _options);
+        var authoredColor = EdgeColor(edge, _svgTheme ?? Theme(), _options);
         var cssVariable = SvgPaint.TryCssVariable(authoredColor, edge.IsMuted ? _colors.Border : Status(edge.Status), out var resolvedColor, out var sourcePaint);
         if (!cssVariable) resolvedColor = Color(authoredColor, edge.IsMuted ? _colors.Border : Status(edge.Status));
         var paintOpacity = _highlight.IsEdgeHighlighted(edge) || !_highlight.IsActive ? 1 : _highlight.DimmedOpacity;
@@ -64,7 +64,7 @@ internal sealed partial class VisualTopologyCompiler {
                     var geographic = ShouldRenderGeographicRouteHalo(_chart, edge, _nodesById, _options);
                     var halo = Highlight(ChartColorMath.WithOpacity(_colors.Background, RouteHaloOpacity(geographic)), _highlight.IsEdgeHighlighted(edge));
                     _builder.Path(path, stroke: halo, strokeWidth: width + RouteHaloStrokeExtra(geographic) * _scale,
-                        role: "topology-edge-route-halo", dash: dash, paint: Paint(stroke: halo, strokeRole: SvgColorRole.Surface));
+                        role: "topology-edge-route-halo", dash: dash, paint: new VisualScenePaintBinding(stroke: BackgroundPaint(halo, RouteHaloOpacity(geographic) * HighlightFactor(_highlight.IsEdgeHighlighted(edge)))));
                 }
                 foreach (var layer in ChartLineVisualLayers.Build(color, width / _scale, style)) {
                     if (layer.IsVisible) _builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth * _scale,
@@ -97,7 +97,7 @@ internal sealed partial class VisualTopologyCompiler {
             var metrics = _builder.MeasureText(text!, size * _scale, 600);
             var b = new ChartRect(p.X - metrics.Width / 2 - 3 * _scale, p.Y - metrics.Height / 2 - 3 * _scale, metrics.Width + 6 * _scale, metrics.Height + 6 * _scale);
             var fill = EdgeLabelColor(_colors.Surface, edge);
-            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, fill, role: "topology-endpoint-label-surface", paint: Paint(fill, SvgColorRole.Surface));
+            if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, fill, role: "topology-endpoint-label-surface", paint: new VisualScenePaintBinding(CardPaint(fill, EdgeLabelOpacity(edge))));
             Text(text!, b, size, EdgeLabelColor(_colors.Foreground, edge), 600, "topology-endpoint-label", centered: true, opacity: EdgeLabelOpacity(edge));
         }
     }
@@ -130,32 +130,42 @@ internal sealed partial class VisualTopologyCompiler {
             if (_options.IncludeEdgeLabelLeaders && ShouldDrawEdgeLabelLeader(layout, _options)) {
                 var from = Point(new ChartPoint(layout.AnchorX, layout.AnchorY)); var to = Point(EdgeLabelLeaderEnd(layout));
                 var color = LabelColor(_colors.Border);
-                _builder.Line(from.X, from.Y, to.X, to.Y, color, _context.Theme.AxisStrokeWidth * _scale, "topology-edge-label-leader", paint: Paint(stroke: color, strokeRole: SvgColorRole.Surface));
+                _builder.Line(from.X, from.Y, to.X, to.Y, color, _context.Theme.AxisStrokeWidth * _scale, "topology-edge-label-leader", paint: new VisualScenePaintBinding(stroke: BorderPaint(color, EdgeLabelOpacity(edge))));
             }
             if (_options.IncludeEdgeLabelBackplates) {
                 var fill = LabelColor(ChartColorMath.WithOpacity(Color(EdgeLabelBackplateFill(Theme(), _options), _colors.Surface), EdgeLabelBackplateFillOpacity(_options)));
                 var stroke = LabelColor(ChartColorMath.WithOpacity(_colors.Border, EdgeLabelBackplateStrokeOpacity(_options)));
                 _builder.Rect(bounds, fill, stroke, EdgeLabelBackplateStrokeWidth * _scale,
-                    EdgeLabelBackplateRadius(_options) * _scale, "topology-edge-label-surface", paint: Paint(fill, SvgColorRole.Surface, stroke, SvgColorRole.Surface));
+                    EdgeLabelBackplateRadius(_options) * _scale, "topology-edge-label-surface", paint: new VisualScenePaintBinding(
+                        IsMonitoringDashboardStyle(_options) ? CardPaint(fill, EdgeLabelBackplateFillOpacity(_options) * EdgeLabelOpacity(edge)) : BackgroundPaint(fill, EdgeLabelBackplateFillOpacity(_options) * EdgeLabelOpacity(edge)),
+                        BorderPaint(stroke, EdgeLabelBackplateStrokeOpacity(_options) * EdgeLabelOpacity(edge))));
             }
             else if (ShouldDrawEdgeLabelClearance(layout, _options)) {
                 var containingGroup = EdgeLabelClearanceGroup(_chart, layout);
-                var fill = ChartColorMath.WithOpacity(Color(EdgeLabelClearanceFill(containingGroup, Theme(), _options), _colors.Background),
-                    EdgeLabelClearanceOpacity(containingGroup));
+                var hasGroupSurface = containingGroup != null && _options.IncludeGroups;
+                var groupAccent = containingGroup == null ? _colors.Accent : Color(containingGroup.Color ?? ResolveGroupIcon(containingGroup, _options)?.Color, Status(containingGroup.Status));
+                var tintAmount = IsMonitoringDashboardStyle(_options) ? .055 : .10;
+                var baseFill = !hasGroupSurface ? _colors.Background : UseNeutralGroupSurface(_options) ? _colors.Surface
+                    : ChartColorMath.BlendPremultiplied(_colors.Background, groupAccent, tintAmount);
+                var fill = ChartColorMath.WithOpacity(baseFill, EdgeLabelClearanceOpacity(containingGroup));
+                var fillPaint = !hasGroupSurface ? BackgroundPaint(baseFill)
+                    : UseNeutralGroupSurface(_options) ? CardPaint(baseFill)
+                    : SvgPaint.Mix(baseFill, BackgroundPaint(_colors.Background), GroupAccentPaint(containingGroup!, groupAccent, true), tintAmount);
                 using var clearance = _builder.PushGroup(null, null, new Dictionary<string, string> {
                     ["data-clearance-surface"] = containingGroup == null ? "background" : "group",
                     ["data-clearance-group-id"] = containingGroup?.Id ?? string.Empty
                 });
                 _builder.Rect(Bounds(EdgeLabelClearanceX(layout, layout.CenterX), EdgeLabelClearanceY(layout, layout.CenterY),
                     EdgeLabelClearanceWidth(layout), EdgeLabelClearanceHeight(layout)), LabelColor(fill),
-                    radius: EdgeLabelClearanceRadius * _scale, role: "topology-edge-label-clearance", paint: Paint(LabelColor(fill), SvgColorRole.Surface));
+                    radius: EdgeLabelClearanceRadius * _scale, role: "topology-edge-label-clearance", paint: new VisualScenePaintBinding(fillPaint.WithOpacity(LabelColor(fill), EdgeLabelClearanceOpacity(containingGroup) * EdgeLabelOpacity(edge))));
             }
             var labels = new[] { layout.Label, layout.SecondaryLabel, layout.TertiaryLabel }.Where(label => !string.IsNullOrWhiteSpace(label)).ToArray();
             var height = bounds.Height / Math.Max(1, labels.Length);
             ChartRect? measured = null;
             for (var i = 0; i < labels.Length; i++) {
                 var textBounds = Text(labels[i], new ChartRect(bounds.X + 4 * _scale, bounds.Y + i * height, Math.Max(0, bounds.Width - 8 * _scale), height),
-                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), LabelColor(i == 0 ? _colors.Foreground : _colors.MutedForeground), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true, opacity: EdgeLabelOpacity(edge));
+                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), LabelColor(i == 0 ? _colors.Foreground : _colors.MutedForeground), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true,
+                    paint: i == 0 ? ForegroundPaint(LabelColor(_colors.Foreground), EdgeLabelOpacity(edge)) : MutedPaint(LabelColor(_colors.MutedForeground), EdgeLabelOpacity(edge)), opacity: EdgeLabelOpacity(edge));
                 if (!textBounds.HasValue) continue;
                 if (!measured.HasValue) measured = textBounds;
                 else {
@@ -184,10 +194,10 @@ internal sealed partial class VisualTopologyCompiler {
             var commands = new List<ChartPathCommand>();
             for (var i = 0; i < xy.Length; i += 2) { var p = P(xy[i], xy[i + 1]); commands.Add(i == 0 ? ChartPathCommand.MoveTo(p.X, p.Y) : ChartPathCommand.LineTo(p.X, p.Y)); }
             _builder.Path(new ChartPath(commands), fill ? color : _colors.Surface, color, _context.Theme.AxisStrokeWidth * _scale, "topology-marker", close: true,
-                paint: new VisualScenePaintBinding(fill ? sourcePaint ?? SvgPaint.Of(color, colorRole) : SvgPaint.Of(_colors.Surface, SvgColorRole.Surface), sourcePaint ?? SvgPaint.Of(color, colorRole)));
+                paint: new VisualScenePaintBinding(fill ? sourcePaint ?? SvgPaint.Of(color, colorRole) : CardPaint(_colors.Surface), sourcePaint ?? SvgPaint.Of(color, colorRole)));
         }
         void Circle(double x, bool fill) { var p = P(x, 0); _builder.Ellipse(p.X, p.Y, 3 * _scale, 3 * _scale, fill ? color : _colors.Surface, color, _context.Theme.AxisStrokeWidth * _scale, "topology-marker",
-            paint: new VisualScenePaintBinding(fill ? sourcePaint ?? SvgPaint.Of(color, colorRole) : SvgPaint.Of(_colors.Surface, SvgColorRole.Surface), sourcePaint ?? SvgPaint.Of(color, colorRole))); }
+            paint: new VisualScenePaintBinding(fill ? sourcePaint ?? SvgPaint.Of(color, colorRole) : CardPaint(_colors.Surface), sourcePaint ?? SvgPaint.Of(color, colorRole))); }
         switch (kind) {
             case TopologyMarkerKind.Arrow:
                 switch (_options.ArrowMarkerStyle) {

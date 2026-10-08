@@ -44,7 +44,7 @@ internal sealed partial class VisualTopologyCompiler {
                         // the common measured text fitter still owns line and width containment.
                         var symbolRatio = DotNodeSymbolFontSize / 11;
                         var symbolSize = Math.Min(_context.Theme.Typography.DataLabelSize, node.Height) * symbolRatio;
-                        Text(node.Symbol!, bounds, symbolSize, _colors.Surface, 700, "topology-node-symbol", centered: true, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface), fitSingleLine: true);
+                        Text(node.Symbol!, bounds, symbolSize, _colors.Surface, 700, "topology-node-symbol", centered: true, paint: CardPaint(_colors.Surface), fitSingleLine: true);
                     }
                 }
                 else if (node.Shape.HasValue) {
@@ -69,13 +69,13 @@ internal sealed partial class VisualTopologyCompiler {
             if (_options.IncludeStatusBadges && node.ShowStatusBadge && mode != TopologyNodeDisplayMode.Dot) {
                 var status = Highlight(Status(node.Status), active);
                 using var statusGroup = _builder.PushGroup(node.Id + "-status", "topology-node-status", new Dictionary<string, string> { ["data-node-id"] = node.Id });
-                using (PinnedState()) _builder.Ellipse(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: Paint(status, SvgColorRole.Status));
+                using (PinnedState()) _builder.Ellipse(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: new VisualScenePaintBinding(StatusPaint(node.Status, status, HighlightFactor(active))));
             }
             if (!string.IsNullOrWhiteSpace(node.Badge)) {
                 var reserved = NodeBadgeBounds(node, mode, _options);
                 var badge = Bounds(reserved.X, reserved.Y, reserved.Width, reserved.Height);
                 _builder.Rect(badge, accent, radius: 4 * _scale, role: "topology-node-badge-surface", paint: new VisualScenePaintBinding(accentPaint));
-                Text(NodeBadge(node), badge, _context.Theme.Typography.DataLabelSize * .75, _colors.Surface, 600, "topology-node-badge", 1, centered: true, paint: SvgPaint.Of(_colors.Surface, SvgColorRole.Surface));
+                Text(NodeBadge(node), badge, _context.Theme.Typography.DataLabelSize * .75, _colors.Surface, 600, "topology-node-badge", 1, centered: true, paint: CardPaint(_colors.Surface));
             }
         }
         _builder.AddRegion(new VisualSemanticRegion(node.Id, "topology-node", bounds, node.Label));
@@ -86,14 +86,14 @@ internal sealed partial class VisualTopologyCompiler {
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
         var titleLines = TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
         var height = Math.Min(bounds.Height, _builder.MeasureText("Ag", size * _scale, 600).LineHeight * titleLines);
-        Text(label, new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(_colors.Foreground, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label");
+        Text(label, new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(_colors.Foreground, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label", opacity: HighlightFactor(active));
         var y = bounds.Y + height;
         if (!string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles)) {
             var subtitleHeight = _builder.MeasureText("Ag", size * .85 * _scale, 400).LineHeight * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
             var subtitle = new ChartRect(bounds.X, y, bounds.Width, Math.Min(Math.Max(0, bounds.Bottom - y), subtitleHeight));
             if (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) {
                 BuildSubtitleChip(node, EffectiveNodeDisplayMode(node, _options), node.Y + (EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.CompactCard ? 31 : CardSubtitleChipOffset(node, _options)), accent, active);
-            } else Text(node.Subtitle!, subtitle, size * .85, Highlight(_colors.MutedForeground, active), 400, "topology-node-subtitle", _options.MaxNodeSubtitleLines, caption);
+            } else Text(node.Subtitle!, subtitle, size * .85, Highlight(_colors.MutedForeground, active), 400, "topology-node-subtitle", _options.MaxNodeSubtitleLines, caption, paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)));
             y += subtitle.Height;
         }
         if (node.Details.Count > 0) {
@@ -106,7 +106,7 @@ internal sealed partial class VisualTopologyCompiler {
             if (bounds.Width > 0 && separator >= bounds.Top && y + detailLineHeight <= bounds.Bottom) {
                 var color = Highlight(_colors.Border, active);
                 _builder.Line(bounds.X, separator, bounds.Right, separator, color, _context.Theme.AxisStrokeWidth * _scale,
-                    "topology-node-detail-separator", paint: Paint(stroke: color, strokeRole: SvgColorRole.Surface));
+                    "topology-node-detail-separator", paint: new VisualScenePaintBinding(stroke: BorderPaint(color, HighlightFactor(active))));
             }
         }
         foreach (var detail in node.Details) {
@@ -124,11 +124,11 @@ internal sealed partial class VisualTopologyCompiler {
                         !string.IsNullOrWhiteSpace(authored) ? SvgColorRole.Any : detail.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Text,
                         artworkOpacity: HighlightFactor(active), sourceFallback: fallback);
                 }
-                else using (PinnedState()) _builder.Ellipse(row.X + 5 * _scale, row.Y + row.Height / 2, 2.5 * _scale, 2.5 * _scale, color, role: "topology-detail-status", paint: new VisualScenePaintBinding(SourcePaint(detail.Color, color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
+                else using (PinnedState()) _builder.Ellipse(row.X + 5 * _scale, row.Y + row.Height / 2, 2.5 * _scale, 2.5 * _scale, color, role: "topology-detail-status", paint: new VisualScenePaintBinding(SourcePaint(detail.Color ?? (detail.Status.HasValue ? _svgTheme?.StatusColor(detail.Status.Value) : _svgTheme?.Foreground), color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
             }
             Text(detail.Text ?? (detail.Label + " " + detail.Value), new ChartRect(row.X + reserve, row.Y, Math.Max(0, row.Width - reserve), row.Height), size * .8,
                 Highlight(Color(detail.Color, _colors.Foreground), active), 400, "topology-node-detail", 1,
-                paint: SourcePaint(detail.Color, Highlight(Color(detail.Color, _colors.Foreground), active), string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
+                paint: SourcePaint(detail.Color ?? _svgTheme?.Foreground, Highlight(Color(detail.Color, _colors.Foreground), active), string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
             y += row.Height;
         }
     }
@@ -200,10 +200,10 @@ internal sealed partial class VisualTopologyCompiler {
         foreach (var line in lines) {
             if (line.Length == 0) { baseline += lineHeight; continue; }
             _builder.Text(line, centered ? bounds.X + bounds.Width / 2 : bounds.X, baseline, size, color, weight, role, id,
-                centered ? TextAlignment.Center : TextAlignment.Left, paint ?? SvgPaint.Of(color, SvgColorRole.Text),
+                centered ? TextAlignment.Center : TextAlignment.Left, paint ?? ForegroundPaint(color, opacity),
                 stroke: halo ? haloColor : null,
                 strokeWidth: halo ? (role == "topology-endpoint-label" ? 3 * _scale : ChartTextHalo.SvgStrokeWidth(size / _scale, weight >= 600) * _scale) : 0,
-                strokePaint: halo ? SvgPaint.Of(haloColor, SvgColorRole.Surface) : null);
+                strokePaint: halo ? BackgroundPaint(haloColor, opacity) : null);
             baseline += lineHeight;
         }
         if (lines.Count == 0) return null;
@@ -234,7 +234,7 @@ internal sealed partial class VisualTopologyCompiler {
         var authored = node.Color ?? icon?.Color;
         var opacity = artworkOpacity ?? HighlightFactor(_highlight.IsNodeHighlighted(node));
         var fallback = sourceFallback ?? Status(node.Status);
-        var glyphPaint = SourcePaint(authored, color, glyphRole, opacity, fallback);
+        var glyphPaint = SourcePaint(authored ?? (glyphRole == SvgColorRole.Text ? _svgTheme?.Foreground : glyphRole == SvgColorRole.Series ? _svgTheme?.Accent : _svgTheme?.StatusColor(node.Status)), color, glyphRole, opacity, fallback);
         var baseColor = SvgPaint.TryCssVariable(authored, fallback, out var variableFallback, out _) ? variableFallback : Color(authored, color);
         BuildGlyphSurface(node, shape, x, y, color, glyphScale, glyphRole, glyphPaint, baseColor,
             string.IsNullOrWhiteSpace(authored) ? 1 : opacity, fallback);

@@ -18,6 +18,7 @@ internal sealed partial class VisualTopologyCompiler {
     private readonly TopologyRenderOptions _options;
     private VisualSceneBuilder _builder;
     private readonly VisualThemeColors _colors;
+    private readonly TopologyTheme? _svgTheme;
     private readonly bool _resolvedLayout;
     private readonly bool _naturalSize;
     private readonly Dictionary<TopologyEdge, IReadOnlyList<ChartPoint>> _routes = new();
@@ -36,8 +37,9 @@ internal sealed partial class VisualTopologyCompiler {
     private double _offsetX;
     private double _offsetY;
 
-    internal VisualTopologyCompiler(TopologyChart source, VisualRenderContext context, TopologyRenderOptions options, bool resolvedLayout = false, bool naturalSize = false) {
+    internal VisualTopologyCompiler(TopologyChart source, VisualRenderContext context, TopologyRenderOptions options, bool resolvedLayout = false, bool naturalSize = false, TopologyTheme? svgTheme = null) {
         _source = source;
+        _svgTheme = svgTheme?.Clone();
         _context = ResolveFrame(context, source, options);
         _options = options.CloneForRendering();
         _options.ResolvedIconLabelFontSize = context.Theme.Typography.DataLabelSize * (10.5 / 11);
@@ -67,7 +69,7 @@ internal sealed partial class VisualTopologyCompiler {
         var entries = legend?.Items.Select((item, index) => new VisualLegendEntry(item.Label,
             Color(item.Color, item.Status.HasValue ? Status(item.Status.Value) : _colors.Accent), index.ToString(CultureInfo.InvariantCulture),
             marker: (builder, bounds) => BuildLegendMarker(item, bounds))).ToArray() ?? Array.Empty<VisualLegendEntry>();
-        _plot = VisualFrameLayout.Build(_builder, _context, entries);
+        _plot = VisualFrameLayout.Build(_builder, _context, entries, FramePaints());
         if (_plot.Height <= 0) ReserveNaturalFrame(entries);
         if (_plot.Width <= 0 || _plot.Height <= 0) throw new InvalidOperationException("The common frame leaves no topology viewport.");
         input.Title = null; input.Subtitle = null; input.Legend = null;

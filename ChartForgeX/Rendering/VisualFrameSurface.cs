@@ -6,7 +6,7 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Builds one bounded card silhouette and its soft shadow using shared native geometry.</summary>
 internal static class VisualFrameSurface {
-    internal static void Paint(VisualSceneBuilder builder, VisualRenderContext context, VisualThemeColors colors) {
+    internal static void Paint(VisualSceneBuilder builder, VisualRenderContext context, VisualThemeColors colors, VisualFramePaints? paints = null) {
         var size = context.Layout.Size;
         var stroke = Math.Min(context.Theme.AxisStrokeWidth, Math.Min(size.Width, size.Height));
         var inset = stroke / 2;
@@ -34,7 +34,7 @@ internal static class VisualFrameSurface {
         }
         builder.Rect(new ChartRect(inset, inset, size.Width - 2 * inset, size.Height - 2 * inset),
             colors.ElevatedSurface, colors.Border, stroke, radius: context.Theme.CardRadius, role: "frame-card",
-            paint: new VisualScenePaintBinding(fill: SvgPaint.Of(colors.ElevatedSurface, SvgColorRole.Surface),
-                stroke: SvgPaint.Of(colors.Border, SvgColorRole.Grid)));
+            paint: new VisualScenePaintBinding(fill: paints?.ElevatedSurface ?? SvgPaint.Of(colors.ElevatedSurface, SvgColorRole.Surface),
+                stroke: paints?.Border ?? SvgPaint.Of(colors.Border, SvgColorRole.Grid)));
     }
 }
