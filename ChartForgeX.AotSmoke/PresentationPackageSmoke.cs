@@ -31,6 +31,7 @@ internal static class PresentationPackageSmoke {
         Require(motion.ToPng().SequenceEqual(grid.ToPng()), "Stories motion completed raster differs from the static source.");
         var story = VisualStory.Create("AOT story").WithSize(480, 320);
         story.Scene("ready", "Ready").Panel("result", new VisualStoryTextSurface("Ready", emphasized: true));
+        story.Outcome("ready", "Ready", "result");
         Require(story.ToSvg().Contains("Ready", StringComparison.Ordinal), "Stories scene SVG failed.");
         Require(story.ToPng().Length > 64, "Stories scene raster failed.");
         var topology = TopologyChart.Create().WithViewport(240, 160).WithLegend(null)

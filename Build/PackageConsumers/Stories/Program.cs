@@ -32,6 +32,7 @@ internal static class Program {
         var story = VisualStory.Create("Packed story").WithSize(480, 320);
         story.Scene("first", "Start", 0.5).Panel("text", new VisualStoryTextSurface("Ready"));
         story.Scene("second", "Finish", 0.5).Panel("image", new VisualStoryMediaSurface(image, "Two pixels"));
+        story.Outcome("ready", "Ready", "image");
         PackageAssertions.Require(PackageAssertions.Contains(story.ToTranscript(), "Ready"), "Story transcript is missing.");
         PackageAssertions.Png(story.ToPng());
         var options = VisualStoryAnimationOptions.Create().WithFramesPerSecond(2).WithEndHold(0).WithTransition(0).WithLoop(false);
