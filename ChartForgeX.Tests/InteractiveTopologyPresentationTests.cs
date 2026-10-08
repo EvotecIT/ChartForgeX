@@ -178,15 +178,23 @@ public sealed class InteractiveTopologyPresentationTests {
         var wrapper = page.Locator(".cfx-topology-wrapper");
         var viewport = page.Locator(".cfx-topology-viewport");
         var node = page.Locator("[data-cfx-role='topology-node'][data-node-id='source']");
-        await viewport.EvaluateAsync("viewport => viewport.addEventListener('pointerdown', event => window.cfxDragPointerId = event.pointerId)");
         var bounds = await node.BoundingBoxAsync();
         Assert.NotNull(bounds);
         await page.Mouse.MoveAsync((float)(bounds.X + bounds.Width / 2), (float)(bounds.Y + bounds.Height / 2));
         await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync((float)(bounds.X + bounds.Width / 2 + 12), (float)(bounds.Y + bounds.Height / 2 + 9));
+        // Snapshot and interrupt within one real movement event so the 280 ms idle timer cannot race browser calls.
+        await viewport.EvaluateAsync(@"(viewport, interruption) => {
+            viewport.addEventListener('pointermove', event => {
+                const wrapper = viewport.closest('.cfx-topology-wrapper');
+                window.cfxInterruptedDragState = [wrapper.getAttribute('data-cfx-topology-dragging'), wrapper.getAttribute('data-cfx-force-moving-edges')];
+                if (interruption === 'lostpointercapture') viewport.releasePointerCapture(event.pointerId);
+                else if (interruption === 'blur') window.dispatchEvent(new Event('blur'));
+                else viewport.dispatchEvent(new PointerEvent('pointercancel', { pointerId: event.pointerId, bubbles: true }));
+            }, { once: true });
+        }", interruption);
         await page.Mouse.MoveAsync((float)(bounds.X + bounds.Width / 2 + 24), (float)(bounds.Y + bounds.Height / 2 + 18));
-        Assert.Equal("true", await wrapper.GetAttributeAsync("data-cfx-topology-dragging"));
-        Assert.Equal("true", await wrapper.GetAttributeAsync("data-cfx-force-moving-edges"));
-        await viewport.EvaluateAsync("(viewport, interruption) => { if (interruption === 'lostpointercapture') viewport.releasePointerCapture(window.cfxDragPointerId); else if (interruption === 'blur') window.dispatchEvent(new Event('blur')); else viewport.dispatchEvent(new PointerEvent('pointercancel', { pointerId: window.cfxDragPointerId, bubbles: true })); }", interruption);
+        Assert.Equal(new[] { "true", "true" }, await page.EvaluateAsync<string[]>("() => window.cfxInterruptedDragState"));
         await page.Mouse.MoveAsync((float)(bounds.X + bounds.Width / 2 + 28), (float)(bounds.Y + bounds.Height / 2 + 18));
         await page.Mouse.UpAsync();
         Assert.Null(await wrapper.GetAttributeAsync("data-cfx-topology-dragging"));
