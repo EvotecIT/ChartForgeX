@@ -24,5 +24,6 @@
     <EmbeddedResource Include="Snippets\FiveLineChart.cs.txt" LogicalName="ChartForgeX.Examples.FiveLineChart.cs" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.svg" LogicalName="ChartForgeX.Examples.styled-multilingual-text.svg" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.html" LogicalName="ChartForgeX.Examples.styled-multilingual-text.html" WithCulture="false" />
+    <EmbeddedResource Include="Assets\Gallery\*" LogicalName="ChartForgeX.Examples.Gallery.%(Filename)%(Extension)" WithCulture="false" />
   </ItemGroup>
 </Project>

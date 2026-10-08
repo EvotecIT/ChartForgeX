@@ -19,20 +19,20 @@ New-BenchmarkSuite 'chartforgex-charts' {
     Set-BenchmarkProfile Current -Cleanup KeepOnFailure
     Add-BenchmarkCases {
         foreach ($fixture in $fixtureNames) {
-            foreach ($format in 'Svg', 'Png') {
-                foreach ($lane in 'Baseline', 'Candidate') {
-                    Add-BenchmarkCase "$lane-$fixture-$format" @{ Lane = $lane; Fixture = $fixture; Format = $format }
-                }
-            }
+            Add-BenchmarkCase $fixture @{ Fixture = $fixture }
         }
     }
-    Set-BenchmarkSetup { param($case, $run) $run.Lane = $lanes["$($case.Lane)-$($case.Fixture)"]; $run.Lane.Reset() }
-    Add-BenchmarkEngine ChartForgeX {
-        Add-BenchmarkOperation Execute {
-            param($case, $run)
-            $before = [GC]::GetAllocatedBytesForCurrentThread()
-            $run.Result = if ($case.Format -eq 'Svg') { $run.Lane.Svg() } else { $run.Lane.Png() }
-            $run.Allocated = [GC]::GetAllocatedBytesForCurrentThread() - $before
+    Set-BenchmarkSetup { param($case, $run) $run.Lane = $lanes["$($case.Engine)-$($case.Fixture)"]; $run.Lane.Reset() }
+    foreach ($lane in 'Baseline', 'Candidate') {
+        Add-BenchmarkEngine $lane {
+            foreach ($format in 'Svg', 'Png') {
+                Add-BenchmarkOperation $format {
+                    param($case, $run)
+                    $before = [GC]::GetAllocatedBytesForCurrentThread()
+                    $run.Result = if ($case.Operation -eq 'Svg') { $run.Lane.Svg() } else { $run.Lane.Png() }
+                    $run.Allocated = [GC]::GetAllocatedBytesForCurrentThread() - $before
+                }
+            }
         }
     }
     Add-BenchmarkValidation { param($case, $run) $run.Lane.Validate() }
@@ -40,6 +40,7 @@ New-BenchmarkSuite 'chartforgex-charts' {
     Add-BenchmarkMetric ThreadAllocatedBytes { param($case, $run) $run.Allocated }
     Add-BenchmarkMetadata BaselineSha256 (Get-FileHash -LiteralPath $baseline).Hash
     Add-BenchmarkMetadata CandidateSha256 (Get-FileHash -LiteralPath $candidate).Hash
+    Add-BenchmarkMetadata PairedOrdering 'Shared fixture scenarios and format operations pair Baseline/Candidate engines; Rotated alternates each paired group.'
     Add-BenchmarkMetadata Scope 'Svg renders a fresh report chart with host colour variables and an id scope; Png renders the same chart natively. Validation outside timing requires byte-identical SVG and PNG against the baseline binary. ThreadAllocatedBytes is the managed allocation of the rendering thread during the operation.'
     Add-BenchmarkMetadata LogicalProcessors ([Environment]::ProcessorCount)
     Add-BenchmarkMetadata ProcessorPlacement 'Baseline and candidate share the same process and processor placement. Record host placement and power policy when qualifying a comparison.'

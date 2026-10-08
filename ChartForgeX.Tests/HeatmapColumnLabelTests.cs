@@ -153,11 +153,18 @@ public sealed class HeatmapColumnLabelTests {
         var chart = Chart.Create().WithSize(480, 320).WithXAxisLabelAngle(-30)
             .WithXLabels(Enumerable.Range(1, 60).Select(i => "Check " + i.ToString(CultureInfo.InvariantCulture)).ToArray())
             .AddHeatmapRow("DC01", Enumerable.Range(0, 60).Select(i => (double)(i % 10)).ToArray());
-        var labels = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-column-label");
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var labels = ByRole(XDocument.Parse(prepared.ToSvg()), "heatmap-column-label");
         Assert.InRange(labels.Length, 2, 59);
-        var xs = labels.Select(label => Number(label, "x")).ToArray();
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.column-label-density");
+        Assert.Equal(chart.Options.XAxisLabels.Select(label => label.Text), prepared.Regions.Where(region => region.Role == "heatmap-column-label").Select(region => region.Label));
+        // SVG writes each right-aligned caption at its measured left edge. Its
+        // varying text widths are unrelated to the separation between columns.
+        var geometry = ColumnGeometry(prepared);
+        var xs = geometry.Select(label => label.Text.X).ToArray();
         var pitch = xs.Zip(xs.Skip(1), (a, b) => b - a).Min();
-        Assert.True(pitch * Math.Sin(Math.PI / 6) >= chart.Options.Theme.TickLabelFontSize * 0.9, "Neighbouring rotated labels keep a line of text between them.");
+        Assert.True(pitch * Math.Sin(Math.PI / 6) >= geometry.Max(label => label.Text.Text.Metrics.Height) * .9 - .000001,
+            "Neighbouring rotated labels keep their measured line separation at the configured font size.");
     }
 
     [Theory]

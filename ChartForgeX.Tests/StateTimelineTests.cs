@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using Xunit;
@@ -336,10 +337,19 @@ public sealed class StateTimelineTests {
         var overflow = prepared.Regions.Single(region => region.Id == "legend-overflow");
         Assert.Contains("more entries", overflow.Label);
         Assert.NotEmpty(ByRole(svg, "legend-entry-omitted"));
-        var track = Lanes(chart).Single().Bounds;
+        var track = prepared.Regions.Single(region => region.Role == "schedule-lane").Bounds;
+        var plot = prepared.Regions.Single(region => region.Role == "schedule-plot").Bounds;
         Assert.True(track.Height >= 18);
-        Assert.All(ByRole(svg, "state-legend-swatch"), item => Assert.InRange(Number(item, "y"), track.Bottom, height - 10));
-        Assert.True(overflow.Bounds.Top >= track.Bottom);
+        var swatches = ByRole(svg, "state-legend-swatch");
+        Assert.NotEmpty(swatches);
+        Assert.All(swatches, item => {
+            Assert.InRange(Number(item, "y"), chart.Options.Padding.Top, plot.Top);
+            Assert.True(Number(item, "y") + Number(item, "height") <= plot.Top);
+        });
+        var legends = prepared.Regions.Where(region => region.Role == "legend" && region.Bounds.Height > 0).ToArray();
+        Assert.NotEmpty(legends);
+        Assert.All(legends, legend => Assert.True(legend.Bounds.Bottom <= plot.Top));
+        Assert.True(overflow.Bounds.Bottom <= plot.Top);
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -359,30 +369,49 @@ public sealed class StateTimelineTests {
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void Render_LargeAxisStyles_KeepTicksTitleAndLegendSeparated(bool largeTicks) {
+    [InlineData(false, ChartLegendPosition.TopLeft)]
+    [InlineData(true, ChartLegendPosition.TopLeft)]
+    [InlineData(false, ChartLegendPosition.Bottom)]
+    [InlineData(true, ChartLegendPosition.Bottom)]
+    public void Render_LargeAxisStyles_KeepTicksTitleAndLegendSeparated(bool largeTicks, ChartLegendPosition position) {
         var chart = CreateChart().WithSize(720, 500).WithXAxis("Time");
+        chart.WithLegendPosition(position);
         if (largeTicks) chart.Options.TickLabelStyle.FontSize = 32;
         chart.Options.XAxis.LabelFormatter = _ => "T";
         chart.Options.AxisTitleStyle.FontSize = 42;
-        var svg = XDocument.Parse(chart.ToSvg());
-        var tick = ByRole(svg, "schedule-tick-label")[0];
-        var title = ByRole(svg, "schedule-x-axis-title").Single();
-        var legend = ByRole(svg, "legend-label")[0];
-        Assert.True(Number(tick, "y") + Number(tick, "font-size") * 0.2 < Number(title, "y") - Number(title, "font-size"));
-        Assert.True(Number(title, "y") + Number(title, "font-size") * 0.2 < Number(legend, "y") - Number(legend, "font-size") * 0.6);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var plot = prepared.Regions.Single(region => region.Role == "schedule-plot").Bounds;
+        Assert.True(plot.Height >= 18);
+        var ticks = VisibleTextBounds(prepared, "schedule-tick-label");
+        var title = Assert.Single(VisibleTextBounds(prepared, "schedule-x-axis-title"));
+        Assert.NotEmpty(ticks);
+        Assert.All(ticks, tick => {
+            Assert.True(tick.Top >= plot.Bottom);
+            Assert.True(tick.Bottom <= title.Top);
+        });
+        var legends = prepared.Regions.Where(region => region.Role == "legend" && region.Bounds.Height > 0).ToArray();
+        Assert.NotEmpty(legends);
+        Assert.All(legends, legend => {
+            Assert.True(position == ChartLegendPosition.Bottom ? title.Bottom <= legend.Bounds.Top : legend.Bounds.Bottom <= plot.Top);
+        });
+        Assert.True(title.Bottom <= chart.Options.Size.Height - chart.Options.Padding.Bottom);
         Assert.NotEmpty(chart.ToPng());
     }
 
     [Fact]
-    public void Render_LargeLegendWithoutAxes_RemainsBelowLastLane() {
+    public void Render_LargeLegendWithoutAxes_KeepsDefaultTopLegendAboveVisibleLanes() {
         var chart = CreateChart().WithSize(390, 400).WithAxes(false);
         chart.Options.LegendStyle.FontSize = 32;
-        var svg = XDocument.Parse(chart.ToSvg());
-        var bottom = Lanes(chart).Max(region => region.Bounds.Bottom);
-        var first = ByRole(svg, "legend-label")[0];
-        Assert.True(Number(first, "y") - Number(first, "font-size") * 0.6 > bottom);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var lanes = prepared.Regions.Where(region => region.Role == "schedule-lane").ToArray();
+        var firstLaneTop = lanes.Min(region => region.Bounds.Top);
+        Assert.All(lanes, lane => Assert.True(lane.Bounds.Height >= 18));
+        var labels = VisibleTextBounds(prepared, "legend-label");
+        Assert.NotEmpty(labels);
+        Assert.All(labels, label => {
+            Assert.True(label.Top >= chart.Options.Padding.Top);
+            Assert.True(label.Bottom < firstLaneTop);
+        });
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -413,7 +442,7 @@ public sealed class StateTimelineTests {
     }
 
     private static Chart CreateChart() {
-        // Tall enough for three readable lanes below the summary header and above the axis, its title, and the legend.
+        // Tall enough for three readable lanes below the legend and summary header, with space for the axis and its title.
         var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 360).WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(
                 new ChartStateCategory("up", "Up", Up),
@@ -440,6 +469,10 @@ public sealed class StateTimelineTests {
 
     private static VisualSemanticRegion[] Lanes(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context)
         .Regions.Where(region => region.Role == "schedule-lane").ToArray();
+
+    private static ChartRect[] VisibleTextBounds(PreparedVisual prepared, string role) => prepared.Scene.Nodes.OfType<VisualSceneText>()
+        .Where(text => text.Role == role).Select(text => new ChartRect(text.Text.Lines.Min(text.LineLeft),
+            text.Baseline - text.Text.Ascent, text.Text.Metrics.Width, text.Text.Metrics.Height)).ToArray();
 
     private static double Number(XElement element, string attribute) => double.Parse((string)element.RenderedAttribute(attribute)!, CultureInfo.InvariantCulture);
 

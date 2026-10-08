@@ -15,10 +15,12 @@ internal static partial class VisualScalarProgressCompiler {
         .Select((series, index) => new { series, index }).Where(item => item.series.ShowInLegend)
         .Select(item => {
             var circle = item.series.Kind == ChartSeriesKind.Circle;
-            var color = circle ? CircleColor(item.series, colors) : ChartSeriesColours.Resolve(item.series, item.index, colors);
+            var bullet = item.series.Kind == ChartSeriesKind.Bullet;
+            var color = circle ? CircleColor(item.series, colors) : bullet ? BulletColor(item.series, item.index, colors)
+                : ChartSeriesColours.Resolve(item.series, item.index, colors);
             var paint = circle
                 ? SvgPaint.Of(color, item.series.Color.HasValue || item.series.PointColors.Count > 0 && item.series.PointColors[0].HasValue ? SvgColorRole.Series : SvgColorRole.Status)
-                : VisualChartPaint.Series(item.series, color);
+                : bullet ? BulletPaint(item.series, color) : VisualChartPaint.Series(item.series, color);
             return new VisualLegendEntry(item.series.Name, color, Id(item.index), item.series.Kind,
                 item.series.FillPattern, item.series.StateRole, item.series.InteractionIdentityKey, paint: paint);
         }).ToArray();
@@ -105,6 +107,8 @@ internal static partial class VisualScalarProgressCompiler {
     }
 
     private static void Text(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series, int point,
-        string text, ChartRect bounds, string role, string id, ChartColor color, double size, int weight = 400, bool ticks = false) =>
-        VisualRadialPrimitives.Text(builder, text, bounds, Style(chart, context, series, point, color, Math.Min(size, Math.Max(.1, bounds.Height / 1.3)), weight, ticks), role, id);
+        string text, ChartRect bounds, string role, string id, ChartColor color, double size, int weight = 400, bool ticks = false,
+        TextAlignment alignment = TextAlignment.Center) =>
+        VisualRadialPrimitives.Text(builder, text, bounds, Style(chart, context, series, point, color, Math.Min(size, Math.Max(.1, bounds.Height / 1.3)), weight, ticks), role, id,
+            alignment: alignment);
 }

@@ -89,6 +89,15 @@ internal static class ChartHeatmapColumnLabels {
     }
 
     private const double EdgeInset = 4;
+    private const double MinimumLineSeparation = .9;
+
+    /// <summary>Returns the smallest column pitch that can show every measured caption without thinning.</summary>
+    internal static double MinimumPitch(Chart chart, double textHeight, double widestLabel) {
+        var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
+        var length = Math.Min(MaximumRotatedLength(chart, textHeight), widestLabel);
+        return Math.Min(length / Math.Max(.000001, Math.Cos(radians)),
+            textHeight * MinimumLineSeparation / Math.Max(.000001, Math.Sin(radians)));
+    }
 
     /// <summary>
     /// Returns how many columns apart rotated labels are drawn so neighbouring labels do not overlap: every column when
@@ -101,9 +110,9 @@ internal static class ChartHeatmapColumnLabels {
     /// <param name="widestLabel">Width of the widest label at the tick font size.</param>
     public static int Step(Chart chart, double columnPitch, double textHeight, double widestLabel) {
         var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
-        if (Math.Min(MaximumRotatedLength(chart, textHeight), widestLabel) <= columnPitch * Math.Cos(radians)) return 1;
+        if (columnPitch >= MinimumPitch(chart, textHeight, widestLabel) - .000001) return 1;
         var spacing = columnPitch * Math.Sin(radians);
         if (spacing <= 0) return 1;
-        return Math.Max(1, (int)Math.Ceiling(textHeight * 0.9 / spacing - 0.000001));
+        return Math.Max(1, (int)Math.Ceiling(textHeight * MinimumLineSeparation / spacing - 0.000001));
     }
 }

@@ -98,7 +98,7 @@ internal static partial class SmokeTests {
         Verify.Equal(6, prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Count(node => node.Role == "bullet-range"));
         Verify.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "bullet-target"));
         Verify.Equal(new[] { "88%", "74%" }, FamilyLabels(prepared, "bullet-value-label").Select(label => FamilyContent(label)));
-        Verify.Equal(new[] { "target 95%", "target 90%" }, FamilyLabels(prepared, "bullet-target-label").Select(label => FamilyContent(label)));
+        Verify.Equal(new[] { "/ 95%", "/ 90%" }, FamilyLabels(prepared, "bullet-target-label").Select(label => FamilyContent(label)));
         Verify.Equal(new[] { "0%", "25%", "50%", "75%", "100%" }, FamilyLabels(prepared, "bullet-axis-label").Select(label => FamilyContent(label)));
         Verify.NotEmpty(prepared.ToPng());
     }

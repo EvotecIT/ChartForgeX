@@ -17,8 +17,8 @@ internal sealed partial class VisualTopologyCompiler {
         var bounds = new ChartRect(origin.X - width / 2, origin.Y, width, height);
         var stroke = ChartForgeX.Rendering.ChartColorMath.WithOpacity(accent, .4);
         _builder.Rect(bounds, Highlight(_colors.Surface, active), stroke, _context.Theme.AxisStrokeWidth * _scale,
-            _context.Theme.BarRadius * _scale, "topology-node-icon-label", paint: new ChartForgeX.Rendering.VisualScenePaintBinding(SvgPaint.Of(Highlight(_colors.Surface, active), SvgColorRole.Surface), NodeAccentPaint(node, stroke, active, .4)));
-        Text(text, bounds, size, Highlight(_colors.Foreground, active), 700, "topology-node-label", centered: true, id: node.Id + "-label");
+            _context.Theme.BarRadius * _scale, "topology-node-icon-label", paint: new ChartForgeX.Rendering.VisualScenePaintBinding(CardPaint(Highlight(_colors.Surface, active), HighlightFactor(active)), NodeAccentPaint(node, stroke, active, .4)));
+        Text(text, bounds, size, Highlight(_colors.Foreground, active), 700, "topology-node-label", centered: true, id: node.Id + "-label", opacity: HighlightFactor(active));
     }
 
     private void BuildDiagramCaption(TopologyNode node, bool active) {
@@ -29,7 +29,7 @@ internal sealed partial class VisualTopologyCompiler {
         for (var i = 0; i < lines.Count; i++) _builder.Text(lines[i], center.X,
             center.Y - _builder.MeasureText("Ag", size * _scale, 600).Height / 2 + _builder.TextAscent(size * _scale, 600) + i * lineHeight,
             size * _scale, Highlight(_colors.Foreground, active), 600, "topology-node-label", node.Id + "-label-" + i,
-            TextAlignment.Center, SvgPaint.Of(Highlight(_colors.Foreground, active), SvgColorRole.Text));
+            TextAlignment.Center, ForegroundPaint(Highlight(_colors.Foreground, active), HighlightFactor(active)));
     }
 
     private void BuildTileCaption(TopologyNode node, ChartColor accent, bool active) {
@@ -41,7 +41,7 @@ internal sealed partial class VisualTopologyCompiler {
         for (var index = 0; index < lines.Count; index++) _builder.Text(lines[index], origin.X,
             origin.Y + _builder.TextAscent(size * _scale, 700) + index * lineHeight, size * _scale,
             Highlight(_colors.Foreground, active), 700, "topology-node-label", node.Id + "-label-" + index,
-            TextAlignment.Center, SvgPaint.Of(Highlight(_colors.Foreground, active), SvgColorRole.Text));
+            TextAlignment.Center, ForegroundPaint(Highlight(_colors.Foreground, active), HighlightFactor(active)));
         if (_options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle))
             BuildSubtitleChip(node, TopologyNodeDisplayMode.Tile, node.Y + node.Height + 7 + lines.Count * lineHeight / _scale, accent, active);
     }
@@ -63,7 +63,7 @@ internal sealed partial class VisualTopologyCompiler {
             _builder.Text(chip.Text, bounds.X + width / 2,
                 bounds.Y + (height - metrics.Height) / 2 + _builder.TextAscent(size * _scale, 700), size * _scale,
                 Highlight(_colors.MutedForeground, active), 700, "topology-subtitle-chip-text", alignment: TextAlignment.Center,
-                paint: SvgPaint.Of(Highlight(_colors.MutedForeground, active), SvgColorRole.Text));
+                paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)));
         }
     }
 }

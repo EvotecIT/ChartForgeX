@@ -7,6 +7,8 @@ internal static class ChartLegendVisibility {
     /// <summary>Continuous scales carry information even when the family has no categorical legend entries.</summary>
     internal static bool ForPreparedContent(Chart chart, int entryCount) {
         if (!chart.Options.ShowLegend) return false;
+        if (!chart.Options.HasExplicitLegend && chart.Series.Count > 0
+            && chart.Series[0].Kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet) return false;
         foreach (var series in chart.Series) {
             if (chart.Options.ShowHeatmapScale && (series.Kind == ChartSeriesKind.CalendarHeatmap
                 || (series.Kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap) && !series.IsCategoricalHeatmapRow)) return true;

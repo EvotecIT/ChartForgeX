@@ -23,13 +23,11 @@ public static partial class V2Examples {
                         throw new InvalidOperationException("The symmetric radial proof lost a label: " + id);
                     ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), svg);
                     File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
-                    var thumbnail = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
-                        VisualTheme.Graphite(), mode, new VisualFrame("", "", showLegend: false), FontSpec.FromFamily(ProofFont)));
-                    ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".thumbnail.svg"), thumbnail.ToSvg(id + "-thumbnail"));
+                    WriteThumbnail(output, chart, id, "Four equal shares", family, mode, legend: false);
                     ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), RadialLabelSnippet(kind, placement, mode));
-                    WritePage(output, id, "Four equal shares", mode);
                     artifacts.Add(new ProofArtifact(id, family, "Four equal shares", variant, mode.ToString().ToLowerInvariant(), 640, 400,
-                        prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count));
+                        prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count,
+                        DiagnosticMessages: prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray()));
                 }
             }
         }

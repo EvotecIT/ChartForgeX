@@ -15,7 +15,7 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var model = V2GalleryModels.Create(ChartSeriesKind.TrendLine, "wide", VisualThemeMode.Light);
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Light,
-    new VisualFrame("Observations over the reporting period", "SVG and native PNG from one prepared scene", showLegend: true), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("Request volume and its trend", "Explore the data, then download the chart", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 System.IO.File.WriteAllText("visual.svg", prepared.ToSvg());
 System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
@@ -40,41 +40,59 @@ public static partial class V2GalleryModels {
 
     /// <summary>Gets a short title describing the actual example data.</summary>
     public static string Title(ChartSeriesKind kind) => kind switch {
-        ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc => "Daily market prices",
-        ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot => "Delivery time distribution",
-        ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.RangeBar => "Expected operating ranges",
-        ChartSeriesKind.Dumbbell or ChartSeriesKind.Slope => "Before and after comparison",
-        ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap => "Service coverage matrix",
-        ChartSeriesKind.CalendarHeatmap => "Daily activity",
-        ChartSeriesKind.DottedMap => "Regional service routes",
-        ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap => "Regional observations",
-        ChartSeriesKind.Gauge or ChartSeriesKind.Circle or ChartSeriesKind.RadialBar or ChartSeriesKind.LayeredRadial or ChartSeriesKind.Bullet or ChartSeriesKind.ProgressBar => "Capacity and completion",
-        ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea => "Observations by category",
-        ChartSeriesKind.Radar or ChartSeriesKind.Polar => "Directional observations",
-        ChartSeriesKind.Timeline or ChartSeriesKind.Gantt or ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane => "Service delivery schedule",
-        ChartSeriesKind.Sankey => "Requests across processing stages",
-        ChartSeriesKind.Tree or ChartSeriesKind.Sunburst or ChartSeriesKind.Treemap => "Allocation by team",
-        ChartSeriesKind.Pictorial => "Completed assessments",
-        ChartSeriesKind.WordCloud => "Topics in observations",
-        ChartSeriesKind.Funnel => "Request conversion stages",
-        ChartSeriesKind.Waterfall => "Changes in available capacity",
-        _ => "Observations over the reporting period"
+        ChartSeriesKind.Line => "Weekly request volume", ChartSeriesKind.StepLine => "Requests waiting in the queue",
+        ChartSeriesKind.Area => "Capacity used during the week", ChartSeriesKind.StepArea => "Reserved processing capacity",
+        ChartSeriesKind.Bar => "Completed orders by region", ChartSeriesKind.HorizontalBar => "Regional order fulfilment",
+        ChartSeriesKind.StackedArea => "Requests and follow-ups over time", ChartSeriesKind.TrendLine => "Request volume and its trend",
+        ChartSeriesKind.Scatter => "Processing time by workload", ChartSeriesKind.Bubble => "Workload, time and request volume",
+        ChartSeriesKind.Lollipop => "Orders at each delivery stage", ChartSeriesKind.Candlestick => "Daily opening and closing prices",
+        ChartSeriesKind.Ohlc => "Daily market price ranges", ChartSeriesKind.ErrorBar => "Delivery time and uncertainty",
+        ChartSeriesKind.BoxPlot => "Delivery time by service level", ChartSeriesKind.RangeBand => "Expected temperature band",
+        ChartSeriesKind.RangeArea => "Expected operating range", ChartSeriesKind.RangeBar => "Minimum and maximum delivery times",
+        ChartSeriesKind.Dumbbell => "Service capacity before and after", ChartSeriesKind.Slope => "Capacity change across teams",
+        ChartSeriesKind.Heatmap => "Coverage across service areas", ChartSeriesKind.HexbinHeatmap => "Service coverage in hexagonal cells",
+        ChartSeriesKind.CalendarHeatmap => "Daily activity across four months", ChartSeriesKind.DottedMap => "Service routes across Europe",
+        ChartSeriesKind.RegionMap => "Regional service coverage", ChartSeriesKind.TileMap => "Service coverage by state",
+        ChartSeriesKind.Gauge => "Available capacity against a target", ChartSeriesKind.Circle => "Assessments completed",
+        ChartSeriesKind.RadialBar => "Completion by delivery stage", ChartSeriesKind.LayeredRadial => "Reviewed, verified and completed",
+        ChartSeriesKind.Bullet => "Reviewed work against its targets", ChartSeriesKind.ProgressBar => "Progress through delivery stages",
+        ChartSeriesKind.Pie => "Revenue by service", ChartSeriesKind.Donut => "Services contributing to revenue",
+        ChartSeriesKind.PolarArea => "Service revenue in radial segments", ChartSeriesKind.Radar => "Observed and expected service levels",
+        ChartSeriesKind.Polar => "Directional sensor readings", ChartSeriesKind.Timeline => "Project activities in March 2026",
+        ChartSeriesKind.Gantt => "Project delivery in March 2026", ChartSeriesKind.StateTimeline => "Availability throughout the day",
+        ChartSeriesKind.GanttLane => "Incidents and recovery in parallel",
+        ChartSeriesKind.Sankey => "Requests across processing stages", ChartSeriesKind.Tree => "Teams and their responsibilities",
+        ChartSeriesKind.Sunburst => "Allocation through the team hierarchy", ChartSeriesKind.Treemap => "How work is allocated across teams",
+        ChartSeriesKind.Pictorial => "Completed assessments by team", ChartSeriesKind.WordCloud => "Topics in service observations",
+        ChartSeriesKind.Funnel => "Requests from receipt to completion", ChartSeriesKind.Waterfall => "Changes in available capacity",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
     };
 
     private static ChartPoint[] Observations(string variant, double offset = 0) => (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
         .Select(index => new ChartPoint(index, 20 + offset + index * 7 % 29, variant == "sparse" && index == 6)).ToArray();
-    private static Chart Categories() => Chart.Create().WithXLabels("Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta");
+    private static Chart Categories(ChartSeriesKind kind) => Chart.Create().WithXLabels(kind switch {
+        ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.TrendLine or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc => new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
+        ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell => new[] { "Standard", "Express", "Premium", "Bulk", "Return" },
+        ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap => new[] { "Identity", "Network", "Storage", "Backup", "Access", "Recovery" },
+        ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea => new[] { "Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other" },
+        ChartSeriesKind.RadialBar => new[] { "Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete" },
+        ChartSeriesKind.Radar => new[] { "Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support" },
+        ChartSeriesKind.Scatter or ChartSeriesKind.Bubble => new[] { "1", "2", "3", "4", "5", "6" },
+        ChartSeriesKind.Lollipop => new[] { "Received", "Packed", "Shipped", "In transit", "Delivered", "Reviewed" },
+        ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea => new[] { "08:00", "10:00", "12:00", "14:00", "16:00" },
+        _ => new[] { "North", "South", "East", "West", "Central", "Online" }
+    });
     private static Chart? Basic(ChartSeriesKind kind, string variant) {
-        var chart = Categories(); var values = Observations(variant);
+        var chart = Categories(kind); var values = Observations(variant);
         return kind switch {
-            ChartSeriesKind.Line => chart.AddLine("Observed", values),
-            ChartSeriesKind.StepLine => chart.AddStepLine("Observed", values),
-            ChartSeriesKind.Area => chart.AddArea("Observed", values),
-            ChartSeriesKind.StepArea => chart.AddStepArea("Observed", values),
-            ChartSeriesKind.Scatter => chart.AddScatter("Observed", values),
-            ChartSeriesKind.Bar => chart.AddBar("Observed", values),
-            ChartSeriesKind.Lollipop => chart.AddLollipop("Observed", values),
-            ChartSeriesKind.HorizontalBar => chart.AddHorizontalBar("Observed", values),
+            ChartSeriesKind.Line => chart.AddLine("Requests", values),
+            ChartSeriesKind.StepLine => chart.AddStepLine("Queued", values),
+            ChartSeriesKind.Area => chart.AddArea("Used capacity", values),
+            ChartSeriesKind.StepArea => chart.AddStepArea("Reserved capacity", values),
+            ChartSeriesKind.Scatter => chart.WithXAxis("Workload batches").WithYAxis("Time (minutes)").AddScatter("Processing time", values),
+            ChartSeriesKind.Bar => chart.AddBar("Orders", values),
+            ChartSeriesKind.Lollipop => chart.AddLollipop("Orders", values),
+            ChartSeriesKind.HorizontalBar => chart.AddHorizontalBar("Orders", values),
             ChartSeriesKind.StackedArea => chart.AddStackedArea("Requests", values).AddStackedArea("Follow-ups", Observations(variant, -10)),
             ChartSeriesKind.Waterfall => chart.AddWaterfall("Changes", new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
             ChartSeriesKind.Slope => Chart.Create().AddSlope("Team A", 28, 64, "Before", "After").AddSlope("Team B", 52, 43, "Before", "After").AddSlope("Team C", 38, 57, "Before", "After"),
@@ -87,11 +105,11 @@ public static partial class V2GalleryModels {
 
 public static partial class V2GalleryModels {
     private static Chart? Ranges(ChartSeriesKind kind, string variant) {
-        var chart = Categories(); var count = variant == "sparse" ? 2 : 5;
+        var chart = Categories(kind); var count = variant == "sparse" ? 2 : 5;
         var candles = Enumerable.Range(1, count).Select(index => new ChartCandlestick(index, 30 + index * 3, 44 + index * 3, 20 + index * 3, index % 2 == 0 ? 26 + index * 3 : 38 + index * 3)).ToArray();
         var ranges = Enumerable.Range(1, count).Select(index => new ChartRangeBand(index, 20 + index * 2, 40 + index * 4)).ToArray();
         return kind switch {
-            ChartSeriesKind.Bubble => chart.AddBubble("Requests", Enumerable.Range(1, count).Select(index => new ChartBubble(index, 20 + index * 5, index * index + 1))),
+            ChartSeriesKind.Bubble => chart.WithXAxis("Workload batches").WithYAxis("Time (minutes)").AddBubble("Requests", Enumerable.Range(1, count).Select(index => new ChartBubble(index, 20 + index * 5, index * index + 1))),
             ChartSeriesKind.ErrorBar => chart.AddErrorBar("Delivery time", Enumerable.Range(1, count).Select(index => new ChartErrorBar(index, 30 + index * 2, 20 + index, 42 + index * 3))),
             ChartSeriesKind.Candlestick => chart.AddCandlestick("Market price", candles),
             ChartSeriesKind.Ohlc => chart.AddOhlc("Market price", candles),
@@ -108,10 +126,10 @@ public static partial class V2GalleryModels {
 
 public static partial class V2GalleryModels {
     private static Chart? Radial(ChartSeriesKind kind, string variant) {
-        var chart = Categories(); var values = Observations(variant);
+        var chart = Categories(kind); var values = Observations(variant);
         switch (kind) {
-            case ChartSeriesKind.Pie: chart.AddPie("Categories", values); break;
-            case ChartSeriesKind.Donut: chart.AddDonut("Categories", values); break;
+            case ChartSeriesKind.Pie: chart.AddPie("Revenue", values); break;
+            case ChartSeriesKind.Donut: chart.AddDonut("Revenue", values); break;
             case ChartSeriesKind.Gauge:
                 chart.AddGauge("Capacity", 76).WithGauge(options => {
                     options.Form = variant == "options" ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
@@ -133,7 +151,7 @@ public static partial class V2GalleryModels {
             case ChartSeriesKind.Radar: chart.AddRadar("Observed", values).AddRadar("Expected", Observations(variant, 12)); break;
             case ChartSeriesKind.Polar: chart = Chart.Create().AddPolar("Observed", Enumerable.Range(0, 6).Select(index => new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
                 chart.ConfigureXAxis(axis => axis.LabelFormatter = angle => (angle * 180 / Math.PI).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "°"); break;
-            case ChartSeriesKind.PolarArea: chart.AddPolarArea("Categories", values); break;
+            case ChartSeriesKind.PolarArea: chart.AddPolarArea("Revenue", values); break;
             default: return null;
         }
         if (kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut && variant == "options") {
@@ -149,7 +167,7 @@ public static partial class V2GalleryModels {
 
 public static partial class V2GalleryModels {
     private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
-        var chart = Categories(); var colors = VisualTheme.Graphite().Resolve(mode);
+        var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
         switch (kind) {
             case ChartSeriesKind.Heatmap:
                 if (variant == "options") return States(mode).WithXLabels("Identity", "Network", "Storage", "Backup")
@@ -195,14 +213,18 @@ public static partial class V2GalleryModels {
 
 public static partial class V2GalleryModels {
     private static Chart? Specialty(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
-        var chart = Categories(); var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+        var chart = Categories(kind); var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var links = new[] { new ChartTreeLink("All teams", "Engineering", 60), new ChartTreeLink("All teams", "Operations", 40),
             new ChartTreeLink("Engineering", "Platform", 35), new ChartTreeLink("Engineering", "Services", 25), new ChartTreeLink("Operations", "Support", 40) };
         switch (kind) {
-            case ChartSeriesKind.Funnel: return chart.AddFunnel("Requests", new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) }).WithXLabels("Received", "Qualified", "Reviewed", "Completed");
-            case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem("Discovery", start, start.AddDays(3)).AddTimelineItem("Implementation", start.AddDays(2), start.AddDays(7)).AddTimelineItem("Validation", start.AddDays(6), start.AddDays(9));
+            case ChartSeriesKind.Funnel: return chart.AddFunnel("Requests", new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
+                .WithXLabels("Received", "Qualified", "Reviewed", "Completed").WithDataLabels();
+            case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem("Discovery", start, start.AddDays(3)).AddTimelineItem("Implementation", start.AddDays(2), start.AddDays(7))
+                .AddTimelineItem("Validation", start.AddDays(6), start.AddDays(9))
+                .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
             case ChartSeriesKind.Gantt: return Chart.Create().AddGanttTask("Discovery", start, start.AddDays(3), .9).AddGanttTask("Implementation", start.AddDays(3), start.AddDays(7), .55, 0)
-                .AddGanttTask("Validation", start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone("Delivery", start.AddDays(9), 2);
+                .AddGanttTask("Validation", start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone("Delivery", start.AddDays(9), 2)
+                .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
             case ChartSeriesKind.Sankey: return Chart.Create().AddSankey("Requests", new[] { new ChartSankeyLink("Received", "Automatic", 72), new ChartSankeyLink("Received", "Manual", 28),
                 new ChartSankeyLink("Automatic", "Completed", 65), new ChartSankeyLink("Automatic", "Review", 7), new ChartSankeyLink("Manual", "Completed", 20), new ChartSankeyLink("Manual", "Review", 8) });
             case ChartSeriesKind.Tree: return Chart.Create().AddTree("Teams", links);

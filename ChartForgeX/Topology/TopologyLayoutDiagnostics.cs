@@ -37,8 +37,7 @@ public static partial class TopologyLayoutDiagnostics {
             report.Nodes.Add(diagnostic);
         }
         foreach (var edge in chart.Edges) {
-            var points = EdgePoints(chart, edge, nodes);
-            points = RenderedEdgeSamplePoints(chart, edge, nodes, points);
+            var points = TopologyResolvedRouteSamples.Sample(chart, options, edge, nodes, EdgePoints(chart, edge, nodes));
             var route = EdgeRouteDiagnostics(chart, edge, nodes);
             report.Edges.Add(new TopologyLayoutEdgeDiagnostic(edge.Id, edge.SourceNodeId, edge.TargetNodeId, points, route.Strategy, route.Corridor, route.ObstacleHits, route.LabelObstacleHits, route.RouteOverlapScore, route.FallbackReason));
         }

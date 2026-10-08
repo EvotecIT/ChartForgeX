@@ -57,7 +57,7 @@ public sealed class GraphiteBulletFormattingTests {
         var values = Roles(nodes, "bullet-value-label");
         var targets = Roles(nodes, "bullet-target-label");
         Assert.Equal(new[] { "88 %", "74 %" }, values.Select(e => e.Value));
-        Assert.Equal(new[] { "target 95 %", "target 90 %" }, targets.Select(e => e.Value));
+        Assert.Equal(new[] { "/ 95 %", "/ 90 %" }, targets.Select(e => e.Value));
         Assert.Equal(new[] { "0 %", "25 %", "50 %", "75 %", "100 %" }, Roles(nodes, "bullet-axis-label").Select(e => e.Value));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var rows = prepared.Regions.Where(region => region.Role == "bullet-row").ToArray();
@@ -66,7 +66,9 @@ public sealed class GraphiteBulletFormattingTests {
         for (var i = 0; i < values.Length; i++) {
             Assert.InRange((double)values[i].Attribute("font-size")!, 1, chart.Options.Theme.DataLabelFontSize);
             Assert.InRange((double)targets[i].Attribute("font-size")!, 1, chart.Options.Theme.DataLabelFontSize);
-            Assert.True(valueRegions[i].Bounds.Bottom <= targetRegions[i].Bounds.Top);
+            Assert.True(valueRegions[i].Bounds.Right <= targetRegions[i].Bounds.Left);
+            Assert.Equal(valueRegions[i].Bounds.Top, targetRegions[i].Bounds.Top);
+            Assert.Equal(valueRegions[i].Bounds.Bottom, targetRegions[i].Bounds.Bottom);
             Assert.InRange(valueRegions[i].Bounds.Right, rows[i].Bounds.Left, rows[i].Bounds.Right);
             Assert.InRange(targetRegions[i].Bounds.Bottom, rows[i].Bounds.Top, rows[i].Bounds.Bottom);
         }
@@ -81,12 +83,12 @@ public sealed class GraphiteBulletFormattingTests {
             .WithSize(640, 300).AddBullet("Count", 1284, 1900, max: 2000);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal("1,284", Assert.Single(Roles(nodes, "bullet-value-label")).Value);
-        Assert.Equal("target 1,900", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
+        Assert.Equal("/ 1,900", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
         Assert.Equal(new[] { "0", "500", "1k", "1.5k", "2k" }, Roles(nodes, "bullet-axis-label").Select(e => e.Value));
         chart.WithValueFormat(ChartValueFormat.Number("#,0"));
         nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal("1,284", Assert.Single(Roles(nodes, "bullet-value-label")).Value);
-        Assert.Equal("target 1,900", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
+        Assert.Equal("/ 1,900", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
         Assert.Equal(new[] { "0", "500", "1,000", "1,500", "2,000" }, Roles(nodes, "bullet-axis-label").Select(e => e.Value));
     }
 
@@ -97,7 +99,7 @@ public sealed class GraphiteBulletFormattingTests {
             .AddBullet("Latency", 1284, 1900, max: 2000);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal("1.284,0 ms", Assert.Single(Roles(nodes, "bullet-value-label")).Value);
-        Assert.Equal("target 1.900,0 ms", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
+        Assert.Equal("/ 1.900,0 ms", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
         Assert.Equal(new[] { "0,0 ms", "500,0 ms", "1.000,0 ms", "1.500,0 ms", "2.000,0 ms" }, Roles(nodes, "bullet-axis-label").Select(e => e.Value));
     }
 

@@ -47,13 +47,14 @@ internal static partial class VisualCartesianCompiler {
                 foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
                     if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
                         paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
-                if (chart.Series.Any(item => item.ShowDataLabels ?? chart.Options.ShowDataLabels)) {
+                if (chart.Series.Any(item => item.ShowDataLabels ?? chart.Options.ShowDataLabels)
+                    || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)) {
                     var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
                     obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, chart.Options.ClipMarksToPlot ? plot : null)));
                 }
             }
         }
-        var radius = series.MarkerRadius ?? context.Theme.MarkerRadius;
+        var radius = ResolveMarkerRadius(series, context);
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];

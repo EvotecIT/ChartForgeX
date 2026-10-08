@@ -15,7 +15,8 @@ public sealed partial class VisualTheme {
     public VisualTheme(VisualDesignTokens light, VisualDesignTokens dark, VisualTypography? typography = null,
         double spacing = 12, double seriesStrokeWidth = 2, double markerRadius = 3,
         double areaOpacity = 0.18, double barRadius = 3, double gridStrokeWidth = 1, double axisStrokeWidth = 1,
-        double cardRadius = DefaultCardRadius, double cardShadowOpacity = 0, ChartColor? cardShadowColor = null) {
+        double cardRadius = DefaultCardRadius, double cardShadowOpacity = 0, ChartColor? cardShadowColor = null,
+        double gaugeStrokeWidth = 14, double gaugeBandWidth = 4) {
         _light = new VisualThemeColors(light ?? throw new ArgumentNullException(nameof(light)));
         _dark = new VisualThemeColors(dark ?? throw new ArgumentNullException(nameof(dark)));
         Typography = typography ?? new VisualTypography();
@@ -23,6 +24,8 @@ public sealed partial class VisualTheme {
         MarkerRadius = NonNegative(markerRadius, nameof(markerRadius)); BarRadius = NonNegative(barRadius, nameof(barRadius));
         GridStrokeWidth = NonNegative(gridStrokeWidth, nameof(gridStrokeWidth)); AxisStrokeWidth = NonNegative(axisStrokeWidth, nameof(axisStrokeWidth));
         CardRadius = NonNegative(cardRadius, nameof(cardRadius));
+        GaugeStrokeWidth = NonNegative(gaugeStrokeWidth, nameof(gaugeStrokeWidth));
+        GaugeBandWidth = NonNegative(gaugeBandWidth, nameof(gaugeBandWidth));
         if (double.IsNaN(cardShadowOpacity) || cardShadowOpacity < 0 || cardShadowOpacity > 1) throw new ArgumentOutOfRangeException(nameof(cardShadowOpacity));
         CardShadowOpacity = cardShadowOpacity;
         CardShadowColor = cardShadowColor ?? ChartColor.FromRgb(15, 23, 42);
@@ -51,6 +54,10 @@ public sealed partial class VisualTheme {
     public double GridStrokeWidth { get; }
     /// <summary>Gets the axis width.</summary>
     public double AxisStrokeWidth { get; }
+    /// <summary>Gets the gauge track and value stroke width.</summary>
+    public double GaugeStrokeWidth { get; }
+    /// <summary>Gets the gauge threshold band width.</summary>
+    public double GaugeBandWidth { get; }
     /// <summary>Resolves the selected immutable color snapshot.</summary>
     public VisualThemeColors Resolve(VisualThemeMode mode) => mode switch {
         VisualThemeMode.Light => _light, VisualThemeMode.Dark => _dark,
@@ -58,6 +65,12 @@ public sealed partial class VisualTheme {
     };
     /// <summary>Gets the Graphite layout preset with the canonical HtmlForgeX light/dark colors.</summary>
     public static VisualTheme Graphite() => Default.Value;
+    /// <summary>Creates an independent paired theme with the supplied typography and the same colors, geometry and effects.</summary>
+    /// <param name="typography">The complete font scale to use for the new theme.</param>
+    public VisualTheme WithTypography(VisualTypography typography) => new(_light.ToTokens(), _dark.ToTokens(),
+        typography ?? throw new ArgumentNullException(nameof(typography)), Spacing, SeriesStrokeWidth, MarkerRadius,
+        AreaOpacity, BarRadius, GridStrokeWidth, AxisStrokeWidth, CardRadius, CardShadowOpacity, CardShadowColor,
+        GaugeStrokeWidth, GaugeBandWidth);
     /// <summary>Creates a paired theme from the generated HtmlForgeX chart token document.</summary>
     public static VisualTheme FromJson(string json, VisualTypography? typography = null) => new(
         VisualDesignTokens.FromJson(json, VisualThemeMode.Light), VisualDesignTokens.FromJson(json, VisualThemeMode.Dark), typography);
@@ -94,6 +107,12 @@ public sealed class VisualThemeColors {
     public ChartColor Axis => _tokens.Axis ?? _tokens.Border;
     /// <summary>Gets the plot grid color, falling back to the shared border role when unspecified.</summary>
     public ChartColor Grid => _tokens.Grid ?? _tokens.Border;
+    /// <summary>Gets the weakest neutral data surface.</summary>
+    public ChartColor Neutral => _tokens.Neutral ?? _tokens.Surface;
+    /// <summary>Gets the middle neutral data surface.</summary>
+    public ChartColor Neutral2 => _tokens.Neutral2 ?? _tokens.Border;
+    /// <summary>Gets the strongest neutral data surface.</summary>
+    public ChartColor Neutral3 => _tokens.Neutral3 ?? _tokens.MutedForeground;
     /// <summary>Gets the accent color.</summary>
     public ChartColor Accent => _tokens.Accent;
     /// <summary>Gets the ordered categorical palette.</summary>
@@ -110,10 +129,12 @@ public sealed class VisualThemeColors {
 public sealed class VisualTypography {
     /// <summary>Creates a validated immutable font scale.</summary>
     public VisualTypography(string family = "Calibri, Carlito, Segoe UI, system-ui, sans-serif",
-        double titleSize = 22, double subtitleSize = 13, double axisSize = 11, double legendSize = 12, double dataLabelSize = 11) {
+        double titleSize = 17, double subtitleSize = 13.5, double axisSize = 12, double legendSize = 13, double dataLabelSize = 12,
+        double scalarValueSize = 34, double centerValueSize = 20) {
         if (string.IsNullOrWhiteSpace(family)) throw new ArgumentException("A font family is required.", nameof(family));
         Family = family; TitleSize = Positive(titleSize, nameof(titleSize)); SubtitleSize = Positive(subtitleSize, nameof(subtitleSize));
         AxisSize = Positive(axisSize, nameof(axisSize)); LegendSize = Positive(legendSize, nameof(legendSize)); DataLabelSize = Positive(dataLabelSize, nameof(dataLabelSize));
+        ScalarValueSize = Positive(scalarValueSize, nameof(scalarValueSize)); CenterValueSize = Positive(centerValueSize, nameof(centerValueSize));
     }
     /// <summary>Gets the fallback family stack.</summary>
     public string Family { get; }
@@ -127,6 +148,10 @@ public sealed class VisualTypography {
     public double LegendSize { get; }
     /// <summary>Gets the data-label size.</summary>
     public double DataLabelSize { get; }
+    /// <summary>Gets the primary value size for scalar charts.</summary>
+    public double ScalarValueSize { get; }
+    /// <summary>Gets the value size inside a radial chart.</summary>
+    public double CenterValueSize { get; }
     private static double Positive(double value, string name) {
         if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(name);
         return value;

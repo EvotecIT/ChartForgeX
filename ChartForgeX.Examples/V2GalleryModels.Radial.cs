@@ -5,10 +5,10 @@ using ChartForgeX.Primitives;
 
 public static partial class V2GalleryModels {
     private static Chart? Radial(ChartSeriesKind kind, string variant) {
-        var chart = Categories(); var values = Observations(variant);
+        var chart = Categories(kind); var values = Observations(variant);
         switch (kind) {
-            case ChartSeriesKind.Pie: chart.AddPie("Categories", values); break;
-            case ChartSeriesKind.Donut: chart.AddDonut("Categories", values); break;
+            case ChartSeriesKind.Pie: chart.AddPie("Revenue", values); break;
+            case ChartSeriesKind.Donut: chart.AddDonut("Revenue", values); break;
             case ChartSeriesKind.Gauge:
                 chart.AddGauge("Capacity", 76).WithGauge(options => {
                     options.Form = variant == "options" ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
@@ -30,7 +30,7 @@ public static partial class V2GalleryModels {
             case ChartSeriesKind.Radar: chart.AddRadar("Observed", values).AddRadar("Expected", Observations(variant, 12)); break;
             case ChartSeriesKind.Polar: chart = Chart.Create().AddPolar("Observed", Enumerable.Range(0, 6).Select(index => new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
                 chart.ConfigureXAxis(axis => axis.LabelFormatter = angle => (angle * 180 / Math.PI).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "°"); break;
-            case ChartSeriesKind.PolarArea: chart.AddPolarArea("Categories", values); break;
+            case ChartSeriesKind.PolarArea: chart.AddPolarArea("Revenue", values); break;
             default: return null;
         }
         if (kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut && variant == "options") {

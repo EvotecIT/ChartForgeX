@@ -58,8 +58,9 @@ public sealed class NativeTopologyGeometryTests {
         Assert.Equal("5", (string?)callout.Attribute("data-callout-node-count"));
         foreach (var name in new[] { "healthy", "warning", "critical", "unknown", "disabled" }) Assert.Equal("1", (string?)callout.Attribute("data-callout-" + name + "-count"));
         var anchor = Assert.Single(callout.Descendants(), element => Role(element) == "topology-geographic-callout-anchor");
-        Assert.Equal(Number(callout, "data-callout-anchor-x"), Number(anchor, "cx"), 2);
-        Assert.Equal(Number(callout, "data-callout-anchor-y"), Number(anchor, "cy"), 2);
+        // Native metadata retains full precision; SVG coordinates round to 0.001 pixels.
+        Assert.InRange(Math.Abs(Number(callout, "data-callout-anchor-x") - Number(anchor, "cx")), 0, .000500001);
+        Assert.InRange(Math.Abs(Number(callout, "data-callout-anchor-y") - Number(anchor, "cy")), 0, .000500001);
         Assert.Contains(callout.Ancestors(), element => (string?)element.Attribute("href") == "/region");
         Assert.Contains(prepared.Visual.Regions, region => region.Id == "region-callout" && region.Role == "topology-callout");
         Assert.Contains(prepared.ToInterchangeEnvelope().Groups, group => group.Id == "region");

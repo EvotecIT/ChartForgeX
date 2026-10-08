@@ -55,11 +55,12 @@ public sealed class GraphiteFamilyTests {
         var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
         var points = Roles(svg, "radial-point");
         Assert.Equal(6, points.Length);
-        Assert.Equal(new[] { "D", "E", "F", "G", "H", "Other" }, points.Select(point => (string?)point.Attribute("data-cfx-label")));
+        Assert.Equal(new[] { "H", "G", "F", "E", "D", "Other" }, points.Select(point => (string?)point.Attribute("data-cfx-label")));
         Assert.Equal("600", (string?)points[^1].Attribute("data-cfx-value"));
         Assert.Equal("0,1,2", (string?)points[^1].Attribute("data-cfx-source-points"));
-        Assert.Equal("3,4,5,6,7,0,1,2", string.Join(",", points.Select(point => (string?)point.Attribute("data-cfx-source-points"))));
+        Assert.Equal("7,6,5,4,3,0,1,2", string.Join(",", points.Select(point => (string?)point.Attribute("data-cfx-source-points"))));
         Assert.Equal(8, chart.Series[0].Points.Count);
+        Assert.Equal(Enumerable.Range(1, 8).Select(index => new ChartPoint(index, index * 100)), chart.Series[0].Points);
         Assert.Equal(6, prepared.Scene.Nodes.OfType<VisualSceneSlice>().Count());
         Assert.Equal(3600, points.Sum(point => Number(point, "data-cfx-value")));
         Assert.NotEmpty(prepared.ToPng());
@@ -75,12 +76,15 @@ public sealed class GraphiteFamilyTests {
             options.Bands.Add(new(60, 80, ChartSeriesState.Warning)); options.Bands.Add(new(80, 100, ChartSeriesState.Quiet));
         });
         var context = VisualExportRequest.ForChart(chart).Context;
-        var expected = ChartSeriesColours.State(state, context.Theme.Resolve(context.ThemeMode), ChartColor.Black);
+        var colors = context.Theme.Resolve(context.ThemeMode);
+        var expected = state is ChartSeriesState.Warning or ChartSeriesState.Danger
+            ? ChartSeriesColours.State(state, colors, colors.Palette[0]) : colors.Palette[0];
         foreach (var form in new[] { ChartGaugeForm.Arc, ChartGaugeForm.Needle, ChartGaugeForm.Linear }) {
             chart.Options.Gauge.Form = form; var svg = Literal(chart);
             if (form == ChartGaugeForm.Needle)
                 Assert.Equal(expected.ToCss(), (string?)Assert.Single(Roles(svg, "gauge-needle")).Attribute("stroke"));
             else Assert.Equal(expected.ToCss(), (string?)Assert.Single(Roles(svg, "gauge-value")).Attribute("fill"));
+            Assert.Equal(state.ToString(), (string?)Assert.Single(Roles(svg, "gauge")).Attribute("data-cfx-status"));
             Assert.Equal(3, Roles(svg, "gauge-band-source").Length); Assert.Single(Roles(svg, "gauge-target"));
             if (form == ChartGaugeForm.Needle) Assert.Single(Roles(svg, "gauge-needle"));
             if (form == ChartGaugeForm.Linear) Assert.Equal("rect", Assert.Single(Roles(svg, "gauge-value")).Name.LocalName);
@@ -91,15 +95,22 @@ public sealed class GraphiteFamilyTests {
     [Fact]
     public void BulletRowsShareOneScaleAndRetainTargetStates() {
         var chart = Chart.Create().AddBullet("Below", 60, 90).AddBullet("Above", 95, 80);
-        var svg = Literal(chart);
+        var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
         Assert.Equal(6, Roles(svg, "bullet-range").Length); Assert.Single(Roles(svg, "bullet-axis"));
         var rows = Roles(svg, "bullet-row");
         Assert.Equal(new[] { "below-target", "above-target" }, rows.Select(row => (string?)row.Attribute("data-cfx-status")));
         Assert.All(rows, row => { Assert.Equal("0", (string?)row.Attribute("data-cfx-scale-min")); Assert.Equal("100", (string?)row.Attribute("data-cfx-scale-max")); });
         var marks = Roles(svg, "bullet-value");
         Assert.Equal(Number(marks[0], "x"), Number(marks[1], "x"));
-        Assert.Equal(60d / 95, Number(marks[0], "width") / Number(marks[1], "width"), 6);
-        Assert.Equal(2, Roles(svg, "bullet-status-marker").Length);
+        var geometry = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "bullet-value").ToArray();
+        Assert.Equal(60d / 95, geometry[0].Bounds.Width / geometry[1].Bounds.Width, 12);
+        for (var index = 0; index < geometry.Length; index++)
+            Assert.InRange(Math.Abs(geometry[index].Bounds.Width - Number(marks[index], "width")), 0, .000501);
+        var colors = VisualExportRequest.ForChart(chart).Context.Theme.Resolve(VisualThemeMode.Light);
+        Assert.All(geometry, mark => Assert.Equal(colors.Foreground, mark.Fill));
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(label => label.Role == "bullet-value-label").ToArray();
+        Assert.Equal(colors.Status.Critical.Ink, labels[0].Color);
+        Assert.Equal(colors.Foreground, labels[1].Color);
     }
 
     [Fact]
