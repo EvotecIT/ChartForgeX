@@ -100,6 +100,7 @@ record Sample(double Index, double Value);
 | PNG bytes/file | `chart.ToPng()` or `chart.SavePng("chart.png")` |
 | GIF, JPEG, and raster file output | `chart.Save("chart.gif")`, `chart.Save("chart.jpg", rasterOptions)`, `chart.SaveRasterImage("chart.tiff")`, or `ImageComposition.FromFile("wallpaper.jpg").Save("wallpaper-output.gif")` |
 | Reusable image composition | `ImageComposition.TryFromBytes(bytes, out var composition)`, `composition.StrokeRectangle(...)`, `composition.DrawCallout(...)`, `composition.Write(stream, RasterImageFormat.Png)`, or `composition.Save(path, RasterImageFormat.Gif)` |
+| RGBA frame animation | `RasterAnimationEncoder.Encode(frames, RasterAnimationFormat.Gif, options)` or `.WriteTo(stream, frames, RasterAnimationFormat.Apng, options)` with individual frame durations and finite or infinite playback |
 | Extension-inferred file output | `chart.Save("chart.svg")`, `chart.Save("chart.html")`, `chart.Save("chart.png")`, `chart.Save("chart.gif")`, `chart.Save("chart.jpg")`, `chart.Save("chart.tiff")` |
 
 `RasterImageOptions` controls JPEG quality, PNG compression level, and the flattening background for opaque formats.
