@@ -25,6 +25,9 @@ internal static class Program {
             .WithTiming(0, 100, 0).WithFinalPrompt(false).Command("status", 0.1).Output("Ready");
         PackageAssertions.Require(PackageAssertions.Contains(terminal.ToTranscript(), "Ready"), "Terminal transcript is missing.");
         PackageAssertions.Png(terminal.ToPng());
+        var terminalArtifact = terminal.ToVisualArtifact();
+        PackageAssertions.Require(ReferenceEquals(terminal, terminalArtifact.Model)
+            && PackageAssertions.Contains(terminalArtifact.ToSvg(), "Ready"), "Completed terminal artifact lost its model or transcript.");
         var terminalOptions = TerminalStoryAnimationOptions.Create().WithFramesPerSecond(2).WithEndHold(0).WithLoop(false);
         PackageAssertions.Gif(terminal.ToGif(terminalOptions));
         PackageAssertions.Apng(terminal.ToApng(terminalOptions));

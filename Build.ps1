@@ -811,6 +811,7 @@ try {
             & (Join-Path $root 'Build/Test-PackageQualification.ps1') -PackageRoot $packageRoot
         } else {
             $consumerRoot = Join-Path ([System.IO.Path]::GetTempPath()) "ChartForgeX-package-consumer-$([Guid]::NewGuid().ToString('N'))"
+            $consumerSucceeded = $false
             try {
                 New-Item -ItemType Directory -Path $consumerRoot | Out-Null
                 $consumerFeed = Join-Path $consumerRoot 'packages'
@@ -860,17 +861,24 @@ try {
                     Copy-Item -LiteralPath (Join-Path $root 'Build/PackageConsumers/Adapters/Program.cs') -Destination (Join-Path $consumerRoot 'Program.cs')
                     Copy-Item -LiteralPath (Join-Path $root 'Build/PackageConsumers/PackageAssertions.cs') -Destination $consumerRoot
                     Invoke-DotNetCommand -Arguments @('run', '-c', 'Release', '--no-restore') -Description 'Package consumer validation' -TimeoutSeconds $PackageConsumerTimeoutSeconds -Quiet
+                    $consumerSucceeded = $true
                 } finally {
                     Pop-Location
                 }
             } finally {
-                if (Test-Path -LiteralPath $consumerRoot) {
-                    $cleanupRoot = [IO.Path]::GetFullPath($consumerRoot)
-                    $tempPrefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
-                    if (-not $cleanupRoot.StartsWith($tempPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Package consumer cleanup target is outside the selected temporary root.' }
-                    $linked = (@(Get-Item -LiteralPath $cleanupRoot) + @(Get-ChildItem -LiteralPath $cleanupRoot -Recurse -Force)) | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
-                    if ($linked) { throw 'Package consumer cleanup target contains a linked path.' }
-                    Remove-Item -LiteralPath $cleanupRoot -Recurse -ErrorAction Stop
+                try {
+                    if (Test-Path -LiteralPath $consumerRoot) {
+                        $cleanupRoot = [IO.Path]::GetFullPath($consumerRoot)
+                        $tempPrefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+                        if (-not $cleanupRoot.StartsWith($tempPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Package consumer cleanup target is outside the selected temporary root.' }
+                        $linked = (@(Get-Item -LiteralPath $cleanupRoot) + @(Get-ChildItem -LiteralPath $cleanupRoot -Recurse -Force)) | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
+                        if ($linked) { throw 'Package consumer cleanup target contains a linked path.' }
+                        # Unix marks NuGet's dot-prefixed metadata as hidden. This is only the fresh, guarded cache above.
+                        Remove-Item -LiteralPath $cleanupRoot -Recurse -Force:([IO.Path]::DirectorySeparatorChar -ne '\') -ErrorAction Stop
+                    }
+                } catch {
+                    if ($consumerSucceeded) { throw }
+                    Write-Warning "Package consumer cleanup failed at $consumerRoot; preserving the original validation error: $($_.Exception.Message)"
                 }
             }
         }

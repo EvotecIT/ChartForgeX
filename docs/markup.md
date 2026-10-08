@@ -131,7 +131,7 @@ Sequence fences render through deterministic SVG/PNG/HTML export and preserve th
 
 ## Tables
 
-`chartforgex table v1` fences create reusable `TableArtifact` models. The core package renders a static preview through `TableArtifact.ToPreviewBlock()`, `ToSvg()`, and `ToPng()`. Capabilities describe what a rich host may offer; they do not force JavaScript into static ChartForgeX output.
+`chartforgex table v1` fences create reusable core `TableArtifact` models. `ChartForgeX.Visuals`, included by the Markup package, renders static previews through `TableArtifact.ToPreviewBlock()`, `ToSvg()`, and `ToPng()`. Capabilities describe what a rich host may offer; they do not force JavaScript into static ChartForgeX output.
 
 ````markdown
 ```chartforgex table v1 {#alerts title="Open Alerts"}

@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Xml.Linq;
 using ChartForgeX.Accessibility;
 using ChartForgeX.Primitives;
@@ -75,8 +76,9 @@ internal sealed class StoryStaticSource : IStaticVisualSource {
         if (_rootId != null) return SvgRenderedIdentity.RebindGeneratedId(_svg, _rootId, id);
         // Prepared SVG keeps IDs below its root. Re-export namespaces by prefixing each generated identity.
         var result = _svg;
-        foreach (var attribute in XDocument.Parse(_svg).Descendants().Attributes("id"))
-            result = SvgRenderedIdentity.RebindGeneratedId(result, attribute.Value, id + "-" + attribute.Value);
+        foreach (var oldId in XDocument.Parse(_svg).Descendants().Attributes("id").Select(attribute => attribute.Value)
+            .Distinct(StringComparer.Ordinal).OrderByDescending(value => value.Length))
+            result = SvgRenderedIdentity.RebindGeneratedId(result, oldId, id + "-" + oldId);
         return result;
     }
     public RgbaImage RenderRgba() => new(_raster.Width, _raster.Height, (byte[])_raster.Pixels.Clone());

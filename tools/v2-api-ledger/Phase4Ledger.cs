@@ -23,7 +23,7 @@ internal static class Phase4Ledger {
         var byId = current.Symbols.GroupBy(symbol => symbol.DocId).ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
         var changes = baseline.Symbols.Select(symbol => {
             var found = byId.TryGetValue(symbol.DocId, out var matches) ? matches.SingleOrDefault(item => item.Assembly == symbol.Assembly) ?? matches.SingleOrDefault() : null;
-            var fate = found == null ? "removed-or-replaced" : found.Assembly != symbol.Assembly ? "assembly-move" : found.Signature != symbol.Signature ? "signature-change" : "retained";
+            var fate = Classify(symbol, found);
             return new Dictionary<string, object?> {
                 ["baseline_sha"] = baseline.Sha, ["candidate_sha"] = current.Sha, ["documentation_id"] = symbol.DocId,
                 ["old_assembly"] = symbol.Assembly, ["new_assembly"] = found?.Assembly ?? "",
@@ -40,5 +40,15 @@ internal static class Phase4Ledger {
         };
         File.WriteAllText(Path.Combine(args[2], "api-ledger-phase4-manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }).Replace("\r\n", "\n") + "\n", new UTF8Encoding(false));
         Console.WriteLine($"Phase 4 source inventory: {rows.Length} rows in {current.SourceCounts.Count} assemblies.");
+    }
+
+    /// <summary>Preserves both migration requirements when a symbol moves and changes its contract.</summary>
+    internal static string Classify(ApiSymbol baseline, ApiSymbol? candidate) {
+        if (candidate == null) return "removed-or-replaced";
+        bool moved = candidate.Assembly != baseline.Assembly;
+        bool changed = candidate.Signature != baseline.Signature;
+        if (moved && changed) return "assembly-move-and-signature-change";
+        if (moved) return "assembly-move";
+        return changed ? "signature-change" : "retained";
     }
 }

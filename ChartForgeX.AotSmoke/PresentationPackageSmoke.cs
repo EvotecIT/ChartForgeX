@@ -6,6 +6,7 @@ using ChartForgeX.Motion;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Stories;
+using ChartForgeX.Terminal;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
@@ -34,6 +35,11 @@ internal static class PresentationPackageSmoke {
         story.Outcome("ready", "Ready", "result");
         Require(story.ToSvg().Contains("Ready", StringComparison.Ordinal), "Stories scene SVG failed.");
         Require(story.ToPng().Length > 64, "Stories scene raster failed.");
+        var terminal = TerminalStory.Create().WithTitle("Completed terminal").WithWidth(480)
+            .WithPngOutputScale(1).WithFinalPrompt(false).Command("status", .1).Output("Ready");
+        var terminalArtifact = terminal.ToVisualArtifact();
+        Require(ReferenceEquals(terminal, terminalArtifact.Model) && terminalArtifact.ToSvg().Contains("Ready", StringComparison.Ordinal),
+            "Stories completed terminal artifact lost its model or transcript.");
         var topology = TopologyChart.Create().WithViewport(240, 160).WithLegend(null)
             .AddNode("a", "A", 20, 60, width: 60, height: 40).AddNode("b", "B", 160, 60, width: 60, height: 40)
             .AddEdge("route", "a", "b");

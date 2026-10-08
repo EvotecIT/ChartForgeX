@@ -62,10 +62,10 @@ internal static class DashboardPatternExamples {
 
     private static HeatmapInsightCard AppointmentVolume() => HeatmapInsightCard.Create()
             .WithTitle("Appointment Volume")
-            .WithSubtitle("Week 1, Jan 1 - Jan 7")
+            .WithSubtitle("Jan 7 - Jan 13, 2024")
             .WithTheme(OperationsTheme())
             .WithPadding(28, 26, 28, 24)
-            .WithPeriodLabel("Week 1 (Jan 1 - Jan 7, 2024)")
+            .WithPeriodLabel("Jan 7 - Jan 13, 2024")
             .WithColumns("S", "M", "T", "W", "T", "F", "S")
             .WithColorKey(0, 12, Mint.WithAlpha(70), TealDark)
             .AddRow("9 AM", 9, 3, 2, 6, 4, 4, 12)

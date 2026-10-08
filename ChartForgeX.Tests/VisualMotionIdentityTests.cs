@@ -6,12 +6,31 @@ using System.Xml.Linq;
 using ChartForgeX.Motion;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
+using ChartForgeX.Stories;
+using ChartForgeX.Terminal;
 using ChartForgeX.VisualBlocks;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class VisualMotionIdentityTests {
+    [Fact]
+    public void CompletedTerminalArtifactsKeepAccessibleReferencesIsolatedBetweenExports() {
+        var terminal = TerminalStory.Create().WithTitle("Completed terminal").WithWidth(480)
+            .WithPngOutputScale(1).WithFinalPrompt(false).Command("status", .1).Output("Ready");
+        var artifact = terminal.ToVisualArtifact();
+        Assert.Same(terminal, artifact.Model);
+        var source = Assert.IsAssignableFrom<IStaticVisualSource>(artifact.RenderSource);
+        var first = XDocument.Parse(source.RenderSvg("first"));
+        var second = XDocument.Parse(source.RenderSvg("second"));
+        Assert.NotEmpty(Ids(first));
+        AssertReferencesResolve(first);
+        AssertReferencesResolve(second);
+        Assert.Empty(Ids(first).Intersect(Ids(second), StringComparer.Ordinal));
+        Assert.Contains("Ready", first.Root!.Value, StringComparison.Ordinal);
+        Assert.Equal(RasterImageDecoder.Decode(terminal.ToPng()).Pixels, source.RenderRgba().Pixels);
+    }
+
     [Fact]
     public void GridMotionKeepsAccessibleReferencesWithinEachExport() {
         var grid = VisualGrid.Create().WithTitle("Capacity").WithSubtitle("Completed snapshot")

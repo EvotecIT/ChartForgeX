@@ -27,6 +27,7 @@ $metadata | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $repo
 $sourceRoot = Join-Path $PSScriptRoot 'PackageConsumers'
 $compileRoot = Join-Path ([IO.Path]::GetTempPath()) ('ChartForgeX-package-compile-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $compileRoot | Out-Null
+$compilationSucceeded = $false
 try {
     foreach ($lane in @('Core', 'Visuals', 'Stories', 'Adapters')) {
         $contractPath = Join-Path $PSScriptRoot "PackageValidation/$($lane.ToLowerInvariant()).json"
@@ -51,18 +52,25 @@ try {
             }
         $result | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $reportRoot "$($lane.ToLowerInvariant()).json") -Encoding utf8
     }
+    $compilationSucceeded = $true
 } finally {
-    # Only the fresh copy/cache created above is disposable; package and report inputs stay intact.
-    $resolvedCompileRoot = [IO.Path]::GetFullPath($compileRoot)
-    $tempPrefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
-    if (-not $resolvedCompileRoot.StartsWith($tempPrefix, [StringComparison]::OrdinalIgnoreCase)) {
-        throw 'Package compilation cleanup target is outside the selected temporary root.'
-    }
-    if (Test-Path -LiteralPath $resolvedCompileRoot) {
-        $linked = (@(Get-Item -LiteralPath $resolvedCompileRoot) + @(Get-ChildItem -LiteralPath $resolvedCompileRoot -Recurse -Force)) |
-            Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
-        if ($linked) { throw 'Package compilation cleanup target contains a linked path.' }
-        Remove-Item -LiteralPath $resolvedCompileRoot -Recurse -ErrorAction Stop
+    try {
+        # Only the fresh copy/cache created above is disposable; package and report inputs stay intact.
+        $resolvedCompileRoot = [IO.Path]::GetFullPath($compileRoot)
+        $tempPrefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+        if (-not $resolvedCompileRoot.StartsWith($tempPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'Package compilation cleanup target is outside the selected temporary root.'
+        }
+        if (Test-Path -LiteralPath $resolvedCompileRoot) {
+            $linked = (@(Get-Item -LiteralPath $resolvedCompileRoot) + @(Get-ChildItem -LiteralPath $resolvedCompileRoot -Recurse -Force)) |
+                Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
+            if ($linked) { throw 'Package compilation cleanup target contains a linked path.' }
+            # Unix marks NuGet's dot-prefixed metadata as hidden. Only the fresh, guarded copy/cache is removed.
+            Remove-Item -LiteralPath $resolvedCompileRoot -Recurse -Force:([IO.Path]::DirectorySeparatorChar -ne '\') -ErrorAction Stop
+        }
+    } catch {
+        if ($compilationSucceeded) { throw }
+        Write-Warning "Package compilation cleanup failed at $compileRoot; preserving the original validation error: $($_.Exception.Message)"
     }
 }
 
