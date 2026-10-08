@@ -2,7 +2,7 @@
 
 This guide records the breaking-release target and the observed consumer contracts. Charts, grids, topology, flow and sequence diagrams use the shared native scene. Optional package extraction and actual consumer upgrades have their own qualification gates. The [capability ledger](consumer-capabilities.csv) maps inspected calls to their destination, migration recipe and acceptance fixture. Its `owner_implementation` and `owner_evidence` columns distinguish available source and owner fixtures from downstream qualification. A row with `status=planned` still requires consumer migration or qualification; an implemented owner path does not close that gate. The ledger covers observed consumer capabilities, not every exported member of ChartForgeX.
 
-Consumer repositories remain unchanged. Revalidate their intended branch before migrating: a primary checkout, cached remote source, local project reference and installed NuGet package are different evidence boundaries.
+Qualify consumer candidates from their intended branches. A primary checkout, remote source, local project reference and installed NuGet package are different evidence boundaries; source migration alone does not establish an installed consumer or a public release.
 
 ## Shared visual defaults
 
@@ -18,11 +18,11 @@ Pie and donut display lists descend by value, with an aggregate `Other` last. Or
 
 | Consumer | Inspected source | Declared dependency / boundary |
 | --- | --- | --- |
-| [PowerBGInfo](https://github.com/EvotecIT/PowerBGInfo) | `v2-speedygonzales`, `b267584067aa58370ce8954423ec6582268950e7`, clean; three commits behind cached upstream | `Sources/PowerBGInfo/PowerBGInfo.csproj`: core `1.7.0`, optional source override. Core + Visuals required. |
-| [ImagePlayground](https://github.com/EvotecIT/ImagePlayground) | `master`, `46bd2fd5e06b076c8c038e134239edf2639ea724`, clean; nine commits behind cached upstream `c1df15a` | Primary core/HTML pins `1.6.0`; cached upstream pins `1.8.1`. PowerShell surface needs core + Visuals + Stories and selected interaction adapters. |
-| [OfficeIMO.ChartForgeX](https://github.com/EvotecIT/OfficeIMO) | Primary `a7207099322cd4496eca9c54990c835291df2a4d`, clean; relevant adapter also inspected at cached `origin/master fc7f5718c4e152257fedcc0651344a7c44a60c14` | `[1.6.0,2.0.0)` explicitly excludes v2. Review the major range and adapter contract together. |
-| Private HTML adapter | Read-only source inspection | Keep the base adapter core-focused; qualify optional composition/story integration independently. |
-| Private reporting consumer | Read-only source inspection | Restore a reproducible dependency closure before claiming consumer build proof. |
+| [PowerBGInfo](https://github.com/EvotecIT/PowerBGInfo) | `v2-speedygonzales`, `63f30cef2a92df8cbd9b7a8d0780cd2dfdaec4d8` | Core + Visuals produce wallpapers; Stories retains the existing GIF file export. Preserve explicit source qualification and installed-module authoring. |
+| [ImagePlayground](https://github.com/EvotecIT/ImagePlayground) | `master`, `fb433aad14a071e301cc4e7686a4680bf1fb8bab` | The PowerShell surface requires core + Visuals + Stories and the HTML interaction adapter. The base image-processing library remains independent. |
+| [OfficeIMO.ChartForgeX](https://github.com/EvotecIT/OfficeIMO) | `master`, `ee066fe0dced8c5948500aaecdd0757f1289d142` | Rebuild the core adapter against `2.0.0`; the Markdown companion also consumes Mermaid. Optional producers hand off through neutral artifacts. |
+| Private HTML adapter | Isolated consumer candidate | Keep the base adapter core-focused; qualify composition and story peer packages independently. |
+| Private reporting consumer | Isolated consumer candidate | Qualify the real report factories against a reproducible dependency closure and retain the wider reporting release gate. |
 
 Paths in this guide and the CSV are repository-relative. Resolve the repository root through `EVOTEC_GITHUB_ROOT`, with the platform default described in `AGENTS.md` when unset. Source findings are not consumer builds, installed-module tests or package publication proof.
 
@@ -58,6 +58,10 @@ string svg = artifact.ToSvg();
 
 The decorator copies watermark declarations and preserves their order. The overload accepting `VisualArtifactRenderOptions` captures topology and raster settings with the producer. Changing an already captured watermark object does not alter the decoration.
 
+Use `artifact.CopyEnvelope().WithWatermarks(...)` when several exports share one artifact and each needs its own decoration. The copy separates mutable host metadata, accessibility, regions and legend items; its semantic model and producer-owned render source remain shared. Use a prepared input when the host also needs detached geometry.
+
+Visuals records the applied layer count as the invariant integer metadata value `presentation.watermarks`. The value travels through the neutral interchange envelope and JSON. A native host that cannot project those layers can report the loss without taking a Visuals dependency. Repeated decoration counts the producer's actual captured layers.
+
 For animated topology, create one presentation from the static request:
 
 ```csharp
@@ -71,6 +75,12 @@ string animatedHtml = presentation.ToHtmlPage();
 ```
 
 The presentation keeps the detached prepared geometry. It does not add animation policy to `TopologyRenderOptions` or repeat layout for each output. For a one-frame GIF from a composition, import `ChartForgeX.Raster` and call `composition.ToImage().ToGif()`.
+
+For animated SVG with marks, use `VisualWatermarkDecoration.ApplyToSvg(presentation.ToSvg(), marks)`. Animated HTML accepts the same optional SVG transformation through `presentation.ToHtmlPage(svg => VisualWatermarkDecoration.ApplyToSvg(svg, marks))`. The decorator retains script-free SVG animation. A presentation's common static-source contract exports its configured progress sample; use its explicit animation exports when motion is required.
+
+The HTML interaction adapter accepts a trusted SVG factory through `topology.ToInteractiveHtmlPage(staticOptions, policy => topology.WithMotion(motion, policy, staticOptions.ActiveScenarioId).ToSvg())`. The independent policy includes the content needed by scenario and label/group controls; the original options retain their initial selection and visibility. Stories uses the preferred scenario for route selection independently of static highlighting, including its normal fallback when that scenario has no route. Supply producer-generated SVG rather than untrusted arbitrary markup.
+
+`prepared.ToArtifact()` derives kind and identity from captured semantics; `prepared.ToArtifact("host-id")` supplies a new host identity. A scene without captured semantics has kind `Unknown`; the adapter does not infer editable diagram data from drawing commands. To embed several artifacts in one HTML document, pass a distinct scope to `artifact.ToSvg(options, scope)`.
 
 `VisualMotionPresentation.Create(grid, timeline)` adds SVG/HTML motion to the grid's static target IDs. Its PNG and common static-source exports retain the completed picture. VisualStory and TerminalStory artifact factories in `ChartForgeX.Stories` capture the completed display and transcript; rebuild the artifact after changing a story. `Model` retains the original semantic object independently of that captured picture.
 

@@ -37,9 +37,20 @@ public sealed class HtmlInteractiveTopologyRenderer {
     /// <param name="options">Optional render options.</param>
     /// <param name="externalAssets">Optional shared asset references; null inlines the runtime.</param>
     /// <returns>A complete HTML document.</returns>
-    public string RenderPage(TopologyChart chart, TopologyRenderOptions? options, HtmlAssetReferences? externalAssets) {
+    public string RenderPage(TopologyChart chart, TopologyRenderOptions? options, HtmlAssetReferences? externalAssets) =>
+        RenderPage(chart, options, externalAssets, null);
+
+    /// <summary>Renders interactive chart controls around an optional trusted SVG presentation of the same topology.</summary>
+    /// <remarks>The factory receives an independent policy that retains all content needed by interactive controls,
+    /// including initially hidden labels and groups. Null uses the static renderer. Return producer-generated SVG;
+    /// this overload does not sanitize arbitrary untrusted markup.</remarks>
+    public string RenderPage(TopologyChart chart, TopologyRenderOptions? options, HtmlAssetReferences? externalAssets,
+        Func<TopologyRenderOptions, string>? svgPresentation) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = Prepare(options ?? chart.DefaultRenderOptions);
+        var presentationSvg = svgPresentation?.Invoke(TopologyHtmlRenderer.PrepareInteractiveSvgOptions(chart, options));
+        if (svgPresentation != null && string.IsNullOrWhiteSpace(presentationSvg))
+            throw new InvalidOperationException("The SVG presentation factory returned no presentation.");
         var theme = chart.Theme ?? TopologyTheme.Light();
         var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!;
         var writer = new HtmlMarkupWriter();
@@ -49,7 +60,7 @@ public sealed class HtmlInteractiveTopologyRenderer {
         HtmlChartRenderer.WriteDocumentHead(writer, title, TopologyHtmlRenderer.BuildPageStyle(options, theme));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
-            .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, assetSource: "document")).Line()
+            .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, assetSource: "document", presentationSvg: presentationSvg)).Line()
             .RawTrusted(externalAssets == null ? InteractionScriptTag(options) : string.Empty);
         if (externalAssets != null) HtmlInteractiveAssetFiles.WriteScript(writer, externalAssets, HtmlInteractiveAssetFiles.TopologyScript(options), null);
         writer.Line()

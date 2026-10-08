@@ -4,7 +4,9 @@
 
 All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
 
+- [x] Inspect current owner and consumer branches, package boundaries and the public package state.
 - [ ] Qualify adapter and consumer candidates in dependency order with saved-document, installed-module and wallpaper fixtures.
+- [ ] Settle candidate review and CI, and prepare coordinated release inputs and migration notes.
 - [ ] With separate release authority, publish and verify owner packages, then repin and release consumers against verified public three-part versions. Owner source and local packs do not establish downstream execution.
 
 ## Rendering Pipeline

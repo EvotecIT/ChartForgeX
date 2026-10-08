@@ -48,10 +48,12 @@ jobs:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           API_VERSION: ${{ steps.release.outputs.version }}
         run: |
+          pwsh -NoProfile -File ./tooling/Build/Export-WebsiteApiDocs.ps1 -Version "$API_VERSION" -ListProjects > api-projects.txt
+          mapfile -t projects < api-projects.txt
           for attempt in {1..10}; do
             gh release download "$RELEASE_TAG" --pattern "ChartForgeX*.${API_VERSION}.zip" --dir release-archives --skip-existing --repo "$GITHUB_REPOSITORY" || true
             missing=0
-            for project in ChartForgeX ChartForgeX.Interactivity ChartForgeX.Interactivity.Html ChartForgeX.Markup ChartForgeX.Markup.Mermaid ChartForgeX.Mermaid; do
+            for project in "${projects[@]}"; do
               if [[ ! -s "release-archives/${project}.${API_VERSION}.zip" ]]; then
                 missing=1
               fi
@@ -59,7 +61,7 @@ jobs:
             if [[ "$missing" == 0 ]]; then
               exit 0
             fi
-            echo "Waiting for the six published ChartForgeX package archives ($attempt/10)."
+            echo "Waiting for the ${#projects[@]} published ChartForgeX package archives ($attempt/10)."
             sleep 30
           done
           echo "The release is missing one or more package archives." >&2
@@ -69,7 +71,9 @@ jobs:
         shell: pwsh
         env:
           API_VERSION: ${{ steps.release.outputs.version }}
-        run: ./tooling/Build/Export-WebsiteApiDocs.ps1 -ReleaseArchivesRoot ./release-archives -OutputRoot ./website-api-output -Version $env:API_VERSION
+        run: |
+          $bundlePath = ./tooling/Build/Export-WebsiteApiDocs.ps1 -ReleaseArchivesRoot ./release-archives -OutputRoot ./website-api-output -Version $env:API_VERSION
+          ./tooling/Build/Test-WebsiteApiBundle.ps1 -BundlePath $bundlePath -Version $env:API_VERSION -ReleaseArchivesRoot ./release-archives
 
       - name: Publish immutable release asset
         shell: bash

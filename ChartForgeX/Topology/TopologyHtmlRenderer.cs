@@ -39,8 +39,8 @@ public sealed partial class TopologyHtmlRenderer {
         return RenderFragmentCore(chart, options, includeAssets: false, assetSource: "host");
     }
 
-    internal string RenderInteractiveFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets, string? assetSource = null) {
-        return RenderFragmentCore(chart, options, includeAssets, assetSource ?? (includeAssets ? "inline" : "host"));
+    internal string RenderInteractiveFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets, string? assetSource = null, string? presentationSvg = null) {
+        return RenderFragmentCore(chart, options, includeAssets, assetSource ?? (includeAssets ? "inline" : "host"), presentationSvg);
     }
 
     private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource, string? preparedSvg = null, double? preparedWidth = null) {
@@ -126,29 +126,23 @@ public sealed partial class TopologyHtmlRenderer {
 
         if (enableSelectionPanel) WriteSelectionPanel(writer, cssPrefix + "-selection-panel");
 
-        writer.RawTrusted(preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls));
+        writer.RawTrusted(preparedSvg ?? RenderEmbeddedSvg(chart, options));
         writer.EndElement().EndElement();
         return writer.Build();
     }
 
-    private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
-        if (!interactiveScenarioControls && !forceGraphControls) return _svg.Render(chart, options);
-        var activeScenarioId = options.ActiveScenarioId;
-        var includeEdgeLabels = options.IncludeEdgeLabels;
-        var includeGroups = options.IncludeGroups;
-        try {
-            if (interactiveScenarioControls) options.ActiveScenarioId = null;
-            if (forceGraphControls) {
-                options.IncludeEdgeLabels = true;
-                options.IncludeGroups = true;
-            }
+    private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options) =>
+        _svg.Render(chart, options.EnableHtmlInteractions ? PrepareInteractiveSvgOptions(chart, options) : options);
 
-            return _svg.Render(chart, options);
-        } finally {
-            options.ActiveScenarioId = activeScenarioId;
-            options.IncludeEdgeLabels = includeEdgeLabels;
-            options.IncludeGroups = includeGroups;
+    internal static TopologyRenderOptions PrepareInteractiveSvgOptions(TopologyChart chart, TopologyRenderOptions options) {
+        var snapshot = options.CloneForRendering();
+        if (options.EnableHtmlInteractions && chart.Scenarios.Count > 0) snapshot.ActiveScenarioId = null;
+        if (options.EnableHtmlInteractions && options.EnableHtmlForceGraphControls &&
+            (chart.LayoutMode == TopologyLayoutMode.ForceDirected || chart.LayoutMode == TopologyLayoutMode.RelationshipRadial)) {
+            snapshot.IncludeEdgeLabels = true;
+            snapshot.IncludeGroups = true;
         }
+        return snapshot;
     }
 
     /// <summary>
