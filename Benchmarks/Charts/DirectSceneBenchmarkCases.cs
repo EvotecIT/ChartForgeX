@@ -14,12 +14,12 @@ public static class DirectSceneBenchmarkCases {
     public static void Initialize(string tokenPath, string fontPath, string boldFontPath) {
         LegacySceneBenchmarkCases.Initialize(tokenPath, fontPath, boldFontPath);
         var theme = VisualTheme.FromJson(File.ReadAllText(tokenPath), new VisualTypography("CFX Proof Carlito", 22, 13, 11, 12, 11));
-        _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(LegacySceneBenchmarkCases.Width, LegacySceneBenchmarkCases.Height)),
+        _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(LegacySceneBenchmarkCases.Width, LegacySceneBenchmarkCases.Height), padding: 24),
             theme, VisualThemeMode.Light,
-            new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG"), FontSpec.FromFamily("CFX Proof Carlito"));
+            new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG", showLegend: true, legendPosition: ChartLegendPosition.TopLeft), FontSpec.FromFamily("CFX Proof Carlito"));
         _phase3Context = new VisualRenderContext(_context.Layout, theme, VisualThemeMode.Light, _context.Frame, _context.Font);
         _topologyContext = new VisualRenderContext(_context.Layout, theme, VisualThemeMode.Light,
-            new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG", showLegend: false), _context.Font);
+            new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG", showLegend: false, legendPosition: ChartLegendPosition.TopLeft), _context.Font);
     }
 
     /// <summary>Uses the same legacy model factory; only the compilation/export path changes.</summary>

@@ -32,25 +32,22 @@ New-BenchmarkSuite $suiteName {
     Set-BenchmarkProfile Current -Cleanup KeepOnFailure
     Add-BenchmarkCases {
         foreach ($fixture in $fixtureNames) {
-            foreach ($format in 'Svg', 'Rgba', 'Png') {
-                foreach ($lane in 'Baseline', 'Candidate') {
-                    Add-BenchmarkCase "$lane-$fixture-$format" @{ Lane = $lane; Fixture = $fixture; Format = $format }
-                }
-            }
-        }
-        foreach ($fixture in $fixtureNames) {
-            foreach ($format in 'Compile', 'PreparedSvg', 'PreparedRgba', 'PreparedPng') {
-                Add-BenchmarkCase "Candidate-$fixture-$format" @{ Lane = 'Candidate'; Fixture = $fixture; Format = $format }
-            }
+            Add-BenchmarkCase $fixture @{ Fixture = $fixture }
         }
     }
-    Set-BenchmarkSetup { param($case, $run) $run.Lane = $lanes["$($case.Lane)-$($case.Fixture)"]; $run.Lane.Reset($case.Format) }
-    Add-BenchmarkEngine ChartForgeX {
-        Add-BenchmarkOperation Execute {
-            param($case, $run)
-            $before = [GC]::GetAllocatedBytesForCurrentThread()
-            $run.Lane.Execute()
-            $run.Allocated = [GC]::GetAllocatedBytesForCurrentThread() - $before
+    Set-BenchmarkSetup { param($case, $run) $run.Lane = $lanes["$($case.Engine)-$($case.Fixture)"]; $run.Lane.Reset($case.Operation) }
+    foreach ($lane in 'Baseline', 'Candidate') {
+        $formats = @('Svg', 'Rgba', 'Png')
+        if ($lane -eq 'Candidate') { $formats += 'Compile', 'PreparedSvg', 'PreparedRgba', 'PreparedPng' }
+        Add-BenchmarkEngine $lane {
+            foreach ($format in $formats) {
+                Add-BenchmarkOperation $format {
+                    param($case, $run)
+                    $before = [GC]::GetAllocatedBytesForCurrentThread()
+                    $run.Lane.Execute()
+                    $run.Allocated = [GC]::GetAllocatedBytesForCurrentThread() - $before
+                }
+            }
         }
     }
     Add-BenchmarkValidation { param($case, $run) $run.Lane.Validate() }
@@ -61,6 +58,7 @@ New-BenchmarkSuite $suiteName {
     Add-BenchmarkMetadata FixtureSha256 (Get-FileHash -LiteralPath $fixtures).Hash
     Add-BenchmarkMetadata BaselineFixtureSha256 (Get-FileHash -LiteralPath $baselineFixtures).Hash
     Add-BenchmarkMetadata BaselineRendering $baselineRendering
+    Add-BenchmarkMetadata PairedOrdering 'Shared fixture scenarios and format operations pair Baseline/Candidate engines; Rotated alternates each paired group. Lane and format are runtime fields, not differing case variables.'
     Add-BenchmarkMetadata ThemeSha256 (Get-FileHash -LiteralPath $tokens).Hash
     Add-BenchmarkMetadata FontSha256 (Get-FileHash -LiteralPath $font).Hash
     Add-BenchmarkMetadata BoldFontSha256 (Get-FileHash -LiteralPath $boldFont).Hash
