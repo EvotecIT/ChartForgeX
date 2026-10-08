@@ -1,21 +1,8 @@
 # ChartForgeX TODO
 
-## Shared rendering migration: Phase 4
+## Consumer migration: Phase 5
 
-Phases 0–3 are merged. All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Existing composition and block producers retain their explicit export contracts while their assembly ownership is separated. Consumer repositories remain read-only during Phase 4.
-
-- [x] Audit the type/resource graph and retained wallpaper, composition and animation capabilities.
-- [x] Close core dispatch and options that name optional composition or animation types.
-- [x] Extract canvas, image composition, factual blocks, static grids and ordered watermark decoration into ChartForgeX.Visuals.
-- [x] Extract visual stories, terminal playback, transcripts, motion and GIF/APNG encoding into peer ChartForgeX.Stories.
-- [x] Remove decorative static controls while preserving factual completion, progress, dates and trend text.
-- [x] Qualify isolated packed core-only, core+Visuals and core+Stories assets across all four frameworks, including resources and observed exports.
-- [x] Inspect representative wallpaper, block and animated output; complete tests, AOT execution and independent review.
-- [x] Close representative performance qualification and investigate timing flags.
-- [ ] Settle current-head CI and delayed PR feedback.
-- [ ] Merge the qualified Phase 4 PR, clean task-owned output/worktree and record the reassessment.
-
-## Shared rendering migration: Phase 5
+All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
 
 - [ ] Qualify adapter and consumer candidates in dependency order with saved-document, installed-module and wallpaper fixtures.
 - [ ] With separate release authority, publish and verify owner packages, then repin and release consumers against verified public three-part versions. Owner source and local packs do not establish downstream execution.
