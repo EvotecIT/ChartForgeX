@@ -245,14 +245,10 @@ internal static partial class SmokeTests {
     }
 
     private static string FindRepositoryRoot() {
-        // SDK artifacts can live outside the source tree. The normal dotnet test
-        // working directory still supplies its source root in that layout.
-        foreach (string start in new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() }) {
-            var directory = new DirectoryInfo(start);
-            while (directory != null) {
-                if (File.Exists(Path.Combine(directory.FullName, "ChartForgeX.sln"))) return directory.FullName;
-                directory = directory.Parent;
-            }
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory != null) {
+            if (File.Exists(Path.Combine(directory.FullName, "ChartForgeX.sln"))) return directory.FullName;
+            directory = directory.Parent;
         }
 
         throw new InvalidOperationException("Could not locate repository root.");

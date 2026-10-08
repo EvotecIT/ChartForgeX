@@ -781,11 +781,6 @@ flowchart LR
         foreach (var configuration in new[] { "Release", "Debug" }) {
             var candidate = Path.Combine(root, "ChartForgeX.Markup.Cli", "bin", configuration, "net8.0", "ChartForgeX.Markup.Cli.dll");
             if (File.Exists(candidate)) return candidate;
-            string? artifacts = Environment.GetEnvironmentVariable("ArtifactsPath");
-            if (!string.IsNullOrWhiteSpace(artifacts)) {
-                candidate = Path.Combine(artifacts, "bin", "ChartForgeX.Markup.Cli", configuration.ToLowerInvariant(), "ChartForgeX.Markup.Cli.dll");
-                if (File.Exists(candidate)) return candidate;
-            }
         }
 
         throw new FileNotFoundException("Build ChartForgeX.Markup.Cli before running CLI stream smoke tests.");
