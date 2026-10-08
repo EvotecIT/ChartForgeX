@@ -5,12 +5,14 @@
 Phases 0–3 are merged. All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Existing composition and block producers retain their explicit export contracts while their assembly ownership is separated. Consumer repositories remain read-only during Phase 4.
 
 - [x] Audit the type/resource graph and retained wallpaper, composition and animation capabilities.
-- [ ] Close core dispatch and options that name optional composition or animation types.
-- [ ] Extract canvas, image composition, factual blocks, static grids and ordered watermark decoration into ChartForgeX.Visuals.
-- [ ] Extract visual stories, terminal playback, transcripts, motion and GIF/APNG encoding into peer ChartForgeX.Stories.
-- [ ] Remove decorative static controls while preserving factual completion, progress, dates and trend text.
-- [ ] Qualify isolated packed core-only, core+Visuals and core+Stories assets across all four frameworks, including resources and observed exports.
-- [ ] Inspect representative wallpaper, block and animated output; complete full quality, independent review and current-head CI.
+- [x] Close core dispatch and options that name optional composition or animation types.
+- [x] Extract canvas, image composition, factual blocks, static grids and ordered watermark decoration into ChartForgeX.Visuals.
+- [x] Extract visual stories, terminal playback, transcripts, motion and GIF/APNG encoding into peer ChartForgeX.Stories.
+- [x] Remove decorative static controls while preserving factual completion, progress, dates and trend text.
+- [x] Qualify isolated packed core-only, core+Visuals and core+Stories assets across all four frameworks, including resources and observed exports.
+- [x] Inspect representative wallpaper, block and animated output; complete tests, AOT execution and independent review.
+- [x] Close representative performance qualification and investigate timing flags.
+- [ ] Settle current-head CI and delayed PR feedback.
 - [ ] Merge the qualified Phase 4 PR, clean task-owned output/worktree and record the reassessment.
 
 ## Shared rendering migration: Phase 5
@@ -22,6 +24,7 @@ Phases 0–3 are merged. All 49 chart kinds, ChartGrid, topology, flow and seque
 
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
 - Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
+- Keep annotation captions clear of data marks in compact plots; the appointment peak-hour example has a caption overlapping bar caps.
 
 SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
 

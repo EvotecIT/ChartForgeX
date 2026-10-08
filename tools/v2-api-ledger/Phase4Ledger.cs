@@ -38,7 +38,7 @@ internal static class Phase4Ledger {
             changes = changes.GroupBy(row => (string)row["fate"]!).ToDictionary(group => group.Key, group => group.Count()),
             scope = "Source symbols; packed four-framework runtime/dependency/resource proof is a separate gate."
         };
-        File.WriteAllText(Path.Combine(args[2], "api-ledger-phase4-manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }) + "\n", new UTF8Encoding(false));
+        File.WriteAllText(Path.Combine(args[2], "api-ledger-phase4-manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }).Replace("\r\n", "\n") + "\n", new UTF8Encoding(false));
         Console.WriteLine($"Phase 4 source inventory: {rows.Length} rows in {current.SourceCounts.Count} assemblies.");
     }
 }

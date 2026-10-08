@@ -21,7 +21,7 @@ internal static class Program {
         PackageAssertions.Require(decoded.Width == 2 && decoded.Height == 1 && decoded.Pixels[7] == 0,
             "Single-frame GIF lost size or transparent pixels.");
 
-        var terminal = TerminalStory.Create().WithTitle("Packed terminal").WithWidth(420).WithPngOutputScale(1)
+        var terminal = TerminalStory.Create().WithTitle("Packed terminal").WithWidth(480).WithPngOutputScale(1)
             .WithTiming(0, 100, 0).WithFinalPrompt(false).Command("status", 0.1).Output("Ready");
         PackageAssertions.Require(PackageAssertions.Contains(terminal.ToTranscript(), "Ready"), "Terminal transcript is missing.");
         PackageAssertions.Png(terminal.ToPng());
