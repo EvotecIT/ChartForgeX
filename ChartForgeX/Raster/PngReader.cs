@@ -18,6 +18,22 @@ internal static class PngReader {
         return true;
     }
 
+    // Called after decoding validates the chunks. Canvas embedding must retain
+    // the decoded static image instead of letting the SVG resource animate.
+    internal static bool IsAnimatedPng(byte[] data) {
+        if (!IsPng(data)) return false;
+        for (var offset = Signature.Length; (long)offset + 12 <= data.Length;) {
+            var length = ReadUInt32(data, offset);
+            var next = (long)offset + 12 + length;
+            if (next > data.Length) return false;
+            var type = ReadUInt32(data, offset + 4);
+            if (type == 0x6163544C) return true; // acTL
+            if (type == 0x49454E44) return false; // IEND
+            offset = (int)next;
+        }
+        return false;
+    }
+
     public static RgbaImage Decode(byte[] data, RasterDecodeLimits? limits = null) {
         var decodeLimits = limits ?? RasterDecodeLimits.Default;
         decodeLimits.ValidateInput(data);

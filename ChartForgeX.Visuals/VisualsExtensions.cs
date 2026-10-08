@@ -193,10 +193,12 @@ public static partial class VisualsExtensions {
     /// <summary>
     /// Decodes image bytes and adds them as an image layer to a visual canvas.
     /// </summary>
+    /// <remarks>SVG preserves original static PNG and JPEG containers. Animated PNG and other decoded formats are embedded as a static PNG. PNG output uses the decoded pixels; both representations are captured during this call.</remarks>
     public static VisualCanvas AddImageBytes(this VisualCanvas canvas, double x, double y, double width, double height, byte[] data, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (data == null) throw new ArgumentNullException(nameof(data));
-        return canvas.AddImage(RasterImageDecoder.Decode(data, options), x, y, width, height, opacity, fit);
+        var image = RasterImageDecoder.Decode(data, options);
+        return AddRenderedImage(canvas, x, y, width, height, image, EmbeddedRasterDataUri(data, image), fit, opacity);
     }
 
     /// <summary>
@@ -211,10 +213,12 @@ public static partial class VisualsExtensions {
     /// <summary>
     /// Decodes an image file and adds it as an image layer to a visual canvas.
     /// </summary>
+    /// <remarks>The file is read within the requested decode limits. SVG preserves original static PNG and JPEG containers; other inputs are embedded as a static PNG. PNG output uses the decoded pixels.</remarks>
     public static VisualCanvas AddImageFile(this VisualCanvas canvas, double x, double y, double width, double height, string path, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch, double opacity = 1, RasterDecodeOptions? options = null) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (path == null) throw new ArgumentNullException(nameof(path));
-        return canvas.AddImage(RasterImageDecoder.Read(path, options), x, y, width, height, opacity, fit);
+        var image = RasterImageDecoder.Read(path, options, out var data);
+        return AddRenderedImage(canvas, x, y, width, height, image, EmbeddedRasterDataUri(data, image), fit, opacity);
     }
 
     /// <summary>
@@ -229,10 +233,12 @@ public static partial class VisualsExtensions {
     /// <summary>
     /// Decodes an image file and adds it as the content of a hero badge.
     /// </summary>
+    /// <remarks>The file is read within the requested decode limits. SVG preserves original static PNG and JPEG containers; other inputs are embedded as a static PNG. PNG output uses the decoded pixels.</remarks>
     public static VisualCanvas AddHeroBadgeImageFile(this VisualCanvas canvas, double x, double y, double width, double height, string path, string symbol = "", ChartColor? accent = null, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain, double padding = 10, double opacity = 1, RasterDecodeOptions? options = null) {
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
         if (path == null) throw new ArgumentNullException(nameof(path));
-        return canvas.AddHeroBadge(RasterImageDecoder.Read(path, options), x, y, width, height, symbol, accent, fit, padding, opacity);
+        var image = RasterImageDecoder.Read(path, options, out var data);
+        return canvas.AddHeroBadge(x, y, width, height, symbol, accent, EmbeddedRasterDataUri(data, image), image.Pixels, image.Width, image.Height, fit, padding, opacity);
     }
 
     /// <summary>
@@ -338,6 +344,14 @@ public static partial class VisualsExtensions {
     private static string SvgDataUri(string svg) {
         if (svg == null) throw new ArgumentNullException(nameof(svg));
         return "data:image/svg+xml;charset=utf-8," + Uri.EscapeDataString(svg);
+    }
+
+    private static string EmbeddedRasterDataUri(byte[] data, RgbaImage image) {
+        var mimeType = RasterImageDecoder.MimeTypeFor(data);
+        if (mimeType == "image/jpeg" || (mimeType == "image/png" && !PngReader.IsAnimatedPng(data))) {
+            return "data:" + mimeType + ";base64," + Convert.ToBase64String(data);
+        }
+        return VisualCanvasImagePixels.EmbeddedPng(image.Width, image.Height, image.Pixels);
     }
 
 }

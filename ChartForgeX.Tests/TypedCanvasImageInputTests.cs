@@ -51,6 +51,55 @@ public sealed class TypedCanvasImageInputTests {
         Assert.NotEmpty(canvas.ToPng());
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EncodedImageHelpersCaptureOriginalStaticContainerAndDecodedPixels(bool jpeg) {
+        var source = ImageComposition.Create(3, 2, ChartColor.FromHex("#e02030"));
+        var encoded = jpeg ? source.ToJpeg() : source.ToPng(new RasterImageOptions { Dpi = 123 });
+        var original = (byte[])encoded.Clone();
+        var decoded = RasterImageDecoder.Decode(original);
+        var path = Path.Combine(Path.GetTempPath(), "cfx-encoded-image-" + Guid.NewGuid().ToString("N"));
+        var options = new RasterDecodeOptions { MaximumEncodedBytes = encoded.Length, MaximumPixels = 6 };
+        try {
+            File.WriteAllBytes(path, encoded);
+            var canvases = EncodedCanvases(encoded, path, options);
+            Array.Clear(encoded, 0, encoded.Length);
+            File.Delete(path);
+            foreach (var canvas in canvases) {
+                var href = ImageHref(canvas.ToSvg());
+                Assert.StartsWith(jpeg ? "data:image/jpeg;base64," : "data:image/png;base64,", href);
+                Assert.Equal(original, Convert.FromBase64String(href.Substring(href.IndexOf(',') + 1)));
+                Assert.Equal(Pixel(decoded, 1, 1), Pixel(RasterImageDecoder.Decode(canvas.ToPng()), 8, 8));
+            }
+        } finally {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void AnimatedPngHelpersEmbedOnlyTheDecodedStaticImage() {
+        var first = ImageComposition.Create(3, 2, ChartColor.FromHex("#ff0000")).ToImage();
+        var second = ImageComposition.Create(3, 2, ChartColor.FromHex("#00ff00")).ToImage();
+        var encoded = RasterAnimationEncoder.Encode([
+            new RasterAnimationFrame(first, TimeSpan.FromMilliseconds(100)),
+            new RasterAnimationFrame(second, TimeSpan.FromMilliseconds(100))
+        ], RasterAnimationFormat.Apng);
+        Assert.True(PngReader.IsAnimatedPng(encoded));
+        var path = Path.Combine(Path.GetTempPath(), "cfx-static-apng-" + Guid.NewGuid().ToString("N"));
+        try {
+            File.WriteAllBytes(path, encoded);
+            foreach (var canvas in EncodedCanvases(encoded, path, new RasterDecodeOptions())) {
+                var embedded = EmbeddedPng(canvas.ToSvg());
+                Assert.False(PngReader.IsAnimatedPng(embedded));
+                Assert.Equal(first.Pixels, RasterImageDecoder.Decode(embedded).Pixels);
+                Assert.Equal(Pixel(first, 1, 1), Pixel(RasterImageDecoder.Decode(canvas.ToPng()), 8, 8));
+            }
+        } finally {
+            File.Delete(path);
+        }
+    }
+
     [Fact]
     public void InvalidDefaultImageIsRejectedBeforeTheCanvasChanges() {
         var canvas = VisualCanvas.Create(32, 32);
@@ -106,9 +155,24 @@ public sealed class TypedCanvasImageInputTests {
     }
 
     private static byte[] EmbeddedPng(string svg) {
-        var href = XDocument.Parse(svg).Descendants().Single(node => node.Name.LocalName == "image").Attribute("href")!.Value;
+        var href = ImageHref(svg);
         Assert.StartsWith("data:image/png;base64,", href);
         return Convert.FromBase64String(href.Substring("data:image/png;base64,".Length));
+    }
+
+    private static string ImageHref(string svg) => XDocument.Parse(svg).Descendants().Single(node => node.Name.LocalName == "image").Attribute("href")!.Value;
+
+    private static VisualCanvas[] EncodedCanvases(byte[] encoded, string path, RasterDecodeOptions options) {
+        var placement = new VisualCanvasPlacement(VisualCanvasAnchor.Center);
+        VisualCanvas Empty() => VisualCanvas.Create(16, 16).WithBackdrop(VisualCanvasBackdropStyle.Transparent);
+        return [
+            Empty().AddImageBytes(0, 0, 16, 16, encoded, options: options),
+            Empty().AddImageBytes(placement, 16, 16, encoded, options: options),
+            Empty().AddImageFile(0, 0, 16, 16, path, options: options),
+            Empty().AddImageFile(placement, 16, 16, path, options: options),
+            Empty().AddHeroBadgeImageFile(0, 0, 16, 16, path, fit: VisualCanvasImageFit.Stretch, padding: 0, options: options),
+            Empty().AddHeroBadgeImageFile(placement, 16, 16, path, fit: VisualCanvasImageFit.Stretch, padding: 0, options: options)
+        ];
     }
 
     private static byte[] Pixel(RgbaImage image, int x, int y) => image.Pixels.Skip((y * image.Width + x) * 4).Take(4).ToArray();

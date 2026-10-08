@@ -141,6 +141,8 @@ canvas.AddImage(logo, 20, 20, 160, 100, opacity: 0.8,
 
 Typed `AddImage` and `AddHeroBadge` calls copy the required pixels during the call. SVG embeds a PNG from the same snapshot used by raster output, so changing the caller's array later does not change the scene. `RgbaImage` itself retains the supplied array; keep it unchanged while a borrowing renderer or encoder runs. `AddRasterImage` uses the same snapshot path.
 
+Encoded image helpers preserve the original static PNG or JPEG container in SVG output and use its decoded pixels for raster output. Animated PNG and other supported containers embed the decoded static image as PNG, keeping the canvas scene static in both renderers.
+
 The raw image layer can carry a paired SVG href and RGBA representation, preserving vector output from charts, grids, blocks, and topology renderers. Callers supplying both representations own their equivalence. RGBA-only input is embedded in SVG. Href-only input is an SVG resource reference and uses the raster placeholder; the renderer does not fetch that resource.
 
 All raster decoders bound encoded input and pixel counts before allocating image buffers. The defaults are 64 MiB of input and 67,108,864 pixels (256 MiB of RGBA output). Codec working buffers use additional memory. Set smaller limits for uploads or other untrusted input; the same options work with files, byte arrays, and non-seekable streams:
