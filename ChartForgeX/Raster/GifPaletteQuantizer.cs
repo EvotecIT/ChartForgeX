@@ -289,12 +289,30 @@ internal static class GifPaletteQuantizer {
 
         public ColorBoxSplit Split(List<ColorSample> samples) {
             Comparison<ColorSample> comparison;
-            if (RedRange >= GreenRange && RedRange >= BlueRange) comparison = (left, right) => left.Red.CompareTo(right.Red);
-            else if (GreenRange >= BlueRange) comparison = (left, right) => left.Green.CompareTo(right.Green);
-            else comparison = (left, right) => left.Blue.CompareTo(right.Blue);
+            if (RedRange >= GreenRange && RedRange >= BlueRange) comparison = (left, right) => CompareSamples(left, right, left.Red.CompareTo(right.Red));
+            else if (GreenRange >= BlueRange) comparison = (left, right) => CompareSamples(left, right, left.Green.CompareTo(right.Green));
+            else comparison = (left, right) => CompareSamples(left, right, left.Blue.CompareTo(right.Blue));
             samples.Sort(Start, Length, Comparer<ColorSample>.Create(comparison));
             var midpoint = WeightedMidpoint(samples);
             return new ColorBoxSplit(Create(samples, Start, midpoint), Create(samples, midpoint, End));
+        }
+
+        /// <summary>Orders dominant-channel ties by color and weight so median cuts are independent of the host's sort algorithm.</summary>
+        private static int CompareSamples(ColorSample left, ColorSample right, int dominantOrder) {
+            if (dominantOrder != 0) {
+                return dominantOrder;
+            }
+
+            var order = left.Red.CompareTo(right.Red);
+            if (order != 0) {
+                return order;
+            }
+            order = left.Green.CompareTo(right.Green);
+            if (order != 0) {
+                return order;
+            }
+            order = left.Blue.CompareTo(right.Blue);
+            return order != 0 ? order : left.Count.CompareTo(right.Count);
         }
 
         private int WeightedMidpoint(IReadOnlyList<ColorSample> samples) {
