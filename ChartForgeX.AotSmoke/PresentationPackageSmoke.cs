@@ -29,7 +29,7 @@ internal static class PresentationPackageSmoke {
         var motion = VisualMotionPresentation.Create(grid, VisualMotionTimeline.Create().Fade("metric"));
         Require(motion.ToSvg().Contains("@keyframes", StringComparison.Ordinal), "Stories motion SVG failed.");
         Require(motion.ToPng().SequenceEqual(grid.ToPng()), "Stories motion completed raster differs from the static source.");
-        var story = VisualStory.Create("AOT story").WithSize(240, 160);
+        var story = VisualStory.Create("AOT story").WithSize(480, 320);
         story.Scene("ready", "Ready").Panel("result", new VisualStoryTextSurface("Ready", emphasized: true));
         Require(story.ToSvg().Contains("Ready", StringComparison.Ordinal), "Stories scene SVG failed.");
         Require(story.ToPng().Length > 64, "Stories scene raster failed.");

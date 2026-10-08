@@ -29,7 +29,7 @@ internal static class Program {
         PackageAssertions.Gif(terminal.ToGif(terminalOptions));
         PackageAssertions.Apng(terminal.ToApng(terminalOptions));
 
-        var story = VisualStory.Create("Packed story").WithSize(420, 260);
+        var story = VisualStory.Create("Packed story").WithSize(480, 320);
         story.Scene("first", "Start", 0.5).Panel("text", new VisualStoryTextSurface("Ready"));
         story.Scene("second", "Finish", 0.5).Panel("image", new VisualStoryMediaSurface(image, "Two pixels"));
         PackageAssertions.Require(PackageAssertions.Contains(story.ToTranscript(), "Ready"), "Story transcript is missing.");

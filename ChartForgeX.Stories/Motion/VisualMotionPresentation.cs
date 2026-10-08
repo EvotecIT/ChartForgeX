@@ -89,8 +89,8 @@ public sealed class VisualMotionPresentation : IStaticVisualSource {
             ?? (string?)element.Attribute("data-cfx-source-id");
 
     private string ScopeStatic(string identity) {
-        var scoped = _svg;
-        var source = ReadDocument(scoped);
+        var source = ReadDocument(_svg);
+        var scoped = source.ToString(SaveOptions.DisableFormatting);
         foreach (var oldId in source.Descendants().Attributes("id").Select(attribute => attribute.Value)
                      .Distinct(StringComparer.Ordinal).OrderByDescending(value => value.Length))
             scoped = SvgRenderedIdentity.RebindGeneratedId(scoped, oldId, identity + "-input-" + oldId);

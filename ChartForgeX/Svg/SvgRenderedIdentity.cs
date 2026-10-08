@@ -73,7 +73,12 @@ internal static class SvgRenderedIdentity {
         if (attributeStart < 0) return false;
         var valueStart = svg.IndexOf("=\"", attributeStart, StringComparison.Ordinal);
         var valueEnd = valueStart < 0 ? -1 : svg.IndexOf('"', valueStart + 2);
-        return valueStart >= 0 && valueStart < index && valueEnd > index;
+        if (valueStart < 0 || valueStart >= index || valueEnd <= index) return false;
+        var name = svg.Substring(attributeStart, valueStart - attributeStart);
+        if (name != "aria-labelledby" && name != "aria-describedby") return false;
+        // Generated child IDs can share a root prefix. Match that prefix only at
+        // the start of an ID token; an already scoped token must not be rebound again.
+        return index == valueStart + 2 || char.IsWhiteSpace(svg[index - 1]);
     }
 
     private static bool IsMotionKeyframeReference(string svg, int index, int idLength) {
