@@ -35,31 +35,16 @@ public sealed class NativeTopologyDuplicateEdgeTests {
         Assert.All(chart.Edges, edge => Assert.Equal("dup", edge.Id));
     }
 
-    [Fact]
-    public void AuthoredIdMotionTraversesEveryMatchingNativeRouteInSourceOrder() {
-        var chart = Diagram();
-        var sourceOptions = new TopologyRenderOptions { IncludeLegend = false };
-        var compiler = new VisualTopologyCompiler(chart, VisualExportRequest.ForTopology(chart, sourceOptions).Context, sourceOptions, naturalSize: true);
-        var prepared = compiler.Compile();
-        var options = new TopologyRenderOptions { IncludeLegend = false, Motion = TopologyMotionOptions.RoutePulseForEdges("dup") };
-        var plan = compiler.MotionPlan(options)!;
-        Assert.Equal(2, plan.Entries.Count);
-        var envelope = prepared.SemanticInterchange!;
-        for (var index = 0; index < plan.Entries.Count; index++) {
-            Assert.Equal(envelope.Edges[index].ResolvedRoute[0].X, plan.Entries[index].Points[0].X);
-            Assert.Equal(envelope.Edges[index].ResolvedRoute.Last().X, plan.Entries[index].Points.Last().X);
-        }
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void AnimatedSvgUsesDetachedCompiledRoutesAndScopedReferences(bool loop) {
         var chart = Diagram();
         var motion = TopologyMotionOptions.RoutePulseForEdges("dup"); motion.Loop = loop;
-        var options = new TopologyRenderOptions { IncludeLegend = false, IdScope = "animation", Motion = motion };
+        var options = new TopologyRenderOptions { IncludeLegend = false, IdScope = "animation" };
         var prepared = chart.Prepare(options);
-        var svg = prepared.ToSvg(); var xml = XDocument.Parse(svg);
+        var presentation = prepared.WithMotion(motion);
+        var svg = presentation.ToSvg(); var xml = XDocument.Parse(svg);
         var routes = xml.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-route").ToArray();
         var envelope = prepared.ToInterchangeEnvelope();
         Assert.Equal(envelope.Edges.Count, routes.Length);
@@ -81,7 +66,7 @@ public sealed class NativeTopologyDuplicateEdgeTests {
         });
         Assert.DoesNotContain(xml.Descendants(), element => element.Name.LocalName == "script");
         motion.Loop = !loop; motion.EdgeIds.Clear(); chart.Nodes.Clear(); chart.Edges.Clear();
-        Assert.Equal(svg, prepared.ToSvg());
+        Assert.Equal(svg, presentation.ToSvg());
     }
 
     [Fact]
@@ -89,8 +74,8 @@ public sealed class NativeTopologyDuplicateEdgeTests {
         var chart = Diagram();
         var looping = TopologyMotionOptions.RoutePulseForEdges("dup");
         var once = looping.Clone(); once.Loop = false;
-        var first = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, Motion = looping });
-        var second = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, Motion = once });
+        var first = chart.WithMotion(looping, new TopologyRenderOptions { IncludeLegend = false });
+        var second = chart.WithMotion(once, new TopologyRenderOptions { IncludeLegend = false });
         var firstSvg = first.ToSvg(); var secondSvg = second.ToSvg();
         Assert.Equal(firstSvg, first.ToSvg());
         Assert.Equal(secondSvg, second.ToSvg());
@@ -98,8 +83,8 @@ public sealed class NativeTopologyDuplicateEdgeTests {
         var secondIds = XDocument.Parse(secondSvg).Descendants().Attributes("id").Select(attribute => attribute.Value).ToArray();
         Assert.NotEmpty(firstIds);
         Assert.Empty(firstIds.Intersect(secondIds, StringComparer.Ordinal));
-        Assert.Equal(first.ToInterchangeEnvelope().Edges.SelectMany(edge => edge.ResolvedRoute).Select(point => (point.X, point.Y)),
-            second.ToInterchangeEnvelope().Edges.SelectMany(edge => edge.ResolvedRoute).Select(point => (point.X, point.Y)));
+        Assert.Equal(first.StaticVisual.SemanticInterchange!.Edges.SelectMany(edge => edge.ResolvedRoute).Select(point => (point.X, point.Y)),
+            second.StaticVisual.SemanticInterchange!.Edges.SelectMany(edge => edge.ResolvedRoute).Select(point => (point.X, point.Y)));
     }
 
     [Fact]
@@ -108,7 +93,7 @@ public sealed class NativeTopologyDuplicateEdgeTests {
         var chart = Diagram().WithTheme(theme);
         var variables = new SvgColorVariables().Add("--background", ChartColor.Parse(theme.Background), SvgColorRole.Surface)
             .Add("--neutral", ChartColor.Parse(theme.Unknown), SvgColorRole.Status);
-        var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, SvgColorVariables = variables, Motion = TopologyMotionOptions.RoutePulseForEdges("dup") });
+        var prepared = chart.WithMotion(TopologyMotionOptions.RoutePulseForEdges("dup"), new TopologyRenderOptions { IncludeLegend = false, SvgColorVariables = variables });
         var svg = prepared.ToSvg(); var xml = XDocument.Parse(svg);
         var marker = Assert.Single(xml.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-motion-marker");
         Assert.StartsWith("var(--neutral,", (string?)marker.Attribute("fill"), StringComparison.Ordinal);

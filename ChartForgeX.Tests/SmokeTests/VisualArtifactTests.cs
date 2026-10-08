@@ -109,12 +109,13 @@ internal static partial class SmokeTests {
         var options = new VisualArtifactRenderOptions {
             Raster = new RasterImageOptions { Dpi = 144 }
         };
-        options.Watermarks.Add(watermark);
+        var plain = RasterImageDecoder.Decode(artifact.ToPng());
+        var semantics = artifact.ToInterchangeJson();
+        artifact.WithWatermarks(watermark);
 
         var svg = artifact.ToSvg(options);
         var html = artifact.ToHtmlPage(options);
         var png = artifact.ToPng(options);
-        var plain = RasterImageDecoder.Decode(artifact.ToPng());
         var decorated = RasterImageDecoder.Decode(png);
 
         Assert(svg.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact SVG should expose a host-inspectable watermark layer.");
@@ -124,6 +125,13 @@ internal static partial class SmokeTests {
         Assert(html.Contains("<html lang=\"pl-PL\">", StringComparison.Ordinal), "Watermarked artifact HTML should preserve the envelope language.");
         Assert(Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Artifact PNG should encode requested physical DPI metadata.");
         Assert(!plain.Pixels.SequenceEqual(decorated.Pixels), "Artifact PNG watermarking should modify visible pixels.");
+        Assert(artifact.ToInterchangeJson() == semantics, "Artifact decoration should preserve portable semantic content.");
+        watermark.OffsetX = 37;
+        watermark.Opacity = 0.1;
+        Assert(artifact.ToSvg(options) == svg && artifact.ToPng(options).SequenceEqual(png),
+            "Attached watermark presentation should snapshot caller-owned mutable settings.");
+        watermark.OffsetX = 0;
+        watermark.Opacity = 0.24;
 
         var interactiveTopologyArtifact = TopologyChart.Create()
             .WithViewport(320, 180)
@@ -135,7 +143,7 @@ internal static partial class SmokeTests {
         var interactiveWatermarkOptions = new VisualArtifactRenderOptions {
             Topology = new TopologyRenderOptions { EnableHtmlInteractions = true }
         };
-        interactiveWatermarkOptions.Watermarks.Add(VisualWatermark.FromText("STATIC"));
+        interactiveTopologyArtifact.WithWatermarks(VisualWatermark.FromText("STATIC"));
         AssertThrows<InvalidOperationException>(() => interactiveTopologyArtifact.ToHtmlPage(interactiveWatermarkOptions), "Watermarked topology HTML should reject interaction requests through the same adapter ownership boundary as ordinary topology HTML.");
 
         AssertThrows<ArgumentException>(() => VisualWatermark.FromText(" "), "Text watermarks should reject empty content.");
@@ -152,9 +160,8 @@ internal static partial class SmokeTests {
         denseWatermark.Repeat = true;
         denseWatermark.RepeatSpacingX = 1;
         denseWatermark.RepeatSpacingY = 1;
-        var denseOptions = new VisualArtifactRenderOptions();
-        denseOptions.Watermarks.Add(denseWatermark);
-        AssertThrows<InvalidOperationException>(() => artifact.ToSvg(denseOptions), "Repeated watermark rendering should reject configurations that exceed the bounded mark count.");
+        var denseArtifact = table.ToVisualArtifact().WithWatermarks(denseWatermark);
+        AssertThrows<InvalidOperationException>(() => denseArtifact.ToSvg(), "Repeated watermark rendering should reject configurations that exceed the bounded mark count.");
 
         var pixel = new RgbaImage(1, 1, new byte[] { 10, 20, 30, 255 });
         var pngBytes = PngWriter.WriteRgba(pixel);
@@ -175,14 +182,13 @@ internal static partial class SmokeTests {
         repeatedImage.OffsetX = 7;
         repeatedImage.OffsetY = 9;
         repeatedImage.Opacity = 1;
-        var repeatedImageOptions = new VisualArtifactRenderOptions();
-        repeatedImageOptions.Watermarks.Add(repeatedImage);
-        var repeatedImageSvg = artifact.ToSvg(repeatedImageOptions);
+        var repeatedImageArtifact = table.ToVisualArtifact().WithWatermarks(repeatedImage);
+        var repeatedImageSvg = repeatedImageArtifact.ToSvg();
         Assert(CountOccurrences(repeatedImageSvg, ";base64,") == 1 && CountOccurrences(repeatedImageSvg, "<use data-cfx-role=\"watermark\"") > 1, "Repeated SVG image watermarks should define their payload once and reuse it for every placement.");
         Assert(repeatedImageSvg.Contains("x=\"12\" y=\"14\"", StringComparison.Ordinal), "Repeated SVG watermark placement should phase its tile grid from anchor, padding, and offsets.");
         var repeatedRaster = VisualWatermarkRendering.ApplyToImage(new RgbaImage(100, 80, new byte[100 * 80 * 4]), new[] { repeatedImage });
         Assert(IsPixelNear(repeatedRaster.Pixels, repeatedRaster.Width, 21, 23, 10, 20, 30), "Repeated PNG watermark placement should use the same anchored tile-grid phase as SVG output.");
-        Assert(artifact.ToPng(repeatedImageOptions).Length > 64, "Repeated image watermarks should retain PNG parity.");
+        Assert(repeatedImageArtifact.ToPng().Length > 64, "Repeated image watermarks should retain PNG parity.");
 
         var widePixels = new byte[20 * 10 * 4];
         for (var index = 0; index < widePixels.Length; index += 4) {
@@ -195,9 +201,7 @@ internal static partial class SmokeTests {
         portableWatermark.Width = 80;
         portableWatermark.Height = 80;
         portableWatermark.Opacity = 1;
-        var portableOptions = new VisualArtifactRenderOptions();
-        portableOptions.Watermarks.Add(portableWatermark);
-        var portableSvg = artifact.ToSvg(portableOptions);
+        var portableSvg = table.ToVisualArtifact().WithWatermarks(portableWatermark).ToSvg();
         Assert(portableSvg.Contains("data:image/png;base64,", StringComparison.Ordinal) && !portableSvg.Contains("image/x-portable-pixmap", StringComparison.Ordinal), "SVG watermarks should transcode accepted non-web raster inputs to browser-safe PNG data URIs.");
 
         var contained = VisualWatermarkRendering.ApplyToImage(new RgbaImage(100, 100, new byte[100 * 100 * 4]), new[] { portableWatermark });
@@ -219,10 +223,8 @@ internal static partial class SmokeTests {
         var scaleTwoOptions = new VisualArtifactRenderOptions { Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 } };
         var scaleOnePlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
         var scaleTwoPlain = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
-        scaleOneOptions.Watermarks.Add(scaleWatermark);
-        scaleTwoOptions.Watermarks.Add(scaleWatermark);
-        var scaleOneDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleOneOptions));
-        var scaleTwoDecorated = RasterImageDecoder.Decode(topologyArtifact.ToPng(scaleTwoOptions));
+        var scaleOneDecorated = RasterImageDecoder.Decode(topology.ToVisualArtifact().WithWatermarks(scaleOneOptions, scaleWatermark).ToPng(scaleOneOptions));
+        var scaleTwoDecorated = RasterImageDecoder.Decode(topology.ToVisualArtifact().WithWatermarks(scaleTwoOptions, scaleWatermark).ToPng(scaleTwoOptions));
         Assert(scaleWatermark.Scale == 1 && scaleWatermark.FontSize == 20 && scaleWatermark.Opacity == 1
             && scaleWatermark.Anchor == VisualCanvasAnchor.Center && scaleWatermark.OffsetX == 0 && scaleWatermark.OffsetY == 0,
             "Artifact rendering should preserve the caller's watermark sizing and placement options.");
@@ -262,11 +264,11 @@ internal static partial class SmokeTests {
         fittedWatermark.RotationDegrees = 45;
         fittedWatermark.Opacity = 1;
         var fittedArtifactOptions = new VisualArtifactRenderOptions { Topology = fittedTopologyOptions };
-        fittedArtifactOptions.Watermarks.Add(fittedWatermark);
         var widePlain = RasterImageDecoder.Decode(wideTopology.ToPng(fittedTopologyOptions));
         var wideArtifact = wideTopology.ToVisualArtifact();
         wideArtifact.NaturalSize = new VisualArtifactSize(wideTopology.Viewport.Width, wideTopology.Viewport.Height);
         wideArtifact.PreserveNaturalSize = true;
+        wideArtifact.WithWatermarks(fittedArtifactOptions, fittedWatermark);
         var wideDecorated = RasterImageDecoder.Decode(wideArtifact.ToPng(fittedArtifactOptions));
         // Prepared topology already fits its content inside the exported SVG root. Its watermark
         // anchors to that same full canvas; internal diagram fitting is not another image viewport.
@@ -296,9 +298,8 @@ internal static partial class SmokeTests {
         var mutableArtifact = mutableChart.ToVisualArtifact();
         Assert(mutableArtifact.Accessibility.Name == "Mutable chart" && mutableArtifact.Accessibility.Description == "A mutable size chart." && mutableArtifact.Accessibility.Language == "en", "Chart artifacts should preserve accessibility metadata for host adapters.");
         mutableChart.WithSize(480, 280);
-        var mutableOptions = new VisualArtifactRenderOptions();
-        mutableOptions.Watermarks.Add(VisualWatermark.FromText("CURRENT"));
-        var resizedSvg = XDocument.Parse(mutableArtifact.ToSvg(mutableOptions));
+        mutableArtifact.WithWatermarks(VisualWatermark.FromText("CURRENT"));
+        var resizedSvg = XDocument.Parse(mutableArtifact.ToSvg());
         var renderedMark = resizedSvg.Descendants().Single(element => string.Equals((string?)element.Attribute("data-cfx-role"), "watermark", StringComparison.Ordinal));
         var renderedX = double.Parse(renderedMark.Attribute("x")!.Value, CultureInfo.InvariantCulture);
         Assert(renderedX > 300, "Watermark placement should follow current rendered dimensions when natural-size preservation is disabled.");

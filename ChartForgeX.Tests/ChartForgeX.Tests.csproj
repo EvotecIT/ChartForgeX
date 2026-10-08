@@ -12,6 +12,8 @@
     <EmbeddedResource Include="Fixtures\OpenType\variable-compact.otf" />
     <EmbeddedResource Include="Fixtures\OpenType\variable-malformed.otf" />
     <EmbeddedResource Include="Fixtures\OpenType\stem-compact.otf" />
+    <ProjectReference Include="..\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Stories\ChartForgeX.Stories.csproj" />
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
     <ProjectReference Include="..\ChartForgeX.Examples\ChartForgeX.Examples.csproj" />
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" />

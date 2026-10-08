@@ -437,7 +437,7 @@ internal static partial class SmokeTests {
             File.ReadAllText(Path.Combine(root, "ChartForgeX", "Html", "HtmlChartRenderer.cs")),
             File.ReadAllText(Path.Combine(root, "ChartForgeX", "Html", "HtmlChartGridRenderer.cs")),
             File.ReadAllText(Path.Combine(root, "ChartForgeX", "VisualBlocks", "HtmlVisualBlockRenderer.cs")),
-            File.ReadAllText(Path.Combine(root, "ChartForgeX", "VisualBlocks", "HtmlVisualGridRenderer.cs")),
+            File.ReadAllText(Path.Combine(root, "ChartForgeX.Visuals", "VisualBlocks", "HtmlVisualGridRenderer.cs")),
             File.ReadAllText(Path.Combine(root, "ChartForgeX", "Topology", "TopologyHtmlRenderer.cs")),
             File.ReadAllText(Path.Combine(root, "ChartForgeX.Interactivity.Html", "HtmlInteractivePage.cs")),
             File.ReadAllText(Path.Combine(root, "ChartForgeX.Interactivity.Html", "HtmlInteractiveChartRenderer.cs")),

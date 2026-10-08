@@ -74,7 +74,7 @@ public sealed class V2FormattingSparklineTests {
         Assert.True(points[1].BreakBefore);
         var anchored = new SparklineData(new double?[] { 2, 4 }, includeZero: true);
         Assert.Equal(0, new ChartTableCell("Trend").WithSparkline(anchored).GetSparklineData().Minimum);
-        Assert.Equal(0, VisualBlockRendering.MiniSparklineBounds(MetricCard.Create().WithSparkline(anchored)).Minimum);
+        Assert.Equal(0, VisualFactBlockRendering.MiniSparklineBounds(MetricCard.Create().WithSparkline(anchored)).Minimum);
         var extreme = new SparklineData(new double?[] { -double.MaxValue, 0, double.MaxValue });
         Assert.Equal(0.5, extreme.Ratio(0), 12);
         Assert.Throws<ArgumentOutOfRangeException>(() => new SparklineData(new double?[] { 1 }, minimum: double.MaxValue));

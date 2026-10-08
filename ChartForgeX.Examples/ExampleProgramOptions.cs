@@ -11,6 +11,11 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--wallpaper-only")) {
+            WallpaperOwnerExamples.Write(output);
+            Console.WriteLine("Generated wallpaper examples in: " + output);
+            return true;
+        }
         if (HasArg(args, "--v2-only")) {
             V2Examples.Write(output, HasArg(args, "--v2-curated"));
             Console.WriteLine("Generated direct-scene proof in: " + output);

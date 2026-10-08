@@ -1,10 +1,8 @@
 using System;
 using System.Globalization;
 using ChartForgeX.Accessibility;
-using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
-using ChartForgeX.Stories;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.VisualArtifacts;
@@ -30,50 +28,6 @@ public static class CompositeArtifactRendering {
             sourceLanguage);
         artifact.Metadata["chart-grid.charts"] = grid.Charts.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["chart-grid.columns"] = grid.Columns.ToString(CultureInfo.InvariantCulture);
-        return artifact;
-    }
-
-    /// <summary>Wraps a layered visual canvas in a reusable visual artifact.</summary>
-    public static VisualArtifact ToVisualArtifact(
-        this VisualCanvas canvas,
-        string? id = null,
-        VisualArtifactSourceLanguage sourceLanguage = VisualArtifactSourceLanguage.Native) {
-        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
-        var artifact = Create(
-            canvas,
-            id,
-            "visual-canvas",
-            VisualArtifactKind.VisualCanvas,
-            canvas.Title,
-            string.Empty,
-            canvas.Width,
-            canvas.Height,
-            sourceLanguage);
-        CopyAccessibility(canvas.Accessibility, artifact.Accessibility);
-        artifact.Metadata["visual-canvas.layers"] = canvas.Layers.Count.ToString(CultureInfo.InvariantCulture);
-        return artifact;
-    }
-
-    /// <summary>Wraps a deterministic visual story in a reusable visual artifact.</summary>
-    public static VisualArtifact ToVisualArtifact(
-        this VisualStory story,
-        string? id = null,
-        VisualArtifactSourceLanguage sourceLanguage = VisualArtifactSourceLanguage.Native) {
-        if (story == null) throw new ArgumentNullException(nameof(story));
-        var artifact = Create(
-            story,
-            id,
-            "visual-story",
-            VisualArtifactKind.Story,
-            story.Title,
-            story.Description,
-            story.Width,
-            story.Height,
-            sourceLanguage);
-        artifact.Accessibility.Name = story.Title;
-        artifact.Accessibility.Description = story.Description;
-        artifact.Metadata["visual-story.scenes"] = story.Scenes.Count.ToString(CultureInfo.InvariantCulture);
-        artifact.Metadata["visual-story.outcomes"] = story.Outcomes.Count.ToString(CultureInfo.InvariantCulture);
         return artifact;
     }
 

@@ -10,11 +10,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void RasterFormatsIncludeCommonWebExports() {
         Assert(RasterImageFormat.Png.GetFileExtension() == ".png", "Generic raster format metadata should include PNG.");
-        Assert(RasterImageFormat.Gif.GetFileExtension() == ".gif", "Generic raster format metadata should include GIF.");
         Assert(RasterImageFormat.Jpeg.GetMimeType() == "image/jpeg", "Generic raster format metadata should include JPEG.");
-        Assert(RasterImageFormat.Gif.GetMimeType() == "image/gif", "Generic raster format metadata should include GIF MIME metadata.");
         Assert(RasterImageFormatExtensions.TryFromFileExtension("wallpaper.jpeg", out var jpeg) && jpeg == RasterImageFormat.Jpeg, "JPEG extension inference should support .jpeg paths.");
-        Assert(RasterImageFormatExtensions.TryFromFileExtension("wallpaper.gif", out var gif) && gif == RasterImageFormat.Gif, "GIF extension inference should support .gif paths.");
         Assert(RasterImageFormatExtensions.TryFromFileExtension(".png", out var png) && png == RasterImageFormat.Png, "PNG extension inference should support direct extension values.");
     }
 
@@ -78,22 +75,16 @@ internal static partial class SmokeTests {
         Assert(linePixel.R > 180 && linePixel.G > 180 && linePixel.B < 80, "ImageComposition.DrawLine should expose reusable annotation leader lines.");
     }
 
-    private static void ImageCompositionExportsStillGifByExtension() {
+    private static void ImageCompositionExportsStillGifThroughStories() {
         var composition = ImageComposition.FromImage(CheckerImage(18, 12))
             .StrokeRectangle(1, 1, 16, 10, ChartColors.Red, 2)
             .DrawText(3, 3, 12, "G", 8, ChartColors.White, emphasized: true);
 
-        var gif = composition.ToGif();
-        Assert(IsGif(gif), "ImageComposition.ToGif should emit GIF bytes through the reusable raster encoder.");
+        var gif = composition.ToImage().ToGif();
+        Assert(IsGif(gif), "Composed image output should encode GIF bytes through Stories.");
+        var decoded = RasterImageDecoder.Decode(gif);
+        Assert(decoded.Width == 18 && decoded.Height == 12, "Stories GIF encoding should preserve the composition artboard dimensions.");
 
-        var temp = Path.Combine(Path.GetTempPath(), "chartforgex-composition-" + Guid.NewGuid().ToString("N") + ".gif");
-        try {
-            composition.Save(temp);
-            var saved = File.ReadAllBytes(temp);
-            Assert(IsGif(saved), "ImageComposition.Save should infer GIF output from the file extension.");
-        } finally {
-            if (File.Exists(temp)) File.Delete(temp);
-        }
     }
 
     private static void ImageCompositionExposesExplicitOutputAndNonThrowingLoaders() {
@@ -110,8 +101,8 @@ internal static partial class SmokeTests {
         var explicitPath = Path.Combine(Path.GetTempPath(), "chartforgex-composition-explicit-" + Guid.NewGuid().ToString("N") + ".ignored");
         var sourcePath = Path.Combine(Path.GetTempPath(), "chartforgex-composition-source-" + Guid.NewGuid().ToString("N") + ".png");
         try {
-            loadedComposition.Save(explicitPath, RasterImageFormat.Gif);
-            Assert(IsGif(File.ReadAllBytes(explicitPath)), "ImageComposition.Save should support explicit format output independent of the file extension.");
+            loadedComposition.Save(explicitPath, RasterImageFormat.Png);
+            AssertPngHeader(File.ReadAllBytes(explicitPath));
 
             File.WriteAllBytes(sourcePath, sourcePng);
             Assert(ImageComposition.TryFromFile(sourcePath, out var fileLoaded) && fileLoaded != null && fileLoaded.Width == 16, "ImageComposition.TryFromFile should expose non-throwing file composition.");
@@ -145,8 +136,8 @@ internal static partial class SmokeTests {
         }
         Assert(filled >= sampled * 0.6, "Screenshot-style annotation should render a filled callout box.");
 
+        Assert(IsGif(composition.ToImage().ToGif()), "Screenshot-style annotation should export GIF bytes through Stories.");
         Assert(composition.ToPng(new RasterImageOptions { PngCompressionLevel = 9 }).Length > 64, "Screenshot-style annotation should export PNG bytes.");
-        Assert(IsGif(composition.ToRasterImage(RasterImageFormat.Gif)), "Screenshot-style annotation should export GIF bytes.");
         Assert(composition.ToJpeg(new RasterImageOptions { JpegQuality = 86, Background = ChartColors.White }).Length > 128, "Screenshot-style annotation should export JPEG bytes.");
         Assert(composition.ToRasterImage(RasterImageFormat.Bmp).Length > 128, "Screenshot-style annotation should export BMP bytes.");
     }

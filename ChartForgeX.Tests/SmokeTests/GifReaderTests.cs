@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void GifReaderDecodesDependencyFreeRasterInput() {
         var source = new RgbaImage(5, 3, SolidPixels(5, 3, ChartColors.DarkGreen));
-        var gif = RasterImageEncoder.Encode(source, RasterImageFormat.Gif);
+        var gif = source.ToGif();
         var decoded = RasterImageDecoder.Decode(gif);
 
         Assert(decoded.Width == 5 && decoded.Height == 3, "GIF input should preserve logical dimensions.");

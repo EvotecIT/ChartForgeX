@@ -6,16 +6,19 @@ internal sealed record Mapping(string Owner, string Disposition, string Phase, s
 internal static class Ownership {
     private static readonly string[] Diagrams = ["Wardley", "Venn", "Packet", "GitGraph", "Fishbone", "BlockLayout"];
     private static readonly string[] SharedBlocks = ["IVisualBlock", "VisualBlock", "VisualBlockOptions", "VisualBlockLayout", "VisualBlockKind", "VisualBlockRendering", "SvgVisualBlockRenderer", "PngVisualBlockRenderer", "HtmlVisualBlockRenderer"];
-    private static readonly string[] Chrome = ["WithMenu", "ShowMenu", "WithSelectionControls", "ShowSelectionControls", "WithNavigation", "WithNavigationSymbols", "ShowNavigation", "PreviousNavigationSymbol", "NextNavigationSymbol", "WithAction", "WithActionStyle", "ActionLabel", "ActionSymbol", "ActionUrl", "ActionBackground", "ActionForeground"];
+    private static readonly string[] Chrome = ["WithMenu", "ShowMenu", "WithSelectionControls", "ShowSelectionControls", "WithNavigation", "WithNavigationSymbols", "ShowNavigation", "PreviousNavigationSymbol", "NextNavigationSymbol", "PreviousSymbol", "NextSymbol", "WithAction", "WithoutAction", "WithActionStyle", "ActionLabel", "ActionSymbol", "ActionUrl", "ActionBackground", "ActionForeground", "HeaderActions", "WithHeaderActions", "LeftControl", "SelectedControl", "WithControls"];
 
     internal static Mapping For(ApiSymbol api) {
+        if (api.Assembly is "ChartForgeX.Visuals" or "ChartForgeX.Stories")
+            return New(api.Assembly, "owned-in-phase4", "phase4", "Consume the optional package; namespaces describe the domain independently of assembly ownership.", "Isolated packed execution and retained capability fixtures.", "implemented-optional-owner");
+        if (api.Type == "ChartForgeX.VisualBlocks.VisualStatus") return Core("neutral-status-contract");
         const string oldOptions = "ChartForgeX.Markup.Mermaid.MermaidVisualMarkupRenderOptions";
         if (api.Type == oldOptions || api.References.Split(';').Contains(oldOptions, StringComparer.Ordinal))
             return New(api.Type == oldOptions ? "ChartForgeX.Mermaid" : api.Assembly, "replaced-in-integrated-baseline", "integrated-main239",
                 api.Signature.Replace(oldOptions, "ChartForgeX.Mermaid.MermaidRenderOptions", StringComparison.Ordinal),
                 "SmokeTests/MarkupMermaidTests.cs:615 per-diagram options; verify same named properties and parser construction with MermaidRenderOptions.", "mermaid-main239-canonical-options");
         if (api.Assembly != "ChartForgeX") return New(api.Assembly, "retained", "existing-adapter", "Retain typed adapter/parser API; consume common core contracts when applicable.", "Adapter parse/render or HTML interaction fixture; framework/package closure.", "existing-adapter");
-        if (api.Namespace == "ChartForgeX.VisualBlocks" && Chrome.Contains(api.Name, StringComparer.Ordinal))
+        if (api.Namespace == "ChartForgeX.VisualBlocks" && (Chrome.Contains(api.Name, StringComparer.Ordinal) || api.Type.EndsWith("WorkloadListRow", StringComparison.Ordinal) && api.Name == "Selected"))
             return New("removed-static-chrome", "removal-planned", "later-family-migration", "Omit decorative controls in static output; real controls belong to HTML/host adapters. Retain factual checked/completed markers.", "Consumer-member audit and before/after static fixture before deletion.", "explicit-static-control-member");
         if (api.Namespace.Contains(".Stories", StringComparison.Ordinal) || api.Namespace.Contains(".Terminal", StringComparison.Ordinal) || api.Namespace.Contains(".Motion", StringComparison.Ordinal) ||
             api.Source.EndsWith("/ChartExtensions.Stories.cs", StringComparison.Ordinal) || api.Source.EndsWith("/ChartExtensions.Terminal.cs", StringComparison.Ordinal) ||

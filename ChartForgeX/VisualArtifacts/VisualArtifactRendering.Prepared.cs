@@ -71,11 +71,11 @@ public static partial class VisualArtifactRendering {
         return prepared;
     }
 
-    private static string RenderPreparedSvg(VisualArtifact artifact, PreparedVisual prepared) {
+    private static string RenderPreparedSvg(VisualArtifact artifact, PreparedVisual prepared, string? idScope = null) {
         var accessibility = artifact.Accessibility.Clone();
         accessibility.Name ??= artifact.Title.Length == 0 ? artifact.Id : artifact.Title;
         return PreparedModel(artifact, prepared).ToSvg(accessibility,
-            SvgRenderedIdentity.CreateProvisionalId("artifact", artifact.Id));
+            idScope == null ? SvgRenderedIdentity.CreateProvisionalId("artifact", artifact.Id) : VisualSvgOptions.NamespaceFromExternalId(idScope));
     }
 
     private static string RenderPreparedHtml(VisualArtifact artifact, PreparedVisual prepared, VisualArtifactRenderOptions? options) {

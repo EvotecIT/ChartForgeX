@@ -8,6 +8,8 @@ param(
 
     [switch] $SkipPack,
 
+    [switch] $QualifyPackages,
+
     [switch] $UpdateVisualBaseline,
 
     [string] $ExamplesOutput,
@@ -644,6 +646,8 @@ try {
     $examples = Join-Path $root 'ChartForgeX.Examples/ChartForgeX.Examples.csproj'
     $aotSmoke = Join-Path $root 'ChartForgeX.AotSmoke/ChartForgeX.AotSmoke.csproj'
     $library = Join-Path $root 'ChartForgeX/ChartForgeX.csproj'
+    $visualsLibrary = Join-Path $root 'ChartForgeX.Visuals/ChartForgeX.Visuals.csproj'
+    $storiesLibrary = Join-Path $root 'ChartForgeX.Stories/ChartForgeX.Stories.csproj'
     $interactivityLibrary = Join-Path $root 'ChartForgeX.Interactivity/ChartForgeX.Interactivity.csproj'
     $htmlInteractivityLibrary = Join-Path $root 'ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj'
     $markupLibrary = Join-Path $root 'ChartForgeX.Markup/ChartForgeX.Markup.csproj'
@@ -651,6 +655,9 @@ try {
     $markupMermaidLibrary = Join-Path $root 'ChartForgeX.Markup.Mermaid/ChartForgeX.Markup.Mermaid.csproj'
     if ($SkipExamples -and $UpdateVisualBaseline) {
         throw 'Visual baseline updates require examples to run. Remove -SkipExamples.'
+    }
+    if ($SkipPack -and $QualifyPackages) {
+        throw 'Package qualification requires packing. Remove -SkipPack.'
     }
 
     # Source structure is a repository quality gate, not a product unit-test contract.
@@ -700,9 +707,11 @@ try {
 
         $packageProjects = @(
             [ordered]@{ Id = 'ChartForgeX'; Project = $library; Assembly = 'ChartForgeX'; Nuspec = 'ChartForgeX.nuspec'; DependencyIds = @(); RequiresDependencyFreeNuspec = $true },
+            [ordered]@{ Id = 'ChartForgeX.Visuals'; Project = $visualsLibrary; Assembly = 'ChartForgeX.Visuals'; Nuspec = 'ChartForgeX.Visuals.nuspec'; DependencyIds = @('ChartForgeX'); RequiresDependencyFreeNuspec = $false },
+            [ordered]@{ Id = 'ChartForgeX.Stories'; Project = $storiesLibrary; Assembly = 'ChartForgeX.Stories'; Nuspec = 'ChartForgeX.Stories.nuspec'; DependencyIds = @('ChartForgeX'); RequiresDependencyFreeNuspec = $false },
             [ordered]@{ Id = 'ChartForgeX.Interactivity'; Project = $interactivityLibrary; Assembly = 'ChartForgeX.Interactivity'; Nuspec = 'ChartForgeX.Interactivity.nuspec'; DependencyIds = @(); RequiresDependencyFreeNuspec = $true },
             [ordered]@{ Id = 'ChartForgeX.Interactivity.Html'; Project = $htmlInteractivityLibrary; Assembly = 'ChartForgeX.Interactivity.Html'; Nuspec = 'ChartForgeX.Interactivity.Html.nuspec'; DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity'); RequiresDependencyFreeNuspec = $false },
-            [ordered]@{ Id = 'ChartForgeX.Markup'; Project = $markupLibrary; Assembly = 'ChartForgeX.Markup'; Nuspec = 'ChartForgeX.Markup.nuspec'; DependencyIds = @('ChartForgeX'); RequiresDependencyFreeNuspec = $false },
+            [ordered]@{ Id = 'ChartForgeX.Markup'; Project = $markupLibrary; Assembly = 'ChartForgeX.Markup'; Nuspec = 'ChartForgeX.Markup.nuspec'; DependencyIds = @('ChartForgeX', 'ChartForgeX.Visuals'); RequiresDependencyFreeNuspec = $false },
             [ordered]@{ Id = 'ChartForgeX.Mermaid'; Project = $mermaidLibrary; Assembly = 'ChartForgeX.Mermaid'; Nuspec = 'ChartForgeX.Mermaid.nuspec'; DependencyIds = @('ChartForgeX'); RequiresDependencyFreeNuspec = $false },
             [ordered]@{ Id = 'ChartForgeX.Markup.Mermaid'; Project = $markupMermaidLibrary; Assembly = 'ChartForgeX.Markup.Mermaid'; Nuspec = 'ChartForgeX.Markup.Mermaid.nuspec'; DependencyIds = @('ChartForgeX.Markup', 'ChartForgeX.Mermaid'); RequiresDependencyFreeNuspec = $false }
         )
@@ -775,6 +784,14 @@ try {
                         throw "$($packageProject.Id) package is missing dependency on $dependencyId."
                     }
                 }
+                [xml] $dependencyDocument = $nuspec
+                foreach ($group in $dependencyDocument.SelectNodes("//*[local-name()='dependencies']/*[local-name()='group']")) {
+                    $actualIds = @($group.SelectNodes("*[local-name()='dependency']") | ForEach-Object { $_.GetAttribute('id') } | Sort-Object)
+                    $expectedIds = @($packageProject.DependencyIds | Sort-Object)
+                    if (($actualIds -join ',') -ne ($expectedIds -join ',')) {
+                        throw "$($packageProject.Id) has unexpected dependencies for $($group.GetAttribute('targetFramework')): $($actualIds -join ', ')."
+                    }
+                }
             } finally {
                 $archive.Dispose()
             }
@@ -790,122 +807,71 @@ try {
             }
         }
 
-        $consumerRoot = Join-Path ([System.IO.Path]::GetTempPath()) "ChartForgeX-package-consumer-$([Guid]::NewGuid().ToString('N'))"
-        try {
-            New-Item -ItemType Directory -Path $consumerRoot | Out-Null
-            $consumerFeed = Join-Path $consumerRoot 'packages'
-            New-Item -ItemType Directory -Path $consumerFeed | Out-Null
-            $packages | Copy-Item -Destination $consumerFeed
-            Push-Location $consumerRoot
+        if ($QualifyPackages) {
+            & (Join-Path $root 'Build/Test-PackageQualification.ps1') -PackageRoot $packageRoot
+        } else {
+            $consumerRoot = Join-Path ([System.IO.Path]::GetTempPath()) "ChartForgeX-package-consumer-$([Guid]::NewGuid().ToString('N'))"
             try {
-                @'
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-</Project>
+                New-Item -ItemType Directory -Path $consumerRoot | Out-Null
+                $consumerFeed = Join-Path $consumerRoot 'packages'
+                New-Item -ItemType Directory -Path $consumerFeed | Out-Null
+                $packages | Copy-Item -Destination $consumerFeed
+                Push-Location $consumerRoot
+                try {
+                    @'
+    <Project Sdk="Microsoft.NET.Sdk">
+      <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+      </PropertyGroup>
+    </Project>
 '@ | Set-Content -Path (Join-Path $consumerRoot 'PackageConsumer.csproj') -Encoding UTF8
-                @"
-<configuration>
-  <config>
-    <add key="globalPackagesFolder" value="$consumerRoot\.nuget-packages" />
-  </config>
-  <packageSources>
-    <clear />
-    <add key="local-chartforgex" value="$consumerFeed" />
-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-  </packageSources>
-  <packageSourceMapping>
-    <packageSource key="local-chartforgex">
-      <package pattern="ChartForgeX" />
-      <package pattern="ChartForgeX.*" />
-    </packageSource>
-    <packageSource key="nuget.org">
-      <package pattern="Microsoft.*" />
-      <package pattern="NETStandard.Library*" />
-      <package pattern="runtime.*" />
-      <package pattern="System.*" />
-    </packageSource>
-  </packageSourceMapping>
-</configuration>
+                    @"
+    <configuration>
+      <config>
+        <add key="globalPackagesFolder" value="$consumerRoot\.nuget-packages" />
+      </config>
+      <packageSources>
+        <clear />
+        <add key="local-chartforgex" value="$consumerFeed" />
+        <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+      </packageSources>
+      <fallbackPackageFolders><clear /></fallbackPackageFolders>
+      <packageSourceMapping>
+        <clear />
+        <packageSource key="local-chartforgex">
+          <package pattern="ChartForgeX" />
+          <package pattern="ChartForgeX.*" />
+        </packageSource>
+        <packageSource key="nuget.org">
+          <package pattern="Microsoft.*" />
+          <package pattern="NETStandard.Library*" />
+          <package pattern="runtime.*" />
+          <package pattern="System.*" />
+        </packageSource>
+      </packageSourceMapping>
+    </configuration>
 "@ | Set-Content -Path (Join-Path $consumerRoot 'NuGet.config') -Encoding UTF8
-                Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Html', '--version', $htmlPackageVersion) -Description 'Package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
-                Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Mermaid', '--version', $mermaidPackageVersion) -Description 'Mermaid package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
-                Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Markup.Mermaid', '--version', $markupMermaidPackageVersion) -Description 'Mermaid markup package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
-                @"
-using ChartForgeX;
-using ChartForgeX.Core;
-using ChartForgeX.Interactivity;
-using ChartForgeX.Interactivity.Html;
-using ChartForgeX.Markup.Mermaid;
-using ChartForgeX.Mermaid;
-using ChartForgeX.Primitives;
-using ChartForgeX.VisualArtifacts;
-
-var chart = Chart.Create()
-    .WithTitle("Package smoke")
-    .WithSize(320, 180)
-    .AddLine("Values", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
-
-if (!chart.ToSvg().Contains("<svg", StringComparison.Ordinal)) throw new InvalidOperationException("SVG render failed.");
-if (!chart.ToHtmlFragment().Contains("<svg", StringComparison.Ordinal)) throw new InvalidOperationException("HTML render failed.");
-if (chart.ToPng().Length <= 64) throw new InvalidOperationException("PNG render failed.");
-var html = chart.ToInteractiveHtmlPage(options => options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts));
-if (!html.Contains("data-cfx-zoom=\"in\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML zoom controls missing.");
-if (!html.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML brush controls missing.");
-if (!html.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML export controls missing.");
-if (!html.Contains("data-cfx-export=\"png\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML PNG export controls missing.");
-if (!html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML sync events missing.");
-var dashboard = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options => {
-    options.IdScope = "package-dashboard";
-    options.Interaction.GroupName = "package-group";
-    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.SynchronizedCharts);
-});
-if (!dashboard.Contains("class=\"cfx-dashboard\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard surface missing.");
-if (!dashboard.Contains("data-cfx-chart-id=\"package-dashboard-2\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive dashboard child chart IDs missing.");
-
-var graph = GraphScene.Create("package-graph", "Package graph")
-    .AddNode("api", "API", node => {
-        node.Kind = "service";
-        node.Status = "healthy";
-    })
-    .AddNode("db", "Database", node => {
-        node.Kind = "database";
-        node.Status = "warning";
-    })
-    .AddEdge("api-db", "api", "db", "queries", edge => edge.Kind = "dependency");
-graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization);
-graph.Options.Physics.Solver = GraphPhysicsSolver.Repulsion;
-var graphHtml = graph.ToGraphExplorerHtmlPage();
-if (!graphHtml.Contains("data-cfx-graph-id=\"package-graph\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer package surface missing.");
-if (!graphHtml.Contains("data-cfx-graph-physics=\"Repulsion\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer physics profile missing.");
-
-var mermaid = new MermaidParser().ParseFlowchart("flowchart LR\n  a[Start] --> b[Done]");
-if (mermaid.HasErrors || mermaid.Document is null) throw new InvalidOperationException("Mermaid package parser failed.");
-if (mermaid.Document.Nodes.Count != 2 || mermaid.Document.Edges.Count != 1) throw new InvalidOperationException("Mermaid package parser model missing nodes or edges.");
-var mermaidArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "package-mermaid" });
-if (mermaidArtifact.Kind != VisualArtifactKind.Mermaid || !mermaidArtifact.SupportsExport(VisualArtifactExportFormat.Svg)) throw new InvalidOperationException("Mermaid package artifact contract missing.");
-var mermaidClass = new MermaidParser().ParseClass("classDiagram\nclass User\nUser <|-- Admin");
-if (mermaidClass.HasErrors || mermaidClass.Document is null || mermaidClass.Document.Classes.Count != 2) throw new InvalidOperationException("Mermaid package class parser failed.");
-if (mermaidClass.Document.ToVisualArtifact().Model is not ChartForgeX.Topology.TopologyChart) throw new InvalidOperationException("Mermaid package class artifact contract missing.");
-var markupMermaid = new MermaidVisualMarkupParser().Parse("~~~mermaid {#package-flow}\nflowchart LR\n  a --> b\n~~~");
-if (markupMermaid.HasErrors || markupMermaid.Artifacts.Count != 1 || markupMermaid.Artifacts[0].Id != "package-flow") throw new InvalidOperationException("Mermaid markup package parser failed.");
-var useCase = MermaidRenderer.Render("usecase-beta\nactor User\nUser --> Action(Do work)", new MermaidRenderOptions());
-if (useCase.HasErrors || useCase.Artifact is null) throw new InvalidOperationException("Mermaid source package renderer failed.");
-if (!useCase.Artifact.ToSvg().Contains("data-node-shape=\"Actor\"", StringComparison.Ordinal) || useCase.Artifact.ToPng().Length <= 64) throw new InvalidOperationException("Mermaid source package SVG/PNG output failed.");
-var useCaseJson = useCase.Artifact.ToInterchangeJson();
-if (VisualArtifactInterchangeEnvelope.FromJson(useCaseJson).ToJson() != useCaseJson) throw new InvalidOperationException("Mermaid source package interchange failed.");
-"@ | Set-Content -Path (Join-Path $consumerRoot 'Program.cs') -Encoding UTF8
-                Invoke-DotNetCommand -Arguments @('run', '-c', 'Release', '--no-restore') -Description 'Package consumer validation' -TimeoutSeconds $PackageConsumerTimeoutSeconds -Quiet
+                    Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Html', '--version', $htmlPackageVersion) -Description 'Package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                    Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Mermaid', '--version', $mermaidPackageVersion) -Description 'Mermaid package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                    Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Markup.Mermaid', '--version', $markupMermaidPackageVersion) -Description 'Mermaid markup package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                    Copy-Item -LiteralPath (Join-Path $root 'Build/PackageConsumers/Adapters/Program.cs') -Destination (Join-Path $consumerRoot 'Program.cs')
+                    Copy-Item -LiteralPath (Join-Path $root 'Build/PackageConsumers/PackageAssertions.cs') -Destination $consumerRoot
+                    Invoke-DotNetCommand -Arguments @('run', '-c', 'Release', '--no-restore') -Description 'Package consumer validation' -TimeoutSeconds $PackageConsumerTimeoutSeconds -Quiet
+                } finally {
+                    Pop-Location
+                }
             } finally {
-                Pop-Location
-            }
-        } finally {
-            if (Test-Path $consumerRoot) {
-                Remove-Item $consumerRoot -Recurse -Force
+                if (Test-Path -LiteralPath $consumerRoot) {
+                    $cleanupRoot = [IO.Path]::GetFullPath($consumerRoot)
+                    $tempPrefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+                    if (-not $cleanupRoot.StartsWith($tempPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Package consumer cleanup target is outside the selected temporary root.' }
+                    $linked = @((Get-Item -LiteralPath $cleanupRoot), (Get-ChildItem -LiteralPath $cleanupRoot -Recurse -Force)) | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
+                    if ($linked) { throw 'Package consumer cleanup target contains a linked path.' }
+                    Remove-Item -LiteralPath $cleanupRoot -Recurse -ErrorAction Stop
+                }
             }
         }
     }

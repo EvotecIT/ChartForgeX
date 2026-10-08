@@ -104,8 +104,7 @@ internal sealed partial class VisualTopologyCompiler {
             if (trunk.Owner != null && trunk.Tail != null) _trunks.Add(edge, (trunk.Owner, SampleRoute(trunk.Tail)));
 
             IReadOnlyList<ChartPoint> SampleRoute(List<ChartPoint> points) {
-                IReadOnlyList<ChartPoint> rendered = RenderedEdgeSamplePoints(_chart, edge, nodes, points, 64);
-                return ShouldRoundEdgeCorners(edge, rendered, _options) ? RoundedOrthogonalRoutePoints(rendered, _options.EdgeCornerRadius) : rendered;
+                return TopologyResolvedRouteSamples.Sample(_chart, _options, edge, nodes, points);
             }
         }
         _edgeLabels = _options.IncludeEdgeLabels ? EdgeLabelLayouts(_chart, _options) : Array.Empty<TopologyEdgeLabelLayout>();
@@ -130,7 +129,6 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private void DiagnoseExportOptions() {
-        if (_options.Motion != null) throw new NotSupportedException("TopologyRenderOptions.Motion requires the Stories animation pipeline; Prepare produces a fixed static scene.");
         if (_options.EnableHtmlInteractions || _options.EnableHtmlViewportControls || _options.EnableHtmlExportControls || _options.EnableHtmlForceGraphControls || _options.EnableHtmlSynchronizedState || _options.EnableHtmlSelectionPanel || _options.EnableHtmlFullscreenControl || _options.EnableHtmlScenarioUrlState)
             _builder.AddDiagnostic(new VisualDiagnostic("topology.host-options", "HTML interaction and viewport options remain host metadata; a static prepared scene does not install their controls."));
     }

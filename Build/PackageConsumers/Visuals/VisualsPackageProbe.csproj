@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;netstandard2.0;net8.0;net10.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <OutputType Condition="'$(TargetFramework)' == 'netstandard2.0'">Library</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../PackageAssertions.cs" Link="PackageAssertions.cs" />
+    <PackageReference Include="ChartForgeX" Version="$(PackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="ChartForgeX.Visuals" Version="$(PackageVersion)" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

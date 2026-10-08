@@ -14,6 +14,54 @@ Consumer repositories remain unchanged. Revalidate their intended branch before 
 
 Paths in this guide and the CSV are repository-relative. Resolve the repository root through `EVOTEC_GITHUB_ROOT`, with the platform default described in `AGENTS.md` when unset. Source findings are not consumer builds, installed-module tests or package publication proof.
 
+## Optional package migration
+
+V2 moves public types between assemblies and uses package version `2.0.0`. Rebuild compiled callers. Domain namespaces stay stable for canvas, factual blocks, stories and terminal models; add the owning package reference rather than copying types or using forwarding shims.
+
+| Existing capability | Owning package and migration |
+| --- | --- |
+| Charts, topology, flow, sequence and the six genuine block diagrams | `ChartForgeX`; existing source models and shared prepared export remain core |
+| `VisualCanvas`, `ImageComposition`, factual metric/table/list blocks and static `VisualGrid` | Add `ChartForgeX.Visuals`; keep the domain namespaces |
+| `VisualArtifactRenderOptions.Watermarks` | Use the Visuals `artifact.WithWatermarks(...)` decorator; semantic `Model` remains available |
+| `VisualStory`, `TerminalStory`, transcripts and GIF/APNG output | Add `ChartForgeX.Stories`; existing story/terminal export extension names remain |
+| `ImageComposition.ToGif()` or core GIF format dispatch | Resolve pixels with `composition.ToImage()` or `chart.ToRgbaImage()`, then call the Stories `ToGif()` extension |
+| `VisualGrid.WithMotion(...)` | Keep static target IDs and create a Stories `VisualMotionPresentation` over the grid's common static output |
+| `TopologyRenderOptions.Motion` / `WithMotion(...)` | Use `chart.WithMotion(motion, staticOptions)` to create a Stories topology presentation; static topology options stay core |
+| Decorative static menus, selection controls, navigation arrows and action buttons | Remove their configuration; preserve dates, trend text and status as ordinary content |
+
+Factual completion checks, activity completion, progress handles, selected-period emphasis and identity initials remain meaningful marks. Markup takes a Visuals reference for its existing table preview producer. Mermaid, core-only charts and static topology do not require either optional package.
+
+The core artifact renderer accepts `IStaticVisualSource` through `RenderSource` or a producer model. Optional packages own their concrete drawing; hosts can retain semantic table/diagram data in `Model` while choosing a different static presentation. This export contract does not convert legacy blocks into native prepared scenes.
+
+For a still artifact, apply the decoration before choosing its output format:
+
+```csharp
+using ChartForgeX;
+using ChartForgeX.VisualArtifacts;
+
+artifact.WithWatermarks(VisualWatermark.FromText("Draft"));
+byte[] png = artifact.ToPng();
+string svg = artifact.ToSvg();
+```
+
+The decorator copies watermark declarations and preserves their order. The overload accepting `VisualArtifactRenderOptions` captures topology and raster settings with the producer. Changing an already captured watermark object does not alter the decoration.
+
+For animated topology, create one presentation from the static request:
+
+```csharp
+using ChartForgeX.Topology;
+
+var motion = TopologyMotionOptions.RoutePulseForEdges("network");
+var presentation = topology.WithMotion(motion, staticOptions);
+byte[] gif = presentation.ToGif();
+byte[] apng = presentation.ToApng();
+string animatedHtml = presentation.ToHtmlPage();
+```
+
+The presentation keeps the detached prepared geometry. It does not add animation policy to `TopologyRenderOptions` or repeat layout for each output. For a one-frame GIF from a composition, import `ChartForgeX.Raster` and call `composition.ToImage().ToGif()`.
+
+`VisualMotionPresentation.Create(grid, timeline)` adds SVG/HTML motion to the grid's static target IDs. Its PNG and common static-source exports retain the completed picture. VisualStory and TerminalStory artifact factories in `ChartForgeX.Stories` capture the completed display and transcript; rebuild the artifact after changing a story. `Model` retains the original semantic object independently of that captured picture.
+
 ## Static HTML embedding
 
 `chart.ToHtmlFragment()` and `grid.ToHtmlFragment()` embed a responsive prepared SVG. The inline SVG shrinks to the host's width and preserves its aspect ratio without a page stylesheet. Its logical `width`, `height` and `viewBox` remain the prepared viewport; proportional scaling does not perform a new compact layout.

@@ -168,9 +168,6 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets the optional scenario id to activate when an interactive HTML page loads.</summary>
     public string? ActiveScenarioId { get; set; }
 
-    /// <summary>Gets or sets optional script-free topology motion for SVG and sampled raster exports.</summary>
-    public TopologyMotionOptions? Motion { get; set; }
-
     /// <summary>Gets or sets whether geographic topology layouts should render map callout summaries for coordinated groups.</summary>
     public bool IncludeGeographicCallouts { get; set; }
 
@@ -385,7 +382,6 @@ public sealed class TopologyRenderOptions {
     public TopologyRenderOptions Clone() {
         var snapshot = (TopologyRenderOptions)MemberwiseClone();
         snapshot._edgeVisualStyle = _edgeVisualStyle?.Clone();
-        snapshot.Motion = Motion?.Clone();
         snapshot.View = View?.Clone();
         snapshot.IconCatalog = IconCatalog?.Clone();
         snapshot.SvgColorVariables = SvgColorVariables?.Clone();

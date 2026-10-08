@@ -78,7 +78,7 @@ public sealed class TopologySvgIdScopeTests {
 
     [Fact]
     public void MotionPathsAndGeographicCallouts_AreScoped() {
-        var motion = Chart().ToSvg("panel-a", new TopologyRenderOptions { Motion = TopologyMotionOptions.RoutePulseForEdges("a", "b") });
+        var motion = Chart().WithMotion(TopologyMotionOptions.RoutePulseForEdges("a", "b")).ToSvg("panel-a");
         Assert.Contains("data-cfx-role=\"topology-motion-marker\"", motion, StringComparison.Ordinal);
         AssertScopedAndResolved(motion, "panel-a-");
 

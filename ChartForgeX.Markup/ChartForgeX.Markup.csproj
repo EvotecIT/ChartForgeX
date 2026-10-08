@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Markdown-friendly ChartForgeX markup parser and code emitter for charts and topology diagrams.</Description>
-    <PackageReleaseNotes>Aligns package dependencies and rendering contracts with ChartForgeX 1.8.2.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 2.0.0 provides shared native chart and diagram rendering with independent Visuals and Stories packages. See the v2 migration guide for assembly and API changes.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;markdown;markup;svg;png;html;topology;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>
@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
+    <ProjectReference Include="..\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj" />
   </ItemGroup>
 
   <ItemGroup>

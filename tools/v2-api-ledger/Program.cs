@@ -3,6 +3,7 @@ using System.Text.Json;
 using ApiLedger;
 
 if (args.Length > 0 && args[0] == "--self-test") { SelfTest.Run(args.Length > 1 ? args[1] : null); return; }
+if (args.Length > 0 && args[0] == "--phase4") { Phase4Ledger.Run(args); return; }
 if (args.Length < 3) throw new ArgumentException("Usage: ApiLedger <repository> <output-directory> <integrated-ref> [consumer-root] [external-private-consumer-map.json]");
 string repository = Path.GetFullPath(args[0]);
 string output = Path.GetFullPath(args[1]);

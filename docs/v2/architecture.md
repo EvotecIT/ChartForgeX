@@ -16,7 +16,11 @@ The entry point is `IVisualRenderable.Prepare(VisualRenderContext)`. Charts, gri
 
 Visuals and Stories are peers. A still wallpaper must not load an animation package. Stories accepts common static inputs without making the core dispatch over optional concrete types. Core retains static GIF input/first-frame decoding as an explicit input exception; GIF output belongs to Stories even when it has one frame.
 
-Package extraction is Phase 4. Phase 1 retains the existing six package projects and their framework assets. It adds a generic prepared handoff beside the legacy dispatch, then later phases remove replaced switches and optional concrete types from core. No compatibility forwarding framework or global renderer registry is planned.
+Phase 4 separates the eight runtime assemblies. Visuals and Stories each reference core only. Markup references Visuals because its existing table parser produces a static factual-table presentation; Mermaid remains core-only. Interactivity is host-neutral, and the HTML adapter keeps its existing core/interactivity direction. No compatibility forwarding framework or global renderer registry is used.
+
+`IStaticVisualSource` is the producer-owned export boundary for optional static presentations. It provides scoped SVG and native RGBA output without making core name canvas, factual block or story implementations. `VisualArtifact.RenderSource` can carry that presentation independently of its semantic `Model`. A watermark decorator captures the previous presentation and supplies an ordered Visuals-owned source. Prepared native scenes continue through `IVisualRenderable` and `PreparedVisual`; immediate image composition and legacy block layouts do not claim a native prepared-scene conversion merely because their assemblies move.
+
+Neutral `VisualStatus`, table semantics, common block contracts and the six genuine block diagrams stay in core. Canvas layout, factual block models and their concrete rendering move to Visuals. Stable static grid target IDs remain usable by a Stories motion presentation without a Visuals assembly reference. Topology motion samples a detached core geometry observation rather than re-running layout or reading geometry from SVG.
 
 Keep product data collection, dashboard shells, filters, inspectors, wallpaper templates and document placement in consumers. PowerBGInfo is a required consumer of both core and Visuals. Its designed wallpaper effects remain supported capabilities. Progress handles and completed-state markers are data marks; they are not removed with decorative menus, selection checkboxes, navigation arrows and action buttons baked into still images.
 
@@ -94,7 +98,7 @@ The [consumer capability ledger](consumer-capabilities.csv) covers [PowerBGInfo]
 
 ## API and catalog closure
 
-The [API conventions](api-conventions.md) define meaningful fluent verbs and purposeful exceptions. The [public member inventory](api-ledger.md) records the integrated source, exact overloads/defaults and planned ownership. It includes all six current runtime assemblies. Its fate column is a migration plan, not evidence that extraction is complete.
+The [API conventions](api-conventions.md) define meaningful fluent verbs and purposeful exceptions. The [public member inventory](api-ledger.md) records the integrated source, exact overloads/defaults and planned ownership. The original inventory describes six baseline runtime assemblies. Phase 4 adds a separate eight-assembly source inventory and an assembly/signature diff; packed dependency, resource and execution qualification remains independent evidence.
 
 The [chart capability roadmap](chart-capabilities.csv) records per-family existing capabilities, missing options, priority lanes, dependencies and acceptance fixtures. Priority is driven by real use and architectural reuse. Browser interaction, maps and advanced financial tooling have separate scope from static chart quality. Chart names alone do not establish completeness.
 

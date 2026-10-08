@@ -21,8 +21,7 @@ public sealed class NativeTopologyResponsiveTests {
         var fitted = XDocument.Parse(prepared.WithOutputSize(600, 200).ToSvg());
         Assert.Equal(expected, (string?)fitted.Root!.Attribute("style"));
         Assert.Equal(600, (double)fitted.Root.Attribute("width")!);
-        options.Motion = TopologyMotionOptions.RoutePulseForEdges("route");
-        var animated = XDocument.Parse(chart.ToSvg(options));
+        var animated = XDocument.Parse(chart.WithMotion(TopologyMotionOptions.RoutePulseForEdges("route"), options).ToSvg());
         Assert.Equal(expected, (string?)animated.Root!.Attribute("style"));
         Assert.Contains(animated.Descendants(), element => element.Name.LocalName == "animateMotion");
     }

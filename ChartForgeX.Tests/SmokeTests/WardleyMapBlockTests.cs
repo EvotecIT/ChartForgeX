@@ -52,11 +52,6 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => markerMap.ToSvg(), "Wardley maps should reject invalid marker coordinates.");
     }
 
-    private static void WardleyMapPngStageLabelsUseCenteredSlots() {
-        var source = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX", "VisualBlocks", "PngVisualBlockRenderer.WardleyMap.cs"));
-        Assert(source.Contains("(index + 0.5) / stages.Count", StringComparison.Ordinal), "Wardley map PNG stage labels should use the same centered stage slots as SVG rendering.");
-    }
-
     private static void WardleyMapRendersDashedAndFlowLinksAcrossSvgAndPng() {
         var map = WardleyMapBlock.Create()
             .WithTitle("Flow Map")
@@ -76,8 +71,6 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"wardley-flow-backward\"", StringComparison.Ordinal), "Wardley map SVG rendering should include backward flow hints for bidirectional links.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Wardley map PNG rendering should emit a valid PNG with dashed and flow link styling.");
 
-        var pngSource = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX", "VisualBlocks", "PngVisualBlockRenderer.WardleyMap.cs"));
-        Assert(pngSource.Contains("DrawDashedLine(from.X, from.Y, to.X, to.Y", StringComparison.Ordinal), "Wardley map PNG rendering should preserve dashed dependency links.");
-        Assert(pngSource.Contains("DrawWardleyFlowHint(canvas, link", StringComparison.Ordinal), "Wardley map PNG rendering should preserve flow hints.");
+
     }
 }

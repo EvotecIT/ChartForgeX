@@ -14,7 +14,6 @@ public static class RasterImageFormatExtensions {
     public static RasterImageFormat[] GetSupportedFormats() {
         return new[] {
             RasterImageFormat.Png,
-            RasterImageFormat.Gif,
             RasterImageFormat.Jpeg,
             RasterImageFormat.Bmp,
             RasterImageFormat.Ppm,
@@ -30,7 +29,6 @@ public static class RasterImageFormatExtensions {
     public static bool IsSupported(this RasterImageFormat format) {
         switch (format) {
             case RasterImageFormat.Png:
-            case RasterImageFormat.Gif:
             case RasterImageFormat.Jpeg:
             case RasterImageFormat.Bmp:
             case RasterImageFormat.Ppm:
@@ -61,9 +59,6 @@ public static class RasterImageFormatExtensions {
         switch (extension) {
             case ".png":
                 format = RasterImageFormat.Png;
-                return true;
-            case ".gif":
-                format = RasterImageFormat.Gif;
                 return true;
             case ".jpg":
             case ".jpeg":
@@ -105,8 +100,6 @@ public static class RasterImageFormatExtensions {
         switch (format) {
             case RasterImageFormat.Png:
                 return ".png";
-            case RasterImageFormat.Gif:
-                return ".gif";
             case RasterImageFormat.Jpeg:
                 return ".jpg";
             case RasterImageFormat.Bmp:
@@ -129,8 +122,6 @@ public static class RasterImageFormatExtensions {
         switch (format) {
             case RasterImageFormat.Png:
                 return new[] { ".png" };
-            case RasterImageFormat.Gif:
-                return new[] { ".gif" };
             case RasterImageFormat.Jpeg:
                 return new[] { ".jpg", ".jpeg" };
             case RasterImageFormat.Bmp:
@@ -153,8 +144,6 @@ public static class RasterImageFormatExtensions {
         switch (format) {
             case RasterImageFormat.Png:
                 return "image/png";
-            case RasterImageFormat.Gif:
-                return "image/gif";
             case RasterImageFormat.Jpeg:
                 return "image/jpeg";
             case RasterImageFormat.Bmp:

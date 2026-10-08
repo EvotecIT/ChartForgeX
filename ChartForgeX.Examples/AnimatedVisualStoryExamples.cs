@@ -51,12 +51,12 @@ internal static class AnimatedVisualStoryExamples {
             .Add("metric-users", Metric("Monthly users", "18.4K", "+12% this quarter"))
             .Add("metric-releases", Metric("Releases", "96", "Last 12 months"))
             .Add("activity", activity, columnSpan: 3, rowSpan: 2)
-            .Add("portfolio", portfolio, columnSpan: 3, rowSpan: 2)
-            .WithMotion(motion);
+            .Add("portfolio", portfolio, columnSpan: 3, rowSpan: 2);
+        var presentation = VisualMotionPresentation.Create(story, motion);
 
-        story.SaveSvg(Path.Combine(output, "animated-engineering-portfolio-story.svg"));
-        story.SaveHtml(Path.Combine(output, "animated-engineering-portfolio-story.html"));
-        story.SavePng(Path.Combine(output, "animated-engineering-portfolio-story.png"));
+        File.WriteAllText(Path.Combine(output, "animated-engineering-portfolio-story.svg"), presentation.ToSvg());
+        File.WriteAllText(Path.Combine(output, "animated-engineering-portfolio-story.html"), presentation.ToHtmlPage());
+        File.WriteAllBytes(Path.Combine(output, "animated-engineering-portfolio-story.png"), presentation.ToPng());
     }
 
     private static MetricCard Metric(string label, string value, string caption) => MetricCard.Create()

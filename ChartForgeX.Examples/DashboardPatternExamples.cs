@@ -65,7 +65,7 @@ internal static class DashboardPatternExamples {
             .WithSubtitle("Week 1, Jan 1 - Jan 7")
             .WithTheme(OperationsTheme())
             .WithPadding(28, 26, 28, 24)
-            .WithControls("Day", "Week", "Week 1 (Jan 1 - Jan 7, 2024)")
+            .WithPeriodLabel("Week 1 (Jan 1 - Jan 7, 2024)")
             .WithColumns("S", "M", "T", "W", "T", "F", "S")
             .WithColorKey(0, 12, Mint.WithAlpha(70), TealDark)
             .AddRow("9 AM", 9, 3, 2, 6, 4, 4, 12)
@@ -155,11 +155,9 @@ internal static class DashboardPatternExamples {
         .WithTheme(ProjectTheme())
         .WithPngOutputScale(outputScale)
         .WithHeaderSymbol("%")
-        .WithMenu()
         .AddItem("Performing Progress", 89, segments: 44, color: Green, delta: "+10.2%", status: VisualStatus.Positive)
         .AddItem("Target Sales", 67, segments: 44, color: Blue, delta: "+2.2%", status: VisualStatus.Info)
-        .WithAction("Up by 6% compared to last week, great momentum.")
-        .WithActionStyle(Green.WithAlpha(38), ChartColor.FromHex("#16A36A"));
+        .WithSubtitle("Up by 6% compared to last week, great momentum.");
 
     private static SegmentedMetricBlock CertificateInventoryCompositionStrip(int outputScale) => SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
         .WithTitle("Certificate Count")
@@ -179,7 +177,6 @@ internal static class DashboardPatternExamples {
         .WithSize(820, 340)
         .WithTheme(ProjectTheme())
         .WithPngOutputScale(outputScale)
-        .WithMenu()
         .AddItem("Direct", 40, color: Green, displayValue: "24,000")
         .AddItem("Partner", 35, color: Orange, displayValue: "21,000")
         .AddItem("Referral", 15, color: ChartColor.FromHex("#EF5DA8"), displayValue: "9,000")
@@ -191,7 +188,6 @@ internal static class DashboardPatternExamples {
         .WithSize(820, 460)
         .WithTheme(ProjectTheme())
         .WithPngOutputScale(outputScale)
-        .WithMenu()
         .AddItem(new SegmentedMetricItem("Posts", 86).WithProgress(100, 44).WithColor(Blue).WithDisplayValue("132,034").WithDelta("+4.3%").WithStatus(VisualStatus.Positive))
         .AddItem(new SegmentedMetricItem("Replies", 62).WithProgress(100, 44).WithColor(ChartColor.FromHex("#7894F8")).WithDisplayValue("56,234").WithDelta("-6.4%").WithStatus(VisualStatus.Negative))
         .AddItem(new SegmentedMetricItem("Likes", 84).WithProgress(100, 44).WithColor(ChartColor.FromHex("#8B7AF4")).WithDisplayValue("125,485,958").WithDelta("+12.34%").WithStatus(VisualStatus.Positive))
@@ -205,7 +201,6 @@ internal static class DashboardPatternExamples {
         .WithSize(820, 330)
         .WithTheme(ProjectTheme())
         .WithPngOutputScale(outputScale)
-        .WithMenu()
         .AddItem("Clicks", 82000, segments: 24, color: Green, displayValue: "82,000")
         .AddItem("Added to Cart", 7200, segments: 16, color: Orange, displayValue: "7,200")
         .AddItem("Payment", 1230, segments: 12, color: ChartColor.FromHex("#6D83F2"), displayValue: "1,230")
@@ -219,11 +214,9 @@ internal static class DashboardPatternExamples {
         .WithPngOutputScale(outputScale)
         .WithCard(false)
         .WithMetric("Tasks", 23, "Task")
-        .WithMenu()
         .AddItem("On Going", 12, color: Blue, status: VisualStatus.Info, pattern: ChartFillPattern.DiagonalForward)
         .AddItem("Under Review", 6, color: Orange, status: VisualStatus.Warning, pattern: ChartFillPattern.DiagonalBackward)
-        .AddItem("Finish", 4, color: Green, status: VisualStatus.Positive)
-        .WithAction("View details task");
+        .AddItem("Finish", 4, color: Green, status: VisualStatus.Positive);
 
     private static Chart ProjectTrackCard() => Chart.Create()
         .WithTitle("Project Track")
@@ -247,7 +240,7 @@ internal static class DashboardPatternExamples {
         .WithCard(false)
         .WithTimeRange(8, 17, 1)
         .WithCurrentTime(14.2)
-        .WithHeaderActions("12/Feb/2025", "Filter", "+ Add Schedule", "...")
+        .WithSubtitle("12/Feb/2025")
         .AddEvent("Meeting Brief Project", 8.0, 10.0, 0, Blue, VisualStatus.Info, avatars: new[] { "AM", "RF", "PD", "MR" })
         .AddEvent("Research Analyze Content", 9.0, 11.0, 1, Purple, VisualStatus.Info, avatars: new[] { "SC", "MR", "RF" })
         .AddEvent("Build Website & Mobile Responsive", 8.0, 11.0, 2, Green, VisualStatus.Positive, avatars: new[] { "RJ", "MH", "PD" })
