@@ -13,8 +13,9 @@
       svg.setAttribute('data-cfx-series-state-' + index, item.state);
       svg.setAttribute('data-cfx-series-source-indices-' + index, item.indices.join(','));
     });
-    const sourceCollections = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points]'))
-      .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxSourcePoints]));
+    const sourceFacts = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points],[data-cfx-point][data-cfx-derived]'))
+      .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint,
+        { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived }]));
     svg.querySelectorAll('[data-cfx-role="legend-entry"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
@@ -27,8 +28,11 @@
       if (match && match[2] !== undefined) {
         data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
         const collectionKey = index + ':' + data.cfxPoint;
-        if (data.cfxSourcePoints === undefined && sourceCollections.has(collectionKey))
-          data.cfxSourcePoints = sourceCollections.get(collectionKey);
+        const facts = sourceFacts.get(collectionKey);
+        if (facts) {
+          if (data.cfxSourcePoints === undefined && facts.points !== undefined) data.cfxSourcePoints = facts.points;
+          if (data.cfxDerived === undefined && facts.derived !== undefined) data.cfxDerived = facts.derived;
+        }
       }
     });
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"]').forEach((node) => {
@@ -40,7 +44,7 @@
       data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
-      if (data.cfxPoint !== undefined && data.cfxSourcePoint === undefined && data.cfxSourcePoints === undefined) {
+      if (data.cfxPoint !== undefined && data.cfxSourcePoint === undefined && !hasDerivedPointIdentity(node)) {
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
       }

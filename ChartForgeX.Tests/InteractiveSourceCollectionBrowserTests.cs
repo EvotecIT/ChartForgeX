@@ -43,10 +43,72 @@ public sealed class InteractiveSourceCollectionBrowserTests {
                 var selected = events.RootElement.EnumerateArray().Last(item => item.GetProperty("type").GetString() == type);
                 var target = selected.GetProperty("target");
                 Assert.Equal("point", target.GetProperty("targetKind").GetString());
-                Assert.Equal("summary-source:0", target.GetProperty("targetId").GetString());
+                Assert.Equal("summary-source:derived:" + (kind == ChartSeriesKind.TrendLine ? "regression-endpoint" : "five-number-summary") + ":0", target.GetProperty("targetId").GetString());
+                Assert.False(target.TryGetProperty("sourcePoint", out _));
+                Assert.False(target.TryGetProperty("sourcePoints", out _));
             }
         }
         await CaptureAsync(page, "raw-summary-" + kind.ToString().ToLowerInvariant());
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
+    [InlineData(ChartSeriesKind.TrendLine)]
+    [InlineData(ChartSeriesKind.BoxPlot)]
+    public async Task DerivedSummarySelectionSynchronizesSummariesWithoutSelectingRawObservations(ChartSeriesKind kind) {
+        if (!Enabled) return;
+        var observations = new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 3), new ChartPoint(3, 7) };
+        Chart Summary(ChartSeriesKind summaryKind) {
+            var chart = Chart.Create().WithSize(640, 360);
+            if (summaryKind == ChartSeriesKind.TrendLine) chart.AddTrendLine("Summary", observations);
+            else chart.AddBoxPlot("Summary", 1, observations.Select(point => point.Y));
+            chart.Series[0].WithInteractionKey("observations");
+            return chart;
+        }
+        var raw = Chart.Create().WithSize(640, 360).AddLine("Raw", observations);
+        raw.Series[0].WithInteractionKey("observations");
+        var otherKind = kind == ChartSeriesKind.TrendLine ? ChartSeriesKind.BoxPlot : ChartSeriesKind.TrendLine;
+        var bins = Chart.Create().WithSize(640, 360).AddHistogram("Bins", observations,
+            ChartHistogramBinLayout.FromBoundaries(new[] { -.5, .5, 1.5, 2.5, 3.5 }), ChartHistogramAggregation.Count);
+        bins.Series[0].WithInteractionKey("observations");
+        var html = new[] { raw, Summary(kind), Summary(kind), Summary(otherKind), bins }.ToInteractiveHtmlDashboardPage(options => {
+            options.Columns = 1;
+            options.Interaction.Features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection
+                | ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.SynchronizedCharts;
+        });
+        await using var session = await OpenAsync(html, 700, 2060);
+        var page = session.Page;
+        var roots = page.Locator(".cfx-interactive-chart");
+        await CaptureEventsAsync(page);
+        var summary = roots.Nth(1).Locator(Point(0, 0));
+        await summary.FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+        foreach (var index in new[] { 0, 3, 4 })
+            Assert.Null(await roots.Nth(index).Locator(Point(0, 0)).GetAttributeAsync("aria-selected"));
+        foreach (var index in new[] { 1, 2 }) {
+            var peer = roots.Nth(index).Locator(Point(0, 0));
+            Assert.Equal("true", await peer.GetAttributeAsync("aria-selected"));
+            Assert.Null(await peer.GetAttributeAsync("data-cfx-source-point"));
+            Assert.Equal("observations:derived:" + (kind == ChartSeriesKind.TrendLine ? "regression-endpoint" : "five-number-summary") + ":0", await peer.GetAttributeAsync("data-cfx-target-id"));
+        }
+        using (var events = await ReadEventsAsync(page)) {
+            var target = events.RootElement.EnumerateArray().Last(item => item.GetProperty("type").GetString() == "cfxselect")
+                .GetProperty("target");
+            Assert.Equal("observations:derived:" + (kind == ChartSeriesKind.TrendLine ? "regression-endpoint" : "five-number-summary") + ":0", target.GetProperty("targetId").GetString());
+            Assert.False(target.TryGetProperty("sourcePoint", out _));
+        }
+        await roots.Nth(0).Locator(Point(0, 0)).FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+        Assert.Equal("true", await roots.Nth(0).Locator(Point(0, 0)).GetAttributeAsync("aria-selected"));
+        foreach (var index in new[] { 1, 2 })
+            Assert.Equal("true", await roots.Nth(index).Locator(Point(0, 0)).GetAttributeAsync("aria-selected"));
+        using (var events = await ReadEventsAsync(page)) {
+            var target = events.RootElement.EnumerateArray().Last(item => item.GetProperty("type").GetString() == "cfxselect")
+                .GetProperty("target");
+            Assert.Equal("observations:0", target.GetProperty("targetId").GetString());
+            Assert.Equal("0", target.GetProperty("sourcePoint").GetString());
+        }
+        await CaptureAsync(page, "summary-raw-peer-" + kind.ToString().ToLowerInvariant());
         AssertNoConsoleErrors(session);
     }
 
@@ -87,7 +149,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         foreach (var bin in new[] { 1, 2 }) {
             var point = roots.Nth(0).Locator(Point(0, bin));
             Assert.Null(await point.GetAttributeAsync("data-cfx-source-point"));
-            Assert.Equal("quantity-source:derived:" + bin, await point.GetAttributeAsync("data-cfx-target-id"));
+            Assert.Equal("quantity-source:derived:histogram-bin:" + bin, await point.GetAttributeAsync("data-cfx-target-id"));
             await point.FocusAsync();
             await page.Keyboard.PressAsync("Space");
             foreach (var peer in new[] { 0, 1 })
@@ -96,8 +158,8 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         using (var events = await ReadEventsAsync(page)) {
             foreach (var bin in new[] { 1, 2 }) {
                 var contributors = bin == 1 ? new[] { 2, 3 } : Array.Empty<int>();
-                AssertEvent(events, "cfxhover", "point", "quantity-source:derived:" + bin, contributors);
-                AssertEvent(events, "cfxselect", "point", "quantity-source:derived:" + bin, contributors);
+                AssertEvent(events, "cfxhover", "point", "quantity-source:derived:histogram-bin:" + bin, contributors);
+                AssertEvent(events, "cfxselect", "point", "quantity-source:derived:histogram-bin:" + bin, contributors);
             }
         }
         var ids = await roots.Nth(0).Locator(PointTarget).EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.dataset.cfxTargetId)");
@@ -136,7 +198,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         foreach (var target in new[] { other, legend }) {
             Assert.Equal("1,2,3", await target.GetAttributeAsync("data-cfx-source-points"));
             Assert.Null(await target.GetAttributeAsync("data-cfx-source-point"));
-            Assert.Equal("slice-source:derived:-1", await target.GetAttributeAsync("data-cfx-target-id"));
+            Assert.Equal("slice-source:derived:radial-slice:-1", await target.GetAttributeAsync("data-cfx-target-id"));
             await target.FocusAsync();
         }
         await other.FocusAsync();
@@ -144,9 +206,9 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         Assert.Equal("true", await other.GetAttributeAsync("aria-selected"));
         Assert.Null(await page.Locator("[data-cfx-role='radial-point'][data-cfx-point='0']").GetAttributeAsync("aria-selected"));
         using var events = await ReadEventsAsync(page);
-        AssertEvent(events, "cfxhover", "point", "slice-source:derived:-1", new[] { 1, 2, 3 });
-        AssertEvent(events, "cfxhover", "legend", "slice-source:derived:-1", new[] { 1, 2, 3 });
-        AssertEvent(events, "cfxselect", "point", "slice-source:derived:-1", new[] { 1, 2, 3 });
+        AssertEvent(events, "cfxhover", "point", "slice-source:derived:radial-slice:-1", new[] { 1, 2, 3 });
+        AssertEvent(events, "cfxhover", "legend", "slice-source:derived:radial-slice:-1", new[] { 1, 2, 3 });
+        AssertEvent(events, "cfxselect", "point", "slice-source:derived:radial-slice:-1", new[] { 1, 2, 3 });
         AssertNoConsoleErrors(session);
     }
 
@@ -168,17 +230,17 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         await run.FocusAsync();
         await page.Keyboard.PressAsync("Space");
         using var events = await ReadEventsAsync(page);
-        AssertEvent(events, "cfxhover", "point", "availability-source:derived:0", new[] { 0, 1, 2, 3 });
-        AssertEvent(events, "cfxselect", "point", "availability-source:derived:0", new[] { 0, 1, 2, 3 });
+        AssertEvent(events, "cfxhover", "point", "availability-source:derived:timeline-run:0", new[] { 0, 1, 2, 3 });
+        AssertEvent(events, "cfxselect", "point", "availability-source:derived:timeline-run:0", new[] { 0, 1, 2, 3 });
         AssertNoConsoleErrors(session);
     }
 
     private static Task CaptureEventsAsync(IPage page) => page.EvaluateAsync("""
         () => {
             window.cfxCollectionEvents = [];
-            const root = document.querySelector('.cfx-interactive-chart');
-            for (const type of ['cfxhover', 'cfxselect'])
-                root.addEventListener(type, event => window.cfxCollectionEvents.push({ type, target: event.detail.target }));
+            for (const root of document.querySelectorAll('.cfx-interactive-chart'))
+                for (const type of ['cfxhover', 'cfxselect'])
+                    root.addEventListener(type, event => window.cfxCollectionEvents.push({ type, target: event.detail.target }));
         }
         """);
 

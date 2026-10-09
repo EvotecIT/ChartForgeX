@@ -130,6 +130,7 @@ internal static partial class VisualRadialCompiler {
             ["data-cfx-series"] = "0",
             ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && chart.Series[0].StateRole != ChartSeriesState.None ? "true" : "false",
             ["data-cfx-point"] = slice.PointIndex.ToString(CultureInfo.InvariantCulture),
+            ["data-cfx-derived"] = "radial-slice",
             ["data-cfx-source-points"] = string.Join(",", slice.SourcePointIndices),
             ["data-cfx-label"] = slice.Label,
             ["data-cfx-pattern"] = slice.Pattern.ToString(),
