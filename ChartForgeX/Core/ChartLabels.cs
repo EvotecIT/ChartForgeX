@@ -15,6 +15,8 @@ public sealed class ChartLabels {
     private string _more = "More";
     private string _noData = "No data";
     private string _color = "Color";
+    private string _authoredValue = "Provided value";
+    private string _remainder = "Remainder";
     private string _allValues = "All values";
     private string _value = "value";
     private string _untitledChart = "ChartForgeX chart";
@@ -55,6 +57,12 @@ public sealed class ChartLabels {
 
     /// <summary>Gets or sets the default title and tooltip row name of an independent numeric color measurement. Default <c>Color</c>.</summary>
     public string Color { get => _color; set => _color = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the tooltip row name for a supplied group size that differs from its resolved size. Default <c>Provided value</c>.</summary>
+    public string AuthoredValue { get => _authoredValue; set => _authoredValue = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the tooltip row name for the unallocated part of an inclusive Sunburst group total. Default <c>Remainder</c>.</summary>
+    public string Remainder { get => _remainder; set => _remainder = Required(value, nameof(value)); }
 
     /// <summary>Gets or sets the caption for a discrete color scale with one unbounded band. Default <c>All values</c>.</summary>
     public string AllValues { get => _allValues; set => _allValues = Required(value, nameof(value)); }

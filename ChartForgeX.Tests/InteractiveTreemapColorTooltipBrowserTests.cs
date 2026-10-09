@@ -21,9 +21,9 @@ public sealed class InteractiveTreemapColorTooltipBrowserTests {
         var chart = Chart.Create().WithSize(width, 380).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithTitle("Przydział pracy").WithDataLabels(false).WithLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; })
             .AddTreemap("Zespoły", new[] {
-                new ChartTreemapItem("positive", "Obsługa", value: 9, colorValue: 7.125),
-                new ChartTreemapItem("zero", "Zerowa zmiana", value: 4, colorValue: 0),
-                new ChartTreemapItem("missing", "Nieznana zmiana", value: 2)
+                new ChartHierarchyItem("positive", "Obsługa", value: 9, colorValue: 7.125),
+                new ChartHierarchyItem("zero", "Zerowa zmiana", value: 4, colorValue: 0),
+                new ChartHierarchyItem("missing", "Nieznana zmiana", value: 2)
             }).ConfigureTreemap(options => {
                 options.ColorScale = ChartColorScale.Sequential(ChartForgeX.Primitives.ChartColor.FromHex("#DAE8F8"), ChartForgeX.Primitives.ChartColor.FromHex("#1C5CAB"));
                 options.ShowColorScaleLegend = !leafKeys;

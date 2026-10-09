@@ -33,7 +33,7 @@ internal static class ChartMarkParityFixture {
             case "pie-offset": chart.AddPie("Parts", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3) }); chart.Series[0].WithPointSliceOffset(0, 0.12); theme.CardBackground = ChartColor.FromRgba(240, 245, 250, alpha); break;
             case "polar": chart.AddPolarArea("Parts", new[] { new ChartPoint(0, 1), new ChartPoint(1, 4), new ChartPoint(2, 2) }); theme.CardBackground = ChartColor.FromRgba(240, 245, 250, alpha); break;
             case "polar-zero": chart.AddPolarArea("Parts", new[] { new ChartPoint(0, 0), new ChartPoint(1, 4), new ChartPoint(2, 2) }); theme.CardBackground = ChartColor.FromRgba(240, 245, 250, alpha); break;
-            case "sunburst": chart.AddSunburst("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C"), new ChartNode("D", "D") }, new[] { new ChartTreeLink("Root", "A", 3), new ChartTreeLink("Root", "B", 2), new ChartTreeLink("A", "C", 2), new ChartTreeLink("A", "D", 1) }); theme.CardBackground = ChartColor.FromRgba(240, 245, 250, alpha); break;
+            case "sunburst": chart.AddSunburst("Hierarchy", new[] { new ChartHierarchyItem("Root", "Root"), new ChartHierarchyItem("A", "A", "Root", 3), new ChartHierarchyItem("B", "B", "Root", 2), new ChartHierarchyItem("C", "C", "A", 2), new ChartHierarchyItem("D", "D", "A", 1) }); theme.CardBackground = ChartColor.FromRgba(240, 245, 250, alpha); break;
             default: throw new ArgumentException("Unknown fixture family.", nameof(family));
         }
         foreach (var series in chart.Series) series.ShowDataLabels = false;

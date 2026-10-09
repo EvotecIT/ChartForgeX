@@ -11,19 +11,27 @@ public sealed class ColorScaleLocalizationTests {
     [InlineData("region-map", true)]
     [InlineData("tile-map", true)]
     [InlineData("treemap", true)]
+    [InlineData("sunburst", true)]
     [InlineData("region-map", false)]
     [InlineData("tile-map", false)]
     [InlineData("treemap", false)]
+    [InlineData("sunburst", false)]
     public void LocalizedIntervalsKeepNumericBoundsAndPreparedOutputsDetached(string family, bool oneBand) {
         var scale = ChartColorScale.Discrete(oneBand
             ? new[] { new ChartColorBand(null, ChartColor.FromHex("#6F9ECE"), "Zakres") }
             : new[] { new ChartColorBand(10, ChartColor.FromHex("#DAE8F8"), "Niski"),
                 new ChartColorBand(20, ChartColor.FromHex("#6F9ECE"), "Średni"), new ChartColorBand(null, ChartColor.FromHex("#1C5CAB"), "Wysoki") });
         var chart = Chart.Create().WithSize(800, 460).WithPngSupersampling(1);
-        if (family == "treemap") chart.AddTreemap("Podział", new[] {
-            new ChartTreemapItem("low", "Niski", value: 4, colorValue: 0),
-            new ChartTreemapItem("middle", "Średni", value: 2, colorValue: 10),
-            new ChartTreemapItem("high", "Wysoki", value: 1, colorValue: 20)
+        if (family == "sunburst") chart.AddSunburst("Podział", new[] {
+            new ChartHierarchyItem("root", "Wszystko"),
+            new ChartHierarchyItem("low", "Niski", "root", 4, 0),
+            new ChartHierarchyItem("middle", "Średni", "root", 2, 10),
+            new ChartHierarchyItem("high", "Wysoki", "root", 1, 20)
+        }).ConfigureSunburst(options => options.ColorScale = scale);
+        else if (family == "treemap") chart.AddTreemap("Podział", new[] {
+            new ChartHierarchyItem("low", "Niski", value: 4, colorValue: 0),
+            new ChartHierarchyItem("middle", "Średni", value: 2, colorValue: 10),
+            new ChartHierarchyItem("high", "Wysoki", value: 1, colorValue: 20)
         }).ConfigureTreemap(options => options.ColorScale = scale);
         else {
             chart.WithMapLabels(false).WithMapColorScale(scale).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
@@ -38,7 +46,7 @@ public sealed class ColorScaleLocalizationTests {
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         Capture(prepared, suffix + "-localized");
         var document = XDocument.Parse(svg);
-        var sourceRole = family == "treemap" ? "treemap-color-scale-step-source" : "map-scale-step-source";
+        var sourceRole = family is "treemap" or "sunburst" ? family + "-color-scale-step-source" : "map-scale-step-source";
         var bands = document.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == sourceRole).ToArray();
         var captions = bands.Select(node => (string?)node.Attribute("data-cfx-label")).ToArray();
         Assert.Equal(oneBand ? new[] { "Zakres · Wszystkie wartości" }

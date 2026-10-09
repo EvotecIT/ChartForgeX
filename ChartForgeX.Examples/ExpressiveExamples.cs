@@ -644,17 +644,18 @@ internal static partial class ExpressiveExamples {
         .WithSubtitle("Sunburst hierarchy chart using the Aurora theme")
         .WithTheme(ChartTheme.Aurora())
         .WithSize(920, 560)
-        .AddSunburst("Controls", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail auth", "Mail auth"), new ChartNode("Certificates", "Certificates"), new ChartNode("DNS hygiene", "DNS hygiene"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("DMARC", "DMARC"), new ChartNode("Expiry", "Expiry"), new ChartNode("SANs", "SANs"), new ChartNode("DNSSEC rollout", "DNSSEC rollout"), new ChartNode("Stale DNS", "Stale DNS") }, new[] {
-            new ChartTreeLink("Security posture", "Mail auth", 42),
-            new ChartTreeLink("Security posture", "Certificates", 30),
-            new ChartTreeLink("Security posture", "DNS hygiene", 28),
-            new ChartTreeLink("Mail auth", "SPF", 18),
-            new ChartTreeLink("Mail auth", "DKIM", 14),
-            new ChartTreeLink("Mail auth", "DMARC", 10),
-            new ChartTreeLink("Certificates", "Expiry", 16),
-            new ChartTreeLink("Certificates", "SANs", 14),
-            new ChartTreeLink("DNS hygiene", "DNSSEC rollout", 16),
-            new ChartTreeLink("DNS hygiene", "Stale DNS", 12)
+        .AddSunburst("Controls", new[] {
+            new ChartHierarchyItem("Security posture", "Security posture"),
+            new ChartHierarchyItem("Mail auth", "Mail auth", "Security posture", 42),
+            new ChartHierarchyItem("Certificates", "Certificates", "Security posture", 30),
+            new ChartHierarchyItem("DNS hygiene", "DNS hygiene", "Security posture", 28),
+            new ChartHierarchyItem("SPF", "SPF", "Mail auth", 18),
+            new ChartHierarchyItem("DKIM", "DKIM", "Mail auth", 14),
+            new ChartHierarchyItem("DMARC", "DMARC", "Mail auth", 10),
+            new ChartHierarchyItem("Expiry", "Expiry", "Certificates", 16),
+            new ChartHierarchyItem("SANs", "SANs", "Certificates", 14),
+            new ChartHierarchyItem("DNSSEC rollout", "DNSSEC rollout", "DNS hygiene", 16),
+            new ChartHierarchyItem("Stale DNS", "Stale DNS", "DNS hygiene", 12)
         });
     private static Chart CreateAudiencePictorial() => Chart.Create()
         .WithTitle("Audience Mix")

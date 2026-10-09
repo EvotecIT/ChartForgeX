@@ -11,8 +11,8 @@ internal static partial class VisualHierarchyCompiler {
     private static void Treemap(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
         var series = chart.Series[0]; var index = series.Relationships!; var options = chart.Options.Treemap;
         var showLabels = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
-        var surface = new ChartTreemapSurface(chart, colors);
-        var areas = TreemapScaleLayout(chart, context, builder, plot, surface);
+        var surface = new ChartHierarchySurface(chart, colors);
+        var areas = HierarchyScaleLayout(chart, context, builder, plot, surface);
         var layout = ChartTreemapLayout.Compute(series, areas.Content, options, item => {
             if (!showLabels) return 0;
             var style = LabelStyle(chart, context, surface.Blend(item).Color, item);
@@ -22,10 +22,10 @@ internal static partial class VisualHierarchyCompiler {
         var paintOrder = layout.Select((tile, ordinal) => (tile.ItemIndex, ordinal)).ToDictionary(item => item.ItemIndex, item => item.ordinal);
         if (tiles.Count == 0) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.no-data", "The treemap has no positive leaf sizes."));
         foreach (var root in Ordered(index.Roots)) Draw(root);
-        DrawTreemapScale(chart, context, builder, areas.Scale, surface, colors);
+        DrawHierarchyScale(chart, context, builder, areas.Scale, surface, colors);
 
         void Draw(int itemIndex) {
-            var item = series.TreemapItems[itemIndex]; var children = index.Children(itemIndex);
+            var item = series.HierarchyItems[itemIndex]; var children = index.Children(itemIndex);
             var value = index.HierarchyValues[itemIndex]; var formatted = ChartNumericFormatter.FormatValue(chart.Options, value);
             var full = itemIndex < series.PointLabels.Count && series.PointLabels[itemIndex] != null ? series.PointLabels[itemIndex]! : item.Label;
             var metadata = ChartRelationshipMetadata.Node(series, item.Id, item.Label, itemIndex);

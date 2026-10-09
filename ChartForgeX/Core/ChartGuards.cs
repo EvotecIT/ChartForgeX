@@ -89,6 +89,8 @@ internal static class ChartGuards {
         for (var i = 0; i < chart.Series.Count; i++) {
             if (chart.Series[i] == null) throw new InvalidOperationException("Chart series collection must not contain null entries.");
             ValidateSeriesShape(chart.Series[i], preparing);
+            if (preparing && chart.Series[i].Kind == ChartSeriesKind.Sunburst && chart.Series[i].Relationships != null)
+                _ = chart.Series[i].Relationships!.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
             if (chart.Series[i].IsHistogramDensity) {
                 var valueAxis = chart.Series[i].YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
                 if ((chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time) || valueAxis.Scale != ChartScaleKind.Linear)

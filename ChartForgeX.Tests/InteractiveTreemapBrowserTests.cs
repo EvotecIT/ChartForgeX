@@ -78,7 +78,7 @@ public sealed class InteractiveTreemapBrowserTests {
     [InlineData(true)]
     public async Task RenamedReorderedItemsKeepAuthoredHostEventIdentity(bool dark) {
         if (!Enabled) return;
-        var items = TreemapHierarchyTests.ForestItems().AsEnumerable().Reverse().Select(item => new ChartTreemapItem(item.Id,
+        var items = TreemapHierarchyTests.ForestItems().AsEnumerable().Reverse().Select(item => new ChartHierarchyItem(item.Id,
             item.Id == "south-support" ? "Customer care" : item.Label, item.ParentId, item.Value, item.ColorValue));
         var chart = Chart.Create().WithSize(640, 400).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).AddTreemap("Allocation", items);
         var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html, 680, 520);
@@ -98,7 +98,7 @@ public sealed class InteractiveTreemapBrowserTests {
         if (!Enabled) return;
         var missing = ChartColor.FromRgb(81, 124, 148);
         var chart = Chart.Create().WithSize(360, 320).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .WithTitle("One independent team").AddTreemap("Team", new[] { new ChartTreemapItem("support", "Support", value: 8) })
+            .WithTitle("One independent team").AddTreemap("Team", new[] { new ChartHierarchyItem("support", "Support", value: 8) })
             .ConfigureTreemap(options => options.ColorScale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White).WithNoDataColor(missing));
         var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html, 400, 440);
         Assert.Equal(0, await session.Page.Locator("[data-cfx-role=treemap-color-scale-step]").CountAsync());

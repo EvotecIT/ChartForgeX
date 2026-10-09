@@ -15,9 +15,9 @@ public sealed class TreemapColorTests {
     private static readonly ChartColor Blue = ChartColor.FromRgb(0, 0, 255);
     private static readonly ChartColor Missing = ChartColor.FromRgb(13, 47, 81);
     private static Chart Colored(double multiplier = 1, bool reverseColors = false) => Chart.Create().WithDataLabels(false).AddTreemap("Sizes", new[] {
-        new ChartTreemapItem("a", "A", value: 9 * multiplier, colorValue: reverseColors ? 20 : 10),
-        new ChartTreemapItem("b", "B", value: 1 * multiplier, colorValue: reverseColors ? 10 : 20),
-        new ChartTreemapItem("missing", "Missing", value: 2 * multiplier)
+        new ChartHierarchyItem("a", "A", value: 9 * multiplier, colorValue: reverseColors ? 20 : 10),
+        new ChartHierarchyItem("b", "B", value: 1 * multiplier, colorValue: reverseColors ? 10 : 20),
+        new ChartHierarchyItem("missing", "Missing", value: 2 * multiplier)
     }).ConfigureTreemap(options => { options.Gap = 0; options.ColorScale = ChartColorScale.Sequential(Red, Blue).WithNoDataColor(Missing); });
     private static XElement OwnMark(XElement target) => target.Elements().Single(element => (string?)element.Attribute("data-cfx-role") is "treemap-tile-mark" or "treemap-group-mark");
 
@@ -70,7 +70,7 @@ public sealed class TreemapColorTests {
     [InlineData(VisualThemeMode.Dark)]
     public void NodeStateWithoutColorScaleUsesSharedPaintAndExplicitOverrides(VisualThemeMode mode) {
         var chart = Chart.Create().WithDataLabels(false).AddTreemap("States", new[] {
-            new ChartTreemapItem("a", "Same", value: 9), new ChartTreemapItem("b", "Same", value: 1)
+            new ChartHierarchyItem("a", "Same", value: 9), new ChartHierarchyItem("b", "Same", value: 1)
         });
         chart.Series[0].StateRole = ChartSeriesState.Warning;
         chart.Series[0].WithNodeState("a", ChartSeriesState.None);
@@ -96,7 +96,7 @@ public sealed class TreemapColorTests {
             ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red, "Lower"), new ChartColorBand(null, Blue, "Upper") }).WithNoDataColor(Missing)
         }) {
             var chart = Chart.Create().WithDataLabels(false).AddTreemap("Colors", new[] {
-                new ChartTreemapItem("low", "Low", value: 9, colorValue: 0), new ChartTreemapItem("high", "High", value: 1, colorValue: 100), new ChartTreemapItem("missing", "Missing", value: 2)
+                new ChartHierarchyItem("low", "Low", value: 9, colorValue: 0), new ChartHierarchyItem("high", "High", value: 1, colorValue: 100), new ChartHierarchyItem("missing", "Missing", value: 2)
             }).ConfigureTreemap(options => { options.Gap = 0; options.ColorScale = scale; });
             var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), themeMode: mode, frame: new VisualFrame(showLegend: true)));
             var xml = XDocument.Parse(prepared.ToSvg()); var nodes = Targets(prepared).ToDictionary(node => (string)node.Attribute("data-cfx-target-id")!);
@@ -121,7 +121,7 @@ public sealed class TreemapColorTests {
     [Fact]
     public void BoundaryEqualitySelectsNextBandAndPointPaintOverridesRemainExplicit() {
         var chart = Chart.Create().WithDataLabels(false).AddTreemap("Bands", new[] {
-            new ChartTreemapItem("before", "Before", value: 4, colorValue: 49), new ChartTreemapItem("boundary", "Boundary", value: 2, colorValue: 50), new ChartTreemapItem("override", "Override", value: 3, colorValue: 100)
+            new ChartHierarchyItem("before", "Before", value: 4, colorValue: 49), new ChartHierarchyItem("boundary", "Boundary", value: 2, colorValue: 50), new ChartHierarchyItem("override", "Override", value: 3, colorValue: 100)
         }).ConfigureTreemap(options => options.ColorScale = ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red, "Low"), new ChartColorBand(null, Blue, "High") }));
         chart.Series[0].WithPointColor(2, Missing); chart.Series[0].WithPointFillPattern(2, ChartFillPattern.Crosshatch);
         var prepared = Prepare(chart); var nodes = Targets(prepared).ToDictionary(node => (string)node.Attribute("data-cfx-target-id")!);
@@ -132,7 +132,7 @@ public sealed class TreemapColorTests {
 
     [Fact]
     public void AllMissingColorsDoNotInventAnObservedZeroDomain() {
-        var chart = Chart.Create().WithDataLabels(false).AddTreemap("Unknown", new[] { new ChartTreemapItem("a", "A", value: 2) })
+        var chart = Chart.Create().WithDataLabels(false).AddTreemap("Unknown", new[] { new ChartHierarchyItem("a", "A", value: 2) })
             .ConfigureTreemap(options => options.ColorScale = ChartColorScale.Sequential(Red, Blue).WithNoDataColor(Missing));
         var prepared = Prepare(chart, true); var xml = XDocument.Parse(prepared.ToSvg()); var node = Assert.Single(Targets(prepared));
         Assert.Equal(Missing.ToCss(), (string?)OwnMark(node).Attribute("fill")); Assert.Null(node.Attribute("data-cfx-color-value"));
@@ -145,7 +145,7 @@ public sealed class TreemapColorTests {
     [Fact]
     public void DefaultColorDomainIncludesAuthoredGroupColorWithoutAggregatingChildColors() {
         var chart = Chart.Create().AddTreemap("Color", new[] {
-            new ChartTreemapItem("group", "Group", colorValue: -10), new ChartTreemapItem("one", "One", "group", 100, 5), new ChartTreemapItem("two", "Two", "group", 300, 15)
+            new ChartHierarchyItem("group", "Group", colorValue: -10), new ChartHierarchyItem("one", "One", "group", 100, 5), new ChartHierarchyItem("two", "Two", "group", 300, 15)
         });
         var prepared = Prepare(chart, true); var xml = XDocument.Parse(prepared.ToSvg());
         var group = Targets(prepared).Single(node => (string?)node.Attribute("data-cfx-target-id") == "group");
@@ -157,7 +157,7 @@ public sealed class TreemapColorTests {
     [Fact]
     public void LeafLegendAndSpacingOptionsUseCurrentItemFacts() {
         var chart = Chart.Create().WithPointLegend().AddTreemap("Leaves", new[] {
-            new ChartTreemapItem("group", "Group"), new ChartTreemapItem("first", "Support", "group", 1), new ChartTreemapItem("second", "Support", "group", 2)
+            new ChartHierarchyItem("group", "Group"), new ChartHierarchyItem("first", "Support", "group", 1), new ChartHierarchyItem("second", "Support", "group", 2)
         });
         chart.Series[0].WithPointColor(1, Red); chart.Series[0].WithPointColor(2, Blue);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

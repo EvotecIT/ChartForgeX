@@ -638,8 +638,8 @@ max 0";
         var chart = document.ToChart(new MermaidTreemapRenderOptions { Id = "infra-map", Title = "Infrastructure Map", Width = 720, Height = 420 });
         Assert(chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Treemap, "Mermaid treemap conversion should produce a ChartForgeX treemap chart.");
         Assert(chart.Title == "Infrastructure Map", "Mermaid treemap conversion should use caller-provided titles.");
-        Assert(chart.Series[0].TreemapItems.Count == 6 && chart.Series[0].Points.Count == 0, "Mermaid treemap conversion should retain every group and leaf without Cartesian points.");
-        Assert(chart.Series[0].TreemapItems[5].Label == "macOS" && chart.Series[0].TreemapItems[5].ParentId == chart.Series[0].TreemapItems[3].Id, "Mermaid treemap conversion should preserve parent IDs independently of display labels.");
+        Assert(chart.Series[0].HierarchyItems.Count == 6 && chart.Series[0].Points.Count == 0, "Mermaid treemap conversion should retain every group and leaf without Cartesian points.");
+        Assert(chart.Series[0].HierarchyItems[5].Label == "macOS" && chart.Series[0].HierarchyItems[5].ParentId == chart.Series[0].HierarchyItems[3].Id, "Mermaid treemap conversion should preserve parent IDs independently of display labels.");
 
         var artifact = document.ToVisualArtifact(new MermaidTreemapRenderOptions { Id = "infra-map" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid treemap visual artifact should report Mermaid artifact kind.");

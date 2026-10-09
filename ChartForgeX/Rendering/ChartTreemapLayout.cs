@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 internal static class ChartTreemapLayout {
     internal static IReadOnlyList<ChartTreemapTile> Compute(ChartSeries series, ChartRect plot, ChartTreemapOptions options, Func<int, double> headerHeight) {
         var index = series.Relationships ?? throw new InvalidOperationException("Treemaps require explicit items.");
-        var tiles = new List<ChartTreemapTile>(series.TreemapItems.Count);
+        var tiles = new List<ChartTreemapTile>(series.HierarchyItems.Count);
         Siblings(index.Roots, plot);
         return tiles;
 

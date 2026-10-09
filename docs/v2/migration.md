@@ -12,7 +12,8 @@ Replace the label-based relationship overloads with explicit nodes and links:
 | --- | --- |
 | `AddSankey(name, links, color)` | `AddSankey(name, nodes, links, color)` |
 | `ChartSankeyLink(source, target, value)` | `ChartFlowLink(id, sourceId, targetId, value)` |
-| `AddTree(name, links, color)` / `AddSunburst(name, links, color)` | Pass `IEnumerable<ChartNode>` before the links. |
+| `AddTree(name, links, color)` | Pass `IEnumerable<ChartNode>` before the links. |
+| `AddSunburst(name, nodes, links, color)` | Pass `IEnumerable<ChartHierarchyItem>` instead; see [parent values](#sunburst-parent-values). |
 | `ChartTreeLink(parent, child, value)` | `ChartTreeLink(parentId, childId, value = 1)` |
 | `Chart.WithSankeyNodeState(...)` / `ChartOptions.SankeyNodeStates` | Use `chart.Series[0].WithNodeState(id, state)`; `ChartSeries.NodeStates` is a read-only view with ordinal ID comparison. |
 | Endpoint/weight pairs in `ChartSeries.Points` | Read immutable `Nodes`, `FlowLinks`, or `TreeLinks`. `Points` is empty and `SourcePointCount` is zero. |
@@ -21,7 +22,7 @@ Every `ChartNode(id, label)` needs a non-empty, unique ID. Labels may repeat. Fl
 
 Keep node order explicit when preserving an existing layout or ordinal styling. The former order was first endpoint appearance in the link list. `WithPointColor`, fill-pattern, and data-label style overrides use node input ordinals for these families; semantic node states use IDs and are scoped to their series. State assignment validates ID membership and enum values before mutation. The collections copy the supplied inputs, and prepared exports remain detached from later model changes. The Mermaid CSV adapter maps its language-defined endpoint identities into nodes and assigns separate flow IDs at the adapter boundary.
 
-Tree weights remain authored values and affect link emphasis rather than node placement. Sunburst leaves retain their authored positive weights; internal rendered values sum their leaves rather than their incoming branch weights. Tiny fractions are preserved without a minimum-weight clamp. Finite leaf aggregates are required, and angular ratios are normalized before multiplication.
+Tree weights remain authored values and affect link emphasis rather than node placement. Sunburst now uses the shared parent-linked item contract below; its default geometry still aggregates descendant leaves.
 
 Sankey node totals must remain finite and are validated before adding a series. Tiny or large finite flows retain proportional node and ribbon thickness. SVG scale metadata uses `data-cfx-weight-reference` and `data-cfx-normalized-weight-scale` instead of an absolute `data-cfx-weight-scale`; divide a raw weight by the reference before multiplying by the normalized scale.
 
@@ -44,11 +45,11 @@ Numeric domains may start above or below zero. A baseline outside explicit bound
 Native compact exports prepare the chart at compact dimensions. Text that cannot fit may be shortened or omitted with `numeric-radial.label-overflow`; descriptive regions retain the full observation. The HTML adapter's `Readable` layout preserves a minimum width in a contained horizontal viewport. `Fit` scales a fixed design, including its text, and may require a larger host viewport for legibility.
 ## Hierarchical Treemap
 
-Replace `ChartTreemapItem(label, value)` with `ChartTreemapItem(id, label, parentId: null, value: size, colorValue: null)`. There is no label-derived identity overload. Flat items remain roots when `ParentId` is null. Preserve input order to retain ordinal point-color, pattern, and label-style overrides.
+Replace `ChartTreemapItem` with the shared `ChartHierarchyItem(id, label, parentId, value, colorValue)` without changing those facts. For the earlier label-only constructor, supply an explicit ID and `parentId: null`. There is no label-derived identity overload. Flat items remain roots when `ParentId` is null. Preserve input order to retain ordinal point-color, pattern, and label-style overrides.
 
 Add group items with null `Value` and reference their IDs from child items. A leaf requires finite `Value >= 0`; a group rejects supplied `Value` and aggregates its descendant leaves. IDs must be unique and non-empty, parent references must exist, and cycles, self-parenting, depth above 512, and non-finite group or forest sums are rejected before adding a series. Labels may repeat. Single leaves and multiple roots are supported. Zero sizes retain metadata without a fabricated positive area.
 
-Read `ChartSeries.TreemapItems` and `Nodes` rather than `Points` or `XAxisLabels`. `SourcePointCount` is zero and `TreeLinks` is empty: parent references are item facts, not authored weight-one links. Treemap groups and leaves expose normalized `node` targets, owning series, authored item IDs/labels, `data-cfx-source-node-index`, parent IDs, depth, and rendered aggregate or raw leaf `data-cfx-value`. Leaves also retain `data-cfx-authored-value`. Replace selectors based on `data-cfx-point` with `data-cfx-target-id`; HTML selection emits the same node IDs without fake point ordinals.
+Replace `ChartSeries.TreemapItems` with `ChartSeries.HierarchyItems`; read that collection and `Nodes` rather than `Points` or `XAxisLabels`. `SourcePointCount` is zero and `TreeLinks` is empty: parent references are item facts, not authored weight-one links. Treemap groups and leaves expose normalized `node` targets, owning series, authored item IDs/labels, `data-cfx-source-node-index`, parent IDs, depth, and rendered aggregate or raw leaf `data-cfx-value`. Leaves also retain `data-cfx-authored-value`. Replace selectors based on `data-cfx-point` with `data-cfx-target-id`; HTML selection emits the same node IDs without fake point ordinals.
 
 Supply optional finite `ColorValue` independently of size. `ConfigureTreemap` or `ChartOptions.Treemap` configures `GroupPadding`, `Gap`, `ShowGroupLabels`, `ColorScale`, `ShowColorScaleLegend`, and `ColorLegendTitle`. The scale uses supplied color observations, honors fixed bounds, and retains missing values as missing rather than zero. Default independent color uses the theme's sequential ramp. A custom no-data color and discrete named bands use the generic scale owner. Native SVG/PNG share geometry and scale swatches; prepared exports are detached from later option or source changes.
 
@@ -58,6 +59,22 @@ Captions follow the chart-level `WithDataLabels(...)` setting. A series-level `W
 
 The Mermaid Treemap adapter retains section nodes and parent containment. Its language has no authored ID syntax, so it assigns distinct source-order IDs at the adapter boundary and keeps labels unchanged, including repeated labels.
 
+## Sunburst parent values
+
+Replace `AddSunburst(name, nodes, links, color)` with `AddSunburst(name, items, color)`. Each `ChartHierarchyItem` carries the existing node ID and label, its incoming link's `ParentId` and weight as `Value`, and an optional independent `ColorValue`. The root has null `ParentId`; a root without children requires a finite non-negative `Value`. Keep group values when preserving supplied facts. No node/link overload or compatibility adapter remains. Tree continues to accept `ChartNode` and `ChartTreeLink`.
+
+Preserve the old node input order for ordinal paint, pattern and label-style overrides. Sunburst siblings now follow their item input order; if the former link order differed, reorder the items and reapply ordinal styling deliberately. Parent items may appear after their children. IDs remain the interaction identity even when labels repeat or item order changes.
+
+`ChartOptions.Sunburst.ParentValuePolicy` defaults to `ChartHierarchyValuePolicy.LeafAggregate`: groups sum descendant leaves and ignore provided group values for geometry. `AuthoredTotal` interprets a supplied group value as its inclusive total; a null value derives the resolved children. Children consume their proportion of the parent angle, and a positive remainder leaves an unpainted part of the next ring. A child total larger than a supplied parent fails ingestion or preparation after an option change. Only bounded representational closure is accepted; zero parents cannot contain positive children. A positive remainder stays in the facts even when its gap is too small to distinguish visually.
+
+Both policies require one root, unique IDs, existing parents, acyclic relationships, depth at most 512 and finite sums. Leaves allow zero. Positive singleton roots render a full circle; zero and precision-collapsed positive nodes retain metadata and zero-size semantic bounds without painted sectors. Small positive values have no minimum clamp, and angle ratios normalize before multiplication.
+
+Read copied `ChartSeries.HierarchyItems` and `Nodes`; `Points` and `TreeLinks` are empty. Replace `data-cfx-authored-weight` with `data-cfx-authored-value`. Groups and leaves retain the provided size when present, while `data-cfx-value` is the resolved geometry value. Groups retain `data-cfx-remainder-value` including zero. The owning series exposes `data-cfx-parent-value-policy`; targets retain item IDs, parents, depths, source item ordinals and geometry status. There is no authored incoming link or `data-cfx-source-link-index` on a Sunburst node.
+
+`ConfigureSunburst` configures `ColorScale`, `ShowColorScaleLegend`, `ColorLegendTitle` and the parent policy. Every group's and leaf's nullable `ColorValue` is an independent observation, with no inheritance or aggregation. The generic scale honors fixed ranges, discrete bands and missing colors. Ordinal explicit colors override the scale; semantic states preserve numeric fill and add an outline. Prepared SVG/PNG and option values remain detached from later model changes.
+
+HTML tooltips show size and numeric color separately, including color zero and localized missing values. A differing supplied group value uses `ChartLabels.AuthoredValue` (default `Provided value`), and a positive remainder uses `ChartLabels.Remainder`. Equal supplied values and leaf values retain raw metadata without duplicate tooltip rows. Rounded sectors, secondary labels and branch highlighting remain future work.
+
 ## Numeric color scales
 
 Replace `ChartMapColorScale` with `ChartColorScale`. Map calls keep their names: `WithMapColorScale`, `ChartOptions.MapColorScale`, `AddRegionHeatmap`, and `AddTileHeatmap` accept the generic scale. Design-token conversion uses `VisualDivergingRamp.ToColorScale(midpoint)` and `VisualDesignTokens.ToSequentialColorScale()`.
@@ -66,7 +83,7 @@ Replace `ChartMapColorScale` with `ChartColorScale`. Map calls keep their names:
 
 `Discrete(bands)` copies immutable `ChartColorBand` instances. Finite upper bounds are strictly ascending and exclusive; the final band has a null upper bound. The first band has no lower limit, and equality with a boundary selects the next band. `Bands` exposes a read-only list, and optional band names appear with their intervals in map legends. Discrete scales use those bounds directly and reject `WithValueRange`, `WithMidpoint`, and continuous endpoint labels. Only diverging scales accept `WithMidpoint`. Missing data keeps the optional `NoDataColor` and renderer/theme fallback policy; non-finite numbers are rejected rather than treated as missing.
 
-Map and Treemap discrete legends use `ChartLabels.AllValues` for a single unbounded band and `ChartLabels.Value` between interior bounds. For example, `chart.WithLabels(labels => { labels.AllValues = "Wszystkie wartości"; labels.Value = "wartość"; })` produces localized interval captions while their numeric metadata remains invariant. Band names and numeric value formatting remain independent choices.
+Map, Sunburst and Treemap discrete legends use `ChartLabels.AllValues` for a single unbounded band and `ChartLabels.Value` between interior bounds. For example, `chart.WithLabels(labels => { labels.AllValues = "Wszystkie wartości"; labels.Value = "wartość"; })` produces localized interval captions while their numeric metadata remains invariant. Band names and numeric value formatting remain independent choices.
 
 ## Raster image inputs and animation delays
 

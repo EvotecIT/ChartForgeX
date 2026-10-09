@@ -50,9 +50,9 @@ public static partial class LegacySceneBenchmarkCases {
                 break;
             case "treemap":
 #if LEGACY_CHART_API
-                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartTreemapItem("Pool " + (index + 1), 10 + (index * 17) % 73)));
+                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartHierarchyItem("Pool " + (index + 1), 10 + (index * 17) % 73)));
 #else
-                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartTreemapItem("pool-" + (index + 1), "Pool " + (index + 1), value: 10 + (index * 17) % 73)));
+                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartHierarchyItem("pool-" + (index + 1), "Pool " + (index + 1), value: 10 + (index * 17) % 73)));
 #endif
                 break;
             case "sankey":
@@ -145,7 +145,7 @@ public static partial class LegacySceneBenchmarkCases {
         var labels = chart.Options.XAxisLabels.ToDictionary(label => label.Value, label => label.Text);
         return series.Points.Select(point => (labels[point.X], point.Y)).ToArray();
 #else
-        return series.TreemapItems.Select(item => (item.Label, item.Value!.Value)).ToArray();
+        return series.HierarchyItems.Select(item => (item.Label, item.Value!.Value)).ToArray();
 #endif
     }
 

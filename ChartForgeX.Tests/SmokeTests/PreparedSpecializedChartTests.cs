@@ -157,9 +157,9 @@ internal static partial class SmokeTests {
         Verify.NotEmpty(prepared.ToPng());
     }
 
-    private static void TreemapItemsRenderProportionalTiles() {
+    private static void HierarchyItemsRenderProportionalTiles() {
         var chart = Chart.Create().WithSize(720, 420).WithDataLabels().AddTreemap("Findings", new[] {
-            new ChartTreemapItem("Critical", "Critical", value: 50), new("High", "High", value: 28), new("Medium", "Medium", value: 14), new("Low", "Low", value: 8)
+            new ChartHierarchyItem("Critical", "Critical", value: 50), new("High", "High", value: 28), new("Medium", "Medium", value: 14), new("Low", "Low", value: 8)
         });
         var prepared = PreparedFamily(chart);
         var tiles = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "treemap-tile-mark").ToArray();

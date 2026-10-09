@@ -11,11 +11,11 @@ public sealed partial class ChartSeries {
     /// <summary>Gets the immutable authored flows of a Sankey or Chord series, in input order.</summary>
     public IReadOnlyList<ChartFlowLink> FlowLinks => Relationships?.FlowLinks ?? Array.Empty<ChartFlowLink>();
 
-    /// <summary>Gets the immutable authored branches of a Tree or Sunburst series, in input order.</summary>
+    /// <summary>Gets the immutable authored branches of a Tree series, in input order.</summary>
     public IReadOnlyList<ChartTreeLink> TreeLinks => Relationships?.TreeLinks ?? Array.Empty<ChartTreeLink>();
 
-    /// <summary>Gets the immutable authored groups and leaves of a Treemap series, in input order.</summary>
-    public IReadOnlyList<ChartTreemapItem> TreemapItems => Relationships?.TreemapItems ?? Array.Empty<ChartTreemapItem>();
+    /// <summary>Gets the immutable authored groups and leaves of a Sunburst or Treemap series, in input order.</summary>
+    public IReadOnlyList<ChartHierarchyItem> HierarchyItems => Relationships?.HierarchyItems ?? Array.Empty<ChartHierarchyItem>();
 
     private readonly Dictionary<string, ChartSeriesState> _nodeStates = new(StringComparer.Ordinal);
     private IReadOnlyDictionary<string, ChartSeriesState>? _nodeStatesView;
@@ -38,7 +38,7 @@ public sealed partial class ChartSeries {
     internal void SetRelationships(ChartRelationshipIndex relationships) => Relationships = relationships;
 
     internal void ValidateRelationships(bool preparing) {
-        if (Points.Count > 0) throw new InvalidOperationException("Relationship series use typed nodes, links or treemap items; raw relationship points are not supported.");
-        if (!preparing && Relationships == null) throw new InvalidOperationException("Relationship charts require explicit nodes and links.");
+        if (Points.Count > 0) throw new InvalidOperationException("Relationship series use typed nodes, links or hierarchy items; raw relationship points are not supported.");
+        if (!preparing && Relationships == null) throw new InvalidOperationException("Relationship charts require explicit nodes and links or hierarchy items.");
     }
 }

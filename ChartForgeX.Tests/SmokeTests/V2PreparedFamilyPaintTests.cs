@@ -27,7 +27,7 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [InlineData(ChartSeriesKind.WordCloud, "word-cloud-text", "fill")]
     public void PreparedMarksKeepStateAndAuthoredSeriesDistinctWithEqualRgb(ChartSeriesKind kind, string role, string attribute) {
         var chart = kind == ChartSeriesKind.Treemap ? Chart.Create().AddTreemap("Values", new[] {
-            new ChartTreemapItem("first", "First", value: 3), new ChartTreemapItem("second", "Second", value: 2)
+            new ChartHierarchyItem("first", "First", value: 3), new ChartHierarchyItem("second", "Second", value: 2)
         }) : V2GalleryModels.Create(kind);
         foreach (var series in chart.Series) series.StateRole = ChartSeriesState.Danger;
         var context = Context(); var variables = Variables();

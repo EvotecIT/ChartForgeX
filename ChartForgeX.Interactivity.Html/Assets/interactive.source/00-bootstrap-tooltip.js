@@ -230,6 +230,10 @@
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
     colorTooltipRows(node).forEach((row) => push(row.name, row.value));
+    if (data.cfxLeaf === 'false' && data.cfxAuthoredValue !== undefined && Number(data.cfxAuthoredValue) !== Number(data.cfxValue))
+      push(rowName(node, 'authored-value', 'Provided value'), data.cfxAuthoredValue);
+    if (Number(data.cfxRemainderValue) > 0)
+      push(rowName(node, 'remainder', 'Remainder'), data.cfxRemainderValue);
     push('Percent', percentText(data.cfxPercent));
     push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');

@@ -58,7 +58,7 @@ public sealed class NativePolarCoordinateBrowserTests {
             case ChartSeriesKind.Polar: chart.AddPolar("Observed", points); break;
             case ChartSeriesKind.PolarArea: chart.AddPolarArea("Observed", points); break;
             case ChartSeriesKind.ProgressRing: chart.AddProgressRing("Observed", points); break;
-            case ChartSeriesKind.Sunburst: chart.AddSunburst("Observed", new[] { new ChartNode("All", "All"), new ChartNode("North", "North"), new ChartNode("South", "South"), new ChartNode("East", "East") }, new[] { new ChartTreeLink("All", "North", 60), new ChartTreeLink("All", "South", 80), new ChartTreeLink("All", "East", 50) }); break;
+            case ChartSeriesKind.Sunburst: chart.AddSunburst("Observed", new[] { new ChartHierarchyItem("All", "All"), new ChartHierarchyItem("North", "North", "All", 60), new ChartHierarchyItem("South", "South", "All", 80), new ChartHierarchyItem("East", "East", "All", 50) }); break;
             case ChartSeriesKind.Gauge: chart.AddGauge("Observed", 80); break;
         }
         return chart;

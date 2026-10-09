@@ -117,11 +117,11 @@ internal static partial class SmokeTests {
                 .WithSize(360, 240)
                 .WithValueFormatter(v => v.ToString("0") + "%")
                 .AddTreemap("Share", new[] {
-                    new ChartTreemapItem("Authentication", "Authentication", value: 34),
-                    new ChartTreemapItem("Certificate lifecycle", "Certificate lifecycle", value: 24),
-                    new ChartTreemapItem("DNS hygiene", "DNS hygiene", value: 18),
-                    new ChartTreemapItem("Policy drift", "Policy drift", value: 14),
-                    new ChartTreemapItem("Monitoring", "Monitoring", value: 10)
+                    new ChartHierarchyItem("Authentication", "Authentication", value: 34),
+                    new ChartHierarchyItem("Certificate lifecycle", "Certificate lifecycle", value: 24),
+                    new ChartHierarchyItem("DNS hygiene", "DNS hygiene", value: 18),
+                    new ChartHierarchyItem("Policy drift", "Policy drift", value: 14),
+                    new ChartHierarchyItem("Monitoring", "Monitoring", value: 10)
                 }), 360, 240, 18),
             ("dense sankey", Chart.Create()
                 .WithTitle("Flow Stress")

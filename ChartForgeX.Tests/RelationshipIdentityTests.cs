@@ -19,9 +19,16 @@ public sealed class RelationshipIdentityTests {
         new ChartTreeLink("north", "north-support", 5), new ChartTreeLink("south", "south-support", 8)
     };
     internal static Chart RepeatedLabels(ChartSeriesKind kind) => Add(Chart.Create(), kind, SupportNodes(), SupportBranches());
+    internal static ChartHierarchyItem[] SupportItems() => Items(SupportNodes(), SupportBranches());
+    private static ChartHierarchyItem[] Items(IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links) {
+        var parents = links.ToDictionary(link => link.ChildId, StringComparer.Ordinal);
+        return nodes.Select(node => parents.TryGetValue(node.Id, out var link)
+            ? new ChartHierarchyItem(node.Id, node.Label, link.ParentId, link.Value)
+            : new ChartHierarchyItem(node.Id, node.Label)).ToArray();
+    }
     private static Chart Add(Chart chart, ChartSeriesKind kind, IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links) => kind switch {
         ChartSeriesKind.Tree => chart.AddTree("Teams", nodes, links),
-        ChartSeriesKind.Sunburst => chart.AddSunburst("Teams", nodes, links),
+        ChartSeriesKind.Sunburst => chart.AddSunburst("Teams", Items(nodes, links)),
         _ => chart.AddSankey("Teams", nodes, links.Select(link => new ChartFlowLink("flow-" + link.ChildId, link.ParentId, link.ChildId, link.Value)))
     };
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), frame: new VisualFrame(showLegend: false)));
@@ -38,7 +45,7 @@ public sealed class RelationshipIdentityTests {
         chart.Options.Labels.AccessibleTextFormatter = value => { facts = value; return null; };
         var prepared = Prepare(chart);
         Assert.Equal(5, series.Nodes.Count); Assert.Empty(series.Points); Assert.Equal(0, series.SourcePointCount);
-        Assert.Equal(4, kind == ChartSeriesKind.Sankey ? series.FlowLinks.Count : series.TreeLinks.Count);
+        Assert.Equal(kind == ChartSeriesKind.Sunburst ? 5 : 4, kind == ChartSeriesKind.Sankey ? series.FlowLinks.Count : kind == ChartSeriesKind.Sunburst ? series.HierarchyItems.Count : series.TreeLinks.Count);
         Assert.NotNull(facts); Assert.Equal(ChartDescriptionKind.Series, facts.Kind);
         Assert.Equal(new[] { "Teams" }, facts.SeriesNames);
         var supports = Targets(chart).Where(e => (string?)e.Attribute("data-cfx-label") == "Support").ToArray();
@@ -97,7 +104,6 @@ public sealed class RelationshipIdentityTests {
 
     [Theory]
     [InlineData(ChartSeriesKind.Tree)]
-    [InlineData(ChartSeriesKind.Sunburst)]
     [InlineData(ChartSeriesKind.Sankey)]
     public void InvalidNodesReferencesAndCyclesLeaveTheChartUnchanged(ChartSeriesKind kind) {
         var chart = Chart.Create().AddLine("Existing", new[] { new ChartPoint(1, 2) });
@@ -138,13 +144,15 @@ public sealed class RelationshipIdentityTests {
     [InlineData(ChartSeriesKind.Sankey)]
     public void SourceCollectionsAreImmutableSnapshotsAndPreparedExportsAreDetached(ChartSeriesKind kind) {
         var nodes = SupportNodes().ToList(); var branches = SupportBranches().ToList();
+        var items = SupportItems().ToList();
         var flows = branches.Select(link => new ChartFlowLink("flow-" + link.ChildId, link.ParentId, link.ChildId, link.Value)).ToList();
-        var chart = kind == ChartSeriesKind.Sankey ? Chart.Create().AddSankey("Teams", nodes, flows) : Add(Chart.Create(), kind, nodes, branches);
+        var chart = kind == ChartSeriesKind.Sankey ? Chart.Create().AddSankey("Teams", nodes, flows)
+            : kind == ChartSeriesKind.Sunburst ? Chart.Create().AddSunburst("Teams", items) : Add(Chart.Create(), kind, nodes, branches);
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
-        nodes.Clear(); branches.Clear(); flows.Clear();
+        nodes.Clear(); branches.Clear(); flows.Clear(); items.Clear();
         Assert.Equal(5, chart.Series[0].Nodes.Count); Assert.Equal(svg, Prepare(chart).ToSvg());
         Assert.Throws<NotSupportedException>(() => ((IList)chart.Series[0].Nodes)[0] = new ChartNode("changed", "Changed"));
-        var links = kind == ChartSeriesKind.Sankey ? (IList)chart.Series[0].FlowLinks : (IList)chart.Series[0].TreeLinks;
+        var links = kind == ChartSeriesKind.Sankey ? (IList)chart.Series[0].FlowLinks : kind == ChartSeriesKind.Sunburst ? (IList)chart.Series[0].HierarchyItems : (IList)chart.Series[0].TreeLinks;
         Assert.Throws<NotSupportedException>(() => links.Clear());
         chart.Series[0].PointLabels.Add("Changed"); chart.Series[0].DataLabelStyle.FontSize = 30;
         chart.Series[0].Color = ChartColor.Black; chart.Series[0].WithNodeState("root", ChartSeriesState.Danger);
@@ -156,13 +164,12 @@ public sealed class RelationshipIdentityTests {
     [InlineData(1e-300, 2e-300)]
     [InlineData(double.Epsilon, double.Epsilon * 2)]
     [InlineData(double.MaxValue / 8, double.MaxValue / 4)]
-    public void SunburstPreservesAuthoredWeightsAndNormalizesBeforeMultiplyingAngles(double small, double large) {
-        var chart = Chart.Create().AddSunburst("Weights", new[] { new ChartNode("root", "Root"), new ChartNode("small", "Small"), new ChartNode("large", "Large") },
-            new[] { new ChartTreeLink("root", "small", small), new ChartTreeLink("root", "large", large) });
+    public void SunburstPreservesAuthoredSizesAndNormalizesBeforeMultiplyingAngles(double small, double large) {
+        var chart = Chart.Create().AddSunburst("Weights", new[] { new ChartHierarchyItem("root", "Root"), new ChartHierarchyItem("small", "Small", "root", small), new ChartHierarchyItem("large", "Large", "root", large) });
         var nodes = Targets(chart).ToDictionary(e => (string)e.Attribute("data-cfx-target-id")!);
-        Assert.Equal(small, Number(nodes["small"], "authored-weight")); Assert.Equal(large, Number(nodes["large"], "authored-weight"));
+        Assert.Equal(small, Number(nodes["small"], "authored-value")); Assert.Equal(large, Number(nodes["large"], "authored-value"));
         Assert.Equal(small, Number(nodes["small"], "value")); Assert.Equal(large, Number(nodes["large"], "value"));
-        Assert.Equal(small + large, Number(nodes["root"], "value")); Assert.Null(nodes["root"].Attribute("data-cfx-authored-weight"));
+        Assert.Equal(small + large, Number(nodes["root"], "value")); Assert.Null(nodes["root"].Attribute("data-cfx-authored-value"));
         Assert.Equal(Math.PI * 2, Number(nodes["small"], "sweep") + Number(nodes["large"], "sweep"), 12);
         Assert.Equal(large / small, Number(nodes["large"], "sweep") / Number(nodes["small"], "sweep"), 12);
         Assert.All(Prepare(chart).Regions, region => { Assert.True(double.IsFinite(region.Bounds.X)); Assert.True(double.IsFinite(region.Bounds.Width)); });
@@ -179,14 +186,12 @@ public sealed class RelationshipIdentityTests {
     }
 
     [Fact]
-    public void SunburstKeepsInternalIncomingWeightsSeparateFromLeafAggregatesAndRejectsOverflow() {
-        var chart = Chart.Create().AddSunburst("Nested", new[] { new ChartNode("r", "Root"), new ChartNode("p", "Parent"), new ChartNode("leaf", "Leaf") },
-            new[] { new ChartTreeLink("r", "p", 100), new ChartTreeLink("p", "leaf", 5e-8) });
+    public void SunburstKeepsAuthoredGroupSizesSeparateFromLeafAggregatesAndRejectsOverflow() {
+        var chart = Chart.Create().AddSunburst("Nested", new[] { new ChartHierarchyItem("r", "Root"), new ChartHierarchyItem("p", "Parent", "r", 100), new ChartHierarchyItem("leaf", "Leaf", "p", 5e-8) });
         var parent = Targets(chart).Single(e => (string?)e.Attribute("data-cfx-target-id") == "p");
-        Assert.Equal(100, Number(parent, "authored-weight")); Assert.Equal(5e-8, Number(parent, "value"));
+        Assert.Equal(100, Number(parent, "authored-value")); Assert.Equal(5e-8, Number(parent, "value"));
         var invalid = Chart.Create();
-        Assert.Throws<ArgumentException>(() => invalid.AddSunburst("Too large", new[] { new ChartNode("r", "Root"), new ChartNode("a", "A"), new ChartNode("b", "B") },
-            new[] { new ChartTreeLink("r", "a", double.MaxValue), new ChartTreeLink("r", "b", double.MaxValue) }));
+        Assert.Throws<ArgumentException>(() => invalid.AddSunburst("Too large", new[] { new ChartHierarchyItem("r", "Root"), new ChartHierarchyItem("a", "A", "r", double.MaxValue), new ChartHierarchyItem("b", "B", "r", double.MaxValue) }));
         Assert.Empty(invalid.Series);
     }
 

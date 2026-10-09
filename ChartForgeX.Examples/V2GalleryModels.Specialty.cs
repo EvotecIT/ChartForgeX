@@ -20,8 +20,8 @@ public static partial class V2GalleryModels {
                 .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
             case ChartSeriesKind.Sankey: return FlowRelationships(variant);
             case ChartSeriesKind.Chord: return ChordRelationships(variant);
-            case ChartSeriesKind.Tree:
-            case ChartSeriesKind.Sunburst: return TeamRelationships(kind, variant);
+            case ChartSeriesKind.Tree: return TeamRelationships(variant);
+            case ChartSeriesKind.Sunburst: return Sunburst(variant, mode);
             case ChartSeriesKind.Treemap: return Treemap(variant, mode);
             case ChartSeriesKind.Pictorial:
                 chart = Chart.Create().AddPictorial("Assessments", new[] { new ChartPictorialItem("Team A", 74), new ChartPictorialItem("Team B", 46), new ChartPictorialItem("Team C", 61) }, ChartPictorialShape.Person)
