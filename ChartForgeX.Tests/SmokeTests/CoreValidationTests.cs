@@ -126,7 +126,8 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 1, 2, dependsOn: 0), "Gantt tasks should reject dependencies that do not reference earlier tasks.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithGanttToday(double.NaN), "Gantt today markers should reject non-finite values.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") }, Array.Empty<ChartFlowLink>()), "Sankey charts should reject empty link sets.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartFlowLink("flow-1", "A", "B", 0), "Sankey links should reject non-positive values.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") },
+            new[] { new ChartFlowLink("flow-1", "A", "B", 0) }), "Sankey charts should reject non-positive flow values before adding a series.");
         AssertThrows<ArgumentException>(() => new ChartFlowLink("flow-2", "", "B", 1), "Sankey links should reject empty source labels.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A") }, new[] { new ChartFlowLink("flow-3", "A", "A", 1) }), "Sankey charts should reject self links.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") }, new[] { new ChartFlowLink("flow-4", "A", "B", 1), new ChartFlowLink("flow-5", "B", "A", 1) }), "Sankey charts should reject cyclic link sets.");
