@@ -3,11 +3,99 @@ using System.Xml.Linq;
 using ChartForgeX.Raster;
 using ChartForgeX.Stories;
 using ChartForgeX.Terminal;
+using ChartForgeX.Svg;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class StoryPlaybackReviewTests {
+    [Fact]
+    public void DifferentStoriesWithTheSameTitleKeepIndependentAnimationNames() {
+        var first = XDocument.Parse(Basic(new VisualStoryTextSurface("First")).Prepare().ToAnimatedSvg(new VisualStoryFrameOptions(2)));
+        var second = XDocument.Parse(Basic(new VisualStoryTextSurface("Second")).Prepare().ToAnimatedSvg(new VisualStoryFrameOptions(2)));
+        var firstId = (string)first.Root!.Attribute("id")!;
+        var secondId = (string)second.Root!.Attribute("id")!;
+        Assert.NotEqual(firstId, secondId);
+        foreach (var document in new[] { first, second }) {
+            var id = (string)document.Root!.Attribute("id")!;
+            var css = document.Root.Elements().Single(element => element.Name.LocalName == "style").Value;
+            Assert.Contains("@keyframes " + id + "-motion-frame-0", css);
+            Assert.Contains("animation:" + id + "-motion-frame-0", css);
+        }
+    }
+
+    [Fact]
+    public void AOneMillisecondCompletedChapterFailsEverySampledExportBeforeWriting() {
+        var story = VisualStory.Create("Readable duration").WithSize(480, 320);
+        story.Scene("first", "First", .251).Panel("first", new VisualStoryTextSurface("First"));
+        story.Scene("last", "Last", .25).Panel("last", new VisualStoryTextSurface("Last"));
+        story.Outcome("last", "Last", "last");
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero));
+        var sampling = new VisualStoryFrameOptions(2);
+        Assert.Throws<InvalidOperationException>(() => prepared.Frames(sampling).First());
+        Assert.Throws<InvalidOperationException>(() => prepared.ToAnimatedSvg(sampling));
+        foreach (var format in new[] { RasterAnimationFormat.Gif, RasterAnimationFormat.Apng }) {
+            using var stream = new MemoryStream();
+            Assert.Throws<InvalidOperationException>(() => prepared.WriteAnimation(stream, format, sampling));
+            Assert.Equal(0, stream.Length);
+        }
+        var held = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(.25), TimeSpan.Zero));
+        Assert.Equal(2, held.FrameSource(sampling).FrameCount);
+    }
+
+    [Fact]
+    public void SvgDocumentBudgetIncludesEscapedTextAttributesAndClosingMarkup() {
+        const string expected = "<svg title=\"&amp;&quot;&#10;\">&lt;&amp;</svg>";
+        var writer = new SvgMarkupWriter(16, expected.Length);
+        Assert.Equal(expected, writer.StartElement("svg").Attribute("title", "&\"\n").Text("<&").EndElement().Build());
+        var smaller = new SvgMarkupWriter(16, expected.Length - 1);
+        Assert.Throws<InvalidOperationException>(() => smaller.StartElement("svg").Attribute("title", "&\"\n").Text("<&").EndElement().Build());
+        Assert.Throws<InvalidOperationException>(() => new SvgMarkupWriter(16, 20).StartElement("svg").Text("&&&&"));
+        Assert.Throws<InvalidOperationException>(() => new SvgMarkupWriter(16, 20).StartElement("svg").Raw(new string('x', 21)));
+    }
+
+    [Theory]
+    [InlineData(14)]
+    [InlineData(18)]
+    [InlineData(32)]
+    public void EditorFilenameTypographyFitsAboveTheSeparatorAtEverySupportedZoom(double fontSize) {
+        var source = new VisualStorySourceSurface(StorySourceText.Create("Ready"), options: new VisualStorySourceOptions(fileName: "demo.cs", fontSize: fontSize));
+        var svg = XDocument.Parse(Basic(source).Prepare().ToSvg());
+        var filename = svg.Descendants().Single(element => element.Name.LocalName == "text" && element.Value == "demo.cs");
+        Assert.Equal("14", (string?)filename.Attribute("font-size"));
+        Assert.Equal("140", (string?)filename.Attribute("y"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RetainedTerminalPanelsAndCrossFadesAreRejectedBeforeAllocatingOrWriting(bool crossFade) {
+        var terminal = TerminalStory.Create().WithWidth(1800).WithTypography(24, 40).WithFinalPrompt(false);
+        for (var i = 0; i < 104; i++) terminal.Output("line " + i);
+        var story = VisualStory.Create("Retained terminal images").WithSize(1400, 788);
+        var surface = new VisualStoryTerminalSurface(terminal);
+        if (crossFade) {
+            story.Scene("first", "First", 1).Panel("result", surface);
+            story.Scene("last", "Last", 1).Panel("result", surface);
+        } else {
+            story.Scene("last", "Last", 1, VisualStorySceneLayout.Stacked).Panel("first", surface).Panel("result", surface);
+        }
+        story.Outcome("ready", "Ready", "result");
+        var content = VisualStoryLayout.PanelContent(story.Scenes[0].Panels[0], VisualStoryLayout.Panels(story, story.Scenes[0])[0]);
+        var formerPeak = PngTerminalStoryRenderer.EstimateFittedWorkingBytes(terminal, content.Width, content.Height, 2);
+        var canvasBytes = AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(2800, 1576, 5);
+        Assert.True(formerPeak + canvasBytes < AnimatedRasterMemoryBudget.MaximumRetainedBytes);
+        Assert.True(PngVisualStoryRenderer.MaximumFittedTerminalWorkingBytes(story, 2) + canvasBytes > AnimatedRasterMemoryBudget.MaximumRetainedBytes);
+        var prepared = story.Prepare();
+        Assert.Throws<InvalidOperationException>(() => prepared.RenderAt(TimeSpan.FromSeconds(.9), 2));
+        Assert.Throws<InvalidOperationException>(() => prepared.ToPng(outputScale: 2));
+        foreach (var format in new[] { RasterAnimationFormat.Gif, RasterAnimationFormat.Apng }) {
+            using var stream = new MemoryStream();
+            Assert.Throws<InvalidOperationException>(() => prepared.WriteAnimation(stream, format, new VisualStoryFrameOptions(2, 2)));
+            Assert.Equal(0, stream.Length);
+        }
+    }
+
     [Fact]
     public void CompletedFrameIncludesAllDeclaredOutcomeLabels() {
         var story = Basic(new VisualStoryTextSurface("Ready"));

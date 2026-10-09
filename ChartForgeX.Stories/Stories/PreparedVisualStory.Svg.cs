@@ -9,12 +9,12 @@ namespace ChartForgeX.Stories;
 
 public sealed partial class PreparedVisualStory {
     /// <summary>Exports sampled native frames as a self-contained, script-free SVG animation using the prepared playback clock.</summary>
-    /// <remarks>Reduced motion and print show the completed poster. SVG sampling has a 64 MiB embedded markup budget.</remarks>
+    /// <remarks>Reduced motion and print show the completed poster. The complete SVG document has a 64 MiB character budget, including escaped text and embedded frames.</remarks>
     public string ToAnimatedSvg(VisualStoryFrameOptions? options = null, string idScope = "", CancellationToken cancellationToken = default) {
         if (idScope == null) throw new ArgumentNullException(nameof(idScope));
         var sampling = options ?? DefaultSvgSampling(); var count = FrameCount(sampling);
         var provisional = SvgRenderedIdentity.CreateProvisionalId("cfx-story", idScope, Title, Width.ToString(CultureInfo.InvariantCulture), Height.ToString(CultureInfo.InvariantCulture));
-        var writer = new SvgMarkupWriter(16384);
+        var writer = new SvgMarkupWriter(16384, SvgVisualStoryRenderer.MaximumDocumentCharacters);
         writer.StartElement("svg").Attribute("xmlns", "http://www.w3.org/2000/svg").Attribute("id", provisional)
             .Attribute("width", Width).Attribute("height", Height).Attribute("viewBox", "0 0 " + Width + " " + Height)
             .Attribute("role", "img").Attribute("aria-labelledby", provisional + "-title " + provisional + "-desc")
@@ -34,7 +34,7 @@ public sealed partial class PreparedVisualStory {
             var frame = PrepareFrame(timestamp, sampling.OutputScale).ToSvg(new VisualAccessibility { IsDecorative = true }, "story-frame");
             embedded = SvgVisualStoryRenderer.ReserveEmbeddedMedia(embedded, Encoding.UTF8.GetByteCount(frame), _story.Scenes[0].Id);
             var chapter = VisualStoryTimeline.FindScene(_story, Math.Min(timestamp.TotalSeconds, ContentDuration.TotalSeconds), out _);
-            var name = provisional + "-frame-" + index;
+            var name = provisional + "-motion-frame-" + index;
             var last = index == count - 1;
             writer.StartElement("g").Attribute("class", "cfx-story-frame cfx-story-frame-" + index + (last ? " cfx-story-frame-last" : ""))
                 .Attribute("data-cfx-scene", _story.Scenes[chapter].Id)
@@ -57,7 +57,10 @@ public sealed partial class PreparedVisualStory {
             .Append(provisional).Append(" .cfx-story-frame-last{display:inline;opacity:1}}");
         writer.StartElement("style").EndStartElement().Raw(css.ToString()).EndElement().EndElement();
         cancellationToken.ThrowIfCancellationRequested();
-        return SvgRenderedIdentity.Bind(writer.Build(), provisional, "cfx-story", idScope);
+        var result = SvgRenderedIdentity.Bind(writer.Build(), provisional, "cfx-story", idScope);
+        if (result.Length > SvgVisualStoryRenderer.MaximumDocumentCharacters)
+            throw new InvalidOperationException("Story SVG document exceeds the 64 MiB character budget. Reduce text or embedded media.");
+        return result;
     }
     private static string Percent(long ticks, long total) => (ticks * 100d / total).ToString("0.#########", CultureInfo.InvariantCulture) + "%";
 }

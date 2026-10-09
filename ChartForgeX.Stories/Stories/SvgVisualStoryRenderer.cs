@@ -5,7 +5,7 @@ namespace ChartForgeX.Stories;
 
 /// <summary>Renders script-free SVG using the common prepared playback clock.</summary>
 public sealed class SvgVisualStoryRenderer {
-    private const long MaximumEmbeddedMediaCharacters = 64L * 1024 * 1024;
+    internal const int MaximumDocumentCharacters = 64 * 1024 * 1024;
     /// <summary>Renders a visual story to animated SVG markup.</summary>
     public string Render(VisualStory story) => Render(story, string.Empty);
     /// <summary>Renders animated SVG with a deterministic identifier scope.</summary>
@@ -24,9 +24,9 @@ public sealed class SvgVisualStoryRenderer {
         if (byteCount < 0) throw new ArgumentOutOfRangeException(nameof(byteCount));
         var encodedCharacters = checked(((byteCount + 2) / 3) * 4);
         var total = checked(currentCharacters + encodedCharacters);
-        if (total > MaximumEmbeddedMediaCharacters) {
+        if (total > MaximumDocumentCharacters) {
             throw new InvalidOperationException(
-                "Visual-story SVG embedded media exceeds the " + MaximumEmbeddedMediaCharacters +
+                "Visual-story SVG embedded media exceeds the " + MaximumDocumentCharacters +
                 "-character safety limit while rendering scene '" + sceneId +
                 "'. Lower the size, scene count, or embedded media complexity.");
         }

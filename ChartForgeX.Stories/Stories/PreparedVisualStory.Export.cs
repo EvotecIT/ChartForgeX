@@ -36,7 +36,8 @@ public sealed partial class PreparedVisualStory {
             throw new InvalidOperationException("GIF's final frame requires at least 20 milliseconds. Increase the completed-state hold or change cadence.");
         EnsureSceneCoverage(count,
             index => TimeSpan.FromTicks(GifBoundary(index, sampling.FramesPerSecond) * TimeSpan.TicksPerMillisecond * 10),
-            index => TimeSpan.FromTicks(SampleTicks(index, sampling.FramesPerSecond)));
+            index => TimeSpan.FromTicks(SampleTicks(index, sampling.FramesPerSecond)),
+            TimeSpan.FromMilliseconds(total * 10));
         return new RasterAnimationSource(source.Width, source.Height, count, (index, cancellation) => {
             cancellation.ThrowIfCancellationRequested();
             var frame = index == count - 1

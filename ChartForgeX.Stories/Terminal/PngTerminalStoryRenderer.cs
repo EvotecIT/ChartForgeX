@@ -38,15 +38,18 @@ public sealed class PngTerminalStoryRenderer {
         TerminalStory story,
         double targetWidth,
         double targetHeight,
-        int outputScale) {
+        int outputScale) => EstimateFittedWorkingBytes(story, targetWidth, targetHeight, outputScale, out _);
+
+    internal static long EstimateFittedWorkingBytes(
+        TerminalStory story, double targetWidth, double targetHeight, int outputScale, out long retainedBytes) {
         ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
         var layout = BuildFittedLayout(story, out _);
         var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
         RasterAllocationGuard.Calculate(layout.Width, layout.Height, 2, renderScale);
         var width = checked((long)layout.Width * renderScale);
         var height = checked((long)layout.Height * renderScale);
-        return checked(AnimatedRasterMemoryBudget.RenderWorkingBytes(width, height, 2) +
-            AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(width, height, 1));
+        retainedBytes = AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(width, height, 1);
+        return checked(AnimatedRasterMemoryBudget.RenderWorkingBytes(width, height, 2) + retainedBytes);
     }
 
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {

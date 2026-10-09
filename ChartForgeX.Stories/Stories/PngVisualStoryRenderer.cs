@@ -10,22 +10,27 @@ public sealed class PngVisualStoryRenderer {
     /// <summary>Renders the completed story state to PNG bytes.</summary>
     public byte[] Render(VisualStory story) => (story ?? throw new ArgumentNullException(nameof(story))).Prepare().ToPng();
 
-    internal static long MaximumFittedTerminalWorkingBytes(VisualStory story, int outputScale) {
+    internal static long MaximumFittedTerminalWorkingBytes(VisualStory story, int outputScale, bool includeTransitions = true) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         var maximum = 0L;
+        var previousSceneRetained = 0L;
         foreach (var scene in story.Scenes) {
+            var retained = 0L;
+            var peak = 0L;
             var bounds = VisualStoryLayout.Panels(story, scene);
             for (var index = 0; index < scene.Panels.Count; index++) {
                 if (!(scene.Panels[index].Surface is VisualStoryTerminalSurface terminal)) continue;
                 var content = VisualStoryLayout.PanelContent(scene.Panels[index], bounds[index]);
-                maximum = Math.Max(
-                    maximum,
-                    Terminal.PngTerminalStoryRenderer.EstimateFittedWorkingBytes(
+                var working = Terminal.PngTerminalStoryRenderer.EstimateFittedWorkingBytes(
                         terminal.Terminal,
                         content.Width,
                         content.Height,
-                        outputScale));
+                        outputScale, out var imageBytes);
+                peak = Math.Max(peak, checked(retained + working));
+                retained = checked(retained + imageBytes);
             }
+            maximum = Math.Max(maximum, checked(peak + (includeTransitions ? previousSceneRetained : 0)));
+            previousSceneRetained = retained;
         }
         return maximum;
     }

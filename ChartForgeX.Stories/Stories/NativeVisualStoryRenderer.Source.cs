@@ -20,7 +20,7 @@ internal static partial class NativeVisualStoryRenderer {
         var size = options.FontSize; var lineHeight = size * 1.5;
         var chrome = options.FileName.Length == 0 ? 0 : 35;
         if (chrome > 0) {
-            FitText(builder, options.FileName, bounds.X + 2, bounds.Y + size, bounds.Width - 4, size * 0.8, story.Theme.Muted);
+            FitText(builder, options.FileName, bounds.X + 2, bounds.Y + 18, bounds.Width - 4, 14, story.Theme.Muted);
             builder.Line(bounds.X, bounds.Y + 27, bounds.X + bounds.Width, bounds.Y + 27, story.Theme.Border);
         }
         var content = new ChartRect(bounds.X, bounds.Y + chrome, bounds.Width, Math.Max(1, bounds.Height - chrome));

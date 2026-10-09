@@ -115,7 +115,7 @@ public sealed partial class PreparedVisualStory {
 
     private long ProducerWorkingBytes(int outputScale) => checked(_assetBytes * 2 +
         AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes((long)Width * outputScale, (long)Height * outputScale, 4) +
-        PngVisualStoryRenderer.MaximumFittedTerminalWorkingBytes(_story, outputScale));
+        PngVisualStoryRenderer.MaximumFittedTerminalWorkingBytes(_story, outputScale, Playback.Transition > TimeSpan.Zero));
 
     private void EnsureRenderBudget(int outputScale) {
         if (ProducerWorkingBytes(outputScale) + AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes((long)Width * outputScale, (long)Height * outputScale, 1) > AnimatedRasterMemoryBudget.MaximumRetainedBytes)
@@ -126,23 +126,36 @@ public sealed partial class PreparedVisualStory {
         EnsureSceneCoverage(count, index => TimeSpan.FromTicks(SampleTicks(index, rate)));
     }
 
-    private void EnsureSceneCoverage(int count, Func<int, TimeSpan> sampleStart, Func<int, TimeSpan>? renderTime = null) {
-        var failure = SceneCoverageFailure(count, sampleStart, renderTime);
+    private void EnsureSceneCoverage(int count, Func<int, TimeSpan> sampleStart, Func<int, TimeSpan>? renderTime = null, TimeSpan? displayEnd = null) {
+        var failure = SceneCoverageFailure(count, sampleStart, renderTime, displayEnd);
         if (failure != null) throw new InvalidOperationException(failure);
     }
 
-    private string? SceneCoverageFailure(int count, Func<int, TimeSpan> sampleStart, Func<int, TimeSpan>? renderTime = null) {
-        var visible = new bool[Chapters.Count];
+    private string? SceneCoverageFailure(int count, Func<int, TimeSpan> sampleStart, Func<int, TimeSpan>? renderTime = null, TimeSpan? displayEnd = null) {
+        var visibleOpacity = new double[Chapters.Count];
+        var visibleSeconds = new double[Chapters.Count];
+        var endOfPlay = displayEnd ?? Duration;
+        var cadence = count > 1 ? (sampleStart(1) - sampleStart(0)).TotalSeconds : endOfPlay.TotalSeconds;
         for (var i = 0; i < count; i++) {
             var start = sampleStart(i);
+            var end = i + 1 == count ? endOfPlay : sampleStart(i + 1);
+            var seconds = (end - start).TotalSeconds;
             var sample = i + 1 == count ? ContentDuration : renderTime?.Invoke(i) ?? start;
             var index = VisualStoryTimeline.FindScene(_story, Math.Min(sample.TotalSeconds, ContentDuration.TotalSeconds), out var timing);
             if (start < Chapters[index].Start) return "Frame cadence would reveal a scene before its boundary. Increase the frame rate or completed-state hold.";
             var transition = Math.Min(Playback.Transition.TotalSeconds, _story.Scenes[index].DurationSeconds);
-            var opacity = transition > 0 && index + 1 < Chapters.Count ? Math.Min(1, (timing.End - sample.TotalSeconds) / transition) : 1;
-            if (opacity >= 0.5) visible[index] = true;
+            var opacity = transition > 0 && index + 1 < Chapters.Count ? Math.Max(0, Math.Min(1, (timing.End - sample.TotalSeconds) / transition)) : 1;
+            visibleOpacity[index] = Math.Max(visibleOpacity[index], opacity);
+            visibleSeconds[index] += seconds * opacity;
+            if (index + 1 < Chapters.Count) {
+                visibleSeconds[index + 1] += seconds * (1 - opacity);
+            }
         }
-        for (var i = 0; i < visible.Length; i++) if (!visible[i]) return "Frame cadence skips a readable scene: " + Chapters[i].Id + ". Increase the frame rate, scene duration or completed-state hold.";
+        for (var i = 0; i < Chapters.Count; i++) {
+            var required = Math.Max(.01, Math.Min(cadence, Chapters[i].Duration.TotalSeconds));
+            if (visibleOpacity[i] < .5 || visibleSeconds[i] + 1e-9 < required)
+                return "Frame cadence skips a readable scene: " + Chapters[i].Id + ". Increase the frame rate, scene duration or completed-state hold.";
+        }
         return null;
     }
 
@@ -150,8 +163,12 @@ public sealed partial class PreparedVisualStory {
         var normal = new VisualStoryFrameOptions();
         var count = Math.Max(1, checked((int)Math.Ceiling(Duration.TotalSeconds * normal.FramesPerSecond)));
         if (count > normal.MaximumFrames || SceneCoverageFailure(count, index => TimeSpan.FromTicks(SampleTicks(index, normal.FramesPerSecond))) == null) return normal;
-        // Twelve fps covers every supported quarter-second scene's readable half, even during its longest allowed transition.
-        return new VisualStoryFrameOptions(12);
+        foreach (var rate in new[] { 12, 24, 30, 60 }) {
+            var candidate = new VisualStoryFrameOptions(rate);
+            count = Math.Max(1, checked((int)Math.Ceiling(Duration.TotalSeconds * rate)));
+            if (count > candidate.MaximumFrames || SceneCoverageFailure(count, index => TimeSpan.FromTicks(SampleTicks(index, rate))) == null) return candidate;
+        }
+        return new VisualStoryFrameOptions(60);
     }
 
     private static VisualStory Capture(VisualStory story, out long assetBytes) {
