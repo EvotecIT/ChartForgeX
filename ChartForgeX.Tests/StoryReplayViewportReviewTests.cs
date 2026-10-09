@@ -6,6 +6,18 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class StoryReplayViewportReviewTests {
+    [Theory]
+    [InlineData(TerminalDialect.Custom)]
+    [InlineData(TerminalDialect.PowerShell)]
+    public void ReplayTranscriptBoundsExpandedCustomPromptsAndDirectories(TerminalDialect dialect) {
+        var metadata = new string('>', 32768);
+        var replay = StoryReplay.Create(TimeSpan.FromSeconds(2), dialect, workingDirectory: metadata, customPrompt: metadata);
+        for (var index = 0; index < 600; index++) replay.Command(TimeSpan.FromTicks(index), "A");
+        var error = Assert.Throws<InvalidOperationException>(() => replay.ToTranscript());
+        Assert.Contains("transcript", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Throws<InvalidOperationException>(() => new VisualStoryReplaySurface(replay));
+    }
+
     [Fact]
     public void AuthoredViewportPreservesPaletteAlphaOutsideATabTransition() {
         var theme = TerminalTheme.GraphiteDark();

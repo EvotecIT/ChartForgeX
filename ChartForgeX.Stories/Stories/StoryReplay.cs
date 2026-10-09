@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using ChartForgeX.Terminal;
 
 namespace ChartForgeX.Stories;
@@ -112,25 +111,6 @@ public sealed partial class StoryReplay {
         copy.Duration = mapped + (trailing > maximumGap ? maximumGap : trailing);
         copy._edited = true;
         return copy;
-    }
-
-    /// <summary>Gets sanitized chronological output, including cleared lines and both timestamps.</summary>
-    public string ToTranscript() {
-        var state = new ReplayState(_initialTab, 1); var output = new StringBuilder();
-        output.AppendLine("Replay: " + _initialTab.Title);
-        foreach (var item in _events) {
-            output.Append('[').Append(item.Timestamp.ToString("c")).Append("; ").Append(item.OriginalTimestamp.HasValue ? "recorded " + item.OriginalTimestamp.Value.ToString("c") : "authored explanation").Append("] ");
-            if (item.Kind == StoryReplayEventKind.Command) output.Append(state.Active.Tab.Prompt());
-            output.Append(item.Kind).Append(": ");
-            if (item.Kind == StoryReplayEventKind.OpenTab || item.Kind == StoryReplayEventKind.SelectTab) {
-                state.Apply(item);
-                output.AppendLine(state.Active.Tab.Title + " [" + item.TabId + "]");
-            } else {
-                output.AppendLine(item.Text);
-                state.Apply(item);
-            }
-        }
-        return output.ToString();
     }
 
     internal StoryReplay Capture() {
