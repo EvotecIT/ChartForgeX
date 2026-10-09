@@ -8,7 +8,7 @@ public sealed class VisualStorySourceSurface : VisualStorySurface {
     private readonly string _caption;
     private readonly StorySourceText _source;
 
-    /// <summary>Initializes a source surface.</summary>
+    /// <summary>Initializes a source surface, including an empty editor document.</summary>
     public VisualStorySourceSurface(StorySourceText source, string? caption = null, VisualStorySourceOptions? options = null)
         : base(VisualStorySurfaceKind.Source, AccessibleSourceText(source, caption), preserveAccessibleWhitespace: true) {
         _source = source ?? throw new ArgumentNullException(nameof(source));
@@ -50,6 +50,7 @@ public sealed class VisualStorySourceSurface : VisualStorySurface {
             if (accessibleHeading.Length > 0) accessibleHeading += Environment.NewLine;
             accessibleHeading += "Language: " + source.Language;
         }
+        if (source.Text.Length == 0 && accessibleHeading.Length == 0) return "Empty source document";
         return accessibleHeading.Length == 0
             ? source.Text
             : accessibleHeading + Environment.NewLine + source.Text;

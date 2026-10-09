@@ -200,13 +200,13 @@ internal sealed class TerminalStoryLayout {
         var activeTabId = Tabs[0].Tab.Id;
         var elapsed = elapsedSeconds.Value;
         foreach (var transition in Transitions) {
-            if (elapsed < transition.StartSeconds) {
+            if (!StoryPlaybackClock.Started(elapsed, transition.StartSeconds)) {
                 break;
             }
 
             var transitionEnd = transition.StartSeconds + transition.DurationSeconds;
-            if (transition.DurationSeconds > 0 && elapsed < transitionEnd) {
-                var progress = Math.Max(0, Math.Min(1, (elapsed - transition.StartSeconds) / transition.DurationSeconds));
+            if (transition.DurationSeconds > 0 && !StoryPlaybackClock.Started(elapsed, transitionEnd)) {
+                var progress = StoryPlaybackClock.Progress(elapsed, transition.StartSeconds, transition.DurationSeconds);
                 if (string.Equals(tabId, transition.FromTabId, StringComparison.OrdinalIgnoreCase)) return 1 - progress;
                 if (string.Equals(tabId, transition.ToTabId, StringComparison.OrdinalIgnoreCase)) return progress;
                 return 0;
@@ -246,7 +246,7 @@ internal sealed class TerminalStoryLayout {
     internal bool TabVisible(string tabId, double? elapsedSeconds) {
         if (!elapsedSeconds.HasValue) return true;
         var tab = Tabs.First(item => string.Equals(item.Tab.Id, tabId, StringComparison.OrdinalIgnoreCase));
-        return elapsedSeconds.Value >= tab.OpenSeconds;
+        return StoryPlaybackClock.Started(elapsedSeconds.Value, tab.OpenSeconds);
     }
 
     private static IEnumerable<string> SplitLines(string value) {

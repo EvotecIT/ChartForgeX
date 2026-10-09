@@ -52,22 +52,21 @@ public sealed class StorySourceTimeline {
 
     internal SourceEditorState At(double? seconds) {
         if (!seconds.HasValue) return new SourceEditorState(_current, _caret, 0, 0, false);
-        var remaining = Math.Max(0, seconds.Value);
+        var remaining = StoryPlaybackClock.Ticks(Math.Max(0, Math.Min(Duration.TotalSeconds, seconds.Value)));
         var state = new SourceEditorState(_initial, _initial.Text.Length, 0, 0, true);
         foreach (var edit in _edits) {
-            if (remaining >= edit.Duration.TotalSeconds) {
-                remaining -= edit.Duration.TotalSeconds;
+            if (remaining >= edit.Duration.Ticks) {
+                remaining -= edit.Duration.Ticks;
                 state = new SourceEditorState(edit.After, CaretBoundary(edit.After.Text, edit.Start + edit.Insertion.Text.Length + edit.SelectionLength), 0, 0, true);
                 continue;
             }
             if (edit.SelectionLength > 0 || edit.Before == edit.After) return new SourceEditorState(edit.Before, edit.Start + edit.SelectionLength, edit.Start, edit.SelectionLength, true);
-            var progress = remaining / edit.Duration.TotalSeconds;
             var deleting = edit.RemoveLength > 0;
             var typing = edit.Insertion.Text.Length > 0;
-            var deleteProgress = deleting && typing ? Math.Min(1, progress * 2) : deleting ? progress : 1;
-            var removed = PrefixBoundary(edit.Before.Text.Substring(edit.Start, edit.RemoveLength), deleteProgress);
-            var typingProgress = deleting && typing ? Math.Max(0, progress * 2 - 1) : typing ? progress : 0;
-            var inserted = PrefixBoundary(edit.Insertion.Text, typingProgress);
+            var deleteTicks = deleting && typing ? Math.Min(edit.Duration.Ticks, remaining * 2) : deleting ? remaining : edit.Duration.Ticks;
+            var removed = PrefixBoundary(edit.Before.Text.Substring(edit.Start, edit.RemoveLength), deleteTicks, edit.Duration.Ticks);
+            var typingTicks = deleting && typing ? Math.Max(0, remaining * 2 - edit.Duration.Ticks) : typing ? remaining : 0;
+            var inserted = PrefixBoundary(edit.Insertion.Text, typingTicks, edit.Duration.Ticks);
             var partial = Prefix(edit.Insertion, inserted);
             var source = Replace(edit.Before, edit.Start, removed, partial);
             return new SourceEditorState(source, CaretBoundary(source.Text, edit.Start + inserted), 0, 0, true);
@@ -99,10 +98,10 @@ public sealed class StorySourceTimeline {
         while (offset < start + length) offset = TerminalTextWidth.NextElementBoundary(text, offset);
         if (offset != start + length) throw new ArgumentException("An edit cannot split a Unicode text element.", nameof(length));
     }
-    private static int PrefixBoundary(string text, double progress) {
+    private static int PrefixBoundary(string text, long elapsedTicks, long durationTicks) {
         var boundaries = new List<int> { 0 };
         for (var offset = 0; offset < text.Length;) { offset = TerminalTextWidth.NextElementBoundary(text, offset); boundaries.Add(offset); }
-        return boundaries[(int)Math.Floor(Math.Max(0, Math.Min(1, progress)) * (boundaries.Count - 1))];
+        return boundaries[StoryPlaybackClock.Elements(boundaries.Count - 1, elapsedTicks, durationTicks)];
     }
     private static StorySourceText Copy(StorySourceText source) {
         var copy = StorySourceText.Create(source.Text, source.Language);

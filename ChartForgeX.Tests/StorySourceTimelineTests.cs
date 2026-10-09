@@ -7,6 +7,34 @@ namespace ChartForgeX.Tests;
 
 public sealed class StorySourceTimelineTests {
     [Fact]
+    public void ExactEditCompletionIncludesAnImmediateFollowingPaste() {
+        var editor = StorySourceTimeline.Create(StorySourceText.Create(""))
+            .Pause(TimeSpan.FromTicks(1_000_000))
+            .Type("AB", TimeSpan.FromTicks(2_000_000))
+            .Paste(StorySourceText.Create("C"));
+        var prepared = Story(editor).Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
+        Assert.Equal("ABC", SourceText(prepared.ToSvg(editor.Duration)));
+        Assert.Equal("A", SourceText(prepared.ToSvg(editor.Duration - TimeSpan.FromTicks(1))));
+    }
+
+    [Theory]
+    [InlineData(false, false, 7_000_000, 63)]
+    [InlineData(true, false, 7_000_000, 27)]
+    [InlineData(true, true, 17_000_000, 63)]
+    public void PartialEditsRevealTheExactNumberOfWholeElements(bool delete, bool replace, long ticks, int count) {
+        var editor = StorySourceTimeline.Create(StorySourceText.Create(delete ? new string('A', 90) : ""));
+        if (replace) editor.Edit(0, 90, StorySourceText.Create(new string('B', 90)), TimeSpan.FromSeconds(2));
+        else if (delete) editor.Delete(0, 90, TimeSpan.FromSeconds(1));
+        else editor.Type(new string('B', 90), TimeSpan.FromSeconds(1));
+        Assert.Equal(new string(delete && !replace ? 'A' : 'B', count), SourceText(Story(editor).Prepare().ToSvg(TimeSpan.FromTicks(ticks))));
+        if (delete && !replace) {
+            var completed = Story(editor).Prepare();
+            Assert.Equal("", SourceText(completed.ToSvg()));
+            Assert.Contains("Empty source document", completed.ToTranscript());
+        }
+    }
+
+    [Fact]
     public void EditorChromeCannotSilentlyConsumeTheWholeSourceViewport() {
         var story = VisualStory.Create("Narrow editor").WithSize(600, 400);
         story.Scene("edit", "Edit", 2, VisualStorySceneLayout.Split)
