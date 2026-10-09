@@ -129,9 +129,14 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"topology-motion-tour-path\"", StringComparison.Ordinal), "Topology SVG motion should build one reusable tour path across the animated route.");
         var motionDocument = System.Xml.Linq.XDocument.Parse(svg);
         var tour = motionDocument.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-tour-path");
-        var reference = motionDocument.Descendants().Single(element => element.Name.LocalName == "mpath");
+        var marker = motionDocument.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-marker");
+        var reference = marker.Descendants().Single(element => element.Name.LocalName == "mpath");
         Assert((string?)reference.Attribute("href") == "#" + (string?)tour.Attribute("id") &&
             (string?)reference.Attribute(System.Xml.Linq.XName.Get("href", "http://www.w3.org/1999/xlink")) == "#" + (string?)tour.Attribute("id"), "Topology SVG motion should render one marker that follows the scoped generated tour path.");
+        Assert((string?)marker.Attribute("fill") == "#2563EB", "Topology SVG motion markers should retain the selected scenario color.");
+        var pulsedNodeIds = motionDocument.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-node")
+            .Select(element => (string?)element.Attribute("data-node-id")).ToArray();
+        Assert(pulsedNodeIds.SequenceEqual(new[] { "a", "b" }), "Topology scenario motion should pulse the authored route endpoint node steps.");
         Assert(svg.IndexOf("data-cfx-role=\"topology-motion-route\"", StringComparison.Ordinal) < svg.IndexOf("data-cfx-role=\"topology-node\"", StringComparison.Ordinal), "Topology SVG route pulses should render under node surfaces.");
         Assert(svg.IndexOf("data-cfx-role=\"topology-motion-marker\"", StringComparison.Ordinal) > svg.IndexOf("data-cfx-role=\"topology-node\"", StringComparison.Ordinal), "Topology SVG moving markers should render above node surfaces to match PNG frame visibility.");
         var nonLoopSvg = chart.WithMotion(new TopologyMotionOptions {

@@ -98,7 +98,12 @@ internal static partial class TopologyEdgeRouter {
 
     public static TopologyRouteDiagnostics Diagnose(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
         if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) return new TopologyRouteDiagnostics(edge.Routing.ToString(), "missing-node", 0, 0, 0, 0, 0, 0, "missing-node");
-        var plan = Route(chart, edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], EdgeRouteLane(chart, edge));
+        // Only obstacle routing chooses a corridor and candidate count. Other routes have a
+        // fixed profile, so do not calculate diagnostics that the rendered route replaces below.
+        TopologyRouteDiagnostics? plannedDiagnostics = edge.Waypoints.Count == 0 && edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal
+            ? Route(chart, edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], EdgeRouteLane(chart, edge)).Diagnostics
+            : null;
+        var strategy = plannedDiagnostics?.Strategy ?? (edge.Waypoints.Count > 0 ? "ManualWaypoints" : edge.Routing.ToString());
         var points = EdgePoints(chart, edge, nodes);
         var renderedPoints = RenderedEdgeSamplePoints(chart, edge, nodes, points);
         var obstacles = RouteObstacles(chart, edge.SourceNodeId, edge.TargetNodeId, edge, includeCaptions: edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0);
@@ -106,15 +111,15 @@ internal static partial class TopologyEdgeRouter {
         var routeOverlap = RouteOverlapScore(renderedPoints, RouteSegments(chart, edge));
         var labelHits = LabelObstacleHits(renderedPoints, edge, obstacles, chart.TextMeasurement, chart.RenderOptions?.IncludeEdgeLabels != false, chart.RenderOptions?.ResolvedEdgeLabelScale ?? 1);
         return new TopologyRouteDiagnostics(
-            plan.Diagnostics.Strategy,
-            plan.Diagnostics.Corridor,
+            strategy,
+            plannedDiagnostics?.Corridor ?? (edge.Waypoints.Count > 0 ? "manual-waypoints" : "default"),
             Math.Max(0, renderedPoints.Count - 1),
             obstacles.Count,
             obstacleHits,
             labelHits,
             routeOverlap,
-            plan.Diagnostics.CandidateCount,
-            FallbackReason(plan.Diagnostics.Strategy, obstacleHits, labelHits, routeOverlap));
+            plannedDiagnostics?.CandidateCount ?? 1,
+            FallbackReason(strategy, obstacleHits, labelHits, routeOverlap));
     }
 
     private static TopologyRoutePlan BuildPlan(string strategy, string corridor, List<ChartPoint> points, IReadOnlyList<RouteBox> obstacles, IReadOnlyList<RouteSegment> existingSegments, TopologyEdge edge, int candidateCount, TextMeasurementContext? measurement, bool includeLabels, double labelScale) {

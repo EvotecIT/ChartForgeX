@@ -13,7 +13,7 @@ public static partial class VisualsExtensions {
     /// <param name="path">The output file path.</param>
     /// <param name="rasterOptions">Optional raster export options.</param>
     public static void Save(this VisualGrid grid, string path, RasterImageOptions? rasterOptions = null) {
-        if (ChartExtensions.TrySaveCommonOutput(path, () => grid.SaveSvg(path), () => grid.SaveHtml(path), () => grid.SavePng(path))) return;
+        if (ChartExtensions.TrySaveSvgOrHtmlOutput(path, () => grid.SaveSvg(path), () => grid.SaveHtml(path))) return;
         grid.SaveRasterImage(path, rasterOptions);
     }
 
@@ -24,7 +24,7 @@ public static partial class VisualsExtensions {
     /// <param name="path">The output file path.</param>
     /// <param name="rasterOptions">Optional raster export options.</param>
     public static void Save(this VisualCanvas canvas, string path, RasterImageOptions? rasterOptions = null) {
-        if (ChartExtensions.TrySaveCommonOutput(path, () => canvas.SaveSvg(path), () => canvas.SaveHtml(path), () => canvas.SavePng(path))) return;
+        if (ChartExtensions.TrySaveSvgOrHtmlOutput(path, () => canvas.SaveSvg(path), () => canvas.SaveHtml(path))) return;
         canvas.SaveRasterImage(path, rasterOptions);
     }
 

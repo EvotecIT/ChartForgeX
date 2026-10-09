@@ -12,7 +12,7 @@ public static partial class ChartExtensions {
     /// <param name="path">The output file path.</param>
     /// <param name="rasterOptions">Optional raster export options.</param>
     public static void Save(this Chart chart, string path, RasterImageOptions? rasterOptions = null) {
-        if (TrySaveCommonOutput(path, () => chart.SaveSvg(path), () => chart.SaveHtml(path), () => chart.SavePng(path))) return;
+        if (TrySaveSvgOrHtmlOutput(path, () => chart.SaveSvg(path), () => chart.SaveHtml(path))) return;
         chart.SaveRasterImage(path, rasterOptions);
     }
 
@@ -23,7 +23,7 @@ public static partial class ChartExtensions {
     /// <param name="path">The output file path.</param>
     /// <param name="rasterOptions">Optional raster export options.</param>
     public static void Save(this ChartGrid grid, string path, RasterImageOptions? rasterOptions = null) {
-        if (TrySaveCommonOutput(path, () => grid.SaveSvg(path), () => grid.SaveHtml(path), () => grid.SavePng(path))) return;
+        if (TrySaveSvgOrHtmlOutput(path, () => grid.SaveSvg(path), () => grid.SaveHtml(path))) return;
         grid.SaveRasterImage(path, rasterOptions);
     }
 
@@ -34,11 +34,11 @@ public static partial class ChartExtensions {
     /// <param name="path">The output file path.</param>
     /// <param name="rasterOptions">Optional raster export options.</param>
     public static void Save(this IVisualBlock block, string path, RasterImageOptions? rasterOptions = null) {
-        if (TrySaveCommonOutput(path, () => block.SaveSvg(path), () => block.SaveHtml(path), () => block.SavePng(path))) return;
+        if (TrySaveSvgOrHtmlOutput(path, () => block.SaveSvg(path), () => block.SaveHtml(path))) return;
         block.SaveRasterImage(path, rasterOptions);
     }
 
-    internal static bool TrySaveCommonOutput(string path, Action saveSvg, Action saveHtml, Action savePng) {
+    internal static bool TrySaveSvgOrHtmlOutput(string path, Action saveSvg, Action saveHtml) {
         var extension = GetExportExtension(path);
         switch (extension) {
             case ".svg":
@@ -47,9 +47,6 @@ public static partial class ChartExtensions {
             case ".html":
             case ".htm":
                 saveHtml();
-                return true;
-            case ".png":
-                savePng();
                 return true;
             default:
                 return false;
