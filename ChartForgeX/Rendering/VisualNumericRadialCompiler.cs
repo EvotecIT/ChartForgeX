@@ -35,6 +35,7 @@ internal static partial class VisualNumericRadialCompiler {
             return;
         }
         var labels = new List<RadialSeriesLabel>();
+        var obstacles = chart.Series.Any(series => series.ShowDataLabels ?? chart.Options.ShowDataLabels) ? new List<LabelObstacle>() : null;
         foreach (var total in stacks.Totals.Where(total => total.NormalizedTo.HasValue && total.SourceValue == 0))
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.stack-zero-total", "A normalized zero-only stack remains at its baseline; its source observations are retained."));
         using (builder.PushClip(plot)) {
@@ -56,12 +57,12 @@ internal static partial class VisualNumericRadialCompiler {
                         var stack = stacks.Point(seriesIndex, pointIndex);
                         var mark = Mark(chart, geometry, scale, stack.Base, stack.End, category, categories.Length, slot, bars);
                         DrawPoint(chart, context, builder, plot, geometry, series, seriesIndex, pointIndex, categoryLabels[category],
-                            stack, mark, colors, labels);
+                            stack, mark, colors, labels, obstacles);
                     }
                 }
             }
             if (chart.Options.ShowStackTotals) StackTotals(chart, context, builder, plot, geometry, categories, coordinates, stacks, scales, bars, labels);
-            DrawLabels(builder, plot, labels, context.Theme.Spacing);
+            DrawLabels(builder, plot, labels, obstacles, context.Theme.Spacing);
         }
     }
 
@@ -101,7 +102,7 @@ internal static partial class VisualNumericRadialCompiler {
 
     private static void DrawPoint(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, RadialSeriesGeometry geometry,
         ChartSeries series, int seriesIndex, int pointIndex, string category, ChartStackPoint stack, RadialSeriesMark mark,
-        VisualThemeColors colors, List<RadialSeriesLabel> labels) {
+        VisualThemeColors colors, List<RadialSeriesLabel> labels, List<LabelObstacle>? obstacles) {
         var point = series.Points[pointIndex]; var id = PointId(seriesIndex, pointIndex);
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null ? series.PointLabels[pointIndex]!
             : ChartNumericFormatter.FormatValue(chart.Options, point.Y);
@@ -126,6 +127,10 @@ internal static partial class VisualNumericRadialCompiler {
         var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
             ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
         metadata["data-cfx-fill-pattern"] = pattern.ToString();
+        if (mark.Painted && obstacles != null) {
+            var outline = new VisualSceneSlice(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep, color, null, 0, null, null);
+            obstacles.Add(new LabelObstacle(id, new LabelMarkShape(VisualSceneGeometry.Flatten(outline, 8), true, 0, plot)));
+        }
         using (builder.PushGroup(id, "point", metadata)) {
             if (mark.Painted) {
                 builder.Slice(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep, color,
@@ -135,7 +140,7 @@ internal static partial class VisualNumericRadialCompiler {
                     pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(110), role: "radial-fill-pattern");
             }
         }
-        if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, color, labels);
+        if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
     }
 
     private static ChartAxis Axis(Chart chart, ChartAxisSide side) => side == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
