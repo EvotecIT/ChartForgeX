@@ -49,6 +49,13 @@ internal static class PresentationPackageSmoke {
         }
         var terminal = TerminalStory.Create().WithTitle("Completed terminal").WithWidth(480)
             .WithPngOutputScale(1).WithFinalPrompt(false).Command("status", .1).Output("Ready");
+        var replay = StoryReplay.Create(TimeSpan.FromSeconds(20)).Command(TimeSpan.FromSeconds(1), "status")
+            .Output(TimeSpan.FromSeconds(10), "Captured result").CompressPauses(TimeSpan.FromSeconds(1));
+        var replayStory = VisualStory.Create("AOT replay").WithSize(480, 320);
+        replayStory.Scene("run", "Replay", replay.Duration.TotalSeconds).Panel("terminal", new VisualStoryReplaySurface(replay));
+        replayStory.Outcome("terminal", "Result", "terminal");
+        Require(replayStory.Prepare().ToSvg().Contains("Captured result", StringComparison.Ordinal), "Stories replay failed.");
+        Require(replayStory.ToPng().Length > 64, "Stories replay raster failed.");
         var terminalArtifact = terminal.ToVisualArtifact();
         Require(ReferenceEquals(terminal, terminalArtifact.Model) && terminalArtifact.ToSvg().Contains("Ready", StringComparison.Ordinal),
             "Stories completed terminal artifact lost its model or transcript.");

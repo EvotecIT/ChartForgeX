@@ -19,6 +19,13 @@ public sealed class StoryReplayTests {
             .Clear(TimeSpan.FromSeconds(8))
             .Command(TimeSpan.FromSeconds(9), "Get-Result");
         var prepared = Story(replay).Prepare();
+        Assert.DoesNotContain("✓ Completed session", prepared.ToSvg(TimeSpan.Zero));
+        Assert.Contains("✓ Completed session", prepared.ToSvg());
+        var html = Story(replay).Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(2), TimeSpan.Zero, 1))
+            .ToHtmlPage(new VisualStoryFrameOptions(2));
+        Assert.Contains("data-cfx-motion-duration=\"12\"", html);
+        Assert.Contains("data-cfx-motion-plays=\"1\"", html);
+        Assert.DoesNotContain("<script", html);
         Assert.Equal("", Visible(prepared.ToSvg(TimeSpan.FromSeconds(.99))));
         Assert.Contains("Ready", Visible(prepared.ToSvg(TimeSpan.FromSeconds(3))));
         Assert.DoesNotContain("Starting", Visible(prepared.ToSvg(TimeSpan.FromSeconds(3))));

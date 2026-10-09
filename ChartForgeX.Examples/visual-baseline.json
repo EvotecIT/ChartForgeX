@@ -6122,6 +6122,78 @@
       }
     },
     {
+      "name": "session-replay-portrait",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 480,
+      "height": 853,
+      "logicalWidth": 480.0,
+      "logicalHeight": 853.0,
+      "svg": {
+        "minVisualNodes": 39,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 204720,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 805,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "session-replay-square",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 720,
+      "height": 720,
+      "logicalWidth": 720.0,
+      "logicalHeight": 720.0,
+      "svg": {
+        "minVisualNodes": 39,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 259200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 793,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "session-replay-widescreen",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1280,
+      "height": 720,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 720.0,
+      "svg": {
+        "minVisualNodes": 39,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 460800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 794,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "shared-axis-coverage-grid",
       "layout": {
         "heightMode": "natural",

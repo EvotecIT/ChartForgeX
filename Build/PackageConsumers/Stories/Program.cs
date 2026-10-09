@@ -57,6 +57,15 @@ internal static class Program {
         }
 
         var topology = PackageAssertions.Topology();
+        var recording = StoryReplay.Create(TimeSpan.FromSeconds(20)).Command(TimeSpan.FromSeconds(1), "status")
+            .Output(TimeSpan.FromSeconds(10), "Captured result", TerminalTextTone.Success);
+        var replay = recording.CompressPauses(TimeSpan.FromSeconds(1));
+        var replayStory = VisualStory.Create("Packed replay").WithSize(480, 320);
+        replayStory.Scene("run", "Replay", replay.Duration.TotalSeconds).Panel("terminal", new VisualStoryReplaySurface(replay));
+        replayStory.Outcome("terminal", "Result", "terminal");
+        PackageAssertions.Owner(typeof(StoryReplay), "ChartForgeX.Stories");
+        PackageAssertions.Require(PackageAssertions.Contains(replayStory.Prepare().ToSvg(), "Captured result"), "Packed replay failed.");
+        PackageAssertions.Png(replayStory.ToPng());
         var motion = topology.WithMotion(TopologyMotionOptions.RoutePulseForEdges("api-db")
             .WithDuration(1).WithFrameRate(2).WithFrameLimit(4));
         PackageAssertions.Require(PackageAssertions.Contains(motion.ToSvg(), "<svg"), "Topology motion SVG failed.");

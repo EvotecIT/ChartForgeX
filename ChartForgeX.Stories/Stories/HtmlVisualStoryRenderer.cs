@@ -24,6 +24,10 @@ public sealed class HtmlVisualStoryRenderer {
     /// <summary>Renders a complete dependency-free HTML document.</summary>
     public string RenderPage(VisualStory story) {
         if (story == null) throw new ArgumentNullException(nameof(story));
+        return story.Prepare().ToHtmlPage();
+    }
+
+    internal string RenderPage(VisualStory story, string animatedSvg) {
         var light = ChartColorMath.RelativeLuminance(story.Theme.Background) > 0.5;
         var html = new StringBuilder();
         html.Append("<!doctype html><html><head><meta charset=\"utf-8\">")
@@ -44,7 +48,10 @@ public sealed class HtmlVisualStoryRenderer {
             .Append("px,100%);margin:0}.chartforgex-visual-story>svg{margin-inline:auto;overflow:visible}")
             .Append(".chartforgex-visual-story-caption{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}")
             .Append("@media print{html,body{background:transparent;background-image:none}.chartforgex-visual-story{box-shadow:none}}</style>")
-            .Append("</head><body>").Append(RenderFragment(story)).Append("</body></html>");
+            .Append("</head><body><figure class=\"chartforgex-visual-story\">").Append(animatedSvg)
+            .Append("<figcaption class=\"chartforgex-visual-story-caption\">")
+            .Append(Escape(story.Description.Length == 0 ? story.Title : story.Description))
+            .Append("</figcaption></figure></body></html>");
         return html.ToString();
     }
 

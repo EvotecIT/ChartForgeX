@@ -8,6 +8,10 @@ using ChartForgeX.Accessibility;
 namespace ChartForgeX.Stories;
 
 public sealed partial class PreparedVisualStory {
+    /// <summary>Exports a script-free HTML page using the captured story and prepared playback clock.</summary>
+    public string ToHtmlPage(VisualStoryFrameOptions? options = null, CancellationToken cancellationToken = default) =>
+        new HtmlVisualStoryRenderer().RenderPage(_story, ToAnimatedSvg(options, cancellationToken: cancellationToken));
+
     /// <summary>Exports sampled native frames as a self-contained, script-free SVG animation using the prepared playback clock.</summary>
     /// <remarks>Reduced motion and print show the completed poster. The complete SVG document has a 64 MiB character budget, including escaped text and embedded frames.</remarks>
     public string ToAnimatedSvg(VisualStoryFrameOptions? options = null, string idScope = "", CancellationToken cancellationToken = default) {

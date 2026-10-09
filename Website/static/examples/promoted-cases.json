@@ -34,6 +34,11 @@
       "id": "visual-systems",
       "label": "Visual systems",
       "description": "Themes, typography, and reusable presentation foundations."
+    },
+    {
+      "id": "stories",
+      "label": "Stories",
+      "description": "Source editing, recorded terminal replays, and visible results."
     }
   ],
   "cases": [
@@ -356,6 +361,58 @@
         "png": "/examples/generated/powerbginfo-endpoint-snapshot.png",
         "width": 2752,
         "height": 600
+      }
+    },
+    {
+      "id": "write-fix-reveal-widescreen",
+      "title": "Write, fix, and reveal a chart",
+      "category": "stories",
+      "summary": "An animated editor follows a source correction from a resolved build error to the chart produced by the corrected example.",
+      "alt": "A dark source editor and terminal lead into a completed bar chart showing passed builds for Monday, Tuesday, and Wednesday.",
+      "useCase": "Explain a script or API in a browser player and export the same prepared story as GIF, APNG, or a static poster.",
+      "capabilities": ["source editing", "chapter navigation", "shared playback clock", "visible chart outcome"],
+      "source": {
+        "path": "ChartForgeX.Examples/StoryPlaybackExamples.cs",
+        "entry": "StoryPlaybackExamples.Write(output)",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/StoryPlaybackExamples.cs"
+      },
+      "build": {
+        "command": "dotnet run --project ./ChartForgeX.Examples -c Release -- --story-playback-only",
+        "outputPath": "ChartForgeX.Examples/bin/Release/net8.0/output/write-fix-reveal-widescreen.html"
+      },
+      "artifacts": {
+        "preview": "/examples/generated/write-fix-reveal-widescreen.png",
+        "html": "/examples/generated/write-fix-reveal-widescreen.html",
+        "svg": "/examples/generated/write-fix-reveal-widescreen.svg",
+        "png": "/examples/generated/write-fix-reveal-widescreen.png",
+        "width": 1280,
+        "height": 720
+      }
+    },
+    {
+      "id": "session-replay-portrait",
+      "title": "Replay a recorded terminal session",
+      "category": "stories",
+      "summary": "A portrait replay keeps terminal text readable while output scrolls, progress updates replace a line, and persistent sessions switch.",
+      "alt": "A portrait terminal replay presents validation output, packaging progress, a preview session, and the completed report result.",
+      "useCase": "Shorten idle gaps in a resolved recording while retaining original timestamps and a complete accessible transcript.",
+      "capabilities": ["recorded events", "fixed font viewport", "pause compression", "persistent tabs"],
+      "source": {
+        "path": "ChartForgeX.Examples/StoryReplayExamples.cs",
+        "entry": "StoryReplayExamples.Write(output)",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/StoryReplayExamples.cs"
+      },
+      "build": {
+        "command": "dotnet run --project ./ChartForgeX.Examples -c Release -- --story-replay-only",
+        "outputPath": "ChartForgeX.Examples/bin/Release/net8.0/output/session-replay-portrait.html"
+      },
+      "artifacts": {
+        "preview": "/examples/generated/session-replay-portrait.png",
+        "html": "/examples/generated/session-replay-portrait.html",
+        "svg": "/examples/generated/session-replay-portrait.svg",
+        "png": "/examples/generated/session-replay-portrait.png",
+        "width": 480,
+        "height": 853
       }
     }
   ]
