@@ -74,7 +74,7 @@ internal static partial class VisualHierarchyCompiler {
                 builder.Rect(b, color, colors.Surface, context.Theme.AxisStrokeWidth, Math.Min(context.Theme.BarRadius, model.NodeHeight / 2), "tree-node-mark",
                     paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 Pattern(builder, Rectangle(b), series, node.Index, color, "tree-node-pattern");
-                if (series.ShowDataLabels != false) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
+                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
             }
             builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", b, node.Label + ": level " + N(node.Depth)));
         }
@@ -93,7 +93,7 @@ internal static partial class VisualHierarchyCompiler {
             using (builder.PushGroup(Id("point", tile.PointIndex), "treemap-tile", metadata)) {
                 builder.Rect(tile.Rect, color, radius: Math.Min(context.Theme.BarRadius, Math.Min(tile.Rect.Width, tile.Rect.Height) * .1), role: "treemap-tile-mark", paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, tile.PointIndex)));
                 Pattern(builder, Rectangle(tile.Rect), series, tile.PointIndex, color, "treemap-pattern");
-                if (series.ShowDataLabels != false) Label(chart, context, builder, full + "\n" + value, tile.Rect, color, tile.PointIndex, "treemap-label");
+                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) Label(chart, context, builder, full + "\n" + value, tile.Rect, color, tile.PointIndex, "treemap-label");
             }
             builder.AddRegion(new VisualSemanticRegion(Id("point", tile.PointIndex), "treemap-tile", tile.Rect, full + ": " + value));
         }
@@ -133,7 +133,7 @@ internal static partial class VisualHierarchyCompiler {
                 var pattern = Pattern(series, node.Index);
                 if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, pattern,
                     ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sunburst-pattern");
-                if (series.ShowDataLabels != false) SunburstLabel(chart, context, builder, model, node, color);
+                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) SunburstLabel(chart, context, builder, model, node, color);
             }
             var bounds = new ChartRect(model.CenterX - node.OuterRadius, model.CenterY - node.OuterRadius, node.OuterRadius * 2, node.OuterRadius * 2);
             builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "sunburst-segment", bounds, node.Label + ": " + formatted));

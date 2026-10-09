@@ -13,7 +13,8 @@ public static partial class V2GalleryModels {
             new ChartTreeLink("engineering", "platform", 35), new ChartTreeLink("engineering", "engineering-support", 25),
             new ChartTreeLink("operations", "operations-support", 40)
         };
-        return kind == ChartSeriesKind.Tree ? Chart.Create().AddTree("Teams", nodes, links) : Chart.Create().AddSunburst("Teams", nodes, links);
+        var chart = Chart.Create().WithDataLabels();
+        return kind == ChartSeriesKind.Tree ? chart.AddTree("Teams", nodes, links) : chart.AddSunburst("Teams", nodes, links);
     }
 
     private static Chart FlowRelationships(string variant) {
