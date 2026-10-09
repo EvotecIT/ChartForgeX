@@ -1097,7 +1097,9 @@
     const data = node.dataset || {};
     const reference = legendTarget(node) || (['node', 'link', 'region'].includes(data.cfxTargetKind)
       ? { targetKind: data.cfxTargetKind, targetId: data.cfxTargetId } : null);
-    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node), ...reference };
+    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node),
+      targetKind: data.cfxPoint === undefined ? 'series' : 'point',
+      targetId: data.cfxPoint === undefined ? seriesKey(node) : pointTargetId(node), ...reference };
   };
   const seriesTargetToken = (target) => !target ? '' : target.targetKind
     ? [target.series ?? '', target.targetKind, target.targetId].join(':') : [target.series ?? '', target.point ?? ''].join(':');
@@ -1105,7 +1107,8 @@
     if (!target) return false;
     const data = node.dataset || {};
     if (data.cfxSeries !== String(target.series)) return false;
-    if (target.targetKind && target.targetId) {
+    if (target.targetKind && target.targetKind !== 'series' && target.targetId) {
+      if (target.targetKind === 'point') return data.cfxPoint !== undefined && pointTargetId(node) === target.targetId;
       const reference = legendTarget(node);
       return reference ? reference.targetKind === target.targetKind && reference.targetId === target.targetId
         : data.cfxTargetKind === target.targetKind && data.cfxTargetId === target.targetId;
@@ -1118,7 +1121,7 @@
     let matchingSeries = legends.filter((item) => seriesKey(item) === target.seriesKey);
     if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter((item) => seriesKey(item) === target.seriesKey);
     if (!matchingSeries.length) return null;
-    if (target.targetKind && target.targetId) {
+    if (['node', 'link', 'region'].includes(target.targetKind) && target.targetId) {
       const exact = matchingSeries.find((node) => {
         const reference = legendTarget(node);
         return reference && reference.targetKind === target.targetKind && reference.targetId === target.targetId;
@@ -1128,6 +1131,12 @@
     if (target.point === undefined) {
       const localSeries = (matchingSeries[0].dataset || {}).cfxSeries;
       return localSeries === undefined ? null : { series: localSeries, seriesKey: target.seriesKey, label: target.label };
+    }
+    if (target.targetId) {
+      const exact = matchingSeries.find((item) => (item.dataset || {}).cfxPoint !== undefined && pointTargetId(item) === target.targetId)
+        || Array.from(root.querySelectorAll('[data-cfx-series][data-cfx-point]'))
+          .find((item) => seriesKey(item) === target.seriesKey && pointTargetId(item) === target.targetId);
+      return exact ? seriesTarget(exact) : null;
     }
     const exactLabel = matchingSeries.find((item) => (item.dataset || {}).cfxLabel === target.label);
     const exactPoint = matchingSeries.find((item) => (item.dataset || {}).cfxPoint === String(target.point));
@@ -1163,9 +1172,11 @@
         return;
       }
       node.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
-      // Keep ancestor containers at full opacity; they also contain the isolated native item.
+      // Preserve ancestor containers for a referenced item or an isolated point.
       const context = item && (node.contains(item) || item.contains(node));
-      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context);
+      const pointContainer = target && target.point !== undefined && data.cfxSeries === String(target.series)
+        && role === 'series' && data.cfxPoint === undefined;
+      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
