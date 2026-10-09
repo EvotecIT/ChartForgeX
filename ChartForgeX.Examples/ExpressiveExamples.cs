@@ -643,7 +643,7 @@ internal static partial class ExpressiveExamples {
         .WithSubtitle("Sunburst hierarchy chart using the Aurora theme")
         .WithTheme(ChartTheme.Aurora())
         .WithSize(920, 560)
-        .AddSunburst("Controls", new[] {
+        .AddSunburst("Controls", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail auth", "Mail auth"), new ChartNode("Certificates", "Certificates"), new ChartNode("DNS hygiene", "DNS hygiene"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("DMARC", "DMARC"), new ChartNode("Expiry", "Expiry"), new ChartNode("SANs", "SANs"), new ChartNode("DNSSEC rollout", "DNSSEC rollout"), new ChartNode("Stale DNS", "Stale DNS") }, new[] {
             new ChartTreeLink("Security posture", "Mail auth", 42),
             new ChartTreeLink("Security posture", "Certificates", 30),
             new ChartTreeLink("Security posture", "DNS hygiene", 28),

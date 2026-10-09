@@ -7,14 +7,14 @@ namespace ChartForgeX.Core;
 /// </summary>
 public readonly struct ChartTreeLink {
     /// <summary>
-    /// Gets the parent node label.
+    /// Gets the parent node ID.
     /// </summary>
-    public string Parent { get; }
+    public string ParentId { get; }
 
     /// <summary>
-    /// Gets the child node label.
+    /// Gets the child node ID, which also identifies its incoming branch.
     /// </summary>
-    public string Child { get; }
+    public string ChildId { get; }
 
     /// <summary>
     /// Gets the optional positive node weight.
@@ -24,13 +24,13 @@ public readonly struct ChartTreeLink {
     /// <summary>
     /// Initializes a new tree link.
     /// </summary>
-    public ChartTreeLink(string parent, string child, double value = 1) {
-        if (string.IsNullOrWhiteSpace(parent)) throw new ArgumentException("Tree parent must not be empty.", nameof(parent));
-        if (string.IsNullOrWhiteSpace(child)) throw new ArgumentException("Tree child must not be empty.", nameof(child));
+    public ChartTreeLink(string parentId, string childId, double value = 1) {
+        if (string.IsNullOrWhiteSpace(parentId)) throw new ArgumentException("Tree parent ID must not be empty.", nameof(parentId));
+        if (string.IsNullOrWhiteSpace(childId)) throw new ArgumentException("Tree child ID must not be empty.", nameof(childId));
         ChartGuards.Finite(value, nameof(value));
         if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Tree link value must be positive.");
-        Parent = parent;
-        Child = child;
+        ParentId = parentId;
+        ChildId = childId;
         Value = value;
     }
 }

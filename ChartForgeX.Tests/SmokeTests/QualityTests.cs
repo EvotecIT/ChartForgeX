@@ -71,9 +71,9 @@ internal static partial class SmokeTests {
             Chart.Create().WithSize(640, 360).AddWordCloud("WordCloud", new[] { new ChartWordCloudItem("Alpha", 50), new ChartWordCloudItem("Beta", 30), new ChartWordCloudItem("Gamma", 20) }),
             Chart.Create().WithSize(640, 360).AddTimelineItem("Timeline", timelineStart, timelineStart.AddDays(14)),
             Chart.Create().WithSize(640, 360).WithGanttToday(timelineStart.AddDays(8)).AddGanttTask("Gantt", timelineStart, timelineStart.AddDays(14), 0.5),
-            Chart.Create().WithSize(640, 360).AddSankey("Sankey", new[] { new ChartSankeyLink("A", "B", 10), new ChartSankeyLink("B", "C", 7) }),
-            Chart.Create().WithSize(640, 360).AddTree("Tree", new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("A", "C") }),
-            Chart.Create().WithSize(640, 360).AddSunburst("Sunburst", new[] { new ChartTreeLink("A", "B", 10), new ChartTreeLink("A", "C", 7), new ChartTreeLink("B", "D", 4) }),
+            Chart.Create().WithSize(640, 360).AddSankey("Sankey", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C") }, new[] { new ChartFlowLink("flow-1", "A", "B", 10), new ChartFlowLink("flow-2", "B", "C", 7) }),
+            Chart.Create().WithSize(640, 360).AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C") }, new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("A", "C") }),
+            Chart.Create().WithSize(640, 360).AddSunburst("Sunburst", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C"), new ChartNode("D", "D") }, new[] { new ChartTreeLink("A", "B", 10), new ChartTreeLink("A", "C", 7), new ChartTreeLink("B", "D", 4) }),
             Chart.Create().WithSize(640, 360).WithXLabels("Passed", "Warnings", "Failed").AddDonut("Donut", Points(70, 20, 10)),
             Chart.Create().WithSize(360, 90).WithSparkline().AddSmoothArea("Spark", Points(10, 14, 13, 19))
         };

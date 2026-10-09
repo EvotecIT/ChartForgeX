@@ -125,21 +125,21 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 1, 2, 1.1), "Gantt tasks should reject progress above one.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 1, 2, dependsOn: 0), "Gantt tasks should reject dependencies that do not reference earlier tasks.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithGanttToday(double.NaN), "Gantt today markers should reject non-finite values.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", Array.Empty<ChartSankeyLink>()), "Sankey charts should reject empty link sets.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartSankeyLink("A", "B", 0), "Sankey links should reject non-positive values.");
-        AssertThrows<ArgumentException>(() => new ChartSankeyLink("", "B", 1), "Sankey links should reject empty source labels.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartSankeyLink("A", "A", 1) }), "Sankey charts should reject self links.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartSankeyLink("A", "B", 1), new ChartSankeyLink("B", "A", 1) }), "Sankey charts should reject cyclic link sets.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", Array.Empty<ChartTreeLink>()), "Tree charts should reject empty link sets.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") }, Array.Empty<ChartFlowLink>()), "Sankey charts should reject empty link sets.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartFlowLink("flow-1", "A", "B", 0), "Sankey links should reject non-positive values.");
+        AssertThrows<ArgumentException>(() => new ChartFlowLink("flow-2", "", "B", 1), "Sankey links should reject empty source labels.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A") }, new[] { new ChartFlowLink("flow-3", "A", "A", 1) }), "Sankey charts should reject self links.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") }, new[] { new ChartFlowLink("flow-4", "A", "B", 1), new ChartFlowLink("flow-5", "B", "A", 1) }), "Sankey charts should reject cyclic link sets.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") }, Array.Empty<ChartTreeLink>()), "Tree charts should reject empty link sets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTreeLink("A", "B", 0), "Tree links should reject non-positive values.");
         AssertThrows<ArgumentException>(() => new ChartTreeLink("", "B"), "Tree links should reject empty parent labels.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartTreeLink("A", "A") }), "Tree charts should reject self links.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartTreeLink("A", "C"), new ChartTreeLink("B", "C") }), "Tree charts should reject multiple parents for a child.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("C", "D") }), "Tree charts should reject multiple roots.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", Array.Empty<ChartTreeLink>()), "Sunburst charts should reject empty link sets.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartTreeLink("A", "A") }), "Sunburst charts should reject self links.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartTreeLink("A", "C"), new ChartTreeLink("B", "C") }), "Sunburst charts should reject multiple parents for a child.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("C", "D") }), "Sunburst charts should reject multiple roots.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A") }, new[] { new ChartTreeLink("A", "A") }), "Tree charts should reject self links.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("C", "C"), new ChartNode("B", "B") }, new[] { new ChartTreeLink("A", "C"), new ChartTreeLink("B", "C") }), "Tree charts should reject multiple parents for a child.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C"), new ChartNode("D", "D") }, new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("C", "D") }), "Tree charts should reject multiple roots.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") }, Array.Empty<ChartTreeLink>()), "Sunburst charts should reject empty link sets.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartNode("A", "A") }, new[] { new ChartTreeLink("A", "A") }), "Sunburst charts should reject self links.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartNode("A", "A"), new ChartNode("C", "C"), new ChartNode("B", "B") }, new[] { new ChartTreeLink("A", "C"), new ChartTreeLink("B", "C") }), "Sunburst charts should reject multiple parents for a child.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C"), new ChartNode("D", "D") }, new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("C", "D") }), "Sunburst charts should reject multiple roots.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddHorizontalBand(1, 2, opacity: 1.5), "Band opacity should reject values outside zero to one.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddMeanLine("Mean", Array.Empty<ChartPoint>()), "Mean overlays should reject empty source points.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddStandardDeviationBand("Sigma", Points(10)), "Standard deviation bands should reject single-point source data.");
@@ -218,20 +218,15 @@ internal static partial class SmokeTests {
         var malformedGantt = Chart.Create();
         malformedGantt.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Gantt, Points(1, 2)));
         AssertThrows<InvalidOperationException>(() => malformedGantt.ToPng(), "Gantt renderers should reject malformed public series instead of rendering a blank chart.");
-        var cyclicSankey = Chart.Create();
-        cyclicSankey.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Sankey, new[] { new ChartPoint(0, 1), new ChartPoint(1, 1), new ChartPoint(1, 0), new ChartPoint(1, 1) }));
-        AssertThrows<InvalidOperationException>(() => cyclicSankey.ToSvg(), "Sankey renderers should reject cyclic public series instead of laying out backward links.");
-        var fractionalSankey = Chart.Create();
-        fractionalSankey.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Sankey, new[] { new ChartPoint(0.4, 1), new ChartPoint(1, 1) }));
-        AssertThrows<InvalidOperationException>(() => fractionalSankey.ToPng(), "Sankey renderers should reject fractional node indexes instead of rounding them.");
-        var disconnectedTree = Chart.Create();
-        disconnectedTree.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Tree, new[] { new ChartPoint(0, 1), new ChartPoint(1, 1), new ChartPoint(2, 3), new ChartPoint(1, 1) }));
-        AssertThrows<InvalidOperationException>(() => disconnectedTree.ToPng(), "Tree renderers should reject disconnected public series instead of rendering an arbitrary root.");
-        var fractionalTree = Chart.Create();
-        fractionalTree.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Tree, new[] { new ChartPoint(0, 1.4), new ChartPoint(1, 1) }));
-        AssertThrows<InvalidOperationException>(() => fractionalTree.ToSvg(), "Tree renderers should reject fractional node indexes instead of rounding them.");
-        var disconnectedSunburst = Chart.Create();
-        disconnectedSunburst.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Sunburst, new[] { new ChartPoint(0, 1), new ChartPoint(1, 1), new ChartPoint(2, 3), new ChartPoint(1, 1) }));
-        AssertThrows<InvalidOperationException>(() => disconnectedSunburst.ToPng(), "Sunburst renderers should reject disconnected public series instead of rendering an arbitrary root.");
+        foreach (var kind in new[] { ChartSeriesKind.Sankey, ChartSeriesKind.Tree, ChartSeriesKind.Sunburst }) {
+            AssertThrows<ArgumentException>(() => new ChartSeries("Raw", kind, Points(1)), "Relationship constructors require typed nodes and links.");
+            var incompatible = Chart.Create();
+            var raw = new ChartSeries("Raw", kind, Array.Empty<ChartPoint>());
+            incompatible.Series.Add(raw);
+            Assert(incompatible.ToSvg().Contains("no-data"), "An empty relationship series remains a native no-data scene.");
+            raw.Points.Add(new ChartPoint(0, 1));
+            AssertThrows<InvalidOperationException>(() => incompatible.ToSvg(), "Relationship SVG exports reject added raw points.");
+            AssertThrows<InvalidOperationException>(() => incompatible.ToPng(), "Relationship PNG exports reject added raw points.");
+        }
     }
 }

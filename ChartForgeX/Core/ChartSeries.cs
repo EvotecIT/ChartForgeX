@@ -5,9 +5,9 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 /// <summary>
-/// Represents one named series of points in a chart.
+/// Represents one named series of chart data.
 /// </summary>
-public sealed class ChartSeries {
+public sealed partial class ChartSeries {
     private double _strokeWidth = 3;
     internal bool HasExplicitStrokeWidth { get; private set; }
     private ChartAxisSide _yAxis = ChartAxisSide.Primary;
@@ -102,6 +102,7 @@ public sealed class ChartSeries {
 
     /// <summary>
     /// Gets optional point-level colors. Null entries fall back to the series color or theme palette.
+    /// For relationship series, these ordinals refer to Nodes.
     /// </summary>
     public List<ChartColor?> PointColors { get; } = new();
 
@@ -118,6 +119,7 @@ public sealed class ChartSeries {
 
     /// <summary>
     /// Gets optional point-level fill patterns. Null entries fall back to the series fill pattern.
+    /// For relationship series, these ordinals refer to Nodes.
     /// </summary>
     public List<ChartFillPattern?> PointFillPatterns { get; } = new();
 
@@ -170,6 +172,7 @@ public sealed class ChartSeries {
 
     /// <summary>
     /// Gets optional point-level data-label styles. Null entries fall back to the series or chart data-label style.
+    /// For relationship series, these ordinals refer to Nodes.
     /// </summary>
     public List<TextStyleOverride?> PointDataLabelStyles { get; } = new();
 
@@ -608,6 +611,7 @@ public sealed class ChartSeries {
         if (!Enum.IsDefined(typeof(ChartSeriesKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown series kind.");
         Kind = kind;
         Points.AddRange(ChartGuards.Points(points, nameof(points)));
+        if (IsRelationshipKind(kind) && Points.Count > 0) throw new ArgumentException("Relationship series use typed nodes and links. Use AddSankey, AddTree, or AddSunburst.", nameof(points));
         SourcePointCount = Points.Count;
     }
 
@@ -624,6 +628,7 @@ public sealed class ChartSeries {
 
     private int LogicalPointCount {
         get {
+            if (IsRelationshipKind(Kind)) return Nodes.Count;
             var tupleSize = Kind == ChartSeriesKind.Bubble ||
                 Kind == ChartSeriesKind.RangeBand ||
                 Kind == ChartSeriesKind.RangeArea ||

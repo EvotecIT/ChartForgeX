@@ -52,6 +52,10 @@ SVG and PNG charts share measured label placement, including data labels, target
 - Keep marketing/poster chart matrices honest by checking each advertised family against public API, SVG renderer, PNG renderer, smoke tests, generated examples, and website gallery tags.
 - When adding a future chart family, update the README catalog, public model/API, SVG and PNG renderers, smoke tests, generated examples, gallery metadata, and promotional imagery together.
 
+- Extend hierarchical Treemap input with explicit IDs, parent containment/headers, leaf-size aggregation, and an independent numeric color dimension. Reuse the typed node/index owner and shared color-scale owner; flat Treemap remains the current input contract.
+- Extend Sunburst with an independent numeric color dimension/scale and an explicit authored-parent value policy. Its current sectors aggregate leaf weights and preserve authored incoming weights separately.
+- Add Sankey alignment, ordering, gap, and style options through its canonical layout. Authored node/flow IDs and parallel flows are supported independently of labels.
+
 ## Topology
 
 - Tighten the replication fixture time budget (45 s per tier) once CI runner history exists.

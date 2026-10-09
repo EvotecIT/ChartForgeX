@@ -60,9 +60,9 @@ internal static partial class SmokeTests {
     }
 
     private static void SankeyLinksRenderWeightedFlows() {
-        var chart = Chart.Create().WithSize(900, 520).WithDataLabels().AddSankey("Finding flow", new[] {
-            new ChartSankeyLink("Discovered", "Validated", 70), new("Discovered", "Accepted risk", 20),
-            new("Validated", "Remediated", 44), new("Validated", "Monitoring", 26)
+        var chart = Chart.Create().WithSize(900, 520).WithDataLabels().AddSankey("Finding flow", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Remediated", "Remediated"), new ChartNode("Monitoring", "Monitoring") }, new[] {
+            new ChartFlowLink("flow-1", "Discovered", "Validated", 70), new("flow-2", "Discovered", "Accepted risk", 20),
+            new("flow-3", "Validated", "Remediated", 44), new("flow-4", "Validated", "Monitoring", 26)
         });
         var prepared = PreparedFamily(chart);
         var links = FamilyGroups(prepared, "sankey-link");
@@ -75,7 +75,7 @@ internal static partial class SmokeTests {
     }
 
     private static void TreeLinksRenderHierarchy() {
-        var chart = Chart.Create().WithSize(900, 520).AddTree("Control hierarchy", new[] {
+        var chart = Chart.Create().WithSize(900, 520).AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("Expiry monitoring", "Expiry monitoring") }, new[] {
             new ChartTreeLink("Security posture", "Mail authentication"), new("Security posture", "Certificate lifecycle"),
             new("Mail authentication", "SPF"), new("Mail authentication", "DKIM"), new("Certificate lifecycle", "Expiry monitoring")
         });

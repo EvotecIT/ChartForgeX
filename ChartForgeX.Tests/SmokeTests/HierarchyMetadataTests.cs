@@ -24,25 +24,25 @@ internal static partial class SmokeTests {
             "The common right legend should occupy space beside the treemap content.");
         Assert(positionedTreemap.ToPng().Length > 64, "Positioned treemap legends should render PNG output.");
 
-        var tree = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddTree("Hierarchy", new[] {
+        var tree = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddTree("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("Mail", "Mail"), new ChartNode("SPF", "SPF") }, new[] {
             new ChartTreeLink("Root", "Mail", 3),
             new ChartTreeLink("Mail", "SPF", 2)
         }).ToSvg();
-        FamilyMetadata(tree, "tree-node", ("point", "0"), ("depth", "0"), ("label", "Root"));
-        FamilyMetadata(tree, "tree-link", ("parent", "0"), ("child", "1"), ("value", "3"), ("source-label", "Root"), ("target-label", "Mail"));
+        FamilyMetadata(tree, "tree-node", ("node", "Root"), ("source-node-index", "0"), ("depth", "0"), ("label", "Root"));
+        FamilyMetadata(tree, "tree-link", ("parent", "Root"), ("child", "Mail"), ("value", "3"), ("source-label", "Root"), ("target-label", "Mail"));
 
-        var sunburst = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddSunburst("Hierarchy", new[] {
+        var sunburst = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddSunburst("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("Mail", "Mail"), new ChartNode("SPF", "SPF") }, new[] {
             new ChartTreeLink("Root", "Mail", 3),
             new ChartTreeLink("Mail", "SPF", 2)
         }).ToSvg();
-        FamilyMetadata(sunburst, "sunburst-segment", ("point", "0"), ("parent", "-1"), ("depth", "0"), ("label", "Root"));
-        FamilyMetadata(sunburst, "sunburst-segment", ("point", "1"), ("parent", "0"), ("depth", "1"), ("label", "Mail"));
+        FamilyMetadata(sunburst, "sunburst-segment", ("node", "Root"), ("source-node-index", "0"), ("depth", "0"), ("label", "Root"));
+        FamilyMetadata(sunburst, "sunburst-segment", ("node", "Mail"), ("parent", "Root"), ("source-node-index", "1"), ("depth", "1"), ("label", "Mail"));
 
-        var sankey = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddSankey("Flow", new[] {
-            new ChartSankeyLink("Discovered", "Validated", 70),
-            new ChartSankeyLink("Validated", "Remediated", 44)
+        var sankey = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddSankey("Flow", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Remediated", "Remediated") }, new[] {
+            new ChartFlowLink("flow-1", "Discovered", "Validated", 70),
+            new ChartFlowLink("flow-2", "Validated", "Remediated", 44)
         }).ToSvg();
-        FamilyMetadata(sankey, "sankey-node", ("node", "0"), ("layer", "0"), ("label", "Discovered"), ("value", "70"));
-        FamilyMetadata(sankey, "sankey-link", ("source", "0"), ("target", "1"), ("value", "70"), ("source-label", "Discovered"), ("target-label", "Validated"));
+        FamilyMetadata(sankey, "sankey-node", ("node", "Discovered"), ("source-node-index", "0"), ("layer", "0"), ("label", "Discovered"), ("value", "70"));
+        FamilyMetadata(sankey, "sankey-link", ("id", "flow-1"), ("source", "Discovered"), ("target", "Validated"), ("value", "70"), ("source-label", "Discovered"), ("target-label", "Validated"));
     }
 }

@@ -47,31 +47,4 @@ internal static partial class VisualHierarchyCompiler {
         return style;
     }
 
-    /// <summary>Validates mutable tuple input before recursive canonical hierarchy helpers can observe it.</summary>
-    private static void ValidateTree(ChartSeries series, int labelCount) {
-        if (series.Points.Count % 2 != 0) throw new InvalidOperationException("Hierarchy links require endpoint/weight pairs.");
-        int count = labelCount;
-        foreach (var point in series.Points.Where((_, i) => i % 2 == 0)) {
-            if (!Finite(point.X) || !Finite(point.Y) || point.X < 0 || point.Y < 0 || point.X != Math.Floor(point.X) || point.Y != Math.Floor(point.Y)
-                || point.X > series.Points.Count || point.Y > series.Points.Count) throw new InvalidOperationException("Hierarchy endpoints must be finite dense node indices.");
-            count = Math.Max(count, (int)Math.Max(point.X, point.Y) + 1);
-        }
-        var children = new List<int>[count]; var parent = Enumerable.Repeat(-1, count).ToArray();
-        for (int i = 0; i < count; i++) children[i] = new List<int>();
-        for (int i = 0; i < series.Points.Count; i += 2) {
-            var point = series.Points[i]; int from = (int)point.X, to = (int)point.Y; double value = series.Points[i + 1].Y;
-            if (!Finite(value) || value <= 0 || from == to || parent[to] >= 0) throw new InvalidOperationException("Hierarchy links require positive finite weights, distinct endpoints and one parent per child.");
-            parent[to] = from; children[from].Add(to);
-        }
-        var roots = Enumerable.Range(0, count).Where(i => parent[i] < 0).ToArray();
-        if (roots.Length != 1) throw new InvalidOperationException("Hierarchy links require exactly one root.");
-        var pending = new Stack<(int Node, int Depth)>(); pending.Push((roots[0], 0)); var visited = new HashSet<int>();
-        while (pending.Count > 0) {
-            var next = pending.Pop();
-            if (!visited.Add(next.Node)) throw new InvalidOperationException("Hierarchy links must not contain cycles.");
-            if (next.Depth > 512) throw new NotSupportedException("Hierarchy depth exceeds the supported layout budget of 512 levels.");
-            foreach (int child in children[next.Node]) pending.Push((child, next.Depth + 1));
-        }
-        if (visited.Count != count) throw new InvalidOperationException("Hierarchy links must form one connected acyclic tree.");
-    }
 }

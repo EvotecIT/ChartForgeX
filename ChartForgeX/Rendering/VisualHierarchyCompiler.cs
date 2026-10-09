@@ -24,7 +24,7 @@ internal static partial class VisualHierarchyCompiler {
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         if (chart.Series.Count != 1) throw new InvalidOperationException("Prepared hierarchy charts require one series.");
         var series = chart.Series[0];
-        if (series.Points.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("hierarchy.no-data", "The hierarchy has no observations.")); return; }
+        if (!series.HasSourceData) { builder.AddDiagnostic(new VisualDiagnostic("hierarchy.no-data", "The hierarchy has no observations.")); return; }
         if (plot.Width <= 2 || plot.Height <= 2) { builder.AddDiagnostic(new VisualDiagnostic("hierarchy.insufficient-space", "No plotting area remains.")); return; }
         var colors = context.Theme.Resolve(context.ThemeMode);
         // Keep stroke coverage inside the common content rectangle.
@@ -35,7 +35,6 @@ internal static partial class VisualHierarchyCompiler {
         })) {
             if (series.Kind == ChartSeriesKind.Treemap) Treemap(chart, context, builder, plot, colors);
             else {
-                ValidateTree(series, chart.Options.TreeNodeLabels.Count);
                 if (series.Kind == ChartSeriesKind.Tree) Tree(chart, context, builder, plot, colors);
                 else if (series.Kind == ChartSeriesKind.Sunburst) Sunburst(chart, context, builder, plot, colors);
                 else throw new NotSupportedException("Unknown hierarchy family.");
@@ -51,25 +50,33 @@ internal static partial class VisualHierarchyCompiler {
             double mid = (x1 + x2) / 2;
             var color = Color(series, source.Index, colors, source.Depth);
             double width = Math.Max(1, context.Theme.SeriesStrokeWidth * (1 + link.Value / model.MaxLinkValue));
-            using (builder.PushGroup(Id("link", link.Child), "tree-link", new Dictionary<string, string> {
-                ["data-cfx-parent"] = N(link.Parent), ["data-cfx-child"] = N(link.Child), ["data-cfx-value"] = N(link.Value),
-                ["data-cfx-source-label"] = source.Label, ["data-cfx-target-label"] = target.Label
-            })) builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(x1, y1), ChartPathCommand.CubicTo(mid, y1, mid, y2, x2, y2) }),
-                stroke: ChartColorMath.WithOpacity(color, .65), strokeWidth: width, role: "tree-link-path",
-                paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, source.Index).WithOpacity(ChartColorMath.WithOpacity(color, .65), .65)));
+            var metadata = ChartRelationshipMetadata.Link(series, target.Id, source.Id, target.Id, source.Label, target.Label, link.Index, link.Value);
+            metadata["data-cfx-parent"] = source.Id; metadata["data-cfx-child"] = target.Id;
+            using (builder.PushGroup(ChartRelationshipMetadata.SourceId("link", target.Id), "tree-link", metadata))
+                builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(x1, y1), ChartPathCommand.CubicTo(mid, y1, mid, y2, x2, y2) }),
+                    stroke: ChartColorMath.WithOpacity(color, .65), strokeWidth: width, role: "tree-link-path",
+                    paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, source.Index).WithOpacity(ChartColorMath.WithOpacity(color, .65), .65)));
+            var bounds = new ChartRect(x1, Math.Min(y1, y2) - width / 2, x2 - x1, Math.Abs(y2 - y1) + width);
+            builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("link", target.Id), "tree-link", bounds, metadata["data-cfx-full-label"]));
         }
         foreach (var node in model.Nodes) {
             var b = new ChartRect(node.X, node.Y, model.NodeWidth, model.NodeHeight); var color = Color(series, node.Index, colors, node.Depth);
-            var metadata = Metadata(node.Label, node.Index, node.Depth, 0); metadata["data-cfx-label"] = node.Label;
-            metadata.Remove("data-cfx-value");
-            if (node.Depth > 0) metadata["data-cfx-value"] = N(model.Links.First(link => link.Child == node.Index).Value);
-            using (builder.PushGroup(Id("node", node.Index), "tree-node", metadata)) {
+            var metadata = ChartRelationshipMetadata.Node(series, node.Id, node.Label, node.Index);
+            metadata["data-cfx-depth"] = N(node.Depth);
+            if (node.Depth > 0) {
+                var incoming = model.Links[series.Relationships!.IncomingLink(node.Index)];
+                metadata["data-cfx-parent"] = model.Nodes[incoming.Parent].Id;
+                metadata["data-cfx-value"] = N(incoming.Value);
+                metadata["data-cfx-authored-weight"] = N(incoming.Value);
+                metadata["data-cfx-source-link-index"] = N(incoming.Index);
+            }
+            using (builder.PushGroup(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", metadata)) {
                 builder.Rect(b, color, colors.Surface, context.Theme.AxisStrokeWidth, Math.Min(context.Theme.BarRadius, model.NodeHeight / 2), "tree-node-mark",
                     paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 Pattern(builder, Rectangle(b), series, node.Index, color, "tree-node-pattern");
                 if (series.ShowDataLabels != false) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
             }
-            builder.AddRegion(new VisualSemanticRegion(Id("node", node.Index), "tree-node", b, node.Label + ": level " + N(node.Depth)));
+            builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", b, node.Label + ": level " + N(node.Depth)));
         }
     }
 
@@ -110,11 +117,16 @@ internal static partial class VisualHierarchyCompiler {
                 paint = SvgPaint.Mix(color, colors.Surface, SvgColorRole.Surface, source, VisualChartPaint.SeriesRole(series, node.Index), .28);
             }
             string formatted = ChartNumericFormatter.FormatValue(chart.Options, node.Value);
-            var metadata = Metadata(node.Label, node.Index, node.Depth, node.Value); metadata["data-cfx-parent"] = N(node.Parent);
-            metadata["data-cfx-authored-weight"] = N(node.IncomingValue);
+            var metadata = ChartRelationshipMetadata.Node(series, node.Id, node.Label, node.Index);
+            metadata["data-cfx-depth"] = N(node.Depth); metadata["data-cfx-value"] = N(node.Value);
+            if (node.Parent >= 0) {
+                metadata["data-cfx-parent"] = model.Nodes[node.Parent].Id;
+                metadata["data-cfx-authored-weight"] = N(node.IncomingValue);
+                metadata["data-cfx-source-link-index"] = N(series.Relationships!.IncomingLink(node.Index));
+            }
             metadata["data-cfx-percent"] = N(node.Value / total); metadata["data-cfx-start-angle"] = N(node.StartAngle); metadata["data-cfx-sweep"] = N(sweep);
             metadata["data-cfx-inner-radius"] = N(node.InnerRadius); metadata["data-cfx-outer-radius"] = N(node.OuterRadius);
-            using (builder.PushGroup(Id("node", node.Index), "sunburst-segment", metadata)) {
+            using (builder.PushGroup(ChartRelationshipMetadata.SourceId("node", node.Id), "sunburst-segment", metadata)) {
                 builder.Slice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, color, colors.Surface, 1, "sunburst-segment-mark",
                     paint: new VisualScenePaintBinding(paint, SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 var pattern = Pattern(series, node.Index);
@@ -123,7 +135,7 @@ internal static partial class VisualHierarchyCompiler {
                 if (series.ShowDataLabels != false) SunburstLabel(chart, context, builder, model, node, color);
             }
             var bounds = new ChartRect(model.CenterX - node.OuterRadius, model.CenterY - node.OuterRadius, node.OuterRadius * 2, node.OuterRadius * 2);
-            builder.AddRegion(new VisualSemanticRegion(Id("node", node.Index), "sunburst-segment", bounds, node.Label + ": " + formatted));
+            builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "sunburst-segment", bounds, node.Label + ": " + formatted));
         }
     }
 

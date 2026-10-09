@@ -422,8 +422,8 @@ internal static partial class SmokeTests {
             ("polar area", Chart.Create().WithXLabels(unsafeLabel, "Safe", "Also safe").AddPolarArea("Polar", Points(96, 88, 74)).ToSvg()),
             ("timeline", Chart.Create().AddTimelineItem(unsafeLabel, new DateTime(2026, 1, 1), new DateTime(2026, 2, 1)).ToSvg()),
             ("gantt", Chart.Create().AddGanttTask(unsafeLabel, new DateTime(2026, 1, 1), new DateTime(2026, 2, 1), 0.5).ToSvg()),
-            ("sankey", Chart.Create().WithDataLabels().AddSankey("Flow", new[] { new ChartSankeyLink(unsafeLabel, "Safe", 10) }).ToSvg()),
-            ("tree", Chart.Create().AddTree("Tree", new[] { new ChartTreeLink(unsafeLabel, "Safe") }).ToSvg()),
+            ("sankey", Chart.Create().WithDataLabels().AddSankey("Flow", new[] { new ChartNode(unsafeLabel, unsafeLabel), new ChartNode("Safe", "Safe") }, new[] { new ChartFlowLink("flow-1", unsafeLabel, "Safe", 10) }).ToSvg()),
+            ("tree", Chart.Create().AddTree("Tree", new[] { new ChartNode(unsafeLabel, unsafeLabel), new ChartNode("Safe", "Safe") }, new[] { new ChartTreeLink(unsafeLabel, "Safe") }).ToSvg()),
             ("gauge", Chart.Create().AddGauge(unsafeLabel, 87).ToSvg()),
             ("donut", Chart.Create().WithXLabels(unsafeLabel).AddDonut(unsafeLabel, Points(100)).ToSvg())
         };

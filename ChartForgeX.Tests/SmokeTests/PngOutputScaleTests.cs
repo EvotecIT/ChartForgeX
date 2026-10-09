@@ -129,13 +129,13 @@ internal static partial class SmokeTests {
                 .WithTheme(ChartTheme.ReportLight())
                 .WithSize(380, 250)
                 .WithDataLabels()
-                .AddSankey("Findings", new[] {
-                    new ChartSankeyLink("Discovered", "Validated", 64),
-                    new ChartSankeyLink("Discovered", "Accepted risk", 16),
-                    new ChartSankeyLink("Validated", "Owner remediation", 42),
-                    new ChartSankeyLink("Validated", "Monitoring", 22),
-                    new ChartSankeyLink("Owner remediation", "Closed", 30),
-                    new ChartSankeyLink("Owner remediation", "Retesting", 12)
+                .AddSankey("Findings", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Owner remediation", "Owner remediation"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("Closed", "Closed"), new ChartNode("Retesting", "Retesting") }, new[] {
+                    new ChartFlowLink("flow-1", "Discovered", "Validated", 64),
+                    new ChartFlowLink("flow-2", "Discovered", "Accepted risk", 16),
+                    new ChartFlowLink("flow-3", "Validated", "Owner remediation", 42),
+                    new ChartFlowLink("flow-4", "Validated", "Monitoring", 22),
+                    new ChartFlowLink("flow-5", "Owner remediation", "Closed", 30),
+                    new ChartFlowLink("flow-6", "Owner remediation", "Retesting", 12)
                 }), 380, 250, 16)
         };
     }
