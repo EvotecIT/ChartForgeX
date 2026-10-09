@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 
 public static partial class V2Examples {
     private sealed record ProofArtifact(string Id, string Family, string Title, string Variant, string Theme,
-        int Width, int Height, string[] Diagnostics, int SemanticRegions, string[]? SeriesKinds = null, string[]? DiagnosticMessages = null);
+        int Width, int Height, string[] Diagnostics, int SemanticRegions, string[]? SeriesKinds = null, string[]? DiagnosticMessages = null, bool Compact = false);
 
     private static string Escape(string value) => WebUtility.HtmlEncode(value);
 
@@ -28,7 +28,7 @@ public static partial class V2Examples {
                 primary = primaryIds.Contains(artifact.Id), seriesKinds = ArtifactKinds(artifact),
                 theme = artifact.Theme, width = artifact.Width, height = artifact.Height,
                 naturalAspect = (double)artifact.Width / artifact.Height,
-                compact = artifact.Variant == "compact" || artifact.Variant == "compact-options", source = artifact.Id + ".csharp.txt",
+                compact = artifact.Compact, source = artifact.Id + ".csharp.txt",
                 svg = artifact.Id + ".svg", png = artifact.Id + ".png", html = artifact.Id + ".html",
                 thumbnail = artifact.Id + ".thumbnail.svg", thumbnailPng = artifact.Id + ".thumbnail.png",
                 thumbnailWidth = ThumbnailWidth, thumbnailHeight = ThumbnailHeight,
