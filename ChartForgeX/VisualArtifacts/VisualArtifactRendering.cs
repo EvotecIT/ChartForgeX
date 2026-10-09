@@ -26,6 +26,13 @@ public static partial class VisualArtifactRendering {
         return RenderSvg(artifact, options);
     }
 
+    /// <summary>Renders SVG with a caller-owned namespace for embedding several artifacts in one document.</summary>
+    public static string ToSvg(this VisualArtifact artifact, VisualArtifactRenderOptions? options, string idScope) {
+        if (artifact == null) throw new ArgumentNullException(nameof(artifact));
+        if (string.IsNullOrWhiteSpace(idScope)) throw new ArgumentException("An embedding namespace is required.", nameof(idScope));
+        return RenderSvg(artifact, options, idScope);
+    }
+
     /// <summary>
     /// Renders a supported visual artifact model to a standalone HTML page.
     /// </summary>

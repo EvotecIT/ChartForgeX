@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 
@@ -6,6 +7,13 @@ namespace ChartForgeX.VisualArtifacts;
 
 /// <summary>Decorates static artifact presentation while preserving its neutral semantic model.</summary>
 public static class VisualWatermarkDecoration {
+    /// <summary>Appends watermark layers to trusted SVG output, preserving existing presentation such as SVG animation.</summary>
+    /// <remarks>The SVG must declare a positive root viewBox or numeric width and height. Watermarks are snapshotted.</remarks>
+    public static string ApplyToSvg(string svg, params VisualWatermark[] watermarks) {
+        if (svg == null) throw new ArgumentNullException(nameof(svg));
+        return VisualWatermarkRendering.ApplyToSvg(svg, new VisualArtifact(), SnapshotWatermarks(watermarks));
+    }
+
     /// <summary>Appends watermark layers to trusted, already-rendered SVG without resolving the artifact's model.</summary>
     /// <param name="artifact">The unchanged host envelope; its natural size is a fallback when SVG dimensions are absent.</param>
     /// <param name="renderedSvg">A complete trusted SVG document supplied by a static or animated renderer.</param>
@@ -44,7 +52,8 @@ public static class VisualWatermarkDecoration {
 
     /// <summary>Creates a detached watermarked artifact with static presentation resolved using the supplied core options.</summary>
     /// <remarks>Watermarks and rendering options are captured before presentation is attached to the copied envelope.
-    /// An empty watermark array still returns an independent envelope. Semantic model changes retain ordinary producer
+    /// An empty watermark array still returns an independent envelope. Applied layers are recorded in the
+    /// presentation.watermarks metadata entry. Semantic model changes retain ordinary producer
     /// behavior; this operation does not freeze or take ownership of a model or borrowed image buffers.</remarks>
     public static VisualArtifact ToWatermarkedArtifact(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions,
         params VisualWatermark[] watermarks) {
@@ -53,7 +62,9 @@ public static class VisualWatermarkDecoration {
         var copy = artifact.Clone();
         if (snapshots.Length == 0) return copy;
         var source = VisualArtifactRendering.GetRenderSource(copy, renderOptions);
-        copy.RenderSource = new WatermarkedStaticSource(source, copy.NaturalSize, snapshots);
+        var decorated = new WatermarkedStaticSource(source, copy.NaturalSize, snapshots);
+        copy.RenderSource = decorated;
+        copy.Metadata["presentation.watermarks"] = decorated.WatermarkCount.ToString(CultureInfo.InvariantCulture);
         return copy;
     }
 
@@ -69,7 +80,9 @@ public static class VisualWatermarkDecoration {
         var snapshots = SnapshotWatermarks(watermarks);
         if (snapshots.Length == 0) return artifact;
         var source = VisualArtifactRendering.GetRenderSource(artifact, renderOptions);
-        artifact.RenderSource = new WatermarkedStaticSource(source, artifact.NaturalSize, snapshots);
+        var decorated = new WatermarkedStaticSource(source, artifact.NaturalSize, snapshots);
+        artifact.RenderSource = decorated;
+        artifact.Metadata["presentation.watermarks"] = decorated.WatermarkCount.ToString(CultureInfo.InvariantCulture);
         return artifact;
     }
 
@@ -87,11 +100,13 @@ public static class VisualWatermarkDecoration {
         private readonly IStaticVisualSource _source;
         private readonly VisualArtifact _frame;
         private readonly VisualWatermark[] _watermarks;
+        internal int WatermarkCount { get; }
 
         internal WatermarkedStaticSource(IStaticVisualSource source, VisualArtifactSize? size, VisualWatermark[] watermarks) {
             _source = source;
             _frame = new VisualArtifact { NaturalSize = size };
             _watermarks = watermarks;
+            WatermarkCount = checked((source is WatermarkedStaticSource previous ? previous.WatermarkCount : 0) + watermarks.Length);
         }
 
         public string RenderSvg(string idScope) =>

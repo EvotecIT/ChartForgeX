@@ -125,7 +125,10 @@ internal static partial class SmokeTests {
         Assert(html.Contains("<html lang=\"pl-PL\">", StringComparison.Ordinal), "Watermarked artifact HTML should preserve the envelope language.");
         Assert(Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Artifact PNG should encode requested physical DPI metadata.");
         Assert(!plain.Pixels.SequenceEqual(decorated.Pixels), "Artifact PNG watermarking should modify visible pixels.");
-        Assert(artifact.ToInterchangeJson() == semantics, "Artifact decoration should preserve portable semantic content.");
+        var decoratedEnvelope = artifact.ToInterchangeEnvelope();
+        Assert(decoratedEnvelope.Extensions["presentation.watermarks"] == "1", "Portable hosts should observe the applied presentation layer count.");
+        decoratedEnvelope.Extensions.Remove("presentation.watermarks");
+        Assert(decoratedEnvelope.ToJson() == semantics, "Artifact decoration should preserve portable semantic content.");
         watermark.OffsetX = 37;
         watermark.Opacity = 0.1;
         Assert(artifact.ToSvg(options) == svg && artifact.ToPng(options).SequenceEqual(png),

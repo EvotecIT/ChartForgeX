@@ -5,6 +5,16 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.VisualArtifacts;
 
 public static partial class VisualArtifactRendering {
+    /// <summary>Wraps a prepared visual using its captured semantic identity and family when available.</summary>
+    /// <param name="prepared">The detached static output.</param>
+    /// <param name="id">Optional host ID; defaults to the captured ID or "prepared-visual" for a scene without semantics.</param>
+    /// <remarks>A scene without captured semantics has kind Unknown; native diagram data is never inferred from pixels.</remarks>
+    public static VisualArtifact ToArtifact(this PreparedVisual prepared, string? id = null) {
+        if (prepared == null) throw new ArgumentNullException(nameof(prepared));
+        var semantics = prepared.SemanticInterchange;
+        return prepared.ToArtifact(id ?? semantics?.Id ?? "prepared-visual", semantics?.Kind ?? VisualArtifactKind.Unknown);
+    }
+
     /// <summary>Wraps an immutable prepared visual for static export and portable host handoff.</summary>
     /// <param name="prepared">The detached static output.</param>
     /// <param name="id">The stable artifact ID; it must match a supplied semantic envelope.</param>

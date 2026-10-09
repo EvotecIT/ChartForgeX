@@ -24,6 +24,7 @@ public sealed class TopologyLabelsTests {
                 return facts.Title + ": " + facts.Count + " węzły, " + facts.EdgeCount + " połączenia, " + facts.GroupCount + " grupa";
             };
         });
+        chart.Subtitle = "An English presentation subtitle";
         var svg = XDocument.Parse(chart.ToSvg());
 
         Assert.Equal("Sieć: 3 węzły, 2 połączenia, 1 grupa", Element(svg, "desc"));

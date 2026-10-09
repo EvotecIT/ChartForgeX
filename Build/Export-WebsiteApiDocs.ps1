@@ -3,27 +3,42 @@ param(
     [string] $OutputRoot = (Join-Path (Join-Path $PSScriptRoot '..') 'artifacts/website-api'),
     [string] $Version,
     [string] $ReleaseArchivesRoot,
-    [switch] $SkipBuild
+    [switch] $SkipBuild,
+    [switch] $ListProjects
 )
 
 $ErrorActionPreference = 'Stop'
-$projects = @(
-    'ChartForgeX',
-    'ChartForgeX.Interactivity',
-    'ChartForgeX.Interactivity.Html',
-    'ChartForgeX.Markup',
-    'ChartForgeX.Markup.Mermaid',
-    'ChartForgeX.Mermaid'
-)
-
 $sourceRootResolved = (Resolve-Path -LiteralPath $SourceRoot).Path
-$manifestPath = Join-Path $sourceRootResolved 'WebsiteArtifacts/project-manifest.json'
-if ([string]::IsNullOrWhiteSpace($Version)) {
-    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
-    $Version = [string] $manifest.version
+$buildConfig = Get-Content -LiteralPath (Join-Path $sourceRootResolved 'Build/project.build.json') -Raw | ConvertFrom-Json
+$projects = @($buildConfig.ExpectedVersionMap.PSObject.Properties.Name)
+if ($ReleaseArchivesRoot -or $ListProjects) {
+    if ([string]::IsNullOrWhiteSpace($Version)) {
+        throw 'Specify -Version when selecting released API documentation packages.'
+    }
+}
+else {
+    $primaryProject = [string] $buildConfig.GitHubPrimaryProject
+    $primaryProjectPath = Join-Path $sourceRootResolved "$primaryProject/$primaryProject.csproj"
+    $versionOutput = & dotnet msbuild $primaryProjectPath -nologo -getProperty:Version
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Could not evaluate the ChartForgeX source version.'
+    }
+    $sourceVersion = ($versionOutput -join "`n").Trim()
+    if (-not [string]::IsNullOrWhiteSpace($Version) -and $Version -ne $sourceVersion) {
+        throw "Source API documentation version must match the evaluated project version $sourceVersion`: $Version"
+    }
+    $Version = $sourceVersion
 }
 if ($Version -notmatch '^\d+\.\d+\.\d+$') {
     throw "Website API bundle requires a public three-part version: $Version"
+}
+# Visuals and Stories are independent packages from v2; 1.x release backfills contain six archives.
+if (([version] $Version).Major -eq 1) {
+    $projects = @($projects | Where-Object { $_ -notin @('ChartForgeX.Visuals', 'ChartForgeX.Stories') })
+}
+if ($ListProjects) {
+    Write-Output $projects
+    return
 }
 
 if (-not $ReleaseArchivesRoot -and -not $SkipBuild) {
@@ -136,6 +151,14 @@ $bundleManifest = [ordered]@{
     targetFramework = 'net10.0'
     assemblies = $projects
 }
+$assemblyFiles = [ordered]@{}
+foreach ($project in $projects) {
+    foreach ($extension in @('.dll', '.xml')) {
+        $fileName = "$project$extension"
+        $assemblyFiles[$fileName] = (Get-FileHash -LiteralPath (Join-Path $apiRoot $fileName) -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
+}
+$bundleManifest.assemblyFileSha256 = $assemblyFiles
 if ($releaseArchivesRootResolved) {
     $releaseArchives = [ordered]@{}
     foreach ($project in $projects) {

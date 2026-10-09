@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using ChartForgeX.Composition;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -16,9 +17,11 @@ internal static class VisualWatermarkRendering {
 
     public static string ApplyToSvg(string svg, VisualArtifact artifact, IReadOnlyList<VisualWatermark> watermarks) {
         if (watermarks.Count == 0) return svg;
-        var size = ResolveSvgSize(svg, artifact);
+        var size = ResolveSvgSize(svg, artifact, out var origin);
         var layer = new StringBuilder();
-        layer.Append("<g data-cfx-role=\"watermarks\" pointer-events=\"none\">");
+        layer.Append("<g data-cfx-role=\"watermarks\" pointer-events=\"none\"");
+        AppendSvgOriginTransform(layer, origin.X, origin.Y);
+        layer.Append('>');
         var imageDefinitions = AppendRepeatedSvgImageDefinitions(layer, svg, watermarks);
         for (var i = 0; i < watermarks.Count; i++) {
             imageDefinitions.TryGetValue(i, out var imageDefinition);
@@ -49,11 +52,13 @@ internal static class VisualWatermarkRendering {
 
     private static Dictionary<int, SvgImageWatermarkDefinition> AppendRepeatedSvgImageDefinitions(StringBuilder output, string svg, IReadOnlyList<VisualWatermark> watermarks) {
         var definitions = new Dictionary<int, SvgImageWatermarkDefinition>();
+        string? definitionScope = null;
         for (var index = 0; index < watermarks.Count; index++) {
             var watermark = watermarks[index];
             if (!watermark.Repeat || watermark.Kind != VisualWatermarkKind.Image) continue;
             var image = RasterImageDecoder.Decode(watermark.ImageBytes!);
-            definitions[index] = new SvgImageWatermarkDefinition(UniqueSvgImageDefinitionId(svg, index), image);
+            definitionScope ??= VisualSvgOptions.NamespaceFromExternalId(svg);
+            definitions[index] = new SvgImageWatermarkDefinition(UniqueSvgImageDefinitionId(svg, definitionScope!, index), image);
         }
         if (definitions.Count == 0) return definitions;
 
@@ -74,10 +79,10 @@ internal static class VisualWatermarkRendering {
         return definitions;
     }
 
-    private static string UniqueSvgImageDefinitionId(string svg, int index) {
+    private static string UniqueSvgImageDefinitionId(string svg, string scope, int index) {
         var suffix = 0;
         while (true) {
-            var id = "cfx-watermark-image-" + index.ToString(CultureInfo.InvariantCulture) + (suffix == 0 ? string.Empty : "-" + suffix.ToString(CultureInfo.InvariantCulture));
+            var id = scope + "-watermark-image-" + index.ToString(CultureInfo.InvariantCulture) + (suffix == 0 ? string.Empty : "-" + suffix.ToString(CultureInfo.InvariantCulture));
             if (!Regex.IsMatch(svg, "\\bid\\s*=\\s*[\\\"']" + Regex.Escape(id) + "[\\\"']", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)) return id;
             suffix++;
         }
@@ -314,7 +319,7 @@ internal static class VisualWatermarkRendering {
     }
 
     private static RasterWatermarkFrame ResolveRasterWatermarkFrame(RgbaImage source, string svg, VisualArtifact artifact) {
-        var logicalSize = ResolveSvgSize(svg, artifact);
+        var logicalSize = ResolveSvgSize(svg, artifact, out _);
         var scaleX = source.Width / logicalSize.Width;
         var scaleY = source.Height / logicalSize.Height;
         if (!IsPositiveFinite(scaleX) || !IsPositiveFinite(scaleY)) return new RasterWatermarkFrame(0, 0, source.Width, source.Height, 1);
@@ -345,15 +350,26 @@ internal static class VisualWatermarkRendering {
 
     private static bool IsPositiveFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value) && value > 0;
 
-    private static VisualArtifactSize ResolveSvgSize(string svg, VisualArtifact artifact) {
+    private static VisualArtifactSize ResolveSvgSize(string svg, VisualArtifact artifact, out (double X, double Y) origin) {
+        origin = (0, 0);
         var attributes = ReadSvgRootAttributes(svg);
         if (attributes.TryGetValue("viewBox", out var viewBox)) {
             var parts = viewBox.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 4 && TryNumber(parts[2], out var viewWidth) && TryNumber(parts[3], out var viewHeight) && viewWidth > 0 && viewHeight > 0) return new VisualArtifactSize(viewWidth, viewHeight);
+            if (parts.Length == 4 && TryNumber(parts[0], out var x) && TryNumber(parts[1], out var y) &&
+                !double.IsNaN(x) && !double.IsInfinity(x) && !double.IsNaN(y) && !double.IsInfinity(y) &&
+                TryNumber(parts[2], out var viewWidth) && TryNumber(parts[3], out var viewHeight) &&
+                IsPositiveFinite(viewWidth) && IsPositiveFinite(viewHeight)) {
+                origin = (x, y);
+                return new VisualArtifactSize(viewWidth, viewHeight);
+            }
         }
         if (attributes.TryGetValue("width", out var width) && attributes.TryGetValue("height", out var height) && TryNumber(TrimPixelSuffix(width), out var parsedWidth) && TryNumber(TrimPixelSuffix(height), out var parsedHeight)) return new VisualArtifactSize(parsedWidth, parsedHeight);
         if (artifact.NaturalSize.HasValue) return artifact.NaturalSize.Value;
         throw new InvalidOperationException("Rendered artifact SVG does not expose a usable viewBox or numeric width and height.");
+    }
+
+    private static void AppendSvgOriginTransform(StringBuilder layer, double x, double y) {
+        if (x != 0 || y != 0) layer.Append(" transform=\"translate(").Append(F(x)).Append(' ').Append(F(y)).Append(")\"");
     }
 
     private static Dictionary<string, string> ReadSvgRootAttributes(string svg) {

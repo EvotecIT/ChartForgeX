@@ -12,8 +12,20 @@ public static class TopologyMotionExtensions {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         return new TopologyMotionPresentation(chart.Prepare(options), motion);
     }
+    /// <summary>Prepares motion with a preferred route scenario independently of static highlighting.</summary>
+    /// <remarks>The preference uses the normal active-scenario fallback policy. Explicit motion ScenarioId and EdgeIds
+    /// remain authoritative. Hosts can clear static highlighting for interactive controls while retaining route selection.</remarks>
+    public static TopologyMotionPresentation WithMotion(this TopologyChart chart, TopologyMotionOptions motion,
+        TopologyRenderOptions? options, string? preferredScenarioId) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        return new TopologyMotionPresentation(chart.Prepare(options), motion, preferredScenarioId);
+    }
     /// <summary>Adds motion to an already prepared topology without repeating layout.</summary>
     public static TopologyMotionPresentation WithMotion(this PreparedTopology prepared, TopologyMotionOptions motion) => new(prepared, motion);
+    /// <summary>Adds motion to prepared geometry with an independent route scenario preference.</summary>
+    /// <remarks>Explicit motion selection remains authoritative; this preference does not change static highlighting.</remarks>
+    public static TopologyMotionPresentation WithMotion(this PreparedTopology prepared, TopologyMotionOptions motion,
+        string? preferredScenarioId) => new(prepared, motion, preferredScenarioId);
     /// <summary>Samples topology route motion into animated GIF bytes.</summary>
     public static byte[] ToGif(this TopologyChart chart, TopologyRenderOptions? options = null, TopologyMotionOptions? motion = null) =>
         chart.WithMotion(motion ?? TopologyMotionOptions.RoutePulse(), options).ToGif();

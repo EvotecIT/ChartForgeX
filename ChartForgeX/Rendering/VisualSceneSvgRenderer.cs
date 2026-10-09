@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
@@ -31,7 +32,7 @@ internal static partial class VisualSceneSvgRenderer {
         writer.EndStartElement();
         if (!decorative && !string.IsNullOrEmpty(title)) writer.StartElement("title").Attribute("id", prefix + "-title").Text(title!).EndElement();
         if (!decorative && !string.IsNullOrEmpty(description)) writer.StartElement("desc").Attribute("id", prefix + "-description").Text(description!).EndElement();
-        WriteClips(writer, scene, prefix, options);
+        var clipAliases = WriteClips(writer, scene, prefix, options);
         WriteFontPalettes(writer, scene);
         for (var i = 0; i < scene.Nodes.Count; i++) {
             var node = scene.Nodes[i];
@@ -43,7 +44,10 @@ internal static partial class VisualSceneSvgRenderer {
                 }
                 foreach (var item in group.Metadata) writer.Attribute(item.Key, item.Value);
                 if (group.Metadata.TryGetValue("data-cfx-pin-state-colors", out var pin) && pin == "true") writer.Attribute("style", "forced-color-adjust:none");
-                if (group.Clip.HasValue) writer.Attribute("clip-path", "url(#" + prefix + "-clip-" + i.ToString(CultureInfo.InvariantCulture) + ")");
+                if (group.Clip.HasValue) {
+                    var clipIndex = clipAliases.TryGetValue(i, out var canonicalIndex) ? canonicalIndex : i;
+                    writer.Attribute("clip-path", "url(#" + prefix + "-clip-" + clipIndex.ToString(CultureInfo.InvariantCulture) + ")");
+                }
                 if (group.PathClip != null) writer.Attribute("clip-path", "url(#" + prefix + "-clip-" + i.ToString(CultureInfo.InvariantCulture) + ")");
                 if (group.Rotation.HasValue || group.Translation.HasValue) {
                     var transform = new StringBuilder();
@@ -101,8 +105,10 @@ internal static partial class VisualSceneSvgRenderer {
         writer.EndElement(); return writer.Build();
     }
 
-    private static void WriteClips(SvgMarkupWriter writer, VisualScene scene, string prefix, VisualSvgOptions? options) {
+    private static Dictionary<int, int> WriteClips(SvgMarkupWriter writer, VisualScene scene, string prefix, VisualSvgOptions? options) {
         var opened = false;
+        var rectangleClips = new Dictionary<(double X, double Y, double Width, double Height), int>();
+        var aliases = new Dictionary<int, int>();
         for (var i = 0; i < scene.Nodes.Count; i++) {
             var node = scene.Nodes[i];
             if (node is VisualSceneGradient gradient) {
@@ -111,6 +117,15 @@ internal static partial class VisualSceneSvgRenderer {
                 continue;
             }
             if (!(node is VisualSceneGroup group) || !group.Clip.HasValue && group.PathClip == null) continue;
+            if (group.PathClip == null && group.Clip.HasValue) {
+                var bounds = group.Clip.Value;
+                var key = (bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                if (rectangleClips.TryGetValue(key, out var canonicalIndex)) {
+                    aliases.Add(i, canonicalIndex);
+                    continue;
+                }
+                rectangleClips.Add(key, i);
+            }
             if (!opened) { writer.StartElement("defs").EndStartElement(); opened = true; }
             writer.StartElement("clipPath").Attribute("id", prefix + "-clip-" + i.ToString(CultureInfo.InvariantCulture)).Attribute("clipPathUnits", "userSpaceOnUse").EndStartElement();
             if (group.PathClip != null) writer.StartElement("path").Attribute("d", PathData(group.PathClip)).Attribute("clip-rule", "evenodd").EndEmptyElement();
@@ -121,6 +136,7 @@ internal static partial class VisualSceneSvgRenderer {
             writer.EndElement();
         }
         if (opened) writer.EndElement();
+        return aliases;
     }
 
     private static void Paint(SvgMarkupWriter writer, VisualSceneMark mark, string prefix, int index, string? fillOverride = null, VisualSvgOptions? options = null) {

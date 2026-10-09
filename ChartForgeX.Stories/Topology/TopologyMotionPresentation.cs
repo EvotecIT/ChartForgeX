@@ -16,12 +16,17 @@ public sealed class TopologyMotionPresentation : IStaticVisualSource {
     private readonly TopologyMotionPlan _plan;
     private readonly TopologyMotionSvgAdapter _animation;
 
-    internal TopologyMotionPresentation(PreparedTopology basis, TopologyMotionOptions motion) {
+    internal TopologyMotionPresentation(PreparedTopology basis, TopologyMotionOptions motion, string? preferredScenarioId = null) {
         _basis = basis ?? throw new ArgumentNullException(nameof(basis));
         _motion = (motion ?? throw new ArgumentNullException(nameof(motion))).Clone();
         _motion.Validate();
         var geometry = basis.Geometry;
-        _plan = TopologyMotionPlanner.Build(geometry.Chart, geometry.Options, _motion, geometry.Routes)
+        var planningOptions = geometry.Options;
+        if (preferredScenarioId != null) {
+            planningOptions = geometry.Options.CloneForRendering();
+            planningOptions.ActiveScenarioId = preferredScenarioId;
+        }
+        _plan = TopologyMotionPlanner.Build(geometry.Chart, planningOptions, _motion, geometry.Routes)
             ?? throw new InvalidOperationException("Topology motion requires a scenario route or explicitly selected edges.");
         string ColorFor(string? authored, TopologyHealthStatus status) {
             var selected = _motion.MarkerColor ?? _plan.Color ?? authored;
@@ -100,6 +105,15 @@ public sealed class TopologyMotionPresentation : IStaticVisualSource {
     public string ToHtmlFragment() => "<div class=\"chartforgex-topology-motion\">" + ToSvg() + "</div>";
     /// <summary>Exports a complete HTML document containing the animated SVG.</summary>
     public string ToHtmlPage() => VisualArtifactRendering.WrapSvgPage(_basis.Title ?? "Topology motion", ToSvg(), _basis.Language);
+
+    /// <summary>Exports animated HTML after a caller-owned transformation of the trusted SVG presentation.</summary>
+    /// <remarks>Use this to compose optional SVG decorators without coupling the Stories package to them.</remarks>
+    public string ToHtmlPage(Func<string, string> svgDecorator) {
+        if (svgDecorator == null) throw new ArgumentNullException(nameof(svgDecorator));
+        var svg = svgDecorator(ToSvg());
+        if (string.IsNullOrWhiteSpace(svg)) throw new InvalidOperationException("The SVG decorator returned no presentation.");
+        return VisualArtifactRendering.WrapSvgPage(_basis.Title ?? "Topology motion", svg, _basis.Language);
+    }
 
     string IStaticVisualSource.RenderSvg(string idScope) => Sample(_motion.Progress).ToSvg(
         new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope), _basis.Geometry.Options.SvgColorVariables,
