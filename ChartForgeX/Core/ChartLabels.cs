@@ -14,6 +14,7 @@ public sealed class ChartLabels {
     private string _less = "Less";
     private string _more = "More";
     private string _noData = "No data";
+    private string _color = "Color";
     private string _untitledChart = "ChartForgeX chart";
     private const string DefaultLevel = "Level";
     private string _level = DefaultLevel;
@@ -49,6 +50,9 @@ public sealed class ChartLabels {
 
     /// <summary>Gets or sets the word for calendar days and map regions without a value, in the scale and in tooltips. Default <c>No data</c>.</summary>
     public string NoData { get => _noData; set => _noData = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the default title of an independent numeric color legend. Default <c>Color</c>.</summary>
+    public string Color { get => _color; set => _color = Required(value, nameof(value)); }
 
     /// <summary>
     /// Gets or sets the accessible name of a chart without a title (the SVG <c>title</c> element and the HTML page title).

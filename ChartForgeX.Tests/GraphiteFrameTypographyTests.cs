@@ -88,7 +88,7 @@ public sealed class GraphiteFrameTypographyTests {
             case ChartSeriesKind.Pie: return chart.AddPie("Measure", points);
             case ChartSeriesKind.Donut: return chart.AddDonut("Measure", points);
             case ChartSeriesKind.Slope: return chart.AddSlope("Measure", 30, 40);
-            case ChartSeriesKind.Treemap: return chart.AddTreemap("Measure", new[] { new ChartTreemapItem("First", 30) });
+            case ChartSeriesKind.Treemap: return chart.AddTreemap("Measure", new[] { new ChartTreemapItem("First", "First", value: 30) });
             case ChartSeriesKind.Pictorial: return chart.AddPictorial("Measure", new[] { new ChartPictorialItem("First", 30) });
             case ChartSeriesKind.ProgressBar: return chart.AddProgressBars("Measure", new[] { new ChartProgressItem("First", 30) });
             case ChartSeriesKind.WordCloud: return chart.AddWordCloud("Measure", new[] { new ChartWordCloudItem("First", 30) });

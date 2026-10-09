@@ -13,7 +13,7 @@ public sealed class PreparedHierarchySankeyTests {
         new(new VisualLayoutOptions(new VisualSize(width, height)), themeMode: mode, frame: new VisualFrame("Shared frame", showLegend: false));
     private static Chart Hierarchy(ChartSeriesKind kind) {
         var chart = Chart.Create();
-        if (kind == ChartSeriesKind.Treemap) return chart.AddTreemap("Budget", new[] { new ChartTreemapItem("Large", 9), new ChartTreemapItem("Small", 1), new ChartTreemapItem("Equal A", 2), new ChartTreemapItem("Equal B", 2) });
+        if (kind == ChartSeriesKind.Treemap) return chart.AddTreemap("Budget", new[] { new ChartTreemapItem("Large", "Large", value: 9), new ChartTreemapItem("Small", "Small", value: 1), new ChartTreemapItem("Equal A", "Equal A", value: 2), new ChartTreemapItem("Equal B", "Equal B", value: 2) });
         var links = new[] { new ChartTreeLink("Root with a long measured label", "First branch", 9), new ChartTreeLink("Root with a long measured label", "Second branch", 1),
             new ChartTreeLink("First branch", "First leaf", 6), new ChartTreeLink("First branch", "Second leaf", 3) };
         return kind == ChartSeriesKind.Tree ? chart.AddTree("Structure", new[] { new ChartNode("Root with a long measured label", "Root with a long measured label"), new ChartNode("First branch", "First branch"), new ChartNode("Second branch", "Second branch"), new ChartNode("First leaf", "First leaf"), new ChartNode("Second leaf", "Second leaf") }, links) : chart.AddSunburst("Structure", new[] { new ChartNode("Root with a long measured label", "Root with a long measured label"), new ChartNode("First branch", "First branch"), new ChartNode("Second branch", "Second branch"), new ChartNode("First leaf", "First leaf"), new ChartNode("Second leaf", "Second leaf") }, links);
@@ -56,12 +56,12 @@ public sealed class PreparedHierarchySankeyTests {
 
     [Fact]
     public void TreemapKeepsSourceIdsAfterWeightOrderingAndZeroValuesRemainSemantic() {
-        var chart = Chart.Create().AddTreemap("Tiles", new[] { new ChartTreemapItem("Small", 1), new ChartTreemapItem("Large", 3), new ChartTreemapItem("Zero", 0), new ChartTreemapItem("Equal", 1) });
+        var chart = Chart.Create().AddTreemap("Tiles", new[] { new ChartTreemapItem("Small", "Small", value: 1), new ChartTreemapItem("Large", "Large", value: 3), new ChartTreemapItem("Zero", "Zero", value: 0), new ChartTreemapItem("Equal", "Equal", value: 1) });
         var prepared = chart.Prepare(Context()); var xml = XDocument.Parse(prepared.ToSvg());
         var tiles = Role(xml, "treemap-tile").ToArray();
-        Assert.Equal("1", (string?)tiles[0].Attribute("data-cfx-point"));
-        Assert.Equal(new[] { "1", "0", "3" }, tiles.Select(e => (string?)e.Attribute("data-cfx-point")).ToArray());
-        var small = prepared.Regions.Single(r => r.Id == "series-0-point-0"); var large = prepared.Regions.Single(r => r.Id == "series-0-point-1");
+        Assert.Equal("Large", (string?)tiles[0].Attribute("data-cfx-target-id"));
+        Assert.Equal(new[] { "Large", "Small", "Equal" }, tiles.Select(e => (string?)e.Attribute("data-cfx-target-id")).ToArray());
+        var small = prepared.Regions.Single(r => r.Id == "series-0-node-Small"); var large = prepared.Regions.Single(r => r.Id == "series-0-node-Large");
         Assert.InRange(large.Bounds.Width * large.Bounds.Height / (small.Bounds.Width * small.Bounds.Height), 2.8, 3.2);
         var zero = Assert.Single(prepared.Regions, r => r.Role == "treemap-zero-value"); Assert.Equal(0, zero.Bounds.Width); Assert.Equal("Zero: 0", zero.Label);
     }
@@ -104,7 +104,7 @@ public sealed class PreparedHierarchySankeyTests {
         var sankey = Chart.Create().AddSankey("Flows", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C") }, new[] { new ChartFlowLink("flow-4", "A", "B", 1), new ChartFlowLink("flow-5", "B", "C", 1) });
         sankey.Series[0].Points.Add(new ChartPoint(1, 0));
         Assert.Throws<InvalidOperationException>(() => sankey.Prepare(Context()));
-        var treemap = Hierarchy(ChartSeriesKind.Treemap); treemap.Series[0].Points[0] = new ChartPoint(1, -1);
+        var treemap = Hierarchy(ChartSeriesKind.Treemap); treemap.Series[0].Points.Add(new ChartPoint(1, -1));
         Assert.Throws<InvalidOperationException>(() => treemap.Prepare(Context()));
     }
 }

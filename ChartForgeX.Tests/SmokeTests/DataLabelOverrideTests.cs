@@ -92,8 +92,8 @@ internal static partial class SmokeTests {
 
     private static void HierarchyLabelsCanBeSuppressed() {
         var treemap = Chart.Create().AddTreemap("Findings", new[] {
-            new ChartTreemapItem("Spoofing", 42),
-            new ChartTreemapItem("Policy gaps", 28)
+            new ChartTreemapItem("Spoofing", "Spoofing", value: 42),
+            new ChartTreemapItem("Policy gaps", "Policy gaps", value: 28)
         });
         treemap.Series[0].WithDataLabels(false);
         var treemapSvg = treemap.ToSvg();
@@ -182,7 +182,7 @@ internal static partial class SmokeTests {
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithLegend(false).WithDataLabels().AddProgressRing("Coverage", Points(90, 75, 66)), "progress-ring-value", "progress ring"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithDataLabels().AddFunnel("Pipeline", Points(100, 74, 51)), "funnel-label", "funnel"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 300).WithDataLabels().AddDonut("Checks", Points(70, 30)), "donut-total-label", "donut center"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 340).WithDataLabels().AddTreemap("Findings", new[] { new ChartTreemapItem("Spoofing", 42), new ChartTreemapItem("Policy", 28) }), "treemap-label", "treemap"),
+            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 340).WithDataLabels().AddTreemap("Findings", new[] { new ChartTreemapItem("Spoofing", "Spoofing", value: 42), new ChartTreemapItem("Policy", "Policy", value: 28) }), "treemap-label", "treemap"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 320).WithDataLabels().AddTree("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("Mail", "Mail"), new ChartNode("Web", "Web") }, new[] { new ChartTreeLink("Root", "Mail"), new ChartTreeLink("Root", "Web") }), "tree-node-label", "tree"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 360).WithDataLabels().AddSunburst("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("Mail", "Mail"), new ChartNode("Web", "Web") }, new[] { new ChartTreeLink("Root", "Mail", 3), new ChartTreeLink("Root", "Web", 2) }), "sunburst-label", "sunburst"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)), "layered-radial-value", "layered radial"),

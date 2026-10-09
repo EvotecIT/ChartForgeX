@@ -605,7 +605,7 @@ public sealed partial class ChartSeries {
         Kind = kind;
         _interpolation = kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea ? ChartInterpolation.Step : ChartInterpolation.Linear;
         Points.AddRange(ChartGuards.Points(points, nameof(points)));
-        if (IsRelationshipKind(kind) && Points.Count > 0) throw new ArgumentException("Relationship series use typed nodes and links. Use AddSankey, AddChord, AddTree, or AddSunburst.", nameof(points));
+        if (IsRelationshipKind(kind) && Points.Count > 0) throw new ArgumentException("Relationship series use typed nodes, links or items. Use AddSankey, AddChord, AddTree, AddSunburst or AddTreemap.", nameof(points));
         SourcePointCount = Points.Count;
     }
 

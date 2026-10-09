@@ -12,7 +12,9 @@
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
   const isInteractiveTarget = (node) => {
-    if ((node.dataset || {}).cfxRole === 'legend-item') return true;
+    const role = (node.dataset || {}).cfxRole;
+    if (role === 'legend-entry-omitted') return false;
+    if (role === 'legend-item') return true;
     if (node.closest('[data-cfx-role="legend-item"]')) return false;
     // Bind a semantic group once; a nested group with its own explicit identity remains a target.
     const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node]');
@@ -29,6 +31,16 @@
     // Prepared marks put identity on the outer group and their cell link inside it.
     return Array.from(node.children).find((child) => child.matches('a[data-cfx-role="heatmap-cell-link"][href]')) || node;
   };
+  // A legend may refer to an authored native item while retaining its own legend identity.
+  const legendTarget = (node) => {
+    const data = node.dataset || {};
+    return data.cfxLegendTargetKind && data.cfxLegendTargetId
+      ? { targetKind: data.cfxLegendTargetKind, targetId: data.cfxLegendTargetId } : null;
+  };
+  const referencedTargetNode = (root, target) => Array.from(root.querySelectorAll('[data-cfx-target-kind][data-cfx-target-id]'))
+    .find((node) => (node.dataset || {}).cfxRole !== 'legend-item'
+      && node.dataset.cfxTargetKind === target.targetKind && node.dataset.cfxTargetId === target.targetId
+      && (!target.seriesKey || seriesKey(node) === target.seriesKey));
   const seriesLegend = (node) => {
     const data = node.dataset || {};
     if (data.cfxSeries === undefined) return null;
@@ -36,6 +48,10 @@
     if (root) {
       const legendItems = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
       const sameSeries = (item) => (item.dataset || {}).cfxSeries === data.cfxSeries;
+      const itemId = data.cfxTargetKind === 'node' ? data.cfxTargetId : undefined;
+      if (itemId !== undefined) return legendItems.find((item) => sameSeries(item)
+        && (item.dataset || {}).cfxLegendTargetKind === 'node' && item.dataset.cfxLegendTargetId === itemId)
+        || legendItems.find((item) => sameSeries(item) && !legendTarget(item));
       return data.cfxPoint === undefined
         ? legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined) || legendItems.find(sameSeries)
         : legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
@@ -110,7 +126,11 @@
     if (kind === 'region') return data.cfxRegion || data.cfxId || data.cfxLabel || '';
     if (kind === 'node') return data.cfxNode || data.cfxId || data.cfxLabel || '';
     if (kind === 'link') return data.cfxId || [data.cfxSource, data.cfxTarget].filter(Boolean).join('->') || data.cfxLabel || '';
-    if (kind === 'legend') return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : pointTargetId(node);
+    if (kind === 'legend') {
+      const reference = legendTarget(node);
+      if (reference) return JSON.stringify([seriesKey(node) || data.cfxSeries || 'series', reference.targetKind, reference.targetId]);
+      return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : pointTargetId(node);
+    }
     if (kind === 'annotation') return data.cfxId || data.cfxLabel || [data.cfxKind, data.cfxValue].filter(Boolean).join(':');
     return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
   };
@@ -153,6 +173,8 @@
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
       sourcePoints: sourcePointCollection(node),
+      legendTargetKind: data.cfxLegendTargetKind,
+      legendTargetId: data.cfxLegendTargetId,
       value: data.cfxValue || data.cfxY || data.cfxEnd || '',
       kind: data.cfxKind || ''
     };

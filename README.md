@@ -352,7 +352,7 @@ var availability = Chart.Create()
     .WithStateCategories(tokens.Status.OperationalStateCategories());
 ```
 
-`SeverityCategories()`, `OutcomeCategories()`, and `OperationalStateCategories()` return the keys `critical`…`info`, `pass`/`notEvaluated`/`couldNotEvaluate`, and `up`/`degraded`/`down`/`recovering`/`maintenance`/`notObservable`/`unknown`. Missing members fail with the JSON path, for example `light.severity.high.ink`. Optional `ramps` (a one-hue `sequential` array and a `diverging` object with `negative`/`positive` arms around a `neutral` colour, each weakest to strongest) become `SequentialRamp` and `DivergingRamp`. `WithDesignTokens` applies the sequential ramp to `ChartTheme.SequentialRamp`, which colours count heatmaps, hexbins, and calendars without an explicit colour; `DivergingRamp.ToMapColorScale(midpoint)` and `ToSequentialMapColorScale()` build map scales with every ramp step. The weakest ramp colour is used for the smallest value, since the tokens guarantee it stays visible on the card surface. Files without ramps still load. For pages that restyle charts from their own tokens, `chart.WithSvgColorVariables(tokens.ToSvgColorVariables())` (and `ChartGrid.WithSvgColorVariables` or `TopologyRenderOptions.SvgColorVariables`) writes every paint that uses a token colour as `var(--cfx-series-1, #2A78D6)`, with the literal colour as fallback, and translucent paints as `color-mix(in srgb, var(...) N%, transparent)`; pass a function to `ToSvgColorVariables` to use the host's property names (it receives token paths such as `surface.card`, `severity.high.fill`, `series.1`, or `ramps.sequential.3`). The renderers write colours by role: a colour they derive (the white sheen of a line, the highlight of a surface, a contrast stroke on a topology icon) stays literal even when it equals a token colour; a blend of colours (bar gradients, heatmap and calendar ramp steps, neutral zero and empty days, topology tints) is written as `color-mix(in srgb, …)` of the properties of its token operands; and a colour written for a role (series, status, ramp step, the surface behind marks) takes the variable of that role (`SvgColorRole`, assigned from the token path) when several tokens share it, so the property names the same token in every theme. Text matched by value never takes a surface token (so white labels on dark marks stay white), but text on filled marks (heatmap and hexbin values, categorical cell text, Gantt lane labels) is written by role: the surface behind the marks on strong marks (solid state marks, semantic cells, cells from 35 % of a sequential ramp, near-full series tints) and the text colour on weak ones (quiet and outlined marks, neutral zeros, the weakest ramp steps, light tints); when that colour reaches less than 3:1 on the mark and the other contrasts more, the other is used, which can differ between themes when a strong fill is close to the surface in one of them (draw the marks against the card, `WithMarkBackdrop(ChartMarkBackdrop.Card)`, as report hosts do). Line, bar, histogram, calendar, matrix and categorical heatmap (with or without cell text), hexbin, state timeline, Gantt lane, and donut charts drawn without card or plot surface, and layered topology diagrams with arrow and endpoint markers (whose ids name the edge status, `muted`, or the order of an explicit edge colour, never the colour itself), then paint the same in light and dark when the light drawing uses the dark values of its properties, so a host can ship one SVG for both themes. `SvgColorVariables.Apply(svg)` on finished markup only matches by value: when two variables share a colour the earlier one names it, and a derived colour that equals a token takes its variable. PNG output, and the CSS of HTML page and topology wrappers, keep literal colours.
+`SeverityCategories()`, `OutcomeCategories()`, and `OperationalStateCategories()` return the keys `critical`…`info`, `pass`/`notEvaluated`/`couldNotEvaluate`, and `up`/`degraded`/`down`/`recovering`/`maintenance`/`notObservable`/`unknown`. Missing members fail with the JSON path, for example `light.severity.high.ink`. Optional `ramps` (a one-hue `sequential` array and a `diverging` object with `negative`/`positive` arms around a `neutral` colour, each weakest to strongest) become `SequentialRamp` and `DivergingRamp`. `WithDesignTokens` applies the sequential ramp to `ChartTheme.SequentialRamp`, which colours count heatmaps, hexbins, and calendars without an explicit colour; `DivergingRamp.ToColorScale(midpoint)` and `ToSequentialColorScale()` build map scales with every ramp step. The weakest ramp colour is used for the smallest value, since the tokens guarantee it stays visible on the card surface. Files without ramps still load. For pages that restyle charts from their own tokens, `chart.WithSvgColorVariables(tokens.ToSvgColorVariables())` (and `ChartGrid.WithSvgColorVariables` or `TopologyRenderOptions.SvgColorVariables`) writes every paint that uses a token colour as `var(--cfx-series-1, #2A78D6)`, with the literal colour as fallback, and translucent paints as `color-mix(in srgb, var(...) N%, transparent)`; pass a function to `ToSvgColorVariables` to use the host's property names (it receives token paths such as `surface.card`, `severity.high.fill`, `series.1`, or `ramps.sequential.3`). The renderers write colours by role: a colour they derive (the white sheen of a line, the highlight of a surface, a contrast stroke on a topology icon) stays literal even when it equals a token colour; a blend of colours (bar gradients, heatmap and calendar ramp steps, neutral zero and empty days, topology tints) is written as `color-mix(in srgb, …)` of the properties of its token operands; and a colour written for a role (series, status, ramp step, the surface behind marks) takes the variable of that role (`SvgColorRole`, assigned from the token path) when several tokens share it, so the property names the same token in every theme. Text matched by value never takes a surface token (so white labels on dark marks stay white), but text on filled marks (heatmap and hexbin values, categorical cell text, Gantt lane labels) is written by role: the surface behind the marks on strong marks (solid state marks, semantic cells, cells from 35 % of a sequential ramp, near-full series tints) and the text colour on weak ones (quiet and outlined marks, neutral zeros, the weakest ramp steps, light tints); when that colour reaches less than 3:1 on the mark and the other contrasts more, the other is used, which can differ between themes when a strong fill is close to the surface in one of them (draw the marks against the card, `WithMarkBackdrop(ChartMarkBackdrop.Card)`, as report hosts do). Line, bar, histogram, calendar, matrix and categorical heatmap (with or without cell text), hexbin, state timeline, Gantt lane, and donut charts drawn without card or plot surface, and layered topology diagrams with arrow and endpoint markers (whose ids name the edge status, `muted`, or the order of an explicit edge colour, never the colour itself), then paint the same in light and dark when the light drawing uses the dark values of its properties, so a host can ship one SVG for both themes. `SvgColorVariables.Apply(svg)` on finished markup only matches by value: when two variables share a colour the earlier one names it, and a derived colour that equals a token takes its variable. PNG output, and the CSS of HTML page and topology wrappers, keep literal colours.
 
 ## Composition
 
@@ -708,6 +708,36 @@ Sankey accepts directed `ChartFlowLink(id, sourceId, targetId, value)` records. 
 
 `chart.Series[0].WithNodeState(id, state)` follows the node ID through input reordering or label changes. Its `NodeStates` view is read-only and belongs to that series. Series expose immutable `Nodes`, `FlowLinks`, and `TreeLinks`; these families have no numeric `Points`. See the [migration guide](docs/v2/migration.md#hierarchy-and-flow-identities) for replaced signatures and metadata, and the [configured examples](ChartForgeX.Examples/V2GalleryModels.Relationships.cs) for repeated labels and parallel flows.
 
+## Hierarchical Treemap
+
+Treemap item IDs identify nodes independently of repeated display labels. A group contains its descendants and aggregates their leaf sizes; a nullable color value controls a separate numeric color scale:
+
+```csharp
+var chart = Chart.Create().AddTreemap("Allocation", new[] {
+    new ChartTreemapItem("north", "North"),
+    new ChartTreemapItem("north-team", "Team", parentId: "north"),
+    new ChartTreemapItem("north-support", "Support", parentId: "north-team", value: 5, colorValue: -2),
+    new ChartTreemapItem("south", "South"),
+    new ChartTreemapItem("south-support", "Support", parentId: "south", value: 8, colorValue: 3),
+    new ChartTreemapItem("research", "Research", value: 3)
+}).ConfigureTreemap(options => {
+    options.GroupPadding = 6;
+    options.Gap = 3;
+    options.ColorLegendTitle = "Change (%)";
+    options.ColorScale = ChartColorScale.Diverging(
+        ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(229, 229, 233), ChartColor.FromRgb(204, 104, 52), 0);
+});
+chart.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
+```
+
+Leaves require finite non-negative `Value`; groups require null `Value`, and their rendered value is the sum of their leaves. Forests, standalone leaves, and zero sizes are supported. Zero sizes retain their source facts without a minimum-area rectangle. `ColorValue` is optional and may be negative. Its observed domain is independent of size, and an explicit scale range remains authoritative. Missing color values use the scale's `NoDataColor` or the theme's neutral paint. Named discrete bands use the same `ChartColorScale.Discrete` API as maps.
+
+`ChartOptions.Treemap` controls group padding, sibling gaps, group labels, and the color legend. `ChartSeries.TreemapItems` is an immutable snapshot; `Points` remains empty. Point styling overrides use item input ordinals, while SVG and HTML targets retain item IDs through input reordering or label renaming. See the [migration guide](docs/v2/migration.md#hierarchical-treemap) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Treemap.cs).
+
+`WithNodeState(id, state)` applies semantic styling by item ID. With a numeric color scale, the state appears as an outline and preserves the quantitative fill. Without a scale, shared state colors supply the fill unless an explicit color overrides them.
+
+`WithPointLegend()` shows leaf keys when no numeric color legend is active. In interactive HTML, a leaf key reads its own value and toggles or isolates that node. Linked charts resolve leaf keys by ID even when their labels or input order differ.
+
 ## Chart catalog
 
 The catalog is broad enough for generated reports, dashboards, operational summaries, and static documentation:
@@ -798,6 +828,20 @@ Use pasted colors when matching an existing design system:
 var palette = ChartPalettes.FromHex("#2563EB", "#14B8A6", "#F59E0B", "#EF4444");
 var color = ChartColor.FromHex("#2563EB");
 ```
+
+`ChartColorScale` maps numeric values to sequential ramps, diverging ramps, or fixed discrete bands. Maps consume it through `WithMapColorScale`; the value-to-color API also works independently of a chart. A band upper bound is exclusive, so a value of 100 selects the last band here:
+
+```csharp
+var scale = ChartColorScale.Discrete(new[] {
+    new ChartColorBand(50, ChartColor.FromHex("#DAE8F8"), "Low"),
+    new ChartColorBand(100, ChartColor.FromHex("#6F9ECE"), "Middle"),
+    new ChartColorBand(null, ChartColor.FromHex("#1C5CAB"), "High")
+});
+chart.WithMapColorScale(scale);
+var high = scale.ColorFor(100);
+```
+
+Continuous scales infer their finite domain from source values or use `WithValueRange(minimum, maximum)` for a fixed domain. `ColorFor(value)` requires that fixed domain; `ColorFor(value, sourceMinimum, sourceMaximum)` uses the supplied source bounds when no domain is fixed. An inferred constant domain keeps its one observed value and uses the low color. `WithNoDataColor` sets the missing-data paint; otherwise each renderer uses its theme fallback. [Numeric color-scale migration](docs/v2/migration.md#numeric-color-scales) describes the type and converter renames.
 
 Use fluent series styling for a single emphasized series:
 

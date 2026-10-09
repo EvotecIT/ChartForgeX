@@ -14,11 +14,22 @@ internal static partial class VisualHierarchyCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         var series = chart.Series[0];
         if (!series.ShowInLegend) return Array.Empty<VisualLegendEntry>();
-        if (series.Kind == ChartSeriesKind.Treemap && chart.Options.ShowPointLegend)
-            return series.Points.Select((point, index) => new VisualLegendEntry(Category(chart, point.X), Color(series, index, colors), Id("point", index), series.Kind,
-                Pattern(series, index), series.StateRole, series.InteractionIdentityKey)).ToArray();
-        return new[] { new VisualLegendEntry(series.Name, ChartSeriesColours.Resolve(series, 0, colors), "series-0", series.Kind,
-            series.FillPattern, series.StateRole, series.InteractionIdentityKey) };
+        if (series.Kind == ChartSeriesKind.Treemap) {
+            var surface = new ChartTreemapSurface(chart, colors);
+            if (surface.Scale != null && chart.Options.Treemap.ShowColorScaleLegend) return Array.Empty<VisualLegendEntry>();
+            if (chart.Options.ShowPointLegend) return series.TreemapItems.Select((item, index) => (item, index))
+                .Where(entry => series.Relationships!.Children(entry.index).Count == 0)
+                .Select(entry => {
+                    var blend = surface.Blend(entry.index);
+                    return new VisualLegendEntry(entry.item.Label, blend.Color,
+                        ChartRelationshipMetadata.SourceId("node", entry.item.Id), series.Kind, Pattern(series, entry.index),
+                        ChartRelationshipPaint.State(series, entry.index), series.InteractionIdentityKey,
+                        paint: blend.Paint, targetKind: "node", targetId: entry.item.Id);
+                }).ToArray();
+        }
+        var color = ChartSeriesColours.Resolve(series, 0, colors);
+        return new[] { new VisualLegendEntry(series.Name, color, "series-0", series.Kind,
+            series.FillPattern, series.StateRole, series.InteractionIdentityKey, paint: VisualChartPaint.Series(series, color)) };
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
@@ -81,30 +92,6 @@ internal static partial class VisualHierarchyCompiler {
         }
     }
 
-    private static void Treemap(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
-        var series = chart.Series[0];
-        if (series.Points.Any(point => !Finite(point.X) || !Finite(point.Y) || point.Y < 0)) throw new InvalidOperationException("Treemap values must be finite and non-negative.");
-        if (!Finite(series.Points.Sum(point => point.Y))) throw new InvalidOperationException("Treemap aggregate weights exceed the finite range.");
-        var tiles = ChartTreemapLayout.Compute(series, plot);
-        if (tiles.Count == 0) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.no-data", "The treemap has no positive values."));
-        foreach (var tile in tiles) {
-            var color = Color(series, tile.PointIndex, colors); string label = Category(chart, tile.Point.X), value = ChartNumericFormatter.FormatValue(chart.Options, tile.Point.Y);
-            string full = tile.PointIndex < series.PointLabels.Count && series.PointLabels[tile.PointIndex] != null ? series.PointLabels[tile.PointIndex]! : label;
-            var metadata = Metadata(label, tile.PointIndex, 0, tile.Point.Y); metadata["data-cfx-full-label"] = full; metadata["data-cfx-formatted-value"] = value;
-            using (builder.PushGroup(Id("point", tile.PointIndex), "treemap-tile", metadata)) {
-                builder.Rect(tile.Rect, color, radius: Math.Min(context.Theme.BarRadius, Math.Min(tile.Rect.Width, tile.Rect.Height) * .1), role: "treemap-tile-mark", paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, tile.PointIndex)));
-                Pattern(builder, Rectangle(tile.Rect), series, tile.PointIndex, color, "treemap-pattern");
-                if (series.ShowDataLabels != false) Label(chart, context, builder, full + "\n" + value, tile.Rect, color, tile.PointIndex, "treemap-label");
-            }
-            builder.AddRegion(new VisualSemanticRegion(Id("point", tile.PointIndex), "treemap-tile", tile.Rect, full + ": " + value));
-        }
-        for (int index = 0; index < series.Points.Count; index++) if (series.Points[index].Y == 0) {
-            string label = Category(chart, series.Points[index].X), value = ChartNumericFormatter.FormatValue(chart.Options, 0);
-            using (builder.PushGroup(Id("point", index), "treemap-zero-value", Metadata(label, index, 0, 0))) { }
-            builder.AddRegion(new VisualSemanticRegion(Id("point", index), "treemap-zero-value", new ChartRect(plot.X, plot.Y, 0, 0), label + ": " + value));
-        }
-    }
-
     private static void Sunburst(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
         var model = ChartSunburstLayout.Compute(chart, plot); var series = chart.Series[0];
         double total = model.Nodes[model.Root].Value;
@@ -141,10 +128,6 @@ internal static partial class VisualHierarchyCompiler {
         }
     }
 
-    private static Dictionary<string, string> Metadata(string label, int index, int depth, double value) => new() {
-        ["data-cfx-label"] = label, ["data-cfx-point"] = N(index), ["data-cfx-depth"] = N(depth), ["data-cfx-value"] = N(value)
-    };
-    private static string Category(Chart chart, double value) => ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value) ?? ChartAxisValueFormatter.Format(chart.Options.XAxis, value);
     private static string Id(string role, int index) => "series-0-" + role + "-" + N(index);
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);
     private static bool Finite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);

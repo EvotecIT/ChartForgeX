@@ -7,15 +7,15 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void HierarchyAndFlowSvgExposeDataMetadata() {
         var treemap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddTreemap("Findings", new[] {
-            new ChartTreemapItem("Critical", 50),
-            new ChartTreemapItem("High", 28)
+            new ChartTreemapItem("Critical", "Critical", value: 50),
+            new ChartTreemapItem("High", "High", value: 28)
         }).ToSvg();
-        FamilyMetadata(treemap, "treemap-tile", ("point", "0"), ("label", "Critical"), ("value", "50"));
+        FamilyMetadata(treemap, "treemap-tile", ("node", "Critical"), ("source-node-index", "0"), ("label", "Critical"), ("value", "50"));
         var positionedTreemap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithLegend(true).WithLegendPosition(ChartLegendPosition.Right)
             .AddTreemap("Findings", new[] {
-                new ChartTreemapItem("Critical", 50),
-                new ChartTreemapItem("High", 28)
+                new ChartTreemapItem("Critical", "Critical", value: 50),
+                new ChartTreemapItem("High", "High", value: 28)
             });
         var positioned = PreparedFamily(positionedTreemap);
         var tile = positioned.Regions.First(region => region.Role == "treemap-tile");

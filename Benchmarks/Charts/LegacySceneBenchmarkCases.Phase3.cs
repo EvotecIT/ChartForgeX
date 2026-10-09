@@ -49,7 +49,11 @@ public static partial class LegacySceneBenchmarkCases {
                 chart.AddDottedMap("Locations", MapItems());
                 break;
             case "treemap":
+#if LEGACY_CHART_API
                 chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartTreemapItem("Pool " + (index + 1), 10 + (index * 17) % 73)));
+#else
+                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartTreemapItem("pool-" + (index + 1), "Pool " + (index + 1), value: 10 + (index * 17) % 73)));
+#endif
                 break;
             case "sankey":
 #if LEGACY_CHART_API
@@ -117,18 +121,32 @@ public static partial class LegacySceneBenchmarkCases {
         } else {
             var chart = (Chart)model;
             source.Append('|').Append(chart.Title).Append('|').Append(chart.Subtitle);
-            foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
+            // The legacy flat Treemap stores item labels in XAxisLabels; the current typed
+            // input stores them with each item. TreemapFacts reads their common source meaning.
+            if (fixture != "treemap") foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
             foreach (var series in chart.Series) {
                 source.Append('|').Append(series.Kind).Append(':').Append(series.Name);
                 if (series.Kind == ChartSeriesKind.Sankey) {
                     foreach (var label in SankeyNodeLabels(chart)) source.Append("|node:").Append(label);
                     foreach (var flow in SankeyFacts(chart)) source.Append("|flow:").Append(flow.Source).Append(':').Append(flow.Target).Append(':').Append(Numeric(flow.Value));
+                } else if (series.Kind == ChartSeriesKind.Treemap) {
+                    foreach (var item in TreemapFacts(chart)) source.Append("|treemap:").Append(item.Label).Append(':').Append(Numeric(item.Value));
                 } else foreach (var point in series.Points) source.Append('|').Append(Numeric(point.X)).Append(',').Append(Numeric(point.Y)).Append(',').Append(point.BreakBefore);
             }
             if (fixture == "map") foreach (var point in MapItems()) source.Append('|').Append(point.Label).Append(':').Append(Numeric(point.Value!.Value));
             source.Append('|').Append(Numeric(chart.Options.ProgressMaximum)).Append("|calendar-first-day=Monday");
         }
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source.ToString())));
+    }
+
+    private static IReadOnlyList<(string Label, double Value)> TreemapFacts(Chart chart) {
+        var series = chart.Series[0];
+#if LEGACY_CHART_API
+        var labels = chart.Options.XAxisLabels.ToDictionary(label => label.Value, label => label.Text);
+        return series.Points.Select(point => (labels[point.X], point.Y)).ToArray();
+#else
+        return series.TreemapItems.Select(item => (item.Label, item.Value!.Value)).ToArray();
+#endif
     }
 
     // Compare actual common model facts: the historical API has no authored relationship identities.

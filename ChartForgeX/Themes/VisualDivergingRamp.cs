@@ -33,16 +33,16 @@ public sealed class VisualDivergingRamp {
     public IReadOnlyList<ChartColor> Positive => Array.AsReadOnly(_positive);
 
     /// <summary>
-    /// Creates a map colour scale with every step of the ramp: the negative arm from its strongest colour at the minimum
+    /// Creates a numeric color scale with every step of the ramp: the negative arm from its strongest colour at the minimum
     /// to its weakest next to the midpoint, the neutral midpoint, and the positive arm from its weakest to its strongest
     /// colour at the maximum.
     /// </summary>
     /// <param name="midpointValue">The value drawn in the neutral colour; null uses the middle of the data range.</param>
-    /// <returns>A diverging map colour scale.</returns>
-    public ChartMapColorScale ToMapColorScale(double? midpointValue = null) {
+    /// <returns>A diverging numeric color scale.</returns>
+    public ChartColorScale ToColorScale(double? midpointValue = null) {
         var low = new ChartColor[_negative.Length];
         for (var i = 0; i < low.Length; i++) low[i] = _negative[_negative.Length - 1 - i];
-        return ChartMapColorScale.Diverging(low, Neutral, _positive, midpointValue);
+        return ChartColorScale.Diverging(low, Neutral, _positive, midpointValue);
     }
 
     private static ChartColor[] Materialize(IEnumerable<ChartColor> colors, string parameterName) {

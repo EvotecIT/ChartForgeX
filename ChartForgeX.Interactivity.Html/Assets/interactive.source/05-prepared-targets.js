@@ -23,7 +23,15 @@
       if (index < 0) return;
       data.cfxRole = 'legend-item'; data.cfxSeries = String(index);
       const region = regions.get(source);
-      data.cfxLabel = region ? region.label : node.getAttribute('aria-label') || '';
+      data.cfxLabel = data.cfxLabel || (region ? region.label : node.getAttribute('aria-label') || '');
+      const reference = legendTarget(node);
+      if (reference) {
+        const mark = referencedTargetNode(svg, { ...reference, seriesKey: data.cfxSeriesKey });
+        if (mark) {
+          data.cfxLabel = mark.dataset.cfxLabel || data.cfxLabel;
+          if (mark.dataset.cfxValue !== undefined) data.cfxValue = mark.dataset.cfxValue;
+        }
+      }
       if (match && match[2] !== undefined) {
         data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
         const collectionKey = index + ':' + data.cfxPoint;

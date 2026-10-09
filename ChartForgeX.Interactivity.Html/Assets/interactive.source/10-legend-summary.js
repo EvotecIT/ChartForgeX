@@ -18,6 +18,7 @@
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
+    if (legendTarget(item)) return data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
     const values = legendSeriesValues(item);
     if (!values.length) return [];
     if (data.cfxPoint !== undefined) {
@@ -32,7 +33,7 @@
   };
   const renderLegendTip = (tip, item) => {
     const data = item.dataset || {};
-    const name = data.cfxPoint !== undefined ? data.cfxLabel || seriesLabel(item) : seriesLabel(item) || data.cfxLabel || '';
+    const name = data.cfxPoint !== undefined || legendTarget(item) ? data.cfxLabel || seriesLabel(item) : seriesLabel(item) || data.cfxLabel || '';
     if (!name) return false;
     tip.replaceChildren();
     const title = document.createElement('div');

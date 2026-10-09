@@ -62,7 +62,7 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets the optional color scale used by region and tile maps.
     /// </summary>
-    public ChartMapColorScale? MapColorScale { get; set; }
+    public ChartColorScale? MapColorScale { get; set; }
 
     /// <summary>
     /// Gets or sets the optional stroke color used for data regions.

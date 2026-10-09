@@ -53,9 +53,8 @@ SVG and PNG charts share measured label placement, including data labels, target
 - Keep marketing/poster chart matrices honest by checking each advertised family against public API, SVG renderer, PNG renderer, smoke tests, generated examples, and website gallery tags.
 - When adding a future chart family, update the README catalog, public model/API, SVG and PNG renderers, smoke tests, generated examples, gallery metadata, and promotional imagery together.
 
-The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation and pyramid height/area partitions share native geometry owners. Further work should retain that API and source-value boundary:
+The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation, pyramid partitions, hierarchical Treemap and numeric color scales share native geometry owners. Further work should retain that API and source-value boundary:
 
-- Extend hierarchical Treemap input with explicit IDs, parent containment/headers, leaf-size aggregation, and an independent numeric color dimension. Reuse the typed node/index owner and shared color-scale owner; flat Treemap remains the current input contract.
 - Extend Sunburst with an independent numeric color dimension/scale and an explicit authored-parent value policy. Its current sectors aggregate leaf weights and preserve authored incoming weights separately.
 - Add Sankey alignment, ordering, gap, and style options through its canonical layout. Authored node/flow IDs and parallel flows are supported independently of labels.
 - [ ] Extend numeric radial axes with axis titles and label orientation, rounded sectors, mixed radial families, and angular reversal for radar/polar. Schedule reversal requires matching packed span and label projections.
