@@ -25,10 +25,13 @@ internal static partial class VisualNumericRadialCompiler {
             return;
         }
         var scales = Scales(chart, stacks);
-        var categoryLabels = categories.Select(category => ChartAxisValueFormatter.Format(chart.Options.XAxis, category.Value)).ToArray();
-        var tickLabels = scales.ToDictionary(pair => pair.Key, pair => pair.Value.Ticks.Select(value =>
-            ChartAxisValueFormatter.Format(Axis(chart, pair.Key), value,
-                pair.Key == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxisValueFormatter : chart.Options.ValueFormatter, pair.Value.Ticks)).ToArray());
+        var categoryValues = categories.Select(category => category.Value).ToArray();
+        var categoryLabels = categoryValues.Select(ChartAxisValueFormatter.Create(chart.Options.XAxis, categoryValues)).ToArray();
+        var tickLabels = scales.ToDictionary(pair => pair.Key, pair => {
+            var format = ChartAxisValueFormatter.Create(Axis(chart, pair.Key), pair.Value.Ticks,
+                pair.Key == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxisValueFormatter : chart.Options.ValueFormatter);
+            return pair.Value.Ticks.Select(format).ToArray();
+        });
         var geometry = Layout(chart, context, builder, plot, categoryLabels, tickLabels.Values.SelectMany(values => values));
         if (geometry.Outer <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.insufficient-space", "The frame leaves no space for numeric radial marks."));
