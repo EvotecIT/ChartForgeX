@@ -6,6 +6,22 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class StorySourceTimelineTests {
+    [Theory]
+    [InlineData("")]
+    [InlineData("\n")]
+    [InlineData("\t ")]
+    public void EmptySourceDocumentsKeepExactWhitespaceAndAMeaningfulTextAlternative(string whitespace) {
+        var source = new VisualStorySourceSurface(StorySourceText.Create(whitespace));
+        Assert.Equal(whitespace, source.Source.Text);
+        Assert.Contains("Empty source document", source.AccessibleText);
+        var editor = StorySourceTimeline.Create(StorySourceText.Create("A" + whitespace)).Delete(0, 1, TimeSpan.FromSeconds(1));
+        var prepared = Story(editor).Prepare();
+        Assert.Equal(whitespace, editor.Source.Text);
+        Assert.Contains("Empty source document", prepared.ToTranscript());
+        Assert.True(prepared.ToPng().Length > 64);
+        XDocument.Parse(prepared.ToSvg());
+    }
+
     [Fact]
     public void ExactEditCompletionIncludesAnImmediateFollowingPaste() {
         var editor = StorySourceTimeline.Create(StorySourceText.Create(""))

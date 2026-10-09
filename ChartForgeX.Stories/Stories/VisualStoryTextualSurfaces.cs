@@ -50,7 +50,8 @@ public sealed class VisualStorySourceSurface : VisualStorySurface {
             if (accessibleHeading.Length > 0) accessibleHeading += Environment.NewLine;
             accessibleHeading += "Language: " + source.Language;
         }
-        if (source.Text.Length == 0 && accessibleHeading.Length == 0) return "Empty source document";
+        if (string.IsNullOrWhiteSpace(source.Text) && accessibleHeading.Length == 0)
+            return "Empty source document" + Environment.NewLine + source.Text;
         return accessibleHeading.Length == 0
             ? source.Text
             : accessibleHeading + Environment.NewLine + source.Text;
