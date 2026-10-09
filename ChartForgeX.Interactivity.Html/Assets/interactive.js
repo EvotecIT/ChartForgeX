@@ -311,8 +311,13 @@
     clear.textContent = 'Clear';
     clear.setAttribute('data-cfx-compare-clear', 'true');
     clear.addEventListener('click', () => {
+      const returnFocus = tray.contains(document.activeElement);
       clearSelections(root);
       publishCompare(root, true);
+      if (returnFocus) {
+        if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+        try { root.focus({ preventScroll: true }); } catch { root.focus(); }
+      }
     });
     tray.appendChild(clear);
     return items;

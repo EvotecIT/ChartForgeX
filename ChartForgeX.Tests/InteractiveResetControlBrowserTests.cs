@@ -31,6 +31,7 @@ public sealed class InteractiveResetControlBrowserTests {
         await page.Locator("[data-cfx-compare-clear]").ClickAsync();
         Assert.False(await reset.IsVisibleAsync());
         Assert.Equal(0, await page.Locator(".cfx-selected").CountAsync());
+        Assert.Equal("cfx-interactive-chart", await page.EvaluateAsync<string>("() => document.activeElement.className"));
 
         await target.ClickAsync();
         await ResetAsync(page);
