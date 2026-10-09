@@ -49,6 +49,38 @@ public sealed class PreparedPolarIdentityTests {
         Assert.Equal("0", Assert.Single(groups, group => group.Id == "series-0-point-2").Metadata["data-cfx-value"]);
     }
 
+    [Fact]
+    public void MissingRadarCategoriesHaveDistinctDerivedFactsWithoutClaimingAnAuthoredZero() {
+        var chart = Bare().WithXLabels("North", "East", "South", "West")
+            .AddRadarArea("Observed", new[] { new ChartPoint(1, 0), new ChartPoint(2, 20), new ChartPoint(3, 30), new ChartPoint(4, 40) })
+            .AddRadarLine("Target", new[] { new ChartPoint(1, 0), new ChartPoint(4, 80) });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "radar-point-source").ToArray();
+        var imputed = groups.Where(group => group.Metadata["data-cfx-missing"] == "true").ToArray();
+        var svg = XDocument.Parse(prepared.ToSvg());
+        Assert.Equal(2, chart.Series[1].Points.Count);
+        Assert.Equal(2, imputed.Length);
+        Assert.Equal(2, imputed.Select(group => group.Id).Distinct().Count());
+        Assert.Equal(new[] { "2", "3" }, imputed.Select(group => group.Metadata["data-cfx-category"]).OrderBy(category => category));
+        Assert.All(imputed, group => {
+            Assert.Equal("1", group.Metadata["data-cfx-series"]);
+            Assert.Equal("-1", group.Metadata["data-cfx-point"]);
+            Assert.Equal("0", group.Metadata["data-cfx-value"]);
+            Assert.Equal("missing-category-zero", group.Metadata["data-cfx-derived"]);
+            Assert.Equal("0", group.Metadata["data-cfx-source-count"]);
+            Assert.Equal(string.Empty, group.Metadata["data-cfx-source-points"]);
+            var element = Assert.Single(svg.Descendants(), item => (string?)item.Attribute("data-cfx-source-id") == group.Id);
+            Assert.Equal("missing-category-zero", (string?)element.Attribute("data-cfx-derived"));
+            Assert.Equal("0", (string?)element.Attribute("data-cfx-source-count"));
+            Assert.Equal(string.Empty, (string?)element.Attribute("data-cfx-source-points"));
+        });
+        var authoredZero = Assert.Single(groups, group => group.Id == "series-1-point-0");
+        Assert.Equal("false", authoredZero.Metadata["data-cfx-missing"]);
+        Assert.Equal("0", authoredZero.Metadata["data-cfx-point"]);
+        Assert.Equal("0", authoredZero.Metadata["data-cfx-value"]);
+        Assert.False(authoredZero.Metadata.ContainsKey("data-cfx-derived"));
+    }
+
     private static void AssertSeriesAttribute(XDocument svg, string sourceId, int series) {
         var element = Assert.Single(svg.Descendants(), item => (string?)item.Attribute("data-cfx-source-id") == sourceId);
         Assert.Equal(series.ToString(), (string?)element.Attribute("data-cfx-series"));

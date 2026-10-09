@@ -92,11 +92,17 @@ internal static partial class VisualPolarCompiler {
                         var marker = VisualMarkerScene.Radius(series, context);
                         var bounds = VisualMarkerScene.Bounds(mapped[index].X, mapped[index].Y, Math.Max(marker, VisualMarkerScene.Extent(series, marker)));
                         builder.AddRegion(new VisualSemanticRegion(pointId, radar ? "radar-point" : "polar-point", bounds, CategoryText(category) + ": " + formatted));
-                        using (builder.PushGroup(pointId, radar ? "radar-point-source" : "polar-point-source", new Dictionary<string, string> {
+                        var pointMetadata = new Dictionary<string, string> {
                             ["data-cfx-series"] = N(seriesIndex),
                             ["data-cfx-point"] = N(source), ["data-cfx-category"] = N(category), ["data-cfx-angle"] = N(radar ? angle : -angle),
                             ["data-cfx-value"] = N(value), ["data-cfx-full-label"] = formatted, ["data-cfx-missing"] = source < 0 ? "true" : "false"
-                        })) {
+                        };
+                        if (source < 0) {
+                            pointMetadata["data-cfx-derived"] = "missing-category-zero";
+                            pointMetadata["data-cfx-source-count"] = "0";
+                            pointMetadata["data-cfx-source-points"] = string.Empty;
+                        }
+                        using (builder.PushGroup(pointId, radar ? "radar-point-source" : "polar-point-source", pointMetadata)) {
                             var pointColor = source >= 0 ? ChartSeriesColours.Point(series, seriesIndex, source, colors) : color;
                             VisualMarkerScene.Draw(builder, series, source, mapped[index].X, mapped[index].Y, marker, pointColor,
                                 VisualChartPaint.Series(series, pointColor, source), radar ? "radar-point" : "polar-point", colors.Surface, 1,
