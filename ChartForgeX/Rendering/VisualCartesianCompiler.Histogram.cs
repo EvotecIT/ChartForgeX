@@ -32,14 +32,6 @@ internal static partial class VisualCartesianCompiler {
         if (series.IsHistogramDensity) metadata["data-cfx-rendered-y"] = Number(bin.RenderedValue);
     }
 
-    private static void AddHistogramSourceRegions(VisualSceneBuilder builder, ChartSeries series, int index, ChartRect plot) {
-        for (var source = 0; source < series.HistogramSourcePoints.Count; source++) {
-            var point = series.HistogramSourcePoints[source];
-            builder.AddRegion(new VisualSemanticRegion(SeriesId(index) + "-source-" + Number(source), "source-observation",
-                new ChartRect(plot.Left, plot.Top, 0, 0), "x=" + Number(point.X) + " y=" + Number(point.Y)));
-        }
-    }
-
     private static void DrawDensityHistogramSurface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
         int index, int pointIndex, ChartRect bounds, VisualThemeColors colors) {
         var color = PointColor(series, index, pointIndex, colors);

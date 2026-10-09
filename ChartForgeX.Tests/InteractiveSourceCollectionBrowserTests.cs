@@ -11,6 +11,46 @@ namespace ChartForgeX.Tests;
 /// <summary>Aggregate marks report contributors separately from their stable rendered identity.</summary>
 public sealed class InteractiveSourceCollectionBrowserTests {
     [Theory]
+    [InlineData(ChartSeriesKind.TrendLine, 2)]
+    [InlineData(ChartSeriesKind.BoxPlot, 1)]
+    public async Task SummaryMarksRetainDerivedFactsAndInteractiveIdentityForLargeRawInput(ChartSeriesKind kind, int marks) {
+        if (!Enabled) return;
+        var observations = Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)).ToArray();
+        var chart = Chart.Create().WithSize(640, 400).WithTitle("Raw observations, prepared summary");
+        if (kind == ChartSeriesKind.TrendLine) chart.AddTrendLine("Regression", observations);
+        else chart.AddBoxPlot("Distribution", 1, observations.Select(point => point.Y));
+        chart.Series[0].WithInteractionKey("summary-source");
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
+        var page = session.Page;
+        await CaptureEventsAsync(page);
+        var root = page.Locator(".cfx-interactive-chart");
+        using (var metadata = JsonDocument.Parse(await root.EvaluateAsync<string>("node => node.dataset.cfxPreparedChart"))) {
+            Assert.Equal(marks, metadata.RootElement.GetProperty("regions").EnumerateArray()
+                .Count(region => region.GetProperty("role").GetString() == "point"));
+            Assert.Equal(marks, metadata.RootElement.GetProperty("regions").EnumerateArray()
+                .Count(region => region.GetProperty("id").GetString()!.StartsWith("series-0-", StringComparison.Ordinal)));
+        }
+        Assert.Equal(marks, await page.Locator(PointTarget).CountAsync());
+        Assert.Equal(observations.Length.ToString(), await page.Locator("[data-cfx-role='series']").GetAttributeAsync("data-cfx-source-points"));
+        var point = page.Locator(Point(0, 0));
+        Assert.Equal(kind == ChartSeriesKind.TrendLine ? "regression-endpoint" : "five-number-summary", await point.GetAttributeAsync("data-cfx-derived"));
+        Assert.Equal("-1", await point.GetAttributeAsync("data-cfx-source-0-index"));
+        await point.FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+        Assert.Equal("true", await point.GetAttributeAsync("aria-selected"));
+        using (var events = await ReadEventsAsync(page)) {
+            foreach (var type in new[] { "cfxhover", "cfxselect" }) {
+                var selected = events.RootElement.EnumerateArray().Last(item => item.GetProperty("type").GetString() == type);
+                var target = selected.GetProperty("target");
+                Assert.Equal("point", target.GetProperty("targetKind").GetString());
+                Assert.Equal("summary-source:0", target.GetProperty("targetId").GetString());
+            }
+        }
+        await CaptureAsync(page, "raw-summary-" + kind.ToString().ToLowerInvariant());
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
     [InlineData(360, false)]
     [InlineData(720, true)]
     public async Task MeanBinsRetainPopulatedAndEmptySourcesInHoverSelectionAndPeerSynchronization(int width, bool dark) {
