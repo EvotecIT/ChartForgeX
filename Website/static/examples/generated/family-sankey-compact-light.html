@@ -294,7 +294,8 @@ public static partial class V2GalleryModels {
             new ChartTreeLink(&quot;engineering&quot;, &quot;platform&quot;, 35), new ChartTreeLink(&quot;engineering&quot;, &quot;engineering-support&quot;, 25),
             new ChartTreeLink(&quot;operations&quot;, &quot;operations-support&quot;, 40)
         };
-        return kind == ChartSeriesKind.Tree ? Chart.Create().AddTree(&quot;Teams&quot;, nodes, links) : Chart.Create().AddSunburst(&quot;Teams&quot;, nodes, links);
+        var chart = Chart.Create().WithDataLabels();
+        return kind == ChartSeriesKind.Tree ? chart.AddTree(&quot;Teams&quot;, nodes, links) : chart.AddSunburst(&quot;Teams&quot;, nodes, links);
     }
 
     private static Chart FlowRelationships(string variant) {
@@ -338,7 +339,7 @@ public static partial class V2GalleryModels {
             case ChartSeriesKind.Sankey: return FlowRelationships(variant);
             case ChartSeriesKind.Tree:
             case ChartSeriesKind.Sunburst: return TeamRelationships(kind, variant);
-            case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
+            case ChartSeriesKind.Treemap: return Chart.Create().WithDataLabels().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
             case ChartSeriesKind.Pictorial:
                 chart = Chart.Create().AddPictorial(&quot;Assessments&quot;, new[] { new ChartPictorialItem(&quot;Team A&quot;, 74), new ChartPictorialItem(&quot;Team B&quot;, 46), new ChartPictorialItem(&quot;Team C&quot;, 61) }, ChartPictorialShape.Person)
                     .WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
@@ -656,7 +657,8 @@ public static partial class V2GalleryModels {
             new ChartTreeLink(&quot;engineering&quot;, &quot;platform&quot;, 35), new ChartTreeLink(&quot;engineering&quot;, &quot;engineering-support&quot;, 25),
             new ChartTreeLink(&quot;operations&quot;, &quot;operations-support&quot;, 40)
         };
-        return kind == ChartSeriesKind.Tree ? Chart.Create().AddTree(&quot;Teams&quot;, nodes, links) : Chart.Create().AddSunburst(&quot;Teams&quot;, nodes, links);
+        var chart = Chart.Create().WithDataLabels();
+        return kind == ChartSeriesKind.Tree ? chart.AddTree(&quot;Teams&quot;, nodes, links) : chart.AddSunburst(&quot;Teams&quot;, nodes, links);
     }
 
     private static Chart FlowRelationships(string variant) {
@@ -700,7 +702,7 @@ public static partial class V2GalleryModels {
             case ChartSeriesKind.Sankey: return FlowRelationships(variant);
             case ChartSeriesKind.Tree:
             case ChartSeriesKind.Sunburst: return TeamRelationships(kind, variant);
-            case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
+            case ChartSeriesKind.Treemap: return Chart.Create().WithDataLabels().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
             case ChartSeriesKind.Pictorial:
                 chart = Chart.Create().AddPictorial(&quot;Assessments&quot;, new[] { new ChartPictorialItem(&quot;Team A&quot;, 74), new ChartPictorialItem(&quot;Team B&quot;, 46), new ChartPictorialItem(&quot;Team C&quot;, 61) }, ChartPictorialShape.Person)
                     .WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
