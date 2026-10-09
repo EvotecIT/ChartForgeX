@@ -60,12 +60,13 @@ public sealed partial class PreparedVisualStory {
         if (timestamp < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(timestamp));
         if (outputScale < 1 || outputScale > 4) throw new ArgumentOutOfRangeException(nameof(outputScale));
         EnsureRenderBudget(outputScale);
-        var elapsed = Math.Min(timestamp.TotalSeconds, ContentDuration.TotalSeconds);
-        var index = VisualStoryTimeline.FindScene(_story, elapsed, out var timing);
+        var elapsed = timestamp < ContentDuration ? timestamp : ContentDuration;
+        var index = FindChapter(elapsed);
+        var chapter = Chapters[index];
         var completed = timestamp >= ContentDuration;
-        var current = NativeVisualStoryRenderer.Prepare(_story, index, completed ? null : elapsed - timing.Start, outputScale, _transcript);
-        var transition = Math.Min(Playback.Transition.TotalSeconds, _story.Scenes[index].DurationSeconds);
-        var remaining = timing.End - elapsed;
+        var current = NativeVisualStoryRenderer.Prepare(_story, index, completed ? null : (elapsed - chapter.Start).TotalSeconds, outputScale, _transcript);
+        var transition = Math.Min(Playback.Transition.TotalSeconds, chapter.Duration.TotalSeconds);
+        var remaining = (chapter.Start + chapter.Duration - elapsed).TotalSeconds;
         if (index + 1 < _story.Scenes.Count && transition > 0 && remaining < transition) {
             var next = NativeVisualStoryRenderer.Prepare(_story, index + 1, 0, outputScale, _transcript);
             var renderOptions = new VisualRenderOptions(outputScale, supersampling: 1);
@@ -108,7 +109,10 @@ public sealed partial class PreparedVisualStory {
     /// <remarks>Use the format overload for GIF-specific cadence, quantization and readability validation.</remarks>
     public RasterAnimationSource FrameSource(VisualStoryFrameOptions? options = null) {
         var sampling = options ?? new VisualStoryFrameOptions();
-        var count = FrameCount(sampling);
+        return CreateFrameSource(sampling, FrameCount(sampling));
+    }
+
+    private RasterAnimationSource CreateFrameSource(VisualStoryFrameOptions sampling, int count) {
         return new RasterAnimationSource(checked(Width * sampling.OutputScale), checked(Height * sampling.OutputScale), count,
             (index, cancellation) => {
                 cancellation.ThrowIfCancellationRequested();
@@ -120,10 +124,23 @@ public sealed partial class PreparedVisualStory {
     }
 
     internal int FrameCount(VisualStoryFrameOptions options) {
-        var count = checked((int)Math.Ceiling(Duration.TotalSeconds * options.FramesPerSecond));
+        var count = SampleFrameCount(options);
+        EnsureSceneCoverage(count, options.FramesPerSecond);
+        return count;
+    }
+
+    private int SampleFrameCount(VisualStoryFrameOptions options) {
+        var count = RequiredFrameCount(options.FramesPerSecond);
         if (count > options.MaximumFrames) throw new InvalidOperationException("Story sampling requires " + count + " frames; reduce duration or frame rate, or increase the explicit frame budget.");
-        EnsureSceneCoverage(Math.Max(1, count), options.FramesPerSecond);
-        return Math.Max(1, count);
+        return count;
+    }
+
+    private int RequiredFrameCount(int rate) => checked((int)((Duration.Ticks * rate + TimeSpan.TicksPerSecond - 1) / TimeSpan.TicksPerSecond));
+
+    private int FindChapter(TimeSpan timestamp) {
+        for (var index = 0; index < Chapters.Count - 1; index++)
+            if (timestamp.Ticks < Chapters[index].Start.Ticks + Chapters[index].Duration.Ticks) return index;
+        return Chapters.Count - 1;
     }
 
     private static long SampleTicks(int index, int rate) => (long)index * TimeSpan.TicksPerSecond / rate;
@@ -155,10 +172,12 @@ public sealed partial class PreparedVisualStory {
             var end = i + 1 == count ? endOfPlay : sampleStart(i + 1);
             var seconds = (end - start).TotalSeconds;
             var sample = i + 1 == count ? ContentDuration : renderTime?.Invoke(i) ?? start;
-            var index = VisualStoryTimeline.FindScene(_story, Math.Min(sample.TotalSeconds, ContentDuration.TotalSeconds), out var timing);
+            var timestamp = sample < ContentDuration ? sample : ContentDuration;
+            var index = FindChapter(timestamp);
             if (start < Chapters[index].Start) return "Frame cadence would reveal a scene before its boundary. Increase the frame rate or completed-state hold.";
-            var transition = Math.Min(Playback.Transition.TotalSeconds, _story.Scenes[index].DurationSeconds);
-            var opacity = transition > 0 && index + 1 < Chapters.Count ? Math.Max(0, Math.Min(1, (timing.End - sample.TotalSeconds) / transition)) : 1;
+            var transition = Math.Min(Playback.Transition.TotalSeconds, Chapters[index].Duration.TotalSeconds);
+            var remaining = (Chapters[index].Start + Chapters[index].Duration - timestamp).TotalSeconds;
+            var opacity = transition > 0 && index + 1 < Chapters.Count ? Math.Max(0, Math.Min(1, remaining / transition)) : 1;
             visibility[index].Credit(opacity, seconds, start);
             if (index + 1 < Chapters.Count) {
                 visibility[index + 1].Credit(1 - opacity, seconds, start);
@@ -187,11 +206,11 @@ public sealed partial class PreparedVisualStory {
 
     private VisualStoryFrameOptions DefaultSvgSampling() {
         var normal = new VisualStoryFrameOptions();
-        var count = Math.Max(1, checked((int)Math.Ceiling(Duration.TotalSeconds * normal.FramesPerSecond)));
+        var count = RequiredFrameCount(normal.FramesPerSecond);
         if (count > normal.MaximumFrames || SceneCoverageFailure(count, index => TimeSpan.FromTicks(SampleTicks(index, normal.FramesPerSecond))) == null) return normal;
         foreach (var rate in new[] { 12, 24, 30, 60 }) {
             var candidate = new VisualStoryFrameOptions(rate);
-            count = Math.Max(1, checked((int)Math.Ceiling(Duration.TotalSeconds * rate)));
+            count = RequiredFrameCount(rate);
             if (count > candidate.MaximumFrames || SceneCoverageFailure(count, index => TimeSpan.FromTicks(SampleTicks(index, rate))) == null) return candidate;
         }
         return new VisualStoryFrameOptions(60);

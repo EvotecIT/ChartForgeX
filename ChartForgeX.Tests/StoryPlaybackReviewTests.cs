@@ -10,6 +10,21 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class StoryPlaybackReviewTests {
+    [Fact]
+    public void RasterFramesDoNotEncodeTheUnusedVectorRepresentation() {
+        var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" height=\"1\"><rect width=\"1\" height=\"1\" fill=\"red\"/>" +
+            new string(' ', 4 * 1024 * 1024) + "</svg>";
+        var media = new VisualStoryMediaSurface(new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 }), "Resolved red", svg);
+        var prepared = Basic(media).Prepare();
+        prepared.RenderAt(TimeSpan.Zero);
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var image = prepared.RenderAt(TimeSpan.Zero);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.True(allocated < svg.Length * 4L, "Raster rendering allocated " + allocated + " bytes for an unused vector representation.");
+        Assert.Equal(480, image.Width);
+        Assert.Contains("data:image/svg+xml;base64,", prepared.ToSvg());
+    }
+
     [Theory]
     [InlineData(.4, true)]
     [InlineData(.2, false)]

@@ -6,6 +6,27 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class RasterAnimationEncoderTests {
+    [Fact]
+    public void GifReadabilityUsesContainerDurationsAcrossPreparedExportRoutes() {
+        var story = VisualStory.Create("Rounded display clock").WithSize(480, 320);
+        story.Scene("first", "First", .25).Panel("first", new VisualStoryTextSurface("First"));
+        story.Scene("last", "Last", .645).Panel("last", new VisualStoryTextSurface("Last"));
+        story.Outcome("last", "Last", "last");
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(.1), TimeSpan.Zero, 1));
+        var sampling = new VisualStoryFrameOptions(2);
+        Assert.Throws<InvalidOperationException>(() => prepared.FrameSource(sampling));
+        Assert.Throws<InvalidOperationException>(() => prepared.FrameSource(RasterAnimationFormat.Apng, sampling));
+        var bytes = prepared.ToGif(sampling);
+        Assert.Equal(new[] { 500d, 500d }, ReadControls(bytes, RasterAnimationFormat.Gif).Durations);
+        Assert.Equal(bytes, RasterAnimationEncoder.Encode(prepared.FrameSource(RasterAnimationFormat.Gif, sampling),
+            RasterAnimationFormat.Gif, new RasterAnimationOptions { PlayCount = 1 }));
+        Assert.Equal(TimeSpan.FromSeconds(1), prepared.Frames(RasterAnimationFormat.Gif, sampling)
+            .Aggregate(TimeSpan.Zero, (duration, frame) => duration + frame.Duration));
+        using var stream = new MemoryStream();
+        prepared.WriteAnimation(stream, RasterAnimationFormat.Gif, sampling);
+        Assert.Equal(bytes, stream.ToArray());
+    }
+
     [Theory]
     [InlineData(1)]
     [InlineData(6)]

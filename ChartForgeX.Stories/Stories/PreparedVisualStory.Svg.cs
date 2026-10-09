@@ -41,7 +41,7 @@ public sealed partial class PreparedVisualStory {
             var timestamp = index == count - 1 ? ContentDuration : TimeSpan.FromTicks(start);
             var frame = PrepareFrame(timestamp, sampling.OutputScale).ToSvg(new VisualAccessibility { IsDecorative = true }, "story-frame");
             embedded = SvgVisualStoryRenderer.ReserveEmbeddedMedia(embedded, Encoding.UTF8.GetByteCount(frame), _story.Scenes[0].Id);
-            var chapter = VisualStoryTimeline.FindScene(_story, Math.Min(timestamp.TotalSeconds, ContentDuration.TotalSeconds), out _);
+            var chapter = FindChapter(timestamp < ContentDuration ? timestamp : ContentDuration);
             var name = provisional + "-motion-frame-" + index;
             var last = index == count - 1;
             writer.StartElement("g").Attribute("class", "cfx-story-frame cfx-story-frame-" + index + (last ? " cfx-story-frame-last" : ""))
