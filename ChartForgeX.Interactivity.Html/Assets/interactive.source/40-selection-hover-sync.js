@@ -307,6 +307,13 @@
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
+    // Authored relationship marks use node/link identity instead of numeric points.
+    const nativeHit = event.target instanceof Element ? event.target.closest('[data-cfx-target-kind="node"],[data-cfx-target-kind="link"]') : null;
+    if (nativeHit && root.contains(nativeHit) && usesPolarCoordinates(nativeHit)
+      && !nativeHit.closest('[data-cfx-role="legend-item"],.cfx-series-muted')
+      && !['zero', 'precision-collapse'].includes(nativeHit.dataset.cfxGeometryStatus)) {
+      return { node: nativeHit, x: event.clientX, y: event.clientY, distance: 0 };
+    }
     // Native SVG hit testing identifies curved marks more accurately than their rectangular envelopes.
     const hit = event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null;
     if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && !hit.classList.contains('cfx-series-muted')) {
