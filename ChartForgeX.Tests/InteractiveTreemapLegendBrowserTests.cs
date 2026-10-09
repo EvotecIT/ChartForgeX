@@ -2,6 +2,7 @@ using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Themes;
 using Microsoft.Playwright;
@@ -173,6 +174,40 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         Assert.Equal(3, await omitted.CountAsync());
         Assert.Equal(3, await session.Page.Locator("[data-cfx-role=legend-entry-omitted][data-cfx-legend-target-kind=node]").CountAsync());
         Assert.Equal(0, await session.Page.Locator("[data-cfx-role=legend-entry-omitted][tabindex],[data-cfx-role=legend-entry-omitted][data-cfx-target-kind]").CountAsync());
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
+    [InlineData(false, 360)]
+    [InlineData(true, 800)]
+    public async Task HostPaletteChangesKeepLeafTilesKeysAndTooltipSwatchesConsistent(bool dark, int width) {
+        if (!Enabled) return;
+        var red = ChartColor.FromRgb(255, 0, 0); var blue = ChartColor.FromRgb(0, 0, 255);
+        var missing = ChartColor.FromRgb(13, 47, 81);
+        var chart = Chart.Create().WithPointLegend().WithSize(width, 360)
+            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).AddTreemap("Colors", new[] {
+                new ChartTreemapItem("low", "Low", value: 4, colorValue: 0),
+                new ChartTreemapItem("explicit", "Explicit", value: 3, colorValue: 100),
+                new ChartTreemapItem("missing", "Missing", value: 2)
+            }).ConfigureTreemap(options => {
+                options.ColorScale = ChartColorScale.Sequential(red, blue).WithValueRange(0, 100).WithNoDataColor(missing);
+                options.ShowColorScaleLegend = false;
+            });
+        chart.Series[0].WithPointColor(1, blue);
+        chart.Options.SvgColorVariables = new SvgColorVariables().Add("--host-low", red, SvgColorRole.Ramp)
+            .Add("--host-explicit", blue, SvgColorRole.Series).Add("--host-missing", missing, SvgColorRole.Ramp);
+        var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html, width + 24, 490);
+        var page = session.Page;
+        await page.EvaluateAsync("() => { const root = document.querySelector('.cfx-interactive-chart'); root.style.setProperty('--host-low', '#00ff00'); root.style.setProperty('--host-explicit', '#ff00ff'); root.style.setProperty('--host-missing', '#ffff00'); }");
+        foreach (var (id, expected) in new[] { ("low", "rgb(0, 255, 0)"), ("explicit", "rgb(255, 0, 255)"), ("missing", "rgb(255, 255, 0)") }) {
+            var tile = page.Locator(Node(id) + " > [data-cfx-role=treemap-tile-mark]");
+            var key = page.Locator(Key(id));
+            Assert.Equal(expected, await tile.EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+            Assert.Equal(expected, await key.Locator("[data-cfx-role=legend-swatch]").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+            await key.FocusAsync();
+            Assert.Equal(expected, await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        }
+        await Capture(page, html, "leaf-legend-host-palette-" + width + "-" + dark);
         AssertNoConsoleErrors(session);
     }
 

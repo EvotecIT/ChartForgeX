@@ -19,12 +19,17 @@ internal static partial class VisualHierarchyCompiler {
             if (surface.Scale != null && chart.Options.Treemap.ShowColorScaleLegend) return Array.Empty<VisualLegendEntry>();
             if (chart.Options.ShowPointLegend) return series.TreemapItems.Select((item, index) => (item, index))
                 .Where(entry => series.Relationships!.Children(entry.index).Count == 0)
-                .Select(entry => new VisualLegendEntry(entry.item.Label, surface.Blend(entry.index).Color,
-                    ChartRelationshipMetadata.SourceId("node", entry.item.Id), series.Kind, Pattern(series, entry.index),
-                    series.StateRole, series.InteractionIdentityKey, targetKind: "node", targetId: entry.item.Id)).ToArray();
+                .Select(entry => {
+                    var blend = surface.Blend(entry.index);
+                    return new VisualLegendEntry(entry.item.Label, blend.Color,
+                        ChartRelationshipMetadata.SourceId("node", entry.item.Id), series.Kind, Pattern(series, entry.index),
+                        ChartRelationshipPaint.State(series, entry.index), series.InteractionIdentityKey,
+                        paint: blend.Paint, targetKind: "node", targetId: entry.item.Id);
+                }).ToArray();
         }
-        return new[] { new VisualLegendEntry(series.Name, ChartSeriesColours.Resolve(series, 0, colors), "series-0", series.Kind,
-            series.FillPattern, series.StateRole, series.InteractionIdentityKey) };
+        var color = ChartSeriesColours.Resolve(series, 0, colors);
+        return new[] { new VisualLegendEntry(series.Name, color, "series-0", series.Kind,
+            series.FillPattern, series.StateRole, series.InteractionIdentityKey, paint: VisualChartPaint.Series(series, color)) };
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
