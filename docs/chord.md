@@ -12,7 +12,7 @@ var chart = Chart.Create().AddChord("Transfers", new[] {
     new ChartFlowLink("priority", "north", "south", 4),
     new ChartFlowLink("internal", "central", "central", 3),
     new ChartFlowLink("none", "central", "north", 0)
-}).WithChord(options => {
+}).ConfigureChord(options => {
     options.StartAngleDegrees = -120;
     options.SweepAngleDegrees = 300;
     options.NodeGapDegrees = 5;
@@ -30,7 +30,7 @@ The node arc represents incoming plus outgoing weight, so each flow contributes 
 
 Flow values are finite and non-negative. Zero flows and nodes without positive endpoints retain source identities and raw values but draw no filled ribbon or arc. Empty and all-zero inputs emit `chord.no-positive-flow`. Positive weights or node thickness that collapse in native geometry emit `chord.precision-collapse`; they receive no minimum-width substitute. Increasing canvas size cannot recover a ratio that underflows the numeric angular allocation.
 
-`ChartOptions.Chord` holds the mutable options configured by `WithChord`:
+`ChartOptions.Chord` holds the mutable options configured by `ConfigureChord`:
 
 | Option | Behavior |
 | --- | --- |
