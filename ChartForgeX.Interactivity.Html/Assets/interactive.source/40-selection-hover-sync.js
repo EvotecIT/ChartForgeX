@@ -399,6 +399,23 @@
       hideCrosshair(root, crosshair);
       return;
     }
+    // An explicitly valued series can be a native scalar datum without Cartesian point geometry.
+    const scalar = event.target instanceof Element ? event.target.closest('[data-cfx-target-kind="series"][data-cfx-value]') : null;
+    const scalarStyle = scalar && getComputedStyle(scalar);
+    if (scalar && root.contains(scalar)) {
+      hideCrosshair(root, crosshair);
+      if (scalar.closest('defs,[hidden],[aria-hidden="true"],[data-cfx-role="legend-item"],.cfx-series-muted')
+        || scalarStyle.display === 'none' || ['hidden', 'collapse'].includes(scalarStyle.visibility)
+        || ['zero', 'precision-collapse'].includes(scalar.dataset.cfxGeometryStatus)) {
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+        return;
+      }
+      if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(scalar)) || root.dataset.cfxHoverMode !== 'series')
+        setHover(root, scalar, true, true, 'series');
+      showTip(root, tip, scalar, event);
+      return;
+    }
     const point = nearestPoint(root, event);
     if (!point) {
       hideCrosshair(root, crosshair);

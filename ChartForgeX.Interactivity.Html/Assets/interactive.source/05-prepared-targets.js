@@ -39,7 +39,7 @@
           data.cfxSourcePoints = sourceCollections.get(collectionKey);
       }
     });
-    svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"]').forEach((node) => {
+    svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"],[data-cfx-role="circle-chart"]').forEach((node) => {
       const data = node.dataset;
       if (data.cfxSeries === undefined) {
         const owner = node.parentElement && node.parentElement.closest('[data-cfx-series]');
@@ -69,6 +69,10 @@
       if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = xLabels.get(Number(data.cfxX)) || '';
       if (data.cfxRole === 'legend-item') return;
       const region = regions.get(data.cfxSourceId || '');
+      // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
+      if (region && data.cfxPoint === undefined && data.cfxValue !== undefined && data.cfxPercent !== undefined
+        && !node.hasAttribute('aria-label') && !node.hasAttribute('data-cfx-label'))
+        node.setAttribute('aria-label', region.label || item.name);
       if (!region || (data.cfxPoint === undefined && data.cfxRegion === undefined)) return;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
