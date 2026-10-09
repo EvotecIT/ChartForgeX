@@ -417,6 +417,8 @@ public static partial class V2GalleryModels {
                 var points = new[] { 8d, 17, 11, 23, 16 }.Select((value, point) =&gt; new ChartPoint(point + 1, value + index * 30));
                 chart.AddLine(positions[index].ToString(), points);
                 chart.Series[index].WithInterpolation(ChartInterpolation.Step, positions[index]);
+                var shape = new[] { ChartMarkerShape.Square, ChartMarkerShape.Diamond, ChartMarkerShape.Triangle }[index];
+                chart.Series[index].ConfigureMarkers(markers =&gt; { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
             }
             return chart;
         }
@@ -450,6 +452,8 @@ public static partial class V2GalleryModels {
             chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
             return chart;
         }
+        if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
+            return MarkerOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
@@ -485,6 +489,41 @@ public static partial class V2GalleryModels {
             chart.WithYAxis(mode == &quot;sum&quot; ? &quot;Total quantity&quot; : &quot;Mean quantity&quot;);
         } else throw new ArgumentOutOfRangeException(nameof(variant));
         return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart MarkerOptions(ChartSeriesKind kind) {
+        if (kind == ChartSeriesKind.Scatter) {
+            var chart = Chart.Create().WithXAxis(&quot;Sample position&quot;).WithYAxis(&quot;Example level&quot;);
+            var shapes = Enum.GetValues&lt;ChartMarkerShape&gt;();
+            for (var index = 0; index &lt; shapes.Length; index++) {
+                var shape = shapes[index];
+                chart.AddScatter(shape.ToString(), new[] { new ChartPoint(index % 3 + 1, index / 3 + 1) });
+                chart.Series[index].WithPointLabel(0, shape.ToString()).WithDataLabels()
+                    .ConfigureMarkers(markers =&gt; { markers.Shape = shape; markers.Radius = 8; markers.StrokeWidth = 1; });
+            }
+            chart.Options.XAxis.WithBounds(0, 4);
+            chart.Options.YAxis.WithBounds(0, 4);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Bubble) {
+            var chart = Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
+                .AddBubble(&quot;Standard&quot;, new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
+                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+            chart.Series[0].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
+            chart.Series[1].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
+            return chart;
+        }
+        var radar = Categories(ChartSeriesKind.Radar)
+            .AddRadarArea(&quot;Observed&quot;, new[] { 58d, 76, 69, 84, 62, 73 }.Select((value, index) =&gt; new ChartPoint(index + 1, value)))
+            .AddRadarLine(&quot;Target&quot;, new[] { 75d, 85, 80, 90, 75, 85 }.Select((value, index) =&gt; new ChartPoint(index + 1, value)));
+        radar.Series[0].ConfigureRadar(options =&gt; options.FillOpacity = .2)
+            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+        radar.Series[1].ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
+        radar.Options.YAxis.WithBounds(0, 100);
+        return radar;
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
@@ -824,6 +863,8 @@ public static partial class V2GalleryModels {
                 var points = new[] { 8d, 17, 11, 23, 16 }.Select((value, point) =&gt; new ChartPoint(point + 1, value + index * 30));
                 chart.AddLine(positions[index].ToString(), points);
                 chart.Series[index].WithInterpolation(ChartInterpolation.Step, positions[index]);
+                var shape = new[] { ChartMarkerShape.Square, ChartMarkerShape.Diamond, ChartMarkerShape.Triangle }[index];
+                chart.Series[index].ConfigureMarkers(markers =&gt; { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
             }
             return chart;
         }
@@ -857,6 +898,8 @@ public static partial class V2GalleryModels {
             chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
             return chart;
         }
+        if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
+            return MarkerOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
@@ -892,6 +935,41 @@ public static partial class V2GalleryModels {
             chart.WithYAxis(mode == &quot;sum&quot; ? &quot;Total quantity&quot; : &quot;Mean quantity&quot;);
         } else throw new ArgumentOutOfRangeException(nameof(variant));
         return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart MarkerOptions(ChartSeriesKind kind) {
+        if (kind == ChartSeriesKind.Scatter) {
+            var chart = Chart.Create().WithXAxis(&quot;Sample position&quot;).WithYAxis(&quot;Example level&quot;);
+            var shapes = Enum.GetValues&lt;ChartMarkerShape&gt;();
+            for (var index = 0; index &lt; shapes.Length; index++) {
+                var shape = shapes[index];
+                chart.AddScatter(shape.ToString(), new[] { new ChartPoint(index % 3 + 1, index / 3 + 1) });
+                chart.Series[index].WithPointLabel(0, shape.ToString()).WithDataLabels()
+                    .ConfigureMarkers(markers =&gt; { markers.Shape = shape; markers.Radius = 8; markers.StrokeWidth = 1; });
+            }
+            chart.Options.XAxis.WithBounds(0, 4);
+            chart.Options.YAxis.WithBounds(0, 4);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Bubble) {
+            var chart = Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
+                .AddBubble(&quot;Standard&quot;, new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
+                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+            chart.Series[0].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
+            chart.Series[1].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
+            return chart;
+        }
+        var radar = Categories(ChartSeriesKind.Radar)
+            .AddRadarArea(&quot;Observed&quot;, new[] { 58d, 76, 69, 84, 62, 73 }.Select((value, index) =&gt; new ChartPoint(index + 1, value)))
+            .AddRadarLine(&quot;Target&quot;, new[] { 75d, 85, 80, 90, 75, 85 }.Select((value, index) =&gt; new ChartPoint(index + 1, value)));
+        radar.Series[0].ConfigureRadar(options =&gt; options.FillOpacity = .2)
+            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+        radar.Series[1].ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
+        radar.Options.YAxis.WithBounds(0, 100);
+        return radar;
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
