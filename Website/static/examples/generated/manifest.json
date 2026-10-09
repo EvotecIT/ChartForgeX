@@ -196,6 +196,30 @@
     "family-bubble-compact-light.svg",
     "family-bubble-compact-light.thumbnail.png",
     "family-bubble-compact-light.thumbnail.svg",
+    "family-bubble-compact-options-dark.csharp.txt",
+    "family-bubble-compact-options-dark.html",
+    "family-bubble-compact-options-dark.png",
+    "family-bubble-compact-options-dark.svg",
+    "family-bubble-compact-options-dark.thumbnail.png",
+    "family-bubble-compact-options-dark.thumbnail.svg",
+    "family-bubble-compact-options-light.csharp.txt",
+    "family-bubble-compact-options-light.html",
+    "family-bubble-compact-options-light.png",
+    "family-bubble-compact-options-light.svg",
+    "family-bubble-compact-options-light.thumbnail.png",
+    "family-bubble-compact-options-light.thumbnail.svg",
+    "family-bubble-options-dark.csharp.txt",
+    "family-bubble-options-dark.html",
+    "family-bubble-options-dark.png",
+    "family-bubble-options-dark.svg",
+    "family-bubble-options-dark.thumbnail.png",
+    "family-bubble-options-dark.thumbnail.svg",
+    "family-bubble-options-light.csharp.txt",
+    "family-bubble-options-light.html",
+    "family-bubble-options-light.png",
+    "family-bubble-options-light.svg",
+    "family-bubble-options-light.thumbnail.png",
+    "family-bubble-options-light.thumbnail.svg",
     "family-bubble-wide-dark.csharp.txt",
     "family-bubble-wide-dark.html",
     "family-bubble-wide-dark.png",
@@ -892,6 +916,30 @@
     "family-radar-compact-light.svg",
     "family-radar-compact-light.thumbnail.png",
     "family-radar-compact-light.thumbnail.svg",
+    "family-radar-compact-options-dark.csharp.txt",
+    "family-radar-compact-options-dark.html",
+    "family-radar-compact-options-dark.png",
+    "family-radar-compact-options-dark.svg",
+    "family-radar-compact-options-dark.thumbnail.png",
+    "family-radar-compact-options-dark.thumbnail.svg",
+    "family-radar-compact-options-light.csharp.txt",
+    "family-radar-compact-options-light.html",
+    "family-radar-compact-options-light.png",
+    "family-radar-compact-options-light.svg",
+    "family-radar-compact-options-light.thumbnail.png",
+    "family-radar-compact-options-light.thumbnail.svg",
+    "family-radar-options-dark.csharp.txt",
+    "family-radar-options-dark.html",
+    "family-radar-options-dark.png",
+    "family-radar-options-dark.svg",
+    "family-radar-options-dark.thumbnail.png",
+    "family-radar-options-dark.thumbnail.svg",
+    "family-radar-options-light.csharp.txt",
+    "family-radar-options-light.html",
+    "family-radar-options-light.png",
+    "family-radar-options-light.svg",
+    "family-radar-options-light.thumbnail.png",
+    "family-radar-options-light.thumbnail.svg",
     "family-radar-wide-dark.csharp.txt",
     "family-radar-wide-dark.html",
     "family-radar-wide-dark.png",
@@ -1084,6 +1132,30 @@
     "family-scatter-compact-light.svg",
     "family-scatter-compact-light.thumbnail.png",
     "family-scatter-compact-light.thumbnail.svg",
+    "family-scatter-compact-options-dark.csharp.txt",
+    "family-scatter-compact-options-dark.html",
+    "family-scatter-compact-options-dark.png",
+    "family-scatter-compact-options-dark.svg",
+    "family-scatter-compact-options-dark.thumbnail.png",
+    "family-scatter-compact-options-dark.thumbnail.svg",
+    "family-scatter-compact-options-light.csharp.txt",
+    "family-scatter-compact-options-light.html",
+    "family-scatter-compact-options-light.png",
+    "family-scatter-compact-options-light.svg",
+    "family-scatter-compact-options-light.thumbnail.png",
+    "family-scatter-compact-options-light.thumbnail.svg",
+    "family-scatter-options-dark.csharp.txt",
+    "family-scatter-options-dark.html",
+    "family-scatter-options-dark.png",
+    "family-scatter-options-dark.svg",
+    "family-scatter-options-dark.thumbnail.png",
+    "family-scatter-options-dark.thumbnail.svg",
+    "family-scatter-options-light.csharp.txt",
+    "family-scatter-options-light.html",
+    "family-scatter-options-light.png",
+    "family-scatter-options-light.svg",
+    "family-scatter-options-light.thumbnail.png",
+    "family-scatter-options-light.thumbnail.svg",
     "family-scatter-wide-dark.csharp.txt",
     "family-scatter-wide-dark.html",
     "family-scatter-wide-dark.png",
@@ -2958,6 +3030,72 @@
       "semanticRegions": 19
     },
     {
+      "id": "family-scatter-options-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-options-light.csharp.txt",
+      "svg": "family-scatter-options-light.svg",
+      "png": "family-scatter-options-light.png",
+      "html": "family-scatter-options-light.html",
+      "thumbnail": "family-scatter-options-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-scatter-compact-options-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-options-light.csharp.txt",
+      "svg": "family-scatter-compact-options-light.svg",
+      "png": "family-scatter-compact-options-light.png",
+      "html": "family-scatter-compact-options-light.html",
+      "thumbnail": "family-scatter-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
       "id": "family-scatter-wide-dark",
       "family": "scatter",
       "familyLabel": "Scatter",
@@ -3022,6 +3160,72 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 19
+    },
+    {
+      "id": "family-scatter-options-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-options-dark.csharp.txt",
+      "svg": "family-scatter-options-dark.svg",
+      "png": "family-scatter-options-dark.png",
+      "html": "family-scatter-options-dark.html",
+      "thumbnail": "family-scatter-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-scatter-compact-options-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-options-dark.csharp.txt",
+      "svg": "family-scatter-compact-options-dark.svg",
+      "png": "family-scatter-compact-options-dark.png",
+      "html": "family-scatter-compact-options-dark.html",
+      "thumbnail": "family-scatter-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-bubble-wide-light",
@@ -3090,6 +3294,76 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-bubble-options-light",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-options-light.csharp.txt",
+      "svg": "family-bubble-options-light.svg",
+      "png": "family-bubble-options-light.png",
+      "html": "family-bubble-options-light.html",
+      "thumbnail": "family-bubble-options-light.thumbnail.svg",
+      "thumbnailPng": "family-bubble-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 20
+    },
+    {
+      "id": "family-bubble-compact-options-light",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-bubble-compact-options-light.csharp.txt",
+      "svg": "family-bubble-compact-options-light.svg",
+      "png": "family-bubble-compact-options-light.png",
+      "html": "family-bubble-compact-options-light.html",
+      "thumbnail": "family-bubble-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-bubble-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 21
+    },
+    {
       "id": "family-bubble-wide-dark",
       "family": "bubble",
       "familyLabel": "Bubble",
@@ -3154,6 +3428,76 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-bubble-options-dark",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-options-dark.csharp.txt",
+      "svg": "family-bubble-options-dark.svg",
+      "png": "family-bubble-options-dark.png",
+      "html": "family-bubble-options-dark.html",
+      "thumbnail": "family-bubble-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-bubble-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 20
+    },
+    {
+      "id": "family-bubble-compact-options-dark",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-bubble-compact-options-dark.csharp.txt",
+      "svg": "family-bubble-compact-options-dark.svg",
+      "png": "family-bubble-compact-options-dark.png",
+      "html": "family-bubble-compact-options-dark.html",
+      "thumbnail": "family-bubble-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-bubble-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 21
     },
     {
       "id": "family-error-bar-wide-light",
@@ -6936,6 +7280,76 @@
       "semanticRegions": 25
     },
     {
+      "id": "family-radar-options-light",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radar-options-light.csharp.txt",
+      "svg": "family-radar-options-light.svg",
+      "png": "family-radar-options-light.png",
+      "html": "family-radar-options-light.html",
+      "thumbnail": "family-radar-options-light.thumbnail.svg",
+      "thumbnailPng": "family-radar-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-radar-compact-options-light",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radar-compact-options-light.csharp.txt",
+      "svg": "family-radar-compact-options-light.svg",
+      "png": "family-radar-compact-options-light.png",
+      "html": "family-radar-compact-options-light.html",
+      "thumbnail": "family-radar-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-radar-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 24
+    },
+    {
       "id": "family-radar-wide-dark",
       "family": "radar",
       "familyLabel": "Radar",
@@ -7010,6 +7424,76 @@
         "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 25
+    },
+    {
+      "id": "family-radar-options-dark",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radar-options-dark.csharp.txt",
+      "svg": "family-radar-options-dark.svg",
+      "png": "family-radar-options-dark.png",
+      "html": "family-radar-options-dark.html",
+      "thumbnail": "family-radar-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-radar-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-radar-compact-options-dark",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radar-compact-options-dark.csharp.txt",
+      "svg": "family-radar-compact-options-dark.svg",
+      "png": "family-radar-compact-options-dark.png",
+      "html": "family-radar-compact-options-dark.html",
+      "thumbnail": "family-radar-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-radar-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 24
     },
     {
       "id": "family-funnel-wide-light",

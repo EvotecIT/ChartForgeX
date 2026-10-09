@@ -15,7 +15,7 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var model = V2GalleryModels.Create(ChartSeriesKind.Line, "options", VisualThemeMode.Dark);
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Dark,
-    new VisualFrame("Weekly request volume", "Step transitions at the start, middle and end", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("Weekly request volume", "Step transitions and three configured marker shapes", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 System.IO.File.WriteAllText("visual.svg", prepared.ToSvg());
 System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
@@ -335,6 +335,8 @@ public static partial class V2GalleryModels {
                 var points = new[] { 8d, 17, 11, 23, 16 }.Select((value, point) => new ChartPoint(point + 1, value + index * 30));
                 chart.AddLine(positions[index].ToString(), points);
                 chart.Series[index].WithInterpolation(ChartInterpolation.Step, positions[index]);
+                var shape = new[] { ChartMarkerShape.Square, ChartMarkerShape.Diamond, ChartMarkerShape.Triangle }[index];
+                chart.Series[index].WithMarkers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
             }
             return chart;
         }
@@ -368,6 +370,8 @@ public static partial class V2GalleryModels {
             chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
             return chart;
         }
+        if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
+            return MarkerOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels("Received", "Reviewed", "Qualified", "Completed").WithDataLabels()
                 .AddFunnel("Requests", new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
@@ -403,5 +407,40 @@ public static partial class V2GalleryModels {
             chart.WithYAxis(mode == "sum" ? "Total quantity" : "Mean quantity");
         } else throw new ArgumentOutOfRangeException(nameof(variant));
         return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart MarkerOptions(ChartSeriesKind kind) {
+        if (kind == ChartSeriesKind.Scatter) {
+            var chart = Chart.Create().WithXAxis("Sample position").WithYAxis("Example level");
+            var shapes = Enum.GetValues<ChartMarkerShape>();
+            for (var index = 0; index < shapes.Length; index++) {
+                var shape = shapes[index];
+                chart.AddScatter(shape.ToString(), new[] { new ChartPoint(index % 3 + 1, index / 3 + 1) });
+                chart.Series[index].WithPointLabel(0, shape.ToString()).WithDataLabels()
+                    .WithMarkers(markers => { markers.Shape = shape; markers.Radius = 8; markers.StrokeWidth = 1; });
+            }
+            chart.Options.XAxis.WithBounds(0, 4);
+            chart.Options.YAxis.WithBounds(0, 4);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Bubble) {
+            var chart = Chart.Create().WithXAxis("Workload batches").WithYAxis("Time (minutes)")
+                .AddBubble("Standard", new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
+                .AddBubble("Priority", new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+            chart.Series[0].WithMarkers(markers => markers.Shape = ChartMarkerShape.Circle);
+            chart.Series[1].WithMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
+            return chart;
+        }
+        var radar = Categories(ChartSeriesKind.Radar)
+            .AddRadarArea("Observed", new[] { 58d, 76, 69, 84, 62, 73 }.Select((value, index) => new ChartPoint(index + 1, value)))
+            .AddRadarLine("Target", new[] { 75d, 85, 80, 90, 75, 85 }.Select((value, index) => new ChartPoint(index + 1, value)));
+        radar.Series[0].WithRadar(options => options.FillOpacity = .2)
+            .WithMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+        radar.Series[1].WithMarkers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
+        radar.Options.YAxis.WithBounds(0, 100);
+        return radar;
     }
 }
