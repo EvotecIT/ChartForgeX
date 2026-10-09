@@ -1,0 +1,901 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="dark" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Requests across processing stages &#183; Sankey</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:1100px;min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Sankey</p><h1>Requests across processing stages</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span class="current-variant"><a href="family-sankey-wide-light.html" data-theme-link data-light-href="family-sankey-wide-light.html" data-dark-href="family-sankey-wide-dark.html" aria-current="page">Standard</a></span><span><a href="family-sankey-compact-light.html" data-theme-link data-light-href="family-sankey-compact-light.html" data-dark-href="family-sankey-compact-dark.html">Compact</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="800" height="440" viewBox="0 0 800 440" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Requests across processing stages" aria-labelledby="family-sankey-wide-light-title" aria-describedby="family-sankey-wide-light-description"><title id="family-sankey-wide-light-title">Requests across processing stages</title><desc id="family-sankey-wide-light-description">Chart with 1 data series: Requests.</desc><defs><clipPath id="family-sankey-wide-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="752" height="392"/></clipPath></defs><rect x="0" y="0" width="800" height="440" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#family-sankey-wide-light-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests across processing stages</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g><g id="family-sankey-wide-light-node-5" data-cfx-source-id="series-0" data-cfx-role="sankey-series" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-series-name="Requests" data-cfx-state="None" data-cfx-weight-scale="3.2035"><g id="family-sankey-wide-light-node-6" data-cfx-source-id="series-0-link-0" data-cfx-role="sankey-link" data-cfx-full-label="Received to Automatic: 72" data-cfx-point="0" data-cfx-source="0" data-cfx-source-label="Received" data-cfx-target="1" data-cfx-target-label="Automatic" data-cfx-value="72" data-cfx-width="230.652"><path d="M 118.32 85.65 C 270.494 85.65 270.494 76.65 395 76.65 L 395 307.302 C 270.494 307.302 270.494 316.302 118.32 316.302 Z" data-cfx-role="sankey-ribbon" fill="rgba(42,120,214,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-light-node-9" data-cfx-source-id="series-0-link-1" data-cfx-role="sankey-link" data-cfx-full-label="Received to Manual: 28" data-cfx-point="2" data-cfx-source="0" data-cfx-source-label="Received" data-cfx-target="2" data-cfx-target-label="Manual" data-cfx-value="28" data-cfx-width="89.69800000000001"><path d="M 118.32 316.302 C 270.494 316.302 270.494 325.302 395 325.302 L 395 415 C 270.494 415 270.494 406 118.32 406 Z" data-cfx-role="sankey-ribbon" fill="rgba(42,120,214,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-light-node-12" data-cfx-source-id="series-0-link-2" data-cfx-role="sankey-link" data-cfx-full-label="Automatic to Completed: 65" data-cfx-point="4" data-cfx-source="1" data-cfx-source-label="Automatic" data-cfx-target="3" data-cfx-target-label="Completed" data-cfx-value="65" data-cfx-width="208.2275"><path d="M 405 76.65 C 557.174 76.65 557.174 76.65 681.68 76.65 L 681.68 284.878 C 557.174 284.878 557.174 284.878 405 284.878 Z" data-cfx-role="sankey-ribbon" fill="rgba(15,159,140,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-light-node-15" data-cfx-source-id="series-0-link-3" data-cfx-role="sankey-link" data-cfx-full-label="Automatic to Review: 7" data-cfx-point="6" data-cfx-source="1" data-cfx-source-label="Automatic" data-cfx-target="4" data-cfx-target-label="Review" data-cfx-value="7" data-cfx-width="22.424500000000002"><path d="M 405 284.878 C 557.174 284.878 557.174 366.948 681.68 366.948 L 681.68 389.372 C 557.174 389.372 557.174 307.302 405 307.302 Z" data-cfx-role="sankey-ribbon" fill="rgba(15,159,140,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-light-node-18" data-cfx-source-id="series-0-link-4" data-cfx-role="sankey-link" data-cfx-full-label="Manual to Completed: 20" data-cfx-point="8" data-cfx-source="2" data-cfx-source-label="Manual" data-cfx-target="3" data-cfx-target-label="Completed" data-cfx-value="20" data-cfx-width="64.07"><path d="M 405 325.302 C 557.174 325.302 557.174 284.878 681.68 284.878 L 681.68 348.948 C 557.174 348.948 557.174 389.372 405 389.372 Z" data-cfx-role="sankey-ribbon" fill="rgba(123,97,232,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-light-node-21" data-cfx-source-id="series-0-link-5" data-cfx-role="sankey-link" data-cfx-full-label="Manual to Review: 8" data-cfx-point="10" data-cfx-source="2" data-cfx-source-label="Manual" data-cfx-target="4" data-cfx-target-label="Review" data-cfx-value="8" data-cfx-width="25.628"><path d="M 405 389.372 C 557.174 389.372 557.174 389.372 681.68 389.372 L 681.68 415 C 557.174 415 557.174 415 405 415 Z" data-cfx-role="sankey-ribbon" fill="rgba(123,97,232,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-light-node-24" data-cfx-source-id="series-0-node-0" data-cfx-role="sankey-node" data-cfx-full-label="Received 100" data-cfx-incoming="0" data-cfx-label="Received" data-cfx-layer="0" data-cfx-node="0" data-cfx-outgoing="100" data-cfx-state="None" data-cfx-value="100"><rect x="108.32" y="85.65" width="10" height="320.35" rx="3" data-cfx-role="sankey-node-mark" fill="#7C818A" stroke="none" stroke-width="1"/></g><g id="family-sankey-wide-light-node-27" data-cfx-source-id="series-0-node-1" data-cfx-role="sankey-node" data-cfx-full-label="Automatic 72" data-cfx-incoming="72" data-cfx-label="Automatic" data-cfx-layer="1" data-cfx-node="1" data-cfx-outgoing="72" data-cfx-state="None" data-cfx-value="72"><rect x="395" y="76.65" width="10" height="230.652" rx="3" data-cfx-role="sankey-node-mark" fill="#7C818A" stroke="none" stroke-width="1"/></g><g id="family-sankey-wide-light-node-30" data-cfx-source-id="series-0-node-2" data-cfx-role="sankey-node" data-cfx-full-label="Manual 28" data-cfx-incoming="28" data-cfx-label="Manual" data-cfx-layer="1" data-cfx-node="2" data-cfx-outgoing="28" data-cfx-state="None" data-cfx-value="28"><rect x="395" y="325.302" width="10" height="89.698" rx="3" data-cfx-role="sankey-node-mark" fill="#7C818A" stroke="none" stroke-width="1"/></g><g id="family-sankey-wide-light-node-33" data-cfx-source-id="series-0-node-3" data-cfx-role="sankey-node" data-cfx-full-label="Completed 85" data-cfx-incoming="85" data-cfx-label="Completed" data-cfx-layer="2" data-cfx-node="3" data-cfx-outgoing="0" data-cfx-state="None" data-cfx-value="85"><rect x="681.68" y="76.65" width="10" height="272.298" rx="3" data-cfx-role="sankey-node-mark" fill="#7C818A" stroke="none" stroke-width="1"/></g><g id="family-sankey-wide-light-node-36" data-cfx-source-id="series-0-node-4" data-cfx-role="sankey-node" data-cfx-full-label="Review 15" data-cfx-incoming="15" data-cfx-label="Review" data-cfx-layer="2" data-cfx-node="4" data-cfx-outgoing="0" data-cfx-state="None" data-cfx-value="15"><rect x="681.68" y="366.948" width="10" height="48.053" rx="3" data-cfx-role="sankey-node-mark" fill="#7C818A" stroke="none" stroke-width="1"/></g><rect x="35.709" y="237.036" width="64.611" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(248,249,250,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-light-node-40" data-cfx-source-id="series-0-node-label-0" data-cfx-role="sankey-node-label"><text x="35.709" y="248.462" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Received 100</text></g><rect x="413" y="183.187" width="65.338" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(248,249,250,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-light-node-42" data-cfx-source-id="series-0-node-label-1" data-cfx-role="sankey-node-label"><text x="413" y="194.613" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Automatic 72</text></g><rect x="413" y="361.362" width="51.996" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(248,249,250,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-light-node-44" data-cfx-source-id="series-0-node-label-2" data-cfx-role="sankey-node-label"><text x="413" y="372.788" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Manual 28</text></g><rect x="699.68" y="204.01" width="68.32" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(248,249,250,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-light-node-46" data-cfx-source-id="series-0-node-label-3" data-cfx-role="sankey-node-label"><text x="699.68" y="215.435" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Completed 85</text></g><rect x="699.68" y="382.185" width="49.758" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(248,249,250,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-light-node-48" data-cfx-source-id="series-0-node-label-4" data-cfx-role="sankey-node-label"><text x="699.68" y="393.61" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Review 15</text></g></g></svg></div><div class="full" data-visual-theme="light" data-output-format="png"><img src="family-sankey-wide-light.png" width="800" height="440" alt="Requests across processing stages" loading="lazy" decoding="async"></div><div class="full" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="800" height="440" viewBox="0 0 800 440" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Requests across processing stages" aria-labelledby="family-sankey-wide-dark-title" aria-describedby="family-sankey-wide-dark-description"><title id="family-sankey-wide-dark-title">Requests across processing stages</title><desc id="family-sankey-wide-dark-description">Chart with 1 data series: Requests.</desc><defs><clipPath id="family-sankey-wide-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="752" height="392"/></clipPath></defs><rect x="0" y="0" width="800" height="440" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#family-sankey-wide-dark-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests across processing stages</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Explore the data, then download the chart</text></g></g><g id="family-sankey-wide-dark-node-5" data-cfx-source-id="series-0" data-cfx-role="sankey-series" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-series-name="Requests" data-cfx-state="None" data-cfx-weight-scale="3.2035"><g id="family-sankey-wide-dark-node-6" data-cfx-source-id="series-0-link-0" data-cfx-role="sankey-link" data-cfx-full-label="Received to Automatic: 72" data-cfx-point="0" data-cfx-source="0" data-cfx-source-label="Received" data-cfx-target="1" data-cfx-target-label="Automatic" data-cfx-value="72" data-cfx-width="230.652"><path d="M 118.32 85.65 C 270.494 85.65 270.494 76.65 395 76.65 L 395 307.302 C 270.494 307.302 270.494 316.302 118.32 316.302 Z" data-cfx-role="sankey-ribbon" fill="rgba(57,135,229,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-dark-node-9" data-cfx-source-id="series-0-link-1" data-cfx-role="sankey-link" data-cfx-full-label="Received to Manual: 28" data-cfx-point="2" data-cfx-source="0" data-cfx-source-label="Received" data-cfx-target="2" data-cfx-target-label="Manual" data-cfx-value="28" data-cfx-width="89.69800000000001"><path d="M 118.32 316.302 C 270.494 316.302 270.494 325.302 395 325.302 L 395 415 C 270.494 415 270.494 406 118.32 406 Z" data-cfx-role="sankey-ribbon" fill="rgba(57,135,229,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-dark-node-12" data-cfx-source-id="series-0-link-2" data-cfx-role="sankey-link" data-cfx-full-label="Automatic to Completed: 65" data-cfx-point="4" data-cfx-source="1" data-cfx-source-label="Automatic" data-cfx-target="3" data-cfx-target-label="Completed" data-cfx-value="65" data-cfx-width="208.2275"><path d="M 405 76.65 C 557.174 76.65 557.174 76.65 681.68 76.65 L 681.68 284.878 C 557.174 284.878 557.174 284.878 405 284.878 Z" data-cfx-role="sankey-ribbon" fill="rgba(23,156,137,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-dark-node-15" data-cfx-source-id="series-0-link-3" data-cfx-role="sankey-link" data-cfx-full-label="Automatic to Review: 7" data-cfx-point="6" data-cfx-source="1" data-cfx-source-label="Automatic" data-cfx-target="4" data-cfx-target-label="Review" data-cfx-value="7" data-cfx-width="22.424500000000002"><path d="M 405 284.878 C 557.174 284.878 557.174 366.948 681.68 366.948 L 681.68 389.372 C 557.174 389.372 557.174 307.302 405 307.302 Z" data-cfx-role="sankey-ribbon" fill="rgba(23,156,137,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-dark-node-18" data-cfx-source-id="series-0-link-4" data-cfx-role="sankey-link" data-cfx-full-label="Manual to Completed: 20" data-cfx-point="8" data-cfx-source="2" data-cfx-source-label="Manual" data-cfx-target="3" data-cfx-target-label="Completed" data-cfx-value="20" data-cfx-width="64.07"><path d="M 405 325.302 C 557.174 325.302 557.174 284.878 681.68 284.878 L 681.68 348.948 C 557.174 348.948 557.174 389.372 405 389.372 Z" data-cfx-role="sankey-ribbon" fill="rgba(138,116,238,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-dark-node-21" data-cfx-source-id="series-0-link-5" data-cfx-role="sankey-link" data-cfx-full-label="Manual to Review: 8" data-cfx-point="10" data-cfx-source="2" data-cfx-source-label="Manual" data-cfx-target="4" data-cfx-target-label="Review" data-cfx-value="8" data-cfx-width="25.628"><path d="M 405 389.372 C 557.174 389.372 557.174 389.372 681.68 389.372 L 681.68 415 C 557.174 415 557.174 415 405 415 Z" data-cfx-role="sankey-ribbon" fill="rgba(138,116,238,0.349)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-sankey-wide-dark-node-24" data-cfx-source-id="series-0-node-0" data-cfx-role="sankey-node" data-cfx-full-label="Received 100" data-cfx-incoming="0" data-cfx-label="Received" data-cfx-layer="0" data-cfx-node="0" data-cfx-outgoing="100" data-cfx-state="None" data-cfx-value="100"><rect x="108.32" y="85.65" width="10" height="320.35" rx="3" data-cfx-role="sankey-node-mark" fill="#8A8F98" stroke="none" stroke-width="1"/></g><g id="family-sankey-wide-dark-node-27" data-cfx-source-id="series-0-node-1" data-cfx-role="sankey-node" data-cfx-full-label="Automatic 72" data-cfx-incoming="72" data-cfx-label="Automatic" data-cfx-layer="1" data-cfx-node="1" data-cfx-outgoing="72" data-cfx-state="None" data-cfx-value="72"><rect x="395" y="76.65" width="10" height="230.652" rx="3" data-cfx-role="sankey-node-mark" fill="#8A8F98" stroke="none" stroke-width="1"/></g><g id="family-sankey-wide-dark-node-30" data-cfx-source-id="series-0-node-2" data-cfx-role="sankey-node" data-cfx-full-label="Manual 28" data-cfx-incoming="28" data-cfx-label="Manual" data-cfx-layer="1" data-cfx-node="2" data-cfx-outgoing="28" data-cfx-state="None" data-cfx-value="28"><rect x="395" y="325.302" width="10" height="89.698" rx="3" data-cfx-role="sankey-node-mark" fill="#8A8F98" stroke="none" stroke-width="1"/></g><g id="family-sankey-wide-dark-node-33" data-cfx-source-id="series-0-node-3" data-cfx-role="sankey-node" data-cfx-full-label="Completed 85" data-cfx-incoming="85" data-cfx-label="Completed" data-cfx-layer="2" data-cfx-node="3" data-cfx-outgoing="0" data-cfx-state="None" data-cfx-value="85"><rect x="681.68" y="76.65" width="10" height="272.298" rx="3" data-cfx-role="sankey-node-mark" fill="#8A8F98" stroke="none" stroke-width="1"/></g><g id="family-sankey-wide-dark-node-36" data-cfx-source-id="series-0-node-4" data-cfx-role="sankey-node" data-cfx-full-label="Review 15" data-cfx-incoming="15" data-cfx-label="Review" data-cfx-layer="2" data-cfx-node="4" data-cfx-outgoing="0" data-cfx-state="None" data-cfx-value="15"><rect x="681.68" y="366.948" width="10" height="48.053" rx="3" data-cfx-role="sankey-node-mark" fill="#8A8F98" stroke="none" stroke-width="1"/></g><rect x="35.709" y="237.036" width="64.611" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(17,19,23,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-dark-node-40" data-cfx-source-id="series-0-node-label-0" data-cfx-role="sankey-node-label"><text x="35.709" y="248.462" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Received 100</text></g><rect x="413" y="183.187" width="65.338" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(17,19,23,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-dark-node-42" data-cfx-source-id="series-0-node-label-1" data-cfx-role="sankey-node-label"><text x="413" y="194.613" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Automatic 72</text></g><rect x="413" y="361.362" width="51.996" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(17,19,23,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-dark-node-44" data-cfx-source-id="series-0-node-label-2" data-cfx-role="sankey-node-label"><text x="413" y="372.788" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Manual 28</text></g><rect x="699.68" y="204.01" width="68.32" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(17,19,23,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-dark-node-46" data-cfx-source-id="series-0-node-label-3" data-cfx-role="sankey-node-label"><text x="699.68" y="215.435" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Completed 85</text></g><rect x="699.68" y="382.185" width="49.758" height="17.578" rx="2" data-cfx-role="sankey-label-backdrop" fill="rgba(17,19,23,0.922)" stroke="none" stroke-width="1"/><g id="family-sankey-wide-dark-node-48" data-cfx-source-id="series-0-node-label-4" data-cfx-role="sankey-node-label"><text x="699.68" y="393.61" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Review 15</text></g></g></svg></div><div class="full" data-visual-theme="dark" data-output-format="png"><img src="family-sankey-wide-dark.png" width="800" height="440" alt="Requests across processing stages" loading="lazy" decoding="async"></div></section><div class="export-row"><span>800 × 440 pixels</span><nav aria-label="Download outputs"><a href="family-sankey-wide-dark.svg" data-theme-link data-light-href="family-sankey-wide-light.svg" data-dark-href="family-sankey-wide-dark.svg" download>Download SVG</a><a href="family-sankey-wide-dark.png" data-theme-link data-light-href="family-sankey-wide-light.png" data-dark-href="family-sankey-wide-dark.png" download>Download PNG</a><a href="family-sankey-wide-dark.csharp.txt" data-theme-link data-light-href="family-sankey-wide-light.csharp.txt" data-dark-href="family-sankey-wide-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Register the included Carlito font files to reproduce the exported typography.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Linq;
+using System.Globalization;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// The licensed font fixtures are included beside the gallery outputs.
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var model = V2GalleryModels.Create(ChartSeriesKind.Sankey, &quot;wide&quot;, VisualThemeMode.Light);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Light,
+    new VisualFrame(&quot;Requests across processing stages&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = model.Prepare(context);
+System.IO.File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+System.IO.File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+System.IO.File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+
+/// &lt;summary&gt;Executable, deterministic gallery models shared by the catalog and its downloadable C# examples.&lt;/summary&gt;
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Creates an actual source model for every chart kind, without selecting a renderer or export backend.&lt;/summary&gt;
+    public static Chart Create(ChartSeriesKind kind, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? throw new ArgumentOutOfRangeException(nameof(kind));
+        chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+        if (variant == &quot;options&quot; &amp;&amp; kind is ChartSeriesKind.Bar or ChartSeriesKind.Area or ChartSeriesKind.HorizontalBar) {
+            chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+            chart.Series[0].StateRole = ChartSeriesState.Warning;
+            chart.WithDataLabels();
+        }
+        return chart;
+    }
+
+    /// &lt;summary&gt;Gets a short title describing the actual example data.&lt;/summary&gt;
+    public static string Title(ChartSeriesKind kind) =&gt; kind switch {
+        ChartSeriesKind.Line =&gt; &quot;Weekly request volume&quot;, ChartSeriesKind.StepLine =&gt; &quot;Requests waiting in the queue&quot;,
+        ChartSeriesKind.Area =&gt; &quot;Capacity used during the week&quot;, ChartSeriesKind.StepArea =&gt; &quot;Reserved processing capacity&quot;,
+        ChartSeriesKind.Bar =&gt; &quot;Completed orders by region&quot;, ChartSeriesKind.HorizontalBar =&gt; &quot;Regional order fulfilment&quot;,
+        ChartSeriesKind.StackedArea =&gt; &quot;Requests and follow-ups over time&quot;, ChartSeriesKind.TrendLine =&gt; &quot;Request volume and its trend&quot;,
+        ChartSeriesKind.Scatter =&gt; &quot;Processing time by workload&quot;, ChartSeriesKind.Bubble =&gt; &quot;Workload, time and request volume&quot;,
+        ChartSeriesKind.Lollipop =&gt; &quot;Orders at each delivery stage&quot;, ChartSeriesKind.Candlestick =&gt; &quot;Daily opening and closing prices&quot;,
+        ChartSeriesKind.Ohlc =&gt; &quot;Daily market price ranges&quot;, ChartSeriesKind.ErrorBar =&gt; &quot;Delivery time and uncertainty&quot;,
+        ChartSeriesKind.BoxPlot =&gt; &quot;Delivery time by service level&quot;, ChartSeriesKind.RangeBand =&gt; &quot;Expected temperature band&quot;,
+        ChartSeriesKind.RangeArea =&gt; &quot;Expected operating range&quot;, ChartSeriesKind.RangeBar =&gt; &quot;Minimum and maximum delivery times&quot;,
+        ChartSeriesKind.Dumbbell =&gt; &quot;Service capacity before and after&quot;, ChartSeriesKind.Slope =&gt; &quot;Capacity change across teams&quot;,
+        ChartSeriesKind.Heatmap =&gt; &quot;Coverage across service areas&quot;, ChartSeriesKind.HexbinHeatmap =&gt; &quot;Service coverage in hexagonal cells&quot;,
+        ChartSeriesKind.CalendarHeatmap =&gt; &quot;Daily activity across four months&quot;, ChartSeriesKind.DottedMap =&gt; &quot;Service routes across Europe&quot;,
+        ChartSeriesKind.RegionMap =&gt; &quot;Regional service coverage&quot;, ChartSeriesKind.TileMap =&gt; &quot;Service coverage by state&quot;,
+        ChartSeriesKind.Gauge =&gt; &quot;Available capacity against a target&quot;, ChartSeriesKind.Circle =&gt; &quot;Assessments completed&quot;,
+        ChartSeriesKind.RadialBar =&gt; &quot;Completion by delivery stage&quot;, ChartSeriesKind.LayeredRadial =&gt; &quot;Reviewed, verified and completed&quot;,
+        ChartSeriesKind.Bullet =&gt; &quot;Reviewed work against its targets&quot;, ChartSeriesKind.ProgressBar =&gt; &quot;Progress through delivery stages&quot;,
+        ChartSeriesKind.Pie =&gt; &quot;Revenue by service&quot;, ChartSeriesKind.Donut =&gt; &quot;Services contributing to revenue&quot;,
+        ChartSeriesKind.PolarArea =&gt; &quot;Service revenue in radial segments&quot;, ChartSeriesKind.Radar =&gt; &quot;Observed and expected service levels&quot;,
+        ChartSeriesKind.Polar =&gt; &quot;Directional sensor readings&quot;, ChartSeriesKind.Timeline =&gt; &quot;Project activities in March 2026&quot;,
+        ChartSeriesKind.Gantt =&gt; &quot;Project delivery in March 2026&quot;, ChartSeriesKind.StateTimeline =&gt; &quot;Availability throughout the day&quot;,
+        ChartSeriesKind.GanttLane =&gt; &quot;Incidents and recovery in parallel&quot;,
+        ChartSeriesKind.Sankey =&gt; &quot;Requests across processing stages&quot;, ChartSeriesKind.Tree =&gt; &quot;Teams and their responsibilities&quot;,
+        ChartSeriesKind.Sunburst =&gt; &quot;Allocation through the team hierarchy&quot;, ChartSeriesKind.Treemap =&gt; &quot;How work is allocated across teams&quot;,
+        ChartSeriesKind.Pictorial =&gt; &quot;Completed assessments by team&quot;, ChartSeriesKind.WordCloud =&gt; &quot;Topics in service observations&quot;,
+        ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
+        _ =&gt; throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    private static ChartPoint[] Observations(string variant, double offset = 0) =&gt; (variant == &quot;sparse&quot; ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
+        .Select(index =&gt; new ChartPoint(index, 20 + offset + index * 7 % 29, variant == &quot;sparse&quot; &amp;&amp; index == 6)).ToArray();
+    private static Chart Categories(ChartSeriesKind kind) =&gt; Chart.Create().WithXLabels(kind switch {
+        ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.TrendLine or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc =&gt; new[] { &quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot; },
+        ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell =&gt; new[] { &quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot; },
+        ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap =&gt; new[] { &quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot; },
+        ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea =&gt; new[] { &quot;Subscriptions&quot;, &quot;Consulting&quot;, &quot;Support&quot;, &quot;Licenses&quot;, &quot;Training&quot;, &quot;Other&quot; },
+        ChartSeriesKind.RadialBar =&gt; new[] { &quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Verified&quot;, &quot;Approved&quot;, &quot;Complete&quot; },
+        ChartSeriesKind.Radar =&gt; new[] { &quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot; },
+        ChartSeriesKind.Scatter or ChartSeriesKind.Bubble =&gt; new[] { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; },
+        ChartSeriesKind.Lollipop =&gt; new[] { &quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot; },
+        ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea =&gt; new[] { &quot;08:00&quot;, &quot;10:00&quot;, &quot;12:00&quot;, &quot;14:00&quot;, &quot;16:00&quot; },
+        _ =&gt; new[] { &quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot; }
+    });
+    private static Chart? Basic(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        return kind switch {
+            ChartSeriesKind.Line =&gt; chart.AddLine(&quot;Requests&quot;, values),
+            ChartSeriesKind.StepLine =&gt; chart.AddStepLine(&quot;Queued&quot;, values),
+            ChartSeriesKind.Area =&gt; chart.AddArea(&quot;Used capacity&quot;, values),
+            ChartSeriesKind.StepArea =&gt; chart.AddStepArea(&quot;Reserved capacity&quot;, values),
+            ChartSeriesKind.Scatter =&gt; chart.WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddScatter(&quot;Processing time&quot;, values),
+            ChartSeriesKind.Bar =&gt; chart.AddBar(&quot;Orders&quot;, values),
+            ChartSeriesKind.Lollipop =&gt; chart.AddLollipop(&quot;Orders&quot;, values),
+            ChartSeriesKind.HorizontalBar =&gt; chart.AddHorizontalBar(&quot;Orders&quot;, values),
+            ChartSeriesKind.StackedArea =&gt; chart.AddStackedArea(&quot;Requests&quot;, values).AddStackedArea(&quot;Follow-ups&quot;, Observations(variant, -10)),
+            ChartSeriesKind.Waterfall =&gt; chart.AddWaterfall(&quot;Changes&quot;, new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
+            ChartSeriesKind.Slope =&gt; Chart.Create().AddSlope(&quot;Team A&quot;, 28, 64, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team B&quot;, 52, 43, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team C&quot;, 38, 57, &quot;Before&quot;, &quot;After&quot;),
+            ChartSeriesKind.TrendLine =&gt; chart.AddScatter(&quot;Observations&quot;, values).AddTrendLine(&quot;Least-squares trend&quot;, values),
+            _ =&gt; null
+        };
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Ranges(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var count = variant == &quot;sparse&quot; ? 2 : 5;
+        var candles = Enumerable.Range(1, count).Select(index =&gt; new ChartCandlestick(index, 30 + index * 3, 44 + index * 3, 20 + index * 3, index % 2 == 0 ? 26 + index * 3 : 38 + index * 3)).ToArray();
+        var ranges = Enumerable.Range(1, count).Select(index =&gt; new ChartRangeBand(index, 20 + index * 2, 40 + index * 4)).ToArray();
+        return kind switch {
+            ChartSeriesKind.Bubble =&gt; chart.WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddBubble(&quot;Requests&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartBubble(index, 20 + index * 5, index * index + 1))),
+            ChartSeriesKind.ErrorBar =&gt; chart.AddErrorBar(&quot;Delivery time&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartErrorBar(index, 30 + index * 2, 20 + index, 42 + index * 3))),
+            ChartSeriesKind.Candlestick =&gt; chart.AddCandlestick(&quot;Market price&quot;, candles),
+            ChartSeriesKind.Ohlc =&gt; chart.AddOhlc(&quot;Market price&quot;, candles),
+            ChartSeriesKind.RangeBand =&gt; chart.AddRangeBand(&quot;Expected range&quot;, ranges),
+            ChartSeriesKind.RangeArea =&gt; chart.AddRangeArea(&quot;Expected range&quot;, ranges),
+            ChartSeriesKind.Dumbbell =&gt; chart.AddDumbbell(&quot;Change&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartDumbbell(index, 20 + index * 2, 40 + index * 3))),
+            ChartSeriesKind.RangeBar =&gt; chart.AddRangeBar(&quot;Range&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartInterval(index, 20 + index * 2, 40 + index * 4))),
+            ChartSeriesKind.BoxPlot =&gt; chart.AddBoxPlot(&quot;Delivery time&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index))),
+            _ =&gt; null
+        };
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Radial(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        switch (kind) {
+            case ChartSeriesKind.Pie: chart.AddPie(&quot;Revenue&quot;, values); break;
+            case ChartSeriesKind.Donut: chart.AddDonut(&quot;Revenue&quot;, values); break;
+            case ChartSeriesKind.Gauge:
+                chart.AddGauge(&quot;Capacity&quot;, 76).WithGauge(options =&gt; {
+                    options.Form = variant == &quot;options&quot; ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
+                    options.Target = 85; options.Caption = &quot;Available capacity&quot;;
+                    options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
+                    options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
+                    options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
+                }); break;
+            case ChartSeriesKind.Circle: chart.AddCircle(&quot;Completed&quot;, 76); break;
+            case ChartSeriesKind.RadialBar: chart.AddRadialBar(&quot;Completion&quot;, values).WithRadialBarCenterLabel(); break;
+            case ChartSeriesKind.LayeredRadial:
+                chart.AddLayeredRadial(&quot;Completion&quot;, new[] {
+                    new ChartRadialLayer(&quot;Reviewed&quot;, 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
+                    new ChartRadialLayer(&quot;Verified&quot;, 58) { RadiusRatio = .7, StrokeRatio = .13, SweepAngleDegrees = 240, StartAngleDegrees = -30, SeparatorCount = 8 },
+                    new ChartRadialLayer(&quot;Complete&quot;, 42) { RadiusRatio = .4, StrokeRatio = .13, SweepAngleDegrees = 360 }
+                }); break;
+            case ChartSeriesKind.Bullet:
+                chart.AddBullet(&quot;Reviewed&quot;, 76, 85, rangeEnds: new[] { 50d, 80d }).AddBullet(&quot;Verified&quot;, 58, 75, rangeEnds: new[] { 40d, 70d }); break;
+            case ChartSeriesKind.Radar: chart.AddRadar(&quot;Observed&quot;, values).AddRadar(&quot;Expected&quot;, Observations(variant, 12)); break;
+            case ChartSeriesKind.Polar: chart = Chart.Create().AddPolar(&quot;Observed&quot;, Enumerable.Range(0, 6).Select(index =&gt; new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
+                chart.ConfigureXAxis(axis =&gt; axis.LabelFormatter = angle =&gt; (angle * 180 / Math.PI).ToString(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture) + &quot;&#176;&quot;); break;
+            case ChartSeriesKind.PolarArea: chart.AddPolarArea(&quot;Revenue&quot;, values); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut &amp;&amp; variant == &quot;options&quot;) {
+            chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label);
+            chart.Series[0].WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+            if (kind == ChartSeriesKind.Donut) chart.WithDonutCenterText(&quot;184&quot;, &quot;Reviewed&quot;);
+        }
+        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.RadialBar) chart.WithRadialBarRadiusScale(.85).WithRadialBarStrokeScale(1.2);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
+        switch (kind) {
+            case ChartSeriesKind.Heatmap:
+                if (variant == &quot;options&quot;) return States(mode).WithXLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;)
+                    .AddHeatmapCategoryRow(&quot;Primary&quot;, new ChartHeatmapCell?[] { new(&quot;pass&quot;, &quot;Ready&quot;, &quot;Assessment passed&quot;), new(&quot;warning&quot;, &quot;Review&quot;), null, new(&quot;pass&quot;, &quot;Ready&quot;) }, &quot;Production&quot;)
+                    .AddHeatmapCategoryRow(&quot;Secondary&quot;, new ChartHeatmapCell?[] { new(&quot;pass&quot;), new(&quot;pass&quot;), new(&quot;warning&quot;), new(&quot;pass&quot;) }, &quot;Production&quot;);
+                chart.AddHeatmapRow(&quot;Primary&quot;, variant == &quot;sparse&quot; ? new double?[] { 92, null, null, 70, null, 41 } : new double?[] { 92, 70, 56, null, 84, 41 })
+                    .AddHeatmapRow(&quot;Secondary&quot;, variant == &quot;sparse&quot; ? new double?[] { null, 84, null, null, 90, null } : new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.HexbinHeatmap:
+                chart.AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 92, 70, 56, null, 84, 41 }).AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.CalendarHeatmap:
+                return Chart.Create().AddCalendarHeatmap(&quot;Observations&quot;, Enumerable.Range(0, variant == &quot;sparse&quot; ? 35 : 120)
+                    .Where(index =&gt; index % 7 != 0 &amp;&amp; index % 9 != 0).Select(index =&gt; new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)), firstDayOfWeek: DayOfWeek.Monday);
+            case ChartSeriesKind.DottedMap:
+                return Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe()).AddDottedMap(&quot;Locations&quot;, new[] {
+                    new ChartMapPoint(&quot;Madrid&quot;, -3.7, 40.4, 18), new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2, 74), new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9, 42)
+                }).AddMapRouteBetweenPoints(&quot;Madrid to Warsaw&quot;, &quot;Madrid&quot;, &quot;Warsaw&quot;)
+                    .AddMapRoute(&quot;Warsaw to Oslo&quot;, new[] { new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2), new ChartMapPoint(&quot;Baltic&quot;, 17, 56), new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9) });
+            case ChartSeriesKind.TileMap:
+                chart = Chart.Create().AddTileMap(&quot;Observations&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;), RegionValues()).WithMapLabels(); break;
+            case ChartSeriesKind.RegionMap:
+                chart = Chart.Create().AddRegionMap(&quot;Observations&quot;, ChartMapCatalog.Get(&quot;us-states&quot;), RegionValues()).WithMapLabels(false); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap &amp;&amp; variant == &quot;options&quot;)
+            chart.WithMapColorScale(ChartMapColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
+                .WithValueRange(0, 100).WithLabels(&quot;Below target&quot;, &quot;Target&quot;, &quot;Above target&quot;).WithNoDataColor(colors.Border))
+                .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap)
+            chart.WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
+        return chart;
+    }
+    private static ChartRegionMapItem[] RegionValues() =&gt; new[] {
+        new ChartRegionMapItem(&quot;CA&quot;, 82), new ChartRegionMapItem(&quot;TX&quot;, 64), new ChartRegionMapItem(&quot;NY&quot;, 91), new ChartRegionMapItem(&quot;FL&quot;, 47),
+        new ChartRegionMapItem(&quot;WA&quot;, 74), new ChartRegionMapItem(&quot;IL&quot;, 58), new ChartRegionMapItem(&quot;CO&quot;, 39), new ChartRegionMapItem(&quot;NC&quot;, 66) };
+    private static Chart States(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        return Chart.Create().WithStateCategories(new ChartStateCategory(&quot;pass&quot;, &quot;Available&quot;, colors.Status.Pass.Fill),
+            new ChartStateCategory(&quot;warning&quot;, &quot;Review&quot;, colors.Status.Medium.Fill, ChartStatePattern.Hatched),
+            new ChartStateCategory(&quot;critical&quot;, &quot;Unavailable&quot;, colors.Status.Critical.Fill, ChartStatePattern.CrossHatched));
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Specialty(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+        var links = new[] { new ChartTreeLink(&quot;All teams&quot;, &quot;Engineering&quot;, 60), new ChartTreeLink(&quot;All teams&quot;, &quot;Operations&quot;, 40),
+            new ChartTreeLink(&quot;Engineering&quot;, &quot;Platform&quot;, 35), new ChartTreeLink(&quot;Engineering&quot;, &quot;Services&quot;, 25), new ChartTreeLink(&quot;Operations&quot;, &quot;Support&quot;, 40) };
+        switch (kind) {
+            case ChartSeriesKind.Funnel: return chart.AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
+                .WithXLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).WithDataLabels();
+            case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem(&quot;Discovery&quot;, start, start.AddDays(3)).AddTimelineItem(&quot;Implementation&quot;, start.AddDays(2), start.AddDays(7))
+                .AddTimelineItem(&quot;Validation&quot;, start.AddDays(6), start.AddDays(9))
+                .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Gantt: return Chart.Create().AddGanttTask(&quot;Discovery&quot;, start, start.AddDays(3), .9).AddGanttTask(&quot;Implementation&quot;, start.AddDays(3), start.AddDays(7), .55, 0)
+                .AddGanttTask(&quot;Validation&quot;, start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone(&quot;Delivery&quot;, start.AddDays(9), 2)
+                .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Sankey: return Chart.Create().AddSankey(&quot;Requests&quot;, new[] { new ChartSankeyLink(&quot;Received&quot;, &quot;Automatic&quot;, 72), new ChartSankeyLink(&quot;Received&quot;, &quot;Manual&quot;, 28),
+                new ChartSankeyLink(&quot;Automatic&quot;, &quot;Completed&quot;, 65), new ChartSankeyLink(&quot;Automatic&quot;, &quot;Review&quot;, 7), new ChartSankeyLink(&quot;Manual&quot;, &quot;Completed&quot;, 20), new ChartSankeyLink(&quot;Manual&quot;, &quot;Review&quot;, 8) });
+            case ChartSeriesKind.Tree: return Chart.Create().AddTree(&quot;Teams&quot;, links);
+            case ChartSeriesKind.Sunburst: return Chart.Create().AddSunburst(&quot;Teams&quot;, links);
+            case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
+            case ChartSeriesKind.Pictorial:
+                chart = Chart.Create().AddPictorial(&quot;Assessments&quot;, new[] { new ChartPictorialItem(&quot;Team A&quot;, 74), new ChartPictorialItem(&quot;Team B&quot;, 46), new ChartPictorialItem(&quot;Team C&quot;, 61) }, ChartPictorialShape.Person)
+                    .WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
+                if (variant == &quot;options&quot;) chart.WithPictorialSvgPath(&quot;M2 2H22V22H2Z M8 8V16H16V8Z&quot;, new ChartRect(0, 0, 24, 24));
+                return chart;
+            case ChartSeriesKind.ProgressBar:
+                chart = Chart.Create().AddProgressBars(&quot;Delivery&quot;, new[] { new ChartProgressItem(&quot;Reviewed&quot;, 76), new ChartProgressItem(&quot;Verified&quot;, 58), new ChartProgressItem(&quot;Complete&quot;, 42) }).WithProgressHandles();
+                if (variant == &quot;options&quot;) chart.WithProgressMaximum(120).WithProgressBarThickness(.42).WithProgressTrackOpacity(.3);
+                return chart;
+            case ChartSeriesKind.WordCloud: return Chart.Create().AddWordCloud(&quot;Topics&quot;, new[] { new ChartWordCloudItem(&quot;Availability&quot;, 20), new ChartWordCloudItem(&quot;Identity&quot;, 16), new ChartWordCloudItem(&quot;Network&quot;, 14),
+                new ChartWordCloudItem(&quot;Storage&quot;, 12), new ChartWordCloudItem(&quot;Recovery&quot;, 10), new ChartWordCloudItem(&quot;Capacity&quot;, 8), new ChartWordCloudItem(&quot;Services&quot;, 6), new ChartWordCloudItem(&quot;Validation&quot;, 4) });
+            case ChartSeriesKind.StateTimeline: return States(mode).AddStateTimelineLane(&quot;Primary&quot;, new[] { new ChartStateTimelineSegment(start, start.AddHours(3), &quot;pass&quot;),
+                new ChartStateTimelineSegment(start.AddHours(3), start.AddHours(5), &quot;warning&quot;, &quot;Increased response time&quot;), new ChartStateTimelineSegment(start.AddHours(6), start.AddHours(10), &quot;pass&quot;) }, group: &quot;Production&quot;)
+                .AddStateTimelineLane(&quot;Secondary&quot;, new[] { new ChartStateTimelineSegment(start, start.AddHours(6), &quot;pass&quot;), new ChartStateTimelineSegment(start.AddHours(7), start.AddHours(10), &quot;critical&quot;, &quot;No response&quot;) }, group: &quot;Production&quot;);
+            case ChartSeriesKind.GanttLane: return States(mode).WithGanttLaneNow(start.AddHours(12)).AddGanttLane(&quot;Primary&quot;, new[] {
+                new ChartGanttLaneItem(start, start.AddHours(5), &quot;warning&quot;, &quot;Investigation&quot;, &quot;Degraded response time&quot;), new ChartGanttLaneItem(start.AddHours(3), start.AddHours(7), &quot;critical&quot;, &quot;Recovery&quot;),
+                new ChartGanttLaneItem(start.AddHours(9), null, &quot;warning&quot;, &quot;Monitoring&quot;) }, &quot;Production&quot;)
+                .AddGanttLane(&quot;Secondary&quot;, new[] { new ChartGanttLaneItem(start.AddHours(2), start.AddHours(6), &quot;warning&quot;, &quot;Maintenance&quot;) }, &quot;Production&quot;);
+            default: return null;
+        }
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Creates a fixed comparison grid with shared Cartesian axes.&lt;/summary&gt;
+    public static ChartGrid CreateGrid() =&gt; ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
+        .Add(Create(ChartSeriesKind.Line).WithTitle(&quot;Observed requests&quot;))
+        .Add(Create(ChartSeriesKind.Bar).WithTitle(&quot;Reviewed requests&quot;))
+        .Add(Create(ChartSeriesKind.Area).WithTitle(&quot;Capacity used&quot;), 2).WithSharedAxes();
+
+    /// &lt;summary&gt;Creates groups, status, icon shapes, details and routed links in a native topology.&lt;/summary&gt;
+    public static TopologyChart CreateTopology(bool atlas = false) {
+        var chart = TopologyChart.Create(); chart.Id = atlas ? &quot;shape-atlas&quot; : &quot;service-topology&quot;;
+        chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true, WrapNodeLabels = true, IncludeLegend = true, IncludeGroupStatusDots = true };
+        if (atlas) {
+            var shapes = Enum.GetValues&lt;TopologyNodeShape&gt;();
+            for (var index = 0; index &lt; shapes.Length; index++) chart.Nodes.Add(new TopologyNode {
+                Id = &quot;shape-&quot; + index, Label = shapes[index].ToString(), X = 24 + index % 5 * 160, Y = 24 + index / 5 * 120,
+                Width = 132, Height = 86, Shape = shapes[index], PreserveDisplayModeSize = true, ShowStatusBadge = false
+            });
+            return chart;
+        }
+        chart.Groups.Add(new TopologyGroup { Id = &quot;primary&quot;, Label = &quot;Primary region&quot;, X = 0, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Healthy });
+        chart.Groups.Add(new TopologyGroup { Id = &quot;secondary&quot;, Label = &quot;Secondary region&quot;, X = 390, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Warning });
+        var source = new TopologyNode { Id = &quot;client&quot;, Label = &quot;Client service&quot;, Subtitle = &quot;Requests&quot;, X = 30, Y = 65, Width = 240, Height = 85,
+            Kind = TopologyNodeKind.Server, GroupId = &quot;primary&quot;, Status = TopologyHealthStatus.Healthy };
+        source.Details.Add(new TopologyNodeDetail { Label = &quot;State&quot;, Value = &quot;Available&quot;, Status = TopologyHealthStatus.Healthy }); chart.Nodes.Add(source);
+        chart.Nodes.Add(new TopologyNode { Id = &quot;cache&quot;, Label = &quot;Cache&quot;, X = 70, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = &quot;primary&quot; });
+        chart.Nodes.Add(new TopologyNode { Id = &quot;worker&quot;, Label = &quot;Processing service&quot;, X = 430, Y = 65, Width = 240, Height = 85, Kind = TopologyNodeKind.Server,
+            GroupId = &quot;secondary&quot;, Status = TopologyHealthStatus.Warning });
+        chart.Nodes.Add(new TopologyNode { Id = &quot;store&quot;, Label = &quot;Result store&quot;, X = 470, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = &quot;secondary&quot; });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;request&quot;, SourceNodeId = &quot;client&quot;, TargetNodeId = &quot;worker&quot;, Label = &quot;Requests&quot;, SecondaryLabel = &quot;Active&quot;,
+            Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal, Direction = VisualLinkDirection.Forward });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;cache-read&quot;, SourceNodeId = &quot;client&quot;, TargetNodeId = &quot;cache&quot;, Label = &quot;Lookup&quot;, Routing = TopologyEdgeRouting.Curved,
+            LineStyle = TopologyEdgeLineStyle.Dashed, Direction = VisualLinkDirection.Bidirectional });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;persist&quot;, SourceNodeId = &quot;worker&quot;, TargetNodeId = &quot;store&quot;, Label = &quot;Persist&quot;, Routing = TopologyEdgeRouting.Orthogonal });
+        chart.Legend = TopologyLegend.Create().AddStatus(&quot;Available&quot;, TopologyHealthStatus.Healthy).AddStatus(&quot;Review&quot;, TopologyHealthStatus.Warning)
+            .AddNodeKind(&quot;Service&quot;, TopologyNodeKind.Server).AddEdgeKind(&quot;Dependency&quot;, TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed);
+        return chart;
+    }
+
+    /// &lt;summary&gt;Creates a branched process with typed lanes, decisions and semantic statuses.&lt;/summary&gt;
+    public static FlowArtifact CreateFlow() =&gt; FlowArtifact.Create(&quot;assessment-flow&quot;).WithSize(900, 600)
+        .AddLane(&quot;service&quot;, &quot;Service&quot;).AddLane(&quot;review&quot;, &quot;Review&quot;)
+        .AddStep(&quot;received&quot;, &quot;Request received&quot;, FlowArtifactStepKind.Start, &quot;service&quot;)
+        .AddStep(&quot;decision&quot;, &quot;Automatic checks pass?&quot;, FlowArtifactStepKind.Decision, &quot;service&quot;)
+        .AddStep(&quot;manual&quot;, &quot;Review observations&quot;, FlowArtifactStepKind.Process, &quot;review&quot;, VisualStatus.Warning)
+        .AddStep(&quot;complete&quot;, &quot;Assessment complete&quot;, FlowArtifactStepKind.End, &quot;service&quot;, VisualStatus.Positive)
+        .AddConnector(&quot;received&quot;, &quot;decision&quot;, &quot;Evaluate&quot;).AddConnector(&quot;decision&quot;, &quot;manual&quot;, &quot;Review required&quot;)
+        .AddConnector(&quot;decision&quot;, &quot;complete&quot;, &quot;Passed&quot;).AddConnector(&quot;manual&quot;, &quot;complete&quot;, &quot;Accepted&quot;);
+
+    /// &lt;summary&gt;Creates actor, control, database and queue notation with nested fragments, notes and activation.&lt;/summary&gt;
+    public static SequenceArtifact CreateSequence() {
+        var model = SequenceArtifact.Create(&quot;request-sequence&quot;).WithSize(960, 760)
+            .AddParticipant(&quot;client&quot;, &quot;Client&quot;, SequenceArtifactParticipantKind.Actor)
+            .AddParticipant(&quot;service&quot;, &quot;Service&quot;, SequenceArtifactParticipantKind.Control)
+            .AddParticipant(&quot;store&quot;, &quot;Store&quot;, SequenceArtifactParticipantKind.Database)
+            .AddParticipant(&quot;queue&quot;, &quot;Queue&quot;, SequenceArtifactParticipantKind.Queue)
+            .AddMessage(&quot;client&quot;, &quot;service&quot;, &quot;Submit request&quot;)
+            .AddMessage(&quot;service&quot;, &quot;service&quot;, &quot;Validate payload&quot;)
+            .AddMessage(&quot;service&quot;, &quot;store&quot;, &quot;Persist result&quot;)
+            .AddMessage(&quot;service&quot;, &quot;queue&quot;, &quot;Publish event&quot;, kind: SequenceArtifactMessageKind.Async)
+            .AddMessage(&quot;service&quot;, &quot;client&quot;, &quot;Return result&quot;, SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return)
+            .AddBlock(SequenceArtifactBlockKind.Alt, &quot;Validation outcome&quot;, 1, 4)
+            .AddBlock(SequenceArtifactBlockKind.Loop, &quot;Retry storage&quot;, 2, 2, depth: 1)
+            .AddActivation(&quot;service&quot;, true, 0).AddActivation(&quot;service&quot;, false, 5)
+            .AddNote(SequenceArtifactNotePlacement.Over, new[] { &quot;service&quot;, &quot;store&quot; }, &quot;Durable result&quot;);
+        model.Notes[0].StepIndex = 2; return model;
+    }
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Linq;
+using System.Globalization;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// The licensed font fixtures are included beside the gallery outputs.
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var model = V2GalleryModels.Create(ChartSeriesKind.Sankey, &quot;wide&quot;, VisualThemeMode.Dark);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Dark,
+    new VisualFrame(&quot;Requests across processing stages&quot;, &quot;Explore the data, then download the chart&quot;, showLegend: null), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = model.Prepare(context);
+System.IO.File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+System.IO.File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+System.IO.File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+
+/// &lt;summary&gt;Executable, deterministic gallery models shared by the catalog and its downloadable C# examples.&lt;/summary&gt;
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Creates an actual source model for every chart kind, without selecting a renderer or export backend.&lt;/summary&gt;
+    public static Chart Create(ChartSeriesKind kind, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? throw new ArgumentOutOfRangeException(nameof(kind));
+        chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+        if (variant == &quot;options&quot; &amp;&amp; kind is ChartSeriesKind.Bar or ChartSeriesKind.Area or ChartSeriesKind.HorizontalBar) {
+            chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+            chart.Series[0].StateRole = ChartSeriesState.Warning;
+            chart.WithDataLabels();
+        }
+        return chart;
+    }
+
+    /// &lt;summary&gt;Gets a short title describing the actual example data.&lt;/summary&gt;
+    public static string Title(ChartSeriesKind kind) =&gt; kind switch {
+        ChartSeriesKind.Line =&gt; &quot;Weekly request volume&quot;, ChartSeriesKind.StepLine =&gt; &quot;Requests waiting in the queue&quot;,
+        ChartSeriesKind.Area =&gt; &quot;Capacity used during the week&quot;, ChartSeriesKind.StepArea =&gt; &quot;Reserved processing capacity&quot;,
+        ChartSeriesKind.Bar =&gt; &quot;Completed orders by region&quot;, ChartSeriesKind.HorizontalBar =&gt; &quot;Regional order fulfilment&quot;,
+        ChartSeriesKind.StackedArea =&gt; &quot;Requests and follow-ups over time&quot;, ChartSeriesKind.TrendLine =&gt; &quot;Request volume and its trend&quot;,
+        ChartSeriesKind.Scatter =&gt; &quot;Processing time by workload&quot;, ChartSeriesKind.Bubble =&gt; &quot;Workload, time and request volume&quot;,
+        ChartSeriesKind.Lollipop =&gt; &quot;Orders at each delivery stage&quot;, ChartSeriesKind.Candlestick =&gt; &quot;Daily opening and closing prices&quot;,
+        ChartSeriesKind.Ohlc =&gt; &quot;Daily market price ranges&quot;, ChartSeriesKind.ErrorBar =&gt; &quot;Delivery time and uncertainty&quot;,
+        ChartSeriesKind.BoxPlot =&gt; &quot;Delivery time by service level&quot;, ChartSeriesKind.RangeBand =&gt; &quot;Expected temperature band&quot;,
+        ChartSeriesKind.RangeArea =&gt; &quot;Expected operating range&quot;, ChartSeriesKind.RangeBar =&gt; &quot;Minimum and maximum delivery times&quot;,
+        ChartSeriesKind.Dumbbell =&gt; &quot;Service capacity before and after&quot;, ChartSeriesKind.Slope =&gt; &quot;Capacity change across teams&quot;,
+        ChartSeriesKind.Heatmap =&gt; &quot;Coverage across service areas&quot;, ChartSeriesKind.HexbinHeatmap =&gt; &quot;Service coverage in hexagonal cells&quot;,
+        ChartSeriesKind.CalendarHeatmap =&gt; &quot;Daily activity across four months&quot;, ChartSeriesKind.DottedMap =&gt; &quot;Service routes across Europe&quot;,
+        ChartSeriesKind.RegionMap =&gt; &quot;Regional service coverage&quot;, ChartSeriesKind.TileMap =&gt; &quot;Service coverage by state&quot;,
+        ChartSeriesKind.Gauge =&gt; &quot;Available capacity against a target&quot;, ChartSeriesKind.Circle =&gt; &quot;Assessments completed&quot;,
+        ChartSeriesKind.RadialBar =&gt; &quot;Completion by delivery stage&quot;, ChartSeriesKind.LayeredRadial =&gt; &quot;Reviewed, verified and completed&quot;,
+        ChartSeriesKind.Bullet =&gt; &quot;Reviewed work against its targets&quot;, ChartSeriesKind.ProgressBar =&gt; &quot;Progress through delivery stages&quot;,
+        ChartSeriesKind.Pie =&gt; &quot;Revenue by service&quot;, ChartSeriesKind.Donut =&gt; &quot;Services contributing to revenue&quot;,
+        ChartSeriesKind.PolarArea =&gt; &quot;Service revenue in radial segments&quot;, ChartSeriesKind.Radar =&gt; &quot;Observed and expected service levels&quot;,
+        ChartSeriesKind.Polar =&gt; &quot;Directional sensor readings&quot;, ChartSeriesKind.Timeline =&gt; &quot;Project activities in March 2026&quot;,
+        ChartSeriesKind.Gantt =&gt; &quot;Project delivery in March 2026&quot;, ChartSeriesKind.StateTimeline =&gt; &quot;Availability throughout the day&quot;,
+        ChartSeriesKind.GanttLane =&gt; &quot;Incidents and recovery in parallel&quot;,
+        ChartSeriesKind.Sankey =&gt; &quot;Requests across processing stages&quot;, ChartSeriesKind.Tree =&gt; &quot;Teams and their responsibilities&quot;,
+        ChartSeriesKind.Sunburst =&gt; &quot;Allocation through the team hierarchy&quot;, ChartSeriesKind.Treemap =&gt; &quot;How work is allocated across teams&quot;,
+        ChartSeriesKind.Pictorial =&gt; &quot;Completed assessments by team&quot;, ChartSeriesKind.WordCloud =&gt; &quot;Topics in service observations&quot;,
+        ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
+        _ =&gt; throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    private static ChartPoint[] Observations(string variant, double offset = 0) =&gt; (variant == &quot;sparse&quot; ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
+        .Select(index =&gt; new ChartPoint(index, 20 + offset + index * 7 % 29, variant == &quot;sparse&quot; &amp;&amp; index == 6)).ToArray();
+    private static Chart Categories(ChartSeriesKind kind) =&gt; Chart.Create().WithXLabels(kind switch {
+        ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.TrendLine or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc =&gt; new[] { &quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot; },
+        ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell =&gt; new[] { &quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot; },
+        ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap =&gt; new[] { &quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot; },
+        ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea =&gt; new[] { &quot;Subscriptions&quot;, &quot;Consulting&quot;, &quot;Support&quot;, &quot;Licenses&quot;, &quot;Training&quot;, &quot;Other&quot; },
+        ChartSeriesKind.RadialBar =&gt; new[] { &quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Verified&quot;, &quot;Approved&quot;, &quot;Complete&quot; },
+        ChartSeriesKind.Radar =&gt; new[] { &quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot; },
+        ChartSeriesKind.Scatter or ChartSeriesKind.Bubble =&gt; new[] { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; },
+        ChartSeriesKind.Lollipop =&gt; new[] { &quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot; },
+        ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea =&gt; new[] { &quot;08:00&quot;, &quot;10:00&quot;, &quot;12:00&quot;, &quot;14:00&quot;, &quot;16:00&quot; },
+        _ =&gt; new[] { &quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot; }
+    });
+    private static Chart? Basic(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        return kind switch {
+            ChartSeriesKind.Line =&gt; chart.AddLine(&quot;Requests&quot;, values),
+            ChartSeriesKind.StepLine =&gt; chart.AddStepLine(&quot;Queued&quot;, values),
+            ChartSeriesKind.Area =&gt; chart.AddArea(&quot;Used capacity&quot;, values),
+            ChartSeriesKind.StepArea =&gt; chart.AddStepArea(&quot;Reserved capacity&quot;, values),
+            ChartSeriesKind.Scatter =&gt; chart.WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddScatter(&quot;Processing time&quot;, values),
+            ChartSeriesKind.Bar =&gt; chart.AddBar(&quot;Orders&quot;, values),
+            ChartSeriesKind.Lollipop =&gt; chart.AddLollipop(&quot;Orders&quot;, values),
+            ChartSeriesKind.HorizontalBar =&gt; chart.AddHorizontalBar(&quot;Orders&quot;, values),
+            ChartSeriesKind.StackedArea =&gt; chart.AddStackedArea(&quot;Requests&quot;, values).AddStackedArea(&quot;Follow-ups&quot;, Observations(variant, -10)),
+            ChartSeriesKind.Waterfall =&gt; chart.AddWaterfall(&quot;Changes&quot;, new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
+            ChartSeriesKind.Slope =&gt; Chart.Create().AddSlope(&quot;Team A&quot;, 28, 64, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team B&quot;, 52, 43, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team C&quot;, 38, 57, &quot;Before&quot;, &quot;After&quot;),
+            ChartSeriesKind.TrendLine =&gt; chart.AddScatter(&quot;Observations&quot;, values).AddTrendLine(&quot;Least-squares trend&quot;, values),
+            _ =&gt; null
+        };
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Ranges(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var count = variant == &quot;sparse&quot; ? 2 : 5;
+        var candles = Enumerable.Range(1, count).Select(index =&gt; new ChartCandlestick(index, 30 + index * 3, 44 + index * 3, 20 + index * 3, index % 2 == 0 ? 26 + index * 3 : 38 + index * 3)).ToArray();
+        var ranges = Enumerable.Range(1, count).Select(index =&gt; new ChartRangeBand(index, 20 + index * 2, 40 + index * 4)).ToArray();
+        return kind switch {
+            ChartSeriesKind.Bubble =&gt; chart.WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddBubble(&quot;Requests&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartBubble(index, 20 + index * 5, index * index + 1))),
+            ChartSeriesKind.ErrorBar =&gt; chart.AddErrorBar(&quot;Delivery time&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartErrorBar(index, 30 + index * 2, 20 + index, 42 + index * 3))),
+            ChartSeriesKind.Candlestick =&gt; chart.AddCandlestick(&quot;Market price&quot;, candles),
+            ChartSeriesKind.Ohlc =&gt; chart.AddOhlc(&quot;Market price&quot;, candles),
+            ChartSeriesKind.RangeBand =&gt; chart.AddRangeBand(&quot;Expected range&quot;, ranges),
+            ChartSeriesKind.RangeArea =&gt; chart.AddRangeArea(&quot;Expected range&quot;, ranges),
+            ChartSeriesKind.Dumbbell =&gt; chart.AddDumbbell(&quot;Change&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartDumbbell(index, 20 + index * 2, 40 + index * 3))),
+            ChartSeriesKind.RangeBar =&gt; chart.AddRangeBar(&quot;Range&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartInterval(index, 20 + index * 2, 40 + index * 4))),
+            ChartSeriesKind.BoxPlot =&gt; chart.AddBoxPlot(&quot;Delivery time&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index))),
+            _ =&gt; null
+        };
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Radial(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        switch (kind) {
+            case ChartSeriesKind.Pie: chart.AddPie(&quot;Revenue&quot;, values); break;
+            case ChartSeriesKind.Donut: chart.AddDonut(&quot;Revenue&quot;, values); break;
+            case ChartSeriesKind.Gauge:
+                chart.AddGauge(&quot;Capacity&quot;, 76).WithGauge(options =&gt; {
+                    options.Form = variant == &quot;options&quot; ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
+                    options.Target = 85; options.Caption = &quot;Available capacity&quot;;
+                    options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
+                    options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
+                    options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
+                }); break;
+            case ChartSeriesKind.Circle: chart.AddCircle(&quot;Completed&quot;, 76); break;
+            case ChartSeriesKind.RadialBar: chart.AddRadialBar(&quot;Completion&quot;, values).WithRadialBarCenterLabel(); break;
+            case ChartSeriesKind.LayeredRadial:
+                chart.AddLayeredRadial(&quot;Completion&quot;, new[] {
+                    new ChartRadialLayer(&quot;Reviewed&quot;, 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
+                    new ChartRadialLayer(&quot;Verified&quot;, 58) { RadiusRatio = .7, StrokeRatio = .13, SweepAngleDegrees = 240, StartAngleDegrees = -30, SeparatorCount = 8 },
+                    new ChartRadialLayer(&quot;Complete&quot;, 42) { RadiusRatio = .4, StrokeRatio = .13, SweepAngleDegrees = 360 }
+                }); break;
+            case ChartSeriesKind.Bullet:
+                chart.AddBullet(&quot;Reviewed&quot;, 76, 85, rangeEnds: new[] { 50d, 80d }).AddBullet(&quot;Verified&quot;, 58, 75, rangeEnds: new[] { 40d, 70d }); break;
+            case ChartSeriesKind.Radar: chart.AddRadar(&quot;Observed&quot;, values).AddRadar(&quot;Expected&quot;, Observations(variant, 12)); break;
+            case ChartSeriesKind.Polar: chart = Chart.Create().AddPolar(&quot;Observed&quot;, Enumerable.Range(0, 6).Select(index =&gt; new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
+                chart.ConfigureXAxis(axis =&gt; axis.LabelFormatter = angle =&gt; (angle * 180 / Math.PI).ToString(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture) + &quot;&#176;&quot;); break;
+            case ChartSeriesKind.PolarArea: chart.AddPolarArea(&quot;Revenue&quot;, values); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut &amp;&amp; variant == &quot;options&quot;) {
+            chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label);
+            chart.Series[0].WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+            if (kind == ChartSeriesKind.Donut) chart.WithDonutCenterText(&quot;184&quot;, &quot;Reviewed&quot;);
+        }
+        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.RadialBar) chart.WithRadialBarRadiusScale(.85).WithRadialBarStrokeScale(1.2);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
+        switch (kind) {
+            case ChartSeriesKind.Heatmap:
+                if (variant == &quot;options&quot;) return States(mode).WithXLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;)
+                    .AddHeatmapCategoryRow(&quot;Primary&quot;, new ChartHeatmapCell?[] { new(&quot;pass&quot;, &quot;Ready&quot;, &quot;Assessment passed&quot;), new(&quot;warning&quot;, &quot;Review&quot;), null, new(&quot;pass&quot;, &quot;Ready&quot;) }, &quot;Production&quot;)
+                    .AddHeatmapCategoryRow(&quot;Secondary&quot;, new ChartHeatmapCell?[] { new(&quot;pass&quot;), new(&quot;pass&quot;), new(&quot;warning&quot;), new(&quot;pass&quot;) }, &quot;Production&quot;);
+                chart.AddHeatmapRow(&quot;Primary&quot;, variant == &quot;sparse&quot; ? new double?[] { 92, null, null, 70, null, 41 } : new double?[] { 92, 70, 56, null, 84, 41 })
+                    .AddHeatmapRow(&quot;Secondary&quot;, variant == &quot;sparse&quot; ? new double?[] { null, 84, null, null, 90, null } : new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.HexbinHeatmap:
+                chart.AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 92, 70, 56, null, 84, 41 }).AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.CalendarHeatmap:
+                return Chart.Create().AddCalendarHeatmap(&quot;Observations&quot;, Enumerable.Range(0, variant == &quot;sparse&quot; ? 35 : 120)
+                    .Where(index =&gt; index % 7 != 0 &amp;&amp; index % 9 != 0).Select(index =&gt; new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)), firstDayOfWeek: DayOfWeek.Monday);
+            case ChartSeriesKind.DottedMap:
+                return Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe()).AddDottedMap(&quot;Locations&quot;, new[] {
+                    new ChartMapPoint(&quot;Madrid&quot;, -3.7, 40.4, 18), new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2, 74), new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9, 42)
+                }).AddMapRouteBetweenPoints(&quot;Madrid to Warsaw&quot;, &quot;Madrid&quot;, &quot;Warsaw&quot;)
+                    .AddMapRoute(&quot;Warsaw to Oslo&quot;, new[] { new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2), new ChartMapPoint(&quot;Baltic&quot;, 17, 56), new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9) });
+            case ChartSeriesKind.TileMap:
+                chart = Chart.Create().AddTileMap(&quot;Observations&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;), RegionValues()).WithMapLabels(); break;
+            case ChartSeriesKind.RegionMap:
+                chart = Chart.Create().AddRegionMap(&quot;Observations&quot;, ChartMapCatalog.Get(&quot;us-states&quot;), RegionValues()).WithMapLabels(false); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap &amp;&amp; variant == &quot;options&quot;)
+            chart.WithMapColorScale(ChartMapColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
+                .WithValueRange(0, 100).WithLabels(&quot;Below target&quot;, &quot;Target&quot;, &quot;Above target&quot;).WithNoDataColor(colors.Border))
+                .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap)
+            chart.WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
+        return chart;
+    }
+    private static ChartRegionMapItem[] RegionValues() =&gt; new[] {
+        new ChartRegionMapItem(&quot;CA&quot;, 82), new ChartRegionMapItem(&quot;TX&quot;, 64), new ChartRegionMapItem(&quot;NY&quot;, 91), new ChartRegionMapItem(&quot;FL&quot;, 47),
+        new ChartRegionMapItem(&quot;WA&quot;, 74), new ChartRegionMapItem(&quot;IL&quot;, 58), new ChartRegionMapItem(&quot;CO&quot;, 39), new ChartRegionMapItem(&quot;NC&quot;, 66) };
+    private static Chart States(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        return Chart.Create().WithStateCategories(new ChartStateCategory(&quot;pass&quot;, &quot;Available&quot;, colors.Status.Pass.Fill),
+            new ChartStateCategory(&quot;warning&quot;, &quot;Review&quot;, colors.Status.Medium.Fill, ChartStatePattern.Hatched),
+            new ChartStateCategory(&quot;critical&quot;, &quot;Unavailable&quot;, colors.Status.Critical.Fill, ChartStatePattern.CrossHatched));
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Specialty(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+        var links = new[] { new ChartTreeLink(&quot;All teams&quot;, &quot;Engineering&quot;, 60), new ChartTreeLink(&quot;All teams&quot;, &quot;Operations&quot;, 40),
+            new ChartTreeLink(&quot;Engineering&quot;, &quot;Platform&quot;, 35), new ChartTreeLink(&quot;Engineering&quot;, &quot;Services&quot;, 25), new ChartTreeLink(&quot;Operations&quot;, &quot;Support&quot;, 40) };
+        switch (kind) {
+            case ChartSeriesKind.Funnel: return chart.AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
+                .WithXLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).WithDataLabels();
+            case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem(&quot;Discovery&quot;, start, start.AddDays(3)).AddTimelineItem(&quot;Implementation&quot;, start.AddDays(2), start.AddDays(7))
+                .AddTimelineItem(&quot;Validation&quot;, start.AddDays(6), start.AddDays(9))
+                .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Gantt: return Chart.Create().AddGanttTask(&quot;Discovery&quot;, start, start.AddDays(3), .9).AddGanttTask(&quot;Implementation&quot;, start.AddDays(3), start.AddDays(7), .55, 0)
+                .AddGanttTask(&quot;Validation&quot;, start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone(&quot;Delivery&quot;, start.AddDays(9), 2)
+                .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Sankey: return Chart.Create().AddSankey(&quot;Requests&quot;, new[] { new ChartSankeyLink(&quot;Received&quot;, &quot;Automatic&quot;, 72), new ChartSankeyLink(&quot;Received&quot;, &quot;Manual&quot;, 28),
+                new ChartSankeyLink(&quot;Automatic&quot;, &quot;Completed&quot;, 65), new ChartSankeyLink(&quot;Automatic&quot;, &quot;Review&quot;, 7), new ChartSankeyLink(&quot;Manual&quot;, &quot;Completed&quot;, 20), new ChartSankeyLink(&quot;Manual&quot;, &quot;Review&quot;, 8) });
+            case ChartSeriesKind.Tree: return Chart.Create().AddTree(&quot;Teams&quot;, links);
+            case ChartSeriesKind.Sunburst: return Chart.Create().AddSunburst(&quot;Teams&quot;, links);
+            case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
+            case ChartSeriesKind.Pictorial:
+                chart = Chart.Create().AddPictorial(&quot;Assessments&quot;, new[] { new ChartPictorialItem(&quot;Team A&quot;, 74), new ChartPictorialItem(&quot;Team B&quot;, 46), new ChartPictorialItem(&quot;Team C&quot;, 61) }, ChartPictorialShape.Person)
+                    .WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
+                if (variant == &quot;options&quot;) chart.WithPictorialSvgPath(&quot;M2 2H22V22H2Z M8 8V16H16V8Z&quot;, new ChartRect(0, 0, 24, 24));
+                return chart;
+            case ChartSeriesKind.ProgressBar:
+                chart = Chart.Create().AddProgressBars(&quot;Delivery&quot;, new[] { new ChartProgressItem(&quot;Reviewed&quot;, 76), new ChartProgressItem(&quot;Verified&quot;, 58), new ChartProgressItem(&quot;Complete&quot;, 42) }).WithProgressHandles();
+                if (variant == &quot;options&quot;) chart.WithProgressMaximum(120).WithProgressBarThickness(.42).WithProgressTrackOpacity(.3);
+                return chart;
+            case ChartSeriesKind.WordCloud: return Chart.Create().AddWordCloud(&quot;Topics&quot;, new[] { new ChartWordCloudItem(&quot;Availability&quot;, 20), new ChartWordCloudItem(&quot;Identity&quot;, 16), new ChartWordCloudItem(&quot;Network&quot;, 14),
+                new ChartWordCloudItem(&quot;Storage&quot;, 12), new ChartWordCloudItem(&quot;Recovery&quot;, 10), new ChartWordCloudItem(&quot;Capacity&quot;, 8), new ChartWordCloudItem(&quot;Services&quot;, 6), new ChartWordCloudItem(&quot;Validation&quot;, 4) });
+            case ChartSeriesKind.StateTimeline: return States(mode).AddStateTimelineLane(&quot;Primary&quot;, new[] { new ChartStateTimelineSegment(start, start.AddHours(3), &quot;pass&quot;),
+                new ChartStateTimelineSegment(start.AddHours(3), start.AddHours(5), &quot;warning&quot;, &quot;Increased response time&quot;), new ChartStateTimelineSegment(start.AddHours(6), start.AddHours(10), &quot;pass&quot;) }, group: &quot;Production&quot;)
+                .AddStateTimelineLane(&quot;Secondary&quot;, new[] { new ChartStateTimelineSegment(start, start.AddHours(6), &quot;pass&quot;), new ChartStateTimelineSegment(start.AddHours(7), start.AddHours(10), &quot;critical&quot;, &quot;No response&quot;) }, group: &quot;Production&quot;);
+            case ChartSeriesKind.GanttLane: return States(mode).WithGanttLaneNow(start.AddHours(12)).AddGanttLane(&quot;Primary&quot;, new[] {
+                new ChartGanttLaneItem(start, start.AddHours(5), &quot;warning&quot;, &quot;Investigation&quot;, &quot;Degraded response time&quot;), new ChartGanttLaneItem(start.AddHours(3), start.AddHours(7), &quot;critical&quot;, &quot;Recovery&quot;),
+                new ChartGanttLaneItem(start.AddHours(9), null, &quot;warning&quot;, &quot;Monitoring&quot;) }, &quot;Production&quot;)
+                .AddGanttLane(&quot;Secondary&quot;, new[] { new ChartGanttLaneItem(start.AddHours(2), start.AddHours(6), &quot;warning&quot;, &quot;Maintenance&quot;) }, &quot;Production&quot;);
+            default: return null;
+        }
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Creates a fixed comparison grid with shared Cartesian axes.&lt;/summary&gt;
+    public static ChartGrid CreateGrid() =&gt; ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
+        .Add(Create(ChartSeriesKind.Line).WithTitle(&quot;Observed requests&quot;))
+        .Add(Create(ChartSeriesKind.Bar).WithTitle(&quot;Reviewed requests&quot;))
+        .Add(Create(ChartSeriesKind.Area).WithTitle(&quot;Capacity used&quot;), 2).WithSharedAxes();
+
+    /// &lt;summary&gt;Creates groups, status, icon shapes, details and routed links in a native topology.&lt;/summary&gt;
+    public static TopologyChart CreateTopology(bool atlas = false) {
+        var chart = TopologyChart.Create(); chart.Id = atlas ? &quot;shape-atlas&quot; : &quot;service-topology&quot;;
+        chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true, WrapNodeLabels = true, IncludeLegend = true, IncludeGroupStatusDots = true };
+        if (atlas) {
+            var shapes = Enum.GetValues&lt;TopologyNodeShape&gt;();
+            for (var index = 0; index &lt; shapes.Length; index++) chart.Nodes.Add(new TopologyNode {
+                Id = &quot;shape-&quot; + index, Label = shapes[index].ToString(), X = 24 + index % 5 * 160, Y = 24 + index / 5 * 120,
+                Width = 132, Height = 86, Shape = shapes[index], PreserveDisplayModeSize = true, ShowStatusBadge = false
+            });
+            return chart;
+        }
+        chart.Groups.Add(new TopologyGroup { Id = &quot;primary&quot;, Label = &quot;Primary region&quot;, X = 0, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Healthy });
+        chart.Groups.Add(new TopologyGroup { Id = &quot;secondary&quot;, Label = &quot;Secondary region&quot;, X = 390, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Warning });
+        var source = new TopologyNode { Id = &quot;client&quot;, Label = &quot;Client service&quot;, Subtitle = &quot;Requests&quot;, X = 30, Y = 65, Width = 240, Height = 85,
+            Kind = TopologyNodeKind.Server, GroupId = &quot;primary&quot;, Status = TopologyHealthStatus.Healthy };
+        source.Details.Add(new TopologyNodeDetail { Label = &quot;State&quot;, Value = &quot;Available&quot;, Status = TopologyHealthStatus.Healthy }); chart.Nodes.Add(source);
+        chart.Nodes.Add(new TopologyNode { Id = &quot;cache&quot;, Label = &quot;Cache&quot;, X = 70, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = &quot;primary&quot; });
+        chart.Nodes.Add(new TopologyNode { Id = &quot;worker&quot;, Label = &quot;Processing service&quot;, X = 430, Y = 65, Width = 240, Height = 85, Kind = TopologyNodeKind.Server,
+            GroupId = &quot;secondary&quot;, Status = TopologyHealthStatus.Warning });
+        chart.Nodes.Add(new TopologyNode { Id = &quot;store&quot;, Label = &quot;Result store&quot;, X = 470, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = &quot;secondary&quot; });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;request&quot;, SourceNodeId = &quot;client&quot;, TargetNodeId = &quot;worker&quot;, Label = &quot;Requests&quot;, SecondaryLabel = &quot;Active&quot;,
+            Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal, Direction = VisualLinkDirection.Forward });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;cache-read&quot;, SourceNodeId = &quot;client&quot;, TargetNodeId = &quot;cache&quot;, Label = &quot;Lookup&quot;, Routing = TopologyEdgeRouting.Curved,
+            LineStyle = TopologyEdgeLineStyle.Dashed, Direction = VisualLinkDirection.Bidirectional });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;persist&quot;, SourceNodeId = &quot;worker&quot;, TargetNodeId = &quot;store&quot;, Label = &quot;Persist&quot;, Routing = TopologyEdgeRouting.Orthogonal });
+        chart.Legend = TopologyLegend.Create().AddStatus(&quot;Available&quot;, TopologyHealthStatus.Healthy).AddStatus(&quot;Review&quot;, TopologyHealthStatus.Warning)
+            .AddNodeKind(&quot;Service&quot;, TopologyNodeKind.Server).AddEdgeKind(&quot;Dependency&quot;, TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed);
+        return chart;
+    }
+
+    /// &lt;summary&gt;Creates a branched process with typed lanes, decisions and semantic statuses.&lt;/summary&gt;
+    public static FlowArtifact CreateFlow() =&gt; FlowArtifact.Create(&quot;assessment-flow&quot;).WithSize(900, 600)
+        .AddLane(&quot;service&quot;, &quot;Service&quot;).AddLane(&quot;review&quot;, &quot;Review&quot;)
+        .AddStep(&quot;received&quot;, &quot;Request received&quot;, FlowArtifactStepKind.Start, &quot;service&quot;)
+        .AddStep(&quot;decision&quot;, &quot;Automatic checks pass?&quot;, FlowArtifactStepKind.Decision, &quot;service&quot;)
+        .AddStep(&quot;manual&quot;, &quot;Review observations&quot;, FlowArtifactStepKind.Process, &quot;review&quot;, VisualStatus.Warning)
+        .AddStep(&quot;complete&quot;, &quot;Assessment complete&quot;, FlowArtifactStepKind.End, &quot;service&quot;, VisualStatus.Positive)
+        .AddConnector(&quot;received&quot;, &quot;decision&quot;, &quot;Evaluate&quot;).AddConnector(&quot;decision&quot;, &quot;manual&quot;, &quot;Review required&quot;)
+        .AddConnector(&quot;decision&quot;, &quot;complete&quot;, &quot;Passed&quot;).AddConnector(&quot;manual&quot;, &quot;complete&quot;, &quot;Accepted&quot;);
+
+    /// &lt;summary&gt;Creates actor, control, database and queue notation with nested fragments, notes and activation.&lt;/summary&gt;
+    public static SequenceArtifact CreateSequence() {
+        var model = SequenceArtifact.Create(&quot;request-sequence&quot;).WithSize(960, 760)
+            .AddParticipant(&quot;client&quot;, &quot;Client&quot;, SequenceArtifactParticipantKind.Actor)
+            .AddParticipant(&quot;service&quot;, &quot;Service&quot;, SequenceArtifactParticipantKind.Control)
+            .AddParticipant(&quot;store&quot;, &quot;Store&quot;, SequenceArtifactParticipantKind.Database)
+            .AddParticipant(&quot;queue&quot;, &quot;Queue&quot;, SequenceArtifactParticipantKind.Queue)
+            .AddMessage(&quot;client&quot;, &quot;service&quot;, &quot;Submit request&quot;)
+            .AddMessage(&quot;service&quot;, &quot;service&quot;, &quot;Validate payload&quot;)
+            .AddMessage(&quot;service&quot;, &quot;store&quot;, &quot;Persist result&quot;)
+            .AddMessage(&quot;service&quot;, &quot;queue&quot;, &quot;Publish event&quot;, kind: SequenceArtifactMessageKind.Async)
+            .AddMessage(&quot;service&quot;, &quot;client&quot;, &quot;Return result&quot;, SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return)
+            .AddBlock(SequenceArtifactBlockKind.Alt, &quot;Validation outcome&quot;, 1, 4)
+            .AddBlock(SequenceArtifactBlockKind.Loop, &quot;Retry storage&quot;, 2, 2, depth: 1)
+            .AddActivation(&quot;service&quot;, true, 0).AddActivation(&quot;service&quot;, false, 5)
+            .AddNote(SequenceArtifactNotePlacement.Over, new[] { &quot;service&quot;, &quot;store&quot; }, &quot;Durable result&quot;);
+        model.Notes[0].StepIndex = 2; return model;
+    }
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = document.querySelector('meta[name="html-preview-source-url"]')?.content || location.href;
+    const pageParams = new URL(sourceUrl).searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            if (canUpdateLocation) {
+                const next = new URL(location.href);
+                next.search = pageParams.toString();
+                history.replaceState(null, '', next);
+            }
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        if (canUpdateLocation) {
+            const next = new URL(location.href);
+            next.search = pageParams.toString();
+            history.replaceState(null, '', next);
+        }
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            const next = new URL(sourceUrl);
+            next.search = pageParams.toString();
+            if (canUpdateLocation) history.replaceState(null, '', next);
+            try { sessionStorage.setItem('chartforgex-gallery-return', next.search); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

@@ -1,0 +1,295 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="light" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Client and server exchange &#183; Sequence</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:1100px;min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Sequence</p><h1>Client and server exchange</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="sequence-expanded-light.html" data-theme-link data-light-href="sequence-expanded-light.html" data-dark-href="sequence-expanded-dark.html">Detailed</a></span><span class="current-variant"><a href="sequence-feasibility-light.html" data-theme-link data-light-href="sequence-feasibility-light.html" data-dark-href="sequence-feasibility-dark.html" aria-current="page">Simple</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Client and server exchange" aria-labelledby="sequence-feasibility-light-title" aria-describedby="sequence-feasibility-light-description"><title id="sequence-feasibility-light-title">Client and server exchange</title><desc id="sequence-feasibility-light-description">Product-neutral diagram semantics</desc><defs><clipPath id="sequence-feasibility-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="592" height="352"/></clipPath></defs><rect x="0" y="0" width="640" height="400" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#sequence-feasibility-light-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Client and server exchange</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Product-neutral diagram semantics</text></g></g><line x1="179" y1="127.65" x2="179" y2="279.595" data-cfx-role="sequence-lifeline" fill="none" stroke="#E2E4E7" stroke-width="1" stroke-dasharray="6 5"/><line x1="461" y1="127.65" x2="461" y2="279.595" data-cfx-role="sequence-lifeline" fill="none" stroke="#E2E4E7" stroke-width="1" stroke-dasharray="6 5"/><g id="sequence-feasibility-light-node-7" data-cfx-source-id="client" data-cfx-role="sequence-participant" data-label="Client"><rect x="99" y="89.65" width="160" height="38" rx="3" data-cfx-role="sequence-participant-box" fill="#F8F9FA" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="sequence-label"><text x="164.955" y="109.076" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Client</text></g></g><g id="sequence-feasibility-light-node-11" data-cfx-source-id="server" data-cfx-role="sequence-participant" data-label="Server"><rect x="381" y="89.65" width="160" height="38" rx="3" data-cfx-role="sequence-participant-box" fill="#F8F9FA" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="sequence-label"><text x="445.382" y="109.076" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Server</text></g></g><g id="sequence-feasibility-light-node-15" data-cfx-source-id="message-1" data-cfx-role="sequence-message" data-kind="Call" data-label="Request&#10;payload" data-source="client" data-target="server"><path d="M 179 192.947 L 461 192.947" data-cfx-role="sequence-message-line" fill="none" stroke="#11776F" stroke-width="2"/><path d="M 461 192.947 L 452 187.947 L 452 197.947 Z" data-cfx-role="sequence-call-arrow" fill="#11776F" stroke="none" stroke-width="1" fill-rule="evenodd"/><g data-cfx-role="sequence-label"><text x="300.283" y="163.076" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Request</text><text x="300.802" y="177.724" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">payload</text></g></g><g id="sequence-feasibility-light-node-20" data-cfx-source-id="message-2" data-cfx-role="sequence-message" data-kind="Return" data-label="Response" data-source="server" data-target="client"><path d="M 461 243.595 L 179 243.595" data-cfx-role="sequence-message-line" fill="none" stroke="#11776F" stroke-width="2" stroke-dasharray="6 5"/><line x1="188" y1="238.595" x2="179" y2="243.595" data-cfx-role="sequence-return-arrow" fill="none" stroke="#11776F" stroke-width="2"/><line x1="188" y1="248.595" x2="179" y2="243.595" fill="none" stroke="#11776F" stroke-width="2"/><g data-cfx-role="sequence-label"><text x="296.715" y="228.373" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Response</text></g></g></svg></div><div class="full" data-visual-theme="light" data-output-format="png"><img src="sequence-feasibility-light.png" width="640" height="400" alt="Client and server exchange" loading="lazy" decoding="async"></div><div class="full" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Client and server exchange" aria-labelledby="sequence-feasibility-dark-title" aria-describedby="sequence-feasibility-dark-description"><title id="sequence-feasibility-dark-title">Client and server exchange</title><desc id="sequence-feasibility-dark-description">Product-neutral diagram semantics</desc><defs><clipPath id="sequence-feasibility-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="592" height="352"/></clipPath></defs><rect x="0" y="0" width="640" height="400" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#sequence-feasibility-dark-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Client and server exchange</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Product-neutral diagram semantics</text></g></g><line x1="179" y1="127.65" x2="179" y2="279.595" data-cfx-role="sequence-lifeline" fill="none" stroke="#272A30" stroke-width="1" stroke-dasharray="6 5"/><line x1="461" y1="127.65" x2="461" y2="279.595" data-cfx-role="sequence-lifeline" fill="none" stroke="#272A30" stroke-width="1" stroke-dasharray="6 5"/><g id="sequence-feasibility-dark-node-7" data-cfx-source-id="client" data-cfx-role="sequence-participant" data-label="Client"><rect x="99" y="89.65" width="160" height="38" rx="3" data-cfx-role="sequence-participant-box" fill="#111317" stroke="#272A30" stroke-width="1"/><g data-cfx-role="sequence-label"><text x="164.955" y="109.076" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Client</text></g></g><g id="sequence-feasibility-dark-node-11" data-cfx-source-id="server" data-cfx-role="sequence-participant" data-label="Server"><rect x="381" y="89.65" width="160" height="38" rx="3" data-cfx-role="sequence-participant-box" fill="#111317" stroke="#272A30" stroke-width="1"/><g data-cfx-role="sequence-label"><text x="445.382" y="109.076" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Server</text></g></g><g id="sequence-feasibility-dark-node-15" data-cfx-source-id="message-1" data-cfx-role="sequence-message" data-kind="Call" data-label="Request&#10;payload" data-source="client" data-target="server"><path d="M 179 192.947 L 461 192.947" data-cfx-role="sequence-message-line" fill="none" stroke="#37C9B8" stroke-width="2"/><path d="M 461 192.947 L 452 187.947 L 452 197.947 Z" data-cfx-role="sequence-call-arrow" fill="#37C9B8" stroke="none" stroke-width="1" fill-rule="evenodd"/><g data-cfx-role="sequence-label"><text x="300.283" y="163.076" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Request</text><text x="300.802" y="177.724" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">payload</text></g></g><g id="sequence-feasibility-dark-node-20" data-cfx-source-id="message-2" data-cfx-role="sequence-message" data-kind="Return" data-label="Response" data-source="server" data-target="client"><path d="M 461 243.595 L 179 243.595" data-cfx-role="sequence-message-line" fill="none" stroke="#37C9B8" stroke-width="2" stroke-dasharray="6 5"/><line x1="188" y1="238.595" x2="179" y2="243.595" data-cfx-role="sequence-return-arrow" fill="none" stroke="#37C9B8" stroke-width="2"/><line x1="188" y1="248.595" x2="179" y2="243.595" fill="none" stroke="#37C9B8" stroke-width="2"/><g data-cfx-role="sequence-label"><text x="296.715" y="228.373" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Response</text></g></g></svg></div><div class="full" data-visual-theme="dark" data-output-format="png"><img src="sequence-feasibility-dark.png" width="640" height="400" alt="Client and server exchange" loading="lazy" decoding="async"></div></section><div class="export-row"><span>640 × 400 pixels</span><nav aria-label="Download outputs"><a href="sequence-feasibility-light.svg" data-theme-link data-light-href="sequence-feasibility-light.svg" data-dark-href="sequence-feasibility-dark.svg" download>Download SVG</a><a href="sequence-feasibility-light.png" data-theme-link data-light-href="sequence-feasibility-light.png" data-dark-href="sequence-feasibility-dark.png" download>Download PNG</a><a href="sequence-feasibility-light.csharp.txt" data-theme-link data-light-href="sequence-feasibility-light.csharp.txt" data-dark-href="sequence-feasibility-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Register the included Carlito font files to reproduce the exported typography.</p><pre data-visual-theme="light"><code data-example-source>using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var model = CreateSequence();
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), VisualTheme.Graphite(), VisualThemeMode.Light,
+    new VisualFrame(&quot;Client and server exchange&quot;, &quot;Product-neutral diagram semantics&quot;, showLegend: false), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = model.Prepare(context);
+System.IO.File.WriteAllText(&quot;diagram.svg&quot;, prepared.ToSvg());
+System.IO.File.WriteAllBytes(&quot;diagram.png&quot;, prepared.ToPng());
+
+static SequenceArtifact CreateSequence() =&gt; SequenceArtifact.Create(&quot;session&quot;).WithSize(640, 400)
+        .AddParticipant(&quot;client&quot;, &quot;Client&quot;).AddParticipant(&quot;server&quot;, &quot;Server&quot;)
+        .AddMessage(&quot;client&quot;, &quot;server&quot;, &quot;Request\npayload&quot;)
+        .AddMessage(&quot;server&quot;, &quot;client&quot;, &quot;Response&quot;, SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return);
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var model = CreateSequence();
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), VisualTheme.Graphite(), VisualThemeMode.Dark,
+    new VisualFrame(&quot;Client and server exchange&quot;, &quot;Product-neutral diagram semantics&quot;, showLegend: false), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = model.Prepare(context);
+System.IO.File.WriteAllText(&quot;diagram.svg&quot;, prepared.ToSvg());
+System.IO.File.WriteAllBytes(&quot;diagram.png&quot;, prepared.ToPng());
+
+static SequenceArtifact CreateSequence() =&gt; SequenceArtifact.Create(&quot;session&quot;).WithSize(640, 400)
+        .AddParticipant(&quot;client&quot;, &quot;Client&quot;).AddParticipant(&quot;server&quot;, &quot;Server&quot;)
+        .AddMessage(&quot;client&quot;, &quot;server&quot;, &quot;Request\npayload&quot;)
+        .AddMessage(&quot;server&quot;, &quot;client&quot;, &quot;Response&quot;, SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return);
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = document.querySelector('meta[name="html-preview-source-url"]')?.content || location.href;
+    const pageParams = new URL(sourceUrl).searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            if (canUpdateLocation) {
+                const next = new URL(location.href);
+                next.search = pageParams.toString();
+                history.replaceState(null, '', next);
+            }
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        if (canUpdateLocation) {
+            const next = new URL(location.href);
+            next.search = pageParams.toString();
+            history.replaceState(null, '', next);
+        }
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            const next = new URL(sourceUrl);
+            next.search = pageParams.toString();
+            if (canUpdateLocation) history.replaceState(null, '', next);
+            try { sessionStorage.setItem('chartforgex-gallery-return', next.search); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

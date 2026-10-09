@@ -26,7 +26,7 @@ public static partial class V2Examples {
         var variants = artifacts.Where(artifact => artifact.Family == selected.Family && artifact.Theme == "light").ToArray();
         var page = new StringBuilder();
         StartPage(page, selected.Title + " · " + FamilyLabel(selected.Family), selected.Theme, "example");
-        page.Append("<header class=\"example-header\"><div class=\"header-top\"><a class=\"back-link\" href=\"index.html\">← Gallery</a>");
+        page.Append("<header class=\"example-header\"><div class=\"header-top\"><a class=\"back-link\" href=\"catalog.html\">← Gallery</a>");
         AppendThemeControl(page);
         page.Append("</div><p class=\"eyebrow\">").Append(Escape(FamilyLabel(selected.Family))).Append("</p><h1>").Append(Escape(selected.Title))
             .Append("</h1><p class=\"intro\">Explore the example, download the output or use the C# source in your own project.</p></header><main id=\"main-content\" class=\"example-main\">");
@@ -62,7 +62,7 @@ public static partial class V2Examples {
         foreach (var artifact in paired)
             page.Append("<pre data-visual-theme=\"").Append(artifact.Theme).Append("\"><code data-example-source>")
                 .Append(Escape(File.ReadAllText(Path.Combine(output, artifact.Id + ".csharp.txt")))).Append("</code></pre>");
-        page.Append("</section></main><footer><a href=\"index.html\">Explore more examples</a><a href=\"fonts/OFL.txt\">Font license</a></footer>");
+        page.Append("</section></main><footer><a href=\"catalog.html\">Explore more examples</a><a href=\"fonts/OFL.txt\">Font license</a></footer>");
         EndPage(page);
         ExampleArtifactWriter.WriteText(Path.Combine(output, selected.Id + ".html"), page.ToString());
     }
@@ -99,10 +99,12 @@ public static partial class V2Examples {
             .Append(Escape(title)).Append("</title><style>");
         AppendThemeCss(page, ":root", VisualThemeMode.Light);
         AppendThemeCss(page, "html[data-theme=dark]", VisualThemeMode.Dark);
-        page.Append("</style><link rel=\"stylesheet\" href=\"gallery.css\"><script src=\"gallery.js\" defer></script></head><body><a class=\"skip-link\" href=\"#main-content\">Skip to content</a>");
+        page.Append("</style><style data-gallery-style>").Append(ReadCatalogAsset("gallery.css"))
+            .Append("</style></head><body><a class=\"skip-link\" href=\"#main-content\">Skip to content</a>");
     }
 
-    private static void EndPage(StringBuilder page) => page.Append("</body></html>");
+    private static void EndPage(StringBuilder page) => page.Append("<script data-gallery-script>")
+        .Append(ReadCatalogAsset("gallery.js")).Append("</script></body></html>");
 
     private static void AppendThemeCss(StringBuilder page, string selector, VisualThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
@@ -113,11 +115,14 @@ public static partial class V2Examples {
     }
 
     private static void WriteCatalogAssets(string output) {
-        foreach (var file in new[] { "gallery.css", "gallery.js" }) {
-            using var stream = typeof(V2Examples).Assembly.GetManifestResourceStream("ChartForgeX.Examples.Gallery." + file)
-                ?? throw new InvalidOperationException("Gallery asset is missing: " + file);
-            using var reader = new StreamReader(stream);
-            ExampleArtifactWriter.WriteText(Path.Combine(output, file), reader.ReadToEnd());
-        }
+        foreach (var file in new[] { "gallery.css", "gallery.js" })
+            ExampleArtifactWriter.WriteText(Path.Combine(output, file), ReadCatalogAsset(file));
+    }
+
+    private static string ReadCatalogAsset(string file) {
+        using var stream = typeof(V2Examples).Assembly.GetManifestResourceStream("ChartForgeX.Examples.Gallery." + file)
+            ?? throw new InvalidOperationException("Gallery asset is missing: " + file);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 }

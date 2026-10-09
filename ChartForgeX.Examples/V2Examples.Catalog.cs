@@ -42,7 +42,7 @@ public static partial class V2Examples {
         var primary = PrimaryArtifacts(artifacts).Where(artifact => artifact.Theme == "light").ToArray();
         var page = new StringBuilder();
         StartPage(page, "ChartForgeX gallery", "light", "catalog");
-        page.Append("<header class=\"gallery-header\"><div class=\"header-top\"><a class=\"brand\" href=\"index.html\">ChartForgeX</a>");
+        page.Append("<header class=\"gallery-header\"><div class=\"header-top\"><a class=\"brand\" href=\"catalog.html\">ChartForgeX</a>");
         AppendThemeControl(page);
         page.Append("</div><p class=\"eyebrow\">CHARTS AND DIAGRAMS</p><h1>Find the right chart.</h1><p class=\"intro\">Charts and diagrams in one consistent theme. Open an example for SVG, PNG and C# source.</p></header>");
         page.Append("<main id=\"main-content\" class=\"gallery-main\"><section class=\"catalog-tools\" aria-label=\"Explore the gallery\"><label class=\"search-label\" for=\"gallery-search\">Find a chart or diagram<input id=\"gallery-search\" type=\"search\" placeholder=\"Try line, heatmap, schedule…\" autocomplete=\"off\" data-gallery-search></label><nav class=\"family-nav\" aria-label=\"Chart families\"><button type=\"button\" data-gallery-group=\"all\" aria-pressed=\"true\">All examples</button>");
@@ -53,7 +53,7 @@ public static partial class V2Examples {
             AppendTile(page, output, artifact, artifacts);
         page.Append("</div><div class=\"empty-results\" data-gallery-empty hidden><h2>No matching examples</h2><p>Try a chart type, a topic such as capacity, or another family.</p></div></main><footer><span>One theme. Every chart and diagram.</span><a href=\"manifest.json\">Export manifest</a></footer>");
         EndPage(page);
-        ExampleArtifactWriter.WriteText(Path.Combine(output, "index.html"), page.ToString());
+        ExampleArtifactWriter.WriteText(Path.Combine(output, "catalog.html"), page.ToString());
     }
 
     private static IEnumerable<ProofArtifact> PrimaryArtifacts(IReadOnlyList<ProofArtifact> artifacts) =>
@@ -65,7 +65,7 @@ public static partial class V2Examples {
     private static string ExampleKey(ProofArtifact artifact) => artifact.Id.Substring(0, artifact.Id.Length - artifact.Theme.Length - 1);
 
     private static string[] CatalogAssets(IReadOnlyList<ProofArtifact> artifacts) =>
-        new[] { "index.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt" }
+        new[] { "catalog.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt" }
             .Concat(artifacts.SelectMany(artifact => new[] { ".html", ".svg", ".png", ".csharp.txt", ".thumbnail.svg", ".thumbnail.png" }.Select(extension => artifact.Id + extension)))
             .Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray();
 

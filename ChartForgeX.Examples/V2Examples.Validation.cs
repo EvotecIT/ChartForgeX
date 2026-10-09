@@ -21,9 +21,9 @@ public static partial class V2Examples {
             if (!artifacts.Any(artifact => artifact.GetProperty("theme").GetString() == theme && artifact.GetProperty("variant").GetString() == variant
                 && artifact.GetProperty("seriesKinds").EnumerateArray().Any(value => value.GetString() == kind.ToString())))
                 throw new InvalidOperationException("The v2 catalog is missing " + kind + " in " + theme + " at " + variant + " size.");
-        var catalog = File.ReadAllText(Path.Combine(output, "index.html"));
+        var catalog = File.ReadAllText(Path.Combine(output, "catalog.html"));
         foreach (var asset in new[] { "gallery.css", "gallery.js" })
-            if (!File.Exists(Path.Combine(output, asset)) || !catalog.Contains(asset, StringComparison.Ordinal))
+            if (!File.Exists(Path.Combine(output, asset)))
                 throw new InvalidOperationException("Missing gallery presentation asset: " + asset);
         var families = artifacts.Select(artifact => artifact.GetProperty("family").GetString()).Distinct().ToArray();
         foreach (var family in families) {
@@ -37,6 +37,7 @@ public static partial class V2Examples {
             var id = artifact.GetProperty("id").GetString()!;
             if (!identifiers.Add(id)) throw new InvalidOperationException("Duplicate v2 artifact: " + id);
             var example = File.ReadAllText(Path.Combine(output, artifact.GetProperty("html").GetString()!));
+            ValidateStandalonePresentation(example, id);
             if (artifact.GetProperty("diagnostics").GetArrayLength() > 0 && !example.Contains("data-layout-notes", StringComparison.Ordinal))
                 throw new InvalidOperationException("Example page hides its layout limitations: " + id);
             foreach (var kind in new[] { "svg", "png", "html", "source", "thumbnail", "thumbnailPng" }) {
@@ -73,6 +74,13 @@ public static partial class V2Examples {
             if (png.Length < 24 || png[0] != 137 || png[1] != 80 || PngDimension(png, 16) != width || PngDimension(png, 20) != height)
                 throw new InvalidOperationException("PNG dimensions differ from the manifest: " + id);
         }
+        ValidateStandalonePresentation(catalog, "index");
+    }
+
+    private static void ValidateStandalonePresentation(string html, string id) {
+        foreach (var marker in new[] { "<style data-gallery-style>", "<script data-gallery-script>" })
+            if (!html.Contains(marker, StringComparison.Ordinal))
+                throw new InvalidOperationException("Gallery page must carry its own presentation: " + id);
     }
 
     private static int PngDimension(byte[] bytes, int offset) => bytes[offset] << 24 | bytes[offset + 1] << 16 | bytes[offset + 2] << 8 | bytes[offset + 3];
