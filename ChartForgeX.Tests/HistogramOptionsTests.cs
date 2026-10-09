@@ -113,6 +113,30 @@ public sealed class HistogramOptionsTests {
         }
     }
 
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(1, true)]
+    [InlineData(-1, false)]
+    [InlineData(-1, true)]
+    public void DensityRetainsItsZeroOriginWhenAuthoredBoundsCropTheRepresentedArea(int sign, bool clipping) {
+        var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2d });
+        var chart = Chart.Create().WithAxes(false).WithGrid(false)
+            .AddHistogram("Quantity", new[] { new ChartPoint(1, 6 * sign) }, layout,
+                ChartHistogramAggregation.Sum, ChartHistogramEncoding.Density);
+        chart.Options.YAxis.WithBounds(sign > 0 ? 1 : -4, sign > 0 ? 4 : -1);
+        chart.Options.ClipMarksToPlot = clipping;
+        var prepared = Prepare(chart);
+        var mark = Bounds(prepared, 0, 0);
+        chart.Options.YAxis.WithBounds(sign > 0 ? 0 : -3, sign > 0 ? 3 : 0);
+        var reference = Bounds(Prepare(chart), 0, 0);
+        // Density represents area from zero, even when authored bounds crop that area.
+        Assert.Equal(reference.Height, mark.Height, 8);
+        Assert.True(sign > 0 ? mark.Bottom > reference.Bottom : mark.Top < reference.Top);
+        Assert.Equal((6 * sign).ToString(System.Globalization.CultureInfo.InvariantCulture), Point(prepared, 0, 0).Metadata["data-cfx-y"]);
+        Assert.Equal((3 * sign).ToString(System.Globalization.CultureInfo.InvariantCulture), Point(prepared, 0, 0).Metadata["data-cfx-rendered-y"]);
+        Assert.True(prepared.ToPng().Length > 64);
+    }
+
     [Fact]
     public void DensityStacksAndRangesUseEncodedHeightWhileTotalsRetainSignedRawAggregates() {
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2d, 5d });
