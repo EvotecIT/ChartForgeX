@@ -91,7 +91,7 @@ internal static partial class VisualCartesianCompiler {
             var point = series.Points[pointIndex];
             var stack = stacks.Point(index, pointIndex);
             var y = map.Y(stack.End);
-            var baseY = map.YOrBaseline(stack.Base);
+            var baseY = stacks.IsStacked(index) ? map.YOrBaseline(stack.Base) : map.YBaseline();
             var left = map.X(point.X) + offset - width / 2;
             var barWidth = width;
             if (ChartHistogramBarSlot.TryResolve(chart, coordinates, stacks, index, pointIndex, map, out var histogramLeft, out var histogramWidth)) {

@@ -53,7 +53,7 @@ public sealed partial class ChartSeries {
         if (Interpolation == ChartInterpolation.Linear) return;
         if (Kind != ChartSeriesKind.Line && Kind != ChartSeriesKind.StepLine && Kind != ChartSeriesKind.Area
             && Kind != ChartSeriesKind.StepArea && Kind != ChartSeriesKind.StackedArea
-            && Kind != ChartSeriesKind.RangeBand && Kind != ChartSeriesKind.RangeArea && Kind != ChartSeriesKind.TrendLine)
+            && Kind != ChartSeriesKind.RangeBand && Kind != ChartSeriesKind.RangeArea)
             throw new InvalidOperationException("Series '" + Name + "' does not support connected-path interpolation.");
     }
 }

@@ -146,8 +146,10 @@ internal sealed class ChartRange {
         }
         range.InitializeEmptyX(chart.Options.XAxis);
         range.InitializeEmptyY(chart.Options.YAxis);
-        if (Math.Abs(range.MaxX - range.MinX) < double.Epsilon) range.MaxX = range.MinX + 1;
-        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) range.MaxY = range.MinY + 1;
+        // Category padding supplies a centered nonzero interval for a single category.
+        // Expanding first would shift that category and make a full-slot bar exceed the plot.
+        if (Math.Abs(range.MaxX - range.MinX) < double.Epsilon && barXValues.Count == 0) range.MaxX = range.MinX + 1;
+        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon && horizontalBarYValues.Count == 0) range.MaxY = range.MinY + 1;
         range.ApplyBarPadding(barXValues, chart.Options.XAxis);
         range.ApplyHorizontalBarPadding(horizontalBarYValues);
         if (!hasHorizontalBars) {

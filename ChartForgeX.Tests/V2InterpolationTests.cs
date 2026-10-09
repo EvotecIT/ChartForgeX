@@ -127,6 +127,23 @@ public sealed class V2InterpolationTests {
         Assert.Throws<InvalidOperationException>(() => line.Prepare(Context()));
     }
 
+    [Theory]
+    [InlineData(ChartInterpolation.Smooth)]
+    [InlineData(ChartInterpolation.Step)]
+    public void RegressionLinesRejectNonlinearInterpolationRatherThanIgnoringIt(ChartInterpolation interpolation) {
+        var chart = Chart.Create().AddTrendLine("Regression", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 8) });
+        chart.Series[0].WithInterpolation(interpolation);
+        Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context()));
+        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        var prepared = chart.Prepare(Context());
+        var path = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "trend-line");
+        Assert.Equal(2, path.Commands.Count);
+        var regression = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "regression");
+        Assert.Equal("3", regression.Metadata["data-cfx-slope"]);
+        Assert.Equal("2", regression.Metadata["data-cfx-intercept"]);
+        Assert.Equal("3", regression.Metadata["data-cfx-source-count"]);
+    }
+
     private static Chart Model(ChartSeriesKind kind, IEnumerable<ChartPoint> points) {
         var chart = Chart.Create().WithAxes(false).WithGrid(false).WithLegend(false).WithDataLabels(false);
         chart.Series.Add(new ChartSeries("Observations", kind, points));
