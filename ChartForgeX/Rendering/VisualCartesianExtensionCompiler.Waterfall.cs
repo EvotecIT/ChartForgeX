@@ -24,6 +24,9 @@ internal static partial class VisualCartesianCompiler {
             var label = ResolveObservationLabel(chart, context, series, item, colors,
                 () => (step.IsTotal || step.Delta < 0 ? string.Empty : "+") + Value(chart, step.Delta));
             var id = step.IsTotal ? SeriesId(index) + "-total" : PointId(index, item);
+            var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            var direction = MappedBarDirection(axis, step.Delta, startY, endY);
+            var fillRole = SemanticMarkPaintRole(series, item);
             var description = series.Name + ": " + label.DisplayedText + " start=" + Number(step.Start) + " end=" + Number(step.End) + " delta=" + Number(step.Delta);
             builder.AddRegion(new VisualSemanticRegion(id, step.IsTotal ? "waterfall-total" : "point", bounds, description));
             using (builder.PushGroup(id, step.IsTotal ? "waterfall-total" : "point", new Dictionary<string, string> {
@@ -40,12 +43,12 @@ internal static partial class VisualCartesianCompiler {
                         paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text).WithOpacity(
                             ChartColorMath.WithOpacity(colors.MutedForeground, ChartVisualPrimitives.WaterfallConnectorOpacity), ChartVisualPrimitives.WaterfallConnectorOpacity)));
                 }
-                var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
                 DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "waterfall-bar",
-                    direction: MappedBarDirection(axis, step.Delta, startY, endY), sourceRole: SemanticMarkPaintRole(series, item));
+                    direction: direction, sourceRole: fillRole);
             }
             obstacles.Add(new LabelObstacle(id, bounds));
-            AddLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, label, labels, step.IsTotal ? step.End : step.Delta, id);
+            AddLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, label, labels, step.IsTotal ? step.End : step.Delta, id,
+                barDirection: direction, markFill: color, markFillRole: fillRole);
             previous = bounds;
         }
     }

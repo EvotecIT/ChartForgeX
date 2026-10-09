@@ -161,12 +161,12 @@ internal static partial class VisualCartesianCompiler {
 
     private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
         ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null,
-        TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false) {
+        TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false, ChartColor? markFill = null, SvgColorRole? markFillRole = null) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
         var value = observationValue ?? series.Points[pointIndex].Y;
         var spacing = context.Theme.Spacing;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
-        var bar = series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar;
+        var bar = series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar or ChartSeriesKind.Waterfall;
         if (placement == ChartDataLabelPlacement.Auto && bar && ChartStackLayout.Participates(chart, series))
             placement = ChartDataLabelPlacement.Inside;
         var candidates = new List<LabelCandidate>();
@@ -250,13 +250,14 @@ internal static partial class VisualCartesianCompiler {
             && !chart.Options.DataLabelStyle.Color.HasValue && !series.DataLabelStyle.Color.HasValue
             && !(pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex]?.Color != null)) {
             var colors = context.Theme.Resolve(context.ThemeMode);
-            var fill = PointColor(series, seriesIndex, pointIndex, colors);
-            if (series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.HorizontalBar || series.Kind == ChartSeriesKind.RangeBar) {
+            // Waterfall steps and their derived total can use status fills independently of the series palette.
+            var fill = markFill ?? PointColor(series, seriesIndex, pointIndex, colors);
+            if (bar || series.Kind == ChartSeriesKind.RangeBar) {
                 var barStyle = chart.Options.ResolvePreparedBarVisualStyle();
                 if (barStyle.Kind == ChartBarStyle.SegmentedCapsule) fill = ChartColorMath.WithOpacity(fill, barStyle.BodyOpacity);
             }
             var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
-            var ink = ChartMarkText.OnPreparedMark(fill, VisualChartPaint.SeriesRole(series, pointIndex), backdrop);
+            var ink = ChartMarkText.OnPreparedMark(fill, markFillRole ?? VisualChartPaint.SeriesRole(series, pointIndex), backdrop);
             insideStyle = style.Clone(); insideStyle.Color = ink.Color;
             insidePaint = ink.Paint;
         }
