@@ -43,7 +43,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(true, 340)]
     public async Task MarkerFreeSharedTooltipUsesActualLinePaintInLightDarkAndCompactViews(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Lines(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLineMarkers(ChartLineMarkerMode.None);
+        var chart = Lines(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLineMarkers(ChartLineMarkerMode.None).WithLuminousLineStyle();
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width, 560);
         var page = session.Page;
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "[data-cfx-role='series'][data-cfx-series='1'] [data-cfx-role='line'] { stroke:#7b61e8; }" });

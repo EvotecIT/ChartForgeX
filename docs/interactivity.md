@@ -28,7 +28,7 @@ There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `I
 
 ## Tooltip modes
 
-`HtmlChartInteractionOptions.TooltipMode` selects the readout independently of the theme or palette. The default, `HtmlChartTooltipMode.SharedX`, shows one visible observation per series at the target's numeric x coordinate. Rows retain full source values and sort by declared state, then descending value. Muted series, hidden marks, and missing or non-finite values are omitted. Swatches follow the painted marks, including point colour overrides and host SVG properties; marker-free lines use their line paint.
+`HtmlChartInteractionOptions.TooltipMode` selects the readout independently of the theme or palette. The default, `HtmlChartTooltipMode.SharedX`, shows one visible observation per series at the target's numeric x coordinate. When several observations share that x, the tooltip uses the pointed or focused observation for its series and the first eligible observation for each other series. Rows retain full source values and sort by declared state, then descending value. Muted series, hidden marks, and missing or non-finite values are omitted. Swatches follow the painted marks, including point colour overrides, gradient fills, and host SVG properties; marker-free lines use their line paint.
 
 Use `Single` to inspect the pointed or focused target and its metadata:
 

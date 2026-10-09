@@ -16,7 +16,7 @@
     const svg = node.closest('svg');
     if (!svg || !sharedXObservation(data) || !tooltipNumber(data.cfxX) || !tooltipNumber(data.cfxY)) return false;
     const points = new Map();
-    svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x][data-cfx-y]').forEach((point) => {
+    const addObservation = (point) => {
       const candidate = point.dataset;
       if (!isInteractiveTarget(point) || !sharedXObservation(candidate) || !tooltipPointVisible(point, root) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(candidate.cfxY)
         || Number(candidate.cfxX) !== Number(data.cfxX) || points.has(candidate.cfxSeries)) return;
@@ -24,7 +24,10 @@
       points.set(index, { point, index, key: seriesKey(point), source: sourcePointIndex(point), name: seriesLabel(point),
         state: candidate.cfxState || svg.getAttribute('data-cfx-series-state-' + index) || 'none',
         value: Number(candidate.cfxY), rawValue: candidate.cfxY, colour: paintColour(point) });
-    });
+    };
+    // Duplicate x coordinates are valid: retain the observation the reader actually interacted with.
+    addObservation(node);
+    svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x][data-cfx-y]').forEach(addObservation);
     const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };
     const rows = Array.from(points.values()).sort((a, b) => (priority[b.state] || 0) - (priority[a.state] || 0) || b.value - a.value);
     if (!rows.length) return false;
