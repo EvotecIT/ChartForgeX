@@ -105,6 +105,35 @@ System.IO.File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;e
 
 
 public static partial class V2GalleryModels {
+    private static Chart ChordRelationships(string variant) {
+        var configured = variant == &quot;options&quot;;
+        var chart = Chart.Create().AddChord(&quot;Transfers&quot;, new[] {
+            new ChartNode(&quot;north&quot;, &quot;North&quot;), new ChartNode(&quot;south&quot;, &quot;South&quot;),
+            new ChartNode(&quot;north-support&quot;, configured ? &quot;Support&quot; : &quot;Services&quot;), new ChartNode(&quot;south-support&quot;, &quot;Support&quot;)
+        }, new[] {
+            new ChartFlowLink(&quot;north-south&quot;, &quot;north&quot;, &quot;south&quot;, 18), new ChartFlowLink(&quot;south-north&quot;, &quot;south&quot;, &quot;north&quot;, 7),
+            new ChartFlowLink(&quot;north-standard&quot;, &quot;north&quot;, &quot;north-support&quot;, 12), new ChartFlowLink(&quot;north-priority&quot;, &quot;north&quot;, &quot;north-support&quot;, 5),
+            new ChartFlowLink(&quot;support-south&quot;, &quot;north-support&quot;, &quot;south&quot;, 9), new ChartFlowLink(&quot;south-support&quot;, &quot;south&quot;, &quot;south-support&quot;, 14),
+            new ChartFlowLink(&quot;support-return&quot;, &quot;south-support&quot;, &quot;north&quot;, 4), new ChartFlowLink(&quot;support-internal&quot;, &quot;south-support&quot;, &quot;south-support&quot;, 3),
+            new ChartFlowLink(&quot;zero-transfer&quot;, &quot;north-support&quot;, &quot;south-support&quot;, 0)
+        });
+        if (configured) {
+            chart.ConfigureChord(options =&gt; {
+                options.StartAngleDegrees = -120;
+                options.SweepAngleDegrees = 300;
+                options.NodeGapDegrees = 5;
+                options.NodeThicknessRatio = .09;
+                options.RibbonOpacity = .45;
+                options.LabelContent = ChartChordLabelContent.LabelAndTotals;
+            });
+            chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates a fixed comparison grid with shared Cartesian axes.&lt;/summary&gt;
     public static ChartGrid CreateGrid() =&gt; ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
         .Add(Create(ChartSeriesKind.Line).WithTitle(&quot;Observed requests&quot;))
@@ -336,6 +365,7 @@ public static partial class V2GalleryModels {
                 .AddGanttTask(&quot;Validation&quot;, start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone(&quot;Delivery&quot;, start.AddDays(9), 2)
                 .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
             case ChartSeriesKind.Sankey: return FlowRelationships(variant);
+            case ChartSeriesKind.Chord: return ChordRelationships(variant);
             case ChartSeriesKind.Tree:
             case ChartSeriesKind.Sunburst: return TeamRelationships(kind, variant);
             case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
@@ -403,6 +433,7 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.Gantt =&gt; &quot;Project delivery in March 2026&quot;, ChartSeriesKind.StateTimeline =&gt; &quot;Availability throughout the day&quot;,
         ChartSeriesKind.GanttLane =&gt; &quot;Incidents and recovery in parallel&quot;,
         ChartSeriesKind.Sankey =&gt; &quot;Requests across processing stages&quot;, ChartSeriesKind.Tree =&gt; &quot;Teams and their responsibilities&quot;,
+        ChartSeriesKind.Chord =&gt; &quot;Transfers between teams&quot;,
         ChartSeriesKind.Sunburst =&gt; &quot;Allocation through the team hierarchy&quot;, ChartSeriesKind.Treemap =&gt; &quot;How work is allocated across teams&quot;,
         ChartSeriesKind.Pictorial =&gt; &quot;Completed assessments by team&quot;, ChartSeriesKind.WordCloud =&gt; &quot;Topics in service observations&quot;,
         ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
@@ -467,6 +498,35 @@ System.IO.File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;e
 
 
 public static partial class V2GalleryModels {
+    private static Chart ChordRelationships(string variant) {
+        var configured = variant == &quot;options&quot;;
+        var chart = Chart.Create().AddChord(&quot;Transfers&quot;, new[] {
+            new ChartNode(&quot;north&quot;, &quot;North&quot;), new ChartNode(&quot;south&quot;, &quot;South&quot;),
+            new ChartNode(&quot;north-support&quot;, configured ? &quot;Support&quot; : &quot;Services&quot;), new ChartNode(&quot;south-support&quot;, &quot;Support&quot;)
+        }, new[] {
+            new ChartFlowLink(&quot;north-south&quot;, &quot;north&quot;, &quot;south&quot;, 18), new ChartFlowLink(&quot;south-north&quot;, &quot;south&quot;, &quot;north&quot;, 7),
+            new ChartFlowLink(&quot;north-standard&quot;, &quot;north&quot;, &quot;north-support&quot;, 12), new ChartFlowLink(&quot;north-priority&quot;, &quot;north&quot;, &quot;north-support&quot;, 5),
+            new ChartFlowLink(&quot;support-south&quot;, &quot;north-support&quot;, &quot;south&quot;, 9), new ChartFlowLink(&quot;south-support&quot;, &quot;south&quot;, &quot;south-support&quot;, 14),
+            new ChartFlowLink(&quot;support-return&quot;, &quot;south-support&quot;, &quot;north&quot;, 4), new ChartFlowLink(&quot;support-internal&quot;, &quot;south-support&quot;, &quot;south-support&quot;, 3),
+            new ChartFlowLink(&quot;zero-transfer&quot;, &quot;north-support&quot;, &quot;south-support&quot;, 0)
+        });
+        if (configured) {
+            chart.ConfigureChord(options =&gt; {
+                options.StartAngleDegrees = -120;
+                options.SweepAngleDegrees = 300;
+                options.NodeGapDegrees = 5;
+                options.NodeThicknessRatio = .09;
+                options.RibbonOpacity = .45;
+                options.LabelContent = ChartChordLabelContent.LabelAndTotals;
+            });
+            chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates a fixed comparison grid with shared Cartesian axes.&lt;/summary&gt;
     public static ChartGrid CreateGrid() =&gt; ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
         .Add(Create(ChartSeriesKind.Line).WithTitle(&quot;Observed requests&quot;))
@@ -698,6 +758,7 @@ public static partial class V2GalleryModels {
                 .AddGanttTask(&quot;Validation&quot;, start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone(&quot;Delivery&quot;, start.AddDays(9), 2)
                 .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
             case ChartSeriesKind.Sankey: return FlowRelationships(variant);
+            case ChartSeriesKind.Chord: return ChordRelationships(variant);
             case ChartSeriesKind.Tree:
             case ChartSeriesKind.Sunburst: return TeamRelationships(kind, variant);
             case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
@@ -765,6 +826,7 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.Gantt =&gt; &quot;Project delivery in March 2026&quot;, ChartSeriesKind.StateTimeline =&gt; &quot;Availability throughout the day&quot;,
         ChartSeriesKind.GanttLane =&gt; &quot;Incidents and recovery in parallel&quot;,
         ChartSeriesKind.Sankey =&gt; &quot;Requests across processing stages&quot;, ChartSeriesKind.Tree =&gt; &quot;Teams and their responsibilities&quot;,
+        ChartSeriesKind.Chord =&gt; &quot;Transfers between teams&quot;,
         ChartSeriesKind.Sunburst =&gt; &quot;Allocation through the team hierarchy&quot;, ChartSeriesKind.Treemap =&gt; &quot;How work is allocated across teams&quot;,
         ChartSeriesKind.Pictorial =&gt; &quot;Completed assessments by team&quot;, ChartSeriesKind.WordCloud =&gt; &quot;Topics in service observations&quot;,
         ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
