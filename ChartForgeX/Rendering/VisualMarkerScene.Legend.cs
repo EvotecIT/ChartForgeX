@@ -25,6 +25,8 @@ internal static partial class VisualMarkerScene {
                 var opacity = radarArea ? series.Radar.FillOpacity ?? context.Theme.AreaOpacity : context.Theme.AreaOpacity;
                 var fill = ChartColorMath.WithOpacity(color, opacity);
                 builder.Rect(bounds, fill, role: "legend-area", paint: VisualChartPaint.Fill(paint.WithOpacity(fill, opacity)));
+                var hatchOpacity = radarArea ? Math.Min(1, opacity / Math.Max(.000001, context.Theme.AreaOpacity)) : 1;
+                VisualFrameLayout.DrawLegendPattern(builder, bounds, pattern, context, hatchOpacity, "legend-area-pattern");
             }
             if (line) builder.Line(bounds.Left, y, bounds.Right, y, color,
                 series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth, role: "legend-line", paint: VisualChartPaint.Stroke(paint));

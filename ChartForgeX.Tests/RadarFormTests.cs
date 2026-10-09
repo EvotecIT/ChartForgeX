@@ -89,16 +89,20 @@ public sealed class RadarFormTests {
 
     [Fact]
     public void ZeroOpacityRemovesAreaInkIncludingPatternWhileKeepingOutlineAndSourceFacts() {
-        var chart = Bare().AddRadarArea("Signal", SixValues(50));
+        var chart = Bare().WithLegend().AddRadarArea("Signal", SixValues(50));
         chart.Series[0].WithRadar(radar => radar.FillOpacity = 0);
         chart.Series[0].FillPattern = ChartFillPattern.Crosshatch;
         chart.Series[0].Markers.Enabled = false;
         var prepared = Prepare(chart);
         Assert.Equal(0, Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "radar-area").Fill!.Value.A);
+        Assert.Equal(0, Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "legend-area").Fill!.Value.A);
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "radar-pattern");
+        Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "legend-area-pattern");
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "radar-outline");
         Assert.Equal(6, prepared.Regions.Count(region => region.Role == "radar-point"));
-        Assert.NotEmpty(prepared.ToPng());
+        var patterned = prepared.ToPng();
+        chart.Series[0].FillPattern = ChartFillPattern.None;
+        Assert.Equal(patterned, Prepare(chart).ToPng());
     }
 
     private static Chart Bare() {

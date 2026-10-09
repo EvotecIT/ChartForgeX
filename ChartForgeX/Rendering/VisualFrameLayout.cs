@@ -131,11 +131,7 @@ internal static class VisualFrameLayout {
                                 builder.Line(swatch.Left, swatch.Top + 5, swatch.Right, swatch.Top + 5, entry.Color, context.Theme.SeriesStrokeWidth, role: "legend-swatch", paint: VisualChartPaint.Stroke(entry.Paint ?? SvgPaint.Literal(entry.Color)));
                             else {
                                 builder.Rect(swatch, entry.Color, role: "legend-swatch", paint: VisualChartPaint.Fill(entry.Paint ?? SvgPaint.Literal(entry.Color)));
-                                if (entry.Pattern != ChartFillPattern.None) builder.Pattern(new ChartPath(new[] {
-                                    ChartPathCommand.MoveTo(swatch.Left, swatch.Top), ChartPathCommand.LineTo(swatch.Right, swatch.Top),
-                                    ChartPathCommand.LineTo(swatch.Right, swatch.Bottom), ChartPathCommand.LineTo(swatch.Left, swatch.Bottom)
-                                }), entry.Pattern, colors.Surface, spacing: 4, strokeWidth: 1, role: "legend-pattern",
-                                    paint: SvgPaint.Of(colors.Surface, SvgColorRole.Surface));
+                                DrawLegendPattern(builder, swatch, entry.Pattern, context);
                             }
                             }
                             var fullLabel = OneLine(entry.Label);
@@ -243,5 +239,16 @@ internal static class VisualFrameLayout {
             return text.Substring(0, space > 0 ? space : length);
         }
     }
+    internal static void DrawLegendPattern(VisualSceneBuilder builder, ChartRect swatch, ChartFillPattern pattern,
+        VisualRenderContext context, double opacity = 1, string role = "legend-pattern") {
+        if (pattern == ChartFillPattern.None || opacity <= 0) return;
+        var surface = context.Theme.Resolve(context.ThemeMode).Surface;
+        var color = ChartColorMath.WithOpacity(surface, opacity);
+        var paint = SvgPaint.Of(surface, SvgColorRole.Surface);
+        if (opacity < 1) paint = paint.WithOpacity(color, opacity);
+        builder.Pattern(ChartPathBuilder.RoundedRectangle(swatch, 0), pattern, color,
+            spacing: 4, strokeWidth: 1, role: role, paint: paint);
+    }
+
     private static string OneLine(string text) => text.Replace('\r', ' ').Replace('\n', ' ');
 }
