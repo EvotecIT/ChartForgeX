@@ -17,7 +17,7 @@ public static partial class V2Examples {
                 var chart = V2GalleryModels.CreateHistogram(variant);
                 var id = "histogram-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 WriteModel(output, artifacts, chart, id, "histogram", title, variant, subtitle, mode, width, height, false,
-                    "V2GalleryModels.CreateHistogram(" + Literal(variant) + ")", new[] { "Bar" });
+                    "V2GalleryModels.CreateHistogram(" + Literal(variant) + ")", new[] { "Bar" }, compact: compact);
             }
     }
 }

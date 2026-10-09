@@ -36,7 +36,7 @@ public static partial class V2Examples {
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift" : V2GalleryModels.Title(kind);
                 if (!chart.Series.Any(series => series.Kind == kind)) throw new InvalidOperationException("The gallery factory did not create its declared chart kind: " + kind);
                 var family = FamilyName(kind); var id = "family-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
-                var compact = variant == "compact" || variant.StartsWith("compact-", StringComparison.Ordinal);
+                var compact = IsCompactVariant(variant);
                 var width = compact ? 360 : 800; var height = compact ? 360 : 440;
                 // Let the shared policy decide whether a legend adds information. The indicator
                 // options example intentionally demonstrates an explicitly requested legend.
