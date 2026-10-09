@@ -178,7 +178,7 @@
     push('Series', seriesLabel(node));
     push('Point', data.cfxPoint);
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
-    push('Y', data.cfxY || data.cfxValue);
+    push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
     push('End', data.cfxEnd);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
@@ -192,41 +192,21 @@
   };
   const renderTip = (tip, node) => {
     if ((node.dataset || {}).cfxRole === 'legend-item') return renderLegendTip(tip, node);
-    const root = node.closest && node.closest('[data-cfx-look="graphite"]');
-    const svg = node.closest && node.closest('svg');
-    if (root && svg && node.dataset.cfxX !== undefined && node.dataset.cfxY !== undefined) {
-      const points = new Map();
-      svg.querySelectorAll('[data-cfx-point][data-cfx-x][data-cfx-y]').forEach((point) => {
-        if (point.dataset.cfxX !== node.dataset.cfxX || points.has(point.dataset.cfxSeries)) return;
-        const index = point.dataset.cfxSeries;
-        const paint = getComputedStyle(point);
-        const colour = paint.fill && paint.fill !== 'none' ? paint.fill : paint.stroke;
-        points.set(index, { index, name: svg.getAttribute('data-cfx-series-name-' + index) || seriesLabel(point), state: svg.getAttribute('data-cfx-series-state-' + index) || 'none', value: Number(point.dataset.cfxY), colour });
-      });
-      const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };
-      const rows = Array.from(points.values()).sort((a, b) => (priority[b.state] || 0) - (priority[a.state] || 0) || b.value - a.value);
-      if (rows.length) {
-        tip.replaceChildren();
-        const header = document.createElement('div');
-        header.className = 'cfx-tooltip__title'; header.textContent = node.dataset.cfxXLabel || node.dataset.cfxX; tip.appendChild(header);
-        const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
-        rows.forEach((row) => {
-          const name = document.createElement('dt'); const value = document.createElement('dd');
-          name.textContent = row.name; value.textContent = row.value.toLocaleString(undefined, { maximumFractionDigits: 12 });
-          const swatch = document.createElement('span'); swatch.className = 'cfx-tooltip__swatch';
-          swatch.style.backgroundColor = row.colour; swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);
-          if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
-          list.appendChild(name); list.appendChild(value);
-        });
-        tip.appendChild(list); return true;
-      }
-    }
+    const root = node.closest && node.closest('.cfx-interactive-chart');
+    if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
     const label = text(node);
     if (!label) return false;
     tip.replaceChildren();
     const title = document.createElement('div');
     title.className = 'cfx-tooltip__title';
     title.textContent = label;
+    const colour = paintColour(node);
+    if (colour) {
+      const swatch = document.createElement('span');
+      swatch.className = 'cfx-tooltip__swatch'; swatch.style.backgroundColor = colour;
+      swatch.setAttribute('aria-hidden', 'true'); title.prepend(swatch);
+      title.classList.add('cfx-tooltip__title--series');
+    }
     tip.appendChild(title);
     const rows = tooltipRows(node);
     if (rows.length) {

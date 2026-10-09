@@ -19,6 +19,7 @@ public sealed class HtmlInteractiveDashboardOptions {
         Interaction = ChartInteractionOptions.ReportReview();
         IncludeResetButton = true;
         ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
+        TooltipMode = HtmlChartTooltipMode.SharedX;
     }
 
     /// <summary>
@@ -75,6 +76,13 @@ public sealed class HtmlInteractiveDashboardOptions {
 
     /// <summary>Gets or sets how every dashboard chart protects readability in narrow containers.</summary>
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
+
+    /// <summary>
+    /// Gets or sets the tooltip mode shared by every dashboard chart. Shared-x tooltips fall back to one target
+    /// when comparable numeric x/y observations are unavailable. The <see cref="ChartInteractionFeatures.Tooltips"/>
+    /// feature controls whether tooltips are enabled.
+    /// </summary>
+    public HtmlChartTooltipMode TooltipMode { get; set; }
 
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;

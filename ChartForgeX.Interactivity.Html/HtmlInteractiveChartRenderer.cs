@@ -123,6 +123,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var prepared = chart.Prepare(request.Context);
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
+        if (!Enum.IsDefined(typeof(HtmlChartTooltipMode), options.TooltipMode)) throw new ArgumentOutOfRangeException(nameof(options.TooltipMode));
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
@@ -140,6 +141,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-scenario-playback", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "idle" : null)
             .Attribute("data-cfx-scenario-playback-delay", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "900" : null)
             .Attribute("data-cfx-responsive-layout", options.ResponsiveLayout.ToString().ToLowerInvariant())
+            .Attribute("data-cfx-tooltip-mode", options.TooltipMode == HtmlChartTooltipMode.Single ? "single" : "shared-x")
             .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart))
             .EndStartElement().Line();
         var toolbar = BuildToolbar(options);

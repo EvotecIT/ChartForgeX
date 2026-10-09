@@ -165,7 +165,17 @@ internal static partial class SmokeTests {
         Assert(html.Contains("applyHoverByTarget(root, detail.target)", StringComparison.Ordinal), "Interactive HTML should apply synchronized hover state by stable target metadata.");
         Assert(html.Contains("const focusAdjacentTarget = (root, node, key)", StringComparison.Ordinal) && html.Contains("'cfxnavigate'", StringComparison.Ordinal), "Interactive HTML should let keyboard users traverse reusable chart targets.");
         Assert(html.Contains("focusNode.focus({ preventScroll: true })", StringComparison.Ordinal) && html.Contains("event.key !== 'Enter' && event.key !== ' '", StringComparison.Ordinal), "Interactive keyboard traversal should preserve activation keys while adding arrow, Home, and End navigation.");
-        Assert(html.Contains("focusNode !== node && event.key === 'Enter'", StringComparison.Ordinal), "Linked marks should focus their anchor and preserve native Enter navigation.");
+        var linkedHtml = Chart.Create().WithXLabels("API")
+            .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
+            .AddHeatmapCategoryRow("Service", new ChartHeatmapCell("pass", "1", href: "#evidence"))
+            .ToInteractiveHtmlFragmentWithoutAssets();
+        var link = ReadEmbeddedSvgs(linkedHtml).Single().Descendants().Single(element => element.Name.LocalName == "a"
+            && (string?)element.Attribute("data-cfx-role") == "heatmap-cell-link");
+        Assert((string?)link.Attribute("href") == "#evidence" && (string?)link.Attribute("tabindex") == "0",
+            "Interactive HTML should retain the authored native link and its keyboard focus target.");
+        var linkedCell = link.Ancestors().Single(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell");
+        Assert(linkedCell.Attribute("tabindex") == null && (string?)linkedCell.Attribute("data-cfx-point") == "0",
+            "Linked cells should retain source identity without creating a second authored focus target.");
         Assert(html.Contains("action: 'navigate'", StringComparison.Ordinal), "Interactive keyboard traversal should synchronize hover context across grouped charts.");
         Assert(html.Contains("Number.isFinite(clientX)", StringComparison.Ordinal) && html.Contains("node.getBoundingClientRect()", StringComparison.Ordinal) && html.Contains("tip.offsetWidth", StringComparison.Ordinal), "Interactive tooltips should position correctly for focus-driven keyboard navigation and narrow viewports.");
         Assert(html.Contains("min-width: 0;", StringComparison.Ordinal) && html.Contains("flex-wrap: wrap;", StringComparison.Ordinal), "Interactive chrome should stay within narrow viewports instead of forcing horizontal overflow.");
@@ -350,7 +360,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(html, "data-cfx-asset-source=\"document\"") == 2, "Interactive dashboards should declare document-owned assets on every chart section.");
         Assert(html.Contains("data-cfx-chart-id=\"exec-dashboard-1\"", StringComparison.Ordinal) && html.Contains("data-cfx-chart-id=\"exec-dashboard-2\"", StringComparison.Ordinal), "Interactive dashboards should assign deterministic child chart IDs.");
         Assert(CountOccurrences(html, "data-cfx-interaction-group=\"exec-review\"") == 2, "Interactive dashboards should place every child chart in the shared interaction group.");
-        Assert(CountOccurrences(html, "data-cfx-responsive-layout=\"fit\" style=") == 2, "Interactive dashboards should propagate the selected responsive layout to every child chart.");
+        Assert(System.Text.RegularExpressions.Regex.Matches(html, "<section\\b[^>]*data-cfx-responsive-layout=\"fit\"[^>]*>").Count == 2, "Interactive dashboards should propagate the selected responsive layout to every child chart.");
         Assert(html.Contains("role=\"group\" aria-label=\"Service availability\"", StringComparison.Ordinal) && html.Contains("role=\"group\" aria-label=\"Response latency\"", StringComparison.Ordinal), "Interactive dashboard chart regions should use each chart title as their accessible name.");
         Assert(!html.Contains("role=\"group\" aria-label=\"Executive interactive dashboard\"", StringComparison.Ordinal), "Interactive dashboard chart regions should not inherit the shared page title when a chart title is available.");
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive dashboards should include grouped synchronization runtime.");

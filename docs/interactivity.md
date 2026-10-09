@@ -11,6 +11,13 @@ Explicitly decimated series keep their original point identity. `data-cfx-point`
 Aggregate marks such as histogram bins, merged timeline runs, and pie slices expose contributing source observations through `target.sourcePoints`, a numeric array in hover and selection events. An empty histogram bin reports `[]`. For these marks, `target.sourcePoint` is `undefined` because one source observation cannot identify an aggregate. Their target IDs use the series interaction key and rendered ordinal, for example `quantity:derived:2`; the ordinal identifies the bin even when it has no observations. Point legends share their mark's contributors and target ID. Hosts should route aggregate selection by `targetId` and read `sourcePoints` when they need the underlying observations.
 
 Radar fills missing categories with zero geometry. Those categories are `region` targets identified by the series interaction key and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; an authored zero remains an ordinary source point. Category identities synchronize correctly when peers order their observations differently or include another category.
+## Keyboard navigation
+
+When `ChartInteractionFeatures.KeyboardNavigation` is enabled, data marks and legend entries are separate roving components. Tab enters each component once and returns to its last active target; Left/Right and Home/End move within a series or legend. Up/Down switches data series at a matching coordinate or source observation, with an ordinal fallback for uneven series. Families without a series/point grid use their deterministic rendered-target order. Hidden targets and aggregate series wrappers do not become extra data stops.
+
+Muted data leaves the data component, while its legend stays reachable for unmuting. Reset restores the data component after all series are muted. Charts initialized inside a host hidden with `hidden` or `display: none` acquire their Tab stops when the host regains layout; hiding and revealing the host preserves each component's active target.
+
+Moving to an offscreen target scrolls the chart's readable viewport locally. Native data links retain Enter navigation, while Space selects a data target when selection is enabled. Legend Space toggles muting and Shift+Space toggles series isolation. `cfxnavigate.index/count` refer to the active data or legend component. Disabling keyboard navigation leaves host key handling and authored links available without adding adapter navigation stops.
 
 ## Graphite appearance
 
@@ -21,6 +28,22 @@ Legend tooltips summarize the series for readers: the name with its colour swatc
 Muting a series retains it at 30% opacity and strikes through its legend label. Keyboard targets use a 2 px focus outline in the host accent.
 
 There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `IncludeResetButton` (on by default) adds a 28 px "Reset view" ghost button in the top-right corner of the chart frame. It appears only while the view differs from its initial state (zoomed, panned, brushed, or a series muted or isolated) and hides again after reset, returning keyboard focus to the chart. Resetting also clears selections, focus trails, and pinned tooltips. Hosts can set `--cfx-host-accent` on the interactive container to align that outline with their own controls. Static exports retain the same flat marks and colour roles without browser behavior.
+
+## Tooltip modes
+
+`HtmlChartInteractionOptions.TooltipMode` selects the readout independently of the theme or palette. The default, `HtmlChartTooltipMode.SharedX`, shows one visible observation per series at the target's numeric x coordinate. When several observations share that x, the tooltip uses the pointed or focused observation for its series and the first eligible observation for each other series. Rows retain full source values and sort by declared state, then descending value. Muted series, hidden marks, and missing or non-finite values are omitted. Swatches follow the painted marks, including point colour overrides, gradient fills, and host SVG properties; marker-free lines use their line paint.
+
+Visibility follows the primary data mark. An ancestor's `display:none` or zero opacity hides its descendants; a mark can restore inherited `visibility:hidden` with `visibility:visible`. Hidden line markers retain a shared row while the series path remains visible. Charts marked `AsDecorative()` retain pointer tooltips because `aria-hidden` affects accessibility exposure, not painted visibility.
+
+Use `Single` to inspect the pointed or focused target and its metadata:
+
+```csharp
+chart.SaveInteractiveHtml("observations.html", options => {
+    options.TooltipMode = HtmlChartTooltipMode.Single;
+});
+```
+
+Shared-x readouts use Cartesian source observations, including scatter and bubble values. Targets with coordinates that describe layout or categories, such as heatmaps, maps, pie slices, and radial charts, keep a single-target tooltip with their value and metadata. Range and financial summaries also retain their individual bounds and measures rather than reducing them to one shared value. Derived regression endpoints use the same single-target fallback. Legend tooltips keep their series summaries in either mode, including muted series. `HtmlInteractiveDashboardOptions.TooltipMode` applies the same choice to every child chart. Both modes require `ChartInteractionFeatures.Tooltips`; choosing a mode does not enable the feature.
 
 ## Semantic Series Identity
 

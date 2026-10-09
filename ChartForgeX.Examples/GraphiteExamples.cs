@@ -19,7 +19,8 @@ internal static class GraphiteExamples {
                 item.Value.SaveSvg(Path.Combine(output, name + ".svg"));
                 item.Value.SavePng(Path.Combine(output, name + ".png"));
                 item.Value.SaveHtml(Path.Combine(output, name + ".html"));
-                if (item.Key == "line") item.Value.SaveInteractiveHtml(Path.Combine(output,name+"-interactive.html"));
+                if (item.Key == "line") item.Value.SaveInteractiveHtml(Path.Combine(output,name+"-interactive.html"),
+                    options => options.TooltipMode = HtmlChartTooltipMode.SharedX);
                 var nativeWidth = item.Value.Options.Size.Width;
                 gallery.Append("<h2>").Append(item.Key).Append("</h2><div class='pair'><img alt='SVG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".svg'><img alt='PNG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".png'></div>");
             }

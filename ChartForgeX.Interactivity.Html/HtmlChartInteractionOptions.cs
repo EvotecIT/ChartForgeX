@@ -18,6 +18,7 @@ public sealed class HtmlChartInteractionOptions {
         Interaction = ChartInteractionOptions.ReportReview();
         IncludeResetButton = true;
         ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
+        TooltipMode = HtmlChartTooltipMode.SharedX;
     }
 
     /// <summary>
@@ -66,6 +67,13 @@ public sealed class HtmlChartInteractionOptions {
 
     /// <summary>Gets or sets how the adapter protects chart readability in narrow containers.</summary>
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether tooltips describe one target or visible observations at the same numeric x coordinate.
+    /// Shared-x tooltips fall back to one target when comparable x/y observations are unavailable.
+    /// The <see cref="ChartInteractionFeatures.Tooltips"/> feature controls whether either mode is enabled.
+    /// </summary>
+    public HtmlChartTooltipMode TooltipMode { get; set; }
 
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;
