@@ -60,22 +60,30 @@ public sealed class StoryReplayViewportReviewTests {
         var rows = Rows(prepared.ToSvg(timestamp));
         Assert.Contains(rows, row => row.Value == "FIRST");
         Assert.Contains(rows, row => row.Value == "SECOND");
+        // A later tab's background must never cover an earlier tab's foreground.
+        var viewport = XDocument.Parse(prepared.ToSvg(timestamp)).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "terminal-viewport").ToArray();
+        Assert.Single(viewport);
+        Assert.StartsWith("#", (string?)viewport[0].Attribute("fill"));
         var image = prepared.ToPng(timestamp);
         Assert.NotEqual(prepared.ToPng(TimeSpan.FromSeconds(start)), image);
         Assert.NotEqual(prepared.ToPng(TimeSpan.FromSeconds(start + 1)), image);
     }
 
-    [Fact]
-    public void FrameProducerAccountsForGeneratedReplayTranscripts() {
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void FrameProducerAccountsForGeneratedReplayTranscripts(int scenes) {
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(2), TerminalDialect.Custom, customPrompt: new string('>', 2048));
         for (var index = 0; index < 1000; index++) replay.Command(TimeSpan.FromTicks(index), "A");
         var surface = new VisualStoryReplaySurface(replay);
         var story = VisualStory.Create("Transcript working memory").WithSize(480, 320);
-        story.Scene("run", "Run", 2).Panel("terminal", surface);
+        for (var index = 0; index < scenes; index++) story.Scene("run" + index, "Run", 2).Panel("terminal", surface);
         story.Outcome("ready", "Ready", "terminal");
-        var source = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1)).FrameSource(new VisualStoryFrameOptions(2));
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
+        var source = prepared.FrameSource(new VisualStoryFrameOptions(2));
         // Both the captured surface and prepared story retain UTF-16 transcript text.
-        Assert.True(source.AdditionalWorkingBytes >= surface.AccessibleText.Length * 4L);
+        Assert.True(source.AdditionalWorkingBytes >= (surface.AccessibleText.Length + prepared.ToTranscript().Length) * 2L);
     }
 
     private static TerminalStory TransitionTerminal() => TerminalStory.Create().WithFinalPrompt(false).WithTiming(0, 42, 0).WithTabHold(0)
