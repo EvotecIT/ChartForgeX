@@ -46,6 +46,16 @@ function Read-Utf8Text {
     return $text
 }
 
+function Get-NormalizedDirectoryPath {
+    param([string] $Path)
+
+    $fullPath = [IO.Path]::GetFullPath($Path)
+    if ($fullPath.Length -gt [IO.Path]::GetPathRoot($fullPath).Length) {
+        return $fullPath.TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+    }
+    return $fullPath
+}
+
 function Normalize-GeneratedTextArtifacts {
     param([string] $Root, [string[]] $Assets)
 
@@ -69,8 +79,9 @@ $v2ManifestPath = Join-Path $SourceRoot 'manifest.json'
 if (-not (Test-Path -LiteralPath $v2ManifestPath -PathType Leaf)) {
     throw 'The gallery sync requires fresh prepared-scene output. Run ChartForgeX.Examples with --v2-only --v2-curated first.'
 }
-$v2Source = (Resolve-Path -LiteralPath $SourceRoot).Path
-$v2Destination = [IO.Path]::GetFullPath($DestinationRoot)
+$v2Source = Get-NormalizedDirectoryPath -Path (Resolve-Path -LiteralPath $SourceRoot).Path
+$v2Destination = Get-NormalizedDirectoryPath -Path $DestinationRoot
+$pathComparison = if ([IO.Path]::DirectorySeparatorChar -eq '\') { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
 $manifest = Read-Utf8Text -Path $v2ManifestPath | ConvertFrom-Json
 if ($manifest.schemaVersion -ne 1 -or $manifest.pipeline -ne 'model-to-prepared-scene-to-svg-or-raster') {
     throw 'The gallery sync requires the ChartForgeX prepared-scene catalog manifest.'
@@ -85,7 +96,7 @@ if ($declaredAssets.Count -eq 0) { throw 'The gallery manifest must declare its 
 foreach ($relative in $declaredAssets) {
     $relative = [string] $relative
     $resolvedAsset = [IO.Path]::GetFullPath((Join-Path $v2Source $relative))
-    if ([IO.Path]::IsPathRooted($relative) -or -not $resolvedAsset.StartsWith($v2Source.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or
+    if ([IO.Path]::IsPathRooted($relative) -or -not $resolvedAsset.StartsWith($v2Source.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar, $pathComparison) -or
         -not (Test-Path -LiteralPath $resolvedAsset -PathType Leaf)) {
         throw "The gallery manifest references a missing or invalid presentation asset: $relative"
     }
@@ -124,24 +135,34 @@ if (Test-Path -LiteralPath $GalleryPath -PathType Leaf) {
 }
 $ownedAssets = @(@($declaredAssets) + @($scenarioFiles) | Select-Object -Unique)
 $retiredAssets = @($previousAssets | Select-Object -Unique | Where-Object { $_ -notin $ownedAssets })
-# Validate retirement before copying anything, including legitimate nested font assets.
-foreach ($relative in $retiredAssets) {
+# Validate all writes and retirements before copying; only inspect the selected output boundary.
+foreach ($relative in @($ownedAssets) + @($retiredAssets)) {
     $target = [IO.Path]::GetFullPath((Join-Path $v2Destination $relative))
     if ([IO.Path]::IsPathRooted($relative) -or
-        -not $target.StartsWith($v2Destination.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Invalid previously declared gallery asset: $relative"
+        -not $target.StartsWith($v2Destination.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar, $pathComparison)) {
+        throw "Invalid gallery output asset: $relative"
     }
-    for ($entry = [IO.FileInfo]::new($target); $null -ne $entry; $entry = if ($entry -is [IO.FileInfo]) { $entry.Directory } else { $entry.Parent }) {
-        if ($entry.Exists -and ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
-            throw "Gallery cleanup cannot pass through a filesystem link: $relative"
+    for ($entryPath = $target; ; $entryPath = [IO.Path]::GetDirectoryName($entryPath)) {
+        $entry = Get-Item -LiteralPath $entryPath -Force -ErrorAction SilentlyContinue
+        if ($null -ne $entry -and ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Gallery output cannot pass through a filesystem link: $relative"
         }
+        if ($entryPath.Equals($v2Destination, $pathComparison)) { break }
     }
 }
+# Keep ownership recoverable if a refresh stops while copying promoted files.
+$pendingOwnership = if (Test-Path -LiteralPath $GalleryPath -PathType Leaf) {
+    Read-Utf8Text -Path $GalleryPath | ConvertFrom-Json
+} else { [pscustomobject][ordered]@{ categories = @(); items = @(); assets = @() } }
+$pendingOwnership | Add-Member -MemberType NoteProperty -Name assets -Force -Value @(
+    @($previousAssets) + @($ownedAssets) | Select-Object -Unique | ForEach-Object { '/examples/generated/' + $_ }
+)
+$pendingOwnership | ConvertTo-Json -Depth 8 | ForEach-Object { Write-Utf8NoBom -Path $GalleryPath -Text $_ }
 New-Item -ItemType Directory -Force -Path $v2Destination | Out-Null
-if (-not $v2Source.Equals($v2Destination, [StringComparison]::OrdinalIgnoreCase)) {
+if (-not $v2Source.Equals($v2Destination, $pathComparison)) {
     foreach ($relative in $declaredAssets) {
         $target = [IO.Path]::GetFullPath((Join-Path $v2Destination $relative))
-        if (-not $target.StartsWith($v2Destination.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+        if (-not $target.StartsWith($v2Destination.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar, $pathComparison)) {
             throw "Gallery output must stay within its destination: $relative"
         }
         [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target)) | Out-Null

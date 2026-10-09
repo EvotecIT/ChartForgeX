@@ -732,9 +732,24 @@ public static partial class V2GalleryModels {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const compactMedia = window.matchMedia('(max-width: 600px)');
     const themes = ['light', 'dark', 'system'];
-    const sourceUrl = document.querySelector('meta[name="html-preview-source-url"]')?.content || location.href;
-    const pageParams = new URL(sourceUrl).searchParams;
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
     const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
     const updateLinkQuery = (link, query) => {
         const wrapper = new URL(link.href, document.baseURI);
         const previewSource = wrapper.searchParams.get('url');
@@ -787,11 +802,7 @@ public static partial class V2GalleryModels {
         button.addEventListener('click', () => {
             preference = button.dataset.setTheme;
             pageParams.set('theme', preference);
-            if (canUpdateLocation) {
-                const next = new URL(location.href);
-                next.search = pageParams.toString();
-                history.replaceState(null, '', next);
-            }
+            updateLocationQuery();
             try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
             applyTheme();
         });
@@ -809,11 +820,7 @@ public static partial class V2GalleryModels {
     for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
         output = button.dataset.setOutput;
         if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
-        if (canUpdateLocation) {
-            const next = new URL(location.href);
-            next.search = pageParams.toString();
-            history.replaceState(null, '', next);
-        }
+        updateLocationQuery();
         applyOutput();
     });
     applyOutput();
@@ -839,10 +846,8 @@ public static partial class V2GalleryModels {
             document.querySelector('[data-gallery-empty]').hidden = count !== 0;
             if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
             if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
-            const next = new URL(sourceUrl);
-            next.search = pageParams.toString();
-            if (canUpdateLocation) history.replaceState(null, '', next);
-            try { sessionStorage.setItem('chartforgex-gallery-return', next.search); } catch { /* Navigation does not require storage. */ }
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
             applyTheme();
         };
         search.addEventListener('input', filter);

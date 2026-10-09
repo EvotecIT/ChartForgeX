@@ -74,7 +74,7 @@ public static partial class V2Examples {
             if (png.Length < 24 || png[0] != 137 || png[1] != 80 || PngDimension(png, 16) != width || PngDimension(png, 20) != height)
                 throw new InvalidOperationException("PNG dimensions differ from the manifest: " + id);
         }
-        ValidateStandalonePresentation(catalog, "index");
+        ValidateStandalonePresentation(catalog, "catalog");
     }
 
     private static void ValidateStandalonePresentation(string html, string id) {
