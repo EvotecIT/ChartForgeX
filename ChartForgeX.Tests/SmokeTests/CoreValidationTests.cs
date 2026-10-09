@@ -117,9 +117,9 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddBoxPlot("Raw", 1, new[] { 1d, double.NaN }), "Raw box plots should reject non-finite sample values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartBoxPlot(1, 5, 4, 3, 2, 1), "Box plots should reject unordered summary values.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGauge("Score", 80, 100, 0), "Gauges should reject inverted scales.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddRadialBar("Empty", Array.Empty<ChartPoint>()), "Radial bars should reject empty value sets.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddRadialBar("Bad", Points(101)), "Radial bars should reject values above 100.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddRadialBar("Bad", Points(-1)), "Radial bars should reject negative values.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddProgressRing("Empty", Array.Empty<ChartPoint>()), "Progress rings should reject empty value sets.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddProgressRing("Bad", Points(101)), "Progress rings should reject values above 100.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddProgressRing("Bad", Points(-1)), "Progress rings should reject negative values.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddTimelineRange("Task", 10, 2), "Timelines should reject inverted ranges.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 10, 2), "Gantt tasks should reject inverted ranges.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 1, 2, 1.1), "Gantt tasks should reject progress above one.");

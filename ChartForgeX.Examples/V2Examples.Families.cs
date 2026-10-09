@@ -9,10 +9,11 @@ public static partial class V2Examples {
     };
     private static readonly ChartSeriesKind[] OptionFamilies = {
         ChartSeriesKind.Bar, ChartSeriesKind.Area, ChartSeriesKind.HorizontalBar, ChartSeriesKind.Pie, ChartSeriesKind.Donut, ChartSeriesKind.Gauge, ChartSeriesKind.Bullet,
-        ChartSeriesKind.RadialBar, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
+        ChartSeriesKind.ProgressRing, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
     };
     private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
-        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel
+        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel,
+        ChartSeriesKind.RadialBar, ChartSeriesKind.RadialColumn
     };
 
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
@@ -50,6 +51,7 @@ public static partial class V2Examples {
         ChartSeriesKind.StackedArea => "A normalized stack with middle-step boundaries",
         ChartSeriesKind.RangeArea => "Lower, middle and upper bounds share middle-step transitions",
         ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
+        ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn => "Named stacks reach 100; labels retain source counts",
         _ => "Configured chart geometry"
     };
 

@@ -9,7 +9,7 @@ public static partial class V2Examples {
         "line" or "step-line" or "area" or "step-area" or "stacked-area" or "range-band" or "range-area" or "trend-line" or "cartesian" => "trends",
         "scatter" or "bubble" or "error-bar" or "box-plot" or "candlestick" or "ohlc" or "polar" or "radar" => "distribution",
         "pie" or "donut" or "polar-area" or "treemap" or "sunburst" or "funnel" or "pictorial" => "proportion",
-        "gauge" or "circle" or "radial-bar" or "layered-radial" or "bullet" or "progress-bar" => "indicators",
+        "gauge" or "circle" or "progress-ring" or "layered-radial" or "bullet" or "progress-bar" => "indicators",
         "heatmap" or "hexbin-heatmap" or "calendar-heatmap" or "dotted-map" or "tile-map" or "region-map" => "matrices-maps",
         "timeline" or "state-timeline" or "gantt" or "gantt-lane" => "schedule",
         "tree" or "sankey" or "topology" or "flow" or "sequence" => "relationships",

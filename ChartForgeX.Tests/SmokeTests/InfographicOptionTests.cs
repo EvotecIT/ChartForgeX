@@ -195,24 +195,24 @@ internal static partial class SmokeTests {
 
         var radial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 280)
-            .WithRadialBarCenterLabel(false)
-            .WithRadialBarRadiusScale(1.12)
-            .WithRadialBarStrokeScale(1.25)
-            .AddRadialBar("Scores", Points(75, 60, 39));
+            .WithProgressRingCenterLabel(false)
+            .WithRadialProgressRadiusScale(1.12)
+            .WithRadialProgressStrokeScale(1.25)
+            .AddProgressRing("Scores", Points(75, 60, 39));
         var radialSvg = radial.ToSvg();
-        Assert(radialSvg.Contains("data-cfx-role=\"radial-bar-ring\"", StringComparison.Ordinal), "Radial-bar center labels should be optional without hiding rings.");
-        var radialDefault = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithRadialBarCenterLabel(false).AddRadialBar("Scores", Points(75, 60, 39));
+        Assert(radialSvg.Contains("data-cfx-role=\"progress-ring-ring\"", StringComparison.Ordinal), "Radial-bar center labels should be optional without hiding rings.");
+        var radialDefault = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithProgressRingCenterLabel(false).AddProgressRing("Scores", Points(75, 60, 39));
         var radialPrepared = PrepareForTypography(radial); var radialDefaultPrepared = PrepareForTypography(radialDefault);
-        Assert(radialPrepared.Regions.First(region => region.Role == "radial-bar-ring").Bounds.Width > radialDefaultPrepared.Regions.First(region => region.Role == "radial-bar-ring").Bounds.Width,
+        Assert(radialPrepared.Regions.First(region => region.Role == "progress-ring-ring").Bounds.Width > radialDefaultPrepared.Regions.First(region => region.Role == "progress-ring-ring").Bounds.Width,
             "Radial-bar radius scale should change the ring extent.");
-        var scaledRing = radialPrepared.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role == "radial-bar-ring");
-        var defaultRing = radialDefaultPrepared.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role == "radial-bar-ring");
+        var scaledRing = radialPrepared.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role == "progress-ring-ring");
+        var defaultRing = radialDefaultPrepared.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role == "progress-ring-ring");
         Assert(scaledRing.Outer - scaledRing.Inner > defaultRing.Outer - defaultRing.Inner,
             "Radial-bar stroke scale should change native stroke width.");
-        Assert(!radialPrepared.Scene.Nodes.OfType<VisualSceneText>().Any(node => node.Role == "radial-bar-value" || node.Role == "radial-bar-title"), "Radial-bar center labels should be optional.");
+        Assert(!radialPrepared.Scene.Nodes.OfType<VisualSceneText>().Any(node => node.Role == "progress-ring-value" || node.Role == "progress-ring-title"), "Radial-bar center labels should be optional.");
         Assert(radial.ToPng().Length > 64, "Radial-bar center label options should render PNG output.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithRadialBarRadiusScale(0.5), "Radial-bar radius scale should reject tiny values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithRadialBarStrokeScale(2.0), "Radial-bar stroke scale should reject huge values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithRadialProgressRadiusScale(0.5), "Radial-bar radius scale should reject tiny values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithRadialProgressStrokeScale(2.0), "Radial-bar stroke scale should reject huge values.");
 
         var circle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 280)

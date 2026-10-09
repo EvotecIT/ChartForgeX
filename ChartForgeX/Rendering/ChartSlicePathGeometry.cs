@@ -1,10 +1,31 @@
 using System;
 using System.Globalization;
+using System.Collections.Generic;
+using System.Linq;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
 /// <summary>The closed slice outlines shared by SVG paths and raster separator strokes.</summary>
 internal static class ChartSlicePathGeometry {
+    /// <summary>Gets the actual annular sector envelope for semantic regions and label placement.</summary>
+    internal static ChartRect Bounds(double cx, double cy, double outer, double inner, double start, double sweep) {
+        var points = new List<ChartPoint>();
+        Add(start); Add(start + sweep);
+        for (var index = 0; index < 4; index++) {
+            var angle = index * Math.PI / 2;
+            angle += Math.Ceiling((start - angle) / (Math.PI * 2)) * Math.PI * 2;
+            if (angle <= start + sweep) Add(angle);
+        }
+        var left = points.Min(point => point.X); var top = points.Min(point => point.Y);
+        return new ChartRect(left, top, points.Max(point => point.X) - left, points.Max(point => point.Y) - top);
+
+        void Add(double angle) {
+            points.Add(new ChartPoint(cx + Math.Cos(angle) * outer, cy + Math.Sin(angle) * outer));
+            points.Add(new ChartPoint(cx + Math.Cos(angle) * inner, cy + Math.Sin(angle) * inner));
+        }
+    }
+
     public static string BuildPath(double cx, double cy, double radius, double innerRadius, double start, double end) {
         if (end - start >= Math.PI * 2 - 0.000001) {
             return BuildFullSlicePath(cx, cy, radius, innerRadius);

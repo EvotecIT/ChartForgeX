@@ -21,7 +21,7 @@ internal static partial class VisualCartesianCompiler {
                 var width = Math.Max(14, Math.Min(46, plot.Width / Math.Max(1, count * 5))); var cap = width * .74;
                 var top = map.Y(q3); var bottom = map.Y(q1); var minY = map.Y(minimum); var maxY = map.Y(maximum);
                 var box = new ChartRect(x - width / 2, Math.Min(top, bottom), width, Math.Max(2, Math.Abs(bottom - top)));
-                var bounds = Extents(x - width / 2, Math.Min(maxY, box.Top), x + width / 2, Math.Max(minY, box.Bottom));
+                var bounds = Extents(x - width / 2, Math.Min(Math.Min(minY, maxY), box.Top), x + width / 2, Math.Max(Math.Max(minY, maxY), box.Bottom));
                 var color = PointColor(series, index, item, colors);
                 var sourcePaint = VisualChartPaint.Series(series, color, item);
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, median));
@@ -48,7 +48,7 @@ internal static partial class VisualCartesianCompiler {
                 var candle = series.Kind == ChartSeriesKind.Candlestick;
                 var width = candle ? Math.Max(8, Math.Min(22, plot.Width / Math.Max(1, count * 5))) : Math.Max(7, Math.Min(18, plot.Width / Math.Max(1, count * 6)));
                 var highY = map.Y(high); var lowY = map.Y(low); var openY = map.Y(open); var closeY = map.Y(close);
-                var bounds = Extents(x - width / 2, Math.Min(highY, Math.Min(openY, closeY)), x + width / 2, Math.Max(lowY, Math.Max(openY, closeY)));
+                var bounds = Extents(x - width / 2, Math.Min(Math.Min(highY, lowY), Math.Min(openY, closeY)), x + width / 2, Math.Max(Math.Max(highY, lowY), Math.Max(openY, closeY)));
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, close));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label,
                     ("x", xValue), ("open", open), ("high", high), ("low", low), ("close", close))) {

@@ -27,8 +27,7 @@ internal static partial class VisualScheduleCompiler {
         if (now.HasValue) { min = Math.Min(min, now.Value); max = Math.Max(max, now.Value); }
         min = axis.Minimum ?? min; max = axis.Maximum ?? max;
         (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
-        var ticks = axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= min && value <= max).Distinct().OrderBy(value => value).ToArray()
-            : ChartTicks.GenerateInside(axis, min, max);
+        var ticks = ChartTicks.ForAxis(axis, min, max);
         var tickLabels = ticks.ToDictionary(value => value, value => ChartAxisValueFormatter.Format(axis, value,
             tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks));
         string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : ChartAxisValueFormatter.Format(axis, value,

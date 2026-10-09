@@ -215,7 +215,7 @@ internal static class ChartGuards {
             ValidateNonNegativeValues(chart.Series[0], kind);
         }
         else if (kind == ChartSeriesKind.Gauge || kind == ChartSeriesKind.Circle) ValidateScalePair(chart.Series[0], kind.ToString());
-        else if (kind == ChartSeriesKind.RadialBar) ValidateRadialBar(chart.Series[0], preparing);
+        else if (kind == ChartSeriesKind.ProgressRing) ValidateProgressRing(chart.Series[0], preparing);
         else if (kind == ChartSeriesKind.LayeredRadial) ValidateLayeredRadial(chart.Series[0], preparing);
         else if (kind == ChartSeriesKind.Polar) {
             if (!preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
@@ -242,10 +242,10 @@ internal static class ChartGuards {
         if (series.Points[1].X <= series.Points[0].X) throw new InvalidOperationException(chartName + " chart maximum must be greater than minimum.");
     }
 
-    private static void ValidateRadialBar(ChartSeries series, bool preparing) {
-        if (!preparing && series.Points.Count == 0) throw new InvalidOperationException("RadialBar charts require at least one value.");
+    private static void ValidateProgressRing(ChartSeries series, bool preparing) {
+        if (!preparing && series.Points.Count == 0) throw new InvalidOperationException("ProgressRing charts require at least one value.");
         foreach (var point in series.Points) {
-            if (point.Y < 0 || point.Y > 100) throw new InvalidOperationException("RadialBar chart values must be between zero and 100.");
+            if (point.Y < 0 || point.Y > 100) throw new InvalidOperationException("ProgressRing chart values must be between zero and 100.");
         }
     }
 

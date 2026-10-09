@@ -27,6 +27,8 @@ internal static partial class VisualPolarCompiler {
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind) || kind == ChartSeriesKind.PolarArea && chart.Series.Count != 1)
             throw new InvalidOperationException("Prepared polar charts require one family; polar area requires one series.");
+        if (chart.Options.XAxis.Reversed || kind == ChartSeriesKind.PolarArea && chart.Options.YAxis.Reversed)
+            throw new NotSupportedException("Polar angular reversal and polar-area reversal are not supported.");
         if (chart.Series.SelectMany(series => series.Points).Any(point => !Finite(point.X) || !Finite(point.Y) || kind == ChartSeriesKind.PolarArea && point.Y < 0))
             throw new InvalidOperationException("Polar coordinates must be finite; area values must be non-negative.");
         if (!chart.Series.Any(series => series.Points.Count > 0)) { builder.AddDiagnostic(new VisualDiagnostic("polar.no-data", "The polar chart has no observations.")); return; }

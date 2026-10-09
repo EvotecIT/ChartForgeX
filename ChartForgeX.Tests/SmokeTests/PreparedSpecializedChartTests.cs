@@ -43,19 +43,19 @@ internal static partial class SmokeTests {
         Verify.NotEmpty(prepared.ToPng());
     }
 
-    private static void RadialBarSeriesRenderProgressRings() {
+    private static void ProgressRingSeriesRenderProgressRings() {
         var chart = Chart.Create().WithSize(720, 460).WithXLabels("Mail auth", "DNSSEC", "TLS")
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddRadialBar("Control coverage", Points(92, 74, 88));
+            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddProgressRing("Control coverage", Points(92, 74, 88));
         var prepared = PreparedFamily(chart);
-        Verify.Equal(3, FamilyGroups(prepared, "radial-bar-point").Length);
-        var tracks = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "radial-bar-track").ToArray();
-        var rings = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "radial-bar-ring").ToArray();
+        Verify.Equal(3, FamilyGroups(prepared, "progress-ring-point").Length);
+        var tracks = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "progress-ring-track").ToArray();
+        var rings = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "progress-ring-ring").ToArray();
         Verify.Equal(3, tracks.Length); Verify.Equal(3, rings.Length);
         for (var index = 0; index < rings.Length; index++) {
             Verify.Equal(chart.Series[0].Points[index].Y / 100, rings[index].Sweep / tracks[index].Sweep, 6);
             Verify.Equal(tracks[index].Outer, rings[index].Outer);
         }
-        Verify.Contains(prepared.Regions, region => region.Role == "radial-bar-ring" && region.Label == "Mail auth: 92%");
+        Verify.Contains(prepared.Regions, region => region.Role == "progress-ring-ring" && region.Label == "Mail auth: 92%");
         Verify.NotEmpty(prepared.ToPng());
     }
 

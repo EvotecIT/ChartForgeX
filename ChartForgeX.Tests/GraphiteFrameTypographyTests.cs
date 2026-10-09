@@ -72,7 +72,7 @@ public sealed class GraphiteFrameTypographyTests {
                 return chart.AddRegionMap("Measure", map, new[] { new ChartRegionMapItem(map.Regions[0].Code, 30) });
             case ChartSeriesKind.Gauge: return chart.AddGauge("Measure", 30);
             case ChartSeriesKind.Circle: return chart.AddCircle("Measure", 30);
-            case ChartSeriesKind.RadialBar: return chart.AddRadialBar("Measure", points);
+            case ChartSeriesKind.ProgressRing: return chart.AddProgressRing("Measure", points);
             case ChartSeriesKind.LayeredRadial: return chart.AddLayeredRadial("Measure", new[] { new ChartRadialLayer("First", 30) });
             case ChartSeriesKind.Bullet: return chart.AddBullet("Measure", 30, 40);
             case ChartSeriesKind.Waterfall: return chart.AddWaterfall("Measure", points);

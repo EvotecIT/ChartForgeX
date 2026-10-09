@@ -11,7 +11,7 @@ internal static class DenseLegendExamples {
         var values = Enumerable.Range(0, 40).Select(i => new ChartPoint(i, 1 + i % 7)).ToArray();
         Save(Base("Dense category legend", "Forty categories with an explicit count of additional legend entries.", scale).AddPie("Categories", values), output, "dense-legend-pie");
         var radialValues = Enumerable.Range(0, 40).Select(i => new ChartPoint(i, 35 + i * 13 % 61)).ToArray();
-        Save(Base("Dense radial legend", "All forty values remain visible as compact concentric rings while the legend stays bounded.", scale).AddRadialBar("Categories", radialValues), output, "dense-legend-radial");
+        Save(Base("Dense radial legend", "All forty values remain visible as compact concentric rings while the legend stays bounded.", scale).AddProgressRing("Categories", radialValues), output, "dense-legend-radial");
     }
 
     private static Chart Base(string title, string subtitle, ChartPngOutputScale scale) => Chart.Create()

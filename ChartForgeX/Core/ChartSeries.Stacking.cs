@@ -7,7 +7,7 @@ public sealed partial class ChartSeries {
     private double? _normalizedTo;
 
     /// <summary>
-    /// Gets or sets the ordinal key of an independent bar or stacked-area stack.
+    /// Gets or sets the ordinal key of an independent Cartesian/radial bar, radial column, or stacked-area stack.
     /// A named bar stack participates in stacking even when the chart's bar mode is grouped.
     /// Null uses the chart's default bar arrangement or the default stacked-area group.
     /// Stacks on different axes and of different series kinds remain independent.
@@ -50,7 +50,8 @@ public sealed partial class ChartSeries {
     public ChartSeries WithNormalization(double? target = 100) { NormalizedTo = target; return this; }
 
     private void RequireStackingKind() {
-        if (Kind != ChartSeriesKind.Bar && Kind != ChartSeriesKind.HorizontalBar && Kind != ChartSeriesKind.StackedArea)
-            throw new InvalidOperationException("Stack configuration is supported only by bar, horizontal-bar, and stacked-area series.");
+        if (Kind != ChartSeriesKind.Bar && Kind != ChartSeriesKind.HorizontalBar && Kind != ChartSeriesKind.StackedArea
+            && Kind != ChartSeriesKind.RadialBar && Kind != ChartSeriesKind.RadialColumn)
+            throw new InvalidOperationException("Stack configuration is supported only by Cartesian/radial bars, radial columns, and stacked areas.");
     }
 }

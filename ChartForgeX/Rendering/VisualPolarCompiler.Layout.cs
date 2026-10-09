@@ -29,14 +29,14 @@ internal static partial class VisualPolarCompiler {
         double[] categories, string[] axes, RadialValueScale scale, bool radar, List<PolarLabel> labels) {
         var colors = context.Theme.Resolve(context.ThemeMode); var style = TickStyle(chart, context);
         for (var index = 0; index < scale.Ticks.Count; index++) {
-            var tick = scale.Ticks[index]; if (tick <= scale.Minimum) continue;
+            var tick = scale.Ticks[index]; if (scale.Normalize(tick) <= 0) continue;
             var r = geometry.Radius * scale.Normalize(tick);
             if (chart.Options.ShowGrid) {
                 if (radar) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, RadarAngle(i, categories.Length), r)).ToArray(), ChartInterpolation.Linear),
                     stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: "radar-ring", close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                 else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, "polar-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             }
-            if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !scale.IsMaximum(tick)) {
+            if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && r < geometry.Radius) {
                 var text = ChartAxisValueFormatter.Format(chart.Options.YAxis, tick, chart.Options.ValueFormatter, scale.Ticks);
                 var anchor = new ChartPoint(geometry.Cx + context.Theme.Spacing / 2, geometry.Cy - r);
                 AddLabel(builder, labels, text, anchor, style, (radar ? "radar" : "polar") + "-radius-label-" + index,

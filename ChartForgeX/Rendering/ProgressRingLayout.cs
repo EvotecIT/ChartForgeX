@@ -5,8 +5,8 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
 
-internal readonly struct RadialBarRingLayout {
-    private RadialBarRingLayout(double outerRadius, double strokeWidth, double gap, double centerRadius) {
+internal readonly struct ProgressRingLayout {
+    private ProgressRingLayout(double outerRadius, double strokeWidth, double gap, double centerRadius) {
         OuterRadius = outerRadius;
         StrokeWidth = strokeWidth;
         Gap = gap;
@@ -21,7 +21,7 @@ internal readonly struct RadialBarRingLayout {
     internal double RadiusAt(int index) => OuterRadius - StrokeWidth / 2 - index * (StrokeWidth + Gap);
 
     internal static double RequestedCenterRadius(Chart chart, ChartSeries series, double outerRadius, string centerLabel, double valueFontSize, double nameFontSize, TextStyleOverride style) {
-        if (!chart.Options.ShowRadialBarCenterLabel || series.ShowDataLabels == false) return 0;
+        if (!chart.Options.ShowProgressRingCenterLabel || series.ShowDataLabels == false) return 0;
         var measurement = new TextMeasurementContext(style.FontFamily ?? chart.Options.Theme.FontFamily);
         var value = style.TransformText(centerLabel, CultureInfo.InvariantCulture);
         var name = style.TransformText(series.Name, CultureInfo.InvariantCulture);
@@ -41,8 +41,8 @@ internal readonly struct RadialBarRingLayout {
         }
     }
 
-    internal static RadialBarRingLayout Create(double outerRadius, int count, double strokeScale, double requestedCenterRadius = 0) {
-        if (count <= 0) return new RadialBarRingLayout(outerRadius, 0, 0, Math.Max(0, outerRadius));
+    internal static ProgressRingLayout Create(double outerRadius, int count, double strokeScale, double requestedCenterRadius = 0) {
+        if (count <= 0) return new ProgressRingLayout(outerRadius, 0, 0, Math.Max(0, outerRadius));
 
         var preferredGap = Math.Max(5, outerRadius * 0.035);
         var preferredStroke = Math.Max(5, Math.Min(24, ((outerRadius - 18) / count - preferredGap) * strokeScale));
@@ -55,13 +55,13 @@ internal readonly struct RadialBarRingLayout {
 
         if (preferredBand <= availableBand) {
             var centerRadius = Math.Max(minimumCenterRadius, outerRadius - preferredBand - 2);
-            return new RadialBarRingLayout(outerRadius, preferredStroke, preferredGap, centerRadius);
+            return new ProgressRingLayout(outerRadius, preferredStroke, preferredGap, centerRadius);
         }
 
         var slot = availableBand / count;
         var strokeShare = Math.Max(0.55, Math.Min(0.90, 0.72 * strokeScale));
         var stroke = slot * strokeShare;
         var gap = count > 1 ? Math.Max(0, (availableBand - stroke * count) / (count - 1)) : 0;
-        return new RadialBarRingLayout(outerRadius, stroke, gap, minimumCenterRadius);
+        return new ProgressRingLayout(outerRadius, stroke, gap, minimumCenterRadius);
     }
 }

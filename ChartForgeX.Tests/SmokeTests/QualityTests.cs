@@ -60,7 +60,7 @@ internal static partial class SmokeTests {
             Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddHeatmapRow("Heat", Points(96, 82, 74)),
             Chart.Create().WithSize(640, 360).AddGauge("Gauge", 87),
             Chart.Create().WithSize(640, 360).AddCircle("Circle", 87),
-            Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddRadialBar("Radial", Points(96, 82, 74)),
+            Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddProgressRing("Radial", Points(96, 82, 74)),
             Chart.Create().WithSize(640, 360).AddBullet("Bullet", 82, 90),
             Chart.Create().WithSize(640, 360).AddWaterfall("Waterfall", Points(18, -42, 9)),
             Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddRadar("Radar", Points(92, 74, 88)),

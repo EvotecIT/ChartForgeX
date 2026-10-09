@@ -27,7 +27,7 @@ public sealed class LegendDensityTests {
         if (omitted > 0) Assert.Contains(ByRole(svg, "legend-label"), element => element.Value.Contains(omitted.ToString(CultureInfo.InvariantCulture) + " more"));
         if (kind != "pie") Assert.True(omitted > 0);
         Assert.Equal(entryCount, prepared.Regions.Count(region => region.Role == "legend" && region.Id != "legend-overflow"));
-        var role = kind == "pie" ? "pie-slice" : kind == "radial" ? "radial-bar-ring" : "point";
+        var role = kind == "pie" ? "pie-slice" : kind == "radial" ? "progress-ring-ring" : "point";
         Assert.Equal(kind == "line" ? 200 : entryCount, prepared.Regions.Count(region => region.Role == role));
         if (kind == "pie") {
             var sourcePoints = ByRole(svg, "radial-point").SelectMany(element => element.Attribute("data-cfx-source-points")!.Value.Split(','))
@@ -109,13 +109,13 @@ public sealed class LegendDensityTests {
     [InlineData(500)]
     [InlineData(1000)]
     public void DenseRadialRingsRetainEverySourceAndRemainOutsideTheCenter(int count) {
-        var layout = RadialBarRingLayout.Create(28, count, 1, 18);
+        var layout = ProgressRingLayout.Create(28, count, 1, 18);
         Assert.True(layout.StrokeWidth > 0);
         Assert.True(layout.StrokeWidth <= (layout.OuterRadius - layout.CenterRadius - 2) / count);
         for (var index = 0; index < count; index++) Assert.True(layout.RadiusAt(index) - layout.StrokeWidth / 2 >= layout.CenterRadius + 2 - .000001);
         var chart = Dense("radial", count).WithLegend(false); var prepared = PrepareDefaults(chart);
-        Assert.Equal(count, prepared.Regions.Count(region => region.Role == "radial-bar-ring"));
-        Assert.Equal(count, ByRole(XDocument.Parse(chart.ToSvg()), "radial-bar-track").Length);
+        Assert.Equal(count, prepared.Regions.Count(region => region.Role == "progress-ring-ring"));
+        Assert.Equal(count, ByRole(XDocument.Parse(chart.ToSvg()), "progress-ring-track").Length);
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -135,7 +135,7 @@ public sealed class LegendDensityTests {
         var points = Enumerable.Range(0, count).Select(index => new ChartPoint(index, index % 100 + 1)).ToArray();
         chart.WithXLabels(points.Select(point => "Service " + point.X).ToArray());
         if (kind == "pie") chart.AddPie("Values", points);
-        else if (kind == "radial") chart.AddRadialBar("Values", points);
+        else if (kind == "radial") chart.AddProgressRing("Values", points);
         else if (kind == "gauge") chart.AddGauge("Value", 73);
         else if (kind == "waterfall") chart.AddWaterfall("Delta", new[] { new ChartPoint(0, 18), new ChartPoint(1, -7), new ChartPoint(2, 12) });
         else foreach (var point in points) chart.AddLine("Service " + point.X, new[] { new ChartPoint(0, point.Y), new ChartPoint(1, point.Y + 1) });

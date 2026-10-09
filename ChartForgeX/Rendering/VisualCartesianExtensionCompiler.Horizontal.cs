@@ -94,7 +94,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawHorizontalAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartRange range, ChartMapper map, VisualThemeColors colors, ChartRect viewport, AxisLabelCache cache, double categoryLabelRight) {
-        var axes = HorizontalAxes(chart, cache); var xTicks = AxisTicks(axes.Value, range.MinX, range.MaxX); var categories = HorizontalCategories(chart, range);
+        var axes = HorizontalAxes(chart, cache); var xTicks = ChartTicks.ForAxis(axes.Value, range.MinX, range.MaxX); var categories = HorizontalCategories(chart, range);
         var spacing = context.Theme.Spacing;
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle(); var width = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;

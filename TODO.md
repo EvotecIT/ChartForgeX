@@ -57,7 +57,7 @@ The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roa
 - [ ] Add common marker shape controls and explicit radar line/area semantics through shared mark geometry.
 - [ ] Extend histogram ingestion with authored boundaries, weighted aggregation and density for unequal widths.
 - [ ] Give hierarchy and flow records stable IDs separate from display labels, then qualify hierarchical treemap input and independent color dimensions.
-- [ ] Add general radial column/bar scales and stacks while retaining the existing progress-ring meaning.
+- [ ] Extend numeric radial axes with axis titles and label orientation, rounded sectors, mixed radial families, and angular reversal for radar/polar. Schedule reversal requires matching packed span and label projections.
 - [ ] Implement the missing chord and pyramid families with explicit value-encoding contracts.
 - [ ] Extend typed adapter tooltip, crosshair, legend visibility and data-domain zoom policies; palette choice must not decide interaction behavior.
 - [ ] Qualify each increment with compact/wide light/dark SVG and native PNG, then maintain the ledger's remaining gaps and evidence limits.

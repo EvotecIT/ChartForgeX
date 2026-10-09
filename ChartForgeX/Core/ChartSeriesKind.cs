@@ -127,7 +127,7 @@ public enum ChartSeriesKind {
     /// <summary>
     /// Renders one or more circular progress rings.
     /// </summary>
-    RadialBar,
+    ProgressRing = 24,
 
     /// <summary>
     /// Renders one or more independently styled radial arc layers.
@@ -248,5 +248,11 @@ public enum ChartSeriesKind {
     /// Renders grouped lanes of time-bounded items, such as incidents, coloured by a categorical severity map. Overlapping
     /// items in a lane stack into sub-rows, and open-ended items run to the current time.
     /// </summary>
-    GanttLane
+    GanttLane,
+
+    /// <summary>Renders numeric angular bars in radial category bands.</summary>
+    RadialBar = 50,
+
+    /// <summary>Renders numeric radial columns in angular category bands.</summary>
+    RadialColumn = 51
 }

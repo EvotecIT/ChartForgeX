@@ -502,11 +502,11 @@ public sealed partial class Chart {
     public Chart WithPieOutsideLabelDistance(double ratio) { Options.PieOutsideLabelDistanceRatio = ratio; return this; }
 
     /// <summary>
-    /// Sets whether radial-bar charts should display center average and series labels.
+    /// Sets whether progress-ring charts should display center average and series labels.
     /// </summary>
     /// <param name="visible">True to show center labels; otherwise false.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithRadialBarCenterLabel(bool visible = true) { Options.ShowRadialBarCenterLabel = visible; return this; }
+    public Chart WithProgressRingCenterLabel(bool visible = true) { Options.ShowProgressRingCenterLabel = visible; return this; }
 
     /// <summary>
     /// Sets the relative radius used by circle charts.
@@ -523,18 +523,18 @@ public sealed partial class Chart {
     public Chart WithCircleStrokeScale(double scale) { Options.CircleStrokeScale = scale; return this; }
 
     /// <summary>
-    /// Sets the relative outer radius used by radial-bar charts.
+    /// Sets the relative outer radius used by progress rings and layered radial progress charts.
     /// </summary>
     /// <param name="scale">The radius scale from 0.65 to 1.35.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithRadialBarRadiusScale(double scale) { Options.RadialBarRadiusScale = scale; return this; }
+    public Chart WithRadialProgressRadiusScale(double scale) { Options.RadialProgressRadiusScale = scale; return this; }
 
     /// <summary>
-    /// Sets the relative stroke thickness used by radial-bar charts.
+    /// Sets the relative stroke thickness used by progress rings and layered radial progress charts.
     /// </summary>
     /// <param name="scale">The stroke scale from 0.55 to 1.8.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithRadialBarStrokeScale(double scale) { Options.RadialBarStrokeScale = scale; return this; }
+    public Chart WithRadialProgressStrokeScale(double scale) { Options.RadialProgressStrokeScale = scale; return this; }
 
     /// <summary>
     /// Sets whether circle charts should display status marker and status labels.
