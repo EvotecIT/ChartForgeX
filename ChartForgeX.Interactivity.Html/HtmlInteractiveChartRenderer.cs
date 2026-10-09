@@ -167,8 +167,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .StartElement("span").Attribute("class", "cfx-crosshair__label").Attribute("data-cfx-crosshair-label", "true").EndStartElement().EndElement()
             .EndElement().Line()
             .RawTrusted(BuildRevealLayer(options))
-            .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()
+            .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .EndElement();
