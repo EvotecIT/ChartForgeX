@@ -26,11 +26,14 @@ public sealed partial class PreparedVisualStory {
 
     private RasterAnimationSource GifSource(VisualStoryFrameOptions? options) {
         var sampling = options ?? new VisualStoryFrameOptions();
+        if (sampling.FramesPerSecond > 50) throw new ArgumentOutOfRangeException(nameof(options), "GIF supports at most 50 fps to avoid short delays that viewers slow down. Use APNG for higher cadence.");
         var source = FrameSource(sampling);
         // Quantize boundaries rather than independent delays: a six-fps story does not drift by two centiseconds per second.
         var total = Math.Max(1, (long)Math.Round(Duration.TotalSeconds * 100, MidpointRounding.AwayFromZero));
         var count = source.FrameCount;
         while (count > 1 && GifBoundary(count - 1, sampling.FramesPerSecond) >= total) count--;
+        if (total - GifBoundary(count - 1, sampling.FramesPerSecond) < 2)
+            throw new InvalidOperationException("GIF's final frame requires at least 20 milliseconds. Increase the completed-state hold or change cadence.");
         EnsureSceneCoverage(count,
             index => TimeSpan.FromTicks(GifBoundary(index, sampling.FramesPerSecond) * TimeSpan.TicksPerMillisecond * 10),
             index => TimeSpan.FromTicks(SampleTicks(index, sampling.FramesPerSecond)));

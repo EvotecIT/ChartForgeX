@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using ChartForgeX.Svg;
+using ChartForgeX.Accessibility;
 
 namespace ChartForgeX.Stories;
 
@@ -11,7 +12,7 @@ public sealed partial class PreparedVisualStory {
     /// <remarks>Reduced motion and print show the completed poster. SVG sampling has a 64 MiB embedded markup budget.</remarks>
     public string ToAnimatedSvg(VisualStoryFrameOptions? options = null, string idScope = "", CancellationToken cancellationToken = default) {
         if (idScope == null) throw new ArgumentNullException(nameof(idScope));
-        var sampling = options ?? new VisualStoryFrameOptions(); var count = FrameCount(sampling);
+        var sampling = options ?? DefaultSvgSampling(); var count = FrameCount(sampling);
         var provisional = SvgRenderedIdentity.CreateProvisionalId("cfx-story", idScope, Title, Width.ToString(CultureInfo.InvariantCulture), Height.ToString(CultureInfo.InvariantCulture));
         var writer = new SvgMarkupWriter(16384);
         writer.StartElement("svg").Attribute("xmlns", "http://www.w3.org/2000/svg").Attribute("id", provisional)
@@ -30,7 +31,7 @@ public sealed partial class PreparedVisualStory {
             var start = SampleTicks(index, sampling.FramesPerSecond);
             var end = index == count - 1 ? total : SampleTicks(index + 1, sampling.FramesPerSecond);
             var timestamp = index == count - 1 ? ContentDuration : TimeSpan.FromTicks(start);
-            var frame = PrepareFrame(timestamp).ToSvg("story-frame");
+            var frame = PrepareFrame(timestamp, sampling.OutputScale).ToSvg(new VisualAccessibility { IsDecorative = true }, "story-frame");
             embedded = SvgVisualStoryRenderer.ReserveEmbeddedMedia(embedded, Encoding.UTF8.GetByteCount(frame), _story.Scenes[0].Id);
             var chapter = VisualStoryTimeline.FindScene(_story, Math.Min(timestamp.TotalSeconds, ContentDuration.TotalSeconds), out _);
             var name = provisional + "-frame-" + index;

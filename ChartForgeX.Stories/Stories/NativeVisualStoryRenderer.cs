@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Accessibility;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -51,8 +52,8 @@ internal static partial class NativeVisualStoryRenderer {
         }
         FitText(builder, (sceneIndex + 1).ToString(CultureInfo.InvariantCulture) + " / " + story.Scenes.Count.ToString(CultureInfo.InvariantCulture),
             padding, story.Height - 13, story.Width * 0.25, 11, theme.Muted);
-        if (sceneIndex == story.Scenes.Count - 1) {
-            var label = "✓ " + story.Outcomes[0].Label;
+        if (sceneIndex == story.Scenes.Count - 1 && (!elapsed.HasValue || elapsed.Value >= scene.DurationSeconds)) {
+            var label = "✓ " + string.Join(" · ", story.Outcomes.Select(outcome => outcome.Label));
             var labelWidth = Math.Min(story.Width * 0.7, builder.MeasureText(label, 11, 700).Width);
             FitText(builder, label, story.Width - padding - labelWidth, story.Height - 13, labelWidth, 11, theme.Success, 700);
         }

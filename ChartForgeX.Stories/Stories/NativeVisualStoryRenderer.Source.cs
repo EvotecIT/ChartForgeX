@@ -47,7 +47,7 @@ internal static partial class NativeVisualStoryRenderer {
         if (options.HighlightedLine > 0) {
             for (var i = 0; i < rows.Count; i++) if (rows[i].Line == options.HighlightedLine) { caretRow = i; break; }
         }
-        var first = Math.Max(0, caretRow - capacity + 2);
+        var first = Math.Max(0, caretRow - Math.Max(0, capacity - 2));
         first = Math.Min(first, Math.Max(0, rows.Count - capacity));
         using (builder.PushClip(content)) {
             for (var i = first; i < Math.Min(rows.Count, first + capacity); i++) {
