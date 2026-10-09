@@ -839,9 +839,10 @@
     let next = node;
     if (key === 'Home') next = targets[0];
     else if (key === 'End') next = targets[targets.length - 1];
-    else if (!legend && group.series !== null && (key === 'ArrowUp' || key === 'ArrowDown')) {
-      const series = state.groups.filter((item) => item.series !== null);
-      const nextGroup = series[clamp(series.indexOf(group) + (key === 'ArrowUp' ? -1 : 1), 0, series.length - 1)];
+    else if (!legend && (group.series !== null || state.groups.length > 1) && (key === 'ArrowUp' || key === 'ArrowDown')) {
+      // Ungrouped annotations are part of the same data component as the Cartesian series.
+      const groups = state.groups;
+      const nextGroup = groups[clamp(groups.indexOf(group) + (key === 'ArrowUp' ? -1 : 1), 0, groups.length - 1)];
       if (nextGroup !== group) {
         const x = node.dataset.cfxX;
         const sourcePoint = sourcePointIndex(node);
