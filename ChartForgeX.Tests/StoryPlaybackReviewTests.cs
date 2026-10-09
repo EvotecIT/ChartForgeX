@@ -1,5 +1,6 @@
 using System.Text;
 using System.Xml.Linq;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Raster;
 using ChartForgeX.Stories;
 using ChartForgeX.Terminal;
@@ -9,6 +10,47 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class StoryPlaybackReviewTests {
+    [Theory]
+    [InlineData(.4, true)]
+    [InlineData(.2, false)]
+    public void IncomingCrossFadeVisibilityUsesBothOpacityAndDisplayDuration(double transition, bool readable) {
+        var story = VisualStory.Create("Incoming chapter").WithSize(480, 320);
+        story.Scene("first", "First", .6).Panel("first", new VisualStoryTextSurface("First"));
+        story.Scene("middle", "Middle", .35).Panel("middle", new VisualStoryTextSurface("Middle"));
+        story.Scene("last", "Last", .5).Panel("last", new VisualStoryTextSurface("Last"));
+        story.Outcome("last", "Last", "last");
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(transition: TimeSpan.FromSeconds(transition)));
+        var sampling = new VisualStoryFrameOptions(2);
+        if (!readable) {
+            Assert.Throws<InvalidOperationException>(() => prepared.Frames(sampling).First());
+            Assert.Throws<InvalidOperationException>(() => prepared.ToAnimatedSvg(sampling));
+        } else {
+            var frames = prepared.Frames(sampling).ToArray();
+            Assert.Equal(prepared.Duration.Ticks, frames.Sum(frame => frame.Duration.Ticks));
+            Assert.Equal(prepared.RenderAt(TimeSpan.FromSeconds(.5)).Pixels, frames[1].Image.Pixels);
+            var svg = XDocument.Parse(prepared.ToAnimatedSvg(sampling));
+            var chapters = svg.Root!.Elements().Where(element => element.Attribute("data-cfx-chapter-id") != null).ToArray();
+            Assert.Equal(new[] { "first", "middle", "last" }, chapters.Select(element => (string?)element.Attribute("data-cfx-chapter-id")));
+            Assert.Equal("0.5", (string?)chapters[1].Attribute("data-cfx-chapter-frame-time"));
+            Assert.Equal("0.6", (string?)chapters[1].Attribute("data-cfx-chapter-start"));
+            Assert.DoesNotContain(svg.Root.Elements(), element => (string?)element.Attribute("data-cfx-scene") == "middle");
+            var page = new HtmlMotionPlayerRenderer().RenderPage(svg.ToString());
+            Assert.Contains("data-cfx-chapter-id=\"middle\"", page);
+            chapters[1].SetAttributeValue("data-cfx-chapter-frame-time", "0.6");
+            Assert.Throws<ArgumentException>(() => new HtmlMotionPlayerRenderer().RenderPage(svg.ToString()));
+        }
+        foreach (var format in new[] { RasterAnimationFormat.Gif, RasterAnimationFormat.Apng }) {
+            using var stream = new MemoryStream();
+            if (readable) {
+                prepared.WriteAnimation(stream, format, sampling);
+                Assert.True(stream.Length > 64);
+            } else {
+                Assert.Throws<InvalidOperationException>(() => prepared.WriteAnimation(stream, format, sampling));
+                Assert.Equal(0, stream.Length);
+            }
+        }
+    }
+
     [Fact]
     public void DifferentStoriesWithTheSameTitleKeepIndependentAnimationNames() {
         var first = XDocument.Parse(Basic(new VisualStoryTextSurface("First")).Prepare().ToAnimatedSvg(new VisualStoryFrameOptions(2)));
@@ -149,13 +191,14 @@ public sealed class StoryPlaybackReviewTests {
     [Fact]
     public void DefaultSvgSamplingCoversShortChaptersAndExplicitSamplingStaysExplicit() {
         var story = VisualStory.Create("Short chapters").WithSize(480, 320);
-        story.Scene("first", "First", .34).Panel("first", new VisualStoryTextSurface("First"));
-        story.Scene("second", "Second", .25).Panel("second", new VisualStoryTextSurface("Second"));
+        story.Scene("first", "First", .501).Panel("first", new VisualStoryTextSurface("First"));
         story.Scene("last", "Last", .25).Panel("last", new VisualStoryTextSurface("Last"));
         story.Outcome("last", "Last", "last");
-        Assert.Throws<InvalidOperationException>(() => story.Prepare().ToAnimatedSvg(new VisualStoryFrameOptions(6)));
-        Assert.Contains("data-cfx-scene=\"second\"", story.ToSvg());
-        Assert.Contains("data-cfx-scene=\"second\"", story.ToHtmlPage());
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero));
+        Assert.Throws<InvalidOperationException>(() => prepared.ToAnimatedSvg(new VisualStoryFrameOptions(6)));
+        var svg = prepared.ToAnimatedSvg();
+        Assert.Contains("data-cfx-scene=\"last\"", svg);
+        Assert.Contains("data-cfx-chapter-id=\"last\"", new HtmlMotionPlayerRenderer().RenderPage(svg));
     }
 
     [Theory]

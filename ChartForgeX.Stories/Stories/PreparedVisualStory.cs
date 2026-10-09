@@ -126,14 +126,13 @@ public sealed partial class PreparedVisualStory {
         EnsureSceneCoverage(count, index => TimeSpan.FromTicks(SampleTicks(index, rate)));
     }
 
-    private void EnsureSceneCoverage(int count, Func<int, TimeSpan> sampleStart, Func<int, TimeSpan>? renderTime = null, TimeSpan? displayEnd = null) {
-        var failure = SceneCoverageFailure(count, sampleStart, renderTime, displayEnd);
+    private void EnsureSceneCoverage(int count, Func<int, TimeSpan> sampleStart, Func<int, TimeSpan>? renderTime = null, TimeSpan? displayEnd = null, TimeSpan[]? chapterSamples = null) {
+        var failure = SceneCoverageFailure(count, sampleStart, renderTime, displayEnd, chapterSamples);
         if (failure != null) throw new InvalidOperationException(failure);
     }
 
-    private string? SceneCoverageFailure(int count, Func<int, TimeSpan> sampleStart, Func<int, TimeSpan>? renderTime = null, TimeSpan? displayEnd = null) {
-        var visibleOpacity = new double[Chapters.Count];
-        var visibleSeconds = new double[Chapters.Count];
+    private string? SceneCoverageFailure(int count, Func<int, TimeSpan> sampleStart, Func<int, TimeSpan>? renderTime = null, TimeSpan? displayEnd = null, TimeSpan[]? chapterSamples = null) {
+        var visibility = new ChapterVisibility[Chapters.Count];
         var endOfPlay = displayEnd ?? Duration;
         var cadence = count > 1 ? (sampleStart(1) - sampleStart(0)).TotalSeconds : endOfPlay.TotalSeconds;
         for (var i = 0; i < count; i++) {
@@ -145,18 +144,30 @@ public sealed partial class PreparedVisualStory {
             if (start < Chapters[index].Start) return "Frame cadence would reveal a scene before its boundary. Increase the frame rate or completed-state hold.";
             var transition = Math.Min(Playback.Transition.TotalSeconds, _story.Scenes[index].DurationSeconds);
             var opacity = transition > 0 && index + 1 < Chapters.Count ? Math.Max(0, Math.Min(1, (timing.End - sample.TotalSeconds) / transition)) : 1;
-            visibleOpacity[index] = Math.Max(visibleOpacity[index], opacity);
-            visibleSeconds[index] += seconds * opacity;
+            visibility[index].Credit(opacity, seconds, start);
             if (index + 1 < Chapters.Count) {
-                visibleSeconds[index + 1] += seconds * (1 - opacity);
+                visibility[index + 1].Credit(1 - opacity, seconds, start);
             }
         }
         for (var i = 0; i < Chapters.Count; i++) {
             var required = Math.Max(.01, Math.Min(cadence, Chapters[i].Duration.TotalSeconds));
-            if (visibleOpacity[i] < .5 || visibleSeconds[i] + 1e-9 < required)
+            if (visibility[i].MaximumOpacity < .5 || visibility[i].WeightedSeconds + 1e-9 < required)
                 return "Frame cadence skips a readable scene: " + Chapters[i].Id + ". Increase the frame rate, scene duration or completed-state hold.";
+            if (chapterSamples != null) chapterSamples[i] = visibility[i].FirstReadableSample;
         }
         return null;
+    }
+
+    private struct ChapterVisibility {
+        internal double MaximumOpacity;
+        internal double WeightedSeconds;
+        internal TimeSpan FirstReadableSample;
+
+        internal void Credit(double opacity, double seconds, TimeSpan sample) {
+            if (MaximumOpacity < .5 && opacity >= .5) FirstReadableSample = sample;
+            MaximumOpacity = Math.Max(MaximumOpacity, opacity);
+            WeightedSeconds += seconds * opacity;
+        }
     }
 
     private VisualStoryFrameOptions DefaultSvgSampling() {

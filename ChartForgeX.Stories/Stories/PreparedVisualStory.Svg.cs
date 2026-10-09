@@ -13,6 +13,8 @@ public sealed partial class PreparedVisualStory {
     public string ToAnimatedSvg(VisualStoryFrameOptions? options = null, string idScope = "", CancellationToken cancellationToken = default) {
         if (idScope == null) throw new ArgumentNullException(nameof(idScope));
         var sampling = options ?? DefaultSvgSampling(); var count = FrameCount(sampling);
+        var chapterSamples = new TimeSpan[Chapters.Count];
+        EnsureSceneCoverage(count, index => TimeSpan.FromTicks(SampleTicks(index, sampling.FramesPerSecond)), chapterSamples: chapterSamples);
         var provisional = SvgRenderedIdentity.CreateProvisionalId("cfx-story", idScope, Title, Width.ToString(CultureInfo.InvariantCulture), Height.ToString(CultureInfo.InvariantCulture));
         var writer = new SvgMarkupWriter(16384, SvgVisualStoryRenderer.MaximumDocumentCharacters);
         writer.StartElement("svg").Attribute("xmlns", "http://www.w3.org/2000/svg").Attribute("id", provisional)
@@ -24,6 +26,12 @@ public sealed partial class PreparedVisualStory {
             .Attribute("data-cfx-motion-plays", Playback.PlayCount).EndStartElement()
             .StartElement("title").Attribute("id", provisional + "-title").Text(Title).EndElement()
             .StartElement("desc").Attribute("id", provisional + "-desc").Text(ToTranscript()).EndElement();
+        for (var chapter = 0; chapter < Chapters.Count; chapter++) {
+            writer.StartElement("g").Attribute("data-cfx-chapter-id", Chapters[chapter].Id)
+                .Attribute("data-cfx-chapter-title", Chapters[chapter].Title)
+                .Attribute("data-cfx-chapter-start", Chapters[chapter].Start.TotalSeconds.ToString("0.#########", CultureInfo.InvariantCulture))
+                .Attribute("data-cfx-chapter-frame-time", chapterSamples[chapter].TotalSeconds.ToString("0.#########", CultureInfo.InvariantCulture)).EndEmptyElement();
+        }
         var css = new StringBuilder(); var total = Duration.Ticks;
         long embedded = 0;
         for (var index = 0; index < count; index++) {
