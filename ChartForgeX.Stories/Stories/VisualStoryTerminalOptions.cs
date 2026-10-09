@@ -12,7 +12,7 @@ public sealed class VisualStoryTerminalOptions {
     }
     /// <summary>Gets the fixed font size in logical story units.</summary>
     public double FontSize { get; }
-    /// <summary>Gets the maximum retained display lines per replay tab. The transcript remains complete.</summary>
+    /// <summary>Gets the maximum retained logical display lines per authored or replay tab. The transcript remains complete.</summary>
     public int HistoryLines { get; }
     /// <summary>Gets whether long lines wrap within the viewport.</summary>
     public bool Wrap { get; }

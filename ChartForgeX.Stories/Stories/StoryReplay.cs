@@ -85,7 +85,7 @@ public sealed partial class StoryReplay {
         if (_events.Count >= MaximumEvents || _characters + text.Length > MaximumCharacters) throw new InvalidOperationException("Replay payload budget exceeded.");
         var copy = Capture(); var index = copy._events.FindIndex(item => item.Timestamp > at);
         copy._events.Insert(index < 0 ? copy._events.Count : index, new StoryReplayEvent(at, null, StoryReplayEventKind.Marker, text, "main"));
-        copy._characters += text.Length; return copy;
+        copy._characters += text.Length; copy._edited = true; return copy;
     }
 
     /// <summary>Returns a detached presentation interval. Earlier events are retained at zero to reconstruct tab and screen state.</summary>
@@ -146,7 +146,7 @@ public sealed partial class StoryReplay {
         CheckEvent(at, text); _events.Add(new StoryReplayEvent(at, at, kind, text, tabId ?? _activeTabId, tone)); _characters += text.Length; return this;
     }
     private void CheckEvent(TimeSpan at, string text, int metadataCharacters = 0) {
-        if (_edited) throw new InvalidOperationException("Record observations before trimming or compressing the presentation. Use Explain to insert presentation text.");
+        if (_edited) throw new InvalidOperationException("Record observations before editing the presentation. Use Explain to insert presentation text.");
         if (at < TimeSpan.Zero || at > Duration || _events.Count > 0 && at < _events[_events.Count - 1].Timestamp)
             throw new ArgumentOutOfRangeException(nameof(at), "Events must be ordered within the declared replay duration.");
         if (_events.Count >= MaximumEvents || _characters + text.Length + metadataCharacters > MaximumCharacters) throw new InvalidOperationException("Replay exceeds its 4096-event or 4 Mi-character payload budget.");
