@@ -105,11 +105,7 @@ internal readonly struct ChartStateMark {
     }
 
     private static ChartColor Over(ChartColor top, ChartColor bottom) {
-        var alpha = top.A / 255.0;
-        return ChartColor.FromRgb(
-            (byte)Math.Round(top.R * alpha + bottom.R * (1 - alpha)),
-            (byte)Math.Round(top.G * alpha + bottom.G * (1 - alpha)),
-            (byte)Math.Round(top.B * alpha + bottom.B * (1 - alpha)));
+        return ChartColorMath.CompositeOverOpaque(top, bottom);
     }
 
     public static ChartStateMark For(Chart chart, ChartStateCategory state) {

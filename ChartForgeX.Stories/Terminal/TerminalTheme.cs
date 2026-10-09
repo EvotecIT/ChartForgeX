@@ -46,6 +46,12 @@ public sealed class TerminalTheme {
     /// <summary>Creates the restrained default dark terminal palette.</summary>
     public static TerminalTheme Dark() => new();
 
+    /// <summary>Creates a terminal theme from the shared Graphite light design tokens.</summary>
+    public static TerminalTheme GraphiteLight() => VisualDesignTokens.GraphiteLight().ApplyTo(new TerminalTheme());
+
+    /// <summary>Creates a terminal theme from the shared Graphite dark design tokens.</summary>
+    public static TerminalTheme GraphiteDark() => VisualDesignTokens.GraphiteDark().ApplyTo(new TerminalTheme());
+
     /// <summary>Creates a PowerShell-oriented dark theme.</summary>
     public static TerminalTheme PowerShell() => new() {
         PageBackground = ChartColor.FromHex("#07101E"),
