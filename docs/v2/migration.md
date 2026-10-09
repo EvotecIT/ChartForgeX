@@ -12,6 +12,8 @@ Explicit zero-duration image frames are preserved in GIF and APNG. Negative and 
 
 ## Shared visual defaults
 
+Stories use the same design tokens as charts and static compositions. Select `VisualStoryTheme.GraphiteLight()` or `GraphiteDark()` for scene output, and `TerminalTheme.GraphiteLight()` or `GraphiteDark()` for transcripts. Apply custom tokens with `tokens.ApplyTo(theme)`, then set any explicit caller overrides. Status text uses the readable status inks; source-code syntax retains a readable foreground on the panel. Existing named themes remain available for authored terminal and story styles.
+
 Default charts and diagrams use 24 logical units of outer padding, 17px bold titles, 13.5px subtitles, 13px legends and 12px axis/data labels. The paired theme owns these values; authored padding, text styles and model legend settings remain authoritative. Native compact exports lay out the data again instead of scaling a desktop chart and its text down.
 
 `VisualFrame` accepts nullable legend visibility and placement. Omit them to use the producer's data-aware policy and the model's configuration; supply `showLegend: true` or a position to override that policy. Rebuild callers compiled against the former constructor signature. Single-series Cartesian legends and direct-label gauge/bullet legends are hidden by default. Explicit legends, slice lists, multiple series and meaningful state mappings remain available.
