@@ -42,12 +42,18 @@ public sealed class V2ModelValidationTests {
     [InlineData(ChartSeriesKind.Candlestick)]
     [InlineData(ChartSeriesKind.RangeArea)]
     [InlineData(ChartSeriesKind.BoxPlot)]
-    [InlineData(ChartSeriesKind.Sankey)]
-    [InlineData(ChartSeriesKind.Tree)]
     [InlineData(ChartSeriesKind.Gantt)]
     [InlineData(ChartSeriesKind.Gauge)]
     public void PreparationDoesNotTreatIncompleteTuplesAsEmptyData(ChartSeriesKind kind) {
         Reject(Raw(kind, new ChartPoint(0, 1)));
+    }
+
+    [Theory]
+    [InlineData(ChartSeriesKind.Tree)]
+    [InlineData(ChartSeriesKind.Sunburst)]
+    [InlineData(ChartSeriesKind.Sankey)]
+    public void RelationshipFamiliesRejectCartesianTuplesAtConstruction(ChartSeriesKind kind) {
+        Assert.Throws<ArgumentException>(() => new ChartSeries("Source", kind, new[] { new ChartPoint(0, 1) }));
     }
 
     [Theory]
