@@ -916,6 +916,18 @@
     "family-sankey-compact-light.svg",
     "family-sankey-compact-light.thumbnail.png",
     "family-sankey-compact-light.thumbnail.svg",
+    "family-sankey-options-dark.csharp.txt",
+    "family-sankey-options-dark.html",
+    "family-sankey-options-dark.png",
+    "family-sankey-options-dark.svg",
+    "family-sankey-options-dark.thumbnail.png",
+    "family-sankey-options-dark.thumbnail.svg",
+    "family-sankey-options-light.csharp.txt",
+    "family-sankey-options-light.html",
+    "family-sankey-options-light.png",
+    "family-sankey-options-light.svg",
+    "family-sankey-options-light.thumbnail.png",
+    "family-sankey-options-light.thumbnail.svg",
     "family-sankey-wide-dark.csharp.txt",
     "family-sankey-wide-dark.html",
     "family-sankey-wide-dark.png",
@@ -1084,6 +1096,18 @@
     "family-sunburst-compact-light.svg",
     "family-sunburst-compact-light.thumbnail.png",
     "family-sunburst-compact-light.thumbnail.svg",
+    "family-sunburst-options-dark.csharp.txt",
+    "family-sunburst-options-dark.html",
+    "family-sunburst-options-dark.png",
+    "family-sunburst-options-dark.svg",
+    "family-sunburst-options-dark.thumbnail.png",
+    "family-sunburst-options-dark.thumbnail.svg",
+    "family-sunburst-options-light.csharp.txt",
+    "family-sunburst-options-light.html",
+    "family-sunburst-options-light.png",
+    "family-sunburst-options-light.svg",
+    "family-sunburst-options-light.thumbnail.png",
+    "family-sunburst-options-light.thumbnail.svg",
     "family-sunburst-wide-dark.csharp.txt",
     "family-sunburst-wide-dark.html",
     "family-sunburst-wide-dark.png",
@@ -1156,6 +1180,18 @@
     "family-tree-compact-light.svg",
     "family-tree-compact-light.thumbnail.png",
     "family-tree-compact-light.thumbnail.svg",
+    "family-tree-options-dark.csharp.txt",
+    "family-tree-options-dark.html",
+    "family-tree-options-dark.png",
+    "family-tree-options-dark.svg",
+    "family-tree-options-dark.thumbnail.png",
+    "family-tree-options-dark.thumbnail.svg",
+    "family-tree-options-light.csharp.txt",
+    "family-tree-options-light.html",
+    "family-tree-options-light.png",
+    "family-tree-options-light.svg",
+    "family-tree-options-light.thumbnail.png",
+    "family-tree-options-light.thumbnail.svg",
     "family-tree-wide-dark.csharp.txt",
     "family-tree-wide-dark.html",
     "family-tree-wide-dark.png",
@@ -6666,6 +6702,39 @@
       "semanticRegions": 11
     },
     {
+      "id": "family-sankey-options-light",
+      "family": "sankey",
+      "familyLabel": "Sankey",
+      "group": "relationships",
+      "title": "Requests across processing stages",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Sankey"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sankey-options-light.csharp.txt",
+      "svg": "family-sankey-options-light.svg",
+      "png": "family-sankey-options-light.png",
+      "html": "family-sankey-options-light.html",
+      "thumbnail": "family-sankey-options-light.thumbnail.svg",
+      "thumbnailPng": "family-sankey-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 13
+    },
+    {
       "id": "family-sankey-wide-dark",
       "family": "sankey",
       "familyLabel": "Sankey",
@@ -6732,6 +6801,39 @@
       "semanticRegions": 11
     },
     {
+      "id": "family-sankey-options-dark",
+      "family": "sankey",
+      "familyLabel": "Sankey",
+      "group": "relationships",
+      "title": "Requests across processing stages",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Sankey"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sankey-options-dark.csharp.txt",
+      "svg": "family-sankey-options-dark.svg",
+      "png": "family-sankey-options-dark.png",
+      "html": "family-sankey-options-dark.html",
+      "thumbnail": "family-sankey-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-sankey-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 13
+    },
+    {
       "id": "family-tree-wide-light",
       "family": "tree",
       "familyLabel": "Tree",
@@ -6762,7 +6864,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 6
+      "semanticRegions": 11
     },
     {
       "id": "family-tree-compact-light",
@@ -6799,7 +6901,40 @@
       "diagnosticMessages": [
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
       ],
-      "semanticRegions": 6
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-tree-options-light",
+      "family": "tree",
+      "familyLabel": "Tree",
+      "group": "relationships",
+      "title": "Teams and their responsibilities",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Tree"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-tree-options-light.csharp.txt",
+      "svg": "family-tree-options-light.svg",
+      "png": "family-tree-options-light.png",
+      "html": "family-tree-options-light.html",
+      "thumbnail": "family-tree-options-light.thumbnail.svg",
+      "thumbnailPng": "family-tree-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
     },
     {
       "id": "family-tree-wide-dark",
@@ -6832,7 +6967,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 6
+      "semanticRegions": 11
     },
     {
       "id": "family-tree-compact-dark",
@@ -6869,7 +7004,40 @@
       "diagnosticMessages": [
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
       ],
-      "semanticRegions": 6
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-tree-options-dark",
+      "family": "tree",
+      "familyLabel": "Tree",
+      "group": "relationships",
+      "title": "Teams and their responsibilities",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Tree"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-tree-options-dark.csharp.txt",
+      "svg": "family-tree-options-dark.svg",
+      "png": "family-tree-options-dark.png",
+      "html": "family-tree-options-dark.html",
+      "thumbnail": "family-tree-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-tree-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
     },
     {
       "id": "family-sunburst-wide-light",
@@ -6938,6 +7106,39 @@
       "semanticRegions": 6
     },
     {
+      "id": "family-sunburst-options-light",
+      "family": "sunburst",
+      "familyLabel": "Sunburst",
+      "group": "proportion",
+      "title": "Allocation through the team hierarchy",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sunburst-options-light.csharp.txt",
+      "svg": "family-sunburst-options-light.svg",
+      "png": "family-sunburst-options-light.png",
+      "html": "family-sunburst-options-light.html",
+      "thumbnail": "family-sunburst-options-light.thumbnail.svg",
+      "thumbnailPng": "family-sunburst-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 6
+    },
+    {
       "id": "family-sunburst-wide-dark",
       "family": "sunburst",
       "familyLabel": "Sunburst",
@@ -6992,6 +7193,39 @@
       "html": "family-sunburst-compact-dark.html",
       "thumbnail": "family-sunburst-compact-dark.thumbnail.svg",
       "thumbnailPng": "family-sunburst-compact-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 6
+    },
+    {
+      "id": "family-sunburst-options-dark",
+      "family": "sunburst",
+      "familyLabel": "Sunburst",
+      "group": "proportion",
+      "title": "Allocation through the team hierarchy",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sunburst-options-dark.csharp.txt",
+      "svg": "family-sunburst-options-dark.svg",
+      "png": "family-sunburst-options-dark.png",
+      "html": "family-sunburst-options-dark.html",
+      "thumbnail": "family-sunburst-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-sunburst-options-dark.thumbnail.png",
       "thumbnailWidth": 400,
       "thumbnailHeight": 280,
       "supportedOutputs": [
