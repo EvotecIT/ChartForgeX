@@ -60,8 +60,19 @@
     const svg = node.closest('svg');
     return svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-key-' + data.cfxSeries) || '' : '';
   };
+  // Series groups use source-points as a count; marks use it as an authored collection.
+  const hasSourcePointCollection = (node) => {
+    const data = node.dataset || {};
+    return data.cfxSourcePoints !== undefined && data.cfxRole !== 'series';
+  };
+  const sourcePointCollection = (node) => {
+    if (!hasSourcePointCollection(node)) return undefined;
+    return node.dataset.cfxSourcePoints.split(',').filter((value) => value.trim() !== '')
+      .map(Number).filter((value) => Number.isSafeInteger(value) && value >= 0);
+  };
   const sourcePointIndex = (node) => {
     const data = node.dataset || {};
+    if (hasSourcePointCollection(node)) return undefined;
     if (data.cfxSourcePoint !== undefined) return data.cfxSourcePoint;
     if (data.cfxPoint === undefined || data.cfxSeries === undefined) return data.cfxPoint;
     const svg = node.closest('svg');
@@ -70,6 +81,11 @@
     const index = Number(data.cfxPoint);
     const mapped = sourceIndices.split(',')[index];
     return mapped === undefined || mapped === '' ? data.cfxPoint : mapped;
+  };
+  const pointTargetId = (node) => {
+    const data = node.dataset || {};
+    const point = hasSourcePointCollection(node) ? 'derived:' + (data.cfxPoint ?? '0') : sourcePointIndex(node) ?? '0';
+    return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
   };
   const renderedTargetKind = (node) => {
     const data = node.dataset || {};
@@ -88,11 +104,11 @@
     const data = node.dataset || {};
     if (data.cfxTargetId) return data.cfxTargetId;
     if (kind === 'series') return seriesKey(node) || data.cfxSeries || '';
-    if (kind === 'point') return `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node) || '0'}`;
+    if (kind === 'point') return pointTargetId(node);
     if (kind === 'region') return data.cfxRegion || data.cfxId || data.cfxLabel || '';
     if (kind === 'node') return data.cfxNode || data.cfxId || data.cfxLabel || '';
     if (kind === 'link') return data.cfxId || [data.cfxSource, data.cfxTarget].filter(Boolean).join('->') || data.cfxLabel || '';
-    if (kind === 'legend') return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node)}`;
+    if (kind === 'legend') return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : pointTargetId(node);
     if (kind === 'annotation') return data.cfxId || data.cfxLabel || [data.cfxKind, data.cfxValue].filter(Boolean).join(':');
     return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
   };
@@ -134,6 +150,7 @@
       seriesKey: seriesKey(node),
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
+      sourcePoints: sourcePointCollection(node),
       value: data.cfxValue || data.cfxY || data.cfxEnd || '',
       kind: data.cfxKind || ''
     };
@@ -367,6 +384,8 @@
       svg.setAttribute('data-cfx-series-state-' + index, item.state);
       svg.setAttribute('data-cfx-series-source-indices-' + index, item.indices.join(','));
     });
+    const sourceCollections = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points]'))
+      .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxSourcePoints]));
     svg.querySelectorAll('[data-cfx-role="legend-entry"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
@@ -376,7 +395,12 @@
       data.cfxRole = 'legend-item'; data.cfxSeries = String(index);
       const region = regions.get(source);
       data.cfxLabel = region ? region.label : node.getAttribute('aria-label') || '';
-      if (match && match[2] !== undefined) data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
+      if (match && match[2] !== undefined) {
+        data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
+        const collectionKey = index + ':' + data.cfxPoint;
+        if (data.cfxSourcePoints === undefined && sourceCollections.has(collectionKey))
+          data.cfxSourcePoints = sourceCollections.get(collectionKey);
+      }
     });
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"]').forEach((node) => {
       const data = node.dataset;
@@ -387,7 +411,7 @@
       data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
-      if (data.cfxPoint !== undefined && data.cfxSourcePoint === undefined) {
+      if (data.cfxPoint !== undefined && data.cfxSourcePoint === undefined && data.cfxSourcePoints === undefined) {
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
       }

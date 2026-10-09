@@ -13,6 +13,8 @@
       svg.setAttribute('data-cfx-series-state-' + index, item.state);
       svg.setAttribute('data-cfx-series-source-indices-' + index, item.indices.join(','));
     });
+    const sourceCollections = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points]'))
+      .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxSourcePoints]));
     svg.querySelectorAll('[data-cfx-role="legend-entry"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
@@ -22,7 +24,12 @@
       data.cfxRole = 'legend-item'; data.cfxSeries = String(index);
       const region = regions.get(source);
       data.cfxLabel = region ? region.label : node.getAttribute('aria-label') || '';
-      if (match && match[2] !== undefined) data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
+      if (match && match[2] !== undefined) {
+        data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
+        const collectionKey = index + ':' + data.cfxPoint;
+        if (data.cfxSourcePoints === undefined && sourceCollections.has(collectionKey))
+          data.cfxSourcePoints = sourceCollections.get(collectionKey);
+      }
     });
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"]').forEach((node) => {
       const data = node.dataset;
@@ -33,7 +40,7 @@
       data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
-      if (data.cfxPoint !== undefined && data.cfxSourcePoint === undefined) {
+      if (data.cfxPoint !== undefined && data.cfxSourcePoint === undefined && data.cfxSourcePoints === undefined) {
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
       }
