@@ -130,7 +130,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
     [InlineData(true)]
     public async Task LeafKeysKeepZeroAndTinyRawValuesWithoutInventingPaintedArea(bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithPointLegend().WithSize(540, 350)
+        var chart = Chart.Create().WithDataLabels().WithPointLegend().WithSize(540, 350)
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).AddTreemap("Sizes", new[] {
                 new ChartTreemapItem("large", "Large", value: 1e308),
                 new ChartTreemapItem("tiny", "Tiny", value: 1e-310), new ChartTreemapItem("zero", "Zero", value: 0)
