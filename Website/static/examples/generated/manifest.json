@@ -1216,6 +1216,18 @@
     "family-treemap-compact-light.svg",
     "family-treemap-compact-light.thumbnail.png",
     "family-treemap-compact-light.thumbnail.svg",
+    "family-treemap-options-dark.csharp.txt",
+    "family-treemap-options-dark.html",
+    "family-treemap-options-dark.png",
+    "family-treemap-options-dark.svg",
+    "family-treemap-options-dark.thumbnail.png",
+    "family-treemap-options-dark.thumbnail.svg",
+    "family-treemap-options-light.csharp.txt",
+    "family-treemap-options-light.html",
+    "family-treemap-options-light.png",
+    "family-treemap-options-light.svg",
+    "family-treemap-options-light.thumbnail.png",
+    "family-treemap-options-light.thumbnail.svg",
     "family-treemap-wide-dark.csharp.txt",
     "family-treemap-wide-dark.html",
     "family-treemap-wide-dark.png",
@@ -7802,9 +7814,13 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 4
+      "diagnostics": [
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+      ],
+      "semanticRegions": 17
     },
     {
       "id": "family-treemap-compact-light",
@@ -7835,9 +7851,64 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 4
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+      ],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-treemap-options-light",
+      "family": "treemap",
+      "familyLabel": "Treemap",
+      "group": "proportion",
+      "title": "How work is allocated across teams",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Treemap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-treemap-options-light.csharp.txt",
+      "svg": "family-treemap-options-light.svg",
+      "png": "family-treemap-options-light.png",
+      "html": "family-treemap-options-light.html",
+      "thumbnail": "family-treemap-options-light.thumbnail.svg",
+      "thumbnailPng": "family-treemap-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+      ],
+      "semanticRegions": 17
     },
     {
       "id": "family-treemap-wide-dark",
@@ -7868,9 +7939,13 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 4
+      "diagnostics": [
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+      ],
+      "semanticRegions": 17
     },
     {
       "id": "family-treemap-compact-dark",
@@ -7901,9 +7976,64 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 4
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+      ],
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-treemap-options-dark",
+      "family": "treemap",
+      "familyLabel": "Treemap",
+      "group": "proportion",
+      "title": "How work is allocated across teams",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Treemap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-treemap-options-dark.csharp.txt",
+      "svg": "family-treemap-options-dark.svg",
+      "png": "family-treemap-options-dark.png",
+      "html": "family-treemap-options-dark.html",
+      "thumbnail": "family-treemap-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-treemap-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+      ],
+      "semanticRegions": 17
     },
     {
       "id": "family-pictorial-wide-light",
