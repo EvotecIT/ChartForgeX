@@ -7,6 +7,18 @@ namespace ChartForgeX.Tests;
 
 public sealed class PreparedVisualStoryTests {
     [Fact]
+    public void ReusedSourceSurfacesAccountForTheCompletePreparedTranscript() {
+        var surface = new VisualStorySourceSurface(StorySourceText.Create(new string('A', 2 * 1024 * 1024)));
+        var story = VisualStory.Create("Shared source transcript").WithSize(480, 320);
+        for (var index = 0; index < 4; index++) story.Scene("scene" + index, "Scene", 1).Panel("source", surface);
+        story.Outcome("ready", "Ready", "source");
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
+        // Scene transcripts repeat shared content even when captured surface assets are deduplicated.
+        var retainedTextBytes = (surface.Source.Text.Length + prepared.ToTranscript().Length) * 2L;
+        Assert.True(prepared.FrameSource(new VisualStoryFrameOptions(2)).AdditionalWorkingBytes >= retainedTextBytes);
+    }
+
+    [Fact]
     public void PreparationDetachesMutableInputsAndReturnedFrames() {
         var theme = VisualStoryTheme.GraphiteDark();
         var table = TerminalTable.Create().WithColumns("Result").AddRow("ready");

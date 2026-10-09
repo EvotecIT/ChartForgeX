@@ -20,6 +20,8 @@ public sealed partial class PreparedVisualStory {
         Playback = playback;
         _story = Capture(story, out _assetBytes);
         _transcript = new VisualStoryTranscriptRenderer().Render(_story);
+        _assetBytes = checked(_assetBytes + _transcript.Length * 2L);
+        if (_assetBytes > 128L * 1024 * 1024) throw new InvalidOperationException("Prepared story assets exceed 128 MiB. Split the story or reduce media.");
         var chapters = new List<VisualStoryChapter>();
         var start = TimeSpan.Zero;
         foreach (var scene in _story.Scenes) {
