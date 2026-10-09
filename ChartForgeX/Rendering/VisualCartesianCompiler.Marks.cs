@@ -88,7 +88,6 @@ internal static partial class VisualCartesianCompiler {
         var width = layout.Width;
         var offset = layout.Offset;
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
-        AddHistogramSourceRegions(builder, series, index, plot);
         for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
             var point = series.Points[pointIndex];
             var stack = stacks.Point(index, pointIndex);

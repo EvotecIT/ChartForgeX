@@ -100,16 +100,9 @@ internal static partial class VisualCartesianCompiler {
         if (trend) {
             var slope = (last.Y - first.Y) / (last.X - first.X);
             var intercept = first.Y - slope * first.X;
-            using (builder.PushGroup(SeriesId(index) + "-regression", "regression", new Dictionary<string, string> {
-                ["data-cfx-slope"] = Number(slope), ["data-cfx-intercept"] = Number(intercept), ["data-cfx-source-count"] = Number(series.TrendSourcePoints.Count)
-            })) {
-                // Original observations are alternatives, not additional marks or hit targets.
-                for (var source = 0; source < series.TrendSourcePoints.Count; source++) {
-                    var point = series.TrendSourcePoints[source];
-                    builder.AddRegion(new VisualSemanticRegion(SeriesId(index) + "-source-" + Number(source), "source-observation",
-                        new ChartRect(plot.Left, plot.Top, 0, 0), "x=" + Number(point.X) + " y=" + Number(point.Y)));
-                }
-            }
+            builder.PushGroup(SeriesId(index) + "-regression", "regression", new Dictionary<string, string> {
+                ["data-cfx-slope"] = Number(slope), ["data-cfx-intercept"] = Number(intercept), ["data-cfx-source-count"] = Number(series.TrendLineSourcePoints.Count)
+            }).Dispose();
         }
         obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(new[] { points.ToList() }, false, SeriesStroke(series, context), plot)));
         var radius = ResolveMarkerRadius(series, context);

@@ -119,18 +119,25 @@ public sealed class V2CartesianExtensionTests {
     }
 
     [Fact]
-    public void RegressionAndBoxSummary_PreserveCopiedOriginalInputsAndDetachedAlternatives() {
+    public void RegressionAndBoxSummary_PreserveTypedInputSnapshotsAndDetachedMarkFacts() {
         var points = new[] { new ChartPoint(1, 3), new ChartPoint(2, 8), new ChartPoint(3, 7) };
         var samples = new[] { 8d, 1d, 3d, 9d, 6d, 2d };
         var trend = Chart.Create().AddTrendLine("Trend", points); var box = Chart.Create().AddBoxPlot("Distribution", 1, samples);
         points[1] = new ChartPoint(2, 999); samples[0] = 999;
         Assert.Equal(3, trend.Series[0].SourcePointCount); Assert.Equal(6, box.Series[0].SourcePointCount);
         var preparedTrend = trend.Prepare(new VisualRenderContext()); var preparedBox = box.Prepare(new VisualRenderContext());
-        Assert.Contains(preparedTrend.Regions, region => region.Role == "source-observation" && region.Label == "x=2 y=8");
-        Assert.Contains(preparedBox.Regions, region => region.Role == "source-sample" && region.Label == "value=8");
-        Assert.DoesNotContain(preparedBox.Regions, region => region.Label?.Contains("999") == true);
-        var svg = preparedBox.ToSvg(); box.Series[0].Points.Clear();
-        Assert.Equal(svg, preparedBox.ToSvg());
+        var trendSource = trend.Series[0].TrendLineSourcePoints; var boxSource = box.Series[0].BoxPlotSourceSamples;
+        Assert.Equal(8, trendSource[1].Y); Assert.Equal(new[] { 8d, 1d, 3d, 9d, 6d, 2d }, boxSource);
+        Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<ChartPoint>)trendSource)[0] = new ChartPoint(1, 999));
+        Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<double>)boxSource)[0] = 999);
+        var trendSvg = preparedTrend.ToSvg(); var boxSvg = preparedBox.ToSvg();
+        var trendFacts = preparedTrend.Regions.Select(region => region.Label).ToArray();
+        var boxFacts = preparedBox.Regions.Select(region => region.Label).ToArray();
+        trend.Series[0].Points.Clear(); box.Series[0].Points.Clear();
+        Assert.Equal(8, trendSource[1].Y); Assert.Equal(8, boxSource[0]);
+        Assert.Equal(trendFacts, preparedTrend.Regions.Select(region => region.Label));
+        Assert.Equal(boxFacts, preparedBox.Regions.Select(region => region.Label));
+        Assert.Equal(trendSvg, preparedTrend.ToSvg()); Assert.Equal(boxSvg, preparedBox.ToSvg());
     }
 
     [Fact]

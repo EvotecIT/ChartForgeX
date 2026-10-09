@@ -83,11 +83,11 @@ internal static partial class VisualCartesianCompiler {
             var raw = rawStart + member;
             var point = series.Points[raw];
             var prefix = "data-cfx-source-" + Number(member);
-            metadata[prefix + "-index"] = Number(series.TrendSourcePoints.Count > 0 || series.BoxPlotSourceSamples.Count > 0 ? -1 : raw < series.SourcePointIndices.Count ? series.SourcePointIndices[raw] : raw);
+            metadata[prefix + "-index"] = Number(series.TrendLineSourcePoints.Count > 0 || series.BoxPlotSourceSamples.Count > 0 ? -1 : raw < series.SourcePointIndices.Count ? series.SourcePointIndices[raw] : raw);
             metadata[prefix + "-x"] = Number(point.X); metadata[prefix + "-y"] = Number(point.Y);
             metadata[prefix + "-break"] = point.BreakBefore ? "true" : "false";
         }
-        if (series.TrendSourcePoints.Count > 0) metadata["data-cfx-derived"] = "regression-endpoint";
+        if (series.TrendLineSourcePoints.Count > 0) metadata["data-cfx-derived"] = "regression-endpoint";
         if (series.BoxPlotSourceSamples.Count > 0) metadata["data-cfx-derived"] = "five-number-summary";
         foreach (var value in values) {
             metadata["data-cfx-" + value.Name] = Number(value.Value);

@@ -10,9 +10,6 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawFinancial(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
         var series = chart.Series[index]; var stride = ObservationStride(series.Kind); var count = series.Points.Count / stride;
-        for (var sample = 0; sample < series.BoxPlotSourceSamples.Count; sample++)
-            builder.AddRegion(new VisualSemanticRegion(SeriesId(index) + "-sample-" + Number(sample), "source-sample",
-                new ChartRect(plot.Left, plot.Top, 0, 0), "value=" + Number(series.BoxPlotSourceSamples[sample])));
         for (var item = 0; item < count; item++) {
             var raw = item * stride; var xValue = series.Points[raw].X; var x = map.X(xValue);
             if (series.Kind == ChartSeriesKind.BoxPlot) {
