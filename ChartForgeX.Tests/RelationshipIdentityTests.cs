@@ -213,6 +213,8 @@ public sealed class RelationshipIdentityTests {
     [Theory]
     [InlineData(5e-8, 5e-7)]
     [InlineData(1e307, 2e307)]
+    [InlineData(1e-310, 2e-310)]
+    [InlineData(double.Epsilon, double.Epsilon * 2)]
     public void SankeyPreservesSupportedFiniteWeightsAndTheirProportions(double small, double large) {
         var chart = Chart.Create().AddSankey("Weights", new[] { new ChartNode("r", "Root"), new ChartNode("a", "A"), new ChartNode("b", "B") },
             new[] { new ChartFlowLink("small", "r", "a", small), new ChartFlowLink("large", "r", "b", large) });
@@ -220,5 +222,33 @@ public sealed class RelationshipIdentityTests {
         Assert.Equal(new[] { small, large }, links.Select(e => Number(e, "value")));
         Assert.Equal(large / small, Number(links[1], "width") / Number(links[0], "width"), 12);
         Assert.All(Prepare(chart).Regions, region => Assert.True(double.IsFinite(region.Bounds.Height)));
+        Assert.NotEmpty(Prepare(chart).ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SankeyRejectsOverflowingNodeTotalsWithoutAppending(bool incoming) {
+        var chart = Chart.Create();
+        var nodes = new[] { new ChartNode("r", "Root"), new ChartNode("a", "A"), new ChartNode("b", "B") };
+        var links = incoming
+            ? new[] { new ChartFlowLink("a", "a", "r", double.MaxValue), new ChartFlowLink("b", "b", "r", double.MaxValue) }
+            : new[] { new ChartFlowLink("a", "r", "a", double.MaxValue), new ChartFlowLink("b", "r", "b", double.MaxValue) };
+        Assert.Throws<ArgumentException>(() => chart.AddSankey("Overflow", nodes, links));
+        Assert.Empty(chart.Series);
+    }
+
+    [Fact]
+    public void SankeyColumnsMayContainLargeIndependentFiniteFlows() {
+        var nodes = new[] { new ChartNode("a", "A"), new ChartNode("b", "B"), new ChartNode("c", "C"), new ChartNode("d", "D") };
+        var chart = Chart.Create().AddSankey("Large", nodes,
+            new[] { new ChartFlowLink("ab", "a", "b", 1e308), new ChartFlowLink("cd", "c", "d", 1e308) });
+        var prepared = Prepare(chart);
+        var links = XDocument.Parse(prepared.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "sankey-link").ToArray();
+        Assert.Equal(2, links.Length);
+        Assert.Equal(Number(links[0], "width"), Number(links[1], "width"));
+        Assert.True(Number(links[0], "width") > 0);
+        Assert.All(prepared.Regions, region => Assert.True(double.IsFinite(region.Bounds.Height)));
+        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 }

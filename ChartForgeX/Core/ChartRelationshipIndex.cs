@@ -8,6 +8,8 @@ namespace ChartForgeX.Core;
 internal sealed partial class ChartRelationshipIndex {
     internal IReadOnlyList<ChartNode> Nodes { get; }
     internal IReadOnlyList<ChartFlowLink> FlowLinks { get; }
+    internal IReadOnlyList<double> FlowIncomingValues { get; }
+    internal IReadOnlyList<double> FlowOutgoingValues { get; }
     internal IReadOnlyList<ChartTreeLink> TreeLinks { get; }
     internal IReadOnlyList<ChartTreemapItem> TreemapItems { get; }
     internal IReadOnlyList<double> HierarchyValues { get; }
@@ -22,9 +24,13 @@ internal sealed partial class ChartRelationshipIndex {
     private readonly IReadOnlyList<int>[] _children;
 
     private ChartRelationshipIndex(ChartNode[] nodes, ChartFlowLink[] flowLinks, ChartTreeLink[] treeLinks,
-        Dictionary<string, int> nodeIndexes, int[] sources, int[] targets, int root, double[] hierarchyValues, ChartTreemapItem[]? treemapItems = null, int[]? depths = null) {
+        Dictionary<string, int> nodeIndexes, int[] sources, int[] targets, int root, double[] hierarchyValues,
+        ChartTreemapItem[]? treemapItems = null, int[]? depths = null,
+        double[]? flowIncomingValues = null, double[]? flowOutgoingValues = null) {
         Nodes = Array.AsReadOnly(nodes);
         FlowLinks = Array.AsReadOnly(flowLinks);
+        FlowIncomingValues = Array.AsReadOnly(flowIncomingValues ?? Array.Empty<double>());
+        FlowOutgoingValues = Array.AsReadOnly(flowOutgoingValues ?? Array.Empty<double>());
         TreeLinks = Array.AsReadOnly(treeLinks);
         TreemapItems = Array.AsReadOnly(treemapItems ?? Array.Empty<ChartTreemapItem>());
         HierarchyValues = Array.AsReadOnly(hierarchyValues);
@@ -56,15 +62,22 @@ internal sealed partial class ChartRelationshipIndex {
         if (flows.Length == 0) throw new ArgumentException("Sankey charts require at least one link.", nameof(links));
         var sources = new int[flows.Length];
         var targets = new int[flows.Length];
+        var incoming = new double[snapshot.Length];
+        var outgoing = new double[snapshot.Length];
         var ids = new HashSet<string>(StringComparer.Ordinal);
         for (var i = 0; i < flows.Length; i++) {
             var link = flows[i];
             if (string.IsNullOrWhiteSpace(link.Id) || !ids.Add(link.Id)) throw new ArgumentException("Sankey link IDs must be non-empty and unique.", nameof(links));
             ValidateWeight(link.Value);
             (sources[i], targets[i]) = Resolve(indexes, link.SourceId, link.TargetId);
+            incoming[targets[i]] += link.Value;
+            outgoing[sources[i]] += link.Value;
+            if (double.IsInfinity(incoming[targets[i]]) || double.IsInfinity(outgoing[sources[i]]))
+                throw new ArgumentException("Sankey node aggregates must remain finite.", nameof(links));
         }
         TopologicalOrder(snapshot.Length, sources, targets, false, out _, out var depths);
-        return new ChartRelationshipIndex(snapshot, flows, Array.Empty<ChartTreeLink>(), indexes, sources, targets, -1, Array.Empty<double>(), depths: depths);
+        return new ChartRelationshipIndex(snapshot, flows, Array.Empty<ChartTreeLink>(), indexes, sources, targets, -1, Array.Empty<double>(),
+            depths: depths, flowIncomingValues: incoming, flowOutgoingValues: outgoing);
     }
 
     internal static ChartRelationshipIndex Hierarchy(IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links, bool aggregateLeaves) {
