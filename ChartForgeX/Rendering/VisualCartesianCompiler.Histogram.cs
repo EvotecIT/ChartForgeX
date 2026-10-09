@@ -22,6 +22,7 @@ internal static partial class VisualCartesianCompiler {
         metadata["data-cfx-bin-index"] = Number(pointIndex);
         metadata["data-cfx-bin-lower"] = Number(bin.LowerBound);
         metadata["data-cfx-bin-upper"] = Number(bin.UpperBound);
+        metadata["data-cfx-bin-upper-inclusive"] = pointIndex == bin.Layout.Count - 1 ? "true" : "false";
         metadata["data-cfx-bin-width"] = Number(bin.Width);
         metadata["data-cfx-bin-count"] = Number(bin.Count);
         metadata["data-cfx-bin-has-value"] = bin.Value.HasValue ? "true" : "false";

@@ -60,6 +60,8 @@ public sealed class HistogramOptionsTests {
         Assert.Equal("0,1", Point(prepared, 0, 0).Metadata["data-cfx-source-points"]);
         Assert.False(Point(prepared, 0, 0).Metadata.ContainsKey("data-cfx-source-point"));
         var empty = Point(prepared, 0, 2);
+        Assert.Equal("false", Point(prepared, 0, 0).Metadata["data-cfx-bin-upper-inclusive"]);
+        Assert.Equal("true", empty.Metadata["data-cfx-bin-upper-inclusive"]);
         Assert.Equal(aggregation == ChartHistogramAggregation.Mean ? "false" : "true", empty.Metadata["data-cfx-bin-has-value"]);
         Assert.Equal(aggregation != ChartHistogramAggregation.Mean, empty.Metadata.ContainsKey("data-cfx-y"));
         Assert.Equal(aggregation != ChartHistogramAggregation.Mean, empty.Metadata.ContainsKey("data-cfx-bin-value"));

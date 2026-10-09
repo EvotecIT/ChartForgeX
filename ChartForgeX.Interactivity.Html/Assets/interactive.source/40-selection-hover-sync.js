@@ -127,6 +127,7 @@
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
     root.removeAttribute('data-cfx-hover-mode');
+    root.removeAttribute('data-cfx-hover-unit');
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
@@ -153,28 +154,34 @@
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
     if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
-    return sameSeries && (!pointUnits || data.cfxPoint === String(target.point));
+    return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
     if (!target) return false;
+    const nodes = Array.from(root.querySelectorAll(targetSelector));
+    const localNode = nodes.find((node) => matchesTargetIdentity(node, target));
+    if (!localNode && target.targetKind && target.targetId) return false;
+    // A peer's equivalent mark may have a different local point ordinal or series position.
+    const localTarget = localNode ? targetIdentity(localNode) : target;
     const hoverMode = mode === 'shared' ? 'shared' : 'series';
-    const pointUnits = hoverMode === 'series' && pointLegendUnits(root, target);
-    const itemUnit = hoverMode === 'series' && legendItemUnit(root, target);
+    const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
+    const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
     let matched = false;
-    root.querySelectorAll(targetSelector).forEach((node) => {
-      const hovered = matchesTargetIdentity(node, target);
-      const related = !hovered && targetRelated(node, target);
+    nodes.forEach((node) => {
+      const hovered = matchesTargetIdentity(node, localTarget);
+      const related = !hovered && targetRelated(node, localTarget);
       if (hovered || related) matched = true;
       setNodeHovered(node, hovered, related);
-      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, target, pointUnits, itemUnit));
-      if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', target.point !== undefined && node.dataset.cfxPoint === String(target.point));
+      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, localTarget, pointUnits, itemUnit));
+      if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', localTarget.point !== undefined && node.dataset.cfxPoint === String(localTarget.point));
     });
     if (matched) {
       root.dataset.cfxHovering = 'true';
       root.dataset.cfxHoverMode = hoverMode;
-      root.dataset.cfxHoverLabel = target.label || target.role || target.id || '';
+      root.dataset.cfxHoverUnit = pointUnits ? 'point' : 'series';
+      root.dataset.cfxHoverLabel = localTarget.label || localTarget.role || localTarget.id || '';
     }
     return matched;
   };

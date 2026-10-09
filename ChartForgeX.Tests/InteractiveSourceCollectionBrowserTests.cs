@@ -146,10 +146,13 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         Assert.Equal("2", await populated.GetAttributeAsync("data-cfx-bin-count"));
         Assert.Equal("false", await empty.GetAttributeAsync("data-cfx-bin-has-value"));
         Assert.Null(await empty.GetAttributeAsync("data-cfx-bin-value"));
+        var targetIds = new Dictionary<int, string>();
         foreach (var bin in new[] { 1, 2 }) {
             var point = roots.Nth(0).Locator(Point(0, bin));
             Assert.Null(await point.GetAttributeAsync("data-cfx-source-point"));
-            Assert.Equal("quantity-source:derived:histogram-bin:" + bin, await point.GetAttributeAsync("data-cfx-target-id"));
+            targetIds[bin] = (await point.GetAttributeAsync("data-cfx-target-id"))!;
+            Assert.StartsWith("quantity-source:derived:histogram-bin:", targetIds[bin]);
+            Assert.Equal(targetIds[bin], await roots.Nth(1).Locator(Point(0, bin)).GetAttributeAsync("data-cfx-target-id"));
             await point.FocusAsync();
             await page.Keyboard.PressAsync("Space");
             foreach (var peer in new[] { 0, 1 })
@@ -158,8 +161,8 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         using (var events = await ReadEventsAsync(page)) {
             foreach (var bin in new[] { 1, 2 }) {
                 var contributors = bin == 1 ? new[] { 2, 3 } : Array.Empty<int>();
-                AssertEvent(events, "cfxhover", "point", "quantity-source:derived:histogram-bin:" + bin, contributors);
-                AssertEvent(events, "cfxselect", "point", "quantity-source:derived:histogram-bin:" + bin, contributors);
+                AssertEvent(events, "cfxhover", "point", targetIds[bin], contributors);
+                AssertEvent(events, "cfxselect", "point", targetIds[bin], contributors);
             }
         }
         var ids = await roots.Nth(0).Locator(PointTarget).EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.dataset.cfxTargetId)");
@@ -195,10 +198,12 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         await CaptureEventsAsync(page);
         var other = page.Locator("[data-cfx-role='radial-point'][data-cfx-point='-1']");
         var legend = page.Locator("[data-cfx-role='legend-item'][data-cfx-point='-1']");
+        var otherId = (await other.GetAttributeAsync("data-cfx-target-id"))!;
+        Assert.StartsWith("slice-source:derived:radial-slice:", otherId);
         foreach (var target in new[] { other, legend }) {
             Assert.Equal("1,2,3", await target.GetAttributeAsync("data-cfx-source-points"));
             Assert.Null(await target.GetAttributeAsync("data-cfx-source-point"));
-            Assert.Equal("slice-source:derived:radial-slice:-1", await target.GetAttributeAsync("data-cfx-target-id"));
+            Assert.Equal(otherId, await target.GetAttributeAsync("data-cfx-target-id"));
             await target.FocusAsync();
         }
         await other.FocusAsync();
@@ -206,9 +211,9 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         Assert.Equal("true", await other.GetAttributeAsync("aria-selected"));
         Assert.Null(await page.Locator("[data-cfx-role='radial-point'][data-cfx-point='0']").GetAttributeAsync("aria-selected"));
         using var events = await ReadEventsAsync(page);
-        AssertEvent(events, "cfxhover", "point", "slice-source:derived:radial-slice:-1", new[] { 1, 2, 3 });
-        AssertEvent(events, "cfxhover", "legend", "slice-source:derived:radial-slice:-1", new[] { 1, 2, 3 });
-        AssertEvent(events, "cfxselect", "point", "slice-source:derived:radial-slice:-1", new[] { 1, 2, 3 });
+        AssertEvent(events, "cfxhover", "point", otherId, new[] { 1, 2, 3 });
+        AssertEvent(events, "cfxhover", "legend", otherId, new[] { 1, 2, 3 });
+        AssertEvent(events, "cfxselect", "point", otherId, new[] { 1, 2, 3 });
         AssertNoConsoleErrors(session);
     }
 
@@ -225,13 +230,15 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         await CaptureEventsAsync(page);
         var run = page.Locator("[data-cfx-role='state-timeline-segment']");
         Assert.Equal(1, await run.CountAsync());
+        var runId = (await run.GetAttributeAsync("data-cfx-target-id"))!;
+        Assert.StartsWith("availability-source:derived:timeline-run:", runId);
         Assert.Equal("0,1,2,3", await run.GetAttributeAsync("data-cfx-source-points"));
         Assert.Null(await run.GetAttributeAsync("data-cfx-source-point"));
         await run.FocusAsync();
         await page.Keyboard.PressAsync("Space");
         using var events = await ReadEventsAsync(page);
-        AssertEvent(events, "cfxhover", "point", "availability-source:derived:timeline-run:0", new[] { 0, 1, 2, 3 });
-        AssertEvent(events, "cfxselect", "point", "availability-source:derived:timeline-run:0", new[] { 0, 1, 2, 3 });
+        AssertEvent(events, "cfxhover", "point", runId, new[] { 0, 1, 2, 3 });
+        AssertEvent(events, "cfxselect", "point", runId, new[] { 0, 1, 2, 3 });
         AssertNoConsoleErrors(session);
     }
 

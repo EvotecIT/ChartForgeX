@@ -751,7 +751,8 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }
 /* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
-.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"] [data-cfx-role="series"] [data-cfx-series] { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series],
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series] { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted,
 .cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out { opacity: 1 !important; }
 .cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; }
