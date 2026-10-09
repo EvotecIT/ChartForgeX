@@ -2451,7 +2451,7 @@
       "darkCompactHtml": "/examples/generated/family-gantt-lane-compact-dark.html"
     },
     {
-      "category": "compare",
+      "category": "relationships",
       "familyLabel": "Chord",
       "title": "Transfers between teams",
       "body": "Chord. SVG, PNG and C# source with matching light and dark themes.",
