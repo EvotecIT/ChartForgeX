@@ -43,7 +43,7 @@ Point markers share one typed configuration across connected Cartesian series, s
 
 ## Shared prepared rendering
 
-The prepared pipeline lays out a chart once, then exports SVG and native PNG from the same detached scene. All 49 chart kinds, chart grids, topology, flow and sequence use this route. The shared context controls logical size, frame, light/dark palette and typography. Unsupported family combinations and options fail explicitly during preparation.
+The prepared pipeline lays out a chart once, then exports SVG and native PNG from the same detached scene. All supported chart kinds, chart grids, topology, flow and sequence use this route. The shared context controls logical size, frame, light/dark palette and typography. Unsupported family combinations and options fail explicitly during preparation.
 
 ```csharp
 using ChartForgeX.Rendering;
