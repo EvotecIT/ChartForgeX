@@ -25,7 +25,9 @@ public static class VisualStoryDesignTokenExtensions {
         theme.FontFamily = tokens.FontFamily;
         theme.MonospaceFontFamily = tokens.MonospaceFontFamily;
         var palette = tokens.Palette;
-        ChartColor SyntaxInk(ChartColor color) => ChartColorMath.ContrastRatio(color, theme.Panel) >= 4.5 ? color : theme.Text;
+        var panel = ChartColorMath.CompositeOverOpaque(theme.Panel, theme.Background);
+        ChartColor SyntaxInk(ChartColor color) => ChartColorMath.ContrastRatio(
+            ChartColorMath.CompositeOverOpaque(color, panel), panel) >= 4.5 ? color : theme.Text;
         ChartColor SeriesInk(int index) => SyntaxInk(palette[index % palette.Length]);
         theme.Syntax = new StorySyntaxPalette {
             Plain = theme.Text,

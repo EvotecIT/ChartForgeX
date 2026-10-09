@@ -27,6 +27,15 @@ internal static class ChartColorMath {
         return ChartColor.FromRgba(color.R, color.G, color.B, alpha);
     }
 
+    /// <summary>Composites an RGBA paint onto an already resolved opaque surface in sRGB.</summary>
+    internal static ChartColor CompositeOverOpaque(ChartColor top, ChartColor bottom) {
+        var alpha = top.A / 255.0;
+        return ChartColor.FromRgb(
+            (byte)Math.Round(top.R * alpha + bottom.R * (1 - alpha)),
+            (byte)Math.Round(top.G * alpha + bottom.G * (1 - alpha)),
+            (byte)Math.Round(top.B * alpha + bottom.B * (1 - alpha)));
+    }
+
     public static double RelativeLuminance(ChartColor color) =>
         (0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B) / 255.0;
 

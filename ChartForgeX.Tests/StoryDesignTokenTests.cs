@@ -12,6 +12,25 @@ public sealed class StoryDesignTokenTests {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void TranslucentSyntaxColorsUseReadableForegroundInsteadOfOpaqueOnlyContrast(bool dark) {
+        var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
+        var invisibleInk = dark ? ChartColor.FromHex("#FFFFFF20") : ChartColor.FromHex("#00000020");
+        tokens.Palette = new[] { invisibleInk };
+        tokens.Accent = ChartColor.FromRgba(invisibleInk.R, invisibleInk.G, invisibleInk.B, 0);
+        var theme = tokens.ApplyTo(new VisualStoryTheme());
+
+        foreach (var kind in new[] { StorySyntaxKind.Keyword, StorySyntaxKind.Type, StorySyntaxKind.Command,
+            StorySyntaxKind.Parameter, StorySyntaxKind.Variable, StorySyntaxKind.Property,
+            StorySyntaxKind.String, StorySyntaxKind.Number }) {
+            Assert.Equal(tokens.Foreground, theme.Syntax.Resolve(kind));
+        }
+        Assert.Equal(invisibleInk, tokens.Palette[0]);
+        Assert.Equal(tokens.Accent, theme.Accent);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void GraphiteFactoriesShareSurfaceTypographyAndSemanticInkRoles(bool dark) {
         var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
         var story = dark ? VisualStoryTheme.GraphiteDark() : VisualStoryTheme.GraphiteLight();
