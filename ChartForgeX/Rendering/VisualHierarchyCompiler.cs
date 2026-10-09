@@ -124,6 +124,7 @@ internal static partial class VisualHierarchyCompiler {
                 metadata["data-cfx-authored-weight"] = N(node.IncomingValue);
                 metadata["data-cfx-source-link-index"] = N(series.Relationships!.IncomingLink(node.Index));
             }
+            metadata["data-cfx-geometry-status"] = sweep > 0 ? "visible" : "precision-collapse";
             metadata["data-cfx-percent"] = N(node.Value / total); metadata["data-cfx-start-angle"] = N(node.StartAngle); metadata["data-cfx-sweep"] = N(sweep);
             metadata["data-cfx-inner-radius"] = N(node.InnerRadius); metadata["data-cfx-outer-radius"] = N(node.OuterRadius);
             using (builder.PushGroup(ChartRelationshipMetadata.SourceId("node", node.Id), "sunburst-segment", metadata)) {
