@@ -10,11 +10,13 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualHierarchyCompiler {
     private static void Treemap(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
         var series = chart.Series[0]; var index = series.Relationships!; var options = chart.Options.Treemap;
+        var showLabels = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
         var surface = new ChartTreemapSurface(chart, colors);
         var areas = TreemapScaleLayout(chart, context, builder, plot, surface);
         var layout = ChartTreemapLayout.Compute(series, areas.Content, options, item => {
+            if (!showLabels) return 0;
             var style = LabelStyle(chart, context, surface.Blend(item).Color, item);
-            return series.ShowDataLabels == false ? 0 : builder.MeasureText("Mg", style).Height + 8;
+            return builder.MeasureText("Mg", style).Height + 8;
         });
         var tiles = layout.ToDictionary(tile => tile.ItemIndex);
         var paintOrder = layout.Select((tile, ordinal) => (tile.ItemIndex, ordinal)).ToDictionary(item => item.ItemIndex, item => item.ordinal);
@@ -52,7 +54,7 @@ internal static partial class VisualHierarchyCompiler {
                         role: children.Count > 0 ? "treemap-group-mark" : "treemap-tile-mark",
                         paint: new VisualScenePaintBinding(blend.Paint, outline.HasValue ? SvgPaint.Of(outline.Value, SvgColorRole.Status) : null));
                     Pattern(builder, Rectangle(bounds), series, itemIndex, blend.Color, "treemap-pattern");
-                    if (series.ShowDataLabels != false) {
+                    if (showLabels) {
                         if (children.Count == 0) Label(chart, context, builder, full + "\n" + formatted, bounds, blend.Color, itemIndex, "treemap-label", fillPaint: blend.Paint);
                         else if (options.ShowGroupLabels) Label(chart, context, builder, full + " · " + formatted, tile.HeaderRect,
                             blend.Color, itemIndex, "treemap-group-label", fillPaint: blend.Paint, insetLimit: 4, maximumLines: 1);
