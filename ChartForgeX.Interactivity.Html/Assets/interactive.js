@@ -334,85 +334,107 @@
   };
   // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
+  // Cache only for this render: host CSS can change between successive focus and pointer events.
+  const paintStyle = (node, styles) => {
+    if (styles.has(node)) return styles.get(node);
+    const style = getComputedStyle(node); styles.set(node, style); return style;
+  };
+  const paintNodeVisible = (node, styles) => {
+    if (!node || node.closest('defs,[hidden]')) return false;
+    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement) {
+      const style = paintStyle(ancestor, styles);
+      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' || Number(style.opacity) === 0) return false;
+    }
+    // aria-hidden changes accessibility exposure, not whether SVG marks are painted.
+    return true;
+  };
   const solidPaintColour = (value, opacity) => value && value !== 'none' && value !== 'transparent'
     && !/^url\(/i.test(value) && !/^rgba\(.*[,]\s*0(?:\.0+)?\s*\)$|\/\s*0(?:\.0+)?%?\s*\)$/i.test(value)
     && Number(opacity) > 0 ? value : '';
-  const paintValueColour = (node, value, opacity) => {
+  const paintValue = (node, value, opacity, styles) => {
     const colour = solidPaintColour(value, opacity);
-    if (colour || Number(opacity) <= 0) return colour;
+    if (colour) return { colour };
+    if (Number(opacity) <= 0) return null;
     const reference = /^url\(\s*["']?([^"')]+)["']?\s*\)$/i.exec(value || '');
-    if (!reference || !node.ownerSVGElement) return '';
+    if (!reference || !node.ownerSVGElement) return null;
     // Read only paint servers in this SVG. One visible stop represents a gradient; never follow linked servers.
     let server;
     try {
       const url = new URL(reference[1], node.ownerDocument.baseURI);
-      if (url.href.split('#')[0] !== node.ownerDocument.URL.split('#')[0]) return '';
+      if (url.href.split('#')[0] !== node.ownerDocument.URL.split('#')[0]) return null;
       server = node.ownerSVGElement.getElementById(decodeURIComponent(url.hash.slice(1)));
-    } catch (_) { return ''; }
-    if (!server || !server.matches('linearGradient,radialGradient')) return '';
+    } catch (_) { return null; }
+    // A pattern is a painted surface even though it has no single representative swatch colour.
+    if (server && server.matches('pattern')) return { colour: '' };
+    if (!server || !server.matches('linearGradient,radialGradient')) return null;
     const stops = server.querySelectorAll('stop');
     for (let index = 0; index < Math.min(stops.length, 32); index++) {
-      const stop = getComputedStyle(stops[index]);
+      const stop = paintStyle(stops[index], styles);
       const paint = solidPaintColour(stop.stopColor, stop.stopOpacity);
-      if (paint) return paint;
+      if (paint) return { colour: paint };
     }
-    return '';
+    return null;
   };
-  const shapePaintColour = (node) => {
-    if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return '';
-    if (/-(highlight|pattern|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')) return '';
-    const paint = getComputedStyle(node);
-    if (paint.display === 'none' || paint.visibility === 'hidden' || paint.visibility === 'collapse' || Number(paint.opacity) === 0) return '';
-    const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValueColour(node, paint.stroke, paint.strokeOpacity) : '';
+  const shapePaint = (node, styles) => {
+    if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
+    if (/-(highlight|pattern|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '') || !paintNodeVisible(node, styles)) return null;
+    const paint = paintStyle(node, styles);
+    const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
     // Open line marks never paint their inherited default black fill.
     if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
-    return paintValueColour(node, paint.fill, paint.fillOpacity) || stroke;
+    return paintValue(node, paint.fill, paint.fillOpacity, styles) || stroke;
   };
-  const childPaintColour = (node, decoration) => {
-    if (!node) return '';
+  const childPaint = (node, decoration, styles) => {
+    if (!node) return null;
     const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
     for (const shape of shapes) {
       if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
-      const colour = shapePaintColour(shape);
-      if (colour) return colour;
+      const paint = shapePaint(shape, styles);
+      if (paint) return paint;
     }
-    return '';
+    return null;
   };
-  const paintColour = (node) => {
+  const seriesPaint = (node, styles) => {
+    const owner = node.closest('[data-cfx-role="series"]');
+    if (!owner) return null;
+    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"]')) {
+      const paint = childPaint(layer, false, styles);
+      if (paint) return paint;
+    }
+    return null;
+  };
+  const observationPaint = (node, styles) => paintNodeVisible(node, styles)
+    ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  const paintColour = (node, styles = new Map()) => {
     if (!node) return '';
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
-    const colour = childPaintColour(node, legend);
-    if (colour || legend) return colour;
-    const owner = node.closest('[data-cfx-role="series"]');
-    const layer = owner && owner.querySelector('[data-cfx-role="line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"]');
-    return childPaintColour(layer, false) || childPaintColour(seriesLegend(node), true);
+    const paint = legend ? childPaint(node, true, styles) : observationPaint(node, styles);
+    if (paint && paint.colour) return paint.colour;
+    const fallback = !legend && childPaint(seriesLegend(node), true, styles);
+    return fallback && fallback.colour || '';
   };
   // The prepared kind names distinguish source quantities from map/grid coordinates and tuple summaries.
   const sharedXSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'scatter', 'bubble', 'errorbar', 'slope', 'trendline', 'waterfall']);
   const sharedXObservation = (data) => sharedXSeriesKinds.has((data.cfxKind || '').toLowerCase()) && !data.cfxDerived;
   const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
-  const tooltipPointVisible = (point, root) => {
-    if (point.closest('defs,[hidden],[aria-hidden="true"],.cfx-series-muted,[data-cfx-role="legend-item"]')) return false;
-    for (let node = point; node; node = node.parentElement) {
-      const style = getComputedStyle(node);
-      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' || Number(style.opacity) === 0) return false;
-      if (node === root) break;
-    }
-    return true;
-  };
   const renderSharedXTip = (tip, node, root) => {
     const data = node.dataset || {};
     const svg = node.closest('svg');
     if (!svg || !sharedXObservation(data) || !tooltipNumber(data.cfxX) || !tooltipNumber(data.cfxY)) return false;
     const points = new Map();
+    const x = Number(data.cfxX), styles = new Map();
     const addObservation = (point) => {
       const candidate = point.dataset;
-      if (!isInteractiveTarget(point) || !sharedXObservation(candidate) || !tooltipPointVisible(point, root) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(candidate.cfxY)
-        || Number(candidate.cfxX) !== Number(data.cfxX) || points.has(candidate.cfxSeries)) return;
+      // Reject unrelated coordinates and duplicate series before resolving any computed mark styles.
+      if (!sharedXObservation(candidate) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(candidate.cfxY)
+        || Number(candidate.cfxX) !== x || points.has(candidate.cfxSeries) || !isInteractiveTarget(point)
+        || point.closest('.cfx-series-muted,[data-cfx-role="legend-item"]')) return;
+      const paint = observationPaint(point, styles);
+      if (!paint) return;
       const index = candidate.cfxSeries;
       points.set(index, { point, index, key: seriesKey(point), source: sourcePointIndex(point), name: seriesLabel(point),
         state: candidate.cfxState || svg.getAttribute('data-cfx-series-state-' + index) || 'none',
-        value: Number(candidate.cfxY), rawValue: candidate.cfxY, colour: paintColour(point) });
+        value: Number(candidate.cfxY), rawValue: candidate.cfxY, colour: paint.colour || paintColour(point, styles) });
     };
     // Duplicate x coordinates are valid: retain the observation the reader actually interacted with.
     addObservation(node);

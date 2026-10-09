@@ -2,28 +2,24 @@
   const sharedXSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'scatter', 'bubble', 'errorbar', 'slope', 'trendline', 'waterfall']);
   const sharedXObservation = (data) => sharedXSeriesKinds.has((data.cfxKind || '').toLowerCase()) && !data.cfxDerived;
   const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
-  const tooltipPointVisible = (point, root) => {
-    if (point.closest('defs,[hidden],[aria-hidden="true"],.cfx-series-muted,[data-cfx-role="legend-item"]')) return false;
-    for (let node = point; node; node = node.parentElement) {
-      const style = getComputedStyle(node);
-      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' || Number(style.opacity) === 0) return false;
-      if (node === root) break;
-    }
-    return true;
-  };
   const renderSharedXTip = (tip, node, root) => {
     const data = node.dataset || {};
     const svg = node.closest('svg');
     if (!svg || !sharedXObservation(data) || !tooltipNumber(data.cfxX) || !tooltipNumber(data.cfxY)) return false;
     const points = new Map();
+    const x = Number(data.cfxX), styles = new Map();
     const addObservation = (point) => {
       const candidate = point.dataset;
-      if (!isInteractiveTarget(point) || !sharedXObservation(candidate) || !tooltipPointVisible(point, root) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(candidate.cfxY)
-        || Number(candidate.cfxX) !== Number(data.cfxX) || points.has(candidate.cfxSeries)) return;
+      // Reject unrelated coordinates and duplicate series before resolving any computed mark styles.
+      if (!sharedXObservation(candidate) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(candidate.cfxY)
+        || Number(candidate.cfxX) !== x || points.has(candidate.cfxSeries) || !isInteractiveTarget(point)
+        || point.closest('.cfx-series-muted,[data-cfx-role="legend-item"]')) return;
+      const paint = observationPaint(point, styles);
+      if (!paint) return;
       const index = candidate.cfxSeries;
       points.set(index, { point, index, key: seriesKey(point), source: sourcePointIndex(point), name: seriesLabel(point),
         state: candidate.cfxState || svg.getAttribute('data-cfx-series-state-' + index) || 'none',
-        value: Number(candidate.cfxY), rawValue: candidate.cfxY, colour: paintColour(point) });
+        value: Number(candidate.cfxY), rawValue: candidate.cfxY, colour: paint.colour || paintColour(point, styles) });
     };
     // Duplicate x coordinates are valid: retain the observation the reader actually interacted with.
     addObservation(node);
