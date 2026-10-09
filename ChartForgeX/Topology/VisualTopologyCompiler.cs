@@ -68,7 +68,7 @@ internal sealed partial class VisualTopologyCompiler {
         }
         var entries = legend?.Items.Select((item, index) => new VisualLegendEntry(item.Label,
             Color(item.Color, item.Status.HasValue ? Status(item.Status.Value) : _colors.Accent), index.ToString(CultureInfo.InvariantCulture),
-            marker: (builder, bounds) => BuildLegendMarker(item, bounds))).ToArray() ?? Array.Empty<VisualLegendEntry>();
+            marker: (builder, bounds, _) => BuildLegendMarker(item, bounds))).ToArray() ?? Array.Empty<VisualLegendEntry>();
         _plot = VisualFrameLayout.Build(_builder, _context, entries, FramePaints());
         if (_plot.Height <= 0) ReserveNaturalFrame(entries);
         if (_plot.Width <= 0 || _plot.Height <= 0) throw new InvalidOperationException("The common frame leaves no topology viewport.");

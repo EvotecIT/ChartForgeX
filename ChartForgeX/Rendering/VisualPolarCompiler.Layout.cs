@@ -18,7 +18,7 @@ internal static partial class VisualPolarCompiler {
             height = Math.Max(height, Math.Min(plot.Height * .2, measured.Height));
         }
         var gap = context.Theme.Spacing;
-        var markExtent = chart.Series.Max(series => Math.Max(series.MarkerRadius ?? context.Theme.MarkerRadius,
+        var markExtent = chart.Series.Max(series => Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
             ChartLineVisualLayers.Build(context.Theme.Resolve(context.ThemeMode).Accent,
                 series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth, chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth) / 2));
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - width - gap, plot.Height / 2 - height - gap) - markExtent);

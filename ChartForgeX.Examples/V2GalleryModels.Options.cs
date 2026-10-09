@@ -12,6 +12,8 @@ public static partial class V2GalleryModels {
                 var points = new[] { 8d, 17, 11, 23, 16 }.Select((value, point) => new ChartPoint(point + 1, value + index * 30));
                 chart.AddLine(positions[index].ToString(), points);
                 chart.Series[index].WithInterpolation(ChartInterpolation.Step, positions[index]);
+                var shape = new[] { ChartMarkerShape.Square, ChartMarkerShape.Diamond, ChartMarkerShape.Triangle }[index];
+                chart.Series[index].WithMarkers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
             }
             return chart;
         }
@@ -45,6 +47,8 @@ public static partial class V2GalleryModels {
             chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
             return chart;
         }
+        if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
+            return MarkerOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels("Received", "Reviewed", "Qualified", "Completed").WithDataLabels()
                 .AddFunnel("Requests", new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })

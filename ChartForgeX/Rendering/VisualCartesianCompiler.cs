@@ -26,14 +26,19 @@ internal static partial class VisualCartesianCompiler {
                 else if (series.Kind == ChartSeriesKind.Waterfall && !series.Color.HasValue && series.StateRole == ChartSeriesState.None
                     && !(point < series.PointColors.Count && series.PointColors[point].HasValue))
                     color = series.Points[point].Y >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
-                entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey, paint: VisualChartPaint.Series(series, color, point)));
+                var paint = VisualChartPaint.Series(series, color, point);
+                entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
+                    marker: VisualMarkerScene.Legend(chart, series, color, paint, point, pattern), paint: paint));
             }
             return entries;
         }
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
-            if (series.ShowInLegend) entries.Add(new VisualLegendEntry(series.Name, Color(series, index, colors), SeriesId(index),
-                series.Kind, series.FillPattern, series.StateRole, series.InteractionIdentityKey, paint: VisualChartPaint.Series(series, Color(series, index, colors))));
+            if (series.ShowInLegend) {
+                var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
+                entries.Add(new VisualLegendEntry(series.Name, color, SeriesId(index), series.Kind, series.FillPattern, series.StateRole,
+                    series.InteractionIdentityKey, marker: VisualMarkerScene.Legend(chart, series, color, paint, pattern: series.FillPattern), paint: paint));
+            }
         }
         return entries;
     }

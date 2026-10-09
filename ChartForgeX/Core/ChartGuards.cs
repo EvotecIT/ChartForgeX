@@ -115,6 +115,7 @@ internal static class ChartGuards {
 
     private static void ValidateSeriesShape(ChartSeries series, bool preparing) {
         series.ValidateInterpolation();
+        series.ValidateMarkerAndRadarOptions();
         if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
             && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea)
             throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, stacked-area, range-band, range-area, and scatter series.");

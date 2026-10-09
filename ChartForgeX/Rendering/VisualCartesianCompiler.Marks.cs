@@ -59,19 +59,20 @@ internal static partial class VisualCartesianCompiler {
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
-            var bounds = new ChartRect(point.X - radius, point.Y - radius, radius * 2, radius * 2);
+            var bounds = VisualMarkerScene.Bounds(point.X, point.Y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
             var visible = radius > 0 && (!chart.Options.ClipMarksToPlot || inside)
-                && (series.Kind == ChartSeriesKind.Scatter || ShowMarker(chart, series, pointIndex));
+                && ShowMarker(chart, series, pointIndex);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null)) {
                 if (visible) {
-                    builder.Ellipse(point.X, point.Y, radius, radius, PointColor(series, index, pointIndex, colors),
-                        role: series.Kind == ChartSeriesKind.Scatter && !string.IsNullOrWhiteSpace(series.SemanticRole) ? series.SemanticRole : "marker",
-                        paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, PointColor(series, index, pointIndex, colors), pointIndex)));
                     var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                         ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
-                    DrawPattern(builder, EllipsePath(point.X, point.Y, radius, radius), pattern, PointColor(series, index, pointIndex, colors), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "marker-pattern");
+                    var pointColor = PointColor(series, index, pointIndex, colors);
+                    VisualMarkerScene.Draw(builder, series, pointIndex, point.X, point.Y, radius, pointColor,
+                        VisualChartPaint.Series(series, pointColor, pointIndex),
+                        series.Kind == ChartSeriesKind.Scatter && !string.IsNullOrWhiteSpace(series.SemanticRole) ? series.SemanticRole! : "marker",
+                        pattern: pattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "marker-pattern");
                 }
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
@@ -130,6 +131,8 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static bool ShowMarker(Chart chart, ChartSeries series, int pointIndex) {
+        if (series.Markers.Enabled.HasValue) return series.Markers.Enabled.Value;
+        if (series.Kind == ChartSeriesKind.Scatter) return true;
         if (chart.Options.IsSparkline) return false;
         var mode = chart.Options.LineMarkerMode ?? ChartLineMarkerMode.Last;
         if (mode == ChartLineMarkerMode.None) return false;

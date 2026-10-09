@@ -68,4 +68,14 @@ internal static class ChartPathBuilder {
         });
     }
 
+    internal static ChartPath Ellipse(double x, double y, double rx, double ry) {
+        const double k = .5522847498307936;
+        return new ChartPath(new[] {
+            ChartPathCommand.MoveTo(x + rx, y), ChartPathCommand.CubicTo(x + rx, y + ry * k, x + rx * k, y + ry, x, y + ry),
+            ChartPathCommand.CubicTo(x - rx * k, y + ry, x - rx, y + ry * k, x - rx, y),
+            ChartPathCommand.CubicTo(x - rx, y - ry * k, x - rx * k, y - ry, x, y - ry),
+            ChartPathCommand.CubicTo(x + rx * k, y - ry, x + rx, y - ry * k, x + rx, y)
+        });
+    }
+
 }

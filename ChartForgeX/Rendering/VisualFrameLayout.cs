@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal sealed class VisualLegendEntry {
     internal VisualLegendEntry(string label, ChartColor color, string id, ChartSeriesKind? kind = null,
         ChartFillPattern pattern = ChartFillPattern.None, ChartSeriesState stateRole = ChartSeriesState.None, string? seriesKey = null,
-        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect>? marker = null, SvgPaint? paint = null, string? value = null, string? percentage = null) {
+        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? marker = null, SvgPaint? paint = null, string? value = null, string? percentage = null) {
         Label = label; Color = color; Id = id; Kind = kind; Pattern = pattern; StateRole = stateRole; SeriesKey = seriesKey;
         State = state; PinStateColors = pinStateColors; Marker = marker; Paint = paint; Value = value; Percentage = percentage;
     }
@@ -27,7 +27,7 @@ internal sealed class VisualLegendEntry {
     internal string? SeriesKey { get; }
     internal ChartStateCategory? State { get; }
     internal bool PinStateColors { get; }
-    internal Action<VisualSceneBuilder, ChartRect>? Marker { get; }
+    internal Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? Marker { get; }
     internal SvgPaint? Paint { get; }
 }
 
@@ -122,7 +122,7 @@ internal static class VisualFrameLayout {
                             ["aria-label"] = entry.Description
                         })) {
                             if (!ReferenceEquals(entry, overflow)) using (builder.PushClip(swatch)) {
-                            if (entry.Marker != null) entry.Marker(builder, swatch);
+                            if (entry.Marker != null) entry.Marker(builder, swatch, context);
                             else if (entry.State != null) {
                                 using (builder.PushGroup("legend-" + entry.Id + "-swatch", "state-legend-swatch",
                                     VisualStateSceneTools.StateMetadata(entry.PinStateColors, entry.State)))

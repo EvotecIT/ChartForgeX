@@ -83,13 +83,4 @@ internal static partial class VisualCartesianCompiler {
 
     private static ChartPath RoundedRectanglePath(ChartRect bounds, double radius) => ChartPathBuilder.RoundedRectangle(bounds, radius);
 
-    private static ChartPath EllipsePath(double x, double y, double rx, double ry) {
-        const double k = .5522847498307936;
-        return new ChartPath(new[] {
-            ChartPathCommand.MoveTo(x + rx, y), ChartPathCommand.CubicTo(x + rx, y + ry * k, x + rx * k, y + ry, x, y + ry),
-            ChartPathCommand.CubicTo(x - rx * k, y + ry, x - rx, y + ry * k, x - rx, y),
-            ChartPathCommand.CubicTo(x - rx, y - ry * k, x - rx * k, y - ry, x, y - ry),
-            ChartPathCommand.CubicTo(x + rx * k, y - ry, x + rx, y - ry * k, x + rx, y)
-        });
-    }
 }

@@ -54,7 +54,6 @@ SVG and PNG charts share measured label placement, including data labels, target
 
 The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement and explicit funnel forms/orientation share native geometry owners. Further work should retain that API and source-value boundary:
 
-- [ ] Add common marker shape controls and explicit radar line/area semantics through shared mark geometry.
 - [ ] Give hierarchy and flow records stable IDs separate from display labels, then qualify hierarchical treemap input and independent color dimensions.
 - [ ] Add general radial column/bar scales and stacks while retaining the existing progress-ring meaning.
 - [ ] Implement the missing chord and pyramid families with explicit value-encoding contracts.

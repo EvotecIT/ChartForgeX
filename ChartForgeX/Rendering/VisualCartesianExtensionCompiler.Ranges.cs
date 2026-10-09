@@ -50,18 +50,20 @@ internal static partial class VisualCartesianCompiler {
         }
         for (var item = 0; item < count; item++) {
             var low = series.Points[item * 2]; var high = series.Points[item * 2 + 1];
-            var bounds = Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y);
+            var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
+            var showMarkers = VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue);
+            var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;
+            var bounds = Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius));
             var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, low.Y) + "–" + Value(chart, high.Y));
             using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, ("x", low.X), ("lower", low.Y), ("upper", high.Y))) {
                 // Per-observation colours/textures are represented by boundary markers rather than repainting the continuous envelope.
-                var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
-                if (hasOverride || series.MarkerRadius.HasValue) {
-                    var r = series.MarkerRadius ?? context.Theme.MarkerRadius; var pointColor = PointColor(series, index, item, colors);
-                    var pointPaint = VisualChartPaint.Fill(VisualChartPaint.Series(series, pointColor, item));
-                    builder.Ellipse(upper[item].X, upper[item].Y, r, r, pointColor, role: "range-marker", paint: pointPaint);
-                    builder.Ellipse(lower[item].X, lower[item].Y, r, r, pointColor, role: "range-marker", paint: pointPaint);
-                    DrawPattern(builder, EllipsePath(upper[item].X, upper[item].Y, r, r), ObservationPattern(series, item), pointColor, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "range-marker-pattern");
-                    DrawPattern(builder, EllipsePath(lower[item].X, lower[item].Y, r, r), ObservationPattern(series, item), pointColor, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "range-marker-pattern");
+                if (showMarkers) {
+                    var pointColor = PointColor(series, index, item, colors);
+                    var pointPaint = VisualChartPaint.Series(series, pointColor, item);
+                    VisualMarkerScene.Draw(builder, series, item, upper[item].X, upper[item].Y, radius, pointColor, pointPaint, "range-marker",
+                        pattern: ObservationPattern(series, item), backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "range-marker-pattern");
+                    VisualMarkerScene.Draw(builder, series, item, lower[item].X, lower[item].Y, radius, pointColor, pointPaint, "range-marker",
+                        pattern: ObservationPattern(series, item), backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "range-marker-pattern");
                 }
             }
             var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;

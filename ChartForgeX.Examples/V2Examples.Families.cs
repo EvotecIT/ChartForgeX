@@ -12,7 +12,8 @@ public static partial class V2Examples {
         ChartSeriesKind.RadialBar, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
     };
     private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
-        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel
+        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel,
+        ChartSeriesKind.Scatter, ChartSeriesKind.Bubble, ChartSeriesKind.Radar
     };
 
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
@@ -33,6 +34,7 @@ public static partial class V2Examples {
                 // Let the shared policy decide whether a legend adds information. The indicator
                 // options example intentionally demonstrates an explicitly requested legend.
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
+                if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
                 var subtitle = variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
                     : variant == "stage-bars-horizontal" ? "Horizontal stage bars; extents remain proportional"
                     : variant is "options" or "compact-options" && GeometryOptionFamilies.Contains(kind) ? GeometrySubtitle(kind)
@@ -45,11 +47,14 @@ public static partial class V2Examples {
     }
 
     private static string GeometrySubtitle(ChartSeriesKind kind) => kind switch {
-        ChartSeriesKind.Line => "Step transitions at the start, middle and end",
+        ChartSeriesKind.Line => "Step transitions and three configured marker shapes",
         ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar => "Two independent stacks; each reaches 100%; source values remain counts",
         ChartSeriesKind.StackedArea => "A normalized stack with middle-step boundaries",
         ChartSeriesKind.RangeArea => "Lower, middle and upper bounds share middle-step transitions",
         ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
+        ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
+        ChartSeriesKind.Bubble => "Marker shape changes; source size still controls each series' scale",
+        ChartSeriesKind.Radar => "A filled area and an unfilled target line share one radial scale",
         _ => "Configured chart geometry"
     };
 

@@ -137,6 +137,22 @@ Typed data uses `dataset.Bin(selector, layout)` and `AddHistogram(name, bins, en
 
 Migration: replace the former global `layout.Width` with `layout.GetWidth(index)`, because the last regular bin and authored bins can have different widths. Histogram layout, aggregation and encoding are read-only series facts. Labels, paints and styles can change after ingestion; to change bin X/Y aggregates, rebuild from observations so source statistics stay consistent.
 
+## Point markers and radial forms
+
+`ChartSeries.Markers` is the shared point-marker configuration for connected Cartesian series, scatter, bubble, radar and polar. `WithMarkers` configures one of nine built-in shapes, logical radius, visibility, fill and outline. Null dimensions and paints preserve the family defaults; explicit point colors retain precedence over the marker fill. `MarkerRadius`, `WithMarkerRadius` and `UseThemeMarkerRadius` use the same radius value. Dotted maps retain their existing radius override; their map geometry does not accept the other marker options.
+
+```csharp
+chart.Series[0].WithMarkers(markers => {
+    markers.Shape = ChartMarkerShape.Diamond;
+    markers.Radius = 5;
+    markers.StrokeWidth = 1;
+});
+```
+
+`Enabled = false` or a radius of zero hides glyphs while retaining source descriptions and connected lines or areas. Bubble values retain their existing series-local size mapping; a radius override scales that mapping. Different shapes can paint different areas at the same radius, and this is not a shared cross-series bubble size domain. SVG, native PNG and legend markers use the same shape geometry. Custom marker paths and dashed marker outlines remain separate options.
+
+`AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `WithRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity. Missing categories retain the existing zero-imputation behavior; an explicit missing-category policy is separate work.
+
 ## Enforcement boundary
 
 `V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.

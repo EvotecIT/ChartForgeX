@@ -18,12 +18,7 @@ internal static partial class VisualSpecialtyCompiler {
             for (var index = 2; index < coordinates.Length; index += 2) Line(coordinates[index], coordinates[index + 1]);
         }
         void Circle(double x, double y, double radius) {
-            const double k = .5522847498307936;
-            Move(x, y - radius);
-            Cubic(x + radius * k, y - radius, x + radius, y - radius * k, x + radius, y);
-            Cubic(x + radius, y + radius * k, x + radius * k, y + radius, x, y + radius);
-            Cubic(x - radius * k, y + radius, x - radius, y + radius * k, x - radius, y);
-            Cubic(x - radius, y - radius * k, x - radius * k, y - radius, x, y - radius);
+            commands.AddRange(ChartPathBuilder.Ellipse(cx + x * r, cy + y * r, radius * r, radius * r).Commands);
         }
         if (custom != null) {
             foreach (var contour in custom) for (var index = 0; index < contour.Count; index++) {
@@ -34,18 +29,10 @@ internal static partial class VisualSpecialtyCompiler {
         }
         switch (shape) {
             case ChartPictorialShape.Square: return ChartPathBuilder.RoundedRectangle(bounds, r * .14);
-            case ChartPictorialShape.Diamond: Polygon(0, -1, 1, 0, 0, 1, -1, 0); break;
-            case ChartPictorialShape.Triangle: Polygon(0, -1, 1, 1, -1, 1); break;
-            case ChartPictorialShape.Star:
-                for (var index = 0; index < 10; index++) {
-                    var angle = -Math.PI / 2 + index * Math.PI / 5; var radius = index % 2 == 0 ? 1 : .44;
-                    if (index == 0) Move(Math.Cos(angle) * radius, Math.Sin(angle) * radius);
-                    else Line(Math.Cos(angle) * radius, Math.Sin(angle) * radius);
-                }
-                break;
-            case ChartPictorialShape.Heart:
-                Move(0, .72); Cubic(-1.12, -.08, -.9, -.82, -.34, -.64); Cubic(-.12, -.56, 0, -.34, 0, -.18);
-                Cubic(0, -.34, .12, -.56, .34, -.64); Cubic(.9, -.82, 1.12, -.08, 0, .72); break;
+            case ChartPictorialShape.Diamond: return ChartMarkerGeometry.Path(ChartMarkerShape.Diamond, cx, cy, r);
+            case ChartPictorialShape.Triangle: return ChartMarkerGeometry.Path(ChartMarkerShape.Triangle, cx, cy, r);
+            case ChartPictorialShape.Star: return ChartMarkerGeometry.Path(ChartMarkerShape.Star, cx, cy, r);
+            case ChartPictorialShape.Heart: return ChartMarkerGeometry.Path(ChartMarkerShape.Heart, cx, cy, r);
             case ChartPictorialShape.Shield:
                 Move(0, -1); Cubic(.72, -.72, .82, -.64, .82, -.22); Cubic(.82, .48, .35, .85, 0, 1);
                 Cubic(-.35, .85, -.82, .48, -.82, -.22); Cubic(-.82, -.64, -.72, -.72, 0, -1); break;

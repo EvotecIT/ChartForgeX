@@ -18,9 +18,12 @@ internal static partial class VisualPolarCompiler {
                 new VisualLegendEntry(Category(chart, point.X), ChartSeriesColours.Point(series, index, index, colors), Id(0, index),
                     series.Kind, Pattern(series, index), series.StateRole, series.InteractionIdentityKey)).ToArray();
         }
-        return chart.Series.Select((series, index) => new { series, index }).Where(item => item.series.ShowInLegend).Select(item =>
-            new VisualLegendEntry(item.series.Name, ChartSeriesColours.Resolve(item.series, item.index, colors), Id(item.index), item.series.Kind,
-                item.series.FillPattern, item.series.StateRole, item.series.InteractionIdentityKey)).ToArray();
+        return chart.Series.Select((series, index) => new { series, index }).Where(item => item.series.ShowInLegend).Select(item => {
+            var color = ChartSeriesColours.Resolve(item.series, item.index, colors); var paint = VisualChartPaint.Series(item.series, color);
+            return new VisualLegendEntry(item.series.Name, color, Id(item.index), item.series.Kind,
+                item.series.FillPattern, item.series.StateRole, item.series.InteractionIdentityKey,
+                marker: VisualMarkerScene.Legend(chart, item.series, color, paint, pattern: item.series.FillPattern), paint: paint);
+        }).ToArray();
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
@@ -61,12 +64,19 @@ internal static partial class VisualPolarCompiler {
                 }
                 var path = ChartPathBuilder.FromPoints(mapped, ChartInterpolation.Linear);
                 using (builder.PushGroup(Id(seriesIndex), radar ? "radar-series" : "polar-series", new Dictionary<string, string> {
-                    ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name
+                    ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name,
+                    ["data-cfx-form"] = radar && series.Radar.Form == ChartRadarForm.Area ? "area" : "line",
+                    ["data-cfx-missing-policy"] = radar ? "zero" : "source"
                 })) {
-                    if (radar) {
-                        builder.Path(path, ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity), role: "radar-area", close: true,
-                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity), context.Theme.AreaOpacity)));
-                        if (series.FillPattern != ChartFillPattern.None) builder.Pattern(path, series.FillPattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(80), role: "radar-pattern");
+                    if (radar && series.Radar.Form == ChartRadarForm.Area) {
+                        var opacity = series.Radar.FillOpacity ?? context.Theme.AreaOpacity;
+                        var fill = ChartColorMath.WithOpacity(color, opacity);
+                        builder.Path(path, fill, role: "radar-area", close: true,
+                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, opacity)));
+                        if (series.FillPattern != ChartFillPattern.None && opacity > 0) {
+                            var hatchOpacity = Math.Min(1, opacity / Math.Max(.000001, context.Theme.AreaOpacity));
+                            builder.Pattern(path, series.FillPattern, ChartColorMath.WithOpacity(ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(80), hatchOpacity), role: "radar-pattern");
+                        }
                     }
                     var width = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
                     foreach (var layer in ChartLineVisualLayers.Build(color, width, chart.Options.LineVisualStyle))
@@ -79,15 +89,19 @@ internal static partial class VisualPolarCompiler {
                         var formatted = source >= 0 && source < series.PointLabels.Count && series.PointLabels[source] != null
                             ? series.PointLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
                         var pointId = source >= 0 ? Id(seriesIndex, source) : Id(seriesIndex) + "-missing-category-" + index;
-                        var marker = series.MarkerRadius ?? context.Theme.MarkerRadius;
-                        var bounds = new ChartRect(mapped[index].X - marker, mapped[index].Y - marker, marker * 2, marker * 2);
+                        var marker = VisualMarkerScene.Radius(series, context);
+                        var bounds = VisualMarkerScene.Bounds(mapped[index].X, mapped[index].Y, Math.Max(marker, VisualMarkerScene.Extent(series, marker)));
                         builder.AddRegion(new VisualSemanticRegion(pointId, radar ? "radar-point" : "polar-point", bounds, CategoryText(category) + ": " + formatted));
                         using (builder.PushGroup(pointId, radar ? "radar-point-source" : "polar-point-source", new Dictionary<string, string> {
                             ["data-cfx-point"] = N(source), ["data-cfx-category"] = N(category), ["data-cfx-angle"] = N(radar ? angle : -angle),
                             ["data-cfx-value"] = N(value), ["data-cfx-full-label"] = formatted, ["data-cfx-missing"] = source < 0 ? "true" : "false"
-                        })) builder.Ellipse(mapped[index].X, mapped[index].Y, marker, marker,
-                            source >= 0 ? ChartSeriesColours.Point(series, seriesIndex, source, colors) : color, colors.Surface, 1, radar ? "radar-point" : "polar-point",
-                            paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, source >= 0 ? ChartSeriesColours.Point(series, seriesIndex, source, colors) : color, source), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
+                        })) {
+                            var pointColor = source >= 0 ? ChartSeriesColours.Point(series, seriesIndex, source, colors) : color;
+                            VisualMarkerScene.Draw(builder, series, source, mapped[index].X, mapped[index].Y, marker, pointColor,
+                                VisualChartPaint.Series(series, pointColor, source), radar ? "radar-point" : "polar-point", colors.Surface, 1,
+                                SvgPaint.Of(colors.Surface, SvgColorRole.Surface), Pattern(series, source),
+                                ChartStateMark.Backdrop(chart.Options, colors, context.Frame), radar ? "radar-point-pattern" : "polar-point-pattern");
+                        }
                         if (series.ShowDataLabels ?? chart.Options.ShowDataLabels)
                             AddDataLabel(chart, context, builder, plot, labels, series, source, pointId, formatted, mapped[index], angle, radar, seriesIndex, chart.Series.Count);
                     }
@@ -103,7 +117,7 @@ internal static partial class VisualPolarCompiler {
         for (var index = 0; index < series.Points.Count; index++) if (ChartMath.SameCoordinate(series.Points[index].X, category)) return index;
         return -1;
     }
-    private static ChartFillPattern Pattern(ChartSeries series, int index) => index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern;
+    private static ChartFillPattern Pattern(ChartSeries series, int index) => index >= 0 && index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern;
     private static ChartPoint On(PolarLayout geometry, double angle, double radius) => new(geometry.Cx + Math.Cos(angle) * radius, geometry.Cy + Math.Sin(angle) * radius);
     private static double RadarAngle(int index, int count) => -Math.PI / 2 + Math.PI * 2 * index / count;
     private static bool Finite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);

@@ -14,7 +14,6 @@ public sealed partial class ChartSeries {
     private ChartDataLabelPlacement? _dataLabelPlacement;
     private ChartFillPattern _fillPattern = ChartFillPattern.None;
     private string? _interactionKey;
-    private double? _markerRadius;
 
     internal bool PreserveInteractionTargetsWhenMarkersHidden { get; private set; }
 
@@ -244,18 +243,12 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Gets or sets the optional marker-radius override for this series. Null uses the chart theme;
-    /// zero suppresses optional line and area markers without affecting specialized mark types.
+    /// Gets or sets the canonical marker-radius override through <see cref="Markers"/>.
+    /// Null preserves the family and theme default; zero hides point glyphs.
     /// </summary>
     public double? MarkerRadius {
-        get => _markerRadius;
-        set {
-            if (value.HasValue) {
-                ChartGuards.Finite(value.Value, nameof(value));
-                if (value.Value < 0d) throw new ArgumentOutOfRangeException(nameof(value), value, "Marker radius cannot be negative.");
-            }
-            _markerRadius = value;
-        }
+        get => Markers.Radius;
+        set => Markers.Radius = value;
     }
 
     /// <summary>
@@ -412,7 +405,7 @@ public sealed partial class ChartSeries {
         return this;
     }
 
-    /// <summary>Overrides the marker radius for this series. Use zero to suppress optional line and area markers.</summary>
+    /// <summary>Overrides the canonical marker radius for this series. Use zero to hide point glyphs.</summary>
     public ChartSeries WithMarkerRadius(double radius) {
         MarkerRadius = radius;
         return this;
