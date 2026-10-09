@@ -53,10 +53,10 @@ SVG and PNG charts share measured label placement, including data labels, target
 - Keep marketing/poster chart matrices honest by checking each advertised family against public API, SVG renderer, PNG renderer, smoke tests, generated examples, and website gallery tags.
 - When adding a future chart family, update the README catalog, public model/API, SVG and PNG renderers, smoke tests, generated examples, gallery metadata, and promotional imagery together.
 
-The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation, pyramid partitions, hierarchical Treemap and numeric color scales share native geometry owners. Further work should retain that API and source-value boundary:
+The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation, pyramid partitions, hierarchical Treemap, Sankey alignment/order/node geometry/paint and numeric color scales share native geometry owners. Further work should retain that API and source-value boundary:
 
 - Extend Sunburst with an independent numeric color dimension/scale and an explicit authored-parent value policy. Its current sectors aggregate leaf weights and preserve authored incoming weights separately.
-- Add Sankey alignment, ordering, gap, and style options through its canonical layout. Authored node/flow IDs and parallel flows are supported independently of labels.
+- Extend Sankey with per-flow styles and additional label placement policies. Any optional tiny-flow minimum-width treatment must preserve truthful weights and conservation; current alignment, ordering, node geometry and fill controls keep one proportional scale.
 - [ ] Extend numeric radial axes with axis titles and label orientation, rounded sectors, mixed radial families, and angular reversal for radar/polar. Schedule reversal requires matching packed span and label projections.
 - Extend weighted Chord with deliberate ordering strategies, per-flow styles, and an independent quantitative color dimension. Its native scene retains directed reciprocal, parallel, self, and raw zero flows in source order; circular span, node gaps/thickness, opacity, target cues, and measured labels are configurable.
 - [ ] Extend typed adapter tooltip, crosshair, legend visibility and data-domain zoom policies; palette choice must not decide interaction behavior.

@@ -70,6 +70,7 @@ public sealed class V2ApiConventionTests {
         var funnel = chart.Options.Funnel;
         var pyramid = chart.Options.Pyramid;
         var chord = chart.Options.Chord;
+        var sankey = chart.Options.Sankey;
         Assert.Same(chart, chart.ConfigureFunnel(options => {
             Assert.Same(funnel, options);
             options.Orientation = ChartOrientation.Horizontal;
@@ -82,12 +83,18 @@ public sealed class V2ApiConventionTests {
             Assert.Same(chord, options);
             options.RibbonOpacity = .2;
         }));
+        Assert.Same(chart, chart.ConfigureSankey(options => {
+            Assert.Same(sankey, options);
+            options.NodeWidth = 18;
+        }));
         Assert.Same(funnel, chart.Options.Funnel);
         Assert.Same(pyramid, chart.Options.Pyramid);
         Assert.Same(chord, chart.Options.Chord);
+        Assert.Same(sankey, chart.Options.Sankey);
         Assert.Equal(ChartOrientation.Horizontal, chart.Options.Funnel.Orientation);
         Assert.Equal(ChartPyramidValueEncoding.Area, chart.Options.Pyramid.ValueEncoding);
         Assert.Equal(.2, chart.Options.Chord.RibbonOpacity);
+        Assert.Equal(18, chart.Options.Sankey.NodeWidth);
 
         var series = chart.Series[0];
         var markers = series.Markers;

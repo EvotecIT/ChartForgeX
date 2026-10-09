@@ -115,7 +115,7 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
         var ids = await supports.EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.dataset.cfxTargetId)");
         Assert.Equal(2, ids.Distinct(StringComparer.Ordinal).Count());
         if (kind == ChartSeriesKind.Sankey) {
-            Assert.Equal(7, await session.Page.Locator("[data-cfx-target-kind=link]").CountAsync());
+            Assert.Equal(9, await session.Page.Locator("[data-cfx-target-kind=link]").CountAsync());
             Assert.Equal("Warning", await session.Page.Locator("[data-cfx-target-id=north-support][data-cfx-target-kind=node]").GetAttributeAsync("data-cfx-state"));
         }
         var name = "configured-" + kind.ToString().ToLowerInvariant() + "-" + width + "-" + (dark ? "dark" : "light");
