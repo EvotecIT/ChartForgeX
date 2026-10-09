@@ -1,10 +1,46 @@
 using System.Text;
 using ChartForgeX.Raster;
+using ChartForgeX.Stories;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class RasterAnimationEncoderTests {
+    [Fact]
+    public void GifRationalCadenceKeepsOneClockForRetainedAndStreamedFramesIncludingZeroDelays() {
+        var image = new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 });
+        var frames = new List<RasterAnimationFrame>();
+        for (var i = 0; i < 60; i++) {
+            if (i == 20) frames.Add(new RasterAnimationFrame(image, TimeSpan.Zero));
+            var ticks = (i + 1L) * TimeSpan.TicksPerSecond / 6 - i * (long)TimeSpan.TicksPerSecond / 6;
+            frames.Add(new RasterAnimationFrame(image, TimeSpan.FromTicks(ticks)));
+        }
+        frames.Add(new RasterAnimationFrame(image, TimeSpan.Zero));
+        var bytes = RasterAnimationEncoder.Encode(frames, RasterAnimationFormat.Gif);
+        var controls = ReadControls(bytes, RasterAnimationFormat.Gif);
+        Assert.Equal(10_000, controls.Durations.Sum());
+        Assert.Equal(0, controls.Durations[20]);
+        Assert.Equal(0, controls.Durations[^1]);
+        var source = new RasterAnimationSource(1, 1, frames.Count, (index, _) => frames[index]);
+        Assert.Equal(bytes, RasterAnimationEncoder.Encode(source, RasterAnimationFormat.Gif));
+    }
+
+    [Fact]
+    public void PreparedGifClockMatchesRawAndContainerSpecificFrameEncoderRoutes() {
+        var story = VisualStory.Create("One GIF clock").WithSize(480, 320);
+        story.Scene("result", "Result", 9).Panel("result", new VisualStoryTextSurface("Ready"));
+        story.Outcome("ready", "Ready", "result");
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 1));
+        var sampling = new VisualStoryFrameOptions(6);
+        var playback = new RasterAnimationOptions { PlayCount = 1 };
+        var expected = prepared.ToGif(sampling);
+        Assert.Equal(10_000, ReadControls(expected, RasterAnimationFormat.Gif).Durations.Sum());
+        Assert.Equal(expected, RasterAnimationEncoder.Encode(prepared.FrameSource(sampling), RasterAnimationFormat.Gif, playback));
+        Assert.Equal(expected, RasterAnimationEncoder.Encode(prepared.Frames(sampling).ToArray(), RasterAnimationFormat.Gif, playback));
+        Assert.Equal(expected, RasterAnimationEncoder.Encode(prepared.FrameSource(RasterAnimationFormat.Gif, sampling), RasterAnimationFormat.Gif, playback));
+        Assert.Equal(expected, RasterAnimationEncoder.Encode(prepared.Frames(RasterAnimationFormat.Gif, sampling).ToArray(), RasterAnimationFormat.Gif, playback));
+    }
+
     [Theory]
     [InlineData(RasterAnimationFormat.Gif)]
     [InlineData(RasterAnimationFormat.Apng)]

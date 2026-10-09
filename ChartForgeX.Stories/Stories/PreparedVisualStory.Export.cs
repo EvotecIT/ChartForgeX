@@ -8,19 +8,19 @@ namespace ChartForgeX.Stories;
 public sealed partial class PreparedVisualStory {
     /// <summary>Encodes GIF with a global palette and bounded two-pass frame production.</summary>
     public byte[] ToGif(VisualStoryFrameOptions? options = null, CancellationToken cancellationToken = default) =>
-        RasterAnimationEncoder.Encode(GifSource(options), RasterAnimationFormat.Gif,
+        RasterAnimationEncoder.Encode(FrameSource(RasterAnimationFormat.Gif, options), RasterAnimationFormat.Gif,
             new RasterAnimationOptions { PlayCount = Playback.PlayCount }, cancellationToken);
 
     /// <summary>Encodes APNG while producing and releasing one frame at a time.</summary>
     public byte[] ToApng(VisualStoryFrameOptions? options = null, CancellationToken cancellationToken = default) =>
-        RasterAnimationEncoder.Encode(FrameSource(options), RasterAnimationFormat.Apng,
+        RasterAnimationEncoder.Encode(FrameSource(RasterAnimationFormat.Apng, options), RasterAnimationFormat.Apng,
             new RasterAnimationOptions { PlayCount = Playback.PlayCount }, cancellationToken);
 
     /// <summary>Writes an animation directly to a caller-owned stream without retaining the encoded file.</summary>
     public void WriteAnimation(Stream stream, RasterAnimationFormat format, VisualStoryFrameOptions? options = null,
         CancellationToken cancellationToken = default) {
         if (format != RasterAnimationFormat.Gif && format != RasterAnimationFormat.Apng) throw new ArgumentOutOfRangeException(nameof(format));
-        RasterAnimationEncoder.WriteTo(stream, format == RasterAnimationFormat.Gif ? GifSource(options) : FrameSource(options),
+        RasterAnimationEncoder.WriteTo(stream, FrameSource(format, options),
             format, new RasterAnimationOptions { PlayCount = Playback.PlayCount }, cancellationToken);
     }
 

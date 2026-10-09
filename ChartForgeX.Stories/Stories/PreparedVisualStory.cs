@@ -90,7 +90,22 @@ public sealed partial class PreparedVisualStory {
         for (var i = 0; i < source.FrameCount; i++) yield return source.GetFrame(i, cancellationToken);
     }
 
-    /// <summary>Creates a repeatable frame source suitable for bounded raster and optional video encoders.</summary>
+    /// <summary>Produces owning frames with the selected container's timing and Stories readability policy.</summary>
+    public IEnumerable<RasterAnimationFrame> Frames(RasterAnimationFormat format, VisualStoryFrameOptions? options = null, CancellationToken cancellationToken = default) {
+        var source = FrameSource(format, options);
+        for (var i = 0; i < source.FrameCount; i++) yield return source.GetFrame(i, cancellationToken);
+    }
+
+    /// <summary>Creates a repeatable producer with container-specific timing, including GIF visibility and viewer delay limits.</summary>
+    /// <remarks>Use this overload when passing prepared story frames to a generic GIF or APNG encoder.</remarks>
+    public RasterAnimationSource FrameSource(RasterAnimationFormat format, VisualStoryFrameOptions? options = null) => format switch {
+        RasterAnimationFormat.Gif => GifSource(options),
+        RasterAnimationFormat.Apng => FrameSource(options),
+        _ => throw new ArgumentOutOfRangeException(nameof(format))
+    };
+
+    /// <summary>Creates a repeatable frame source on the exact tick clock, suitable for timestamp observations and optional video encoders.</summary>
+    /// <remarks>Use the format overload for GIF-specific cadence, quantization and readability validation.</remarks>
     public RasterAnimationSource FrameSource(VisualStoryFrameOptions? options = null) {
         var sampling = options ?? new VisualStoryFrameOptions();
         var count = FrameCount(sampling);

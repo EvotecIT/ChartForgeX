@@ -95,6 +95,8 @@ public sealed class PreparedVisualStoryTests {
         Assert.Throws<InvalidOperationException>(() => prepared.WriteAnimation(stream, RasterAnimationFormat.Gif, sampling));
         Assert.Equal(0, stream.Length);
         Assert.Throws<InvalidOperationException>(() => prepared.ToGif(sampling));
+        Assert.Throws<InvalidOperationException>(() => prepared.FrameSource(RasterAnimationFormat.Gif, sampling));
+        Assert.Throws<InvalidOperationException>(() => prepared.Frames(RasterAnimationFormat.Gif, sampling).First());
         Assert.True(prepared.ToApng(sampling).Length > 64);
     }
 }

@@ -210,8 +210,13 @@ public sealed class StoryPlaybackReviewTests {
         story.Outcome("ready", "Ready", "result");
         var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(hold), TimeSpan.Zero, 1));
         using var stream = new MemoryStream();
-        if (rate > 50) Assert.Throws<ArgumentOutOfRangeException>(() => prepared.WriteAnimation(stream, RasterAnimationFormat.Gif, new VisualStoryFrameOptions(rate)));
-        else Assert.Throws<InvalidOperationException>(() => prepared.WriteAnimation(stream, RasterAnimationFormat.Gif, new VisualStoryFrameOptions(rate)));
+        if (rate > 50) {
+            Assert.Throws<ArgumentOutOfRangeException>(() => prepared.WriteAnimation(stream, RasterAnimationFormat.Gif, new VisualStoryFrameOptions(rate)));
+            Assert.Throws<ArgumentOutOfRangeException>(() => prepared.FrameSource(RasterAnimationFormat.Gif, new VisualStoryFrameOptions(rate)));
+        } else {
+            Assert.Throws<InvalidOperationException>(() => prepared.WriteAnimation(stream, RasterAnimationFormat.Gif, new VisualStoryFrameOptions(rate)));
+            Assert.Throws<InvalidOperationException>(() => prepared.FrameSource(RasterAnimationFormat.Gif, new VisualStoryFrameOptions(rate)));
+        }
         Assert.Equal(0, stream.Length);
         Assert.True(prepared.ToApng(new VisualStoryFrameOptions(rate)).Length > 64);
     }

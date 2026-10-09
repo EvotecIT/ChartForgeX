@@ -16,22 +16,24 @@ internal static partial class GifWriter {
         stream.WriteByte(0); WritePalette(stream, palette);
         if (playCount != 1) WriteLoopExtension(stream, playCount == 0 ? 0 : playCount - 1);
         byte[]? previous = null;
+        var clock = new GifFrameClock();
         for (var i = 0; i < source.FrameCount; i++) {
             var frame = source.GetFrame(i, cancellationToken);
             var current = GifPaletteQuantizer.Quantize(frame.Image, palette, cancellationToken);
             var indexed = palette.HasTransparency || previous == null
                 ? GifFrameOptimizer.FullFrame(frame.Image, current)
                 : GifFrameOptimizer.DeltaFrame(frame.Image, current, previous);
-            WriteFrame(stream, indexed, RasterFrameDelay.GifCentiseconds(frame.Duration), palette, cancellationToken);
+            WriteFrame(stream, indexed, clock.Next(frame.Duration), palette, cancellationToken);
             previous = current;
         }
         stream.WriteByte(0x3B);
     }
 
     private static IEnumerable<RgbaImage> Images(RasterAnimationSource source, CancellationToken cancellationToken) {
+        var clock = new GifFrameClock();
         for (var i = 0; i < source.FrameCount; i++) {
             var frame = source.GetFrame(i, cancellationToken);
-            RasterFrameDelay.GifCentiseconds(frame.Duration);
+            clock.Next(frame.Duration);
             yield return frame.Image;
         }
     }

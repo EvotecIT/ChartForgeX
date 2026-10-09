@@ -7,8 +7,8 @@ namespace ChartForgeX.Raster;
 
 /// <summary>Encodes complete RGBA canvases as GIF or animated PNG using the managed raster engines.</summary>
 /// <remarks>
-/// Frames must share their dimensions. Both containers preserve zero frame delays. GIF rounds positive
-/// durations to the nearest 10 milliseconds, with a 10 millisecond minimum and 655.35 second maximum,
+/// Frames must share their dimensions. Both containers preserve zero frame delays. GIF rounds cumulative positive
+/// frame boundaries to the nearest 10 milliseconds, with a 10 millisecond minimum and 655.35 second maximum,
 /// and treats alpha below 128 as transparent.
 /// APNG preserves representable rational durations and otherwise rounds to a supported fraction,
 /// with a 65,535 second maximum. Encoder working buffers and returned output share a 256 MiB ceiling;
