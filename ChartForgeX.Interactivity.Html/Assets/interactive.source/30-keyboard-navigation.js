@@ -59,6 +59,8 @@
   const refreshKeyboardNavigation = (root, focused) => {
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
+    const activeElement = root.ownerDocument.activeElement;
+    const activeOwned = root.contains(activeElement) && state.owned.has(activeElement);
     const targets = keyboardTargets(root);
     state.legends = targets.filter((node) => renderedTargetKind(node) === 'legend');
     state.groups = keyboardDataGroups(targets.filter((node) => renderedTargetKind(node) !== 'legend'));
@@ -79,6 +81,11 @@
       focusNode.setAttribute('data-cfx-keyboard-component', renderedTargetKind(node) === 'legend' ? 'legend' : 'data');
       focusNode.setAttribute('tabindex', node === state.activeData || node === state.activeLegend ? '0' : '-1');
     });
+    if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
+      // Local and synchronized state changes must not strand focus on a datum that just left the component.
+      const replacement = state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
+      if (replacement) focusKeyboardTarget(root, replacement);
+    }
     return state;
   };
   const bindKeyboardNavigationResize = (root) => {
@@ -132,6 +139,13 @@
     stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, box.left, box.right);
     stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, box.top, box.bottom);
   };
+  const focusKeyboardTarget = (root, node) => {
+    const focusNode = targetFocusNode(node);
+    scrollKeyboardTargetIntoView(root, focusNode);
+    if (focusNode.focus) {
+      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
+    }
+  };
   const focusAdjacentTarget = (root, node, key) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(key)) return false;
     const state = refreshKeyboardNavigation(root, node);
@@ -160,11 +174,7 @@
     }
     if (next === node) return true;
     refreshKeyboardNavigation(root, next);
-    const focusNode = targetFocusNode(next);
-    scrollKeyboardTargetIntoView(root, focusNode);
-    if (focusNode.focus) {
-      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
-    }
+    focusKeyboardTarget(root, next);
     const target = targetIdentity(next);
     const component = legend ? state.legends : state.data;
     emitHostEvent(root, 'cfxnavigate', { label: text(next), target, index: component.indexOf(next), count: component.length, key });
