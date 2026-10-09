@@ -27,6 +27,8 @@ public sealed class InteractivePolarHitBrowserTests {
         // Existing producers supply the fixture; the explicit coordinate contract keeps this adapter test independent of new Core APIs.
         await using var session = await OpenAsync(PolarContract(chart.ToInteractiveHtmlPage()), compact ? 360 : 680, 480);
         var page = session.Page;
+        var targetId = await page.Locator("[data-cfx-role='point'][data-cfx-point='0']").GetAttributeAsync("data-cfx-target-id");
+        Assert.False(string.IsNullOrWhiteSpace(targetId));
         await page.EvaluateAsync("() => { window.cfxSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.cfxSelections.push(event.detail)); }");
         var angle = mark.Start + mark.Sweep * .985;
         var radius = (mark.Inner + mark.Outer) / 2;
@@ -42,7 +44,7 @@ public sealed class InteractivePolarHitBrowserTests {
         Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-key"));
         Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node => node.hidden"));
         await page.Mouse.ClickAsync((float)painted[0], (float)painted[1]);
-        Assert.Equal("requests:derived:0", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetId"));
+        Assert.Equal(targetId, await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetId"));
         Assert.Equal(new[] { 0 }, await page.EvaluateAsync<int[]>("() => window.cfxSelections[0].target.sourcePoints"));
         Assert.True(await page.EvaluateAsync<bool>("() => window.cfxSelections[0].target.sourcePoint === undefined"));
         AssertNoConsoleErrors(session);
