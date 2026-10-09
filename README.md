@@ -39,7 +39,7 @@ ChartForgeX turns .NET data into deterministic static visuals: charts, chart gri
 
 The core package renders SVG, script-free static HTML, PNG, JPEG, BMP, PPM, and TIFF without runtime package dependencies. `ChartForgeX.Stories` adds GIF/APNG encoding. Optional browser behavior lives in adapter packages, so a static report can stay static while a dashboard can opt into tooltips, selection, zoom, pan, brush ranges, synchronized charts, and export controls.
 
-Point markers share one typed configuration across connected Cartesian series, scatter, bubble, radar and polar. Use `series.WithMarkers(...)` for nine built-in shapes, radius, visibility, fill and outline; SVG, native PNG and legends use the same geometry. `AddRadarLine` and `AddRadarArea` share categorical/radial axes and make the fill policy explicit. See [marker and radar options](docs/v2/api-conventions.md#chart-geometry) for defaults and supported families.
+Point markers share one typed configuration across connected Cartesian series, scatter, bubble, radar and polar. Use `series.ConfigureMarkers(...)` for nine built-in shapes, radius, visibility, fill and outline; SVG, native PNG and legends use the same geometry. `AddRadarLine` and `AddRadarArea` share categorical/radial axes and make the fill policy explicit. See [marker and radar options](docs/v2/api-conventions.md#chart-geometry) for defaults and supported families.
 
 ## Shared prepared rendering
 

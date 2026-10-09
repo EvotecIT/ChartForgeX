@@ -13,7 +13,7 @@ public static partial class V2GalleryModels {
                 chart.AddLine(positions[index].ToString(), points);
                 chart.Series[index].WithInterpolation(ChartInterpolation.Step, positions[index]);
                 var shape = new[] { ChartMarkerShape.Square, ChartMarkerShape.Diamond, ChartMarkerShape.Triangle }[index];
-                chart.Series[index].WithMarkers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
+                chart.Series[index].ConfigureMarkers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
             }
             return chart;
         }

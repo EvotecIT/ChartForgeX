@@ -19,7 +19,7 @@ public sealed class RadarFormTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.FillOpacity = double.NaN);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.FillOpacity = 1.1);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.FillOpacity = -.1);
-        Assert.Throws<ArgumentNullException>(() => chart.Series[0].WithRadar(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.Series[0].ConfigureRadar(null!));
         chart.Series[1].Radar.FillOpacity = .4;
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         var scatter = Chart.Create().AddScatter("Samples", points);
@@ -63,7 +63,7 @@ public sealed class RadarFormTests {
         var color = ChartColor.FromHex("#2468AC");
         var chart = Bare().AddRadarArea("Area", new[] { new ChartPoint(3, 80), new ChartPoint(1, 0), new ChartPoint(2, 50) }, color)
             .AddRadarLine("Line", new[] { new ChartPoint(1, 0), new ChartPoint(3, 80), new ChartPoint(4, 20) }, color);
-        chart.Series[0].WithMarkers(marker => { marker.Shape = ChartMarkerShape.Star; marker.Radius = 6; });
+        chart.Series[0].ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Star; marker.Radius = 6; });
         chart.Series[0].WithPointColor(0, ChartColor.FromHex("#AB1234")).WithPointLabel(0, "Complete source label");
         var prepared = Prepare(chart);
         Assert.Single(prepared.Scene.Nodes, node => node.Role == "radar-area");
@@ -90,7 +90,7 @@ public sealed class RadarFormTests {
     [Fact]
     public void ZeroOpacityRemovesAreaInkIncludingPatternWhileKeepingOutlineAndSourceFacts() {
         var chart = Bare().WithLegend().AddRadarArea("Signal", SixValues(50));
-        chart.Series[0].WithRadar(radar => radar.FillOpacity = 0);
+        chart.Series[0].ConfigureRadar(radar => radar.FillOpacity = 0);
         chart.Series[0].FillPattern = ChartFillPattern.Crosshatch;
         chart.Series[0].Markers.Enabled = false;
         var prepared = Prepare(chart);

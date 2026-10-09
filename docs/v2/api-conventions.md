@@ -139,10 +139,10 @@ Migration: replace the former global `layout.Width` with `layout.GetWidth(index)
 
 ## Point markers and radial forms
 
-`ChartSeries.Markers` is the shared point-marker configuration for connected Cartesian series, scatter, bubble, radar and polar. `WithMarkers` configures one of nine built-in shapes, logical radius, visibility, fill and outline. Null dimensions and paints preserve the family defaults; explicit point colors retain precedence over the marker fill. `MarkerRadius`, `WithMarkerRadius` and `UseThemeMarkerRadius` use the same radius value. Dotted maps retain their existing radius override; their map geometry does not accept the other marker options.
+`ChartSeries.Markers` is the shared point-marker configuration for connected Cartesian series, scatter, bubble, radar and polar. `ConfigureMarkers` configures one of nine built-in shapes, logical radius, visibility, fill and outline. Null dimensions and paints preserve the family defaults; explicit point colors retain precedence over the marker fill. `MarkerRadius`, `WithMarkerRadius` and `UseThemeMarkerRadius` use the same radius value. Dotted maps retain their existing radius override; their map geometry does not accept the other marker options.
 
 ```csharp
-chart.Series[0].WithMarkers(markers => {
+chart.Series[0].ConfigureMarkers(markers => {
     markers.Shape = ChartMarkerShape.Diamond;
     markers.Radius = 5;
     markers.StrokeWidth = 1;
@@ -153,7 +153,7 @@ chart.Series[0].WithMarkers(markers => {
 
 `ChartForgeX.Core.ChartLineAreaForm` is the shared form type for `ChartSeries.Radar.Form` and `MetricCard.MiniSparklineStyle`. Its values are `Area = 0` and `Line = 1`; both models default to Area. Metric cards select the same form through `WithMiniSparklineStyle`.
 
-`AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `WithRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity. Missing categories retain the existing zero-imputation behavior; an explicit missing-category policy is separate work.
+`AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `ConfigureRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity. Missing categories retain the existing zero-imputation behavior; an explicit missing-category policy is separate work.
 
 ## Enforcement boundary
 

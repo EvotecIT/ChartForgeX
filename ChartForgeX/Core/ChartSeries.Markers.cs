@@ -12,7 +12,7 @@ public sealed partial class ChartSeries {
     /// <summary>Configures marker geometry, visibility and paint without changing the source observations.</summary>
     /// <param name="configure">The configuration callback.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithMarkers(Action<ChartMarkerOptions> configure) {
+    public ChartSeries ConfigureMarkers(Action<ChartMarkerOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(Markers); return this;
     }
@@ -20,7 +20,7 @@ public sealed partial class ChartSeries {
     /// <summary>Configures the form and area opacity of a radar series.</summary>
     /// <param name="configure">The configuration callback.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithRadar(Action<ChartRadarOptions> configure) {
+    public ChartSeries ConfigureRadar(Action<ChartRadarOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(Radar); return this;
     }
