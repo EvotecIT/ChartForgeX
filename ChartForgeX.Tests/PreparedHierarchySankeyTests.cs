@@ -55,6 +55,34 @@ public sealed class PreparedHierarchySankeyTests {
     }
 
     [Fact]
+    public void SunburstRetainsPositiveCollapsedValuesWithoutInventingSliceGeometry() {
+        var chart = Chart.Create().WithDataLabels(false).AddSunburst("Allocation", new[] {
+            new ChartNode("root", "All work"), new ChartNode("tiny", "Small allocation"), new ChartNode("visible", "Main allocation")
+        }, new[] { new ChartTreeLink("root", "tiny", 1e-20), new ChartTreeLink("root", "visible", 1) });
+        chart.Series[0].WithInteractionKey("allocation-source");
+        chart.Series[0].WithDataLabels(false);
+        var prepared = chart.Prepare(Context());
+        var nodes = Role(XDocument.Parse(prepared.ToSvg()), "sunburst-segment").ToArray();
+        var collapsed = Assert.Single(nodes, node => (string?)node.Attribute("data-cfx-target-id") == "tiny");
+        Assert.Equal("node", (string?)collapsed.Attribute("data-cfx-target-kind"));
+        Assert.Equal("allocation-source", (string?)collapsed.Attribute("data-cfx-series-key"));
+        Assert.Equal("Small allocation", (string?)collapsed.Attribute("data-cfx-full-label"));
+        Assert.Equal("root", (string?)collapsed.Attribute("data-cfx-parent"));
+        Assert.Equal(1e-20, Number(collapsed, "data-cfx-value"));
+        Assert.Equal(1e-20, Number(collapsed, "data-cfx-authored-weight"));
+        Assert.Equal(0, Number(collapsed, "data-cfx-sweep"));
+        Assert.Equal("precision-collapse", (string?)collapsed.Attribute("data-cfx-geometry-status"));
+        Assert.Empty(collapsed.Elements());
+        Assert.Null(collapsed.Attribute("data-cfx-point"));
+        Assert.Equal(3, prepared.Regions.Count(region => region.Role == "sunburst-segment"));
+        Assert.All(nodes.Where(node => node != collapsed), node => {
+            Assert.Equal("visible", (string?)node.Attribute("data-cfx-geometry-status"));
+            Assert.Single(node.Elements());
+            Assert.Equal(Math.PI * 2, Number(node, "data-cfx-sweep"), 10);
+        });
+    }
+
+    [Fact]
     public void TreemapKeepsSourceIdsAfterWeightOrderingAndZeroValuesRemainSemantic() {
         var chart = Chart.Create().AddTreemap("Tiles", new[] { new ChartTreemapItem("Small", "Small", value: 1), new ChartTreemapItem("Large", "Large", value: 3), new ChartTreemapItem("Zero", "Zero", value: 0), new ChartTreemapItem("Equal", "Equal", value: 1) });
         var prepared = chart.Prepare(Context()); var xml = XDocument.Parse(prepared.ToSvg());

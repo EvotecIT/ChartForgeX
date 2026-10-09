@@ -226,7 +226,7 @@ public sealed partial class ChartOptions {
     public bool TransparentBackground { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether point and bar values are rendered as labels.
+    /// Gets or sets chart-level data-label visibility. Series without an explicit override use this setting.
     /// </summary>
     public bool ShowDataLabels { get; set; }
 
