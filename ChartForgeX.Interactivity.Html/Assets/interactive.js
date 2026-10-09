@@ -411,6 +411,13 @@
       data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
+      // A zero-imputed category has no authored observation. Category identity remains stable
+      // when a peer has another category or orders its authored observations differently.
+      if (data.cfxDerived === 'missing-category-zero') {
+        data.cfxRegion = item.key + ':category:' + Number(data.cfxCategory);
+        delete data.cfxPoint;
+        delete data.cfxSourcePoint;
+      }
       if (data.cfxPoint !== undefined && data.cfxSourcePoint === undefined && data.cfxSourcePoints === undefined) {
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
@@ -418,7 +425,7 @@
       if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = xLabels.get(Number(data.cfxX)) || '';
       if (data.cfxRole === 'legend-item') return;
       const region = regions.get(data.cfxSourceId || '');
-      if (!region || data.cfxPoint === undefined) return;
+      if (!region || (data.cfxPoint === undefined && data.cfxRegion === undefined)) return;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
