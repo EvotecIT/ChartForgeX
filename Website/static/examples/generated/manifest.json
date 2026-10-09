@@ -10059,7 +10059,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 21
     },
     {
       "id": "family-trend-line-compact-light",
@@ -10093,7 +10093,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 21
     },
     {
       "id": "family-trend-line-wide-dark",
@@ -10127,7 +10127,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 21
     },
     {
       "id": "family-trend-line-compact-dark",
@@ -10161,7 +10161,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 21
     },
     {
       "id": "family-polar-wide-light",
@@ -10874,7 +10874,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 19
     },
     {
       "id": "histogram-compact-light",
@@ -10913,7 +10913,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 19
     },
     {
       "id": "histogram-density-light",
@@ -10946,7 +10946,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 19
     },
     {
       "id": "histogram-compact-density-light",
@@ -10983,7 +10983,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 19
     },
     {
       "id": "histogram-sum-light",
@@ -11016,7 +11016,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 19
     },
     {
       "id": "histogram-compact-sum-light",
@@ -11049,7 +11049,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 19
     },
     {
       "id": "histogram-mean-light",
@@ -11082,7 +11082,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 19
     },
     {
       "id": "histogram-compact-mean-light",
@@ -11115,7 +11115,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 19
     },
     {
       "id": "histogram-wide-dark",
@@ -11148,7 +11148,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 19
     },
     {
       "id": "histogram-compact-dark",
@@ -11187,7 +11187,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 19
     },
     {
       "id": "histogram-density-dark",
@@ -11220,7 +11220,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 19
     },
     {
       "id": "histogram-compact-density-dark",
@@ -11257,7 +11257,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 19
     },
     {
       "id": "histogram-sum-dark",
@@ -11290,7 +11290,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 19
     },
     {
       "id": "histogram-compact-sum-dark",
@@ -11323,7 +11323,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 19
     },
     {
       "id": "histogram-mean-dark",
@@ -11356,7 +11356,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 19
     },
     {
       "id": "histogram-compact-mean-dark",
@@ -11389,7 +11389,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 19
     }
   ]
 }
