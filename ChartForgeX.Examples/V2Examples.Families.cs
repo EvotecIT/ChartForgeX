@@ -12,11 +12,12 @@ public static partial class V2Examples {
     };
     private static readonly ChartSeriesKind[] OptionFamilies = {
         ChartSeriesKind.Bar, ChartSeriesKind.Area, ChartSeriesKind.HorizontalBar, ChartSeriesKind.Pie, ChartSeriesKind.Donut, ChartSeriesKind.Gauge, ChartSeriesKind.Bullet,
-        ChartSeriesKind.RadialBar, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
+        ChartSeriesKind.ProgressRing, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
     };
     private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
         ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel,
-        ChartSeriesKind.Scatter, ChartSeriesKind.Bubble, ChartSeriesKind.Radar, ChartSeriesKind.Pyramid
+        ChartSeriesKind.Scatter, ChartSeriesKind.Bubble, ChartSeriesKind.Radar, ChartSeriesKind.Pyramid,
+        ChartSeriesKind.RadialBar, ChartSeriesKind.RadialColumn
     };
 
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
@@ -60,6 +61,7 @@ public static partial class V2Examples {
         ChartSeriesKind.Bubble => "Marker shape changes; source size still controls each series' scale",
         ChartSeriesKind.Radar => "A filled area and an unfilled target line share one radial scale",
         ChartSeriesKind.Pyramid => "Reversed horizontal pyramid; areas encode values including zero",
+        ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn => "Named stacks reach 100; labels retain source counts",
         _ => "Configured chart geometry"
     };
 

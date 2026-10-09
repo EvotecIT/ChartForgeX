@@ -114,6 +114,10 @@ public sealed class ChartAxis {
     /// <summary>Gets or sets a value indicating whether the axis and its labels are visible.</summary>
     public bool Visible { get; set; } = true;
 
+    /// <summary>Gets or sets whether increasing values advance in the reverse visual direction. Bounds and source labels keep their original values.</summary>
+    /// <remarks>Supported by Cartesian projections, numeric radial axes, and radar/polar numeric radii. Schedule, polar angular, and polar-area reversal reject during preparation.</remarks>
+    public bool Reversed { get; set; }
+
     /// <summary>Gets or sets a value indicating whether the axis rule is visible.</summary>
     public bool ShowLine { get => _showLine; set { _showLine = value; HasExplicitLine = true; } }
     private bool _showLine = true;
@@ -169,6 +173,9 @@ public sealed class ChartAxis {
 
     /// <summary>Sets axis visibility.</summary>
     public ChartAxis WithVisibility(bool visible = true) { Visible = visible; return this; }
+
+    /// <summary>Reverses the visual direction while retaining bounds and source values.</summary>
+    public ChartAxis WithReversal(bool reversed = true) { Reversed = reversed; return this; }
 
     /// <summary>
     /// Uses a UTC time scale displayed in <paramref name="timeZone"/> (UTC when null) and optionally shows the zone designator.

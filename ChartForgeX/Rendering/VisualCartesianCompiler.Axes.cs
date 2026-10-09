@@ -27,7 +27,7 @@ internal static partial class VisualCartesianCompiler {
                 .Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray();
         }
         internal IReadOnlyList<double> Ticks(ChartAxis axis, double minimum, double maximum) => _ticks.TryGetValue(axis, out var ticks)
-            ? ticks.Where(value => value >= minimum && value <= maximum).ToArray() : AxisTicks(axis, minimum, maximum);
+            ? ticks.Where(value => value >= minimum && value <= maximum).ToArray() : ChartTicks.ForAxis(axis, minimum, maximum);
         internal string Format(ChartAxis axis, double value, Func<double, string>? fallback, IReadOnlyList<double> ticks) {
             if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
             if (!labels.TryGetValue(value, out var text)) labels.Add(value, text = ChartAxisValueFormatter.Format(axis, value, fallback, ticks));
@@ -136,10 +136,6 @@ internal static partial class VisualCartesianCompiler {
             }
         }
     }
-
-    private static IReadOnlyList<double> AxisTicks(ChartAxis axis, double minimum, double maximum) =>
-        axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray()
-            : ChartTicks.GenerateInside(axis, minimum, maximum);
 
     private static void DrawAxisLabels(VisualSceneBuilder builder, ChartOptions options, ChartAxis axis, IReadOnlyList<double> ticks, Func<double, double> coordinate,
         bool horizontal, bool secondary, ChartRect bounds, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels) {

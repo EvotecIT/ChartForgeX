@@ -58,7 +58,7 @@ The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roa
 - Extend hierarchical Treemap input with explicit IDs, parent containment/headers, leaf-size aggregation, and an independent numeric color dimension. Reuse the typed node/index owner and shared color-scale owner; flat Treemap remains the current input contract.
 - Extend Sunburst with an independent numeric color dimension/scale and an explicit authored-parent value policy. Its current sectors aggregate leaf weights and preserve authored incoming weights separately.
 - Add Sankey alignment, ordering, gap, and style options through its canonical layout. Authored node/flow IDs and parallel flows are supported independently of labels.
-- [ ] Add general radial column/bar scales and stacks while retaining the existing progress-ring meaning.
+- [ ] Extend numeric radial axes with axis titles and label orientation, rounded sectors, mixed radial families, and angular reversal for radar/polar. Schedule reversal requires matching packed span and label projections.
 - Extend weighted Chord with deliberate ordering strategies, per-flow styles, and an independent quantitative color dimension. Its native scene retains directed reciprocal, parallel, self, and raw zero flows in source order; circular span, node gaps/thickness, opacity, target cues, and measured labels are configurable.
 - [ ] Extend typed adapter tooltip, crosshair, legend visibility and data-domain zoom policies; palette choice must not decide interaction behavior.
 - [ ] Qualify each increment with compact/wide light/dark SVG and native PNG, then maintain the ledger's remaining gaps and evidence limits.

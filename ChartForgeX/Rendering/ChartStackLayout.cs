@@ -96,7 +96,8 @@ internal sealed partial class ChartStackLayout {
         return (Math.Max(1, identities.Count), Math.Max(0, identities.IndexOf(_seriesGroups[seriesIndex])));
     }
 
-    private static bool Supports(ChartSeriesKind kind) => kind == ChartSeriesKind.Bar || kind == ChartSeriesKind.HorizontalBar || kind == ChartSeriesKind.StackedArea;
+    private static bool Supports(ChartSeriesKind kind) => kind == ChartSeriesKind.Bar || kind == ChartSeriesKind.HorizontalBar || kind == ChartSeriesKind.StackedArea
+        || kind == ChartSeriesKind.RadialBar || kind == ChartSeriesKind.RadialColumn;
 
     private sealed class StackGroup {
         internal StackGroup(int id, int seriesIndex, ChartSeries series, bool stacked) {

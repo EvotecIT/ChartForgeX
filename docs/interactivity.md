@@ -6,6 +6,8 @@ The HTML adapter works from renderer metadata such as `data-cfx-series`, `data-c
 
 The selected-target compare tray appears below the chart viewport, preserving axes, outer labels, and pointer access to marks. Its controls wrap inside compact hosts. Clearing the selection returns focus to the chart when the clear button held focus. Graphite charts use the chart's surface, text, and accent colors for these controls.
 
+Native painted marks retain their observation identity when pointed at. A producer declares polar geometry with `data-cfx-coordinate-system="polar"` on the SVG or a containing semantic group. The adapter uses native SVG hit testing for those observations, leaves empty polar space without a nearest-point target, and suppresses the Cartesian crosshair. Nested observations inherit their containing series identity. Cartesian charts retain the nearest-point readout over the plot background.
+
 Every rendered interaction surface is normalized to `data-cfx-target-kind` and `data-cfx-target-id` before bindings run. The current target kinds are `series`, `point`, `annotation`, `region`, `node`, `link`, and `legend`. Hosts can therefore route one scenario across Cartesian marks, topology nodes and links, annotations, map regions, and legend entries without depending on renderer-specific markup. Use `AddRegionStep`, `AddNodeStep`, `AddLinkStep`, or `AddLegendStep` when building those routes.
 
 Explicitly decimated series keep their original point identity. `data-cfx-point` remains the rendered ordinal, while the series source-index map and each host event's `sourcePoint` identify the caller's original point.

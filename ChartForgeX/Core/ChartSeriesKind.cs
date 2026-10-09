@@ -127,7 +127,7 @@ public enum ChartSeriesKind {
     /// <summary>
     /// Renders one or more circular progress rings.
     /// </summary>
-    RadialBar,
+    ProgressRing = 24,
 
     /// <summary>
     /// Renders one or more independently styled radial arc layers.
@@ -251,7 +251,13 @@ public enum ChartSeriesKind {
     GanttLane,
 
     /// <summary>Renders values as height- or area-proportional partitions of a triangle.</summary>
-    Pyramid,
+    Pyramid = 49,
+
+    /// <summary>Renders numeric angular bars in radial category bands.</summary>
+    RadialBar = 50,
+
+    /// <summary>Renders numeric radial columns in angular category bands.</summary>
+    RadialColumn = 51,
 
     /// <summary>Renders directed weighted flows as circular node arcs and curved ribbons.</summary>
     Chord = 52

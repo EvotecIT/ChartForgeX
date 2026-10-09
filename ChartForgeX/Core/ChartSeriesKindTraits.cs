@@ -13,7 +13,9 @@ internal static class ChartSeriesKindTraits {
         ChartSeriesKind.RegionMap,
         ChartSeriesKind.Gauge,
         ChartSeriesKind.Circle,
+        ChartSeriesKind.ProgressRing,
         ChartSeriesKind.RadialBar,
+        ChartSeriesKind.RadialColumn,
         ChartSeriesKind.LayeredRadial,
         ChartSeriesKind.Bullet,
         ChartSeriesKind.Waterfall,
@@ -49,6 +51,8 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.Scatter ||
         kind == ChartSeriesKind.Bar ||
         kind == ChartSeriesKind.HorizontalBar ||
+        kind == ChartSeriesKind.RadialBar ||
+        kind == ChartSeriesKind.RadialColumn ||
         kind == ChartSeriesKind.Lollipop;
 
     public static bool SupportsMarkers(ChartSeriesKind kind) => kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine
@@ -68,7 +72,9 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.BoxPlot ||
         kind == ChartSeriesKind.HorizontalBar ||
         kind == ChartSeriesKind.DottedMap ||
+        kind == ChartSeriesKind.ProgressRing ||
         kind == ChartSeriesKind.RadialBar ||
+        kind == ChartSeriesKind.RadialColumn ||
         kind == ChartSeriesKind.Waterfall ||
         kind == ChartSeriesKind.Funnel ||
         kind == ChartSeriesKind.Pyramid ||
@@ -97,7 +103,7 @@ internal static class ChartSeriesKindTraits {
             kind == ChartSeriesKind.TileMap ||
             kind == ChartSeriesKind.RegionMap ||
             kind == ChartSeriesKind.Circle ||
-            kind == ChartSeriesKind.RadialBar ||
+            kind == ChartSeriesKind.ProgressRing ||
             kind == ChartSeriesKind.LayeredRadial ||
             kind == ChartSeriesKind.Waterfall ||
             kind == ChartSeriesKind.Funnel ||

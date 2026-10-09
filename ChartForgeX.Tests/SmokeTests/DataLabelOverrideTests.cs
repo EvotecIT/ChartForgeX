@@ -71,9 +71,9 @@ internal static partial class SmokeTests {
         circle.Series[0].WithDataLabels(false);
         Assert(!circle.ToSvg().Contains("data-cfx-role=\"circle-label\"", System.StringComparison.Ordinal), "Circle series overrides should hide intrinsic labels.");
 
-        var radial = Chart.Create().WithLegend(false).AddRadialBar("Coverage", Points(90, 75, 66));
+        var radial = Chart.Create().WithLegend(false).AddProgressRing("Coverage", Points(90, 75, 66));
         radial.Series[0].WithDataLabels(false);
-        Assert(!radial.ToSvg().Contains("data-cfx-role=\"radial-bar-value\"", System.StringComparison.Ordinal), "Radial bar series overrides should hide center labels.");
+        Assert(!radial.ToSvg().Contains("data-cfx-role=\"progress-ring-value\"", System.StringComparison.Ordinal), "Radial bar series overrides should hide center labels.");
 
         var funnel = Chart.Create().AddFunnel("Pipeline", Points(100, 74, 51));
         funnel.Series[0].WithDataLabels(false);
@@ -179,7 +179,7 @@ internal static partial class SmokeTests {
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 320).WithDataLabels().AddSankey("Flow", new[] { new ChartNode("Found", "Found"), new ChartNode("Fixed", "Fixed") }, new[] { new ChartFlowLink("flow-2", "Found", "Fixed", 10) }), "sankey-node-label", "Sankey"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddGauge("Score", 87), "gauge-label", "gauge"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddCircle("Progress", 72), "circle-label", "circle"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)), "radial-bar-value", "radial bar"),
+            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithLegend(false).WithDataLabels().AddProgressRing("Coverage", Points(90, 75, 66)), "progress-ring-value", "progress ring"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithDataLabels().AddFunnel("Pipeline", Points(100, 74, 51)), "funnel-label", "funnel"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 300).WithDataLabels().AddDonut("Checks", Points(70, 30)), "donut-total-label", "donut center"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 340).WithDataLabels().AddTreemap("Findings", new[] { new ChartTreemapItem("Spoofing", 42), new ChartTreemapItem("Policy", 28) }), "treemap-label", "treemap"),
@@ -214,10 +214,10 @@ internal static partial class SmokeTests {
             "donut-title",
             "donut");
         AssertCenterDataLabelSpacing(
-            () => Chart.Create().WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)),
-            "radial-bar-value",
-            "radial-bar-title",
-            "radial bar");
+            () => Chart.Create().WithSize(460, 320).WithLegend(false).WithDataLabels().AddProgressRing("Coverage", Points(90, 75, 66)),
+            "progress-ring-value",
+            "progress-ring-title",
+            "progress ring");
         AssertCenterDataLabelSpacing(
             () => Chart.Create().WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)),
             "layered-radial-value",

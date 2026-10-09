@@ -93,7 +93,7 @@ internal static partial class VisualCartesianCompiler {
             metadata["data-cfx-" + value.Name] = Number(value.Value);
             description += " " + value.Name + "=" + Number(value.Value);
         }
-        if (stack.HasValue) AddStackMetadata(metadata, stack.Value);
+        if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
         metadata["aria-label"] = description;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, description));
         return builder.PushGroup(id, "point", metadata);

@@ -9,17 +9,6 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
-    private static void AddStackMetadata(IDictionary<string, string> metadata, ChartStackPoint stack) {
-        metadata["data-cfx-base"] = Number(stack.Base);
-        if (!stack.IsStacked) return;
-        metadata["data-cfx-rendered-y"] = Number(stack.Value);
-        metadata["data-cfx-stack-end"] = Number(stack.End);
-        metadata["data-cfx-stack-total"] = Number(stack.Total);
-        metadata["data-cfx-stack-source-total"] = Number(stack.SourceTotal);
-        metadata["data-cfx-stack-group"] = stack.Group ?? string.Empty;
-        if (stack.NormalizedTo.HasValue) metadata["data-cfx-normalized-to"] = Number(stack.NormalizedTo.Value);
-    }
-
     private sealed class VerticalStackCaption {
         internal VerticalStackCaption(ChartStackTotal total, string text, TextStyle style, TextMetrics metrics) { Total = total; Text = text; Style = style; Metrics = metrics; }
         internal ChartStackTotal Total { get; }

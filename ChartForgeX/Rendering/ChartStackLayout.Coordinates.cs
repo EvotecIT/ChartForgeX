@@ -9,7 +9,8 @@ internal sealed partial class ChartStackLayout {
     private static int[][] CoordinateIds(Chart chart, ChartBarCoordinateMap bars) {
         var ids = chart.Series.Select(series => Supports(series.Kind) ? new int[series.Points.Count] : Array.Empty<int>()).ToArray();
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
-            if (chart.Series[seriesIndex].Kind != ChartSeriesKind.Bar) continue;
+            if (chart.Series[seriesIndex].Kind != ChartSeriesKind.Bar && chart.Series[seriesIndex].Kind != ChartSeriesKind.RadialBar
+                && chart.Series[seriesIndex].Kind != ChartSeriesKind.RadialColumn) continue;
             for (var point = 0; point < ids[seriesIndex].Length; point++) ids[seriesIndex][point] = bars.Resolve(seriesIndex, point).Id;
         }
         // A kind namespaces these identities. Adjacent numeric equivalents share a

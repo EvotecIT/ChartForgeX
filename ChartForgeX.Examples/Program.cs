@@ -148,12 +148,12 @@ SaveChart(policyReadinessCircle, "policy-readiness-circle-light");
 
 var radialBar = Chart.Create()
     .WithTitle("Control Coverage Rings")
-    .WithSubtitle("Radial bars compare core security control completion")
+    .WithSubtitle("Progress rings compare core security control completion")
     .WithTheme(ChartTheme.ReportDark())
     .WithSize(760, 460)
     .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
     .WithXLabels("Mail auth", "DNSSEC", "Transport TLS", "Certificate CT")
-    .AddRadialBar("Average coverage", Points(92, 74, 88, 96));
+    .AddProgressRing("Average coverage", Points(92, 74, 88, 96));
 
 SaveChart(radialBar, "control-coverage-radialbar-dark");
 

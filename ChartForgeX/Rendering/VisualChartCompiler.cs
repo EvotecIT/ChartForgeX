@@ -16,7 +16,8 @@ internal static class VisualChartCompiler {
         return kind switch {
             ChartSeriesKind.Pie or ChartSeriesKind.Donut => VisualChartFamily.Radial,
             ChartSeriesKind.Gauge => VisualChartFamily.Gauge,
-            ChartSeriesKind.RadialBar or ChartSeriesKind.LayeredRadial => VisualChartFamily.RadialProgress,
+            ChartSeriesKind.ProgressRing or ChartSeriesKind.LayeredRadial => VisualChartFamily.RadialProgress,
+            ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn => VisualChartFamily.NumericRadial,
             ChartSeriesKind.Polar or ChartSeriesKind.Radar or ChartSeriesKind.PolarArea => VisualChartFamily.Polar,
             ChartSeriesKind.Circle or ChartSeriesKind.Bullet or ChartSeriesKind.ProgressBar => VisualChartFamily.Scalar,
             ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap => VisualChartFamily.Matrix,
@@ -35,6 +36,7 @@ internal static class VisualChartCompiler {
         VisualChartFamily.Radial => VisualRadialCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Gauge => VisualGaugeCompiler.LegendEntries(chart, colors),
         VisualChartFamily.RadialProgress => VisualRadialProgressCompiler.LegendEntries(chart, colors),
+        VisualChartFamily.NumericRadial => VisualCartesianCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Polar => VisualPolarCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Scalar => VisualScalarProgressCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Matrix => VisualMatrixCompiler.LegendEntries(chart, colors),
@@ -47,11 +49,16 @@ internal static class VisualChartCompiler {
     };
 
     internal static void Build(VisualChartFamily family, Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content) {
+        using var coordinateScope = family is VisualChartFamily.Radial or VisualChartFamily.RadialProgress or VisualChartFamily.Polar or VisualChartFamily.NumericRadial
+            || family == VisualChartFamily.Gauge && chart.Options.Gauge.Form != ChartGaugeForm.Linear
+            || family == VisualChartFamily.Hierarchy && chart.Series[0].Kind == ChartSeriesKind.Sunburst
+            ? builder.PushGroup(null, "coordinate-system", new Dictionary<string, string> { ["data-cfx-coordinate-system"] = "polar" }) : null;
         switch (family) {
             case VisualChartFamily.Cartesian: VisualCartesianCompiler.BuildInViewport(chart, context, builder, content); break;
             case VisualChartFamily.Radial: VisualRadialCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Gauge: VisualGaugeCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.RadialProgress: VisualRadialProgressCompiler.Build(chart, context, builder, content); break;
+            case VisualChartFamily.NumericRadial: VisualNumericRadialCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Polar: VisualPolarCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Scalar: VisualScalarProgressCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Matrix: VisualMatrixCompiler.Build(chart, context, builder, content); break;
@@ -65,4 +72,4 @@ internal static class VisualChartCompiler {
     }
 }
 
-internal enum VisualChartFamily { Cartesian, Radial, Gauge, RadialProgress, Polar, Scalar, Matrix, Schedule, Map, Hierarchy, Sankey, Chord, Specialty }
+internal enum VisualChartFamily { Cartesian, Radial, Gauge, RadialProgress, Polar, Scalar, Matrix, Schedule, Map, Hierarchy, Sankey, Chord, Specialty, NumericRadial }

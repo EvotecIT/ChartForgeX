@@ -6,7 +6,6 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartPathBuilder {
-    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartInterpolation interpolation = ChartInterpolation.Linear, ChartStepPosition stepPosition = ChartStepPosition.End) {
     /// <summary>Appends clockwise circular cubic segments, bounded to a quarter turn for native path parity.</summary>
     internal static void AddCircularArc(List<ChartPathCommand> commands, double cx, double cy, double radius, double start, double sweep) {
         if (sweep <= 0) return;
@@ -22,7 +21,7 @@ internal static class ChartPathBuilder {
         }
     }
 
-    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartSeriesKind kind, bool smooth) {
+    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartInterpolation interpolation = ChartInterpolation.Linear, ChartStepPosition stepPosition = ChartStepPosition.End) {
         if (points == null) throw new ArgumentNullException(nameof(points));
         var commands = new List<ChartPathCommand>();
         if (points.Count == 0) return new ChartPath(commands);

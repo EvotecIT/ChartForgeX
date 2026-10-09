@@ -33,7 +33,10 @@
     });
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"]').forEach((node) => {
       const data = node.dataset;
-      if (data.cfxSeries === undefined) data.cfxSeries = '0';
+      if (data.cfxSeries === undefined) {
+        const owner = node.parentElement && node.parentElement.closest('[data-cfx-series]');
+        data.cfxSeries = owner ? owner.dataset.cfxSeries : '0';
+      }
       const item = series[Number(data.cfxSeries)];
       if (!item) return;
       data.cfxSeriesName = item.name; data.cfxSeriesKey = item.key;

@@ -522,7 +522,10 @@
     });
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"]').forEach((node) => {
       const data = node.dataset;
-      if (data.cfxSeries === undefined) data.cfxSeries = '0';
+      if (data.cfxSeries === undefined) {
+        const owner = node.parentElement && node.parentElement.closest('[data-cfx-series]');
+        data.cfxSeries = owner ? owner.dataset.cfxSeries : '0';
+      }
       const item = series[Number(data.cfxSeries)];
       if (!item) return;
       data.cfxSeriesName = item.name; data.cfxSeriesKey = item.key;
@@ -1310,14 +1313,24 @@
     if (crosshair) crosshair.hidden = true;
     root.removeAttribute('data-cfx-crosshair');
   };
+  // A producer's coordinate contract controls inferred geometry; native painted targets always retain their identity.
+  const usesPolarCoordinates = (node) => !!node.closest('[data-cfx-coordinate-system="polar"]');
   const nearestPoint = (root, event) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
+    // Native SVG hit testing identifies curved marks more accurately than their rectangular envelopes.
+    const hit = event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null;
+    if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && !hit.classList.contains('cfx-series-muted')) {
+      if (usesPolarCoordinates(hit)) return { node: hit, x: event.clientX, y: event.clientY, distance: 0 };
+      const box = hit.getBoundingClientRect();
+      return { node: hit, x: box.left + box.width / 2, y: box.top + box.height / 2, distance: 0 };
+    }
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
       if (node.closest('[data-cfx-role="legend-item"]') || node.classList.contains('cfx-series-muted')) return;
+      if (usesPolarCoordinates(node)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
       const x = box.left + box.width / 2;
@@ -1362,11 +1375,19 @@
     const point = nearestPoint(root, event);
     if (!point) {
       hideCrosshair(root, crosshair);
+      const hit = event.target instanceof Element ? event.target.closest(targetSelector) : null;
+      if (!hit || usesPolarCoordinates(hit)) hideTip(root, tip, false);
       clearHover(root, true, true);
       return;
     }
     const target = targetIdentity(point.node);
     const key = targetKey(target);
+    if (usesPolarCoordinates(point.node)) {
+      hideCrosshair(root, crosshair);
+      if (root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== 'series') setHover(root, point.node, true, true, 'series');
+      showTip(root, tip, point.node, event);
+      return;
+    }
     const mode = crosshairHoverMode(event, point.node);
     if (root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode) {
       setHover(root, point.node, true, true, mode);

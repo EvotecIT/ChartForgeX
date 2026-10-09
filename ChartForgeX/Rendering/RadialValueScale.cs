@@ -24,23 +24,40 @@ internal sealed class RadialValueScale {
 
     /// <summary>Builds one shared radial scale from the configured value axis and rendered series.</summary>
     public static RadialValueScale Create(ChartAxis axis, IEnumerable<ChartSeries> series, string chartName) {
-        if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (series == null) throw new ArgumentNullException(nameof(series));
+        return Create(axis, series.SelectMany(item => item.Points).Select(point => point.Y), chartName, false);
+    }
+
+    /// <summary>Uses compiled segment endpoints when a numeric radial family supports signed baselines and stacks.</summary>
+    internal static RadialValueScale Create(ChartAxis axis, IEnumerable<double> values, string chartName, bool includeZero) {
+        if (axis == null) throw new ArgumentNullException(nameof(axis));
+        if (values == null) throw new ArgumentNullException(nameof(values));
         if (string.IsNullOrWhiteSpace(chartName)) throw new ArgumentException("Chart name cannot be empty.", nameof(chartName));
 
-        var values = series.SelectMany(item => item.Points).Select(point => point.Y).ToArray();
-        if (values.Length == 0) throw new InvalidOperationException(chartName + " charts require at least one value.");
-        if (axis.Scale == ChartScaleKind.Logarithmic && values.Any(value => value <= 0)) {
+        var observed = values.ToArray();
+        if (observed.Length == 0) throw new InvalidOperationException(chartName + " charts require at least one value.");
+        if (observed.Any(value => !ChartMath.IsFinite(value))) throw new InvalidOperationException(chartName + " values must be finite.");
+        if (axis.Scale == ChartScaleKind.Logarithmic && observed.Any(value => value <= 0)) {
             throw new InvalidOperationException(chartName + " charts with logarithmic value axes require positive values only.");
         }
 
-        var minimum = axis.Minimum ?? AutomaticMinimum(axis, values);
-        var maximum = axis.Maximum ?? values.Max();
-        if (maximum <= minimum) maximum = axis.Scale == ChartScaleKind.Logarithmic ? minimum * 10 : minimum + 1;
+        var signed = includeZero && axis.Scale != ChartScaleKind.Logarithmic;
+        var minimum = axis.Minimum ?? (signed ? Math.Min(0, observed.Min()) : AutomaticMinimum(axis, observed));
+        var maximum = axis.Maximum ?? (signed ? Math.Max(0, observed.Max()) : observed.Max());
+        if (maximum <= minimum) {
+            if (signed) {
+                var expanded = ChartTicks.Generate(axis, minimum, minimum);
+                if (!axis.Minimum.HasValue) minimum = expanded[0];
+                if (!axis.Maximum.HasValue) maximum = expanded[expanded.Count - 1];
+            } else maximum = axis.Scale == ChartScaleKind.Logarithmic ? minimum * 10 : minimum + 1;
+        }
+        if (!ChartMath.IsFinite(minimum) || !ChartMath.IsFinite(maximum) || maximum <= minimum)
+            throw new InvalidOperationException(chartName + " axis bounds cannot form a finite visible domain.");
 
-        var generatedTicks = ChartTicks.Generate(axis, minimum, maximum);
+        var generatedTicks = axis.Labels.Count > 0 || axis.Minimum.HasValue || axis.Maximum.HasValue
+            ? ChartTicks.ForAxis(axis, minimum, maximum) : ChartTicks.Generate(axis, minimum, maximum);
         var ticks = ChartTicks.PreserveFormatting(generatedTicks, generatedTicks.Where(tick => tick >= minimum).ToArray());
-        if (ticks.Count > 0) maximum = Math.Max(maximum, ticks[ticks.Count - 1]);
+        if (ticks.Count > 0 && !axis.Maximum.HasValue) maximum = Math.Max(maximum, ticks[ticks.Count - 1]);
         return new RadialValueScale(axis, minimum, maximum, ticks);
     }
 

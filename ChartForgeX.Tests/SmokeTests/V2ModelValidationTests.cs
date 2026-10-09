@@ -31,7 +31,7 @@ public sealed class V2ModelValidationTests {
     [InlineData(ChartSeriesKind.Treemap)]
     [InlineData(ChartSeriesKind.Polar)]
     [InlineData(ChartSeriesKind.PolarArea)]
-    [InlineData(ChartSeriesKind.RadialBar)]
+    [InlineData(ChartSeriesKind.ProgressRing)]
     public void NonNegativeFamiliesRejectNegativeSourceData(ChartSeriesKind kind) {
         Reject(Raw(kind, new ChartPoint(1, 4), new ChartPoint(2, -1)));
     }
@@ -62,7 +62,7 @@ public sealed class V2ModelValidationTests {
     [InlineData(ChartSeriesKind.Waterfall, "cartesian.no-data")]
     [InlineData(ChartSeriesKind.Bubble, "cartesian.no-data")]
     [InlineData(ChartSeriesKind.Radar, "polar.no-data")]
-    [InlineData(ChartSeriesKind.RadialBar, "radial.no-data")]
+    [InlineData(ChartSeriesKind.ProgressRing, "radial.no-data")]
     [InlineData(ChartSeriesKind.LayeredRadial, "radial.no-data")]
     [InlineData(ChartSeriesKind.Tree, "hierarchy.no-data")]
     [InlineData(ChartSeriesKind.Sunburst, "hierarchy.no-data")]

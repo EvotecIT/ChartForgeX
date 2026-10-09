@@ -4,7 +4,6 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 internal sealed class ChartMapper {
-    private static readonly ChartAxis LinearCategoryAxis = new ChartAxis();
     private readonly ChartRect _plot;
     private readonly ChartRange _range;
     private readonly ChartAxis _xAxis;
@@ -20,19 +19,19 @@ internal sealed class ChartMapper {
     }
 
     /// <summary>Creates a mapper whose horizontal-bar category coordinates remain linear.</summary>
-    public static ChartMapper ForHorizontalBars(ChartRect plot, ChartRange range, ChartAxis valueAxis) =>
-        new ChartMapper(plot, range, valueAxis, LinearCategoryAxis);
+    public static ChartMapper ForHorizontalBars(ChartRect plot, ChartRange range, ChartAxis valueAxis, ChartAxis categoryAxis) =>
+        new ChartMapper(plot, range, valueAxis, new ChartAxis { Reversed = categoryAxis.Reversed });
 
     public double X(double value) => _plot.Left + ChartScaleTransform.Normalize(value, _range.MinX, _range.MaxX, _xAxis) * _plot.Width;
     public double Y(double value) => _plot.Bottom - ChartScaleTransform.Normalize(value, _range.MinY, _range.MaxY, _yAxis) * _plot.Height;
 
     public double XBaseline() {
-        if (_xAxis.Scale == ChartScaleKind.Logarithmic) return _plot.Left;
+        if (_xAxis.Scale == ChartScaleKind.Logarithmic) return X(_range.MinX);
         return System.Math.Min(_plot.Right, System.Math.Max(_plot.Left, X(0)));
     }
 
     public double YBaseline() {
-        if (_yAxis.Scale == ChartScaleKind.Logarithmic) return _plot.Bottom;
+        if (_yAxis.Scale == ChartScaleKind.Logarithmic) return Y(_range.MinY);
         return System.Math.Min(_plot.Bottom, System.Math.Max(_plot.Top, Y(0)));
     }
 

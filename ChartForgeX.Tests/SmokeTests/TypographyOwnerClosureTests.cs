@@ -49,7 +49,7 @@ internal static partial class SmokeTests {
         AssertNativeStyledText(pie, "legend-label", "NORTH REGION", 18 * .65, "#D946EF", "monospace", true);
         Assert(!plainPiePng.SequenceEqual(pie.ToPng()), "Custom slice legends should preserve the complete legend style in raster output.");
 
-        var radial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 360).WithXLabels("mail controls", "dns controls").AddRadialBar("Coverage", Points(82, 71));
+        var radial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 360).WithXLabels("mail controls", "dns controls").AddProgressRing("Coverage", Points(82, 71));
         var plainRadialPng = radial.ToPng();
         ApplyLegendStyle(radial);
         var radialSvg = radial.ToSvg();

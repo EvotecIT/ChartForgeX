@@ -103,7 +103,7 @@ internal static partial class VisualCartesianCompiler {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
         }
-        var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
+        var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         using (builder.PushClip(viewport)) {
             if (horizontal) DrawHorizontalAxes(chart, context, builder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
@@ -195,7 +195,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         };
-        if (stack.HasValue) AddStackMetadata(metadata, stack.Value);
+        if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
         if (series.HistogramBinLayout != null) AddHistogramMetadata(metadata, series, pointIndex);
         return builder.PushGroup(id, "point", metadata);
     }

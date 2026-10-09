@@ -67,7 +67,7 @@ internal sealed class ChartBarCoordinateMap {
     private static IEnumerable<CoordinateNode> CreateNodes(Chart chart) {
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
-            if (series.Kind != ChartSeriesKind.Bar) continue;
+            if (series.Kind != ChartSeriesKind.Bar && series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn) continue;
             for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
                 var layout = series.HistogramBinLayout;
                 var isHistogramBin = layout != null && layout.Minimum != layout.Maximum && pointIndex < layout.Count;
