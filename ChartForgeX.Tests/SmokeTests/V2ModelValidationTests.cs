@@ -65,6 +65,7 @@ public sealed class V2ModelValidationTests {
     [InlineData(ChartSeriesKind.RadialBar, "radial.no-data")]
     [InlineData(ChartSeriesKind.LayeredRadial, "radial.no-data")]
     [InlineData(ChartSeriesKind.Tree, "hierarchy.no-data")]
+    [InlineData(ChartSeriesKind.Sunburst, "hierarchy.no-data")]
     [InlineData(ChartSeriesKind.Sankey, "sankey.no-data")]
     [InlineData(ChartSeriesKind.WordCloud, "specialty.no-data")]
     public void EmptyNativeFamiliesRetainTheirNoDataContract(ChartSeriesKind kind, string diagnostic) {
