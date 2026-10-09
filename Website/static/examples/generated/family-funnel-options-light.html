@@ -149,7 +149,8 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.Sankey =&gt; &quot;Requests across processing stages&quot;, ChartSeriesKind.Tree =&gt; &quot;Teams and their responsibilities&quot;,
         ChartSeriesKind.Sunburst =&gt; &quot;Allocation through the team hierarchy&quot;, ChartSeriesKind.Treemap =&gt; &quot;How work is allocated across teams&quot;,
         ChartSeriesKind.Pictorial =&gt; &quot;Completed assessments by team&quot;, ChartSeriesKind.WordCloud =&gt; &quot;Topics in service observations&quot;,
-        ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
+        ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Pyramid =&gt; &quot;How work is allocated across services&quot;,
+        ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
         _ =&gt; throw new ArgumentOutOfRangeException(nameof(kind))
     };
 
@@ -304,6 +305,8 @@ public static partial class V2GalleryModels {
         switch (kind) {
             case ChartSeriesKind.Funnel: return chart.AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
                 .WithXLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).WithDataLabels();
+            case ChartSeriesKind.Pyramid: return chart.AddPyramid(&quot;Allocation&quot;, new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
+                .WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;).WithDataLabels();
             case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem(&quot;Discovery&quot;, start, start.AddDays(3)).AddTimelineItem(&quot;Implementation&quot;, start.AddDays(2), start.AddDays(7))
                 .AddTimelineItem(&quot;Validation&quot;, start.AddDays(6), start.AddDays(9))
                 .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
@@ -457,6 +460,19 @@ public static partial class V2GalleryModels {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
+        if (kind == ChartSeriesKind.Pyramid) {
+            var chart = Chart.Create().WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).WithDataLabels()
+                .AddPyramid(&quot;Allocation&quot;, new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
+                .WithPyramid(options =&gt; {
+                    options.ValueEncoding = ChartPyramidValueEncoding.Area;
+                    options.Orientation = ChartOrientation.Horizontal;
+                    options.Reversed = true;
+                    options.AspectRatio = .75;
+                });
+            chart.Series[0].WithPointColor(0, &quot;#2F78C4&quot;).WithPointColor(1, &quot;#E2A644&quot;).WithPointColor(2, &quot;#34957A&quot;)
+                .WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+            return chart;
+        }
         return null;
     }
 
@@ -531,7 +547,8 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.Sankey =&gt; &quot;Requests across processing stages&quot;, ChartSeriesKind.Tree =&gt; &quot;Teams and their responsibilities&quot;,
         ChartSeriesKind.Sunburst =&gt; &quot;Allocation through the team hierarchy&quot;, ChartSeriesKind.Treemap =&gt; &quot;How work is allocated across teams&quot;,
         ChartSeriesKind.Pictorial =&gt; &quot;Completed assessments by team&quot;, ChartSeriesKind.WordCloud =&gt; &quot;Topics in service observations&quot;,
-        ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
+        ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Pyramid =&gt; &quot;How work is allocated across services&quot;,
+        ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
         _ =&gt; throw new ArgumentOutOfRangeException(nameof(kind))
     };
 
@@ -686,6 +703,8 @@ public static partial class V2GalleryModels {
         switch (kind) {
             case ChartSeriesKind.Funnel: return chart.AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
                 .WithXLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).WithDataLabels();
+            case ChartSeriesKind.Pyramid: return chart.AddPyramid(&quot;Allocation&quot;, new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
+                .WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;).WithDataLabels();
             case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem(&quot;Discovery&quot;, start, start.AddDays(3)).AddTimelineItem(&quot;Implementation&quot;, start.AddDays(2), start.AddDays(7))
                 .AddTimelineItem(&quot;Validation&quot;, start.AddDays(6), start.AddDays(9))
                 .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
@@ -839,6 +858,19 @@ public static partial class V2GalleryModels {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
+        if (kind == ChartSeriesKind.Pyramid) {
+            var chart = Chart.Create().WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).WithDataLabels()
+                .AddPyramid(&quot;Allocation&quot;, new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
+                .WithPyramid(options =&gt; {
+                    options.ValueEncoding = ChartPyramidValueEncoding.Area;
+                    options.Orientation = ChartOrientation.Horizontal;
+                    options.Reversed = true;
+                    options.AspectRatio = .75;
+                });
+            chart.Series[0].WithPointColor(0, &quot;#2F78C4&quot;).WithPointColor(1, &quot;#E2A644&quot;).WithPointColor(2, &quot;#34957A&quot;)
+                .WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+            return chart;
+        }
         return null;
     }
 
