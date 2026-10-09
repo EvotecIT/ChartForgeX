@@ -98,9 +98,9 @@ public sealed class TopologyMotionPresentation : IStaticVisualSource {
     /// <summary>Exports the configured progress sample as PNG.</summary>
     public byte[] ToPng() => PngWriter.WriteRgba(ToRgbaImage());
     /// <summary>Exports a sampled animated GIF.</summary>
-    public byte[] ToGif() => AnimatedRasterEncoder.Encode(AnimatedRasterFormat.Gif, Frames());
+    public byte[] ToGif() => Encode(AnimatedRasterFormat.Gif);
     /// <summary>Exports a sampled animated PNG.</summary>
-    public byte[] ToApng() => AnimatedRasterEncoder.Encode(AnimatedRasterFormat.Apng, Frames());
+    public byte[] ToApng() => Encode(AnimatedRasterFormat.Apng);
     /// <summary>Exports the animated SVG inside an embeddable HTML wrapper.</summary>
     public string ToHtmlFragment() => "<div class=\"chartforgex-topology-motion\">" + ToSvg() + "</div>";
     /// <summary>Exports a complete HTML document containing the animated SVG.</summary>
@@ -121,13 +121,33 @@ public sealed class TopologyMotionPresentation : IStaticVisualSource {
             responsive: _basis.Geometry.Options.UseResponsiveSvg));
     RgbaImage IStaticVisualSource.RenderRgba() => ToRgbaImage();
 
-    internal AnimatedRasterFrames Frames() {
+    private byte[] Encode(AnimatedRasterFormat format) {
+        var frames = Frames(format, out var maximumEncodedBytes);
+        return AnimatedRasterEncoder.EncodeBounded(format, frames, maximumEncodedBytes);
+    }
+
+    internal AnimatedRasterFrames Frames(AnimatedRasterFormat format, out long maximumEncodedBytes) {
         var delay = Math.Max(1, (int)Math.Round(100.0 / _motion.FramesPerSecond));
         var rawCount = Math.Ceiling(_motion.DurationSeconds * 100.0 / delay);
         if (rawCount > _motion.MaximumRasterFrames)
             throw new ArgumentOutOfRangeException(nameof(TopologyMotionOptions.MaximumRasterFrames), rawCount,
                 "Topology animated raster export would exceed the configured motion frame limit.");
         var count = Math.Max(1, (int)rawCount);
+        var raster = _basis.RasterOptions;
+        var allocation = VisualSceneRasterRenderer.CalculateAllocation(StaticVisual.Size,
+            raster.Scale, raster.Supersampling, raster.PixelBudget);
+        var width = allocation.PixelWidth / raster.Supersampling;
+        var height = allocation.PixelHeight / raster.Supersampling;
+        var encoderBytes = format == AnimatedRasterFormat.Gif
+            ? AnimatedRasterMemoryBudget.EncoderRetainedBytes(width, height, count, format)
+            : AnimatedRasterMemoryBudget.ApngWorkingBytes(width, height);
+        // Sampling and encoding occur consecutively while all completed frames remain retained.
+        var retained = checked(AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(width, height, count) +
+            Math.Max(AnimatedRasterMemoryBudget.RenderWorkingBytes(width, height, raster.Supersampling), encoderBytes));
+        maximumEncodedBytes = AnimatedRasterMemoryBudget.MaximumStreamedApngBytes(retained);
+        if (maximumEncodedBytes <= 0) {
+            throw new InvalidOperationException("Animated topology would exceed 256 MiB of sampled frames, render buffers, encoder buffers, and encoded output. Lower the canvas size, supersampling, or frame count.");
+        }
         var frames = new List<RgbaImage>(count);
         for (var index = 0; index < count; index++)
             frames.Add(Sample(TopologyMotionExtensions.RasterFrameProgress(_motion, index, count)).ToRgba(_basis.RasterOptions));

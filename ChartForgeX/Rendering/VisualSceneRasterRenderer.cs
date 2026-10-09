@@ -10,13 +10,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualSceneRasterRenderer {
     internal static RgbaImage Render(VisualScene scene, int scale = 1, int supersampling = 2, long pixelBudget = 64000000, TextHinting? textHinting = null) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
-        if (scale <= 0) throw new ArgumentOutOfRangeException(nameof(scale));
-        if (supersampling <= 0) throw new ArgumentOutOfRangeException(nameof(supersampling));
-        if (pixelBudget <= 0) throw new ArgumentOutOfRangeException(nameof(pixelBudget));
-        var width = Dimension(scene.Size.Width * scale); var height = Dimension(scene.Size.Height * scale);
-        var allocation = RasterAllocationGuard.Calculate(width, height, supersampling, 1);
-        if ((long)allocation.PixelWidth * allocation.PixelHeight > pixelBudget)
-            throw new ArgumentOutOfRangeException(nameof(pixelBudget), "Prepared visual exceeds the configured raster pixel budget, including supersampling.");
+        CalculateAllocation(scene.Size, scale, supersampling, pixelBudget);
         // Fonts are already retained by each text run. Do not resolve a canvas default font at export.
         var canvas = new RgbaCanvas(scene.Size.Width, scene.Size.Height, supersampling, null, scale, useDefaultOutlineFont: false);
         var groups = new Stack<IDisposable?>();
@@ -63,6 +57,18 @@ internal static partial class VisualSceneRasterRenderer {
             while (groups.Count > 0) groups.Pop()?.Dispose();
         }
         return canvas.ToImage();
+    }
+
+    /// <summary>Plans the exact raster canvas before either static or animated frame allocation.</summary>
+    internal static RasterAllocation CalculateAllocation(VisualSize size, int scale, int supersampling, long pixelBudget) {
+        if (scale <= 0) throw new ArgumentOutOfRangeException(nameof(scale));
+        if (supersampling <= 0) throw new ArgumentOutOfRangeException(nameof(supersampling));
+        if (pixelBudget <= 0) throw new ArgumentOutOfRangeException(nameof(pixelBudget));
+        var width = Dimension(size.Width * scale); var height = Dimension(size.Height * scale);
+        var allocation = RasterAllocationGuard.Calculate(width, height, supersampling, 1);
+        if ((long)allocation.PixelWidth * allocation.PixelHeight > pixelBudget)
+            throw new ArgumentOutOfRangeException(nameof(pixelBudget), "Prepared visual exceeds the configured raster pixel budget, including supersampling.");
+        return allocation;
     }
 
     private static int Dimension(double value) {

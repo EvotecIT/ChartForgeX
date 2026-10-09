@@ -22,11 +22,11 @@ public static class InteractiveTopologyExtensions {
         return new HtmlInteractiveTopologyRenderer().RenderPage(chart, options);
     }
 
-    /// <summary>Renders controls around trusted SVG created with the adapter's independent interactive presentation policy.</summary>
+    /// <summary>Renders controls around trusted SVG created from the adapter's detached interactive topology.</summary>
     public static string ToInteractiveHtmlPage(this TopologyChart chart, TopologyRenderOptions? options,
-        Func<TopologyRenderOptions, string> svgPresentation) {
+        Func<PreparedTopology, string> svgPresentation) {
         if (svgPresentation == null) throw new ArgumentNullException(nameof(svgPresentation));
-        return new HtmlInteractiveTopologyRenderer().RenderPage(chart, options, null, svgPresentation);
+        return new HtmlInteractiveTopologyRenderer().RenderPresentationPage(chart, svgPresentation, options);
     }
 
     /// <summary>Saves a complete self-contained interactive topology HTML page.</summary>
@@ -37,7 +37,7 @@ public static class InteractiveTopologyExtensions {
 
     /// <summary>Saves interactive controls around a trusted detached SVG presentation of the same topology.</summary>
     public static void SaveInteractiveHtml(this TopologyChart chart, string path, TopologyRenderOptions? options,
-        Func<TopologyRenderOptions, string> svgPresentation) {
+        Func<PreparedTopology, string> svgPresentation) {
         if (path == null) throw new ArgumentNullException(nameof(path));
         File.WriteAllText(path, chart.ToInteractiveHtmlPage(options, svgPresentation), Encoding.UTF8);
     }

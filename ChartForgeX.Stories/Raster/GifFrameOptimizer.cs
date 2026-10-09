@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ChartForgeX.Raster;
 
@@ -26,13 +27,14 @@ internal readonly struct GifIndexedFrame {
 }
 
 internal static class GifFrameOptimizer {
-    public static IReadOnlyList<GifIndexedFrame> BuildFrames(IReadOnlyList<RgbaImage> frames, GifPalette palette) {
+    public static IReadOnlyList<GifIndexedFrame> BuildFrames(IReadOnlyList<RgbaImage> frames, GifPalette palette, CancellationToken cancellationToken = default) {
         if (frames == null) throw new ArgumentNullException(nameof(frames));
         if (palette == null) throw new ArgumentNullException(nameof(palette));
         var indexed = new List<GifIndexedFrame>(frames.Count);
         byte[]? previous = null;
         for (var i = 0; i < frames.Count; i++) {
-            var current = GifPaletteQuantizer.Quantize(frames[i], palette);
+            cancellationToken.ThrowIfCancellationRequested();
+            var current = GifPaletteQuantizer.Quantize(frames[i], palette, cancellationToken);
             indexed.Add(palette.HasTransparency || i == 0 || previous == null ? FullFrame(frames[i], current) : DeltaFrame(frames[i], current, previous));
             previous = current;
         }

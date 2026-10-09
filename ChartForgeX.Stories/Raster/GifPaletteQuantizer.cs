@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ChartForgeX.Raster;
 
@@ -21,10 +22,10 @@ internal static class GifPaletteQuantizer {
     private const int PaletteSize = 256;
     private const int HistogramSize = 65536;
 
-    public static GifPalette BuildPalette(IReadOnlyList<RgbaImage> frames) {
-        var transparentIndex = HasTransparentPixels(frames) ? PaletteSize - 1 : -1;
+    public static GifPalette BuildPalette(IReadOnlyList<RgbaImage> frames, CancellationToken cancellationToken = default) {
+        var transparentIndex = HasTransparentPixels(frames, cancellationToken) ? PaletteSize - 1 : -1;
         var colorSlots = transparentIndex >= 0 ? PaletteSize - 1 : PaletteSize;
-        var histogram = BuildHistogram(frames);
+        var histogram = BuildHistogram(frames, cancellationToken);
         var samples = new List<ColorSample>();
         for (var key = 0; key < histogram.Counts.Length; key++) {
             var count = histogram.Counts[key];
@@ -35,6 +36,7 @@ internal static class GifPaletteQuantizer {
         if (samples.Count == 0) samples.Add(new ColorSample(0, 0, 0, 1));
         var boxes = new List<ColorBox> { ColorBox.Create(samples, 0, samples.Count) };
         while (boxes.Count < colorSlots) {
+            cancellationToken.ThrowIfCancellationRequested();
             var index = LargestSplittableBox(boxes);
             if (index < 0) break;
             var split = boxes[index].Split(samples);
@@ -60,7 +62,7 @@ internal static class GifPaletteQuantizer {
         return new GifPalette(colors, transparentIndex);
     }
 
-    public static byte[] Quantize(RgbaImage frame, GifPalette palette) {
+    public static byte[] Quantize(RgbaImage frame, GifPalette palette, CancellationToken cancellationToken = default) {
         var indexed = new byte[frame.Width * frame.Height];
         var cache = new int[HistogramSize];
         for (var i = 0; i < cache.Length; i++) cache[i] = -1;
@@ -72,6 +74,7 @@ internal static class GifPaletteQuantizer {
         var nextBlue = new double[frame.Width + 2];
 
         for (var y = 0; y < frame.Height; y++) {
+            cancellationToken.ThrowIfCancellationRequested();
             var row = y * frame.Width;
             for (var x = 0; x < frame.Width; x++) {
                 var source = (row + x) * 4;
@@ -105,11 +108,12 @@ internal static class GifPaletteQuantizer {
         return indexed;
     }
 
-    private static GifHistogram BuildHistogram(IReadOnlyList<RgbaImage> frames) {
+    private static GifHistogram BuildHistogram(IReadOnlyList<RgbaImage> frames, CancellationToken cancellationToken) {
         var histogram = new GifHistogram();
         foreach (var frame in frames) {
             var pixels = frame.Pixels;
             for (var i = 0; i < frame.Width * frame.Height; i++) {
+                if ((i & 4095) == 0) cancellationToken.ThrowIfCancellationRequested();
                 var source = i * 4;
                 if (IsTransparent(pixels[source + 3])) continue;
                 var r = pixels[source];
@@ -126,10 +130,11 @@ internal static class GifPaletteQuantizer {
         return histogram;
     }
 
-    private static bool HasTransparentPixels(IReadOnlyList<RgbaImage> frames) {
+    private static bool HasTransparentPixels(IReadOnlyList<RgbaImage> frames, CancellationToken cancellationToken) {
         foreach (var frame in frames) {
             var pixels = frame.Pixels;
             for (var i = 0; i < frame.Width * frame.Height; i++) {
+                if ((i & 4095) == 0) cancellationToken.ThrowIfCancellationRequested();
                 if (IsTransparent(pixels[i * 4 + 3])) return true;
             }
         }
@@ -284,12 +289,30 @@ internal static class GifPaletteQuantizer {
 
         public ColorBoxSplit Split(List<ColorSample> samples) {
             Comparison<ColorSample> comparison;
-            if (RedRange >= GreenRange && RedRange >= BlueRange) comparison = (left, right) => left.Red.CompareTo(right.Red);
-            else if (GreenRange >= BlueRange) comparison = (left, right) => left.Green.CompareTo(right.Green);
-            else comparison = (left, right) => left.Blue.CompareTo(right.Blue);
+            if (RedRange >= GreenRange && RedRange >= BlueRange) comparison = (left, right) => CompareSamples(left, right, left.Red.CompareTo(right.Red));
+            else if (GreenRange >= BlueRange) comparison = (left, right) => CompareSamples(left, right, left.Green.CompareTo(right.Green));
+            else comparison = (left, right) => CompareSamples(left, right, left.Blue.CompareTo(right.Blue));
             samples.Sort(Start, Length, Comparer<ColorSample>.Create(comparison));
             var midpoint = WeightedMidpoint(samples);
             return new ColorBoxSplit(Create(samples, Start, midpoint), Create(samples, midpoint, End));
+        }
+
+        /// <summary>Orders dominant-channel ties by color and weight so median cuts are independent of the host's sort algorithm.</summary>
+        private static int CompareSamples(ColorSample left, ColorSample right, int dominantOrder) {
+            if (dominantOrder != 0) {
+                return dominantOrder;
+            }
+
+            var order = left.Red.CompareTo(right.Red);
+            if (order != 0) {
+                return order;
+            }
+            order = left.Green.CompareTo(right.Green);
+            if (order != 0) {
+                return order;
+            }
+            order = left.Blue.CompareTo(right.Blue);
+            return order != 0 ? order : left.Count.CompareTo(right.Count);
         }
 
         private int WeightedMidpoint(IReadOnlyList<ColorSample> samples) {

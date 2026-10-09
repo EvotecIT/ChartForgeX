@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -9,6 +10,59 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class NativeTopologyMotionSizingTests {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnimationBudgetIncludesSupersampledRenderBuffersBeforeStreamWrites(bool apng) {
+        var chart = TopologyChart.Create().WithViewport(1200, 800, 20)
+            .AddNode("source", "Source", 20, 80)
+            .AddNode("target", "Target", 280, 180)
+            .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight);
+        var options = new TopologyRenderOptions {
+            FitContentToViewport = true,
+            PngSupersamplingScale = 8
+        };
+        var motion = TopologyMotionOptions.RoutePulseForEdges("route").WithDuration(.8).WithFrameRate(10).WithFrameLimit(8);
+        using var output = new MemoryStream();
+        var error = Assert.Throws<InvalidOperationException>(() => {
+            if (apng) chart.WriteApng(output, options, motion); else chart.WriteGif(output, options, motion);
+        });
+        Assert.Contains("256 MiB", error.Message);
+        Assert.Equal(0, output.Length);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OversizedAnimationFailsBeforeWritingOrReplacingExistingFiles(bool apng) {
+        var chart = TopologyChart.Create().WithViewport(640, 360, 20)
+            .AddNode("source", "Source", 20, 80)
+            .AddNode("target", "Target", 280, 180)
+            .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight);
+        var options = new TopologyRenderOptions {
+            FitContentToViewport = true,
+            PngSupersamplingScale = 1
+        };
+        var motion = TopologyMotionOptions.RoutePulseForEdges("route").WithDuration(200).WithFrameRate(10).WithFrameLimit(2000);
+        var error = Assert.Throws<InvalidOperationException>(() => {
+            if (apng) chart.ToApng(options, motion); else chart.ToGif(options, motion);
+        });
+        Assert.Contains("256 MiB", error.Message);
+        using var output = new MemoryStream();
+        Assert.Throws<InvalidOperationException>(() => {
+            if (apng) chart.WriteApng(output, options, motion); else chart.WriteGif(output, options, motion);
+        });
+        Assert.Equal(0, output.Length);
+        var path = Path.Combine(Path.GetTempPath(), "chartforge-animation-budget-" + Guid.NewGuid().ToString("N"));
+        try {
+            File.WriteAllText(path, "existing content");
+            Assert.Throws<InvalidOperationException>(() => {
+                if (apng) chart.SaveApng(path, options, motion); else chart.SaveGif(path, options, motion);
+            });
+            Assert.Equal("existing content", File.ReadAllText(path));
+        } finally { File.Delete(path); }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

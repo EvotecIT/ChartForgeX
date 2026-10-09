@@ -29,9 +29,8 @@ public sealed class ArtifactHostHandoffTests {
         var motion = new TopologyMotionOptions { ScenarioId = explicitScenario };
         var options = new TopologyRenderOptions { ActiveScenarioId = preference };
         string? svg = null;
-        chart.ToInteractiveHtmlPage(options, policy => {
-            Assert.Null(policy.ActiveScenarioId);
-            svg = chart.WithMotion(motion, policy, preference).ToSvg();
+        chart.ToInteractiveHtmlPage(options, prepared => {
+            svg = prepared.WithMotion(motion, preference).ToSvg();
             return svg;
         });
         Assert.Contains("data-cfx-motion-source=\"" + selected + "\"", svg);
@@ -90,11 +89,8 @@ public sealed class ArtifactHostHandoffTests {
         };
         var motion = new TopologyMotionOptions { ScenarioId = "delivery" };
         string? svg = null;
-        var html = chart.ToInteractiveHtmlPage(options, policy => {
-            Assert.True(policy.IncludeEdgeLabels);
-            Assert.True(policy.IncludeGroups);
-            Assert.Null(policy.ActiveScenarioId);
-            svg = chart.WithMotion(motion, policy, options.ActiveScenarioId).ToSvg();
+        var html = chart.ToInteractiveHtmlPage(options, prepared => {
+            svg = prepared.WithMotion(motion, options.ActiveScenarioId).ToSvg();
             return svg;
         });
         var document = XDocument.Parse(svg!);
@@ -106,14 +102,14 @@ public sealed class ArtifactHostHandoffTests {
     }
 
     [Fact]
-    public void CopyEnvelopeSeparatesMutableHostStateAndDecorationFromCapturedSemantics() {
+    public void CloneSeparatesMutableHostStateAndDecorationFromCapturedSemantics() {
         var source = ChartFixture().Prepare(VisualExportRequest.ForChart(ChartFixture()).Context).ToArtifact("original");
         source.Metadata["owner"] = "source";
         source.Regions[0].Metadata["detail"] = "source region";
         source.Legend.Add(new VisualArtifactLegendItem { Id = "cpu", Label = "CPU", Color = "#0891b2" });
         var svg = source.ToSvg();
         var png = source.ToPng();
-        var copy = source.CopyEnvelope();
+        var copy = source.Clone();
         Assert.Same(source.Model, copy.Model);
         Assert.Same(source.RenderSource, copy.RenderSource);
         Assert.Equal(source.ToInterchangeUtf8Json(), copy.ToInterchangeUtf8Json());
@@ -149,6 +145,9 @@ public sealed class ArtifactHostHandoffTests {
         Assert.Equal("3", artifact.Metadata["presentation.watermarks"]);
         var portable = VisualArtifactInterchangeEnvelope.FromUtf8Json(artifact.ToInterchangeUtf8Json());
         Assert.Equal("3", portable.Extensions["presentation.watermarks"]);
+        var detached = artifact.ToWatermarkedArtifact(VisualWatermark.FromText("FOURTH"));
+        Assert.Equal("4", detached.ToInterchangeEnvelope().Extensions["presentation.watermarks"]);
+        Assert.Equal("3", artifact.Metadata["presentation.watermarks"]);
         Assert.Equal(before.Nodes.Select(n => n.Id), portable.Nodes.Select(n => n.Id));
         Assert.Equal(before.Edges.Select(e => e.Id), portable.Edges.Select(e => e.Id));
         var rendered = artifact.ToSvg();
@@ -211,8 +210,8 @@ public sealed class ArtifactHostHandoffTests {
         Assert.Contains(decorated, html);
         Assert.DoesNotContain("<script", html);
         string? interactiveSvg = null;
-        var interactive = chart.ToInteractiveHtmlPage(options, policy => {
-            interactiveSvg = chart.WithMotion(new TopologyMotionOptions { ScenarioId = "delivery" }, policy).ToSvg();
+        var interactive = chart.ToInteractiveHtmlPage(options, prepared => {
+            interactiveSvg = prepared.WithMotion(new TopologyMotionOptions { ScenarioId = "delivery" }).ToSvg();
             return interactiveSvg;
         });
         Assert.Contains(interactiveSvg!, interactive);

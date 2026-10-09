@@ -39,11 +39,13 @@ public sealed partial class TopologyHtmlRenderer {
         return RenderFragmentCore(chart, options, includeAssets: false, assetSource: "host");
     }
 
-    internal string RenderInteractiveFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets, string? assetSource = null, string? presentationSvg = null) {
-        return RenderFragmentCore(chart, options, includeAssets, assetSource ?? (includeAssets ? "inline" : "host"), presentationSvg);
+    internal string RenderInteractiveFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets,
+        string? assetSource = null, Func<PreparedTopology, string>? renderSvg = null) {
+        return RenderFragmentCore(chart, options, includeAssets, assetSource ?? (includeAssets ? "inline" : "host"), renderSvg: renderSvg);
     }
 
-    private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource, string? preparedSvg = null, double? preparedWidth = null) {
+    private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource,
+        string? preparedSvg = null, double? preparedWidth = null, Func<PreparedTopology, string>? renderSvg = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = chart.ResolveRenderOptions(options).CloneForRendering();
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
@@ -70,6 +72,14 @@ public sealed partial class TopologyHtmlRenderer {
         var syncGroup = enableSync ? options.HtmlSyncGroupName!.Trim() : string.Empty;
         var activeScenarioId = enableScenarioInteractions ? ResolveActiveScenarioId(chart, options.ActiveScenarioId) : options.ActiveScenarioId;
         var forceControlsChart = enableForceGraphControls ? TopologyLayoutEngine.Prepare(chart, options.View, options) : chart;
+        if (renderSvg != null) {
+            var prepared = chart.Prepare(EmbeddedSvgOptions(options, enableScenarioInteractions, enableForceGraphControls));
+            preparedSvg = renderSvg(prepared);
+            if (string.IsNullOrWhiteSpace(preparedSvg)) {
+                throw new InvalidOperationException("The topology presentation renderer must return SVG for the supplied prepared topology.");
+            }
+            preparedWidth = prepared.Width;
+        }
         var writer = new HtmlMarkupWriter();
         if (includeAssets) {
             writer.StartElement("style")
@@ -126,19 +136,20 @@ public sealed partial class TopologyHtmlRenderer {
 
         if (enableSelectionPanel) WriteSelectionPanel(writer, cssPrefix + "-selection-panel");
 
-        writer.RawTrusted(preparedSvg ?? RenderEmbeddedSvg(chart, options));
+        writer.RawTrusted(preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls));
         writer.EndElement().EndElement();
         return writer.Build();
     }
 
-    private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options) =>
-        _svg.Render(chart, options.EnableHtmlInteractions ? PrepareInteractiveSvgOptions(chart, options) : options);
+    private string RenderEmbeddedSvg(TopologyChart chart, TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
+        return _svg.Render(chart, EmbeddedSvgOptions(options, interactiveScenarioControls, forceGraphControls));
+    }
 
-    internal static TopologyRenderOptions PrepareInteractiveSvgOptions(TopologyChart chart, TopologyRenderOptions options) {
-        var snapshot = options.CloneForRendering();
-        if (options.EnableHtmlInteractions && chart.Scenarios.Count > 0) snapshot.ActiveScenarioId = null;
-        if (options.EnableHtmlInteractions && options.EnableHtmlForceGraphControls &&
-            (chart.LayoutMode == TopologyLayoutMode.ForceDirected || chart.LayoutMode == TopologyLayoutMode.RelationshipRadial)) {
+    private static TopologyRenderOptions EmbeddedSvgOptions(TopologyRenderOptions options, bool interactiveScenarioControls, bool forceGraphControls) {
+        if (!interactiveScenarioControls && !forceGraphControls) return options;
+        var snapshot = options.Clone();
+        if (interactiveScenarioControls) snapshot.ActiveScenarioId = null;
+        if (forceGraphControls) {
             snapshot.IncludeEdgeLabels = true;
             snapshot.IncludeGroups = true;
         }

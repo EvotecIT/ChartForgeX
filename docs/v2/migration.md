@@ -4,6 +4,12 @@ This guide records the breaking-release target and the observed consumer contrac
 
 Qualify consumer candidates from their intended branches. A primary checkout, remote source, local project reference and installed NuGet package are different evidence boundaries; source migration alone does not establish an installed consumer or a public release.
 
+## Raster image inputs and animation delays
+
+Pass `RgbaImage` directly to `VisualCanvas.AddImage` or the image overload of `AddHeroBadge` for an independent pixel snapshot used by SVG and raster output. `RgbaImage` itself retains the supplied array; the typed canvas call copies it. The raw paired SVG href and RGBA contract remains available for vector producers. See [Visual Canvas](../visual-canvas.md) for ownership and bounded file-input options.
+
+Explicit zero-duration image frames are preserved in GIF and APNG. Negative and excessive format durations fail instead of silently clamping through image-array `ToGif` or `ToApng` conveniences. Positive story transition timing is unchanged. `RasterAnimationOptions.PngCompressionLevel` controls APNG's stored, fastest, or optimal compression profile; [raster animation](../raster-animation.md) documents timing, limits, and caller-buffer lifetime.
+
 ## Shared visual defaults
 
 Default charts and diagrams use 24 logical units of outer padding, 17px bold titles, 13.5px subtitles, 13px legends and 12px axis/data labels. The paired theme owns these values; authored padding, text styles and model legend settings remain authoritative. Native compact exports lay out the data again instead of scaling a desktop chart and its text down.
@@ -36,6 +42,7 @@ V2 moves public types between assemblies and uses package version `2.0.0`. Rebui
 | `VisualCanvas`, `ImageComposition`, factual metric/table/list blocks and static `VisualGrid` | Add `ChartForgeX.Visuals`; keep the domain namespaces |
 | `VisualArtifactRenderOptions.Watermarks` | Use the Visuals `artifact.WithWatermarks(...)` decorator; semantic `Model` remains available |
 | `VisualStory`, `TerminalStory`, transcripts and GIF/APNG output | Add `ChartForgeX.Stories`; existing story/terminal export extension names remain |
+| Timed RGBA animation frames | Add `ChartForgeX.Stories` for `RasterAnimationEncoder`, `RasterAnimationFrame`, `RasterAnimationFormat` and `RasterAnimationOptions`; keep the `ChartForgeX.Raster` namespace and use Core `RgbaImage` inputs |
 | `ImageComposition.ToGif()` or core GIF format dispatch | Resolve pixels with `composition.ToImage()` or `chart.ToRgbaImage()`, then call the Stories `ToGif()` extension |
 | `VisualGrid.WithMotion(...)` | Keep static target IDs and create a Stories `VisualMotionPresentation` over the grid's common static output |
 | `TopologyRenderOptions.Motion` / `WithMotion(...)` | Use `chart.WithMotion(motion, staticOptions)` to create a Stories topology presentation; static topology options stay core |
@@ -58,7 +65,7 @@ string svg = artifact.ToSvg();
 
 The decorator copies watermark declarations and preserves their order. The overload accepting `VisualArtifactRenderOptions` captures topology and raster settings with the producer. Changing an already captured watermark object does not alter the decoration.
 
-Use `artifact.CopyEnvelope().WithWatermarks(...)` when several exports share one artifact and each needs its own decoration. The copy separates mutable host metadata, accessibility, regions and legend items; its semantic model and producer-owned render source remain shared. Use a prepared input when the host also needs detached geometry.
+Use `artifact.ToWatermarkedArtifact(...)` when several exports share one artifact and each needs its own decoration. `artifact.Clone()` separates mutable host metadata, accessibility, regions and legend items; its semantic model and producer-owned render source remain shared. Use a prepared input when the host also needs detached geometry.
 
 Visuals records the applied layer count as the invariant integer metadata value `presentation.watermarks`. The value travels through the neutral interchange envelope and JSON. A native host that cannot project those layers can report the loss without taking a Visuals dependency. Repeated decoration counts the producer's actual captured layers.
 
@@ -78,7 +85,7 @@ The presentation keeps the detached prepared geometry. It does not add animation
 
 For animated SVG with marks, use `VisualWatermarkDecoration.ApplyToSvg(presentation.ToSvg(), marks)`. Animated HTML accepts the same optional SVG transformation through `presentation.ToHtmlPage(svg => VisualWatermarkDecoration.ApplyToSvg(svg, marks))`. The decorator retains script-free SVG animation. A presentation's common static-source contract exports its configured progress sample; use its explicit animation exports when motion is required.
 
-The HTML interaction adapter accepts a trusted SVG factory through `topology.ToInteractiveHtmlPage(staticOptions, policy => topology.WithMotion(motion, policy, staticOptions.ActiveScenarioId).ToSvg())`. The independent policy includes the content needed by scenario and label/group controls; the original options retain their initial selection and visibility. Stories uses the preferred scenario for route selection independently of static highlighting, including its normal fallback when that scenario has no route. Supply producer-generated SVG rather than untrusted arbitrary markup.
+The HTML interaction adapter accepts a trusted SVG factory through `topology.ToInteractiveHtmlPage(staticOptions, prepared => prepared.WithMotion(motion, staticOptions.ActiveScenarioId).ToSvg())`. The detached topology includes the content needed by scenario and label/group controls; the original options retain their initial selection and visibility. Stories uses the preferred scenario for route selection independently of static highlighting, including its normal fallback when that scenario has no route. Supply producer-generated SVG rather than untrusted arbitrary markup.
 
 `prepared.ToArtifact()` derives kind and identity from captured semantics; `prepared.ToArtifact("host-id")` supplies a new host identity. A scene without captured semantics has kind `Unknown`; the adapter does not infer editable diagram data from drawing commands. To embed several artifacts in one HTML document, pass a distinct scope to `artifact.ToSvg(options, scope)`.
 

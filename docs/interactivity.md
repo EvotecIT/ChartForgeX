@@ -53,6 +53,30 @@ chart.SaveInteractiveHtml(Path.Combine(bundle, "latency.html"), options => optio
 
 `HtmlInteractiveDashboardOptions.ExternalAssets` and `HtmlGraphExplorerOptions.ExternalAssets` work the same way, and `HtmlInteractiveTopologyRenderer.RenderPage(chart, options, assets)` links the topology runtime from `HtmlInteractiveAssetFiles.TopologyScript(options)` (topology page styles stay inline because they depend on the render options). File names carry a content hash (`cfx-interactive.<hash>.js`), so every page of a bundle points at the same file and an upgraded runtime never collides with a cached copy. `WriteTo` leaves identical files untouched. Set `IncludeIntegrity = true` to add `sha384` Subresource Integrity attributes for hosted bundles; it is off by default because browsers refuse integrity-checked assets on `file://` pages, and integrity-checked assets are requested with `crossorigin="anonymous"`, so assets on another origin need CORS headers. Script nonces are kept on external script tags.
 
+## Topology motion with HTML controls
+
+Use `ChartForgeX.Stories` and `ChartForgeX.Interactivity.Html` together when a topology needs script-free SVG motion and browser controls:
+
+```csharp
+using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Topology;
+
+var motion = TopologyMotionOptions.RoutePulseForScenario("delivery");
+var options = new TopologyRenderOptions {
+    EnableHtmlScenarioControls = true,
+    EnableHtmlViewportControls = true,
+    EnableHtmlSelectionPanel = true,
+    ActiveScenarioId = "delivery",
+    IdScope = "service-route"
+};
+var html = new HtmlInteractiveTopologyRenderer().RenderPresentationPage(
+    topology, prepared => prepared.WithMotion(motion).ToSvg(), options);
+```
+
+The adapter prepares a detached topology once and passes it to the SVG producer. The prepared geometry, metadata and identity scope align with the HTML controls. Scenario highlighting stays reversible because the initial active scenario is applied by the browser runtime. The callback must return trusted SVG exported from the supplied prepared topology; it must preserve that topology's geometry and entity metadata.
+
+`RenderPresentationFragment` includes the topology CSS and interaction runtime. `RenderPresentationFragmentWithoutAssets` lets the embedding host register them once. `RenderPresentationPage` also accepts `HtmlAssetReferences` for a shared external runtime. Motion keeps its configured route while scenario controls change the visible highlight; choosing another scenario does not retarget the animation.
+
 ## Scenario Timelines
 
 Scenarios are ordered, host-neutral timelines rather than browser-only tours. Configure pacing and visual intent on the scenario model; adapters consume the same contract:
