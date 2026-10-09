@@ -453,7 +453,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
-                .WithFunnel(options =&gt; {
+                .ConfigureFunnel(options =&gt; {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
@@ -835,7 +835,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
-                .WithFunnel(options =&gt; {
+                .ConfigureFunnel(options =&gt; {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
