@@ -109,10 +109,10 @@ public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates an actual source model for every chart kind, without selecting a renderer or export backend.&lt;/summary&gt;
     public static Chart Create(ChartSeriesKind kind, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
         var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
-        var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind == ChartSeriesKind.TrendLine;
+        var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (precisionVariant ? AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant ? GeometryOptions(kind, variant) : null)
+        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant ? GeometryOptions(kind, variant) : null)
             ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
@@ -469,6 +469,9 @@ public static partial class V2GalleryModels {
     private static Chart AxisPrecision() =&gt; Chart.Create().WithXAxis(&quot;Measurement&quot;).WithYAxis(&quot;Fitted drift&quot;)
         .AddTrendLine(&quot;Least-squares drift&quot;, Enumerable.Range(0, 4096)
             .Select(index =&gt; new ChartPoint(index % 10 + .5, index % 7 - 3)));
+
+    private static Chart GaugePrecision() =&gt; Chart.Create().AddLinearGauge(&quot;Tolerance&quot;, 1.003, 1.001, 1.005)
+        .WithGauge(options =&gt; options.Target = 1.0025);
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
 using System.Linq;
@@ -499,10 +502,10 @@ public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates an actual source model for every chart kind, without selecting a renderer or export backend.&lt;/summary&gt;
     public static Chart Create(ChartSeriesKind kind, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
         var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
-        var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind == ChartSeriesKind.TrendLine;
+        var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (precisionVariant ? AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant ? GeometryOptions(kind, variant) : null)
+        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant ? GeometryOptions(kind, variant) : null)
             ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
@@ -859,6 +862,9 @@ public static partial class V2GalleryModels {
     private static Chart AxisPrecision() =&gt; Chart.Create().WithXAxis(&quot;Measurement&quot;).WithYAxis(&quot;Fitted drift&quot;)
         .AddTrendLine(&quot;Least-squares drift&quot;, Enumerable.Range(0, 4096)
             .Select(index =&gt; new ChartPoint(index % 10 + .5, index % 7 - 3)));
+
+    private static Chart GaugePrecision() =&gt; Chart.Create().AddLinearGauge(&quot;Tolerance&quot;, 1.003, 1.001, 1.005)
+        .WithGauge(options =&gt; options.Target = 1.0025);
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
     'use strict';
