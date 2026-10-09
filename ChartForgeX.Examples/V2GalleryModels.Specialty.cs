@@ -19,6 +19,7 @@ public static partial class V2GalleryModels {
                 .AddGanttTask("Validation", start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone("Delivery", start.AddDays(9), 2)
                 .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
             case ChartSeriesKind.Sankey: return FlowRelationships(variant);
+            case ChartSeriesKind.Chord: return ChordRelationships(variant);
             case ChartSeriesKind.Tree:
             case ChartSeriesKind.Sunburst: return TeamRelationships(kind, variant);
             case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap("Allocation", new[] { new ChartTreemapItem("Platform", 35), new ChartTreemapItem("Services", 25), new ChartTreemapItem("Support", 25), new ChartTreemapItem("Research", 15) });

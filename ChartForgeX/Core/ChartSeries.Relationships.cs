@@ -8,7 +8,7 @@ public sealed partial class ChartSeries {
     /// <summary>Gets immutable authored relationship nodes, in input order.</summary>
     public IReadOnlyList<ChartNode> Nodes => Relationships?.Nodes ?? Array.Empty<ChartNode>();
 
-    /// <summary>Gets the immutable authored flows of a Sankey series, in input order.</summary>
+    /// <summary>Gets the immutable authored flows of a Sankey or Chord series, in input order.</summary>
     public IReadOnlyList<ChartFlowLink> FlowLinks => Relationships?.FlowLinks ?? Array.Empty<ChartFlowLink>();
 
     /// <summary>Gets the immutable authored branches of a Tree or Sunburst series, in input order.</summary>
@@ -31,7 +31,7 @@ public sealed partial class ChartSeries {
 
     internal ChartRelationshipIndex? Relationships { get; private set; }
     internal bool HasSourceData => Points.Count > 0 || Nodes.Count > 0;
-    internal static bool IsRelationshipKind(ChartSeriesKind kind) => kind == ChartSeriesKind.Sankey || kind == ChartSeriesKind.Tree || kind == ChartSeriesKind.Sunburst;
+    internal static bool IsRelationshipKind(ChartSeriesKind kind) => kind == ChartSeriesKind.Sankey || kind == ChartSeriesKind.Chord || kind == ChartSeriesKind.Tree || kind == ChartSeriesKind.Sunburst;
     internal void SetRelationships(ChartRelationshipIndex relationships) => Relationships = relationships;
 
     internal void ValidateRelationships(bool preparing) {

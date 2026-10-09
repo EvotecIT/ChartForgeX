@@ -20,7 +20,7 @@ public readonly struct ChartFlowLink {
     public string TargetId { get; }
 
     /// <summary>
-    /// Gets the positive flow value.
+    /// Gets the non-negative raw flow value. Individual chart families may require positive values.
     /// </summary>
     public double Value { get; }
 
@@ -32,7 +32,7 @@ public readonly struct ChartFlowLink {
         if (string.IsNullOrWhiteSpace(sourceId)) throw new ArgumentException("Flow source ID must not be empty.", nameof(sourceId));
         if (string.IsNullOrWhiteSpace(targetId)) throw new ArgumentException("Flow target ID must not be empty.", nameof(targetId));
         ChartGuards.Finite(value, nameof(value));
-        if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Flow value must be positive.");
+        if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Flow value must be non-negative.");
         Id = id;
         SourceId = sourceId;
         TargetId = targetId;

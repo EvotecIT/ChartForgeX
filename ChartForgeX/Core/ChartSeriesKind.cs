@@ -251,5 +251,8 @@ public enum ChartSeriesKind {
     GanttLane,
 
     /// <summary>Renders values as height- or area-proportional partitions of a triangle.</summary>
-    Pyramid
+    Pyramid,
+
+    /// <summary>Renders directed weighted flows as circular node arcs and curved ribbons.</summary>
+    Chord = 52
 }

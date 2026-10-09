@@ -82,6 +82,7 @@ public sealed class GraphiteFrameTypographyTests {
             case ChartSeriesKind.Timeline: return chart.AddTimelineRange("Measure", 1, 3);
             case ChartSeriesKind.Gantt: return chart.AddGanttTask("Measure", 1, 3);
             case ChartSeriesKind.Sankey: return chart.AddSankey("Measure", new[] { new ChartNode("First", "First"), new ChartNode("Second", "Second") }, new[] { new ChartFlowLink("flow-1", "First", "Second", 30) });
+            case ChartSeriesKind.Chord: return chart.AddChord("Measure", new[] { new ChartNode("First", "First"), new ChartNode("Second", "Second") }, new[] { new ChartFlowLink("flow-1", "First", "Second", 30) });
             case ChartSeriesKind.Tree: return chart.AddTree("Measure", new[] { new ChartNode("Root", "Root"), new ChartNode("First", "First"), new ChartNode("Second", "Second") }, links);
             case ChartSeriesKind.Sunburst: return chart.AddSunburst("Measure", new[] { new ChartNode("Root", "Root"), new ChartNode("First", "First"), new ChartNode("Second", "Second") }, links);
             case ChartSeriesKind.Pie: return chart.AddPie("Measure", points);
