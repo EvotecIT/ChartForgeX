@@ -11,29 +11,47 @@ public static partial class V2Examples {
         ChartSeriesKind.Bar, ChartSeriesKind.Area, ChartSeriesKind.HorizontalBar, ChartSeriesKind.Pie, ChartSeriesKind.Donut, ChartSeriesKind.Gauge, ChartSeriesKind.Bullet,
         ChartSeriesKind.RadialBar, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
     };
+    private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
+        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel
+    };
 
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
         foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var variants = new List<string> { "wide", "compact" };
+            if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
+            if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
             if (!curated) {
                 if (SparseFamilies.Contains(kind)) variants.Add("sparse");
-                if (OptionFamilies.Contains(kind)) variants.Add("options");
+                if (OptionFamilies.Contains(kind) && !variants.Contains("options")) variants.Add("options");
             }
             foreach (var variant in variants) {
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = V2GalleryModels.Title(kind);
                 if (!chart.Series.Any(series => series.Kind == kind)) throw new InvalidOperationException("The gallery factory did not create its declared chart kind: " + kind);
                 var family = FamilyName(kind); var id = "family-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
-                var width = variant == "compact" ? 360 : 800; var height = variant == "compact" ? 360 : 440;
+                var compact = variant == "compact" || variant == "compact-options";
+                var width = compact ? 360 : 800; var height = compact ? 360 : 440;
                 // Let the shared policy decide whether a legend adds information. The indicator
                 // options example intentionally demonstrates an explicitly requested legend.
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
-                var subtitle = variant switch { "sparse" => "Missing observations remain visible as gaps", "options" => "Explore configured marks, scales and labels", "compact" => "The same data in a compact view", _ => "Explore the data, then download the chart" };
+                var subtitle = variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
+                    : variant == "stage-bars-horizontal" ? "Horizontal stage bars; extents remain proportional"
+                    : variant is "options" or "compact-options" && GeometryOptionFamilies.Contains(kind) ? GeometrySubtitle(kind)
+                    : variant switch { "sparse" => "Missing observations remain visible as gaps", "options" => "Explore configured marks, scales and labels", "compact" => "The same data in a compact view", _ => "Explore the data, then download the chart" };
                 WriteModel(output, artifacts, chart, id, family, title, variant, subtitle, mode, width, height, legend,
                     "V2GalleryModels.Create(ChartSeriesKind." + kind + ", " + Literal(variant) + ", VisualThemeMode." + mode + ")", chart.Series.Select(series => series.Kind.ToString()).Distinct().ToArray());
             }
         }
         WriteExpandedDiagrams(output, artifacts, curated);
     }
+
+    private static string GeometrySubtitle(ChartSeriesKind kind) => kind switch {
+        ChartSeriesKind.Line => "Step transitions at the start, middle and end",
+        ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar => "Two independent stacks; each reaches 100%; source values remain counts",
+        ChartSeriesKind.StackedArea => "A normalized stack with middle-step boundaries",
+        ChartSeriesKind.RangeArea => "Lower, middle and upper bounds share middle-step transitions",
+        ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
+        _ => "Configured chart geometry"
+    };
 
     private static void WriteModel(string output, ICollection<ProofArtifact> artifacts, IVisualRenderable model, string id, string family, string title,
         string variant, string subtitle, VisualThemeMode mode, int width, int height, bool? legend, string expression, string[]? kinds = null) {

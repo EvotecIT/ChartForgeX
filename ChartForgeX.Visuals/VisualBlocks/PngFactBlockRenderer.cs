@@ -220,7 +220,7 @@ public sealed partial class PngFactBlockRenderer {
     private static void DrawSparklineSegments(RgbaCanvas canvas, VisualMiniSparkline sparkline, bool smooth, double width) {
         foreach (var segment in ChartPointSegments.Split(sparkline.Points)) {
             if (segment.Count == 1) canvas.DrawCircle(segment[0].X, segment[0].Y, width / 2, sparkline.LineColor);
-            else canvas.DrawPolyline(smooth ? ChartPathBuilder.FromPoints(segment, ChartSeriesKind.Line, true).Flatten(5) : segment, sparkline.LineColor, width);
+            else canvas.DrawPolyline(smooth ? ChartPathBuilder.FromPoints(segment, ChartInterpolation.Smooth).Flatten(5) : segment, sparkline.LineColor, width);
         }
     }
 

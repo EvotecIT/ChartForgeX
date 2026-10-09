@@ -9,11 +9,14 @@ using ChartForgeX.Themes;
 public static partial class V2GalleryModels {
     /// <summary>Creates an actual source model for every chart kind, without selecting a renderer or export backend.</summary>
     public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        if (variant is not ("wide" or "compact" or "sparse" or "options")) throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+        var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = (variant is "options" or "compact-options" || funnelVariant ? GeometryOptions(kind, variant) : null)
+            ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
-        if (variant == "options" && kind is ChartSeriesKind.Bar or ChartSeriesKind.Area or ChartSeriesKind.HorizontalBar) {
+        if (variant == "options" && kind == ChartSeriesKind.Area) {
             chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
             chart.Series[0].StateRole = ChartSeriesState.Warning;
             chart.WithDataLabels();

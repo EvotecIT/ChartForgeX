@@ -32,7 +32,7 @@ internal static partial class VisualCartesianCompiler {
 
     /// <summary>Contains finite-size marks by extending only automatic ends of the final pixel-space axes.</summary>
     private static bool ExpandMarkerRanges(Chart chart, VisualRenderContext context, ChartRect plot,
-        ChartRange range, ChartRange? secondaryRange) {
+        ChartRange range, ChartRange? secondaryRange, ChartStackLayout stacks) {
         var x = new MarkerExtents(); var primaryY = new MarkerExtents(); var secondaryY = new MarkerExtents();
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
@@ -53,7 +53,7 @@ internal static partial class VisualCartesianCompiler {
                     markerRadius += (series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BubbleStrokeWidth) / 2;
                 else if (series.Kind == ChartSeriesKind.Lollipop) markerRadius += ChartVisualPrimitives.LollipopMarkerStrokeWidth / 2;
                 if (markerRadius <= 0) continue;
-                var value = series.Kind == ChartSeriesKind.StackedArea ? point.Y + AreaBase(chart, index, point) : point.Y;
+                var value = series.Kind == ChartSeriesKind.StackedArea ? stacks.Point(index, raw).End : point.Y;
                 Include(point.X, value, markerRadius, series.YAxis);
                 if (series.Kind == ChartSeriesKind.Dumbbell) Include(point.X, series.Points[raw + 1].Y, markerRadius, series.YAxis);
             }

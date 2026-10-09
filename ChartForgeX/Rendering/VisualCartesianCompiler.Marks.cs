@@ -10,14 +10,15 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
-        int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
         var series = chart.Series[index];
         var points = new List<ChartPoint>(series.Points.Count);
         var lower = new List<ChartPoint>(series.Points.Count);
-        foreach (var point in series.Points) {
-            var baseValue = series.Kind == ChartSeriesKind.StackedArea ? AreaBase(chart, index, point) : 0;
-            points.Add(new ChartPoint(map.X(point.X), map.Y(baseValue + point.Y), point.BreakBefore));
-            lower.Add(new ChartPoint(map.X(point.X), series.Kind == ChartSeriesKind.StackedArea ? map.YOrBaseline(baseValue) : map.YBaseline(), point.BreakBefore));
+        for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+            var point = series.Points[pointIndex];
+            var stack = stacks.Point(index, pointIndex);
+            points.Add(new ChartPoint(map.X(point.X), map.Y(stack.End), point.BreakBefore));
+            lower.Add(new ChartPoint(map.X(point.X), series.Kind == ChartSeriesKind.StackedArea ? map.YOrBaseline(stack.Base) : map.YBaseline(), point.BreakBefore));
         }
         var color = Color(series, index, colors);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
@@ -28,8 +29,8 @@ internal static partial class VisualCartesianCompiler {
                     var offset = 0;
                     foreach (var segment in ChartPointSegments.Split(points)) {
                         var baseline = lower.GetRange(offset, segment.Count);
-                        var upperPath = ChartPathBuilder.FromPoints(segment, series.Kind, series.Smooth).Flatten(12);
-                        var lowerPath = ChartPathBuilder.FromPoints(baseline, series.Kind, series.Smooth).Flatten(12);
+                        var upperPath = ChartPathBuilder.FromPoints(segment, series.Interpolation, series.StepPosition).Flatten(12);
+                        var lowerPath = ChartPathBuilder.FromPoints(baseline, series.Interpolation, series.StepPosition).Flatten(12);
                         var commands = new List<ChartPathCommand>();
                         if (upperPath.Count > 0) {
                             commands.Add(ChartPathCommand.MoveTo(upperPath[0].X, upperPath[0].Y));
@@ -43,7 +44,7 @@ internal static partial class VisualCartesianCompiler {
                         offset += segment.Count;
                     }
                 }
-                var linePath = ChartPathBuilder.FromPoints(points, series.Kind, series.Smooth);
+                var linePath = ChartPathBuilder.FromPoints(points, series.Interpolation, series.StepPosition);
                 foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
                     if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
                         paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
@@ -63,7 +64,7 @@ internal static partial class VisualCartesianCompiler {
             var visible = radius > 0 && (!chart.Options.ClipMarksToPlot || inside)
                 && (series.Kind == ChartSeriesKind.Scatter || ShowMarker(chart, series, pointIndex));
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
-            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel)) {
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null)) {
                 if (visible) {
                     builder.Ellipse(point.X, point.Y, radius, radius, PointColor(series, index, pointIndex, colors),
                         role: series.Kind == ChartSeriesKind.Scatter && !string.IsNullOrWhiteSpace(series.SemanticRole) ? series.SemanticRole : "marker",
@@ -80,27 +81,26 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawBars(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartBarCoordinateMap coordinates,
-        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
         var series = chart.Series[index];
-        var layout = ResolveBarLayout(chart, context, plot, map, index);
-        var grouped = chart.Options.BarMode == ChartBarMode.Grouped;
+        var layout = ResolveBarLayout(chart, context, plot, map, stacks, index);
         var width = layout.Width;
         var offset = layout.Offset;
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
         for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
             var point = series.Points[pointIndex];
-            var baseValue = grouped ? 0 : ChartBarStacking.BaseValue(chart, coordinates, index, pointIndex);
-            var y = map.Y(baseValue + point.Y);
-            var baseY = grouped ? map.YBaseline() : map.YOrBaseline(baseValue);
+            var stack = stacks.Point(index, pointIndex);
+            var y = map.Y(stack.End);
+            var baseY = map.YOrBaseline(stack.Base);
             var left = map.X(point.X) + offset - width / 2;
             var barWidth = width;
-            if (ChartHistogramBarSlot.TryResolve(chart, coordinates, index, pointIndex, map, out var histogramLeft, out var histogramWidth)) {
+            if (ChartHistogramBarSlot.TryResolve(chart, coordinates, stacks, index, pointIndex, map, out var histogramLeft, out var histogramWidth)) {
                 left = histogramLeft;
                 barWidth = histogramWidth;
             }
-            var bounds = VisibleSegmentBounds(chart, new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y)), point.Y);
+            var bounds = VisibleSegmentBounds(chart, new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y)), stack.Value);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
-            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, baseValue)) {
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stack)) {
                 DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors);
             }
             obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
@@ -108,14 +108,12 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static (double Width, double Offset) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, int index) {
-        var series = chart.Series[index];
+    private static (double Width, double Offset) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, ChartStackLayout stacks, int index) {
         var barIndices = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.Bar
             && (chart.Series[i].HistogramBinLayout == null || chart.Series[i].HistogramBinLayout!.Minimum == chart.Series[i].HistogramBinLayout!.Maximum)).ToArray();
-        var grouped = chart.Options.BarMode == ChartBarMode.Grouped;
-        var stackAxes = barIndices.Select(i => chart.Series[i].YAxis).Distinct().ToArray();
-        var count = Math.Max(1, grouped ? barIndices.Length : stackAxes.Length);
-        var position = grouped ? Math.Max(0, Array.IndexOf(barIndices, index)) : Math.Max(0, Array.IndexOf(stackAxes, series.YAxis));
+        var slot = stacks.Slot(barIndices, index);
+        var count = slot.Count;
+        var position = slot.Position;
         var centers = barIndices.SelectMany(i => chart.Series[i].Points.Select(point => map.X(point.X))).Distinct().OrderBy(value => value).ToArray();
         var sampleSlots = chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0;
         var spacing = sampleSlots > 0 ? plot.Width / sampleSlots : plot.Width;
@@ -126,20 +124,6 @@ internal static partial class VisualCartesianCompiler {
         var width = Math.Max(sampleSlots > 0 ? 0 : .1, (occupied - gap * (count - 1)) / count);
         var offset = (position - (count - 1) / 2d) * (width + gap);
         return (width, offset);
-    }
-
-    private static double AreaBase(Chart chart, int index, ChartPoint point) {
-        var sum = 0d;
-        for (var previous = 0; previous < index; previous++) {
-            var series = chart.Series[previous];
-            if (series.Kind != ChartSeriesKind.StackedArea || series.YAxis != chart.Series[index].YAxis) continue;
-            foreach (var candidate in series.Points) {
-                if (!ChartMath.SameCoordinate(candidate.X, point.X)) continue;
-                if ((point.Y >= 0 && candidate.Y >= 0) || (point.Y < 0 && candidate.Y < 0)) sum += candidate.Y;
-                break;
-            }
-        }
-        return sum;
     }
 
     private static bool ShowMarker(Chart chart, ChartSeries series, int pointIndex) {
@@ -180,7 +164,7 @@ internal static partial class VisualCartesianCompiler {
         var value = observationValue ?? series.Points[pointIndex].Y;
         var spacing = context.Theme.Spacing;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
-        if (placement == ChartDataLabelPlacement.Auto && series.Kind == ChartSeriesKind.Bar && chart.Options.BarMode == ChartBarMode.Stacked)
+        if (placement == ChartDataLabelPlacement.Auto && series.Kind == ChartSeriesKind.Bar && ChartStackLayout.Participates(chart, series))
             placement = ChartDataLabelPlacement.Inside;
         var candidates = new List<LabelCandidate>();
         var leftOffset = mark.Left - anchor.X - spacing;

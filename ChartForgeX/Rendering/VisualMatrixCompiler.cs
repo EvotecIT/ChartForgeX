@@ -71,7 +71,7 @@ internal static partial class VisualMatrixCompiler {
                         if (kind == ChartSeriesKind.HexbinHeatmap) {
                             var cx = plot.Left + (columnIndex + .5 + (rowIndex % 2) * .5) * plot.Width / (columns.Length + .5);
                             var cy = y + cellHeight / 2;
-                            hexPath = ChartPathBuilder.FromPoints(ChartHexbinLayout.Points(cx, cy, hexRadius).ToArray(), ChartSeriesKind.Line, false);
+                            hexPath = ChartPathBuilder.FromPoints(ChartHexbinLayout.Points(cx, cy, hexRadius).ToArray(), ChartInterpolation.Linear);
                             bounds = new ChartRect(cx - hexRadius * Math.Sqrt(3) / 2, cy - hexRadius, hexRadius * Math.Sqrt(3), hexRadius * 2);
                         }
                         var cell = ChartStateCategoryLegend.HeatmapCell(series, pointIndex);

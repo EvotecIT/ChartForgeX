@@ -7,7 +7,7 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Represents one named series of points in a chart.
 /// </summary>
-public sealed class ChartSeries {
+public sealed partial class ChartSeries {
     private double _strokeWidth = 3;
     internal bool HasExplicitStrokeWidth { get; private set; }
     private ChartAxisSide _yAxis = ChartAxisSide.Primary;
@@ -184,9 +184,14 @@ public sealed class ChartSeries {
     public List<ChartRadialLayer> RadialLayers { get; } = new();
 
     /// <summary>
-    /// Gets or sets a value indicating whether capable renderers should smooth connected line segments.
+    /// Gets or sets smooth interpolation. Setting false restores linear interpolation,
+    /// or end-step interpolation for a step-line or step-area series.
     /// </summary>
-    public bool Smooth { get; set; }
+    public bool Smooth {
+        get => Interpolation == ChartInterpolation.Smooth;
+        set => Interpolation = value ? ChartInterpolation.Smooth
+            : Kind == ChartSeriesKind.StepLine || Kind == ChartSeriesKind.StepArea ? ChartInterpolation.Step : ChartInterpolation.Linear;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the series should appear in the chart legend.
@@ -607,6 +612,7 @@ public sealed class ChartSeries {
         Name = name ?? throw new ArgumentNullException(nameof(name));
         if (!Enum.IsDefined(typeof(ChartSeriesKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown series kind.");
         Kind = kind;
+        _interpolation = kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea ? ChartInterpolation.Step : ChartInterpolation.Linear;
         Points.AddRange(ChartGuards.Points(points, nameof(points)));
         SourcePointCount = Points.Count;
     }

@@ -23,8 +23,8 @@ internal static partial class VisualCartesianCompiler {
         var offset = 0;
         foreach (var segment in ChartPointSegments.Split(upper)) {
             var lowSegment = lower.GetRange(offset, segment.Count);
-            var highPath = ChartPathBuilder.FromPoints(segment, ChartSeriesKind.Line, area && series.Smooth);
-            var lowPath = ChartPathBuilder.FromPoints(lowSegment, ChartSeriesKind.Line, area && series.Smooth);
+            var highPath = ChartPathBuilder.FromPoints(segment, series.Interpolation, series.StepPosition);
+            var lowPath = ChartPathBuilder.FromPoints(lowSegment, series.Interpolation, series.StepPosition);
             var highFlat = highPath.Flatten(12); var lowFlat = lowPath.Flatten(12);
             var commands = new List<ChartPathCommand>();
             commands.Add(ChartPathCommand.MoveTo(highFlat[0].X, highFlat[0].Y));
@@ -41,7 +41,7 @@ internal static partial class VisualCartesianCompiler {
             var upperColor = ChartColorMath.WithOpacity(color, upperOpacity); var lowerColor = ChartColorMath.WithOpacity(color, lowerOpacity);
             DrawLayeredPath(chart, builder, highPath, upperColor, sourcePaint.WithOpacity(upperColor, upperOpacity), stroke, "range-upper");
             DrawLayeredPath(chart, builder, lowPath, lowerColor, sourcePaint.WithOpacity(lowerColor, lowerOpacity), stroke, "range-lower");
-            if (area) builder.Path(ChartPathBuilder.FromPoints(middle.GetRange(offset, segment.Count), ChartSeriesKind.Line, series.Smooth),
+            if (area) builder.Path(ChartPathBuilder.FromPoints(middle.GetRange(offset, segment.Count), series.Interpolation, series.StepPosition),
                 stroke: ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), strokeWidth: ChartVisualPrimitives.RangeAreaMidlineStrokeWidth,
                 role: "range-midline", dash: new[] { ChartVisualPrimitives.RangeAreaDash, ChartVisualPrimitives.RangeAreaGap },
                 paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.RangeAreaMidlineOpacity), ChartVisualPrimitives.RangeAreaMidlineOpacity)));

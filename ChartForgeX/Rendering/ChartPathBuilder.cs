@@ -6,7 +6,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartPathBuilder {
-    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartSeriesKind kind, bool smooth) {
+    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartInterpolation interpolation = ChartInterpolation.Linear, ChartStepPosition stepPosition = ChartStepPosition.End) {
         if (points == null) throw new ArgumentNullException(nameof(points));
         var commands = new List<ChartPathCommand>();
         if (points.Count == 0) return new ChartPath(commands);
@@ -16,8 +16,8 @@ internal static class ChartPathBuilder {
             if (segment.Count == 1) {
                 // A round-capped zero-length segment keeps an isolated observation visible.
                 commands.Add(ChartPathCommand.LineTo(segment[0].X, segment[0].Y));
-            } else if (kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea) AddStepSegments(commands, segment);
-            else if (smooth && segment.Count >= 3) AddSmoothSegments(commands, segment);
+            } else if (interpolation == ChartInterpolation.Step) AddStepSegments(commands, segment, stepPosition);
+            else if (interpolation == ChartInterpolation.Smooth && segment.Count >= 3) AddSmoothSegments(commands, segment);
             else AddStraightSegments(commands, segment);
         }
 
@@ -28,9 +28,12 @@ internal static class ChartPathBuilder {
         for (var i = 1; i < points.Count; i++) commands.Add(ChartPathCommand.LineTo(points[i].X, points[i].Y));
     }
 
-    private static void AddStepSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points) {
+    private static void AddStepSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points, ChartStepPosition position) {
         for (var i = 1; i < points.Count; i++) {
-            commands.Add(ChartPathCommand.LineTo(points[i].X, points[i - 1].Y));
+            var transition = position == ChartStepPosition.Start ? points[i - 1].X
+                : position == ChartStepPosition.Middle ? points[i - 1].X / 2 + points[i].X / 2 : points[i].X;
+            if (position != ChartStepPosition.Start) commands.Add(ChartPathCommand.LineTo(transition, points[i - 1].Y));
+            if (position != ChartStepPosition.End) commands.Add(ChartPathCommand.LineTo(transition, points[i].Y));
             commands.Add(ChartPathCommand.LineTo(points[i].X, points[i].Y));
         }
     }

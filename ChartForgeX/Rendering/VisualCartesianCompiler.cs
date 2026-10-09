@@ -48,16 +48,21 @@ internal static partial class VisualCartesianCompiler {
     private static void BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport, bool measureAxes) {
         Validate(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
+        var coordinates = ChartBarCoordinateMap.Create(chart);
+        var stacks = ChartStackLayout.Create(chart, coordinates);
         if (!chart.Series.Any(series => series.Points.Count > 0) && chart.Annotations.Count == 0) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.no-data", "The chart has no observations."));
             builder.Text(chart.Options.Labels.NoData, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
                 context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center, paint: SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text));
             return;
         }
-        var coordinates = ChartBarCoordinateMap.Create(chart);
-        var range = ChartRange.FromChart(chart, coordinates);
+        foreach (var total in stacks.Totals.Where(total => total.NormalizedTo.HasValue && total.SourceValue == 0))
+            builder.AddDiagnostic(new VisualDiagnostic("cartesian.stack-zero-total", "Normalized stack '" + (total.Group ?? "default")
+                + "' on the " + total.Axis.ToString().ToLowerInvariant() + " axis at " + Number(total.Coordinate)
+                + " has a zero " + (total.Positive ? "positive" : "negative") + " total and remains at the baseline with its source observations retained."));
+        var range = ChartRange.FromChart(chart, coordinates, stacks);
         var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
-        var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range) : null;
+        var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range, stacks) : null;
         var axisLabels = new AxisLabelCache();
         var horizontal = Horizontal(chart);
         if (!horizontal) {
@@ -72,7 +77,7 @@ internal static partial class VisualCartesianCompiler {
         }
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
-        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange)) {
+        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks)) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
             if (measureAxes) plot = MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
@@ -82,14 +87,14 @@ internal static partial class VisualCartesianCompiler {
             return;
         }
         var labelBounds = plot;
-        var horizontalTotals = horizontal && chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked
-            ? ResolveHorizontalTotals(chart, context, builder, colors) : Array.Empty<HorizontalStackTotal>();
-        var verticalTotals = !horizontal && chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked
-            ? ResolveVerticalTotals(chart, context, builder, colors, coordinates) : null;
+        var horizontalTotals = horizontal && chart.Options.ShowStackTotals && stacks.HasBarStacks
+            ? ResolveHorizontalTotals(chart, context, builder, colors, stacks) : Array.Empty<HorizontalStackTotal>();
+        var verticalTotals = !horizontal && chart.Options.ShowStackTotals && stacks.HasBarStacks
+            ? ResolveVerticalTotals(chart, context, builder, colors, stacks) : null;
         if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(plot, horizontalTotals, context.Theme.Spacing);
         if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(plot, verticalTotals, context.Theme.Spacing);
         // Axis measurement and total lanes can change the final radius-to-plot ratio.
-        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange)) {
+        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks)) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
         }
@@ -123,10 +128,10 @@ internal static partial class VisualCartesianCompiler {
                     ["data-cfx-source-points"] = Number(series.SourcePointCount), ["data-cfx-rendered-points"] = Number(series.Points.Count),
                     ["data-cfx-decimation"] = series.DecimationMode?.ToString() ?? string.Empty, ["aria-label"] = series.Name
                 })) {
-                    if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, index, colors, labels, obstacles);
+                    if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
-                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, index, colors, labels, obstacles);
-                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, index, colors, labels, obstacles);
+                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles);
+                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
@@ -137,9 +142,9 @@ internal static partial class VisualCartesianCompiler {
             using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null)
                 DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles);
         }
-        if (chart.Options.ShowStackTotals && chart.Options.BarMode == ChartBarMode.Stacked) {
-            if (horizontal) AddHorizontalTotals(horizontalTotals, context, builder, map, labels);
-            else AddStackTotals(chart, context, builder, plot, coordinates, map, secondaryMap, labels, verticalTotals!);
+        if (chart.Options.ShowStackTotals && stacks.HasBarStacks) {
+            if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, stacks, labels);
+            else AddStackTotals(chart, context, builder, plot, coordinates, stacks, map, secondaryMap, labels, verticalTotals!);
         }
         DrawDataLabels(context, builder, labelBounds, labels, obstacles);
     }
@@ -169,7 +174,7 @@ internal static partial class VisualCartesianCompiler {
     private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
 
-    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, double? baseValue = null) {
+    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null) {
         var point = series.Points[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
         var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + Number(point.X) + ", " + Number(point.Y) + ")";
@@ -184,7 +189,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         };
-        if (baseValue.HasValue) metadata["data-cfx-base"] = Number(baseValue.Value);
+        if (stack.HasValue) AddStackMetadata(metadata, stack.Value);
         return builder.PushGroup(id, "point", metadata);
     }
 

@@ -91,7 +91,7 @@ internal static partial class VisualCartesianCompiler {
         if (series.Points.Count < 2) return;
         var first = series.Points[0]; var last = series.Points[series.Points.Count - 1];
         var points = new[] { new ChartPoint(map.X(first.X), map.Y(first.Y)), new ChartPoint(map.X(last.X), map.Y(last.Y)) };
-        var path = ChartPathBuilder.FromPoints(points, ChartSeriesKind.Line, false);
+        var path = ChartPathBuilder.FromPoints(points, ChartInterpolation.Linear);
         var trend = series.Kind == ChartSeriesKind.TrendLine;
         var sourceColor = Color(series, index, colors);
         DrawLayeredPath(chart, builder, path, sourceColor, VisualChartPaint.Series(series, sourceColor), Math.Max(ChartVisualPrimitives.TrendLineMinStrokeWidth, SeriesStroke(series, context)),

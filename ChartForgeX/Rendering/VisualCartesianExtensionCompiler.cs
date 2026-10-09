@@ -37,7 +37,7 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawExtensionSeries(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
         var series = chart.Series[index];
         switch (series.Kind) {
             case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
@@ -47,7 +47,7 @@ internal static partial class VisualCartesianCompiler {
             case ChartSeriesKind.RangeBar:
                 DrawRangeBars(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
             case ChartSeriesKind.HorizontalBar:
-                DrawPreparedHorizontalBars(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+                DrawPreparedHorizontalBars(chart, context, builder, plot, map, stacks, index, colors, labels, obstacles); break;
             case ChartSeriesKind.Waterfall:
                 DrawPreparedWaterfall(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
             default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
@@ -65,7 +65,11 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
-        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, params (string Name, double Value)[] values) {
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, params (string Name, double Value)[] values) =>
+        ObservationGroup(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, values);
+
+    private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartStackPoint? stack, params (string Name, double Value)[] values) {
         var id = PointId(seriesIndex, observation);
         var description = series.Name + ": " + label.DisplayedText;
         var metadata = new Dictionary<string, string> {
@@ -89,6 +93,7 @@ internal static partial class VisualCartesianCompiler {
             metadata["data-cfx-" + value.Name] = Number(value.Value);
             description += " " + value.Name + "=" + Number(value.Value);
         }
+        if (stack.HasValue) AddStackMetadata(metadata, stack.Value);
         metadata["aria-label"] = description;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, description));
         return builder.PushGroup(id, "point", metadata);

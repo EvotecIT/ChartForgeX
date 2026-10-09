@@ -435,7 +435,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static string SparklineSmoothPath(IReadOnlyList<ChartPoint> points, double yOffset) {
         var path = new SvgPathDataBuilder();
-        foreach (var command in ChartPathBuilder.FromPoints(points, ChartSeriesKind.Line, true).Commands) {
+        foreach (var command in ChartPathBuilder.FromPoints(points, ChartInterpolation.Smooth).Commands) {
             if (command.Kind == ChartPathCommandKind.MoveTo) path.MoveTo(command.X, command.Y + yOffset);
             else if (command.Kind == ChartPathCommandKind.LineTo) path.LineTo(command.X, command.Y + yOffset);
             else if (command.Kind == ChartPathCommandKind.CubicTo) path.CubicTo(command.Control1X, command.Control1Y + yOffset,

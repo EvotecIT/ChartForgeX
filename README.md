@@ -685,6 +685,8 @@ Scenario timelines are also typed and opt in. Chart and topology scenarios suppo
 
 The catalog is broad enough for generated reports, dashboards, operational summaries, and static documentation:
 
+Configure line, area and range geometry on `ChartSeries` with `WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle)`; `Linear` and `Smooth` use the same path owner. Bar and stacked-area series use `WithStackGroup("region")` for independent stacks and `WithNormalization(100)` for percentage geometry. Raw values and labels retain their source units; format the value axis as percentages separately. Funnel anatomy is explicit through `WithFunnel(options => { options.Form = ChartFunnelForm.Cone; options.Orientation = ChartOrientation.Horizontal; })`. The default funnel uses proportional vertical stage bars. See [geometry conventions](docs/v2/api-conventions.md#chart-geometry) and the configured gallery examples for limits and migration details.
+
 | Family | APIs |
 | --- | --- |
 | Cartesian lines and areas | `AddLine`, `AddSmoothLine`, `AddStepLine`, `AddArea`, `AddStepArea`, `AddSmoothArea`, `AddStackedArea`, `AddSmoothStackedArea`, `AddScatter`, `AddDecimatedLine`, `AddDecimatedArea`, `AddDecimatedScatter`, `ChartDecimator.Decimate`, `AddTrendLine`, `AddPointCallout`, `WithPointLabel`, `WithLegendEntry`, `WithSemanticRole`, `AddMeanLine`, `AddMedianLine`, `AddStandardDeviationBand`, `AddSlope` |
@@ -702,7 +704,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 
 ## Renderer Contracts
 
-- Funnel palette fills use diagonal shading, series colours use solid fills, and point colours retain shaded transparency in both SVG and PNG. Topology arrow footprints, database drums, queue badges and Wardley markers use shared geometry; font and curved-edge antialiasing may differ.
+- Funnel stage bars encode each value through its cross-axis extent; cone stage lines share those extents and connect only adjacent observations. Explicit series/point paints and fill patterns apply in both SVG and PNG. Topology arrow footprints, database drums, queue badges and Wardley markers use shared geometry; font and curved-edge antialiasing may differ.
 - ChartForgeX validates chart data before rendering so invalid payloads fail near the caller instead of producing partial markup or malformed PNGs.
 - Specialized data checks reject non-finite values, malformed trees, multiple tree roots, and cyclic Sankey flows.
 - Scoped inline SVG ids are available through `chart.ToSvg("panel-a")` and `grid.ToSvg("report-a")`, so repeated charts can be embedded safely. Topology charts take the same scope through `topology.ToSvg("panel-a", options)` or `TopologyRenderOptions.IdScope` (also used by the HTML renderers), which covers markers, filters, element ids, and the ids of icon artwork imported from SVG packs (ids in hand-written inline artwork are not rewritten).

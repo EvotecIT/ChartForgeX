@@ -59,7 +59,7 @@ internal static partial class VisualPolarCompiler {
                     var angle = radar ? RadarAngle(index, categories.Length) : -series.Points[raw[index]].X;
                     mapped[index] = On(geometry, angle, geometry.Radius * scale.Normalize(value));
                 }
-                var path = ChartPathBuilder.FromPoints(mapped, ChartSeriesKind.Line, false);
+                var path = ChartPathBuilder.FromPoints(mapped, ChartInterpolation.Linear);
                 using (builder.PushGroup(Id(seriesIndex), radar ? "radar-series" : "polar-series", new Dictionary<string, string> {
                     ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name
                 })) {

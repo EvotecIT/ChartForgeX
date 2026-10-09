@@ -25,7 +25,7 @@ public static partial class V2Examples {
     };
 
     private static string VariantLabel(string variant) => variant switch {
-        "wide" => "Standard", "expanded" => "Detailed", "compact" => "Compact", "feasibility" => "Simple",
+        "wide" => "Standard", "expanded" => "Detailed", "compact" => "Compact", "compact-options" => "Compact options", "feasibility" => "Simple",
         "explicit-status" => "Status colors", "explicit-series" => "Series colors", "surface" => "Filled surface",
         "wrapped-legend" => "Long legend", "long-title" => "Long title", "missing" => "Missing observations",
         "zero" => "Zero values", "empty" => "Empty data", "dense" => "Dense data", "options" => "Configured options",
