@@ -9,6 +9,7 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void SunburstLinksRenderRadialHierarchy() {
         var chart = Chart.Create()
+            .WithDataLabels()
             .WithSize(760, 520)
             .WithTheme(ChartTheme.Aurora())
             .AddSunburst("Control partition", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("DNS hygiene", "DNS hygiene"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("Expiry monitoring", "Expiry monitoring") }, new[] {

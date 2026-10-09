@@ -103,6 +103,7 @@ internal static partial class SmokeTests {
         Assert(narrowBulletChart.ToPng().Length > 64, "Narrow bullet chart bounds should render in PNG output.");
 
         var treeChart = Chart.Create()
+            .WithDataLabels()
             .WithSize(1040, 600)
             .WithTheme(ChartTheme.ReportLight())
             .AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("DNS hygiene", "DNS hygiene"), new ChartNode("SPF alignment", "SPF alignment"), new ChartNode("DKIM rotation", "DKIM rotation"), new ChartNode("Expiry monitoring", "Expiry monitoring"), new ChartNode("SAN inventory", "SAN inventory"), new ChartNode("DNSSEC rollout", "DNSSEC rollout"), new ChartNode("Stale record cleanup", "Stale record cleanup") }, new[] {

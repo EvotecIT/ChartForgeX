@@ -20,7 +20,7 @@ public static partial class V2GalleryModels {
             case ChartSeriesKind.Chord: return ChordRelationships(variant);
             case ChartSeriesKind.Tree:
             case ChartSeriesKind.Sunburst: return TeamRelationships(kind, variant);
-            case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap("Allocation", new[] { new ChartTreemapItem("Platform", 35), new ChartTreemapItem("Services", 25), new ChartTreemapItem("Support", 25), new ChartTreemapItem("Research", 15) });
+            case ChartSeriesKind.Treemap: return Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] { new ChartTreemapItem("Platform", 35), new ChartTreemapItem("Services", 25), new ChartTreemapItem("Support", 25), new ChartTreemapItem("Research", 15) });
             case ChartSeriesKind.Pictorial:
                 chart = Chart.Create().AddPictorial("Assessments", new[] { new ChartPictorialItem("Team A", 74), new ChartPictorialItem("Team B", 46), new ChartPictorialItem("Team C", 61) }, ChartPictorialShape.Person)
                     .WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
