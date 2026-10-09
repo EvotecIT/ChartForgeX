@@ -89,7 +89,8 @@ internal static class ChartPatternLineGeometry {
         return dx * dx + dy * dy <= radius * radius + 0.000001;
     }
 
-    private static bool ClipLineToRect(ref double x0, ref double y0, ref double x1, ref double y1, double minX, double minY, double maxX, double maxY) {
+    /// <summary>Clips a segment before producing bounded visible geometry, retaining its authored direction.</summary>
+    internal static bool ClipLineToRect(ref double x0, ref double y0, ref double x1, ref double y1, double minX, double minY, double maxX, double maxY) {
         var dx = x1 - x0;
         var dy = y1 - y0;
         var t0 = 0.0;
