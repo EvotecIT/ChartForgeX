@@ -8,10 +8,6 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Canonical weighted DAG geometry for every Sankey painter. Ribbon and node thickness share one exact scale.</summary>
 internal static class ChartSankeyLayout {
-    internal static ChartSankeyModel Compute(Chart chart, ChartRect plot, double? nodeWidth = null, bool orderNodes = true) {
-        var model = Build(chart); Layout(model, plot, nodeWidth, orderNodes); return model;
-    }
-
     internal static ChartSankeyModel Build(Chart chart) {
         var series = chart.Series.FirstOrDefault(s => s.Kind == ChartSeriesKind.Sankey);
         if (series?.Relationships == null) return ChartSankeyModel.Empty;
@@ -29,27 +25,41 @@ internal static class ChartSankeyLayout {
             outgoing[link.Source].Add(link.Target); incoming[link.Target]++;
         }
         var ready = new Queue<int>(Enumerable.Range(0, count).Where(i => incoming[i] == 0));
+        var order = new List<int>(count);
         while (ready.Count > 0) {
             int source = ready.Dequeue();
+            order.Add(source);
             foreach (int target in outgoing[source]) {
                 nodes[target].Layer = Math.Max(nodes[target].Layer, nodes[source].Layer + 1);
                 if (--incoming[target] == 0) ready.Enqueue(target);
             }
         }
         int maxLayer = Math.Max(1, nodes.Max(n => n.Layer));
-        foreach (var node in nodes) if (node.Outgoing == 0 && node.Incoming > 0) node.Layer = maxLayer;
+        var remaining = new int[count];
+        for (int i = order.Count - 1; i >= 0; i--) {
+            int source = order[i];
+            foreach (int target in outgoing[source]) remaining[source] = Math.Max(remaining[source], remaining[target] + 1);
+        }
+        foreach (var node in nodes) {
+            int latest = maxLayer - remaining[node.Index];
+            node.Layer = chart.Options.Sankey.Alignment switch {
+                ChartSankeyAlignment.Right => latest,
+                ChartSankeyAlignment.Center => (node.Layer + latest) / 2,
+                ChartSankeyAlignment.Justify when outgoing[node.Index].Count == 0 => maxLayer,
+                _ => node.Layer
+            };
+        }
         return new ChartSankeyModel(nodes, links, maxLayer);
     }
 
-    internal static void Layout(ChartSankeyModel model, ChartRect plot, double? nodeWidth = null, bool orderNodes = true, double gap = 18) {
+    internal static void Layout(ChartSankeyModel model, ChartRect plot, ChartSankeyOptions options, double gap) {
         if (model.Nodes.Count == 0) return;
         if (plot.Width <= 0 || plot.Height <= 0) throw new NotSupportedException("Sankey layout requires positive content dimensions.");
         var nodes = model.Nodes; var links = model.Links;
-        model.NodeWidth = nodeWidth ?? Math.Max(14, Math.Min(24, plot.Width / (model.MaxLayer + 1) * .08));
+        model.NodeWidth = options.NodeWidth;
         if (!Finite(model.NodeWidth) || model.NodeWidth <= 0 || model.NodeWidth * (model.MaxLayer + 1) >= plot.Width)
             throw new NotSupportedException("Sankey columns require a wider common viewport.");
-        if (orderNodes) Order(nodes, links, model.MaxLayer);
-        else foreach (var node in nodes) node.Order = node.Index;
+        Order(nodes, links, model.MaxLayer, options.NodeOrder);
         // Divide by a finite authored magnitude first. Raw column sums and pixels/weight
         // can overflow even when all node totals and the proportional geometry are valid.
         model.WeightReference = nodes.Max(n => n.Value);
@@ -65,7 +75,9 @@ internal static class ChartSankeyLayout {
         for (int layer = 0; layer <= model.MaxLayer; layer++) {
             var column = nodes.Where(n => n.Layer == layer).OrderBy(n => n.Order).ThenBy(n => n.Index).ToArray();
             double height = column.Sum(n => model.Thickness(n.Value)) + Math.Max(0, column.Length - 1) * gap;
-            double y = plot.Y + (plot.Height - height) / 2;
+            double unused = plot.Height - height;
+            double y = plot.Y + (options.VerticalAlignment == ChartSankeyVerticalAlignment.Top ? 0
+                : options.VerticalAlignment == ChartSankeyVerticalAlignment.Bottom ? unused : unused / 2);
             foreach (var node in column) {
                 node.X = plot.X + layer / (double)model.MaxLayer * (plot.Width - model.NodeWidth);
                 node.Y = y; node.Height = model.Thickness(node.Value); y += node.Height + gap;
@@ -89,8 +101,19 @@ internal static class ChartSankeyLayout {
             ChartPathCommand.CubicTo(mid, link.TargetY + half, mid, link.SourceY + half, x1, link.SourceY + half) });
     }
 
-    private static void Order(List<ChartSankeyNode> nodes, List<ChartSankeyLayoutLink> links, int maxLayer) {
+    private static void Order(List<ChartSankeyNode> nodes, List<ChartSankeyLayoutLink> links, int maxLayer, ChartSankeyNodeOrder order) {
         foreach (var node in nodes) node.Order = node.Index;
+        if (order == ChartSankeyNodeOrder.Input) return;
+        if (order is ChartSankeyNodeOrder.LabelAscending or ChartSankeyNodeOrder.LabelDescending) {
+            for (int layer = 0; layer <= maxLayer; layer++) {
+                var column = nodes.Where(node => node.Layer == layer);
+                var sorted = (order == ChartSankeyNodeOrder.LabelAscending
+                    ? column.OrderBy(node => node.Label, StringComparer.Ordinal)
+                    : column.OrderByDescending(node => node.Label, StringComparer.Ordinal)).ThenBy(node => node.Index).ToArray();
+                for (int i = 0; i < sorted.Length; i++) sorted[i].Order = i;
+            }
+            return;
+        }
         for (int pass = 0; pass < 6; pass++) {
             bool forward = pass % 2 == 0;
             for (int step = 0; step <= maxLayer; step++) {

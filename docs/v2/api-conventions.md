@@ -36,6 +36,7 @@ Immutable render requests use constructors and read-only properties. They do not
 | `ChartNode` / `ChartFlowLink` | Immutable authored relationship identities and raw finite non-negative flow facts. Chart families validate their graph and weight constraints before adding a series. |
 | `ChartSeries.WithNodeState(id, state)` | Mutable semantic styling keyed by an existing authored node ID, scoped to that series. `NodeStates` exposes a read-only view; preparation snapshots the resulting paint. |
 | `ChartOptions.Chord` | Typed circular span/start, node geometry, opacity, direction and label settings over the canonical weighted-flow facts. See [weighted chord charts](../chord.md). |
+| `ChartOptions.Sankey` | Getter-owned mutable alignment, ordering, node geometry and flow paint options. `ConfigureSankey` edits the existing object and returns the chart. |
 
 Keep the numeric scene and painter implementation internal. Public signatures use core-owned types and do not reference Visuals, Stories, browser hosts, their encoders or their policy objects. Static rendering is script-free. Optional animation, interaction and composition have the ownership described in the architecture and [consumer migration guide](migration.md).
 
@@ -130,6 +131,39 @@ var pyramid = Chart.Create().WithXLabels("Services", "Platform", "Support").With
 Pyramid values and their aggregate must be finite and non-negative. Zero values retain source facts and zero geometry; all-zero input emits a no-data diagnostic. A singleton occupies the entire triangle. Series/point paints, patterns, data-label styles and placement preferences use the common controls. Labels use a safe inner rectangle when readable and a measured outer rail otherwise. SVG metadata records the declared encoding, source value, value share, normalized length and normalized area; geometric shares never replace source values in tooltips or detached artifacts. A positive partition below floating-point boundary or coordinate precision retains its source value and emits a precision diagnostic rather than receiving an invented minimum size.
 
 `ChartOrientation` is the shared core orientation type, including `MermaidXYChartDocument.Orientation`. Replace `MermaidXYChartOrientation` references with `ChartForgeX.Core.ChartOrientation` when migrating parsed XY chart code.
+
+## Sankey layout
+
+`ChartOptions.Sankey` configures the shared native SVG/PNG geometry without changing authored nodes, flows or values:
+
+```csharp
+chart.ConfigureSankey(options => {
+    options.Alignment = ChartSankeyAlignment.Center;
+    options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
+    options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
+    options.NodeWidth = 16;
+    options.NodeGap = 12;
+    options.NodeCornerRadius = 1;
+    options.RibbonFill = ChartColor.FromHex("#607DAA");
+    options.RibbonOpacity = .45;
+});
+```
+
+| Option | Default and meaning |
+| --- | --- |
+| `Alignment` | `Justify` retains longest source depths and moves sinks to the final layer. `Left`, `Right` and `Center` select other feasible layers. |
+| `VerticalAlignment` | `Center` splits each column's unused space equally; `Top` and `Bottom` place it against the corresponding content edge. |
+| `NodeOrder` | `Auto` uses bounded weighted ordering passes. `Input` retains input order per layer; `LabelAscending` and `LabelDescending` compare labels ordinally and preserve input order for ties. |
+| `NodeWidth` | `10` logical units; must be finite and positive. |
+| `NodeGap` | `null` uses `max(12, theme.Spacing * 1.5)`; an explicit gap must be finite and non-negative. |
+| `NodeCornerRadius` | `null` uses `theme.BarRadius`; an explicit radius must be finite and non-negative and is bounded to half the bar's smaller dimension. |
+| `NodeFill` | `null` retains series/state/theme paint, including neutral default bars. |
+| `RibbonFill` | `null` retains source-node series/state/palette paint. |
+| `RibbonOpacity` | `.35`; accepts 0–1 for filled ribbons. An authored pattern overlay keeps its separate opacity. |
+
+The earliest feasible layer is the longest path depth from any source. The latest is the graph's final layer minus the longest remaining path to a sink. `Left` uses the earliest layer, `Right` the latest, and `Center` uses `floor((earliest + latest) / 2)`. This midpoint policy also applies to disconnected components and keeps every edge directed to a later layer.
+
+Explicit point colors take precedence over the corresponding family fill, then series colors and state/theme fallbacks. Layout order never reorders `Nodes` or `FlowLinks`, changes source ordinals, or reassigns point styles and ID-keyed states. All node and ribbon thicknesses use the same scale; gaps and widths do not inflate small weights. Preparation rejects node widths or gaps that cannot fit the supplied viewport. Per-flow styling, additional label placement policies and any truthful minimum-width treatment remain separate work.
 
 ## Histogram ingestion
 

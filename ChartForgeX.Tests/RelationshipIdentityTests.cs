@@ -58,7 +58,7 @@ public sealed class RelationshipIdentityTests {
     public void ParallelSankeyFlowsRetainSeparateIdsAndConserveTheirWidths() {
         var chart = Chart.Create().AddSankey("Traffic", new[] { new ChartNode("a", "Support"), new ChartNode("b", "Support") }, new[] {
             new ChartFlowLink("standard", "a", "b", 5), new ChartFlowLink("priority", "a", "b", 8)
-        });
+        }).ConfigureSankey(options => { options.Alignment = ChartSankeyAlignment.Center; options.NodeWidth = 18; options.NodeGap = 24; });
         var targets = Targets(chart); var links = targets.Where(e => (string?)e.Attribute("data-cfx-target-kind") == "link").ToArray();
         Assert.Equal(new[] { "standard", "priority" }, links.Select(e => (string?)e.Attribute("data-cfx-target-id")));
         Assert.Equal(new[] { "0", "1" }, links.Select(e => (string?)e.Attribute("data-cfx-source-link-index")));

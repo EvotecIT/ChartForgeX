@@ -13,4 +13,11 @@ public sealed partial class Chart {
         AppendSeries(series);
         return this;
     }
+
+    /// <summary>Configures the existing native Sankey layout and paint options without adding or changing authored flows.</summary>
+    public Chart ConfigureSankey(Action<ChartSankeyOptions> configure) {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        configure(Options.Sankey);
+        return this;
+    }
 }
