@@ -20,10 +20,13 @@ internal static partial class VisualChordCompiler {
         var styles = series.Nodes.Select((_, index) => ChartRelationshipPaint.LabelStyle(chart, context, index, colors.Foreground)).ToArray();
         var labels = series.Nodes.Select((node, index) => Label(chart, index)).ToArray();
         var showLabels = series.ShowDataLabels != false && options.LabelContent != ChartChordLabelContent.None;
-        var reserveX = showLabels && labels.Length > 0 ? Math.Min(plot.Width * .22, labels.Select((label, index) => builder.MeasureText(label, styles[index]).Width).Max() + context.Theme.Spacing) : 0;
-        var reserveY = showLabels && labels.Length > 0 ? Math.Min(plot.Height * .2, labels.Select((label, index) => builder.MeasureText(label, styles[index]).Height).Max() + context.Theme.Spacing) : 0;
+        var model = ChartChordLayout.Compute(series, options, plot);
+        // Semantic-only nodes have no rendered caption, including positive totals whose native arcs collapse.
+        var captionNodes = showLabels ? model.Nodes.Where(node => node.IsVisible).ToArray() : Array.Empty<ChartChordNode>();
+        var reserveX = captionNodes.Length > 0 ? Math.Min(plot.Width * .22, captionNodes.Select(node => builder.MeasureText(labels[node.Index], styles[node.Index]).Width).Max() + context.Theme.Spacing) : 0;
+        var reserveY = captionNodes.Length > 0 ? Math.Min(plot.Height * .2, captionNodes.Select(node => builder.MeasureText(labels[node.Index], styles[node.Index]).Height).Max() + context.Theme.Spacing) : 0;
         var circle = new ChartRect(plot.Left + reserveX, plot.Top + reserveY, Math.Max(0, plot.Width - reserveX * 2), Math.Max(0, plot.Height - reserveY * 2));
-        var model = ChartChordLayout.Compute(series, options, circle);
+        if (captionNodes.Length > 0) model = ChartChordLayout.Compute(series, options, circle);
         if (model.WeightReference == 0) builder.AddDiagnostic(new VisualDiagnostic("chord.no-positive-flow", "The chord chart has no positive flows; zero-valued source facts retain their identities without filled arcs or ribbons."));
         if (model.OuterRadius <= 0) builder.AddDiagnostic(new VisualDiagnostic("chord.insufficient-space", "No positive chord radius remains inside the common viewport."));
         using (builder.PushGroup("series-0", "chord-series", new Dictionary<string, string> {
