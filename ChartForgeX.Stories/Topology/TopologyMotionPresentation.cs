@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
-using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
 namespace ChartForgeX.Topology;
@@ -13,7 +10,7 @@ namespace ChartForgeX.Topology;
 public sealed class TopologyMotionPresentation : IStaticVisualSource {
     private readonly PreparedTopology _basis;
     private readonly TopologyMotionOptions _motion;
-    private readonly TopologyMotionPlan _plan;
+    private readonly ResolvedTopologyMotionVisual _visual;
     private readonly TopologyMotionSvgAdapter _animation;
 
     internal TopologyMotionPresentation(PreparedTopology basis, TopologyMotionOptions motion, string? preferredScenarioId = null) {
@@ -26,19 +23,10 @@ public sealed class TopologyMotionPresentation : IStaticVisualSource {
             planningOptions = geometry.Options.CloneForRendering();
             planningOptions.ActiveScenarioId = preferredScenarioId;
         }
-        _plan = TopologyMotionPlanner.Build(geometry.Chart, planningOptions, _motion, geometry.Routes)
+        var plan = TopologyMotionPlanner.Build(geometry.Chart, planningOptions, _motion, geometry.Routes)
             ?? throw new InvalidOperationException("Topology motion requires a scenario route or explicitly selected edges.");
-        string ColorFor(string? authored, TopologyHealthStatus status) {
-            var selected = _motion.MarkerColor ?? _plan.Color ?? authored;
-            return geometry.PaintColor(geometry.ResolveColor(selected, status),
-                string.IsNullOrWhiteSpace(selected) ? SvgColorRole.Status : SvgColorRole.Any);
-        }
-        var nodes = _plan.NodeIds.Select(id => geometry.Chart.Nodes.FirstOrDefault(node => node.Id == id))
-            .OfType<TopologyNode>().Where(node => geometry.NodeCenters.ContainsKey(node.Id))
-            .Select(node => (node.Id, geometry.NodeCenters[node.Id], ColorFor(node.Color, node.Status))).ToArray();
-        _animation = new TopologyMotionSvgAdapter(_plan, _motion,
-            geometry.PaintColor(geometry.Background, SvgColorRole.Surface), edge => ColorFor(edge.Color, edge.Status),
-            nodes, geometry.Scale);
+        _visual = new ResolvedTopologyMotionVisual(plan, _motion, geometry);
+        _animation = new TopologyMotionSvgAdapter(_visual);
     }
 
     /// <summary>Gets the resolved logical width shared by all exports.</summary>
@@ -68,26 +56,13 @@ public sealed class TopologyMotionPresentation : IStaticVisualSource {
             responsive: _basis.Geometry.Options.UseResponsiveSvg)));
 
     /// <summary>Samples the same resolved route into a detached static scene without mutating the base scene.</summary>
+    /// <param name="progress">Progress from zero to one. One retains the completed route for non-looping motion,
+    /// and returns to the route start at the seam of looping motion.</param>
     public PreparedVisual Sample(double progress) {
-        var motion = _motion.Clone().AtProgress(progress);
+        if (progress < 0 || progress > 1 || double.IsNaN(progress) || double.IsInfinity(progress))
+            throw new ArgumentOutOfRangeException(nameof(progress), progress, "Topology motion progress must be between 0.0 and 1.0.");
         var geometry = _basis.Geometry;
-        var sample = TopologyMotionPlanner.Sample(_plan, motion, geometry.Theme);
-        var color = geometry.ResolveColor(sample.Color, sample.Status);
-        var radius = motion.MarkerRadius * geometry.Scale;
-        var builder = new VisualSceneBuilder(StaticVisual.Size, geometry.Context.Font);
-        builder.Append(StaticVisual.Scene, 0, 0, "topology-frame");
-        using (builder.PushClip(geometry.Clip)) {
-            builder.Ellipse(sample.Point.X, sample.Point.Y, radius + 7 * geometry.Scale, radius + 7 * geometry.Scale,
-                color.WithOpacity(42d / 255), role: "topology-motion-halo");
-            builder.Ellipse(sample.Point.X, sample.Point.Y, radius + 3 * geometry.Scale, radius + 3 * geometry.Scale,
-                geometry.Background.WithOpacity(230d / 255), role: "topology-motion-surface");
-            builder.Ellipse(sample.Point.X, sample.Point.Y, radius, radius, color, role: "topology-motion-marker",
-                paint: new VisualScenePaintBinding(SvgPaint.Of(color,
-                    string.IsNullOrWhiteSpace(motion.MarkerColor) ? SvgColorRole.Status : SvgColorRole.Any), null));
-            builder.Ellipse(sample.Point.X, sample.Point.Y, radius + 3 * geometry.Scale, radius + 3 * geometry.Scale,
-                null, color.WithOpacity(180d / 255), 1.5 * geometry.Scale, "topology-motion-outline");
-        }
-        return StaticVisual.WithScene(builder.Build(),
+        return StaticVisual.WithScene(TopologyMotionSceneAdapter.Sample(StaticVisual.Scene, geometry, _visual, progress),
             new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(geometry.Options.IdScope),
                 geometry.Options.SvgColorVariables, geometry.Options.OpenLinksInNewTab
                     ? VisualSvgLinkTarget.NewContext : VisualSvgLinkTarget.SameContext, responsive: geometry.Options.UseResponsiveSvg));

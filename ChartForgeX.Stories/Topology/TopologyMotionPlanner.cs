@@ -39,25 +39,6 @@ internal static class TopologyMotionPlanner {
         return entries.Count == 0 ? null : new TopologyMotionPlan(scenario.Id, MotionSourceColor(scenario), entries, OrderedNodeIds(nodeIds));
     }
 
-    public static TopologyMotionSample Sample(TopologyMotionPlan plan, TopologyMotionOptions motion, TopologyTheme theme) {
-        var progress = Clamp(motion.Progress, 0, 1);
-        var targetDistance = progress >= 1 ? plan.TotalLength : plan.TotalLength * progress;
-        var walked = 0.0;
-        foreach (var entry in plan.Entries) {
-            if (walked + entry.Length >= targetDistance || ReferenceEquals(entry, plan.Entries[plan.Entries.Count - 1])) {
-                var localDistance = Math.Max(0, targetDistance - walked);
-                var point = PointAtDistance(entry.Points, localDistance);
-                var color = MotionColor(entry.Edge, plan, motion, theme);
-                return new TopologyMotionSample(point, color, entry.Edge.Status);
-            }
-
-            walked += entry.Length;
-        }
-
-        var first = plan.Entries[0];
-        return new TopologyMotionSample(first.Points[0], MotionColor(first.Edge, plan, motion, theme), first.Edge.Status);
-    }
-
     private static void AddEdges(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, List<TopologyMotionEntry> entries, string edgeId, IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>>? resolvedRoutes) {
         foreach (var edge in chart.Edges.Where(candidate => string.Equals(candidate.Id, edgeId, StringComparison.Ordinal))) {
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
@@ -109,36 +90,10 @@ internal static class TopologyMotionPlanner {
     private static string? MotionSourceColor(TopologyScenario? scenario) =>
         string.IsNullOrWhiteSpace(scenario?.Color) ? null : scenario!.Color!.Trim();
 
-    private static string MotionColor(TopologyEdge edge, TopologyMotionPlan plan, TopologyMotionOptions motion, TopologyTheme theme) {
-        if (!string.IsNullOrWhiteSpace(motion.MarkerColor)) return motion.MarkerColor!.Trim();
-        if (!string.IsNullOrWhiteSpace(plan.Color)) return plan.Color!;
-        if (!string.IsNullOrWhiteSpace(edge.Color)) return edge.Color!.Trim();
-        return theme.StatusColor(edge.Status);
-    }
-
     private static double PolylineLength(IReadOnlyList<ChartPoint> points) {
         var total = 0.0;
         for (var i = 1; i < points.Count; i++) total += Distance(points[i - 1], points[i]);
         return Math.Max(0.0001, total);
-    }
-
-    private static ChartPoint PointAtDistance(IReadOnlyList<ChartPoint> points, double distance) {
-        if (points.Count == 0) return new ChartPoint(0, 0);
-        if (points.Count == 1) return points[0];
-        var walked = 0.0;
-        for (var i = 1; i < points.Count; i++) {
-            var start = points[i - 1];
-            var end = points[i];
-            var segment = Distance(start, end);
-            if (walked + segment >= distance) {
-                var t = segment <= 0.0001 ? 0 : (distance - walked) / segment;
-                return new ChartPoint(start.X + (end.X - start.X) * t, start.Y + (end.Y - start.Y) * t);
-            }
-
-            walked += segment;
-        }
-
-        return points[points.Count - 1];
     }
 
     private static double Distance(ChartPoint first, ChartPoint second) {
@@ -147,8 +102,6 @@ internal static class TopologyMotionPlanner {
         return Math.Sqrt(dx * dx + dy * dy);
     }
 
-    private static double Clamp(double value, double minimum, double maximum) =>
-        value < minimum ? minimum : value > maximum ? maximum : value;
 }
 
 internal sealed class TopologyMotionPlan {
@@ -177,16 +130,4 @@ internal sealed class TopologyMotionEntry {
     public TopologyEdge Edge { get; }
     public IReadOnlyList<ChartPoint> Points { get; }
     public double Length { get; }
-}
-
-internal readonly struct TopologyMotionSample {
-    public TopologyMotionSample(ChartPoint point, string color, TopologyHealthStatus status = TopologyHealthStatus.Unknown) {
-        Point = point;
-        Color = color;
-        Status = status;
-    }
-
-    public ChartPoint Point { get; }
-    public string Color { get; }
-    public TopologyHealthStatus Status { get; }
 }
