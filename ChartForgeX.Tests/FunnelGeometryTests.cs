@@ -17,7 +17,7 @@ public sealed class FunnelGeometryTests {
         Assert.Equal(ChartOrientation.Vertical, chart.Options.Funnel.Orientation);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Funnel.Form = (ChartFunnelForm)99);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Funnel.Orientation = (ChartOrientation)99);
-        Assert.Throws<ArgumentNullException>(() => chart.WithFunnel(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.ConfigureFunnel(null!));
     }
 
     [Theory]
@@ -197,7 +197,7 @@ public sealed class FunnelGeometryTests {
 
     private static Chart Funnel(double[] values, ChartFunnelForm form, ChartOrientation orientation) {
         var chart = Chart.Create().WithXLabels(values.Select((_, index) => "Stage " + index).ToArray())
-            .WithFunnel(options => { options.Form = form; options.Orientation = orientation; })
+            .ConfigureFunnel(options => { options.Form = form; options.Orientation = orientation; })
             .AddFunnel("Stages", values.Select((value, index) => new ChartPoint(index + 1, value)), ChartColor.FromHex("#2468AC"));
         return chart;
     }
