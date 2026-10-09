@@ -5,8 +5,17 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ChartApiProfile Condition="'$(ChartApiProfile)' == ''">Current</ChartApiProfile>
+    <DefineConstants Condition="'$(ChartApiProfile)' == 'Legacy'">$(DefineConstants);LEGACY_CHART_API</DefineConstants>
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj/**;bin/**</DefaultItemExcludes>
   </PropertyGroup>
+  <ItemGroup Condition="'$(ChartApiProfile)' == 'Legacy'">
+    <Compile Remove="DirectSceneBenchmarkCases.cs;ChartBenchmarkCases.cs" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="ChartForgeX"><HintPath>$(ProductDll)</HintPath></Reference>
   </ItemGroup>
+  <Target Name="ValidateChartApiProfile" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(ChartApiProfile)' != 'Current' and '$(ChartApiProfile)' != 'Legacy'" Text="ChartApiProfile must be Current or Legacy." />
+  </Target>
 </Project>
