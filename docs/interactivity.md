@@ -8,7 +8,7 @@ Every rendered interaction surface is normalized to `data-cfx-target-kind` and `
 
 Explicitly decimated series keep their original point identity. `data-cfx-point` remains the rendered ordinal, while the series source-index map and each host event's `sourcePoint` identify the caller's original point.
 
-Aggregate marks such as histogram bins, merged timeline runs, and pie slices expose contributing source observations through `target.sourcePoints`, a numeric array in hover and selection events. An empty histogram bin reports `[]`. These marks omit `target.sourcePoint` because one source observation cannot identify an aggregate. Their target IDs use the series interaction key and rendered ordinal, for example `quantity:derived:2`; the ordinal identifies the bin even when it has no observations. Point legends share their mark's contributors and target ID. Hosts should route aggregate selection by `targetId` and read `sourcePoints` when they need the underlying observations.
+Aggregate marks such as histogram bins, merged timeline runs, and pie slices expose contributing source observations through `target.sourcePoints`, a numeric array in hover and selection events. An empty histogram bin reports `[]`. For these marks, `target.sourcePoint` is `undefined` because one source observation cannot identify an aggregate. Their target IDs use the series interaction key and rendered ordinal, for example `quantity:derived:2`; the ordinal identifies the bin even when it has no observations. Point legends share their mark's contributors and target ID. Hosts should route aggregate selection by `targetId` and read `sourcePoints` when they need the underlying observations.
 
 ## Graphite appearance
 
