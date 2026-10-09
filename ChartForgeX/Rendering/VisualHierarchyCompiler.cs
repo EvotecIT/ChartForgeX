@@ -97,7 +97,7 @@ internal static partial class VisualHierarchyCompiler {
             var paint = ChartRelationshipPaint.Paint(series, color, node.Index);
             if (node.Depth == 0 && !ChartRelationshipPaint.HasExplicitColor(series, node.Index) && ChartRelationshipPaint.State(series, node.Index) == ChartSeriesState.None) {
                 var source = color; color = ChartColorMath.Blend(colors.Surface, source, .28);
-                paint = SvgPaint.Mix(color, colors.Surface, SvgColorRole.Surface, source, VisualChartPaint.SeriesRole(series, node.Index), .28);
+                paint = SvgPaint.Mix(color, colors.Surface, SvgColorRole.Surface, source, ChartRelationshipPaint.Role(series, node.Index), .28);
             }
             string formatted = ChartNumericFormatter.FormatValue(chart.Options, node.Value);
             var metadata = ChartRelationshipMetadata.Node(series, node.Id, node.Label, node.Index);
