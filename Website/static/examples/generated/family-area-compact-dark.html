@@ -139,7 +139,8 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.CalendarHeatmap =&gt; &quot;Daily activity across four months&quot;, ChartSeriesKind.DottedMap =&gt; &quot;Service routes across Europe&quot;,
         ChartSeriesKind.RegionMap =&gt; &quot;Regional service coverage&quot;, ChartSeriesKind.TileMap =&gt; &quot;Service coverage by state&quot;,
         ChartSeriesKind.Gauge =&gt; &quot;Available capacity against a target&quot;, ChartSeriesKind.Circle =&gt; &quot;Assessments completed&quot;,
-        ChartSeriesKind.RadialBar =&gt; &quot;Completion by delivery stage&quot;, ChartSeriesKind.LayeredRadial =&gt; &quot;Reviewed, verified and completed&quot;,
+        ChartSeriesKind.ProgressRing =&gt; &quot;Completion by delivery stage&quot;, ChartSeriesKind.LayeredRadial =&gt; &quot;Reviewed, verified and completed&quot;,
+        ChartSeriesKind.RadialBar =&gt; &quot;Requests by region and service&quot;, ChartSeriesKind.RadialColumn =&gt; &quot;Regional service workload&quot;,
         ChartSeriesKind.Bullet =&gt; &quot;Reviewed work against its targets&quot;, ChartSeriesKind.ProgressBar =&gt; &quot;Progress through delivery stages&quot;,
         ChartSeriesKind.Pie =&gt; &quot;Revenue by service&quot;, ChartSeriesKind.Donut =&gt; &quot;Services contributing to revenue&quot;,
         ChartSeriesKind.PolarArea =&gt; &quot;Service revenue in radial segments&quot;, ChartSeriesKind.Radar =&gt; &quot;Observed and expected service levels&quot;,
@@ -160,7 +161,7 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell =&gt; new[] { &quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot; },
         ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap =&gt; new[] { &quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot; },
         ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea =&gt; new[] { &quot;Subscriptions&quot;, &quot;Consulting&quot;, &quot;Support&quot;, &quot;Licenses&quot;, &quot;Training&quot;, &quot;Other&quot; },
-        ChartSeriesKind.RadialBar =&gt; new[] { &quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Verified&quot;, &quot;Approved&quot;, &quot;Complete&quot; },
+        ChartSeriesKind.ProgressRing =&gt; new[] { &quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Verified&quot;, &quot;Approved&quot;, &quot;Complete&quot; },
         ChartSeriesKind.Radar =&gt; new[] { &quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot; },
         ChartSeriesKind.Scatter or ChartSeriesKind.Bubble =&gt; new[] { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; },
         ChartSeriesKind.Lollipop =&gt; new[] { &quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot; },
@@ -213,6 +214,8 @@ public static partial class V2GalleryModels {
     private static Chart? Radial(ChartSeriesKind kind, string variant) {
         var chart = Categories(kind); var values = Observations(variant);
         switch (kind) {
+            case ChartSeriesKind.RadialBar:
+            case ChartSeriesKind.RadialColumn: return NumericRadial(kind, variant);
             case ChartSeriesKind.Pie: chart.AddPie(&quot;Revenue&quot;, values); break;
             case ChartSeriesKind.Donut: chart.AddDonut(&quot;Revenue&quot;, values); break;
             case ChartSeriesKind.Gauge:
@@ -224,7 +227,7 @@ public static partial class V2GalleryModels {
                     options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
                 }); break;
             case ChartSeriesKind.Circle: chart.AddCircle(&quot;Completed&quot;, 76); break;
-            case ChartSeriesKind.RadialBar: chart.AddRadialBar(&quot;Completion&quot;, values).WithRadialBarCenterLabel(); break;
+            case ChartSeriesKind.ProgressRing: chart.AddProgressRing(&quot;Completion&quot;, values).WithProgressRingCenterLabel(); break;
             case ChartSeriesKind.LayeredRadial:
                 chart.AddLayeredRadial(&quot;Completion&quot;, new[] {
                     new ChartRadialLayer(&quot;Reviewed&quot;, 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
@@ -244,7 +247,11 @@ public static partial class V2GalleryModels {
             chart.Series[0].WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
             if (kind == ChartSeriesKind.Donut) chart.WithDonutCenterText(&quot;184&quot;, &quot;Reviewed&quot;);
         }
-        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.RadialBar) chart.WithRadialBarRadiusScale(.85).WithRadialBarStrokeScale(1.2);
+        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.ProgressRing) chart.WithRadialProgressRadiusScale(.85).WithRadialProgressStrokeScale(1.2);
+        if (variant == &quot;options&quot; &amp;&amp; kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar) {
+            chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
+            chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, &quot;20 &#183; Target&quot;));
+        }
         return chart;
     }
 }
@@ -432,7 +439,14 @@ public static partial class V2GalleryModels {
             }
             if (kind == ChartSeriesKind.Bar) chart.WithYAxis(&quot;Share (%)&quot;);
             else chart.WithXAxis(&quot;Share (%)&quot;);
-            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis).WithBounds(0, 100).WithLabelFormatter(Percent);
+            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis)
+                .WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == &quot;compact-options&quot;);
+            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Waterfall) {
+            var chart = Basic(kind, variant)!;
+            chart.Options.XAxis.WithReversal();
             return chart;
         }
         if (kind == ChartSeriesKind.StackedArea) {
@@ -453,7 +467,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
-                .WithFunnel(options =&gt; {
+                .ConfigureFunnel(options =&gt; {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
@@ -521,7 +535,8 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.CalendarHeatmap =&gt; &quot;Daily activity across four months&quot;, ChartSeriesKind.DottedMap =&gt; &quot;Service routes across Europe&quot;,
         ChartSeriesKind.RegionMap =&gt; &quot;Regional service coverage&quot;, ChartSeriesKind.TileMap =&gt; &quot;Service coverage by state&quot;,
         ChartSeriesKind.Gauge =&gt; &quot;Available capacity against a target&quot;, ChartSeriesKind.Circle =&gt; &quot;Assessments completed&quot;,
-        ChartSeriesKind.RadialBar =&gt; &quot;Completion by delivery stage&quot;, ChartSeriesKind.LayeredRadial =&gt; &quot;Reviewed, verified and completed&quot;,
+        ChartSeriesKind.ProgressRing =&gt; &quot;Completion by delivery stage&quot;, ChartSeriesKind.LayeredRadial =&gt; &quot;Reviewed, verified and completed&quot;,
+        ChartSeriesKind.RadialBar =&gt; &quot;Requests by region and service&quot;, ChartSeriesKind.RadialColumn =&gt; &quot;Regional service workload&quot;,
         ChartSeriesKind.Bullet =&gt; &quot;Reviewed work against its targets&quot;, ChartSeriesKind.ProgressBar =&gt; &quot;Progress through delivery stages&quot;,
         ChartSeriesKind.Pie =&gt; &quot;Revenue by service&quot;, ChartSeriesKind.Donut =&gt; &quot;Services contributing to revenue&quot;,
         ChartSeriesKind.PolarArea =&gt; &quot;Service revenue in radial segments&quot;, ChartSeriesKind.Radar =&gt; &quot;Observed and expected service levels&quot;,
@@ -542,7 +557,7 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell =&gt; new[] { &quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot; },
         ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap =&gt; new[] { &quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot; },
         ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea =&gt; new[] { &quot;Subscriptions&quot;, &quot;Consulting&quot;, &quot;Support&quot;, &quot;Licenses&quot;, &quot;Training&quot;, &quot;Other&quot; },
-        ChartSeriesKind.RadialBar =&gt; new[] { &quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Verified&quot;, &quot;Approved&quot;, &quot;Complete&quot; },
+        ChartSeriesKind.ProgressRing =&gt; new[] { &quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Verified&quot;, &quot;Approved&quot;, &quot;Complete&quot; },
         ChartSeriesKind.Radar =&gt; new[] { &quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot; },
         ChartSeriesKind.Scatter or ChartSeriesKind.Bubble =&gt; new[] { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; },
         ChartSeriesKind.Lollipop =&gt; new[] { &quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot; },
@@ -595,6 +610,8 @@ public static partial class V2GalleryModels {
     private static Chart? Radial(ChartSeriesKind kind, string variant) {
         var chart = Categories(kind); var values = Observations(variant);
         switch (kind) {
+            case ChartSeriesKind.RadialBar:
+            case ChartSeriesKind.RadialColumn: return NumericRadial(kind, variant);
             case ChartSeriesKind.Pie: chart.AddPie(&quot;Revenue&quot;, values); break;
             case ChartSeriesKind.Donut: chart.AddDonut(&quot;Revenue&quot;, values); break;
             case ChartSeriesKind.Gauge:
@@ -606,7 +623,7 @@ public static partial class V2GalleryModels {
                     options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
                 }); break;
             case ChartSeriesKind.Circle: chart.AddCircle(&quot;Completed&quot;, 76); break;
-            case ChartSeriesKind.RadialBar: chart.AddRadialBar(&quot;Completion&quot;, values).WithRadialBarCenterLabel(); break;
+            case ChartSeriesKind.ProgressRing: chart.AddProgressRing(&quot;Completion&quot;, values).WithProgressRingCenterLabel(); break;
             case ChartSeriesKind.LayeredRadial:
                 chart.AddLayeredRadial(&quot;Completion&quot;, new[] {
                     new ChartRadialLayer(&quot;Reviewed&quot;, 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
@@ -626,7 +643,11 @@ public static partial class V2GalleryModels {
             chart.Series[0].WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
             if (kind == ChartSeriesKind.Donut) chart.WithDonutCenterText(&quot;184&quot;, &quot;Reviewed&quot;);
         }
-        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.RadialBar) chart.WithRadialBarRadiusScale(.85).WithRadialBarStrokeScale(1.2);
+        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.ProgressRing) chart.WithRadialProgressRadiusScale(.85).WithRadialProgressStrokeScale(1.2);
+        if (variant == &quot;options&quot; &amp;&amp; kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar) {
+            chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
+            chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, &quot;20 &#183; Target&quot;));
+        }
         return chart;
     }
 }
@@ -814,7 +835,14 @@ public static partial class V2GalleryModels {
             }
             if (kind == ChartSeriesKind.Bar) chart.WithYAxis(&quot;Share (%)&quot;);
             else chart.WithXAxis(&quot;Share (%)&quot;);
-            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis).WithBounds(0, 100).WithLabelFormatter(Percent);
+            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis)
+                .WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == &quot;compact-options&quot;);
+            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Waterfall) {
+            var chart = Basic(kind, variant)!;
+            chart.Options.XAxis.WithReversal();
             return chart;
         }
         if (kind == ChartSeriesKind.StackedArea) {
@@ -835,7 +863,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
-                .WithFunnel(options =&gt; {
+                .ConfigureFunnel(options =&gt; {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });

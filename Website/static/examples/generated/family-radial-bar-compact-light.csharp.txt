@@ -15,7 +15,7 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var model = V2GalleryModels.Create(ChartSeriesKind.RadialBar, "compact", VisualThemeMode.Light);
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Light,
-    new VisualFrame("Completion by delivery stage", "The same data in a compact view", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("Requests by region and service", "The same data in a compact view", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 System.IO.File.WriteAllText("visual.svg", prepared.ToSvg());
 System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
@@ -57,7 +57,8 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.CalendarHeatmap => "Daily activity across four months", ChartSeriesKind.DottedMap => "Service routes across Europe",
         ChartSeriesKind.RegionMap => "Regional service coverage", ChartSeriesKind.TileMap => "Service coverage by state",
         ChartSeriesKind.Gauge => "Available capacity against a target", ChartSeriesKind.Circle => "Assessments completed",
-        ChartSeriesKind.RadialBar => "Completion by delivery stage", ChartSeriesKind.LayeredRadial => "Reviewed, verified and completed",
+        ChartSeriesKind.ProgressRing => "Completion by delivery stage", ChartSeriesKind.LayeredRadial => "Reviewed, verified and completed",
+        ChartSeriesKind.RadialBar => "Requests by region and service", ChartSeriesKind.RadialColumn => "Regional service workload",
         ChartSeriesKind.Bullet => "Reviewed work against its targets", ChartSeriesKind.ProgressBar => "Progress through delivery stages",
         ChartSeriesKind.Pie => "Revenue by service", ChartSeriesKind.Donut => "Services contributing to revenue",
         ChartSeriesKind.PolarArea => "Service revenue in radial segments", ChartSeriesKind.Radar => "Observed and expected service levels",
@@ -78,7 +79,7 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell => new[] { "Standard", "Express", "Premium", "Bulk", "Return" },
         ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap => new[] { "Identity", "Network", "Storage", "Backup", "Access", "Recovery" },
         ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea => new[] { "Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other" },
-        ChartSeriesKind.RadialBar => new[] { "Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete" },
+        ChartSeriesKind.ProgressRing => new[] { "Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete" },
         ChartSeriesKind.Radar => new[] { "Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support" },
         ChartSeriesKind.Scatter or ChartSeriesKind.Bubble => new[] { "1", "2", "3", "4", "5", "6" },
         ChartSeriesKind.Lollipop => new[] { "Received", "Packed", "Shipped", "In transit", "Delivered", "Reviewed" },
@@ -131,6 +132,8 @@ public static partial class V2GalleryModels {
     private static Chart? Radial(ChartSeriesKind kind, string variant) {
         var chart = Categories(kind); var values = Observations(variant);
         switch (kind) {
+            case ChartSeriesKind.RadialBar:
+            case ChartSeriesKind.RadialColumn: return NumericRadial(kind, variant);
             case ChartSeriesKind.Pie: chart.AddPie("Revenue", values); break;
             case ChartSeriesKind.Donut: chart.AddDonut("Revenue", values); break;
             case ChartSeriesKind.Gauge:
@@ -142,7 +145,7 @@ public static partial class V2GalleryModels {
                     options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
                 }); break;
             case ChartSeriesKind.Circle: chart.AddCircle("Completed", 76); break;
-            case ChartSeriesKind.RadialBar: chart.AddRadialBar("Completion", values).WithRadialBarCenterLabel(); break;
+            case ChartSeriesKind.ProgressRing: chart.AddProgressRing("Completion", values).WithProgressRingCenterLabel(); break;
             case ChartSeriesKind.LayeredRadial:
                 chart.AddLayeredRadial("Completion", new[] {
                     new ChartRadialLayer("Reviewed", 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
@@ -162,7 +165,11 @@ public static partial class V2GalleryModels {
             chart.Series[0].WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
             if (kind == ChartSeriesKind.Donut) chart.WithDonutCenterText("184", "Reviewed");
         }
-        if (variant == "options" && kind == ChartSeriesKind.RadialBar) chart.WithRadialBarRadiusScale(.85).WithRadialBarStrokeScale(1.2);
+        if (variant == "options" && kind == ChartSeriesKind.ProgressRing) chart.WithRadialProgressRadiusScale(.85).WithRadialProgressStrokeScale(1.2);
+        if (variant == "options" && kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar) {
+            chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
+            chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, "20 · Target"));
+        }
         return chart;
     }
 }
@@ -350,7 +357,14 @@ public static partial class V2GalleryModels {
             }
             if (kind == ChartSeriesKind.Bar) chart.WithYAxis("Share (%)");
             else chart.WithXAxis("Share (%)");
-            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis).WithBounds(0, 100).WithLabelFormatter(Percent);
+            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis)
+                .WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == "compact-options");
+            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Waterfall) {
+            var chart = Basic(kind, variant)!;
+            chart.Options.XAxis.WithReversal();
             return chart;
         }
         if (kind == ChartSeriesKind.StackedArea) {
@@ -371,7 +385,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels("Received", "Reviewed", "Qualified", "Completed").WithDataLabels()
                 .AddFunnel("Requests", new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
-                .WithFunnel(options => {
+                .ConfigureFunnel(options => {
                     options.Form = variant == "stage-bars-horizontal" ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == "cone-vertical" ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
