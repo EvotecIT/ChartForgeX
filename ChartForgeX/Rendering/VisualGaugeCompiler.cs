@@ -21,11 +21,25 @@ internal static class VisualGaugeCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var data = Read(chart, colors);
         var series = chart.Series[0]; var options = chart.Options.Gauge;
-        var value = series.PointLabels.Count > 0 && series.PointLabels[0] != null ? series.PointLabels[0]! : ChartNumericFormatter.FormatValue(chart.Options, data.Raw);
+        var authoredValue = series.PointLabels.Count > 0 ? series.PointLabels[0] : null;
+        var showValue = series.ShowDataLabels != false;
         var caption = options.Caption ?? series.Name;
-        var target = options.Target.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, options.Target.Value) : null;
-        var min = chart.Options.ShowAxes ? ChartNumericFormatter.FormatValue(chart.Options, data.Min) : null;
-        var max = chart.Options.ShowAxes ? ChartNumericFormatter.FormatValue(chart.Options, data.Max) : null;
+        var scaleValues = !chart.Options.ShowAxes ? Array.Empty<double>() : options.Form == ChartGaugeForm.Linear
+            ? Enumerable.Range(0, 5).Select(tick => ChartHeatmapSurface.InterpolateObservedRange(data.Min, data.Max, tick / 4d)).ToArray()
+            : new[] { data.Min, data.Max };
+        var requestedValues = new List<double>(scaleValues);
+        if (authoredValue == null && showValue) requestedValues.Add(data.Raw);
+        if (options.Target.HasValue) requestedValues.Add(options.Target.Value);
+        // One caption per requested numeric fact keeps a shared value/target/tick consistent and resolves callbacks once.
+        var distinctValues = requestedValues.Distinct().ToArray();
+        var formatted = distinctValues.Length == 0 ? Array.Empty<string>() : ChartNumericFormatter.FormatScaleValues(chart.Options, distinctValues);
+        var captions = new Dictionary<double, string>();
+        for (var index = 0; index < distinctValues.Length; index++) captions[distinctValues[index]] = formatted[index];
+        var value = authoredValue ?? (showValue ? captions[data.Raw] : N(data.Raw));
+        var target = options.Target.HasValue ? captions[options.Target.Value] : null;
+        var scaleCaptions = scaleValues.Select(number => captions[number]).ToArray();
+        var min = scaleCaptions.Length > 0 ? scaleCaptions[0] : null;
+        var max = scaleCaptions.Length > 0 ? scaleCaptions[scaleCaptions.Length - 1] : null;
         builder.AddRegion(new VisualSemanticRegion("series-0", "gauge", plot, series.Name + ": " + value));
         using (builder.PushGroup("series-0", "gauge", new Dictionary<string, string> {
             ["data-cfx-value"] = N(data.Raw), ["data-cfx-min"] = N(data.Min), ["data-cfx-max"] = N(data.Max),
@@ -35,7 +49,7 @@ internal static class VisualGaugeCompiler {
         })) {
             if (plot.Width <= 0 || plot.Height <= 0) { builder.AddDiagnostic(new VisualDiagnostic("gauge.insufficient-space", "No content viewport remains for the gauge.")); return; }
             using (builder.PushClip(plot)) {
-                if (options.Form == ChartGaugeForm.Linear) Linear(chart, context, builder, plot, data, value, caption, target, min, max);
+                if (options.Form == ChartGaugeForm.Linear) Linear(chart, context, builder, plot, data, value, caption, target, scaleCaptions);
                 else Circular(chart, context, builder, plot, data, value, caption, target, min, max);
             }
         }
@@ -100,16 +114,24 @@ internal static class VisualGaugeCompiler {
         }
         if (chart.Series[0].ShowDataLabels != false) {
             var needle = chart.Options.Gauge.Form == ChartGaugeForm.Needle;
-            var valueStyle = LabelStyle(chart, context, builder, value, radius * (needle ? .34 : .6),
+            var captionBottom = Math.Min(plot.Bottom, cy + radius * .5 + stroke / 2);
+            var valueBudget = radius * (needle ? .34 : .6);
+            if (needle) {
+                var desiredCaptionStyle = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground,
+                    context.Theme.Typography.DataLabelSize, point: 0);
+                var captionHeight = string.IsNullOrEmpty(caption) ? 0 : builder.MeasureText(caption, desiredCaptionStyle).Height;
+                // The needle summary sits below its pivot; reserve its real caption row before fitting the scalar.
+                valueBudget = Math.Min(valueBudget, Math.Max(0, captionBottom - cy - stroke - gap / 2 - gap / 3 - captionHeight));
+            }
+            var valueStyle = LabelStyle(chart, context, builder, value, valueBudget,
                 context.Theme.Typography.ScalarValueSize, 700);
-            var valueHeight = Math.Min(radius * (needle ? .34 : .6), builder.MeasureText(value, valueStyle).Height);
+            var valueHeight = Math.Min(valueBudget, builder.MeasureText(value, valueStyle).Height);
             var valueTop = needle ? cy + stroke + gap / 2 : cy - valueHeight / 2;
             VisualRadialPrimitives.Text(builder, value, new ChartRect(cx - radius * .7, valueTop, radius * 1.4, valueHeight),
                 valueStyle, "gauge-label", "series-0-gauge-label");
             var captionTop = valueTop + valueHeight + gap / 3;
-            var captionBottom = Math.Min(plot.Bottom, cy + radius * .5 + stroke / 2);
             var captionStyle = LabelStyle(chart, context, builder, caption, Math.Max(0, captionBottom - captionTop),
-                context.Theme.Typography.DataLabelSize, muted: true);
+                context.Theme.Typography.DataLabelSize, muted: true, minimumDefaultSize: context.Theme.Typography.DataLabelSize);
             VisualRadialPrimitives.Text(builder, caption, new ChartRect(cx - radius * .75, captionTop, radius * 1.5,
                 Math.Max(0, Math.Min(builder.MeasureText(caption, captionStyle).Height, captionBottom - captionTop))),
                 captionStyle, "gauge-title", "series-0-gauge-title");
@@ -148,11 +170,11 @@ internal static class VisualGaugeCompiler {
     }
 
     private static void Linear(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, GaugeData data,
-        string value, string caption, string? target, string? min, string? max) {
+        string value, string caption, string? target, IReadOnlyList<string> scaleCaptions) {
         var colors = context.Theme.Resolve(context.ThemeMode); var gap = context.Theme.Spacing;
         var labelHeight = context.Theme.Typography.AxisSize * 1.5;
         var height = Math.Min(plot.Height / 7, Math.Max(4, context.Theme.Typography.DataLabelSize * 1.4));
-        var footerTop = plot.Bottom - labelHeight * ((min != null ? 1 : 0) + (target != null ? 1 : 0));
+        var footerTop = plot.Bottom - labelHeight * ((scaleCaptions.Count > 0 ? 1 : 0) + (target != null ? 1 : 0));
         var maximumTrackTop = footerTop - height - (target != null ? height / 4 : 0) - gap / 3;
         if (maximumTrackTop < plot.Top + height / 2) {
             builder.AddDiagnostic(new VisualDiagnostic("gauge.insufficient-space", "The viewport cannot fit the linear gauge and its declared scale rows."));
@@ -196,28 +218,21 @@ internal static class VisualGaugeCompiler {
             VisualRadialPrimitives.Text(builder, caption, new ChartRect(summaryLeft + valueWidth + gap, plot.Top, captionWidth, summaryHeight),
                 captionStyle, "gauge-title", "series-0-gauge-title");
         }
-        Footer(chart, context, builder, plot, data, target, min, max, labelHeight);
+        LinearFooter(chart, context, builder, plot, target, scaleCaptions, labelHeight);
     }
 
-    private static void Footer(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, GaugeData data, string? target, string? min, string? max, double height) {
+    private static void LinearFooter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, string? target, IReadOnlyList<string> scaleCaptions, double height) {
         var y = plot.Bottom - height;
         if (target != null) { Label(chart, context, builder, target, new ChartRect(plot.Left + plot.Width / 3, y, plot.Width / 3, height), "gauge-target-label", context.Theme.Typography.AxisSize); y -= height; }
-        if (min != null && max != null) {
-            if (chart.Options.Gauge.Form == ChartGaugeForm.Linear) {
-                var colors = context.Theme.Resolve(context.ThemeMode);
-                var left = plot.Left + context.Theme.Spacing; var width = Math.Max(0, plot.Width - context.Theme.Spacing * 2);
-                builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "gauge-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
-                for (var tick = 0; tick < 5; tick++) {
-                    var x = left + width * tick / 4;
-                    builder.Line(x, y, x, y + 3, colors.Border, context.Theme.AxisStrokeWidth, "gauge-tick", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
-                    var text = tick == 0 ? min : tick == 4 ? max : ChartNumericFormatter.FormatValue(chart.Options, data.Min + (data.Max - data.Min) * tick / 4);
-                    var box = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - plot.Width / 5, x - plot.Width / 10)), y + 3, plot.Width / 5, Math.Max(0, height - 3));
-                    Label(chart, context, builder, text, box, tick == 0 ? "gauge-min-label" : tick == 4 ? "gauge-max-label" : "gauge-tick-label-" + tick, context.Theme.Typography.AxisSize, ticks: true);
-                }
-                return;
-            }
-            Label(chart, context, builder, min, new ChartRect(plot.Left, y, plot.Width / 3, height), "gauge-min-label", context.Theme.Typography.AxisSize, ticks: true);
-            Label(chart, context, builder, max, new ChartRect(plot.Left + plot.Width * 2 / 3, y, plot.Width / 3, height), "gauge-max-label", context.Theme.Typography.AxisSize, ticks: true);
+        if (scaleCaptions.Count == 0) return;
+        var colors = context.Theme.Resolve(context.ThemeMode);
+        var left = plot.Left + context.Theme.Spacing; var width = Math.Max(0, plot.Width - context.Theme.Spacing * 2);
+        builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "gauge-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
+        for (var tick = 0; tick < scaleCaptions.Count; tick++) {
+            var x = left + width * tick / 4;
+            builder.Line(x, y, x, y + 3, colors.Border, context.Theme.AxisStrokeWidth, "gauge-tick", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
+            var box = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - plot.Width / 5, x - plot.Width / 10)), y + 3, plot.Width / 5, Math.Max(0, height - 3));
+            Label(chart, context, builder, scaleCaptions[tick], box, tick == 0 ? "gauge-min-label" : tick == 4 ? "gauge-max-label" : "gauge-tick-label-" + tick, context.Theme.Typography.AxisSize, ticks: true);
         }
     }
 
