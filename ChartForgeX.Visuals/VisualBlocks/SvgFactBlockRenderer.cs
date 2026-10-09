@@ -220,12 +220,12 @@ public sealed partial class SvgFactBlockRenderer {
         var sparkline = VisualFactBlockRendering.CreateMiniSparkline(card, x, y, width, height);
 
         writer.StartElement("g").Attribute("data-cfx-role", "metric-mini-sparkline").Attribute("data-cfx-style", card.MiniSparklineStyle.ToString().ToLowerInvariant()).Attribute("data-cfx-min", bounds.Minimum).Attribute("data-cfx-max", bounds.Maximum).EndStartElement().Line();
-        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Line && card.SecondarySparklineCount > 0) {
+        if (card.MiniSparklineStyle == ChartLineAreaForm.Line && card.SecondarySparklineCount > 0) {
             var secondary = VisualFactBlockRendering.CreateSecondaryMiniSparkline(card, x, y, width, height);
             writer.StartElement("path").Attribute("data-cfx-role", "metric-mini-sparkline-secondary").Attribute("d", SparklineSmoothPath(secondary.Points, 0)).Attribute("fill", "none").Attribute("stroke", secondary.LineColor.ToCss()).Attribute("stroke-width", Math.Max(1.8, secondary.StrokeWidth * 0.72)).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
         }
         if (sparkline.Points.Length == 0) { writer.EndElement().Line(); return; }
-        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Area) {
+        if (card.MiniSparklineStyle == ChartLineAreaForm.Area) {
             foreach (var segment in ChartPointSegments.Split(sparkline.Points)) {
                 writer.StartElement("polygon")
                     .Attribute("data-cfx-role", "metric-mini-sparkline-fill")

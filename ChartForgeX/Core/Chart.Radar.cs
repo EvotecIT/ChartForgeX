@@ -11,7 +11,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddRadarLine(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) {
         AddRadar(name, points, color);
-        Series[Series.Count - 1].Radar.Form = ChartRadarForm.Line;
+        Series[Series.Count - 1].Radar.Form = ChartLineAreaForm.Line;
         return this;
     }
 

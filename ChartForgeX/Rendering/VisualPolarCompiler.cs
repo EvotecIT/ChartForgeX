@@ -65,10 +65,10 @@ internal static partial class VisualPolarCompiler {
                 var path = ChartPathBuilder.FromPoints(mapped, ChartInterpolation.Linear);
                 using (builder.PushGroup(Id(seriesIndex), radar ? "radar-series" : "polar-series", new Dictionary<string, string> {
                     ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name,
-                    ["data-cfx-form"] = radar && series.Radar.Form == ChartRadarForm.Area ? "area" : "line",
+                    ["data-cfx-form"] = radar && series.Radar.Form == ChartLineAreaForm.Area ? "area" : "line",
                     ["data-cfx-missing-policy"] = radar ? "zero" : "source"
                 })) {
-                    if (radar && series.Radar.Form == ChartRadarForm.Area) {
+                    if (radar && series.Radar.Form == ChartLineAreaForm.Area) {
                         var opacity = series.Radar.FillOpacity ?? context.Theme.AreaOpacity;
                         var fill = ChartColorMath.WithOpacity(color, opacity);
                         builder.Path(path, fill, role: "radar-area", close: true,

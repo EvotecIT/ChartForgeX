@@ -4,14 +4,14 @@ namespace ChartForgeX.Core;
 
 /// <summary>Per-series radar form and area paint; categorical and radial axes remain shared by the chart.</summary>
 public sealed class ChartRadarOptions {
-    private ChartRadarForm _form;
+    private ChartLineAreaForm _form;
     private double? _fillOpacity;
 
     /// <summary>Gets or sets the radar form. Area preserves the default of AddRadar.</summary>
-    public ChartRadarForm Form {
+    public ChartLineAreaForm Form {
         get => _form;
         set {
-            if (!Enum.IsDefined(typeof(ChartRadarForm), value)) throw new ArgumentOutOfRangeException(nameof(value));
+            if (!Enum.IsDefined(typeof(ChartLineAreaForm), value)) throw new ArgumentOutOfRangeException(nameof(value));
             _form = value; IsConfigured = true;
         }
     }

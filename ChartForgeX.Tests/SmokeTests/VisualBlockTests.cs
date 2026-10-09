@@ -147,7 +147,7 @@ internal static partial class SmokeTests {
             .WithMetric("Running", "30 mins")
             .WithMiniSparkline(new[] { 18d, 30d, 34d, 25d, 28d, 43d, 45d, 44d, 48d })
             .WithSecondaryMiniSparkline(new[] { 15d, 27d, 31d, 23d, 25d, 40d, 42d, 41d, 45d })
-            .WithMiniSparklineStyle(MetricCardSparklineStyle.Line)
+            .WithMiniSparklineStyle(ChartLineAreaForm.Line)
             .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
             .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .WithSize(360, 300);
@@ -177,7 +177,7 @@ internal static partial class SmokeTests {
         var retainedSparklineStyleMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithMetric("Style", "1")
             .WithMiniSparkline(new[] { 1d, 2d })
-            .WithMiniSparklineStyle(MetricCardSparklineStyle.Line)
+            .WithMiniSparklineStyle(ChartLineAreaForm.Line)
             .WithoutMiniSparkline()
             .WithMiniSparkline(new[] { 2d, 4d });
         Assert(retainedSparklineStyleMetric.ToSvg("visual-block-metric-retained-sparkline-style").Contains("data-cfx-style=\"line\"", StringComparison.Ordinal), "MetricCard should preserve configured sparkline style after clearing and replacing sparkline data.");
@@ -684,7 +684,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().Icon = (VisualIcon)999, "MetricCard should reject unknown icon values.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().BadgePlacement = (MetricCardBadgePlacement)999, "MetricCard should reject unknown badge placements.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().MicroVisualPlacement = (MetricCardMicroVisualPlacement)999, "MetricCard should reject unknown micro visual placements.");
-        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().MiniSparklineStyle = (MetricCardSparklineStyle)999, "MetricCard should reject unknown mini sparkline styles.");
+        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().MiniSparklineStyle = (ChartLineAreaForm)999, "MetricCard should reject unknown mini sparkline styles.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().MicroVisualSurface = (MetricCardMicroVisualSurface)999, "MetricCard should reject unknown micro visual surfaces.");
         AssertThrows<InvalidOperationException>(() => MetricCard.Create().WithMetric("Bad", 1, unit: new string('x', 25)).ToSvg(), "MetricCard units should stay compact.");
         AssertThrows<ArgumentException>(() => MetricCard.Create().WithMiniBars(Array.Empty<double>()), "MetricCard mini bars should reject empty value sets.");

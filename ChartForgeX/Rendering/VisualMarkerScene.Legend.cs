@@ -12,7 +12,7 @@ internal static partial class VisualMarkerScene {
         if (!ChartSeriesKindTraits.SupportsMarkers(series.Kind)) return null;
         var connected = series.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area
             or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.RangeArea or ChartSeriesKind.RangeBand;
-        var radarArea = series.Kind == ChartSeriesKind.Radar && series.Radar.Form == ChartRadarForm.Area;
+        var radarArea = series.Kind == ChartSeriesKind.Radar && series.Radar.Form == ChartLineAreaForm.Area;
         // Retain ordinary area/line swatches until their marker or radar paint is explicitly configured.
         if (!series.Markers.IsConfigured && (connected || radarArea && !series.Radar.FillOpacity.HasValue)) return null;
         return (builder, bounds, context) => {

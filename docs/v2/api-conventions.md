@@ -151,6 +151,8 @@ chart.Series[0].WithMarkers(markers => {
 
 `Enabled = false` or a radius of zero hides glyphs while retaining source descriptions and connected lines or areas. Bubble values retain their existing series-local size mapping; a radius override scales that mapping. Different shapes can paint different areas at the same radius, and this is not a shared cross-series bubble size domain. SVG, native PNG and legend markers use the same shape geometry. Custom marker paths and dashed marker outlines remain separate options.
 
+`ChartForgeX.Core.ChartLineAreaForm` is the shared form type for `ChartSeries.Radar.Form` and `MetricCard.MiniSparklineStyle`. Its values are `Area = 0` and `Line = 1`; both models default to Area. Metric cards select the same form through `WithMiniSparklineStyle`.
+
 `AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `WithRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity. Missing categories retain the existing zero-imputation behavior; an explicit missing-category policy is separate work.
 
 ## Enforcement boundary

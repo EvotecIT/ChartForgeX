@@ -124,7 +124,7 @@ public sealed class V2FormattingSparklineTests {
         var card = MetricCard.Create().WithSize(640, 260).WithMetric("Load", "0")
             .WithSparkline(new SparklineData(new double?[] { 0, 2, null }))
             .WithSecondarySparkline(new SparklineData(new double?[] { 10, null, 20 }))
-            .WithMiniSparklineStyle(MetricCardSparklineStyle.Line);
+            .WithMiniSparklineStyle(ChartLineAreaForm.Line);
         var svg = card.ToSvg(); var group = Role(svg, "metric-mini-sparkline");
         Assert.Equal("0", group.Attribute("data-cfx-min")!.Value);
         Assert.Equal("20", group.Attribute("data-cfx-max")!.Value);
@@ -133,7 +133,7 @@ public sealed class V2FormattingSparklineTests {
         Assert.NotEmpty(card.ToPng());
         var area = MetricCard.Create().WithMetric("Load", "0").WithSparkline(new SparklineData(new double?[] { 0, 1, null, 3, 4 }));
         Assert.Equal(2, Roles(area.ToSvg(), "metric-mini-sparkline-fill").Count());
-        var missing = MetricCard.Create().WithMetric("Load", "Missing").WithMiniSparklineStyle(MetricCardSparklineStyle.Line)
+        var missing = MetricCard.Create().WithMetric("Load", "Missing").WithMiniSparklineStyle(ChartLineAreaForm.Line)
             .WithSparkline(new SparklineData(new double?[] { null, null, null }));
         var primaryOnly = missing.ToPng();
         missing.WithSecondarySparkline(new SparklineData(new double?[] { 10, 20, 30 }));

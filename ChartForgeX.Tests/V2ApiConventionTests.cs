@@ -7,6 +7,7 @@ using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
+using ChartForgeX.VisualBlocks;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -80,6 +81,19 @@ public sealed class V2ApiConventionTests {
         }
         Assert.DoesNotContain(core.GetReferencedAssemblies(), reference =>
             reference.Name != "ChartForgeX" && (reference.Name?.StartsWith("ChartForgeX.", StringComparison.Ordinal) ?? false));
+    }
+
+    [Fact]
+    public void LineAreaFormKeepsSharedNumericValuesAndRadarAndMetricDefaults() {
+        Assert.Equal(0, (int)ChartLineAreaForm.Area);
+        Assert.Equal(1, (int)ChartLineAreaForm.Line);
+        var series = Chart.Create().AddRadar("Signal", new[] { new ChartPoint(1, 50), new ChartPoint(2, 70) }).Series[0];
+        var card = MetricCard.Create();
+        Assert.Equal(ChartLineAreaForm.Area, series.Radar.Form);
+        Assert.Equal(ChartLineAreaForm.Area, card.MiniSparklineStyle);
+        series.Radar.Form = ChartLineAreaForm.Line;
+        Assert.Same(card, card.WithMiniSparklineStyle(series.Radar.Form));
+        Assert.Equal(ChartLineAreaForm.Line, card.MiniSparklineStyle);
     }
 
     [Fact]

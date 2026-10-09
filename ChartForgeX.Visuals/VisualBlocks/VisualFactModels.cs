@@ -67,16 +67,6 @@ public enum MetricCardMicroVisualPlacement {
 }
 
 /// <summary>
-/// Presentation style for metric-card mini sparklines.
-/// </summary>
-public enum MetricCardSparklineStyle {
-    /// <summary>Render the sparkline as a compact area chart.</summary>
-    Area,
-    /// <summary>Render the sparkline as a stroked line without area fill.</summary>
-    Line
-}
-
-/// <summary>
 /// Optional surface treatment for metric-card mini visuals.
 /// </summary>
 public enum MetricCardMicroVisualSurface {

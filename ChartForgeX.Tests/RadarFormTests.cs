@@ -14,8 +14,8 @@ public sealed class RadarFormTests {
         var points = new[] { new ChartPoint(1, 50), new ChartPoint(2, 50), new ChartPoint(3, 50) };
         var chart = Chart.Create().AddRadar("Default", points).AddRadarLine("Line", points).AddRadarArea("Area", points);
         Assert.All(chart.Series, series => Assert.Equal(ChartSeriesKind.Radar, series.Kind));
-        Assert.Equal(new[] { ChartRadarForm.Area, ChartRadarForm.Line, ChartRadarForm.Area }, chart.Series.Select(series => series.Radar.Form));
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.Form = (ChartRadarForm)99);
+        Assert.Equal(new[] { ChartLineAreaForm.Area, ChartLineAreaForm.Line, ChartLineAreaForm.Area }, chart.Series.Select(series => series.Radar.Form));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.Form = (ChartLineAreaForm)99);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.FillOpacity = double.NaN);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.FillOpacity = 1.1);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.FillOpacity = -.1);
@@ -23,22 +23,22 @@ public sealed class RadarFormTests {
         chart.Series[1].Radar.FillOpacity = .4;
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         var scatter = Chart.Create().AddScatter("Samples", points);
-        scatter.Series[0].Radar.Form = ChartRadarForm.Line;
+        scatter.Series[0].Radar.Form = ChartLineAreaForm.Line;
         Assert.Throws<InvalidOperationException>(() => Prepare(scatter));
     }
 
     [Theory]
-    [InlineData(ChartRadarForm.Line, 0)]
-    [InlineData(ChartRadarForm.Area, 102)]
-    public void ExplicitFormsPaintTheSameClosedOutlineButOnlyAreaFillsItsNativeInterior(ChartRadarForm form, int alpha) {
+    [InlineData(ChartLineAreaForm.Line, 0)]
+    [InlineData(ChartLineAreaForm.Area, 102)]
+    public void ExplicitFormsPaintTheSameClosedOutlineButOnlyAreaFillsItsNativeInterior(ChartLineAreaForm form, int alpha) {
         var chart = Bare().AddRadar("Signal", SixValues(50), ChartColor.FromHex("#2468AC"));
         chart.Series[0].Radar.Form = form;
         chart.Series[0].Markers.Enabled = false;
-        if (form == ChartRadarForm.Area) chart.Series[0].Radar.FillOpacity = .4;
+        if (form == ChartLineAreaForm.Area) chart.Series[0].Radar.FillOpacity = .4;
         var prepared = Prepare(chart);
         var outline = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "radar-outline");
         Assert.True(outline.Close);
-        Assert.Equal(form == ChartRadarForm.Area ? 1 : 0, prepared.Scene.Nodes.Count(node => node.Role == "radar-area"));
+        Assert.Equal(form == ChartLineAreaForm.Area ? 1 : 0, prepared.Scene.Nodes.Count(node => node.Role == "radar-area"));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "radar-point");
         Assert.Equal(6, prepared.Regions.Count(region => region.Role == "radar-point"));
         var centre = new ChartPoint((outline.Commands.Min(command => command.X) + outline.Commands.Max(command => command.X)) / 2,
@@ -54,7 +54,7 @@ public sealed class RadarFormTests {
             for (var index = 0; index < expected.Length; index++) Assert.InRange(Math.Abs(pixel[index] - expected[index]), 0, 1);
         }
         var svg = XDocument.Parse(prepared.ToSvg());
-        Assert.Equal(form == ChartRadarForm.Area ? 1 : 0, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radar-area"));
+        Assert.Equal(form == ChartLineAreaForm.Area ? 1 : 0, svg.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radar-area"));
         Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-form") == form.ToString().ToLowerInvariant());
     }
 
@@ -82,7 +82,7 @@ public sealed class RadarFormTests {
         Assert.Equal(sameAreaPoint.Left + sameAreaPoint.Width / 2, sameLinePoint.Left + sameLinePoint.Width / 2, 7);
         Assert.Equal(sameAreaPoint.Top + sameAreaPoint.Height / 2, sameLinePoint.Top + sameLinePoint.Height / 2, 7);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Series[0].Radar.Form = ChartRadarForm.Line; chart.Series[0].Points.Clear();
+        chart.Series[0].Radar.Form = ChartLineAreaForm.Line; chart.Series[0].Points.Clear();
         chart.Series[1].Markers.Shape = ChartMarkerShape.Pin;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }

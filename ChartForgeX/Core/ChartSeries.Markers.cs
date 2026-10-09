@@ -31,7 +31,7 @@ public sealed partial class ChartSeries {
             throw new InvalidOperationException("Series '" + Name + "' of kind " + Kind + " does not support marker options.");
         if (Radar.IsConfigured && Kind != ChartSeriesKind.Radar)
             throw new InvalidOperationException("Series '" + Name + "' requires the Radar kind for radar options.");
-        if (Kind == ChartSeriesKind.Radar && Radar.Form == ChartRadarForm.Line && Radar.FillOpacity.HasValue)
+        if (Kind == ChartSeriesKind.Radar && Radar.Form == ChartLineAreaForm.Line && Radar.FillOpacity.HasValue)
             throw new InvalidOperationException("Series '" + Name + "' requires the radar Area form for fill opacity.");
     }
 }
