@@ -12,7 +12,7 @@ public static partial class V2Examples {
         "gauge" or "circle" or "progress-ring" or "layered-radial" or "bullet" or "progress-bar" => "indicators",
         "heatmap" or "hexbin-heatmap" or "calendar-heatmap" or "dotted-map" or "tile-map" or "region-map" => "matrices-maps",
         "timeline" or "state-timeline" or "gantt" or "gantt-lane" => "schedule",
-        "tree" or "sankey" or "topology" or "flow" or "sequence" => "relationships",
+        "tree" or "sankey" or "topology" or "flow" or "sequence" or "chord" => "relationships",
         _ => "compare"
     };
 
