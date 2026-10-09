@@ -157,16 +157,13 @@
     const push = (name, value) => {
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
-    push('Role', data.cfxRole ? data.cfxRole.replace(/-/g, ' ') : '');
     push('Series', seriesLabel(node));
-    push('Point', data.cfxPoint);
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
     push('End', data.cfxEnd);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
-    push('Kind', data.cfxKind);
     push('Percent', data.cfxPercent);
     push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
