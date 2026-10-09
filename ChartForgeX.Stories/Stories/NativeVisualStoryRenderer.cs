@@ -34,9 +34,12 @@ internal static partial class NativeVisualStoryRenderer {
                     switch (panel.Surface) {
                         case VisualStorySourceSurface source: DrawSource(builder, story, source, content, elapsed); break;
                         case VisualStoryTerminalSurface terminal:
+                            if (terminal.Options != null) { DrawTerminalViewport(builder, story, terminal, content, elapsed); break; }
                             builder.Image(new PngTerminalStoryRenderer().RenderFitted(terminal.Terminal, content.Width, content.Height, outputScale, elapsed), content,
                                 role: "story-terminal", preserveAspectRatio: "xMidYMid meet");
                             break;
+                        case VisualStoryReplaySurface replay:
+                            DrawReplay(builder, story, replay, content, elapsed); break;
                         case VisualStoryMediaSurface media:
                             if (media.Svg.Length > 0) {
                                 using (builder.PushEmbeddedSvg(media.Svg,

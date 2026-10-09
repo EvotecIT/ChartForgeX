@@ -54,7 +54,7 @@ public sealed class VisualStoryScene {
     internal VisualStoryScene(string id, string title, double durationSeconds, VisualStorySceneLayout layout) {
         Id = VisualStorySurface.RequireIdentifier(id, nameof(id));
         Title = VisualStorySurface.RequireHeading(title, nameof(title));
-        if (double.IsNaN(durationSeconds) || double.IsInfinity(durationSeconds) || durationSeconds < 0.25 || durationSeconds > 60) throw new ArgumentOutOfRangeException(nameof(durationSeconds));
+        if (double.IsNaN(durationSeconds) || double.IsInfinity(durationSeconds) || durationSeconds < 0.25 || durationSeconds > 1800) throw new ArgumentOutOfRangeException(nameof(durationSeconds));
         if (!Enum.IsDefined(typeof(VisualStorySceneLayout), layout)) throw new ArgumentOutOfRangeException(nameof(layout));
         DurationSeconds = durationSeconds;
         Layout = layout;
@@ -213,6 +213,7 @@ public sealed class VisualStory {
 
     internal void Validate() {
         if (_scenes.Count == 0) throw new InvalidOperationException("Visual stories require at least one scene.");
+        if (DurationSeconds > 1800) throw new InvalidOperationException("Visual stories support at most 30 minutes of authored content. Trim or compress longer recordings.");
         if (_outcomes.Count == 0) throw new InvalidOperationException("Visual stories must declare at least one completed outcome.");
         if (string.IsNullOrWhiteSpace(Theme.FontFamily) || string.IsNullOrWhiteSpace(Theme.MonospaceFontFamily)) throw new InvalidOperationException("Visual-story themes require font families.");
         if (Theme.Syntax == null) throw new InvalidOperationException("Visual-story themes require a syntax palette.");

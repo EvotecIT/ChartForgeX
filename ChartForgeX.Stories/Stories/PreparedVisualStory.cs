@@ -235,6 +235,9 @@ public sealed partial class PreparedVisualStory {
                         case VisualStoryTerminalSurface terminal:
                             assetBytes = checked(assetBytes + terminal.AccessibleText.Length * 2L);
                             surface = terminal.Capture(); break;
+                        case VisualStoryReplaySurface replay:
+                            assetBytes = checked(assetBytes + replay.Replay.RetainedCharacters * 2L);
+                            surface = replay.Capture(); break;
                         case VisualStoryTextSurface text:
                             assetBytes = checked(assetBytes + text.Text.Length * 2L);
                             surface = new VisualStoryTextSurface(text.Text, text.Emphasized); break;
