@@ -12,6 +12,8 @@ public static partial class V2GalleryModels {
         switch (kind) {
             case ChartSeriesKind.Funnel: return chart.AddFunnel("Requests", new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
                 .WithXLabels("Received", "Qualified", "Reviewed", "Completed").WithDataLabels();
+            case ChartSeriesKind.Pyramid: return chart.AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
+                .WithXLabels("Services", "Platform", "Support").WithDataLabels();
             case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem("Discovery", start, start.AddDays(3)).AddTimelineItem("Implementation", start.AddDays(2), start.AddDays(7))
                 .AddTimelineItem("Validation", start.AddDays(6), start.AddDays(9))
                 .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));

@@ -8,7 +8,7 @@ public static partial class V2Examples {
     private static string GroupFor(string family) => family switch {
         "line" or "step-line" or "area" or "step-area" or "stacked-area" or "range-band" or "range-area" or "trend-line" or "cartesian" => "trends",
         "scatter" or "bubble" or "histogram" or "error-bar" or "box-plot" or "candlestick" or "ohlc" or "polar" or "radar" => "distribution",
-        "pie" or "donut" or "polar-area" or "treemap" or "sunburst" or "funnel" or "pictorial" => "proportion",
+        "pie" or "donut" or "polar-area" or "treemap" or "sunburst" or "funnel" or "pyramid" or "pictorial" => "proportion",
         "gauge" or "circle" or "radial-bar" or "layered-radial" or "bullet" or "progress-bar" => "indicators",
         "heatmap" or "hexbin-heatmap" or "calendar-heatmap" or "dotted-map" or "tile-map" or "region-map" => "matrices-maps",
         "timeline" or "state-timeline" or "gantt" or "gantt-lane" => "schedule",

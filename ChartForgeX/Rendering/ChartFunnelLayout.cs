@@ -32,18 +32,11 @@ internal sealed class ChartFunnelLayout {
         var maximum = 0d;
         foreach (var point in points) maximum = Math.Max(maximum, point.Y);
 
-        ChartPoint Position(double cross, double process) => horizontal
-            ? new ChartPoint(plot.Left + process, plot.Top + cross)
-            : new ChartPoint(plot.Left + cross, plot.Top + process);
-        ChartRect Rectangle(double cross, double process, double crossExtent, double processExtent) => horizontal
-            ? new ChartRect(plot.Left + process, plot.Top + cross, processExtent, crossExtent)
-            : new ChartRect(plot.Left + cross, plot.Top + process, crossExtent, processExtent);
-        ChartPath Polygon(double firstWidth, double firstProcess, double lastWidth, double lastProcess) {
-            var a = Position(center - firstWidth / 2, firstProcess); var b = Position(center + firstWidth / 2, firstProcess);
-            var c = Position(center + lastWidth / 2, lastProcess); var d = Position(center - lastWidth / 2, lastProcess);
-            return new ChartPath(new[] { ChartPathCommand.MoveTo(a.X, a.Y), ChartPathCommand.LineTo(b.X, b.Y),
-                ChartPathCommand.LineTo(c.X, c.Y), ChartPathCommand.LineTo(d.X, d.Y) });
-        }
+        var geometry = new ChartStageGeometry(plot, options.Orientation);
+        ChartPoint Position(double cross, double process) => geometry.Position(cross, process);
+        ChartRect Rectangle(double cross, double process, double crossExtent, double processExtent) => geometry.Rectangle(cross, process, crossExtent, processExtent);
+        ChartPath Polygon(double firstWidth, double firstProcess, double lastWidth, double lastProcess) =>
+            geometry.Polygon(center, firstWidth, firstProcess, lastWidth, lastProcess);
 
         var stages = new ChartFunnelStageLayout[points.Count];
         var connections = new ChartFunnelConnectionLayout[Math.Max(0, points.Count - 1)];

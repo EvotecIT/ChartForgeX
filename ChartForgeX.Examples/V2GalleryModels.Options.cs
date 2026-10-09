@@ -56,6 +56,19 @@ public static partial class V2GalleryModels {
                     options.Form = variant == "stage-bars-horizontal" ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == "cone-vertical" ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
+        if (kind == ChartSeriesKind.Pyramid) {
+            var chart = Chart.Create().WithXLabels("Services", "Platform", "Support", "Unassigned").WithDataLabels()
+                .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
+                .WithPyramid(options => {
+                    options.ValueEncoding = ChartPyramidValueEncoding.Area;
+                    options.Orientation = ChartOrientation.Horizontal;
+                    options.Reversed = true;
+                    options.AspectRatio = .75;
+                });
+            chart.Series[0].WithPointColor(0, "#2F78C4").WithPointColor(1, "#E2A644").WithPointColor(2, "#34957A")
+                .WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+            return chart;
+        }
         return null;
     }
 

@@ -248,5 +248,8 @@ public enum ChartSeriesKind {
     /// Renders grouped lanes of time-bounded items, such as incidents, coloured by a categorical severity map. Overlapping
     /// items in a lane stack into sub-rows, and open-ended items run to the current time.
     /// </summary>
-    GanttLane
+    GanttLane,
+
+    /// <summary>Renders values as height- or area-proportional partitions of a triangle.</summary>
+    Pyramid
 }

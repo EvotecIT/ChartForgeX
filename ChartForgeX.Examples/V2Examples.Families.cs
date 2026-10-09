@@ -13,7 +13,7 @@ public static partial class V2Examples {
     };
     private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
         ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel,
-        ChartSeriesKind.Scatter, ChartSeriesKind.Bubble, ChartSeriesKind.Radar
+        ChartSeriesKind.Scatter, ChartSeriesKind.Bubble, ChartSeriesKind.Radar, ChartSeriesKind.Pyramid
     };
 
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
@@ -55,6 +55,7 @@ public static partial class V2Examples {
         ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
         ChartSeriesKind.Bubble => "Marker shape changes; source size still controls each series' scale",
         ChartSeriesKind.Radar => "A filled area and an unfilled target line share one radial scale",
+        ChartSeriesKind.Pyramid => "Reversed horizontal pyramid; areas encode values including zero",
         _ => "Configured chart geometry"
     };
 

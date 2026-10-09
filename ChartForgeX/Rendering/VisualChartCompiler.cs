@@ -24,7 +24,7 @@ internal static class VisualChartCompiler {
             ChartSeriesKind.DottedMap or ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap => VisualChartFamily.Map,
             ChartSeriesKind.Tree or ChartSeriesKind.Sunburst or ChartSeriesKind.Treemap => VisualChartFamily.Hierarchy,
             ChartSeriesKind.Sankey => VisualChartFamily.Sankey,
-            ChartSeriesKind.Funnel or ChartSeriesKind.Pictorial or ChartSeriesKind.WordCloud => VisualChartFamily.Specialty,
+            ChartSeriesKind.Funnel or ChartSeriesKind.Pyramid or ChartSeriesKind.Pictorial or ChartSeriesKind.WordCloud => VisualChartFamily.Specialty,
             _ => throw new NotSupportedException("The chart has no native scene producer.")
         };
     }
