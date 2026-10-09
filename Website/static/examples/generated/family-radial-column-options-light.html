@@ -1,0 +1,1052 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="light" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Regional service workload &#183; Radial Column</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:1100px;min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Radial Column</p><h1>Regional service workload</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="family-radial-column-wide-light.html" data-theme-link data-light-href="family-radial-column-wide-light.html" data-dark-href="family-radial-column-wide-dark.html">Standard</a></span><span><a href="family-radial-column-compact-light.html" data-theme-link data-light-href="family-radial-column-compact-light.html" data-dark-href="family-radial-column-compact-dark.html">Compact</a></span><span><a href="family-radial-column-compact-options-light.html" data-theme-link data-light-href="family-radial-column-compact-options-light.html" data-dark-href="family-radial-column-compact-options-dark.html">Compact options</a></span><span class="current-variant"><a href="family-radial-column-options-light.html" data-theme-link data-light-href="family-radial-column-options-light.html" data-dark-href="family-radial-column-options-dark.html" aria-current="page">Configured options</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="800" height="440" viewBox="0 0 800 440" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Regional service workload" aria-labelledby="family-radial-column-options-light-title" aria-describedby="family-radial-column-options-light-description"><title id="family-radial-column-options-light-title">Regional service workload</title><desc id="family-radial-column-options-light-description">Chart with 2 data series: Requests, Follow-ups.</desc><defs><clipPath id="family-radial-column-options-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="752" height="392"/></clipPath><clipPath id="family-radial-column-options-light-clip-5" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="752" height="19.5"/></clipPath><clipPath id="family-radial-column-options-light-clip-7" clipPathUnits="userSpaceOnUse"><rect x="24" y="79.578" width="10" height="10"/></clipPath><clipPath id="family-radial-column-options-light-clip-13" clipPathUnits="userSpaceOnUse"><rect x="111.804" y="79.578" width="10" height="10"/></clipPath><clipPath id="family-radial-column-options-light-clip-20" clipPathUnits="userSpaceOnUse"><rect x="24" y="107.15" width="752" height="308.85"/></clipPath><clipPath id="family-radial-column-options-light-clip-50" clipPathUnits="userSpaceOnUse"><path d="M 522.5 237.483 L 523.125 240.909 L 523.653 244.352 L 524.085 247.807 L 524.421 251.273 L 524.66 254.748 L 524.802 258.228 L 524.847 261.71 L 524.794 265.192 L 524.645 268.671 L 524.399 272.145 L 524.055 275.611 L 523.616 279.066 L 523.08 282.507 L 522.448 285.931 L 521.721 289.337 L 520.899 292.722 L 519.984 296.082 L 518.974 299.415 L 517.873 302.718 L 516.679 305.99 L 515.395 309.227 L 514.021 312.427 L 512.558 315.588 L 511.008 318.706 L 509.371 321.78 L 507.649 324.807 L 505.844 327.785 L 503.956 330.712 L 479.511 314.455 L 481.124 311.945 L 482.658 309.386 L 484.111 306.781 L 485.482 304.131 L 486.77 301.44 L 487.973 298.71 L 489.09 295.944 L 490.12 293.144 L 491.062 290.314 L 491.916 287.455 L 492.679 284.571 L 493.352 281.665 L 493.934 278.739 L 494.425 275.796 L 494.823 272.84 L 495.128 269.872 L 495.341 266.896 L 495.461 263.915 L 495.487 260.932 L 495.421 257.95 L 495.261 254.971 L 495.008 251.998 L 494.663 249.035 L 494.225 246.084 L 493.695 243.148 L 522.5 237.483 Z" clip-rule="evenodd"/></clipPath></defs><rect x="0" y="0" width="800" height="440" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#family-radial-column-options-light-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Regional service workload</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Named stacks reach 100; labels retain source counts</text></g></g><g clip-path="url(#family-radial-column-options-light-clip-5)"><g id="family-radial-column-options-light-node-6" data-cfx-source-id="legend-series-0" data-cfx-role="legend-entry" aria-label="Requests" data-cfx-series-key="Requests" data-cfx-state="None"><g clip-path="url(#family-radial-column-options-light-clip-7)"><rect x="24" y="79.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#2A78D6" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="42" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests</text></g></g><g id="family-radial-column-options-light-node-12" data-cfx-source-id="legend-series-1" data-cfx-role="legend-entry" aria-label="Follow-ups" data-cfx-series-key="Follow-ups" data-cfx-state="None"><g clip-path="url(#family-radial-column-options-light-clip-13)"><rect x="111.804" y="79.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#0F9F8C" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="129.804" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Follow-ups</text></g></g></g><g data-cfx-role="coordinate-system" data-cfx-coordinate-system="polar"><g clip-path="url(#family-radial-column-options-light-clip-20)"><g data-cfx-role="radial-value-axis" data-cfx-axis="primary" data-cfx-max="100" data-cfx-min="0" data-cfx-reversed="false"><path d="M 400 233.609 A 27.966 27.966 0 1 1 372.034 261.575 L 373.034 261.575 A 26.966 26.966 0 1 0 400 234.609 Z" data-cfx-role="radial-value-grid" fill="#E2E4E7" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 214.133 A 47.442 47.442 0 1 1 352.558 261.575 L 353.558 261.575 A 46.442 46.442 0 1 0 400 215.133 Z" data-cfx-role="radial-value-grid" fill="#E2E4E7" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 194.656 A 66.919 66.919 0 1 1 333.081 261.575 L 334.081 261.575 A 65.919 65.919 0 1 0 400 195.656 Z" data-cfx-role="radial-value-grid" fill="#E2E4E7" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 175.18 A 86.395 86.395 0 1 1 313.605 261.575 L 314.605 261.575 A 85.395 85.395 0 1 0 400 176.18 Z" data-cfx-role="radial-value-grid" fill="#E2E4E7" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 155.704 A 105.871 105.871 0 1 1 294.129 261.575 L 295.129 261.575 A 104.871 104.871 0 1 0 400 156.704 Z" data-cfx-role="radial-value-grid" fill="#E2E4E7" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 136.228 A 125.347 125.347 0 1 1 274.653 261.575 L 275.653 261.575 A 124.347 124.347 0 1 0 400 137.228 Z" data-cfx-role="radial-value-grid" fill="#E2E4E7" stroke="none" stroke-width="1" fill-rule="evenodd"/><line x1="400" y1="234.109" x2="400" y2="136.728" data-cfx-role="radial-value-rule" fill="none" stroke="#E2E4E7" stroke-width="1"/></g><g id="family-radial-column-options-light-node-30" data-cfx-source-id="series-0" data-cfx-role="series" data-cfx-axis="primary" data-cfx-label="Requests" data-cfx-max-value="100" data-cfx-min-value="0" data-cfx-radial-kind="column" data-cfx-series="0" data-cfx-series-key="Requests"><g id="family-radial-column-options-light-node-31" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Requests, North: 1200" data-cfx-axis="primary" data-cfx-base="0" data-cfx-category="North" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Requests, North: 1200" data-cfx-inner-radius="27.466312500000004" data-cfx-label="1200" data-cfx-normalized-to="100" data-cfx-outer-radius="104.34570394736843" data-cfx-pin-state-colors="false" data-cfx-point="0" data-cfx-rendered-y="78.94736842105263" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-source-point="0" data-cfx-stack-end="78.94736842105263" data-cfx-stack-group="work" data-cfx-stack-source-total="1520" data-cfx-stack-total="100" data-cfx-start-angle="-1.3722869409961915" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="1200" data-cfx-x="1" data-cfx-y="1200"><path d="M 420.578 159.278 A 104.346 104.346 0 0 1 486.635 203.416 L 422.804 246.266 A 27.466 27.466 0 0 0 405.417 234.648 Z" id="family-radial-column-options-light-node-32" data-cfx-source-id="series-0-point-0-mark" data-cfx-role="radial-column" fill="#2A78D6" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-light-node-34" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Requests, South: 950" data-cfx-axis="primary" data-cfx-base="0" data-cfx-category="South" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Requests, South: 950" data-cfx-inner-radius="27.466312500000004" data-cfx-label="950" data-cfx-normalized-to="100" data-cfx-outer-radius="95.489499540441187" data-cfx-pin-state-colors="false" data-cfx-point="1" data-cfx-rendered-y="69.85294117647058" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-source-point="1" data-cfx-stack-end="69.85294117647058" data-cfx-stack-group="work" data-cfx-stack-source-total="1360" data-cfx-stack-total="100" data-cfx-start-angle="-0.19418969590001911" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="950" data-cfx-x="2" data-cfx-y="950"><path d="M 493.695 243.148 A 95.489 95.489 0 0 1 479.511 314.455 L 422.87 276.785 A 27.466 27.466 0 0 0 426.95 256.275 Z" id="family-radial-column-options-light-node-35" data-cfx-source-id="series-0-point-1-mark" data-cfx-role="radial-column" fill="#2A78D6" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-light-node-37" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Requests, East: 680" data-cfx-axis="primary" data-cfx-base="0" data-cfx-category="East" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Requests, East: 680" data-cfx-inner-radius="27.466312500000004" data-cfx-label="680" data-cfx-normalized-to="100" data-cfx-outer-radius="97.911825797872353" data-cfx-pin-state-colors="false" data-cfx-point="2" data-cfx-rendered-y="72.340425531914903" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-source-point="2" data-cfx-stack-end="72.340425531914903" data-cfx-stack-group="work" data-cfx-stack-source-total="940" data-cfx-stack-total="100" data-cfx-start-angle="0.98390754919615331" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="680" data-cfx-x="3" data-cfx-y="680"><path d="M 454.221 343.103 A 97.912 97.912 0 0 1 381.106 357.647 L 394.7 288.525 A 27.466 27.466 0 0 0 415.21 284.445 Z" id="family-radial-column-options-light-node-38" data-cfx-source-id="series-0-point-2-mark" data-cfx-role="radial-column" fill="#2A78D6" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-light-node-40" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Requests, West: 1050" data-cfx-axis="primary" data-cfx-base="0" data-cfx-category="West" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Requests, West: 1050" data-cfx-inner-radius="27.466312500000004" data-cfx-label="1050" data-cfx-normalized-to="100" data-cfx-outer-radius="99.983752659574478" data-cfx-pin-state-colors="false" data-cfx-point="3" data-cfx-rendered-y="74.468085106382972" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-source-point="3" data-cfx-stack-end="74.468085106382972" data-cfx-stack-group="work" data-cfx-stack-source-total="1410" data-cfx-stack-total="100" data-cfx-start-angle="2.1620047942923257" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="1050" data-cfx-x="4" data-cfx-y="1050"><path d="M 344.273 344.588 A 99.984 99.984 0 0 1 301.98 281.293 L 373.073 266.992 A 27.466 27.466 0 0 0 384.691 284.379 Z" id="family-radial-column-options-light-node-41" data-cfx-source-id="series-0-point-3-mark" data-cfx-role="radial-column" fill="#2A78D6" stroke="none" stroke-width="1" fill-rule="evenodd"/></g></g><g id="family-radial-column-options-light-node-44" data-cfx-source-id="series-1" data-cfx-role="series" data-cfx-axis="primary" data-cfx-label="Follow-ups" data-cfx-max-value="100" data-cfx-min-value="0" data-cfx-radial-kind="column" data-cfx-series="1" data-cfx-series-key="Follow-ups"><g id="family-radial-column-options-light-node-45" data-cfx-source-id="series-1-point-0" data-cfx-role="point" aria-label="Follow-ups, North: 320" data-cfx-axis="primary" data-cfx-base="78.94736842105263" data-cfx-category="North" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Follow-ups, North: 320" data-cfx-inner-radius="104.34570394736843" data-cfx-label="320" data-cfx-normalized-to="100" data-cfx-outer-radius="124.84687500000001" data-cfx-pin-state-colors="false" data-cfx-point="0" data-cfx-rendered-y="21.05263157894737" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="Follow-ups" data-cfx-source-point="0" data-cfx-stack-end="100" data-cfx-stack-group="work" data-cfx-stack-source-total="1520" data-cfx-stack-total="100" data-cfx-start-angle="-1.3722869409961915" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="320" data-cfx-x="1" data-cfx-y="320"><path d="M 424.621 139.18 A 124.847 124.847 0 0 1 503.656 191.99 L 486.635 203.416 A 104.346 104.346 0 0 0 420.578 159.278 Z" id="family-radial-column-options-light-node-46" data-cfx-source-id="series-1-point-0-mark" data-cfx-role="radial-column" fill="#0F9F8C" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-light-node-48" data-cfx-source-id="series-1-point-1" data-cfx-role="point" aria-label="Follow-ups, South: 410" data-cfx-axis="primary" data-cfx-base="69.85294117647058" data-cfx-category="South" data-cfx-clipped="false" data-cfx-fill-pattern="DiagonalForward" data-cfx-full-label="Follow-ups, South: 410" data-cfx-inner-radius="95.489499540441187" data-cfx-label="410" data-cfx-normalized-to="100" data-cfx-outer-radius="124.84687500000001" data-cfx-pin-state-colors="false" data-cfx-point="1" data-cfx-rendered-y="30.14705882352942" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="Follow-ups" data-cfx-source-point="1" data-cfx-stack-end="100" data-cfx-stack-group="work" data-cfx-stack-source-total="1360" data-cfx-stack-total="100" data-cfx-start-angle="-0.19418969590001911" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="410" data-cfx-x="2" data-cfx-y="410"><path d="M 522.5 237.483 A 124.847 124.847 0 0 1 503.956 330.712 L 479.511 314.455 A 95.489 95.489 0 0 0 493.695 243.148 Z" id="family-radial-column-options-light-node-49" data-cfx-source-id="series-1-point-1-mark" data-cfx-role="radial-column" fill="#0F9F8C" stroke="none" stroke-width="1" fill-rule="evenodd"/><g clip-path="url(#family-radial-column-options-light-clip-50)"><line x1="479.511" y1="240.489" x2="482.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="248.489" x2="490.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="256.489" x2="498.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="264.489" x2="506.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="272.489" x2="514.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="280.489" x2="522.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="288.489" x2="524.847" y2="243.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="296.489" x2="524.847" y2="251.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="304.489" x2="524.847" y2="259.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="312.489" x2="524.847" y2="267.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="320.489" x2="524.847" y2="275.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="328.489" x2="524.847" y2="283.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="485.288" y1="330.712" x2="524.847" y2="291.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="493.288" y1="330.712" x2="524.847" y2="299.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="501.288" y1="330.712" x2="524.847" y2="307.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="509.288" y1="330.712" x2="524.847" y2="315.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="517.288" y1="330.712" x2="524.847" y2="323.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/></g></g><g id="family-radial-column-options-light-node-70" data-cfx-source-id="series-1-point-2" data-cfx-role="point" aria-label="Follow-ups, East: 260" data-cfx-axis="primary" data-cfx-base="72.340425531914903" data-cfx-category="East" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Follow-ups, East: 260" data-cfx-inner-radius="97.911825797872353" data-cfx-label="260" data-cfx-normalized-to="100" data-cfx-outer-radius="124.84687500000001" data-cfx-pin-state-colors="false" data-cfx-point="2" data-cfx-rendered-y="27.659574468085097" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="Follow-ups" data-cfx-source-point="2" data-cfx-stack-end="100" data-cfx-stack-group="work" data-cfx-stack-source-total="940" data-cfx-stack-total="100" data-cfx-start-angle="0.98390754919615331" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="260" data-cfx-x="3" data-cfx-y="260"><path d="M 469.137 365.531 A 124.847 124.847 0 0 1 375.908 384.075 L 381.106 357.647 A 97.912 97.912 0 0 0 454.221 343.103 Z" id="family-radial-column-options-light-node-71" data-cfx-source-id="series-1-point-2-mark" data-cfx-role="radial-column" fill="#0F9F8C" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-light-node-73" data-cfx-source-id="series-1-point-3" data-cfx-role="point" aria-label="Follow-ups, West: 360" data-cfx-axis="primary" data-cfx-base="74.468085106382972" data-cfx-category="West" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Follow-ups, West: 360" data-cfx-inner-radius="99.983752659574478" data-cfx-label="360" data-cfx-normalized-to="100" data-cfx-outer-radius="124.84687500000001" data-cfx-pin-state-colors="false" data-cfx-point="3" data-cfx-rendered-y="25.531914893617028" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="Follow-ups" data-cfx-source-point="3" data-cfx-stack-end="100" data-cfx-stack-group="work" data-cfx-stack-source-total="1410" data-cfx-stack-total="100" data-cfx-start-angle="2.1620047942923257" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="360" data-cfx-x="4" data-cfx-y="360"><path d="M 330.415 365.231 A 124.847 124.847 0 0 1 277.605 286.196 L 301.98 281.293 A 99.984 99.984 0 0 0 344.273 344.588 Z" id="family-radial-column-options-light-node-74" data-cfx-source-id="series-1-point-3-mark" data-cfx-role="radial-column" fill="#0F9F8C" stroke="none" stroke-width="1" fill-rule="evenodd"/></g></g><g id="family-radial-column-options-light-node-77" data-cfx-source-id="radial-value-label-Primary-0-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="0"><g id="family-radial-column-options-light-node-78" data-cfx-source-id="radial-value-label-Primary-0" data-cfx-role="radial-value-label"><text x="387.918" y="236.745" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g></g><g id="family-radial-column-options-light-node-80" data-cfx-source-id="radial-value-label-Primary-1-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="20"></g><g id="family-radial-column-options-light-node-82" data-cfx-source-id="radial-value-label-Primary-2-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="40"><g id="family-radial-column-options-light-node-83" data-cfx-source-id="radial-value-label-Primary-2" data-cfx-role="radial-value-label"><text x="381.836" y="197.793" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">40</text></g></g><g id="family-radial-column-options-light-node-85" data-cfx-source-id="radial-value-label-Primary-3-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="60"></g><g id="family-radial-column-options-light-node-87" data-cfx-source-id="radial-value-label-Primary-4-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="80"><g id="family-radial-column-options-light-node-88" data-cfx-source-id="radial-value-label-Primary-4" data-cfx-role="radial-value-label"><text x="381.836" y="158.841" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">80</text></g></g><g id="family-radial-column-options-light-node-90" data-cfx-source-id="radial-value-label-Primary-5-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="100"></g><g id="family-radial-column-options-light-node-92" data-cfx-source-id="radial-category-label-0-source" data-cfx-role="radial-category-label-source" data-cfx-full-label="North"><g id="family-radial-column-options-light-node-93" data-cfx-source-id="radial-category-label-0" data-cfx-role="radial-category-label"><text x="476.028" y="141.639" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">North</text></g></g><g id="family-radial-column-options-light-node-95" data-cfx-source-id="radial-category-label-1-source" data-cfx-role="radial-category-label-source" data-cfx-full-label="South"><g id="family-radial-column-options-light-node-96" data-cfx-source-id="radial-category-label-1" data-cfx-role="radial-category-label"><text x="534.217" y="290.909" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">South</text></g></g><g id="family-radial-column-options-light-node-98" data-cfx-source-id="radial-category-label-2-source" data-cfx-role="radial-category-label-source" data-cfx-full-label="East"><g id="family-radial-column-options-light-node-99" data-cfx-source-id="radial-category-label-2" data-cfx-role="radial-category-label"><text x="416.704" y="407.218" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">East</text></g></g><g id="family-radial-column-options-light-node-101" data-cfx-source-id="radial-category-label-3-source" data-cfx-role="radial-category-label-source" data-cfx-full-label="West"><g id="family-radial-column-options-light-node-102" data-cfx-source-id="radial-category-label-3" data-cfx-role="radial-category-label"><text x="261.431" y="349.029" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">West</text></g></g><g id="family-radial-column-options-light-node-104" data-cfx-source-id="series-0-point-0-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="1200"><g id="family-radial-column-options-light-node-105" data-cfx-source-id="series-0-point-0-label" data-cfx-role="radial-data-label"><text x="424.451" y="209.413" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1200</text></g></g><g id="family-radial-column-options-light-node-107" data-cfx-source-id="series-0-point-1-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="950"><g id="family-radial-column-options-light-node-108" data-cfx-source-id="series-0-point-1-label" data-cfx-role="radial-data-label"><text x="451.174" y="276.205" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">950</text></g></g><g id="family-radial-column-options-light-node-110" data-cfx-source-id="series-0-point-2-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="680"><g id="family-radial-column-options-light-node-111" data-cfx-source-id="series-0-point-2-label" data-cfx-role="radial-data-label"><text x="403.107" y="325.696" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">680</text></g></g><g id="family-radial-column-options-light-node-113" data-cfx-source-id="series-0-point-3-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="1050"><g id="family-radial-column-options-light-node-114" data-cfx-source-id="series-0-point-3-label" data-cfx-role="radial-data-label"><text x="334.851" y="299.615" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1050</text></g></g><g id="family-radial-column-options-light-node-116" data-cfx-source-id="series-1-point-0-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="320"></g><g id="family-radial-column-options-light-node-118" data-cfx-source-id="series-1-point-1-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="410"><g id="family-radial-column-options-light-node-119" data-cfx-source-id="series-1-point-1-label" data-cfx-role="radial-data-label"><text x="500.868" y="285.704" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">4…</text></g></g><g id="family-radial-column-options-light-node-121" data-cfx-source-id="series-1-point-2-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="260"></g><g id="family-radial-column-options-light-node-123" data-cfx-source-id="series-1-point-3-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="360"></g></g></g></svg></div><div class="full" data-visual-theme="light" data-output-format="png"><img src="family-radial-column-options-light.png" width="800" height="440" alt="Regional service workload" loading="lazy" decoding="async"></div><div class="full" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="800" height="440" viewBox="0 0 800 440" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Regional service workload" aria-labelledby="family-radial-column-options-dark-title" aria-describedby="family-radial-column-options-dark-description"><title id="family-radial-column-options-dark-title">Regional service workload</title><desc id="family-radial-column-options-dark-description">Chart with 2 data series: Requests, Follow-ups.</desc><defs><clipPath id="family-radial-column-options-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="752" height="392"/></clipPath><clipPath id="family-radial-column-options-dark-clip-5" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="752" height="19.5"/></clipPath><clipPath id="family-radial-column-options-dark-clip-7" clipPathUnits="userSpaceOnUse"><rect x="24" y="79.578" width="10" height="10"/></clipPath><clipPath id="family-radial-column-options-dark-clip-13" clipPathUnits="userSpaceOnUse"><rect x="111.804" y="79.578" width="10" height="10"/></clipPath><clipPath id="family-radial-column-options-dark-clip-20" clipPathUnits="userSpaceOnUse"><rect x="24" y="107.15" width="752" height="308.85"/></clipPath><clipPath id="family-radial-column-options-dark-clip-50" clipPathUnits="userSpaceOnUse"><path d="M 522.5 237.483 L 523.125 240.909 L 523.653 244.352 L 524.085 247.807 L 524.421 251.273 L 524.66 254.748 L 524.802 258.228 L 524.847 261.71 L 524.794 265.192 L 524.645 268.671 L 524.399 272.145 L 524.055 275.611 L 523.616 279.066 L 523.08 282.507 L 522.448 285.931 L 521.721 289.337 L 520.899 292.722 L 519.984 296.082 L 518.974 299.415 L 517.873 302.718 L 516.679 305.99 L 515.395 309.227 L 514.021 312.427 L 512.558 315.588 L 511.008 318.706 L 509.371 321.78 L 507.649 324.807 L 505.844 327.785 L 503.956 330.712 L 479.511 314.455 L 481.124 311.945 L 482.658 309.386 L 484.111 306.781 L 485.482 304.131 L 486.77 301.44 L 487.973 298.71 L 489.09 295.944 L 490.12 293.144 L 491.062 290.314 L 491.916 287.455 L 492.679 284.571 L 493.352 281.665 L 493.934 278.739 L 494.425 275.796 L 494.823 272.84 L 495.128 269.872 L 495.341 266.896 L 495.461 263.915 L 495.487 260.932 L 495.421 257.95 L 495.261 254.971 L 495.008 251.998 L 494.663 249.035 L 494.225 246.084 L 493.695 243.148 L 522.5 237.483 Z" clip-rule="evenodd"/></clipPath></defs><rect x="0" y="0" width="800" height="440" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#family-radial-column-options-dark-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Regional service workload</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Named stacks reach 100; labels retain source counts</text></g></g><g clip-path="url(#family-radial-column-options-dark-clip-5)"><g id="family-radial-column-options-dark-node-6" data-cfx-source-id="legend-series-0" data-cfx-role="legend-entry" aria-label="Requests" data-cfx-series-key="Requests" data-cfx-state="None"><g clip-path="url(#family-radial-column-options-dark-clip-7)"><rect x="24" y="79.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#3987E5" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="42" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests</text></g></g><g id="family-radial-column-options-dark-node-12" data-cfx-source-id="legend-series-1" data-cfx-role="legend-entry" aria-label="Follow-ups" data-cfx-series-key="Follow-ups" data-cfx-state="None"><g clip-path="url(#family-radial-column-options-dark-clip-13)"><rect x="111.804" y="79.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#179C89" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="129.804" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Follow-ups</text></g></g></g><g data-cfx-role="coordinate-system" data-cfx-coordinate-system="polar"><g clip-path="url(#family-radial-column-options-dark-clip-20)"><g data-cfx-role="radial-value-axis" data-cfx-axis="primary" data-cfx-max="100" data-cfx-min="0" data-cfx-reversed="false"><path d="M 400 233.609 A 27.966 27.966 0 1 1 372.034 261.575 L 373.034 261.575 A 26.966 26.966 0 1 0 400 234.609 Z" data-cfx-role="radial-value-grid" fill="#272A30" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 214.133 A 47.442 47.442 0 1 1 352.558 261.575 L 353.558 261.575 A 46.442 46.442 0 1 0 400 215.133 Z" data-cfx-role="radial-value-grid" fill="#272A30" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 194.656 A 66.919 66.919 0 1 1 333.081 261.575 L 334.081 261.575 A 65.919 65.919 0 1 0 400 195.656 Z" data-cfx-role="radial-value-grid" fill="#272A30" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 175.18 A 86.395 86.395 0 1 1 313.605 261.575 L 314.605 261.575 A 85.395 85.395 0 1 0 400 176.18 Z" data-cfx-role="radial-value-grid" fill="#272A30" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 155.704 A 105.871 105.871 0 1 1 294.129 261.575 L 295.129 261.575 A 104.871 104.871 0 1 0 400 156.704 Z" data-cfx-role="radial-value-grid" fill="#272A30" stroke="none" stroke-width="1" fill-rule="evenodd"/><path d="M 400 136.228 A 125.347 125.347 0 1 1 274.653 261.575 L 275.653 261.575 A 124.347 124.347 0 1 0 400 137.228 Z" data-cfx-role="radial-value-grid" fill="#272A30" stroke="none" stroke-width="1" fill-rule="evenodd"/><line x1="400" y1="234.109" x2="400" y2="136.728" data-cfx-role="radial-value-rule" fill="none" stroke="#272A30" stroke-width="1"/></g><g id="family-radial-column-options-dark-node-30" data-cfx-source-id="series-0" data-cfx-role="series" data-cfx-axis="primary" data-cfx-label="Requests" data-cfx-max-value="100" data-cfx-min-value="0" data-cfx-radial-kind="column" data-cfx-series="0" data-cfx-series-key="Requests"><g id="family-radial-column-options-dark-node-31" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Requests, North: 1200" data-cfx-axis="primary" data-cfx-base="0" data-cfx-category="North" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Requests, North: 1200" data-cfx-inner-radius="27.466312500000004" data-cfx-label="1200" data-cfx-normalized-to="100" data-cfx-outer-radius="104.34570394736843" data-cfx-pin-state-colors="false" data-cfx-point="0" data-cfx-rendered-y="78.94736842105263" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-source-point="0" data-cfx-stack-end="78.94736842105263" data-cfx-stack-group="work" data-cfx-stack-source-total="1520" data-cfx-stack-total="100" data-cfx-start-angle="-1.3722869409961915" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="1200" data-cfx-x="1" data-cfx-y="1200"><path d="M 420.578 159.278 A 104.346 104.346 0 0 1 486.635 203.416 L 422.804 246.266 A 27.466 27.466 0 0 0 405.417 234.648 Z" id="family-radial-column-options-dark-node-32" data-cfx-source-id="series-0-point-0-mark" data-cfx-role="radial-column" fill="#3987E5" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-dark-node-34" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Requests, South: 950" data-cfx-axis="primary" data-cfx-base="0" data-cfx-category="South" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Requests, South: 950" data-cfx-inner-radius="27.466312500000004" data-cfx-label="950" data-cfx-normalized-to="100" data-cfx-outer-radius="95.489499540441187" data-cfx-pin-state-colors="false" data-cfx-point="1" data-cfx-rendered-y="69.85294117647058" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-source-point="1" data-cfx-stack-end="69.85294117647058" data-cfx-stack-group="work" data-cfx-stack-source-total="1360" data-cfx-stack-total="100" data-cfx-start-angle="-0.19418969590001911" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="950" data-cfx-x="2" data-cfx-y="950"><path d="M 493.695 243.148 A 95.489 95.489 0 0 1 479.511 314.455 L 422.87 276.785 A 27.466 27.466 0 0 0 426.95 256.275 Z" id="family-radial-column-options-dark-node-35" data-cfx-source-id="series-0-point-1-mark" data-cfx-role="radial-column" fill="#3987E5" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-dark-node-37" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Requests, East: 680" data-cfx-axis="primary" data-cfx-base="0" data-cfx-category="East" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Requests, East: 680" data-cfx-inner-radius="27.466312500000004" data-cfx-label="680" data-cfx-normalized-to="100" data-cfx-outer-radius="97.911825797872353" data-cfx-pin-state-colors="false" data-cfx-point="2" data-cfx-rendered-y="72.340425531914903" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-source-point="2" data-cfx-stack-end="72.340425531914903" data-cfx-stack-group="work" data-cfx-stack-source-total="940" data-cfx-stack-total="100" data-cfx-start-angle="0.98390754919615331" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="680" data-cfx-x="3" data-cfx-y="680"><path d="M 454.221 343.103 A 97.912 97.912 0 0 1 381.106 357.647 L 394.7 288.525 A 27.466 27.466 0 0 0 415.21 284.445 Z" id="family-radial-column-options-dark-node-38" data-cfx-source-id="series-0-point-2-mark" data-cfx-role="radial-column" fill="#3987E5" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-dark-node-40" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Requests, West: 1050" data-cfx-axis="primary" data-cfx-base="0" data-cfx-category="West" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Requests, West: 1050" data-cfx-inner-radius="27.466312500000004" data-cfx-label="1050" data-cfx-normalized-to="100" data-cfx-outer-radius="99.983752659574478" data-cfx-pin-state-colors="false" data-cfx-point="3" data-cfx-rendered-y="74.468085106382972" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Requests" data-cfx-source-point="3" data-cfx-stack-end="74.468085106382972" data-cfx-stack-group="work" data-cfx-stack-source-total="1410" data-cfx-stack-total="100" data-cfx-start-angle="2.1620047942923257" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="1050" data-cfx-x="4" data-cfx-y="1050"><path d="M 344.273 344.588 A 99.984 99.984 0 0 1 301.98 281.293 L 373.073 266.992 A 27.466 27.466 0 0 0 384.691 284.379 Z" id="family-radial-column-options-dark-node-41" data-cfx-source-id="series-0-point-3-mark" data-cfx-role="radial-column" fill="#3987E5" stroke="none" stroke-width="1" fill-rule="evenodd"/></g></g><g id="family-radial-column-options-dark-node-44" data-cfx-source-id="series-1" data-cfx-role="series" data-cfx-axis="primary" data-cfx-label="Follow-ups" data-cfx-max-value="100" data-cfx-min-value="0" data-cfx-radial-kind="column" data-cfx-series="1" data-cfx-series-key="Follow-ups"><g id="family-radial-column-options-dark-node-45" data-cfx-source-id="series-1-point-0" data-cfx-role="point" aria-label="Follow-ups, North: 320" data-cfx-axis="primary" data-cfx-base="78.94736842105263" data-cfx-category="North" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Follow-ups, North: 320" data-cfx-inner-radius="104.34570394736843" data-cfx-label="320" data-cfx-normalized-to="100" data-cfx-outer-radius="124.84687500000001" data-cfx-pin-state-colors="false" data-cfx-point="0" data-cfx-rendered-y="21.05263157894737" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="Follow-ups" data-cfx-source-point="0" data-cfx-stack-end="100" data-cfx-stack-group="work" data-cfx-stack-source-total="1520" data-cfx-stack-total="100" data-cfx-start-angle="-1.3722869409961915" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="320" data-cfx-x="1" data-cfx-y="320"><path d="M 424.621 139.18 A 124.847 124.847 0 0 1 503.656 191.99 L 486.635 203.416 A 104.346 104.346 0 0 0 420.578 159.278 Z" id="family-radial-column-options-dark-node-46" data-cfx-source-id="series-1-point-0-mark" data-cfx-role="radial-column" fill="#179C89" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-dark-node-48" data-cfx-source-id="series-1-point-1" data-cfx-role="point" aria-label="Follow-ups, South: 410" data-cfx-axis="primary" data-cfx-base="69.85294117647058" data-cfx-category="South" data-cfx-clipped="false" data-cfx-fill-pattern="DiagonalForward" data-cfx-full-label="Follow-ups, South: 410" data-cfx-inner-radius="95.489499540441187" data-cfx-label="410" data-cfx-normalized-to="100" data-cfx-outer-radius="124.84687500000001" data-cfx-pin-state-colors="false" data-cfx-point="1" data-cfx-rendered-y="30.14705882352942" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="Follow-ups" data-cfx-source-point="1" data-cfx-stack-end="100" data-cfx-stack-group="work" data-cfx-stack-source-total="1360" data-cfx-stack-total="100" data-cfx-start-angle="-0.19418969590001911" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="410" data-cfx-x="2" data-cfx-y="410"><path d="M 522.5 237.483 A 124.847 124.847 0 0 1 503.956 330.712 L 479.511 314.455 A 95.489 95.489 0 0 0 493.695 243.148 Z" id="family-radial-column-options-dark-node-49" data-cfx-source-id="series-1-point-1-mark" data-cfx-role="radial-column" fill="#179C89" stroke="none" stroke-width="1" fill-rule="evenodd"/><g clip-path="url(#family-radial-column-options-dark-clip-50)"><line x1="479.511" y1="240.489" x2="482.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="248.489" x2="490.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="256.489" x2="498.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="264.489" x2="506.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="272.489" x2="514.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="280.489" x2="522.517" y2="237.483" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="288.489" x2="524.847" y2="243.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="296.489" x2="524.847" y2="251.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="304.489" x2="524.847" y2="259.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="312.489" x2="524.847" y2="267.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="320.489" x2="524.847" y2="275.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="479.511" y1="328.489" x2="524.847" y2="283.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="485.288" y1="330.712" x2="524.847" y2="291.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="493.288" y1="330.712" x2="524.847" y2="299.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="501.288" y1="330.712" x2="524.847" y2="307.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="509.288" y1="330.712" x2="524.847" y2="315.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/><line x1="517.288" y1="330.712" x2="524.847" y2="323.153" data-cfx-role="radial-fill-pattern" fill="none" stroke="rgba(0,0,0,0.431)" stroke-width="1.5"/></g></g><g id="family-radial-column-options-dark-node-70" data-cfx-source-id="series-1-point-2" data-cfx-role="point" aria-label="Follow-ups, East: 260" data-cfx-axis="primary" data-cfx-base="72.340425531914903" data-cfx-category="East" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Follow-ups, East: 260" data-cfx-inner-radius="97.911825797872353" data-cfx-label="260" data-cfx-normalized-to="100" data-cfx-outer-radius="124.84687500000001" data-cfx-pin-state-colors="false" data-cfx-point="2" data-cfx-rendered-y="27.659574468085097" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="Follow-ups" data-cfx-source-point="2" data-cfx-stack-end="100" data-cfx-stack-group="work" data-cfx-stack-source-total="940" data-cfx-stack-total="100" data-cfx-start-angle="0.98390754919615331" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="260" data-cfx-x="3" data-cfx-y="260"><path d="M 469.137 365.531 A 124.847 124.847 0 0 1 375.908 384.075 L 381.106 357.647 A 97.912 97.912 0 0 0 454.221 343.103 Z" id="family-radial-column-options-dark-node-71" data-cfx-source-id="series-1-point-2-mark" data-cfx-role="radial-column" fill="#179C89" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><g id="family-radial-column-options-dark-node-73" data-cfx-source-id="series-1-point-3" data-cfx-role="point" aria-label="Follow-ups, West: 360" data-cfx-axis="primary" data-cfx-base="74.468085106382972" data-cfx-category="West" data-cfx-clipped="false" data-cfx-fill-pattern="None" data-cfx-full-label="Follow-ups, West: 360" data-cfx-inner-radius="99.983752659574478" data-cfx-label="360" data-cfx-normalized-to="100" data-cfx-outer-radius="124.84687500000001" data-cfx-pin-state-colors="false" data-cfx-point="3" data-cfx-rendered-y="25.531914893617028" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="Follow-ups" data-cfx-source-point="3" data-cfx-stack-end="100" data-cfx-stack-group="work" data-cfx-stack-source-total="1410" data-cfx-stack-total="100" data-cfx-start-angle="2.1620047942923257" data-cfx-state="none" data-cfx-sweep-angle="0.78107847349876236" data-cfx-value="360" data-cfx-x="4" data-cfx-y="360"><path d="M 330.415 365.231 A 124.847 124.847 0 0 1 277.605 286.196 L 301.98 281.293 A 99.984 99.984 0 0 0 344.273 344.588 Z" id="family-radial-column-options-dark-node-74" data-cfx-source-id="series-1-point-3-mark" data-cfx-role="radial-column" fill="#179C89" stroke="none" stroke-width="1" fill-rule="evenodd"/></g></g><g id="family-radial-column-options-dark-node-77" data-cfx-source-id="radial-value-label-Primary-0-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="0"><g id="family-radial-column-options-dark-node-78" data-cfx-source-id="radial-value-label-Primary-0" data-cfx-role="radial-value-label"><text x="387.918" y="236.745" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g></g><g id="family-radial-column-options-dark-node-80" data-cfx-source-id="radial-value-label-Primary-1-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="20"></g><g id="family-radial-column-options-dark-node-82" data-cfx-source-id="radial-value-label-Primary-2-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="40"><g id="family-radial-column-options-dark-node-83" data-cfx-source-id="radial-value-label-Primary-2" data-cfx-role="radial-value-label"><text x="381.836" y="197.793" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">40</text></g></g><g id="family-radial-column-options-dark-node-85" data-cfx-source-id="radial-value-label-Primary-3-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="60"></g><g id="family-radial-column-options-dark-node-87" data-cfx-source-id="radial-value-label-Primary-4-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="80"><g id="family-radial-column-options-dark-node-88" data-cfx-source-id="radial-value-label-Primary-4" data-cfx-role="radial-value-label"><text x="381.836" y="158.841" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">80</text></g></g><g id="family-radial-column-options-dark-node-90" data-cfx-source-id="radial-value-label-Primary-5-source" data-cfx-role="radial-value-label-source" data-cfx-full-label="100"></g><g id="family-radial-column-options-dark-node-92" data-cfx-source-id="radial-category-label-0-source" data-cfx-role="radial-category-label-source" data-cfx-full-label="North"><g id="family-radial-column-options-dark-node-93" data-cfx-source-id="radial-category-label-0" data-cfx-role="radial-category-label"><text x="476.028" y="141.639" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">North</text></g></g><g id="family-radial-column-options-dark-node-95" data-cfx-source-id="radial-category-label-1-source" data-cfx-role="radial-category-label-source" data-cfx-full-label="South"><g id="family-radial-column-options-dark-node-96" data-cfx-source-id="radial-category-label-1" data-cfx-role="radial-category-label"><text x="534.217" y="290.909" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">South</text></g></g><g id="family-radial-column-options-dark-node-98" data-cfx-source-id="radial-category-label-2-source" data-cfx-role="radial-category-label-source" data-cfx-full-label="East"><g id="family-radial-column-options-dark-node-99" data-cfx-source-id="radial-category-label-2" data-cfx-role="radial-category-label"><text x="416.704" y="407.218" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">East</text></g></g><g id="family-radial-column-options-dark-node-101" data-cfx-source-id="radial-category-label-3-source" data-cfx-role="radial-category-label-source" data-cfx-full-label="West"><g id="family-radial-column-options-dark-node-102" data-cfx-source-id="radial-category-label-3" data-cfx-role="radial-category-label"><text x="261.431" y="349.029" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">West</text></g></g><g id="family-radial-column-options-dark-node-104" data-cfx-source-id="series-0-point-0-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="1200"><g id="family-radial-column-options-dark-node-105" data-cfx-source-id="series-0-point-0-label" data-cfx-role="radial-data-label"><text x="424.451" y="209.413" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1200</text></g></g><g id="family-radial-column-options-dark-node-107" data-cfx-source-id="series-0-point-1-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="950"><g id="family-radial-column-options-dark-node-108" data-cfx-source-id="series-0-point-1-label" data-cfx-role="radial-data-label"><text x="451.174" y="276.205" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">950</text></g></g><g id="family-radial-column-options-dark-node-110" data-cfx-source-id="series-0-point-2-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="680"><g id="family-radial-column-options-dark-node-111" data-cfx-source-id="series-0-point-2-label" data-cfx-role="radial-data-label"><text x="403.107" y="325.696" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">680</text></g></g><g id="family-radial-column-options-dark-node-113" data-cfx-source-id="series-0-point-3-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="1050"><g id="family-radial-column-options-dark-node-114" data-cfx-source-id="series-0-point-3-label" data-cfx-role="radial-data-label"><text x="334.851" y="299.615" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1050</text></g></g><g id="family-radial-column-options-dark-node-116" data-cfx-source-id="series-1-point-0-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="320"></g><g id="family-radial-column-options-dark-node-118" data-cfx-source-id="series-1-point-1-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="410"><g id="family-radial-column-options-dark-node-119" data-cfx-source-id="series-1-point-1-label" data-cfx-role="radial-data-label"><text x="500.868" y="285.704" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#000000" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">4…</text></g></g><g id="family-radial-column-options-dark-node-121" data-cfx-source-id="series-1-point-2-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="260"></g><g id="family-radial-column-options-dark-node-123" data-cfx-source-id="series-1-point-3-label-source" data-cfx-role="radial-data-label-source" data-cfx-full-label="360"></g></g></g></svg></div><div class="full" data-visual-theme="dark" data-output-format="png"><img src="family-radial-column-options-dark.png" width="800" height="440" alt="Regional service workload" loading="lazy" decoding="async"></div></section><div class="export-row"><span>800 × 440 pixels</span><nav aria-label="Download outputs"><a href="family-radial-column-options-light.svg" data-theme-link data-light-href="family-radial-column-options-light.svg" data-dark-href="family-radial-column-options-dark.svg" download>Download SVG</a><a href="family-radial-column-options-light.png" data-theme-link data-light-href="family-radial-column-options-light.png" data-dark-href="family-radial-column-options-dark.png" download>Download PNG</a><a href="family-radial-column-options-light.csharp.txt" data-theme-link data-light-href="family-radial-column-options-light.csharp.txt" data-dark-href="family-radial-column-options-dark.csharp.txt" download>Download C#</a></nav></div><aside class="layout-notes" data-layout-notes data-visual-theme="light" aria-label="Layout notes for this size"><h2>Layout notes for this size</h2><ul><li>Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.</li></ul></aside><aside class="layout-notes" data-layout-notes data-visual-theme="dark" aria-label="Layout notes for this size"><h2>Layout notes for this size</h2><ul><li>Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.</li></ul></aside><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Register the included Carlito font files to reproduce the exported typography.</p><pre data-visual-theme="light"><code data-example-source>using System;
+using System.Linq;
+using System.Globalization;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// The licensed font fixtures are included beside the gallery outputs.
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var model = V2GalleryModels.Create(ChartSeriesKind.RadialColumn, &quot;options&quot;, VisualThemeMode.Light);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Light,
+    new VisualFrame(&quot;Regional service workload&quot;, &quot;Named stacks reach 100; labels retain source counts&quot;, showLegend: null), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = model.Prepare(context);
+System.IO.File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+System.IO.File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+System.IO.File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+
+/// &lt;summary&gt;Executable, deterministic gallery models shared by the catalog and its downloadable C# examples.&lt;/summary&gt;
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Creates an actual source model for every chart kind, without selecting a renderer or export backend.&lt;/summary&gt;
+    public static Chart Create(ChartSeriesKind kind, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant ? GeometryOptions(kind, variant) : null)
+            ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? throw new ArgumentOutOfRangeException(nameof(kind));
+        chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.Area) {
+            chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+            chart.Series[0].StateRole = ChartSeriesState.Warning;
+            chart.WithDataLabels();
+        }
+        return chart;
+    }
+
+    /// &lt;summary&gt;Gets a short title describing the actual example data.&lt;/summary&gt;
+    public static string Title(ChartSeriesKind kind) =&gt; kind switch {
+        ChartSeriesKind.Line =&gt; &quot;Weekly request volume&quot;, ChartSeriesKind.StepLine =&gt; &quot;Requests waiting in the queue&quot;,
+        ChartSeriesKind.Area =&gt; &quot;Capacity used during the week&quot;, ChartSeriesKind.StepArea =&gt; &quot;Reserved processing capacity&quot;,
+        ChartSeriesKind.Bar =&gt; &quot;Completed orders by region&quot;, ChartSeriesKind.HorizontalBar =&gt; &quot;Regional order fulfilment&quot;,
+        ChartSeriesKind.StackedArea =&gt; &quot;Requests and follow-ups over time&quot;, ChartSeriesKind.TrendLine =&gt; &quot;Request volume and its trend&quot;,
+        ChartSeriesKind.Scatter =&gt; &quot;Processing time by workload&quot;, ChartSeriesKind.Bubble =&gt; &quot;Workload, time and request volume&quot;,
+        ChartSeriesKind.Lollipop =&gt; &quot;Orders at each delivery stage&quot;, ChartSeriesKind.Candlestick =&gt; &quot;Daily opening and closing prices&quot;,
+        ChartSeriesKind.Ohlc =&gt; &quot;Daily market price ranges&quot;, ChartSeriesKind.ErrorBar =&gt; &quot;Delivery time and uncertainty&quot;,
+        ChartSeriesKind.BoxPlot =&gt; &quot;Delivery time by service level&quot;, ChartSeriesKind.RangeBand =&gt; &quot;Expected temperature band&quot;,
+        ChartSeriesKind.RangeArea =&gt; &quot;Expected operating range&quot;, ChartSeriesKind.RangeBar =&gt; &quot;Minimum and maximum delivery times&quot;,
+        ChartSeriesKind.Dumbbell =&gt; &quot;Service capacity before and after&quot;, ChartSeriesKind.Slope =&gt; &quot;Capacity change across teams&quot;,
+        ChartSeriesKind.Heatmap =&gt; &quot;Coverage across service areas&quot;, ChartSeriesKind.HexbinHeatmap =&gt; &quot;Service coverage in hexagonal cells&quot;,
+        ChartSeriesKind.CalendarHeatmap =&gt; &quot;Daily activity across four months&quot;, ChartSeriesKind.DottedMap =&gt; &quot;Service routes across Europe&quot;,
+        ChartSeriesKind.RegionMap =&gt; &quot;Regional service coverage&quot;, ChartSeriesKind.TileMap =&gt; &quot;Service coverage by state&quot;,
+        ChartSeriesKind.Gauge =&gt; &quot;Available capacity against a target&quot;, ChartSeriesKind.Circle =&gt; &quot;Assessments completed&quot;,
+        ChartSeriesKind.ProgressRing =&gt; &quot;Completion by delivery stage&quot;, ChartSeriesKind.LayeredRadial =&gt; &quot;Reviewed, verified and completed&quot;,
+        ChartSeriesKind.RadialBar =&gt; &quot;Requests by region and service&quot;, ChartSeriesKind.RadialColumn =&gt; &quot;Regional service workload&quot;,
+        ChartSeriesKind.Bullet =&gt; &quot;Reviewed work against its targets&quot;, ChartSeriesKind.ProgressBar =&gt; &quot;Progress through delivery stages&quot;,
+        ChartSeriesKind.Pie =&gt; &quot;Revenue by service&quot;, ChartSeriesKind.Donut =&gt; &quot;Services contributing to revenue&quot;,
+        ChartSeriesKind.PolarArea =&gt; &quot;Service revenue in radial segments&quot;, ChartSeriesKind.Radar =&gt; &quot;Observed and expected service levels&quot;,
+        ChartSeriesKind.Polar =&gt; &quot;Directional sensor readings&quot;, ChartSeriesKind.Timeline =&gt; &quot;Project activities in March 2026&quot;,
+        ChartSeriesKind.Gantt =&gt; &quot;Project delivery in March 2026&quot;, ChartSeriesKind.StateTimeline =&gt; &quot;Availability throughout the day&quot;,
+        ChartSeriesKind.GanttLane =&gt; &quot;Incidents and recovery in parallel&quot;,
+        ChartSeriesKind.Sankey =&gt; &quot;Requests across processing stages&quot;, ChartSeriesKind.Tree =&gt; &quot;Teams and their responsibilities&quot;,
+        ChartSeriesKind.Sunburst =&gt; &quot;Allocation through the team hierarchy&quot;, ChartSeriesKind.Treemap =&gt; &quot;How work is allocated across teams&quot;,
+        ChartSeriesKind.Pictorial =&gt; &quot;Completed assessments by team&quot;, ChartSeriesKind.WordCloud =&gt; &quot;Topics in service observations&quot;,
+        ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
+        _ =&gt; throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    private static ChartPoint[] Observations(string variant, double offset = 0) =&gt; (variant == &quot;sparse&quot; ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
+        .Select(index =&gt; new ChartPoint(index, 20 + offset + index * 7 % 29, variant == &quot;sparse&quot; &amp;&amp; index == 6)).ToArray();
+    private static Chart Categories(ChartSeriesKind kind) =&gt; Chart.Create().WithXLabels(kind switch {
+        ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.TrendLine or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc =&gt; new[] { &quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot; },
+        ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell =&gt; new[] { &quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot; },
+        ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap =&gt; new[] { &quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot; },
+        ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea =&gt; new[] { &quot;Subscriptions&quot;, &quot;Consulting&quot;, &quot;Support&quot;, &quot;Licenses&quot;, &quot;Training&quot;, &quot;Other&quot; },
+        ChartSeriesKind.ProgressRing =&gt; new[] { &quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Verified&quot;, &quot;Approved&quot;, &quot;Complete&quot; },
+        ChartSeriesKind.Radar =&gt; new[] { &quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot; },
+        ChartSeriesKind.Scatter or ChartSeriesKind.Bubble =&gt; new[] { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; },
+        ChartSeriesKind.Lollipop =&gt; new[] { &quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot; },
+        ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea =&gt; new[] { &quot;08:00&quot;, &quot;10:00&quot;, &quot;12:00&quot;, &quot;14:00&quot;, &quot;16:00&quot; },
+        _ =&gt; new[] { &quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot; }
+    });
+    private static Chart? Basic(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        return kind switch {
+            ChartSeriesKind.Line =&gt; chart.AddLine(&quot;Requests&quot;, values),
+            ChartSeriesKind.StepLine =&gt; chart.AddStepLine(&quot;Queued&quot;, values),
+            ChartSeriesKind.Area =&gt; chart.AddArea(&quot;Used capacity&quot;, values),
+            ChartSeriesKind.StepArea =&gt; chart.AddStepArea(&quot;Reserved capacity&quot;, values),
+            ChartSeriesKind.Scatter =&gt; chart.WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddScatter(&quot;Processing time&quot;, values),
+            ChartSeriesKind.Bar =&gt; chart.AddBar(&quot;Orders&quot;, values),
+            ChartSeriesKind.Lollipop =&gt; chart.AddLollipop(&quot;Orders&quot;, values),
+            ChartSeriesKind.HorizontalBar =&gt; chart.AddHorizontalBar(&quot;Orders&quot;, values),
+            ChartSeriesKind.StackedArea =&gt; chart.AddStackedArea(&quot;Requests&quot;, values).AddStackedArea(&quot;Follow-ups&quot;, Observations(variant, -10)),
+            ChartSeriesKind.Waterfall =&gt; chart.AddWaterfall(&quot;Changes&quot;, new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
+            ChartSeriesKind.Slope =&gt; Chart.Create().AddSlope(&quot;Team A&quot;, 28, 64, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team B&quot;, 52, 43, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team C&quot;, 38, 57, &quot;Before&quot;, &quot;After&quot;),
+            ChartSeriesKind.TrendLine =&gt; chart.AddScatter(&quot;Observations&quot;, values).AddTrendLine(&quot;Least-squares trend&quot;, values),
+            _ =&gt; null
+        };
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Ranges(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var count = variant == &quot;sparse&quot; ? 2 : 5;
+        var candles = Enumerable.Range(1, count).Select(index =&gt; new ChartCandlestick(index, 30 + index * 3, 44 + index * 3, 20 + index * 3, index % 2 == 0 ? 26 + index * 3 : 38 + index * 3)).ToArray();
+        var ranges = Enumerable.Range(1, count).Select(index =&gt; new ChartRangeBand(index, 20 + index * 2, 40 + index * 4)).ToArray();
+        return kind switch {
+            ChartSeriesKind.Bubble =&gt; chart.WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddBubble(&quot;Requests&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartBubble(index, 20 + index * 5, index * index + 1))),
+            ChartSeriesKind.ErrorBar =&gt; chart.AddErrorBar(&quot;Delivery time&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartErrorBar(index, 30 + index * 2, 20 + index, 42 + index * 3))),
+            ChartSeriesKind.Candlestick =&gt; chart.AddCandlestick(&quot;Market price&quot;, candles),
+            ChartSeriesKind.Ohlc =&gt; chart.AddOhlc(&quot;Market price&quot;, candles),
+            ChartSeriesKind.RangeBand =&gt; chart.AddRangeBand(&quot;Expected range&quot;, ranges),
+            ChartSeriesKind.RangeArea =&gt; chart.AddRangeArea(&quot;Expected range&quot;, ranges),
+            ChartSeriesKind.Dumbbell =&gt; chart.AddDumbbell(&quot;Change&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartDumbbell(index, 20 + index * 2, 40 + index * 3))),
+            ChartSeriesKind.RangeBar =&gt; chart.AddRangeBar(&quot;Range&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartInterval(index, 20 + index * 2, 40 + index * 4))),
+            ChartSeriesKind.BoxPlot =&gt; chart.AddBoxPlot(&quot;Delivery time&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index))),
+            _ =&gt; null
+        };
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Radial(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        switch (kind) {
+            case ChartSeriesKind.RadialBar:
+            case ChartSeriesKind.RadialColumn: return NumericRadial(kind, variant);
+            case ChartSeriesKind.Pie: chart.AddPie(&quot;Revenue&quot;, values); break;
+            case ChartSeriesKind.Donut: chart.AddDonut(&quot;Revenue&quot;, values); break;
+            case ChartSeriesKind.Gauge:
+                chart.AddGauge(&quot;Capacity&quot;, 76).WithGauge(options =&gt; {
+                    options.Form = variant == &quot;options&quot; ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
+                    options.Target = 85; options.Caption = &quot;Available capacity&quot;;
+                    options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
+                    options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
+                    options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
+                }); break;
+            case ChartSeriesKind.Circle: chart.AddCircle(&quot;Completed&quot;, 76); break;
+            case ChartSeriesKind.ProgressRing: chart.AddProgressRing(&quot;Completion&quot;, values).WithProgressRingCenterLabel(); break;
+            case ChartSeriesKind.LayeredRadial:
+                chart.AddLayeredRadial(&quot;Completion&quot;, new[] {
+                    new ChartRadialLayer(&quot;Reviewed&quot;, 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
+                    new ChartRadialLayer(&quot;Verified&quot;, 58) { RadiusRatio = .7, StrokeRatio = .13, SweepAngleDegrees = 240, StartAngleDegrees = -30, SeparatorCount = 8 },
+                    new ChartRadialLayer(&quot;Complete&quot;, 42) { RadiusRatio = .4, StrokeRatio = .13, SweepAngleDegrees = 360 }
+                }); break;
+            case ChartSeriesKind.Bullet:
+                chart.AddBullet(&quot;Reviewed&quot;, 76, 85, rangeEnds: new[] { 50d, 80d }).AddBullet(&quot;Verified&quot;, 58, 75, rangeEnds: new[] { 40d, 70d }); break;
+            case ChartSeriesKind.Radar: chart.AddRadar(&quot;Observed&quot;, values).AddRadar(&quot;Expected&quot;, Observations(variant, 12)); break;
+            case ChartSeriesKind.Polar: chart = Chart.Create().AddPolar(&quot;Observed&quot;, Enumerable.Range(0, 6).Select(index =&gt; new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
+                chart.ConfigureXAxis(axis =&gt; axis.LabelFormatter = angle =&gt; (angle * 180 / Math.PI).ToString(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture) + &quot;&#176;&quot;); break;
+            case ChartSeriesKind.PolarArea: chart.AddPolarArea(&quot;Revenue&quot;, values); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut &amp;&amp; variant == &quot;options&quot;) {
+            chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label);
+            chart.Series[0].WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+            if (kind == ChartSeriesKind.Donut) chart.WithDonutCenterText(&quot;184&quot;, &quot;Reviewed&quot;);
+        }
+        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.ProgressRing) chart.WithRadialProgressRadiusScale(.85).WithRadialProgressStrokeScale(1.2);
+        if (variant == &quot;options&quot; &amp;&amp; kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar) {
+            chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
+            chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, &quot;20 &#183; Target&quot;));
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
+        switch (kind) {
+            case ChartSeriesKind.Heatmap:
+                if (variant == &quot;options&quot;) return States(mode).WithXLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;)
+                    .AddHeatmapCategoryRow(&quot;Primary&quot;, new ChartHeatmapCell?[] { new(&quot;pass&quot;, &quot;Ready&quot;, &quot;Assessment passed&quot;), new(&quot;warning&quot;, &quot;Review&quot;), null, new(&quot;pass&quot;, &quot;Ready&quot;) }, &quot;Production&quot;)
+                    .AddHeatmapCategoryRow(&quot;Secondary&quot;, new ChartHeatmapCell?[] { new(&quot;pass&quot;), new(&quot;pass&quot;), new(&quot;warning&quot;), new(&quot;pass&quot;) }, &quot;Production&quot;);
+                chart.AddHeatmapRow(&quot;Primary&quot;, variant == &quot;sparse&quot; ? new double?[] { 92, null, null, 70, null, 41 } : new double?[] { 92, 70, 56, null, 84, 41 })
+                    .AddHeatmapRow(&quot;Secondary&quot;, variant == &quot;sparse&quot; ? new double?[] { null, 84, null, null, 90, null } : new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.HexbinHeatmap:
+                chart.AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 92, 70, 56, null, 84, 41 }).AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.CalendarHeatmap:
+                return Chart.Create().AddCalendarHeatmap(&quot;Observations&quot;, Enumerable.Range(0, variant == &quot;sparse&quot; ? 35 : 120)
+                    .Where(index =&gt; index % 7 != 0 &amp;&amp; index % 9 != 0).Select(index =&gt; new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)), firstDayOfWeek: DayOfWeek.Monday);
+            case ChartSeriesKind.DottedMap:
+                return Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe()).AddDottedMap(&quot;Locations&quot;, new[] {
+                    new ChartMapPoint(&quot;Madrid&quot;, -3.7, 40.4, 18), new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2, 74), new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9, 42)
+                }).AddMapRouteBetweenPoints(&quot;Madrid to Warsaw&quot;, &quot;Madrid&quot;, &quot;Warsaw&quot;)
+                    .AddMapRoute(&quot;Warsaw to Oslo&quot;, new[] { new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2), new ChartMapPoint(&quot;Baltic&quot;, 17, 56), new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9) });
+            case ChartSeriesKind.TileMap:
+                chart = Chart.Create().AddTileMap(&quot;Observations&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;), RegionValues()).WithMapLabels(); break;
+            case ChartSeriesKind.RegionMap:
+                chart = Chart.Create().AddRegionMap(&quot;Observations&quot;, ChartMapCatalog.Get(&quot;us-states&quot;), RegionValues()).WithMapLabels(false); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap &amp;&amp; variant == &quot;options&quot;)
+            chart.WithMapColorScale(ChartMapColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
+                .WithValueRange(0, 100).WithLabels(&quot;Below target&quot;, &quot;Target&quot;, &quot;Above target&quot;).WithNoDataColor(colors.Border))
+                .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap)
+            chart.WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
+        return chart;
+    }
+    private static ChartRegionMapItem[] RegionValues() =&gt; new[] {
+        new ChartRegionMapItem(&quot;CA&quot;, 82), new ChartRegionMapItem(&quot;TX&quot;, 64), new ChartRegionMapItem(&quot;NY&quot;, 91), new ChartRegionMapItem(&quot;FL&quot;, 47),
+        new ChartRegionMapItem(&quot;WA&quot;, 74), new ChartRegionMapItem(&quot;IL&quot;, 58), new ChartRegionMapItem(&quot;CO&quot;, 39), new ChartRegionMapItem(&quot;NC&quot;, 66) };
+    private static Chart States(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        return Chart.Create().WithStateCategories(new ChartStateCategory(&quot;pass&quot;, &quot;Available&quot;, colors.Status.Pass.Fill),
+            new ChartStateCategory(&quot;warning&quot;, &quot;Review&quot;, colors.Status.Medium.Fill, ChartStatePattern.Hatched),
+            new ChartStateCategory(&quot;critical&quot;, &quot;Unavailable&quot;, colors.Status.Critical.Fill, ChartStatePattern.CrossHatched));
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Specialty(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+        var links = new[] { new ChartTreeLink(&quot;All teams&quot;, &quot;Engineering&quot;, 60), new ChartTreeLink(&quot;All teams&quot;, &quot;Operations&quot;, 40),
+            new ChartTreeLink(&quot;Engineering&quot;, &quot;Platform&quot;, 35), new ChartTreeLink(&quot;Engineering&quot;, &quot;Services&quot;, 25), new ChartTreeLink(&quot;Operations&quot;, &quot;Support&quot;, 40) };
+        switch (kind) {
+            case ChartSeriesKind.Funnel: return chart.AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
+                .WithXLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).WithDataLabels();
+            case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem(&quot;Discovery&quot;, start, start.AddDays(3)).AddTimelineItem(&quot;Implementation&quot;, start.AddDays(2), start.AddDays(7))
+                .AddTimelineItem(&quot;Validation&quot;, start.AddDays(6), start.AddDays(9))
+                .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Gantt: return Chart.Create().AddGanttTask(&quot;Discovery&quot;, start, start.AddDays(3), .9).AddGanttTask(&quot;Implementation&quot;, start.AddDays(3), start.AddDays(7), .55, 0)
+                .AddGanttTask(&quot;Validation&quot;, start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone(&quot;Delivery&quot;, start.AddDays(9), 2)
+                .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Sankey: return Chart.Create().AddSankey(&quot;Requests&quot;, new[] { new ChartSankeyLink(&quot;Received&quot;, &quot;Automatic&quot;, 72), new ChartSankeyLink(&quot;Received&quot;, &quot;Manual&quot;, 28),
+                new ChartSankeyLink(&quot;Automatic&quot;, &quot;Completed&quot;, 65), new ChartSankeyLink(&quot;Automatic&quot;, &quot;Review&quot;, 7), new ChartSankeyLink(&quot;Manual&quot;, &quot;Completed&quot;, 20), new ChartSankeyLink(&quot;Manual&quot;, &quot;Review&quot;, 8) });
+            case ChartSeriesKind.Tree: return Chart.Create().AddTree(&quot;Teams&quot;, links);
+            case ChartSeriesKind.Sunburst: return Chart.Create().AddSunburst(&quot;Teams&quot;, links);
+            case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
+            case ChartSeriesKind.Pictorial:
+                chart = Chart.Create().AddPictorial(&quot;Assessments&quot;, new[] { new ChartPictorialItem(&quot;Team A&quot;, 74), new ChartPictorialItem(&quot;Team B&quot;, 46), new ChartPictorialItem(&quot;Team C&quot;, 61) }, ChartPictorialShape.Person)
+                    .WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
+                if (variant == &quot;options&quot;) chart.WithPictorialSvgPath(&quot;M2 2H22V22H2Z M8 8V16H16V8Z&quot;, new ChartRect(0, 0, 24, 24));
+                return chart;
+            case ChartSeriesKind.ProgressBar:
+                chart = Chart.Create().AddProgressBars(&quot;Delivery&quot;, new[] { new ChartProgressItem(&quot;Reviewed&quot;, 76), new ChartProgressItem(&quot;Verified&quot;, 58), new ChartProgressItem(&quot;Complete&quot;, 42) }).WithProgressHandles();
+                if (variant == &quot;options&quot;) chart.WithProgressMaximum(120).WithProgressBarThickness(.42).WithProgressTrackOpacity(.3);
+                return chart;
+            case ChartSeriesKind.WordCloud: return Chart.Create().AddWordCloud(&quot;Topics&quot;, new[] { new ChartWordCloudItem(&quot;Availability&quot;, 20), new ChartWordCloudItem(&quot;Identity&quot;, 16), new ChartWordCloudItem(&quot;Network&quot;, 14),
+                new ChartWordCloudItem(&quot;Storage&quot;, 12), new ChartWordCloudItem(&quot;Recovery&quot;, 10), new ChartWordCloudItem(&quot;Capacity&quot;, 8), new ChartWordCloudItem(&quot;Services&quot;, 6), new ChartWordCloudItem(&quot;Validation&quot;, 4) });
+            case ChartSeriesKind.StateTimeline: return States(mode).AddStateTimelineLane(&quot;Primary&quot;, new[] { new ChartStateTimelineSegment(start, start.AddHours(3), &quot;pass&quot;),
+                new ChartStateTimelineSegment(start.AddHours(3), start.AddHours(5), &quot;warning&quot;, &quot;Increased response time&quot;), new ChartStateTimelineSegment(start.AddHours(6), start.AddHours(10), &quot;pass&quot;) }, group: &quot;Production&quot;)
+                .AddStateTimelineLane(&quot;Secondary&quot;, new[] { new ChartStateTimelineSegment(start, start.AddHours(6), &quot;pass&quot;), new ChartStateTimelineSegment(start.AddHours(7), start.AddHours(10), &quot;critical&quot;, &quot;No response&quot;) }, group: &quot;Production&quot;);
+            case ChartSeriesKind.GanttLane: return States(mode).WithGanttLaneNow(start.AddHours(12)).AddGanttLane(&quot;Primary&quot;, new[] {
+                new ChartGanttLaneItem(start, start.AddHours(5), &quot;warning&quot;, &quot;Investigation&quot;, &quot;Degraded response time&quot;), new ChartGanttLaneItem(start.AddHours(3), start.AddHours(7), &quot;critical&quot;, &quot;Recovery&quot;),
+                new ChartGanttLaneItem(start.AddHours(9), null, &quot;warning&quot;, &quot;Monitoring&quot;) }, &quot;Production&quot;)
+                .AddGanttLane(&quot;Secondary&quot;, new[] { new ChartGanttLaneItem(start.AddHours(2), start.AddHours(6), &quot;warning&quot;, &quot;Maintenance&quot;) }, &quot;Production&quot;);
+            default: return null;
+        }
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Creates a fixed comparison grid with shared Cartesian axes.&lt;/summary&gt;
+    public static ChartGrid CreateGrid() =&gt; ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
+        .Add(Create(ChartSeriesKind.Line).WithTitle(&quot;Observed requests&quot;))
+        .Add(Create(ChartSeriesKind.Bar).WithTitle(&quot;Reviewed requests&quot;))
+        .Add(Create(ChartSeriesKind.Area).WithTitle(&quot;Capacity used&quot;), 2).WithSharedAxes();
+
+    /// &lt;summary&gt;Creates groups, status, icon shapes, details and routed links in a native topology.&lt;/summary&gt;
+    public static TopologyChart CreateTopology(bool atlas = false) {
+        var chart = TopologyChart.Create(); chart.Id = atlas ? &quot;shape-atlas&quot; : &quot;service-topology&quot;;
+        chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true, WrapNodeLabels = true, IncludeLegend = true, IncludeGroupStatusDots = true };
+        if (atlas) {
+            var shapes = Enum.GetValues&lt;TopologyNodeShape&gt;();
+            for (var index = 0; index &lt; shapes.Length; index++) chart.Nodes.Add(new TopologyNode {
+                Id = &quot;shape-&quot; + index, Label = shapes[index].ToString(), X = 24 + index % 5 * 160, Y = 24 + index / 5 * 120,
+                Width = 132, Height = 86, Shape = shapes[index], PreserveDisplayModeSize = true, ShowStatusBadge = false
+            });
+            return chart;
+        }
+        chart.Groups.Add(new TopologyGroup { Id = &quot;primary&quot;, Label = &quot;Primary region&quot;, X = 0, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Healthy });
+        chart.Groups.Add(new TopologyGroup { Id = &quot;secondary&quot;, Label = &quot;Secondary region&quot;, X = 390, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Warning });
+        var source = new TopologyNode { Id = &quot;client&quot;, Label = &quot;Client service&quot;, Subtitle = &quot;Requests&quot;, X = 30, Y = 65, Width = 240, Height = 85,
+            Kind = TopologyNodeKind.Server, GroupId = &quot;primary&quot;, Status = TopologyHealthStatus.Healthy };
+        source.Details.Add(new TopologyNodeDetail { Label = &quot;State&quot;, Value = &quot;Available&quot;, Status = TopologyHealthStatus.Healthy }); chart.Nodes.Add(source);
+        chart.Nodes.Add(new TopologyNode { Id = &quot;cache&quot;, Label = &quot;Cache&quot;, X = 70, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = &quot;primary&quot; });
+        chart.Nodes.Add(new TopologyNode { Id = &quot;worker&quot;, Label = &quot;Processing service&quot;, X = 430, Y = 65, Width = 240, Height = 85, Kind = TopologyNodeKind.Server,
+            GroupId = &quot;secondary&quot;, Status = TopologyHealthStatus.Warning });
+        chart.Nodes.Add(new TopologyNode { Id = &quot;store&quot;, Label = &quot;Result store&quot;, X = 470, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = &quot;secondary&quot; });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;request&quot;, SourceNodeId = &quot;client&quot;, TargetNodeId = &quot;worker&quot;, Label = &quot;Requests&quot;, SecondaryLabel = &quot;Active&quot;,
+            Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal, Direction = VisualLinkDirection.Forward });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;cache-read&quot;, SourceNodeId = &quot;client&quot;, TargetNodeId = &quot;cache&quot;, Label = &quot;Lookup&quot;, Routing = TopologyEdgeRouting.Curved,
+            LineStyle = TopologyEdgeLineStyle.Dashed, Direction = VisualLinkDirection.Bidirectional });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;persist&quot;, SourceNodeId = &quot;worker&quot;, TargetNodeId = &quot;store&quot;, Label = &quot;Persist&quot;, Routing = TopologyEdgeRouting.Orthogonal });
+        chart.Legend = TopologyLegend.Create().AddStatus(&quot;Available&quot;, TopologyHealthStatus.Healthy).AddStatus(&quot;Review&quot;, TopologyHealthStatus.Warning)
+            .AddNodeKind(&quot;Service&quot;, TopologyNodeKind.Server).AddEdgeKind(&quot;Dependency&quot;, TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed);
+        return chart;
+    }
+
+    /// &lt;summary&gt;Creates a branched process with typed lanes, decisions and semantic statuses.&lt;/summary&gt;
+    public static FlowArtifact CreateFlow() =&gt; FlowArtifact.Create(&quot;assessment-flow&quot;).WithSize(900, 600)
+        .AddLane(&quot;service&quot;, &quot;Service&quot;).AddLane(&quot;review&quot;, &quot;Review&quot;)
+        .AddStep(&quot;received&quot;, &quot;Request received&quot;, FlowArtifactStepKind.Start, &quot;service&quot;)
+        .AddStep(&quot;decision&quot;, &quot;Automatic checks pass?&quot;, FlowArtifactStepKind.Decision, &quot;service&quot;)
+        .AddStep(&quot;manual&quot;, &quot;Review observations&quot;, FlowArtifactStepKind.Process, &quot;review&quot;, VisualStatus.Warning)
+        .AddStep(&quot;complete&quot;, &quot;Assessment complete&quot;, FlowArtifactStepKind.End, &quot;service&quot;, VisualStatus.Positive)
+        .AddConnector(&quot;received&quot;, &quot;decision&quot;, &quot;Evaluate&quot;).AddConnector(&quot;decision&quot;, &quot;manual&quot;, &quot;Review required&quot;)
+        .AddConnector(&quot;decision&quot;, &quot;complete&quot;, &quot;Passed&quot;).AddConnector(&quot;manual&quot;, &quot;complete&quot;, &quot;Accepted&quot;);
+
+    /// &lt;summary&gt;Creates actor, control, database and queue notation with nested fragments, notes and activation.&lt;/summary&gt;
+    public static SequenceArtifact CreateSequence() {
+        var model = SequenceArtifact.Create(&quot;request-sequence&quot;).WithSize(960, 760)
+            .AddParticipant(&quot;client&quot;, &quot;Client&quot;, SequenceArtifactParticipantKind.Actor)
+            .AddParticipant(&quot;service&quot;, &quot;Service&quot;, SequenceArtifactParticipantKind.Control)
+            .AddParticipant(&quot;store&quot;, &quot;Store&quot;, SequenceArtifactParticipantKind.Database)
+            .AddParticipant(&quot;queue&quot;, &quot;Queue&quot;, SequenceArtifactParticipantKind.Queue)
+            .AddMessage(&quot;client&quot;, &quot;service&quot;, &quot;Submit request&quot;)
+            .AddMessage(&quot;service&quot;, &quot;service&quot;, &quot;Validate payload&quot;)
+            .AddMessage(&quot;service&quot;, &quot;store&quot;, &quot;Persist result&quot;)
+            .AddMessage(&quot;service&quot;, &quot;queue&quot;, &quot;Publish event&quot;, kind: SequenceArtifactMessageKind.Async)
+            .AddMessage(&quot;service&quot;, &quot;client&quot;, &quot;Return result&quot;, SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return)
+            .AddBlock(SequenceArtifactBlockKind.Alt, &quot;Validation outcome&quot;, 1, 4)
+            .AddBlock(SequenceArtifactBlockKind.Loop, &quot;Retry storage&quot;, 2, 2, depth: 1)
+            .AddActivation(&quot;service&quot;, true, 0).AddActivation(&quot;service&quot;, false, 5)
+            .AddNote(SequenceArtifactNotePlacement.Over, new[] { &quot;service&quot;, &quot;store&quot; }, &quot;Durable result&quot;);
+        model.Notes[0].StepIndex = 2; return model;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? GeometryOptions(ChartSeriesKind kind, string variant) {
+        if (kind == ChartSeriesKind.Line) {
+            var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Recorded level&quot;);
+            var positions = new[] { ChartStepPosition.Start, ChartStepPosition.Middle, ChartStepPosition.End };
+            for (var index = 0; index &lt; positions.Length; index++) {
+                var points = new[] { 8d, 17, 11, 23, 16 }.Select((value, point) =&gt; new ChartPoint(point + 1, value + index * 30));
+                chart.AddLine(positions[index].ToString(), points);
+                chart.Series[index].WithInterpolation(ChartInterpolation.Step, positions[index]);
+            }
+            return chart;
+        }
+        if (kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar) {
+            var chart = Chart.Create().WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;);
+            var names = new[] { &quot;First half &#183; Completed&quot;, &quot;First half &#183; Remaining&quot;, &quot;Second half &#183; Completed&quot;, &quot;Second half &#183; Remaining&quot; };
+            var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
+            for (var index = 0; index &lt; names.Length; index++) {
+                var points = values[index].Select((value, point) =&gt; new ChartPoint(point + 1, value));
+                if (kind == ChartSeriesKind.Bar) chart.AddBar(names[index], points);
+                else chart.AddHorizontalBar(names[index], points);
+                chart.Series[index].WithStackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).WithNormalization(100);
+            }
+            if (kind == ChartSeriesKind.Bar) chart.WithYAxis(&quot;Share (%)&quot;);
+            else chart.WithXAxis(&quot;Share (%)&quot;);
+            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis)
+                .WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == &quot;compact-options&quot;);
+            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Waterfall) {
+            var chart = Basic(kind, variant)!;
+            chart.Options.XAxis.WithReversal();
+            return chart;
+        }
+        if (kind == ChartSeriesKind.StackedArea) {
+            var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Share (%)&quot;)
+                .AddStackedArea(&quot;Completed&quot;, new[] { 45d, 70, 80, 55, 90 }.Select((value, point) =&gt; new ChartPoint(point + 1, value)))
+                .AddStackedArea(&quot;Remaining&quot;, new[] { 55d, 45, 20, 45, 30 }.Select((value, point) =&gt; new ChartPoint(point + 1, value)));
+            foreach (var series in chart.Series) series.WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.RangeArea) {
+            var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Expected level&quot;)
+                .AddRangeArea(&quot;Expected range&quot;, new[] { new ChartRangeBand(1, 15, 30), new ChartRangeBand(2, 25, 50),
+                    new ChartRangeBand(3, 20, 40), new ChartRangeBand(4, 40, 65), new ChartRangeBand(5, 30, 55) });
+            chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Funnel)
+            return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
+                .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
+                .ConfigureFunnel(options =&gt; {
+                    options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
+                    options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
+                });
+        return null;
+    }
+
+    private static string Percent(double value) =&gt; value.ToString(&quot;0&quot;, CultureInfo.InvariantCulture) + &quot;%&quot;;
+}
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using System;
+using System.Linq;
+using System.Globalization;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// The licensed font fixtures are included beside the gallery outputs.
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var model = V2GalleryModels.Create(ChartSeriesKind.RadialColumn, &quot;options&quot;, VisualThemeMode.Dark);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Dark,
+    new VisualFrame(&quot;Regional service workload&quot;, &quot;Named stacks reach 100; labels retain source counts&quot;, showLegend: null), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = model.Prepare(context);
+System.IO.File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg());
+System.IO.File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+System.IO.File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+
+/// &lt;summary&gt;Executable, deterministic gallery models shared by the catalog and its downloadable C# examples.&lt;/summary&gt;
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Creates an actual source model for every chart kind, without selecting a renderer or export backend.&lt;/summary&gt;
+    public static Chart Create(ChartSeriesKind kind, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+        var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant ? GeometryOptions(kind, variant) : null)
+            ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? throw new ArgumentOutOfRangeException(nameof(kind));
+        chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.Area) {
+            chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+            chart.Series[0].StateRole = ChartSeriesState.Warning;
+            chart.WithDataLabels();
+        }
+        return chart;
+    }
+
+    /// &lt;summary&gt;Gets a short title describing the actual example data.&lt;/summary&gt;
+    public static string Title(ChartSeriesKind kind) =&gt; kind switch {
+        ChartSeriesKind.Line =&gt; &quot;Weekly request volume&quot;, ChartSeriesKind.StepLine =&gt; &quot;Requests waiting in the queue&quot;,
+        ChartSeriesKind.Area =&gt; &quot;Capacity used during the week&quot;, ChartSeriesKind.StepArea =&gt; &quot;Reserved processing capacity&quot;,
+        ChartSeriesKind.Bar =&gt; &quot;Completed orders by region&quot;, ChartSeriesKind.HorizontalBar =&gt; &quot;Regional order fulfilment&quot;,
+        ChartSeriesKind.StackedArea =&gt; &quot;Requests and follow-ups over time&quot;, ChartSeriesKind.TrendLine =&gt; &quot;Request volume and its trend&quot;,
+        ChartSeriesKind.Scatter =&gt; &quot;Processing time by workload&quot;, ChartSeriesKind.Bubble =&gt; &quot;Workload, time and request volume&quot;,
+        ChartSeriesKind.Lollipop =&gt; &quot;Orders at each delivery stage&quot;, ChartSeriesKind.Candlestick =&gt; &quot;Daily opening and closing prices&quot;,
+        ChartSeriesKind.Ohlc =&gt; &quot;Daily market price ranges&quot;, ChartSeriesKind.ErrorBar =&gt; &quot;Delivery time and uncertainty&quot;,
+        ChartSeriesKind.BoxPlot =&gt; &quot;Delivery time by service level&quot;, ChartSeriesKind.RangeBand =&gt; &quot;Expected temperature band&quot;,
+        ChartSeriesKind.RangeArea =&gt; &quot;Expected operating range&quot;, ChartSeriesKind.RangeBar =&gt; &quot;Minimum and maximum delivery times&quot;,
+        ChartSeriesKind.Dumbbell =&gt; &quot;Service capacity before and after&quot;, ChartSeriesKind.Slope =&gt; &quot;Capacity change across teams&quot;,
+        ChartSeriesKind.Heatmap =&gt; &quot;Coverage across service areas&quot;, ChartSeriesKind.HexbinHeatmap =&gt; &quot;Service coverage in hexagonal cells&quot;,
+        ChartSeriesKind.CalendarHeatmap =&gt; &quot;Daily activity across four months&quot;, ChartSeriesKind.DottedMap =&gt; &quot;Service routes across Europe&quot;,
+        ChartSeriesKind.RegionMap =&gt; &quot;Regional service coverage&quot;, ChartSeriesKind.TileMap =&gt; &quot;Service coverage by state&quot;,
+        ChartSeriesKind.Gauge =&gt; &quot;Available capacity against a target&quot;, ChartSeriesKind.Circle =&gt; &quot;Assessments completed&quot;,
+        ChartSeriesKind.ProgressRing =&gt; &quot;Completion by delivery stage&quot;, ChartSeriesKind.LayeredRadial =&gt; &quot;Reviewed, verified and completed&quot;,
+        ChartSeriesKind.RadialBar =&gt; &quot;Requests by region and service&quot;, ChartSeriesKind.RadialColumn =&gt; &quot;Regional service workload&quot;,
+        ChartSeriesKind.Bullet =&gt; &quot;Reviewed work against its targets&quot;, ChartSeriesKind.ProgressBar =&gt; &quot;Progress through delivery stages&quot;,
+        ChartSeriesKind.Pie =&gt; &quot;Revenue by service&quot;, ChartSeriesKind.Donut =&gt; &quot;Services contributing to revenue&quot;,
+        ChartSeriesKind.PolarArea =&gt; &quot;Service revenue in radial segments&quot;, ChartSeriesKind.Radar =&gt; &quot;Observed and expected service levels&quot;,
+        ChartSeriesKind.Polar =&gt; &quot;Directional sensor readings&quot;, ChartSeriesKind.Timeline =&gt; &quot;Project activities in March 2026&quot;,
+        ChartSeriesKind.Gantt =&gt; &quot;Project delivery in March 2026&quot;, ChartSeriesKind.StateTimeline =&gt; &quot;Availability throughout the day&quot;,
+        ChartSeriesKind.GanttLane =&gt; &quot;Incidents and recovery in parallel&quot;,
+        ChartSeriesKind.Sankey =&gt; &quot;Requests across processing stages&quot;, ChartSeriesKind.Tree =&gt; &quot;Teams and their responsibilities&quot;,
+        ChartSeriesKind.Sunburst =&gt; &quot;Allocation through the team hierarchy&quot;, ChartSeriesKind.Treemap =&gt; &quot;How work is allocated across teams&quot;,
+        ChartSeriesKind.Pictorial =&gt; &quot;Completed assessments by team&quot;, ChartSeriesKind.WordCloud =&gt; &quot;Topics in service observations&quot;,
+        ChartSeriesKind.Funnel =&gt; &quot;Requests from receipt to completion&quot;, ChartSeriesKind.Waterfall =&gt; &quot;Changes in available capacity&quot;,
+        _ =&gt; throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    private static ChartPoint[] Observations(string variant, double offset = 0) =&gt; (variant == &quot;sparse&quot; ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
+        .Select(index =&gt; new ChartPoint(index, 20 + offset + index * 7 % 29, variant == &quot;sparse&quot; &amp;&amp; index == 6)).ToArray();
+    private static Chart Categories(ChartSeriesKind kind) =&gt; Chart.Create().WithXLabels(kind switch {
+        ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.TrendLine or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc =&gt; new[] { &quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot; },
+        ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell =&gt; new[] { &quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot; },
+        ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap =&gt; new[] { &quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot; },
+        ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea =&gt; new[] { &quot;Subscriptions&quot;, &quot;Consulting&quot;, &quot;Support&quot;, &quot;Licenses&quot;, &quot;Training&quot;, &quot;Other&quot; },
+        ChartSeriesKind.ProgressRing =&gt; new[] { &quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Verified&quot;, &quot;Approved&quot;, &quot;Complete&quot; },
+        ChartSeriesKind.Radar =&gt; new[] { &quot;Speed&quot;, &quot;Coverage&quot;, &quot;Capacity&quot;, &quot;Quality&quot;, &quot;Recovery&quot;, &quot;Support&quot; },
+        ChartSeriesKind.Scatter or ChartSeriesKind.Bubble =&gt; new[] { &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot; },
+        ChartSeriesKind.Lollipop =&gt; new[] { &quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot; },
+        ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea =&gt; new[] { &quot;08:00&quot;, &quot;10:00&quot;, &quot;12:00&quot;, &quot;14:00&quot;, &quot;16:00&quot; },
+        _ =&gt; new[] { &quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot; }
+    });
+    private static Chart? Basic(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        return kind switch {
+            ChartSeriesKind.Line =&gt; chart.AddLine(&quot;Requests&quot;, values),
+            ChartSeriesKind.StepLine =&gt; chart.AddStepLine(&quot;Queued&quot;, values),
+            ChartSeriesKind.Area =&gt; chart.AddArea(&quot;Used capacity&quot;, values),
+            ChartSeriesKind.StepArea =&gt; chart.AddStepArea(&quot;Reserved capacity&quot;, values),
+            ChartSeriesKind.Scatter =&gt; chart.WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddScatter(&quot;Processing time&quot;, values),
+            ChartSeriesKind.Bar =&gt; chart.AddBar(&quot;Orders&quot;, values),
+            ChartSeriesKind.Lollipop =&gt; chart.AddLollipop(&quot;Orders&quot;, values),
+            ChartSeriesKind.HorizontalBar =&gt; chart.AddHorizontalBar(&quot;Orders&quot;, values),
+            ChartSeriesKind.StackedArea =&gt; chart.AddStackedArea(&quot;Requests&quot;, values).AddStackedArea(&quot;Follow-ups&quot;, Observations(variant, -10)),
+            ChartSeriesKind.Waterfall =&gt; chart.AddWaterfall(&quot;Changes&quot;, new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
+            ChartSeriesKind.Slope =&gt; Chart.Create().AddSlope(&quot;Team A&quot;, 28, 64, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team B&quot;, 52, 43, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team C&quot;, 38, 57, &quot;Before&quot;, &quot;After&quot;),
+            ChartSeriesKind.TrendLine =&gt; chart.AddScatter(&quot;Observations&quot;, values).AddTrendLine(&quot;Least-squares trend&quot;, values),
+            _ =&gt; null
+        };
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Ranges(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var count = variant == &quot;sparse&quot; ? 2 : 5;
+        var candles = Enumerable.Range(1, count).Select(index =&gt; new ChartCandlestick(index, 30 + index * 3, 44 + index * 3, 20 + index * 3, index % 2 == 0 ? 26 + index * 3 : 38 + index * 3)).ToArray();
+        var ranges = Enumerable.Range(1, count).Select(index =&gt; new ChartRangeBand(index, 20 + index * 2, 40 + index * 4)).ToArray();
+        return kind switch {
+            ChartSeriesKind.Bubble =&gt; chart.WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;).AddBubble(&quot;Requests&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartBubble(index, 20 + index * 5, index * index + 1))),
+            ChartSeriesKind.ErrorBar =&gt; chart.AddErrorBar(&quot;Delivery time&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartErrorBar(index, 30 + index * 2, 20 + index, 42 + index * 3))),
+            ChartSeriesKind.Candlestick =&gt; chart.AddCandlestick(&quot;Market price&quot;, candles),
+            ChartSeriesKind.Ohlc =&gt; chart.AddOhlc(&quot;Market price&quot;, candles),
+            ChartSeriesKind.RangeBand =&gt; chart.AddRangeBand(&quot;Expected range&quot;, ranges),
+            ChartSeriesKind.RangeArea =&gt; chart.AddRangeArea(&quot;Expected range&quot;, ranges),
+            ChartSeriesKind.Dumbbell =&gt; chart.AddDumbbell(&quot;Change&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartDumbbell(index, 20 + index * 2, 40 + index * 3))),
+            ChartSeriesKind.RangeBar =&gt; chart.AddRangeBar(&quot;Range&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartInterval(index, 20 + index * 2, 40 + index * 4))),
+            ChartSeriesKind.BoxPlot =&gt; chart.AddBoxPlot(&quot;Delivery time&quot;, Enumerable.Range(1, count).Select(index =&gt; new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index))),
+            _ =&gt; null
+        };
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Radial(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        switch (kind) {
+            case ChartSeriesKind.RadialBar:
+            case ChartSeriesKind.RadialColumn: return NumericRadial(kind, variant);
+            case ChartSeriesKind.Pie: chart.AddPie(&quot;Revenue&quot;, values); break;
+            case ChartSeriesKind.Donut: chart.AddDonut(&quot;Revenue&quot;, values); break;
+            case ChartSeriesKind.Gauge:
+                chart.AddGauge(&quot;Capacity&quot;, 76).WithGauge(options =&gt; {
+                    options.Form = variant == &quot;options&quot; ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
+                    options.Target = 85; options.Caption = &quot;Available capacity&quot;;
+                    options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
+                    options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
+                    options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
+                }); break;
+            case ChartSeriesKind.Circle: chart.AddCircle(&quot;Completed&quot;, 76); break;
+            case ChartSeriesKind.ProgressRing: chart.AddProgressRing(&quot;Completion&quot;, values).WithProgressRingCenterLabel(); break;
+            case ChartSeriesKind.LayeredRadial:
+                chart.AddLayeredRadial(&quot;Completion&quot;, new[] {
+                    new ChartRadialLayer(&quot;Reviewed&quot;, 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
+                    new ChartRadialLayer(&quot;Verified&quot;, 58) { RadiusRatio = .7, StrokeRatio = .13, SweepAngleDegrees = 240, StartAngleDegrees = -30, SeparatorCount = 8 },
+                    new ChartRadialLayer(&quot;Complete&quot;, 42) { RadiusRatio = .4, StrokeRatio = .13, SweepAngleDegrees = 360 }
+                }); break;
+            case ChartSeriesKind.Bullet:
+                chart.AddBullet(&quot;Reviewed&quot;, 76, 85, rangeEnds: new[] { 50d, 80d }).AddBullet(&quot;Verified&quot;, 58, 75, rangeEnds: new[] { 40d, 70d }); break;
+            case ChartSeriesKind.Radar: chart.AddRadar(&quot;Observed&quot;, values).AddRadar(&quot;Expected&quot;, Observations(variant, 12)); break;
+            case ChartSeriesKind.Polar: chart = Chart.Create().AddPolar(&quot;Observed&quot;, Enumerable.Range(0, 6).Select(index =&gt; new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
+                chart.ConfigureXAxis(axis =&gt; axis.LabelFormatter = angle =&gt; (angle * 180 / Math.PI).ToString(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture) + &quot;&#176;&quot;); break;
+            case ChartSeriesKind.PolarArea: chart.AddPolarArea(&quot;Revenue&quot;, values); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut &amp;&amp; variant == &quot;options&quot;) {
+            chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label);
+            chart.Series[0].WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+            if (kind == ChartSeriesKind.Donut) chart.WithDonutCenterText(&quot;184&quot;, &quot;Reviewed&quot;);
+        }
+        if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.ProgressRing) chart.WithRadialProgressRadiusScale(.85).WithRadialProgressStrokeScale(1.2);
+        if (variant == &quot;options&quot; &amp;&amp; kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar) {
+            chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
+            chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, &quot;20 &#183; Target&quot;));
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
+        switch (kind) {
+            case ChartSeriesKind.Heatmap:
+                if (variant == &quot;options&quot;) return States(mode).WithXLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;)
+                    .AddHeatmapCategoryRow(&quot;Primary&quot;, new ChartHeatmapCell?[] { new(&quot;pass&quot;, &quot;Ready&quot;, &quot;Assessment passed&quot;), new(&quot;warning&quot;, &quot;Review&quot;), null, new(&quot;pass&quot;, &quot;Ready&quot;) }, &quot;Production&quot;)
+                    .AddHeatmapCategoryRow(&quot;Secondary&quot;, new ChartHeatmapCell?[] { new(&quot;pass&quot;), new(&quot;pass&quot;), new(&quot;warning&quot;), new(&quot;pass&quot;) }, &quot;Production&quot;);
+                chart.AddHeatmapRow(&quot;Primary&quot;, variant == &quot;sparse&quot; ? new double?[] { 92, null, null, 70, null, 41 } : new double?[] { 92, 70, 56, null, 84, 41 })
+                    .AddHeatmapRow(&quot;Secondary&quot;, variant == &quot;sparse&quot; ? new double?[] { null, 84, null, null, 90, null } : new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.HexbinHeatmap:
+                chart.AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 92, 70, 56, null, 84, 41 }).AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.CalendarHeatmap:
+                return Chart.Create().AddCalendarHeatmap(&quot;Observations&quot;, Enumerable.Range(0, variant == &quot;sparse&quot; ? 35 : 120)
+                    .Where(index =&gt; index % 7 != 0 &amp;&amp; index % 9 != 0).Select(index =&gt; new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)), firstDayOfWeek: DayOfWeek.Monday);
+            case ChartSeriesKind.DottedMap:
+                return Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe()).AddDottedMap(&quot;Locations&quot;, new[] {
+                    new ChartMapPoint(&quot;Madrid&quot;, -3.7, 40.4, 18), new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2, 74), new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9, 42)
+                }).AddMapRouteBetweenPoints(&quot;Madrid to Warsaw&quot;, &quot;Madrid&quot;, &quot;Warsaw&quot;)
+                    .AddMapRoute(&quot;Warsaw to Oslo&quot;, new[] { new ChartMapPoint(&quot;Warsaw&quot;, 21, 52.2), new ChartMapPoint(&quot;Baltic&quot;, 17, 56), new ChartMapPoint(&quot;Oslo&quot;, 10.8, 59.9) });
+            case ChartSeriesKind.TileMap:
+                chart = Chart.Create().AddTileMap(&quot;Observations&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;), RegionValues()).WithMapLabels(); break;
+            case ChartSeriesKind.RegionMap:
+                chart = Chart.Create().AddRegionMap(&quot;Observations&quot;, ChartMapCatalog.Get(&quot;us-states&quot;), RegionValues()).WithMapLabels(false); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap &amp;&amp; variant == &quot;options&quot;)
+            chart.WithMapColorScale(ChartMapColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
+                .WithValueRange(0, 100).WithLabels(&quot;Below target&quot;, &quot;Target&quot;, &quot;Above target&quot;).WithNoDataColor(colors.Border))
+                .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap)
+            chart.WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
+        return chart;
+    }
+    private static ChartRegionMapItem[] RegionValues() =&gt; new[] {
+        new ChartRegionMapItem(&quot;CA&quot;, 82), new ChartRegionMapItem(&quot;TX&quot;, 64), new ChartRegionMapItem(&quot;NY&quot;, 91), new ChartRegionMapItem(&quot;FL&quot;, 47),
+        new ChartRegionMapItem(&quot;WA&quot;, 74), new ChartRegionMapItem(&quot;IL&quot;, 58), new ChartRegionMapItem(&quot;CO&quot;, 39), new ChartRegionMapItem(&quot;NC&quot;, 66) };
+    private static Chart States(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        return Chart.Create().WithStateCategories(new ChartStateCategory(&quot;pass&quot;, &quot;Available&quot;, colors.Status.Pass.Fill),
+            new ChartStateCategory(&quot;warning&quot;, &quot;Review&quot;, colors.Status.Medium.Fill, ChartStatePattern.Hatched),
+            new ChartStateCategory(&quot;critical&quot;, &quot;Unavailable&quot;, colors.Status.Critical.Fill, ChartStatePattern.CrossHatched));
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Specialty(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+        var links = new[] { new ChartTreeLink(&quot;All teams&quot;, &quot;Engineering&quot;, 60), new ChartTreeLink(&quot;All teams&quot;, &quot;Operations&quot;, 40),
+            new ChartTreeLink(&quot;Engineering&quot;, &quot;Platform&quot;, 35), new ChartTreeLink(&quot;Engineering&quot;, &quot;Services&quot;, 25), new ChartTreeLink(&quot;Operations&quot;, &quot;Support&quot;, 40) };
+        switch (kind) {
+            case ChartSeriesKind.Funnel: return chart.AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
+                .WithXLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).WithDataLabels();
+            case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem(&quot;Discovery&quot;, start, start.AddDays(3)).AddTimelineItem(&quot;Implementation&quot;, start.AddDays(2), start.AddDays(7))
+                .AddTimelineItem(&quot;Validation&quot;, start.AddDays(6), start.AddDays(9))
+                .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Gantt: return Chart.Create().AddGanttTask(&quot;Discovery&quot;, start, start.AddDays(3), .9).AddGanttTask(&quot;Implementation&quot;, start.AddDays(3), start.AddDays(7), .55, 0)
+                .AddGanttTask(&quot;Validation&quot;, start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone(&quot;Delivery&quot;, start.AddDays(9), 2)
+                .ConfigureXAxis(axis =&gt; axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM d&quot;, System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Sankey: return Chart.Create().AddSankey(&quot;Requests&quot;, new[] { new ChartSankeyLink(&quot;Received&quot;, &quot;Automatic&quot;, 72), new ChartSankeyLink(&quot;Received&quot;, &quot;Manual&quot;, 28),
+                new ChartSankeyLink(&quot;Automatic&quot;, &quot;Completed&quot;, 65), new ChartSankeyLink(&quot;Automatic&quot;, &quot;Review&quot;, 7), new ChartSankeyLink(&quot;Manual&quot;, &quot;Completed&quot;, 20), new ChartSankeyLink(&quot;Manual&quot;, &quot;Review&quot;, 8) });
+            case ChartSeriesKind.Tree: return Chart.Create().AddTree(&quot;Teams&quot;, links);
+            case ChartSeriesKind.Sunburst: return Chart.Create().AddSunburst(&quot;Teams&quot;, links);
+            case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap(&quot;Allocation&quot;, new[] { new ChartTreemapItem(&quot;Platform&quot;, 35), new ChartTreemapItem(&quot;Services&quot;, 25), new ChartTreemapItem(&quot;Support&quot;, 25), new ChartTreemapItem(&quot;Research&quot;, 15) });
+            case ChartSeriesKind.Pictorial:
+                chart = Chart.Create().AddPictorial(&quot;Assessments&quot;, new[] { new ChartPictorialItem(&quot;Team A&quot;, 74), new ChartPictorialItem(&quot;Team B&quot;, 46), new ChartPictorialItem(&quot;Team C&quot;, 61) }, ChartPictorialShape.Person)
+                    .WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
+                if (variant == &quot;options&quot;) chart.WithPictorialSvgPath(&quot;M2 2H22V22H2Z M8 8V16H16V8Z&quot;, new ChartRect(0, 0, 24, 24));
+                return chart;
+            case ChartSeriesKind.ProgressBar:
+                chart = Chart.Create().AddProgressBars(&quot;Delivery&quot;, new[] { new ChartProgressItem(&quot;Reviewed&quot;, 76), new ChartProgressItem(&quot;Verified&quot;, 58), new ChartProgressItem(&quot;Complete&quot;, 42) }).WithProgressHandles();
+                if (variant == &quot;options&quot;) chart.WithProgressMaximum(120).WithProgressBarThickness(.42).WithProgressTrackOpacity(.3);
+                return chart;
+            case ChartSeriesKind.WordCloud: return Chart.Create().AddWordCloud(&quot;Topics&quot;, new[] { new ChartWordCloudItem(&quot;Availability&quot;, 20), new ChartWordCloudItem(&quot;Identity&quot;, 16), new ChartWordCloudItem(&quot;Network&quot;, 14),
+                new ChartWordCloudItem(&quot;Storage&quot;, 12), new ChartWordCloudItem(&quot;Recovery&quot;, 10), new ChartWordCloudItem(&quot;Capacity&quot;, 8), new ChartWordCloudItem(&quot;Services&quot;, 6), new ChartWordCloudItem(&quot;Validation&quot;, 4) });
+            case ChartSeriesKind.StateTimeline: return States(mode).AddStateTimelineLane(&quot;Primary&quot;, new[] { new ChartStateTimelineSegment(start, start.AddHours(3), &quot;pass&quot;),
+                new ChartStateTimelineSegment(start.AddHours(3), start.AddHours(5), &quot;warning&quot;, &quot;Increased response time&quot;), new ChartStateTimelineSegment(start.AddHours(6), start.AddHours(10), &quot;pass&quot;) }, group: &quot;Production&quot;)
+                .AddStateTimelineLane(&quot;Secondary&quot;, new[] { new ChartStateTimelineSegment(start, start.AddHours(6), &quot;pass&quot;), new ChartStateTimelineSegment(start.AddHours(7), start.AddHours(10), &quot;critical&quot;, &quot;No response&quot;) }, group: &quot;Production&quot;);
+            case ChartSeriesKind.GanttLane: return States(mode).WithGanttLaneNow(start.AddHours(12)).AddGanttLane(&quot;Primary&quot;, new[] {
+                new ChartGanttLaneItem(start, start.AddHours(5), &quot;warning&quot;, &quot;Investigation&quot;, &quot;Degraded response time&quot;), new ChartGanttLaneItem(start.AddHours(3), start.AddHours(7), &quot;critical&quot;, &quot;Recovery&quot;),
+                new ChartGanttLaneItem(start.AddHours(9), null, &quot;warning&quot;, &quot;Monitoring&quot;) }, &quot;Production&quot;)
+                .AddGanttLane(&quot;Secondary&quot;, new[] { new ChartGanttLaneItem(start.AddHours(2), start.AddHours(6), &quot;warning&quot;, &quot;Maintenance&quot;) }, &quot;Production&quot;);
+            default: return null;
+        }
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Creates a fixed comparison grid with shared Cartesian axes.&lt;/summary&gt;
+    public static ChartGrid CreateGrid() =&gt; ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
+        .Add(Create(ChartSeriesKind.Line).WithTitle(&quot;Observed requests&quot;))
+        .Add(Create(ChartSeriesKind.Bar).WithTitle(&quot;Reviewed requests&quot;))
+        .Add(Create(ChartSeriesKind.Area).WithTitle(&quot;Capacity used&quot;), 2).WithSharedAxes();
+
+    /// &lt;summary&gt;Creates groups, status, icon shapes, details and routed links in a native topology.&lt;/summary&gt;
+    public static TopologyChart CreateTopology(bool atlas = false) {
+        var chart = TopologyChart.Create(); chart.Id = atlas ? &quot;shape-atlas&quot; : &quot;service-topology&quot;;
+        chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true, WrapNodeLabels = true, IncludeLegend = true, IncludeGroupStatusDots = true };
+        if (atlas) {
+            var shapes = Enum.GetValues&lt;TopologyNodeShape&gt;();
+            for (var index = 0; index &lt; shapes.Length; index++) chart.Nodes.Add(new TopologyNode {
+                Id = &quot;shape-&quot; + index, Label = shapes[index].ToString(), X = 24 + index % 5 * 160, Y = 24 + index / 5 * 120,
+                Width = 132, Height = 86, Shape = shapes[index], PreserveDisplayModeSize = true, ShowStatusBadge = false
+            });
+            return chart;
+        }
+        chart.Groups.Add(new TopologyGroup { Id = &quot;primary&quot;, Label = &quot;Primary region&quot;, X = 0, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Healthy });
+        chart.Groups.Add(new TopologyGroup { Id = &quot;secondary&quot;, Label = &quot;Secondary region&quot;, X = 390, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Warning });
+        var source = new TopologyNode { Id = &quot;client&quot;, Label = &quot;Client service&quot;, Subtitle = &quot;Requests&quot;, X = 30, Y = 65, Width = 240, Height = 85,
+            Kind = TopologyNodeKind.Server, GroupId = &quot;primary&quot;, Status = TopologyHealthStatus.Healthy };
+        source.Details.Add(new TopologyNodeDetail { Label = &quot;State&quot;, Value = &quot;Available&quot;, Status = TopologyHealthStatus.Healthy }); chart.Nodes.Add(source);
+        chart.Nodes.Add(new TopologyNode { Id = &quot;cache&quot;, Label = &quot;Cache&quot;, X = 70, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = &quot;primary&quot; });
+        chart.Nodes.Add(new TopologyNode { Id = &quot;worker&quot;, Label = &quot;Processing service&quot;, X = 430, Y = 65, Width = 240, Height = 85, Kind = TopologyNodeKind.Server,
+            GroupId = &quot;secondary&quot;, Status = TopologyHealthStatus.Warning });
+        chart.Nodes.Add(new TopologyNode { Id = &quot;store&quot;, Label = &quot;Result store&quot;, X = 470, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = &quot;secondary&quot; });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;request&quot;, SourceNodeId = &quot;client&quot;, TargetNodeId = &quot;worker&quot;, Label = &quot;Requests&quot;, SecondaryLabel = &quot;Active&quot;,
+            Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal, Direction = VisualLinkDirection.Forward });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;cache-read&quot;, SourceNodeId = &quot;client&quot;, TargetNodeId = &quot;cache&quot;, Label = &quot;Lookup&quot;, Routing = TopologyEdgeRouting.Curved,
+            LineStyle = TopologyEdgeLineStyle.Dashed, Direction = VisualLinkDirection.Bidirectional });
+        chart.Edges.Add(new TopologyEdge { Id = &quot;persist&quot;, SourceNodeId = &quot;worker&quot;, TargetNodeId = &quot;store&quot;, Label = &quot;Persist&quot;, Routing = TopologyEdgeRouting.Orthogonal });
+        chart.Legend = TopologyLegend.Create().AddStatus(&quot;Available&quot;, TopologyHealthStatus.Healthy).AddStatus(&quot;Review&quot;, TopologyHealthStatus.Warning)
+            .AddNodeKind(&quot;Service&quot;, TopologyNodeKind.Server).AddEdgeKind(&quot;Dependency&quot;, TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed);
+        return chart;
+    }
+
+    /// &lt;summary&gt;Creates a branched process with typed lanes, decisions and semantic statuses.&lt;/summary&gt;
+    public static FlowArtifact CreateFlow() =&gt; FlowArtifact.Create(&quot;assessment-flow&quot;).WithSize(900, 600)
+        .AddLane(&quot;service&quot;, &quot;Service&quot;).AddLane(&quot;review&quot;, &quot;Review&quot;)
+        .AddStep(&quot;received&quot;, &quot;Request received&quot;, FlowArtifactStepKind.Start, &quot;service&quot;)
+        .AddStep(&quot;decision&quot;, &quot;Automatic checks pass?&quot;, FlowArtifactStepKind.Decision, &quot;service&quot;)
+        .AddStep(&quot;manual&quot;, &quot;Review observations&quot;, FlowArtifactStepKind.Process, &quot;review&quot;, VisualStatus.Warning)
+        .AddStep(&quot;complete&quot;, &quot;Assessment complete&quot;, FlowArtifactStepKind.End, &quot;service&quot;, VisualStatus.Positive)
+        .AddConnector(&quot;received&quot;, &quot;decision&quot;, &quot;Evaluate&quot;).AddConnector(&quot;decision&quot;, &quot;manual&quot;, &quot;Review required&quot;)
+        .AddConnector(&quot;decision&quot;, &quot;complete&quot;, &quot;Passed&quot;).AddConnector(&quot;manual&quot;, &quot;complete&quot;, &quot;Accepted&quot;);
+
+    /// &lt;summary&gt;Creates actor, control, database and queue notation with nested fragments, notes and activation.&lt;/summary&gt;
+    public static SequenceArtifact CreateSequence() {
+        var model = SequenceArtifact.Create(&quot;request-sequence&quot;).WithSize(960, 760)
+            .AddParticipant(&quot;client&quot;, &quot;Client&quot;, SequenceArtifactParticipantKind.Actor)
+            .AddParticipant(&quot;service&quot;, &quot;Service&quot;, SequenceArtifactParticipantKind.Control)
+            .AddParticipant(&quot;store&quot;, &quot;Store&quot;, SequenceArtifactParticipantKind.Database)
+            .AddParticipant(&quot;queue&quot;, &quot;Queue&quot;, SequenceArtifactParticipantKind.Queue)
+            .AddMessage(&quot;client&quot;, &quot;service&quot;, &quot;Submit request&quot;)
+            .AddMessage(&quot;service&quot;, &quot;service&quot;, &quot;Validate payload&quot;)
+            .AddMessage(&quot;service&quot;, &quot;store&quot;, &quot;Persist result&quot;)
+            .AddMessage(&quot;service&quot;, &quot;queue&quot;, &quot;Publish event&quot;, kind: SequenceArtifactMessageKind.Async)
+            .AddMessage(&quot;service&quot;, &quot;client&quot;, &quot;Return result&quot;, SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return)
+            .AddBlock(SequenceArtifactBlockKind.Alt, &quot;Validation outcome&quot;, 1, 4)
+            .AddBlock(SequenceArtifactBlockKind.Loop, &quot;Retry storage&quot;, 2, 2, depth: 1)
+            .AddActivation(&quot;service&quot;, true, 0).AddActivation(&quot;service&quot;, false, 5)
+            .AddNote(SequenceArtifactNotePlacement.Over, new[] { &quot;service&quot;, &quot;store&quot; }, &quot;Durable result&quot;);
+        model.Notes[0].StepIndex = 2; return model;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? GeometryOptions(ChartSeriesKind kind, string variant) {
+        if (kind == ChartSeriesKind.Line) {
+            var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Recorded level&quot;);
+            var positions = new[] { ChartStepPosition.Start, ChartStepPosition.Middle, ChartStepPosition.End };
+            for (var index = 0; index &lt; positions.Length; index++) {
+                var points = new[] { 8d, 17, 11, 23, 16 }.Select((value, point) =&gt; new ChartPoint(point + 1, value + index * 30));
+                chart.AddLine(positions[index].ToString(), points);
+                chart.Series[index].WithInterpolation(ChartInterpolation.Step, positions[index]);
+            }
+            return chart;
+        }
+        if (kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar) {
+            var chart = Chart.Create().WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;);
+            var names = new[] { &quot;First half &#183; Completed&quot;, &quot;First half &#183; Remaining&quot;, &quot;Second half &#183; Completed&quot;, &quot;Second half &#183; Remaining&quot; };
+            var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
+            for (var index = 0; index &lt; names.Length; index++) {
+                var points = values[index].Select((value, point) =&gt; new ChartPoint(point + 1, value));
+                if (kind == ChartSeriesKind.Bar) chart.AddBar(names[index], points);
+                else chart.AddHorizontalBar(names[index], points);
+                chart.Series[index].WithStackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).WithNormalization(100);
+            }
+            if (kind == ChartSeriesKind.Bar) chart.WithYAxis(&quot;Share (%)&quot;);
+            else chart.WithXAxis(&quot;Share (%)&quot;);
+            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis)
+                .WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == &quot;compact-options&quot;);
+            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Waterfall) {
+            var chart = Basic(kind, variant)!;
+            chart.Options.XAxis.WithReversal();
+            return chart;
+        }
+        if (kind == ChartSeriesKind.StackedArea) {
+            var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Share (%)&quot;)
+                .AddStackedArea(&quot;Completed&quot;, new[] { 45d, 70, 80, 55, 90 }.Select((value, point) =&gt; new ChartPoint(point + 1, value)))
+                .AddStackedArea(&quot;Remaining&quot;, new[] { 55d, 45, 20, 45, 30 }.Select((value, point) =&gt; new ChartPoint(point + 1, value)));
+            foreach (var series in chart.Series) series.WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.RangeArea) {
+            var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Expected level&quot;)
+                .AddRangeArea(&quot;Expected range&quot;, new[] { new ChartRangeBand(1, 15, 30), new ChartRangeBand(2, 25, 50),
+                    new ChartRangeBand(3, 20, 40), new ChartRangeBand(4, 40, 65), new ChartRangeBand(5, 30, 55) });
+            chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Funnel)
+            return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
+                .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
+                .ConfigureFunnel(options =&gt; {
+                    options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
+                    options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
+                });
+        return null;
+    }
+
+    private static string Percent(double value) =&gt; value.ToString(&quot;0&quot;, CultureInfo.InvariantCulture) + &quot;%&quot;;
+}
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

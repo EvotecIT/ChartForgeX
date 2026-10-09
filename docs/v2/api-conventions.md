@@ -183,6 +183,8 @@ chart.Series[0].ConfigureMarkers(markers => {
 
 Numeric radial `ChartPoint.X` identifies an ordinal category; `Y` is the signed source value. The numeric domain belongs to `YAxis` or `SecondaryYAxis` in both angular-bar and radial-column orientations. `ChartRadialGeometryOptions` owns finite clockwise start/end angles, inner radius and category/series spacing. Reversal belongs to the corresponding `ChartAxis`, so tick placement and mark projection agree. Fixed nonzero numeric bounds constrain visible geometry without rewriting observations. Percent rings use the separate `AddProgressRing` API and retain their 0–100 contract.
 
+Numeric radial `Inside` and `Center` captions fit entirely within their painted sector. Captions that cannot fit are shortened or omitted with `numeric-radial.label-overflow`; their full source values remain in descriptive regions and point metadata. Outside captions avoid painted marks, and automatic inside ink resolves contrast against the composited fill. Explicit label colors remain caller-controlled.
+
 ## Enforcement boundary
 
 `V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.
