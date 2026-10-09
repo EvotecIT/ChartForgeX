@@ -14,10 +14,12 @@
   const isInteractiveTarget = (node) => {
     if ((node.dataset || {}).cfxRole === 'legend-item') return true;
     if (node.closest('[data-cfx-role="legend-item"]')) return false;
-    // Prepared marks carry their source identity on a containing semantic group.
-    // Bind that group once instead of also binding its labels, decorations and individual shapes.
+    // Bind a semantic group once; a nested group with its own explicit identity remains a target.
     const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node]');
-    return !owner;
+    if (!owner) return true;
+    const data = node.dataset || {}, ownerData = owner.dataset || {};
+    return !!(data.cfxTargetKind && data.cfxTargetId
+      && (data.cfxTargetKind !== ownerData.cfxTargetKind || data.cfxTargetId !== ownerData.cfxTargetId));
   };
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
@@ -161,7 +163,7 @@
     push('Series', seriesLabel(node));
     push('Point', data.cfxPoint);
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
-    push('Y', data.cfxY || data.cfxValue);
+    push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
     push('End', data.cfxEnd);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);

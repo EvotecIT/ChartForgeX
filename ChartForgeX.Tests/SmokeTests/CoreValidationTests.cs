@@ -223,7 +223,10 @@ internal static partial class SmokeTests {
             var incompatible = Chart.Create();
             var raw = new ChartSeries("Raw", kind, Array.Empty<ChartPoint>());
             incompatible.Series.Add(raw);
-            Assert(incompatible.ToSvg().Contains("no-data"), "An empty relationship series remains a native no-data scene.");
+            var empty = incompatible.Prepare(new ChartForgeX.Rendering.VisualRenderContext());
+            var diagnostic = kind == ChartSeriesKind.Sankey ? "sankey.no-data" : "hierarchy.no-data";
+            Assert(empty.Diagnostics.Any(item => item.Code == diagnostic), "An empty relationship series reports its native no-data diagnostic.");
+            Assert(!string.IsNullOrWhiteSpace(empty.ToSvg()), "An empty relationship series remains exportable.");
             raw.Points.Add(new ChartPoint(0, 1));
             AssertThrows<InvalidOperationException>(() => incompatible.ToSvg(), "Relationship SVG exports reject added raw points.");
             AssertThrows<InvalidOperationException>(() => incompatible.ToPng(), "Relationship PNG exports reject added raw points.");
