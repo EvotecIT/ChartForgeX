@@ -107,7 +107,8 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
             case "gauge": chart.AddGauge("Capacity", 13, max: 13); break;
             case "gauge-needle": chart.AddGauge("Capacity", 13, max: 13).WithGauge(options => options.Form = ChartGaugeForm.Needle); break;
             case "gauge-linear": chart.AddGauge("Capacity", 13, max: 13).WithGauge(options => options.Form = ChartGaugeForm.Linear); break;
-            case "sunburst": chart.AddSunburst("Teams", new[] { new ChartTreeLink("Teams", "Support", 8), new ChartTreeLink("Teams", "Other", 5) }); break;
+            case "sunburst": chart.AddSunburst("Teams", new[] { new ChartNode("Teams", "Teams"), new ChartNode("Support", "Support"), new ChartNode("Other", "Other") },
+                new[] { new ChartTreeLink("Teams", "Support", 8), new ChartTreeLink("Teams", "Other", 5) }); break;
             case "polar-area": chart.AddPolarArea("Requests", ChartPoints.FromValues(8, 5)); break;
         }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.TooltipMode = HtmlChartTooltipMode.Single), dark ? 340 : 700, 560);
