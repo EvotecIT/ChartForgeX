@@ -121,7 +121,9 @@ public static partial class LegacySceneBenchmarkCases {
         } else {
             var chart = (Chart)model;
             source.Append('|').Append(chart.Title).Append('|').Append(chart.Subtitle);
-            foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
+            // The legacy flat Treemap stores item labels in XAxisLabels; the current typed
+            // input stores them with each item. TreemapFacts reads their common source meaning.
+            if (fixture != "treemap") foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
             foreach (var series in chart.Series) {
                 source.Append('|').Append(series.Kind).Append(':').Append(series.Name);
                 if (series.Kind == ChartSeriesKind.Sankey) {
@@ -140,7 +142,8 @@ public static partial class LegacySceneBenchmarkCases {
     private static IReadOnlyList<(string Label, double Value)> TreemapFacts(Chart chart) {
         var series = chart.Series[0];
 #if LEGACY_CHART_API
-        return series.Points.Select((point, index) => (series.PointLabels[index] ?? string.Empty, point.Y)).ToArray();
+        var labels = chart.Options.XAxisLabels.ToDictionary(label => label.Value, label => label.Text);
+        return series.Points.Select(point => (labels[point.X], point.Y)).ToArray();
 #else
         return series.TreemapItems.Select(item => (item.Label, item.Value!.Value)).ToArray();
 #endif
