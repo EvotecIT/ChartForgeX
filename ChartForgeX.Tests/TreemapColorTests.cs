@@ -113,6 +113,13 @@ public sealed class TreemapColorTests {
         chart.Series[0].WithPointColor(1, Red); chart.Series[0].WithPointColor(2, Blue);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "legend-entry"));
+        var legends = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "legend-entry").ToArray();
+        Assert.Equal(new[] { "first", "second" }, legends.Select(node => node.Metadata["data-cfx-legend-target-id"]));
+        Assert.All(legends, node => {
+            Assert.Equal("node", node.Metadata["data-cfx-legend-target-kind"]);
+            Assert.Equal("Support", node.Metadata["data-cfx-label"]);
+            Assert.False(node.Metadata.ContainsKey("data-cfx-point"));
+        });
         Assert.DoesNotContain(prepared.Regions, region => region.Role == "legend" && region.Label == "Group");
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Treemap.Gap = double.NaN);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Treemap.GroupPadding = -1);

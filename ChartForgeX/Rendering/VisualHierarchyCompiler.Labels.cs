@@ -34,7 +34,9 @@ internal static partial class VisualHierarchyCompiler {
         double y = center ? bounds.Y + (bounds.Height - builder.MeasureText(displayed, style).Height) / 2 : bounds.Y + inset;
         var paint = VisualChartPaint.ExplicitDataLabelColor(chart, pointIndex) ? VisualChartPaint.Text(style)
             : fillPaint.HasValue ? SvgPaint.Contrast(fill, fillPaint.Value) : SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(chart.Series[0], pointIndex));
-        builder.Text(displayed, center ? bounds.X + bounds.Width / 2 : bounds.X + inset, y + builder.TextAscent(style), style, role, paint: paint);
+        // SVG consumers can substitute a wider fallback font; keep painted captions inside their mark.
+        using (builder.PushClip(bounds))
+            builder.Text(displayed, center ? bounds.X + bounds.Width / 2 : bounds.X + inset, y + builder.TextAscent(style), style, role, paint: paint);
     }
 
     /// <summary>Resolves the same authored caption typography for rectangular and radial hierarchy marks.</summary>

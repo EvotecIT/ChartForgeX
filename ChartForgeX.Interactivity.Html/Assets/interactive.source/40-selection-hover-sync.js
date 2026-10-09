@@ -1,12 +1,21 @@
   const seriesTarget = (node) => {
     const data = node.dataset || {};
-    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node) };
+    const reference = legendTarget(node) || (['node', 'link', 'region'].includes(data.cfxTargetKind)
+      ? { targetKind: data.cfxTargetKind, targetId: data.cfxTargetId } : null);
+    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node), ...reference };
   };
-  const seriesTargetToken = (target) => target ? [target.series ?? '', target.point ?? ''].join(':') : '';
+  const seriesTargetToken = (target) => !target ? '' : target.targetKind
+    ? [target.series ?? '', target.targetKind, target.targetId].join(':') : [target.series ?? '', target.point ?? ''].join(':');
   const matchesLocalSeriesTarget = (node, target) => {
     if (!target) return false;
     const data = node.dataset || {};
-    return data.cfxSeries === String(target.series) && (target.point === undefined || data.cfxPoint === String(target.point));
+    if (data.cfxSeries !== String(target.series)) return false;
+    if (target.targetKind && target.targetId) {
+      const reference = legendTarget(node);
+      return reference ? reference.targetKind === target.targetKind && reference.targetId === target.targetId
+        : data.cfxTargetKind === target.targetKind && data.cfxTargetId === target.targetId;
+    }
+    return target.point === undefined || data.cfxPoint === String(target.point);
   };
   const resolveSeriesTarget = (root, target) => {
     if (!target || !target.seriesKey) return null;
@@ -14,6 +23,13 @@
     let matchingSeries = legends.filter((item) => seriesKey(item) === target.seriesKey);
     if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter((item) => seriesKey(item) === target.seriesKey);
     if (!matchingSeries.length) return null;
+    if (target.targetKind && target.targetId) {
+      const exact = matchingSeries.find((node) => {
+        const reference = legendTarget(node);
+        return reference && reference.targetKind === target.targetKind && reference.targetId === target.targetId;
+      }) || referencedTargetNode(root, target);
+      return exact ? seriesTarget(exact) : null;
+    }
     if (target.point === undefined) {
       const localSeries = (matchingSeries[0].dataset || {}).cfxSeries;
       return localSeries === undefined ? null : { series: localSeries, seriesKey: target.seriesKey, label: target.label };
@@ -35,6 +51,7 @@
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
+    const item = target && target.targetKind ? referencedTargetNode(root, target) : null;
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
       const data = node.dataset || {};
       const role = data.cfxRole || '';
@@ -50,7 +67,9 @@
         return;
       }
       node.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
-      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries);
+      // Keep ancestor containers at full opacity; they also contain the isolated native item.
+      const context = item && (node.contains(item) || item.contains(node));
+      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context);
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
@@ -117,10 +136,22 @@
   // Pie-like legends name points, so their emphasis unit is one point rather than the containing series.
   const pointLegendUnits = (root, target) => target.point !== undefined && Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-point]'))
     .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));
-  const inHoverUnit = (node, target, pointUnits) => {
+  const legendItemUnit = (root, target) => {
+    const reference = target.legendTargetKind ? { targetKind: target.legendTargetKind, targetId: target.legendTargetId }
+      : target.targetKind === 'node' ? { targetKind: target.targetKind, targetId: target.targetId } : null;
+    if (!reference) return null;
+    const hasLegend = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"]')).some((node) => {
+      const item = legendTarget(node);
+      return item && item.targetKind === reference.targetKind && item.targetId === reference.targetId
+        && (target.seriesKey ? seriesKey(node) === target.seriesKey : node.dataset.cfxSeries === String(target.series));
+    });
+    return hasLegend ? referencedTargetNode(root, { ...reference, seriesKey: target.seriesKey }) : null;
+  };
+  const inHoverUnit = (node, target, pointUnits, itemUnit) => {
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
+    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point));
   };
   // 'series' keeps the pointed series at full strength while other series recede;
@@ -129,13 +160,14 @@
     if (!target) return false;
     const hoverMode = mode === 'shared' ? 'shared' : 'series';
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, target);
+    const itemUnit = hoverMode === 'series' && legendItemUnit(root, target);
     let matched = false;
     root.querySelectorAll(targetSelector).forEach((node) => {
       const hovered = matchesTargetIdentity(node, target);
       const related = !hovered && targetRelated(node, target);
       if (hovered || related) matched = true;
       setNodeHovered(node, hovered, related);
-      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, target, pointUnits));
+      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, target, pointUnits, itemUnit));
       if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', target.point !== undefined && node.dataset.cfxPoint === String(target.point));
     });
     if (matched) {

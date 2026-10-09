@@ -11,9 +11,11 @@ namespace ChartForgeX.Rendering;
 internal sealed class VisualLegendEntry {
     internal VisualLegendEntry(string label, ChartColor color, string id, ChartSeriesKind? kind = null,
         ChartFillPattern pattern = ChartFillPattern.None, ChartSeriesState stateRole = ChartSeriesState.None, string? seriesKey = null,
-        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect>? marker = null, SvgPaint? paint = null, string? value = null, string? percentage = null) {
+        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect>? marker = null, SvgPaint? paint = null, string? value = null, string? percentage = null,
+        string? targetKind = null, string? targetId = null) {
         Label = label; Color = color; Id = id; Kind = kind; Pattern = pattern; StateRole = stateRole; SeriesKey = seriesKey;
         State = state; PinStateColors = pinStateColors; Marker = marker; Paint = paint; Value = value; Percentage = percentage;
+        TargetKind = targetKind; TargetId = targetId;
     }
     internal string Label { get; }
     internal string? Value { get; }
@@ -29,6 +31,20 @@ internal sealed class VisualLegendEntry {
     internal bool PinStateColors { get; }
     internal Action<VisualSceneBuilder, ChartRect>? Marker { get; }
     internal SvgPaint? Paint { get; }
+    // A legend describes a native target independently of its own rendered legend identity.
+    internal string? TargetKind { get; }
+    internal string? TargetId { get; }
+    internal Dictionary<string, string> Metadata() {
+        var metadata = new Dictionary<string, string> {
+            ["data-cfx-series-key"] = SeriesKey ?? "", ["data-cfx-state"] = StateRole.ToString(), ["aria-label"] = Description
+        };
+        if (TargetKind != null && TargetId != null) {
+            metadata["data-cfx-legend-target-kind"] = TargetKind;
+            metadata["data-cfx-legend-target-id"] = TargetId;
+            metadata["data-cfx-label"] = Label;
+        }
+        return metadata;
+    }
 }
 
 /// <summary>Measures and paints one common frame before any family lays out its marks.</summary>
@@ -117,10 +133,7 @@ internal static class VisualFrameLayout {
                         var width = LegendWidth(entry, isSummary ? 0 : 28);
                         var baseline = y + titleHeight + r * lineHeight + builder.TextAscent(legendStyle);
                         var swatch = new ChartRect(cursor, baseline - legendStyle.EffectiveFontSize * 0.65, 10, 10);
-                        using (builder.PushGroup("legend-" + entry.Id, "legend-entry", new Dictionary<string, string> {
-                            ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["data-cfx-state"] = entry.StateRole.ToString(),
-                            ["aria-label"] = entry.Description
-                        })) {
+                        using (builder.PushGroup("legend-" + entry.Id, "legend-entry", entry.Metadata())) {
                             if (!ReferenceEquals(entry, overflow)) using (builder.PushClip(swatch)) {
                             if (entry.Marker != null) entry.Marker(builder, swatch);
                             else if (entry.State != null) {
@@ -170,9 +183,7 @@ internal static class VisualFrameLayout {
                 foreach (var visibleRow in rows) foreach (var entry in visibleRow) shown.Add(entry);
                 foreach (var entry in entries) if (!shown.Contains(entry)) {
                     builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(x, y, 0, 0), entry.Description));
-                    using (builder.PushGroup("legend-" + entry.Id, "legend-entry-omitted", new Dictionary<string, string> {
-                        ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["aria-label"] = entry.Description
-                    })) { }
+                    using (builder.PushGroup("legend-" + entry.Id, "legend-entry-omitted", entry.Metadata())) { }
                 }
             }
             if (height > 0) {

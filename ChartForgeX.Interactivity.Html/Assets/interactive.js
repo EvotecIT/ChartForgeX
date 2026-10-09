@@ -12,7 +12,9 @@
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
   const isInteractiveTarget = (node) => {
-    if ((node.dataset || {}).cfxRole === 'legend-item') return true;
+    const role = (node.dataset || {}).cfxRole;
+    if (role === 'legend-entry-omitted') return false;
+    if (role === 'legend-item') return true;
     if (node.closest('[data-cfx-role="legend-item"]')) return false;
     // Bind a semantic group once; a nested group with its own explicit identity remains a target.
     const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node]');
@@ -29,6 +31,16 @@
     // Prepared marks put identity on the outer group and their cell link inside it.
     return Array.from(node.children).find((child) => child.matches('a[data-cfx-role="heatmap-cell-link"][href]')) || node;
   };
+  // A legend may refer to an authored native item while retaining its own legend identity.
+  const legendTarget = (node) => {
+    const data = node.dataset || {};
+    return data.cfxLegendTargetKind && data.cfxLegendTargetId
+      ? { targetKind: data.cfxLegendTargetKind, targetId: data.cfxLegendTargetId } : null;
+  };
+  const referencedTargetNode = (root, target) => Array.from(root.querySelectorAll('[data-cfx-target-kind][data-cfx-target-id]'))
+    .find((node) => (node.dataset || {}).cfxRole !== 'legend-item'
+      && node.dataset.cfxTargetKind === target.targetKind && node.dataset.cfxTargetId === target.targetId
+      && (!target.seriesKey || seriesKey(node) === target.seriesKey));
   const seriesLegend = (node) => {
     const data = node.dataset || {};
     if (data.cfxSeries === undefined) return null;
@@ -36,6 +48,10 @@
     if (root) {
       const legendItems = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
       const sameSeries = (item) => (item.dataset || {}).cfxSeries === data.cfxSeries;
+      const itemId = data.cfxTargetKind === 'node' ? data.cfxTargetId : undefined;
+      if (itemId !== undefined) return legendItems.find((item) => sameSeries(item)
+        && (item.dataset || {}).cfxLegendTargetKind === 'node' && item.dataset.cfxLegendTargetId === itemId)
+        || legendItems.find((item) => sameSeries(item) && !legendTarget(item));
       return data.cfxPoint === undefined
         ? legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined) || legendItems.find(sameSeries)
         : legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
@@ -94,7 +110,11 @@
     if (kind === 'region') return data.cfxRegion || data.cfxId || data.cfxLabel || '';
     if (kind === 'node') return data.cfxNode || data.cfxId || data.cfxLabel || '';
     if (kind === 'link') return data.cfxId || [data.cfxSource, data.cfxTarget].filter(Boolean).join('->') || data.cfxLabel || '';
-    if (kind === 'legend') return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node)}`;
+    if (kind === 'legend') {
+      const reference = legendTarget(node);
+      if (reference) return JSON.stringify([seriesKey(node) || data.cfxSeries || 'series', reference.targetKind, reference.targetId]);
+      return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node)}`;
+    }
     if (kind === 'annotation') return data.cfxId || data.cfxLabel || [data.cfxKind, data.cfxValue].filter(Boolean).join(':');
     return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
   };
@@ -136,6 +156,8 @@
       seriesKey: seriesKey(node),
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
+      legendTargetKind: data.cfxLegendTargetKind,
+      legendTargetId: data.cfxLegendTargetId,
       value: data.cfxValue || data.cfxY || data.cfxEnd || '',
       kind: data.cfxKind || ''
     };
@@ -377,7 +399,15 @@
       if (index < 0) return;
       data.cfxRole = 'legend-item'; data.cfxSeries = String(index);
       const region = regions.get(source);
-      data.cfxLabel = region ? region.label : node.getAttribute('aria-label') || '';
+      data.cfxLabel = data.cfxLabel || (region ? region.label : node.getAttribute('aria-label') || '');
+      const reference = legendTarget(node);
+      if (reference) {
+        const mark = referencedTargetNode(svg, { ...reference, seriesKey: data.cfxSeriesKey });
+        if (mark) {
+          data.cfxLabel = mark.dataset.cfxLabel || data.cfxLabel;
+          if (mark.dataset.cfxValue !== undefined) data.cfxValue = mark.dataset.cfxValue;
+        }
+      }
       if (match && match[2] !== undefined) data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
     });
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"]').forEach((node) => {
@@ -450,6 +480,7 @@
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
+    if (legendTarget(item)) return data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
     const values = legendSeriesValues(item);
     if (!values.length) return [];
     if (data.cfxPoint !== undefined) {
@@ -464,7 +495,7 @@
   };
   const renderLegendTip = (tip, item) => {
     const data = item.dataset || {};
-    const name = data.cfxPoint !== undefined ? data.cfxLabel || seriesLabel(item) : seriesLabel(item) || data.cfxLabel || '';
+    const name = data.cfxPoint !== undefined || legendTarget(item) ? data.cfxLabel || seriesLabel(item) : seriesLabel(item) || data.cfxLabel || '';
     if (!name) return false;
     tip.replaceChildren();
     const title = document.createElement('div');
@@ -683,13 +714,22 @@
   };
   const seriesTarget = (node) => {
     const data = node.dataset || {};
-    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node) };
+    const reference = legendTarget(node) || (['node', 'link', 'region'].includes(data.cfxTargetKind)
+      ? { targetKind: data.cfxTargetKind, targetId: data.cfxTargetId } : null);
+    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node), ...reference };
   };
-  const seriesTargetToken = (target) => target ? [target.series ?? '', target.point ?? ''].join(':') : '';
+  const seriesTargetToken = (target) => !target ? '' : target.targetKind
+    ? [target.series ?? '', target.targetKind, target.targetId].join(':') : [target.series ?? '', target.point ?? ''].join(':');
   const matchesLocalSeriesTarget = (node, target) => {
     if (!target) return false;
     const data = node.dataset || {};
-    return data.cfxSeries === String(target.series) && (target.point === undefined || data.cfxPoint === String(target.point));
+    if (data.cfxSeries !== String(target.series)) return false;
+    if (target.targetKind && target.targetId) {
+      const reference = legendTarget(node);
+      return reference ? reference.targetKind === target.targetKind && reference.targetId === target.targetId
+        : data.cfxTargetKind === target.targetKind && data.cfxTargetId === target.targetId;
+    }
+    return target.point === undefined || data.cfxPoint === String(target.point);
   };
   const resolveSeriesTarget = (root, target) => {
     if (!target || !target.seriesKey) return null;
@@ -697,6 +737,13 @@
     let matchingSeries = legends.filter((item) => seriesKey(item) === target.seriesKey);
     if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter((item) => seriesKey(item) === target.seriesKey);
     if (!matchingSeries.length) return null;
+    if (target.targetKind && target.targetId) {
+      const exact = matchingSeries.find((node) => {
+        const reference = legendTarget(node);
+        return reference && reference.targetKind === target.targetKind && reference.targetId === target.targetId;
+      }) || referencedTargetNode(root, target);
+      return exact ? seriesTarget(exact) : null;
+    }
     if (target.point === undefined) {
       const localSeries = (matchingSeries[0].dataset || {}).cfxSeries;
       return localSeries === undefined ? null : { series: localSeries, seriesKey: target.seriesKey, label: target.label };
@@ -718,6 +765,7 @@
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
+    const item = target && target.targetKind ? referencedTargetNode(root, target) : null;
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
       const data = node.dataset || {};
       const role = data.cfxRole || '';
@@ -733,7 +781,9 @@
         return;
       }
       node.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
-      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries);
+      // Keep ancestor containers at full opacity; they also contain the isolated native item.
+      const context = item && (node.contains(item) || item.contains(node));
+      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context);
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
@@ -800,10 +850,22 @@
   // Pie-like legends name points, so their emphasis unit is one point rather than the containing series.
   const pointLegendUnits = (root, target) => target.point !== undefined && Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-point]'))
     .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));
-  const inHoverUnit = (node, target, pointUnits) => {
+  const legendItemUnit = (root, target) => {
+    const reference = target.legendTargetKind ? { targetKind: target.legendTargetKind, targetId: target.legendTargetId }
+      : target.targetKind === 'node' ? { targetKind: target.targetKind, targetId: target.targetId } : null;
+    if (!reference) return null;
+    const hasLegend = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"]')).some((node) => {
+      const item = legendTarget(node);
+      return item && item.targetKind === reference.targetKind && item.targetId === reference.targetId
+        && (target.seriesKey ? seriesKey(node) === target.seriesKey : node.dataset.cfxSeries === String(target.series));
+    });
+    return hasLegend ? referencedTargetNode(root, { ...reference, seriesKey: target.seriesKey }) : null;
+  };
+  const inHoverUnit = (node, target, pointUnits, itemUnit) => {
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
+    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point));
   };
   // 'series' keeps the pointed series at full strength while other series recede;
@@ -812,13 +874,14 @@
     if (!target) return false;
     const hoverMode = mode === 'shared' ? 'shared' : 'series';
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, target);
+    const itemUnit = hoverMode === 'series' && legendItemUnit(root, target);
     let matched = false;
     root.querySelectorAll(targetSelector).forEach((node) => {
       const hovered = matchesTargetIdentity(node, target);
       const related = !hovered && targetRelated(node, target);
       if (hovered || related) matched = true;
       setNodeHovered(node, hovered, related);
-      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, target, pointUnits));
+      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, target, pointUnits, itemUnit));
       if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', target.point !== undefined && node.dataset.cfxPoint === String(target.point));
     });
     if (matched) {

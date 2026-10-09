@@ -21,7 +21,7 @@ internal static partial class VisualHierarchyCompiler {
                 .Where(entry => series.Relationships!.Children(entry.index).Count == 0)
                 .Select(entry => new VisualLegendEntry(entry.item.Label, surface.Blend(entry.index).Color,
                     ChartRelationshipMetadata.SourceId("node", entry.item.Id), series.Kind, Pattern(series, entry.index),
-                    series.StateRole, series.InteractionIdentityKey)).ToArray();
+                    series.StateRole, series.InteractionIdentityKey, targetKind: "node", targetId: entry.item.Id)).ToArray();
         }
         return new[] { new VisualLegendEntry(series.Name, ChartSeriesColours.Resolve(series, 0, colors), "series-0", series.Kind,
             series.FillPattern, series.StateRole, series.InteractionIdentityKey) };

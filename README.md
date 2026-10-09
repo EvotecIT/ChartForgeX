@@ -727,6 +727,8 @@ Leaves require finite non-negative `Value`; groups require null `Value`, and the
 
 `ChartOptions.Treemap` controls group padding, sibling gaps, group labels, and the color legend. `ChartSeries.TreemapItems` is an immutable snapshot; `Points` remains empty. Point styling overrides use item input ordinals, while SVG and HTML targets retain item IDs through input reordering or label renaming. See the [migration guide](docs/v2/migration.md#hierarchical-treemap) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Treemap.cs).
 
+`WithPointLegend()` shows leaf keys when no numeric color legend is active. In interactive HTML, a leaf key reads its own value and toggles or isolates that node. Linked charts resolve leaf keys by ID even when their labels or input order differ.
+
 ## Chart catalog
 
 The catalog is broad enough for generated reports, dashboards, operational summaries, and static documentation:
