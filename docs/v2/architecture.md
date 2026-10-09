@@ -192,6 +192,12 @@ Controlled performance comparisons cover 42 complete-export pairs on each of two
 
 Measured placement retains full semantic text when an optional label cannot fit, and records the omission. Fixed canvases cannot promise that arbitrary dense data or long text will remain fully painted. Explicit undersized fonts and bounds remain caller choices. Browser hover, selection, zoom and host controls belong to the interaction adapters; additional chart options and families remain in the [capability roadmap](chart-capabilities.csv). Visual acceptance covers the supported static layouts and observed fixtures, while consumer execution, public package availability and website deployment retain separate gates.
 
+## Chart option qualification
+
+The integrated chart-option source passes 3,903 unfiltered tests, all four target-framework builds without compiler warnings, 42 Mermaid conformance fixtures, macOS Native AOT execution, 318 native visual comparisons and eight isolated local package qualifications. Its generated API inventory records 8,102 source entries across eight assemblies. These source and local-package checks are separate from public package availability and downstream release builds.
+
+The current gallery covers 53 chart kinds and their declared variants in compact/wide light/dark output. Enabled browser checks exercise the native export matrix and 229 interaction cases, including authored and derived target identities, contributor readout, roving keyboard navigation and retained zero/collapsed facts. Native previews respect their logical width. Representative SVG/browser and PNG outputs are visually inspected; browser font painting remains distinct from native rasterization. Further family options and adapter policies remain explicit in the capability roadmap.
+
 ## Consumer handoff qualification
 
 Prepared artifacts capture their own identity, accessibility text and semantic envelope. Reader or caller mutation cannot alter another export. Visuals applies ordered watermark layers without replacing those semantics; Stories owns motion and static-source selection. Interactive topology prepares the complete SVG needed by its presentation adapter. Explicit text alternatives take precedence over presentation subtitles, including localized host formatters.

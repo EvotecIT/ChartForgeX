@@ -1,6 +1,6 @@
 # Public API ownership ledger
 
-The pinned post-extraction inventory covers eight assemblies, including the shared visual-default contracts. It describes the source revision in its manifest; later breaking changes are documented in the [migration guide](migration.md).
+The pinned post-extraction inventory covers eight assemblies, including typed family options, aggregate source snapshots, relationship identities and the shared visual defaults. It describes the source revision in its manifest; later breaking changes are documented in the [migration guide](migration.md).
 
 | Artifact | Purpose |
 | --- | --- |
