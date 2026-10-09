@@ -245,6 +245,7 @@
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
       setSeriesIsolation(root, null, false);
+      refreshKeyboardNavigation(root);
       clearFocusTrail(root);
       clearReveals(root);
       if (brush) brush.hidden = true;

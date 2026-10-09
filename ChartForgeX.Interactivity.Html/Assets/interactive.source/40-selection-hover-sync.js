@@ -32,6 +32,7 @@
       }
       node.classList.toggle('cfx-series-muted', muted);
     });
+    refreshKeyboardNavigation(root);
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {

@@ -682,6 +682,8 @@
   // Data and legend are separate roving components. Source identities stay on the actual rendered marks.
   const keyboardTargetAvailable = (node) => {
     if (node.closest('defs,[hidden],[aria-hidden="true"]')) return false;
+    // Muted data leaves navigation; its legend remains an entry point for restoring the series.
+    if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
     const style = getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
     const box = node.getBoundingClientRect();
@@ -742,10 +744,15 @@
     state.legends = targets.filter((node) => renderedTargetKind(node) === 'legend');
     state.groups = keyboardDataGroups(targets.filter((node) => renderedTargetKind(node) !== 'legend'));
     state.data = state.groups.flatMap((group) => group.nodes);
-    if (!state.data.includes(state.activeData)) state.activeData = state.data[0];
-    if (!state.legends.includes(state.activeLegend)) state.activeLegend = state.legends[0];
+    // A hidden host has no available targets. Retain each component's position until layout returns.
+    if (state.data.length && !state.data.includes(state.activeData)) state.activeData = state.data[0];
+    if (state.legends.length && !state.legends.includes(state.activeLegend)) state.activeLegend = state.legends[0];
     if (state.data.includes(focused)) state.activeData = focused;
     if (state.legends.includes(focused)) state.activeLegend = focused;
+    if (!state.legendOrderPrepared && state.data.length && state.legends.length) {
+      placeKeyboardLegendAfterData(root, state.data, state.legends);
+      state.legendOrderPrepared = true;
+    }
     state.owned.forEach((node) => node.setAttribute('tabindex', '-1'));
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
@@ -755,13 +762,37 @@
     });
     return state;
   };
+  const bindKeyboardNavigationResize = (root) => {
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return;
+    let frame = 0;
+    let observer;
+    const queueRefresh = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (!root.isConnected) {
+          if (observer) observer.disconnect();
+          window.removeEventListener('resize', queueRefresh);
+          return;
+        }
+        refreshKeyboardNavigation(root);
+      });
+    };
+    window.addEventListener('resize', queueRefresh);
+    if (typeof ResizeObserver !== 'undefined') {
+      // Tabs and other initially hidden hosts acquire layout without a window resize.
+      observer = new ResizeObserver(queueRefresh);
+      observer.observe(stage);
+    }
+  };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) return;
     root._cfxKeyboardNavigation = { owned: new Set() };
     // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
-    const state = refreshKeyboardNavigation(root);
-    if (state) placeKeyboardLegendAfterData(root, state.data, state.legends);
+    refreshKeyboardNavigation(root);
+    bindKeyboardNavigationResize(root);
   };
   const scrollKeyboardTargetIntoView = (root, node) => {
     const stage = root.querySelector('.cfx-stage');
@@ -855,6 +886,7 @@
       }
       node.classList.toggle('cfx-series-muted', muted);
     });
+    refreshKeyboardNavigation(root);
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
@@ -1856,6 +1888,7 @@
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
       setSeriesIsolation(root, null, false);
+      refreshKeyboardNavigation(root);
       clearFocusTrail(root);
       clearReveals(root);
       if (brush) brush.hidden = true;

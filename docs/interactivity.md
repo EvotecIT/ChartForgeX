@@ -12,6 +12,8 @@ Explicitly decimated series keep their original point identity. `data-cfx-point`
 
 When `ChartInteractionFeatures.KeyboardNavigation` is enabled, data marks and legend entries are separate roving components. Tab enters each component once and returns to its last active target; Left/Right and Home/End move within a series or legend. Up/Down switches data series at a matching coordinate or source observation, with an ordinal fallback for uneven series. Families without a series/point grid use their deterministic rendered-target order. Hidden targets and aggregate series wrappers do not become extra data stops.
 
+Muted data leaves the data component, while its legend stays reachable for unmuting. Reset restores the data component after all series are muted. Charts initialized inside a host hidden with `hidden` or `display: none` acquire their Tab stops when the host regains layout; hiding and revealing the host preserves each component's active target.
+
 Moving to an offscreen target scrolls the chart's readable viewport locally. Native data links retain Enter navigation, while Space selects a data target when selection is enabled. Legend Space toggles muting and Shift+Space toggles series isolation. `cfxnavigate.index/count` refer to the active data or legend component. Disabling keyboard navigation leaves host key handling and authored links available without adding adapter navigation stops.
 
 ## Graphite appearance
