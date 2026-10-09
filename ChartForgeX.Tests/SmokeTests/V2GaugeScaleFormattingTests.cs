@@ -144,6 +144,29 @@ public sealed class V2GaugeScaleFormattingTests {
         Assert.Equal(9, Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-label").Text.Size);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PublishedBandedNeedleKeepsReadableMeasurementAndCaption(bool dark) {
+        var chart = Chart.Create().WithSize(396, 294).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands").AddGauge("Readiness", 74)
+            .WithGauge(options => {
+                options.Form = ChartGaugeForm.Needle; options.Target = 90;
+                options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Danger));
+                options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning));
+                options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Quiet));
+            });
+        var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
+        var value = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-label");
+        var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-title");
+        Assert.True(value.Text.Size >= context.Theme.Typography.DataLabelSize);
+        Assert.Equal("74", Assert.Single(value.Text.Lines).Text);
+        Assert.Equal(context.Theme.Typography.DataLabelSize, caption.Text.Size);
+        Assert.Equal("Readiness", Assert.Single(caption.Text.Lines).Text);
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
     private static bool IsScaleRole(string? role) => role is "gauge-min-label" or "gauge-max-label" or "gauge-tick-label-1" or "gauge-tick-label-2" or "gauge-tick-label-3";
     private static string[] ScaleCaptions(PreparedVisual prepared) => prepared.Regions.Where(region => IsScaleRole(region.Role)).Select(region => region.Label!).ToArray();
 

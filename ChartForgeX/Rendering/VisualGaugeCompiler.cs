@@ -116,17 +116,18 @@ internal static class VisualGaugeCompiler {
             var needle = chart.Options.Gauge.Form == ChartGaugeForm.Needle;
             var captionBottom = Math.Min(plot.Bottom, cy + radius * .5 + stroke / 2);
             var valueBudget = radius * (needle ? .34 : .6);
+            var valueTop = needle ? cy + stroke / 3 + gap / 2 : 0;
             if (needle) {
                 var desiredCaptionStyle = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground,
                     context.Theme.Typography.DataLabelSize, point: 0);
                 var captionHeight = string.IsNullOrEmpty(caption) ? 0 : builder.MeasureText(caption, desiredCaptionStyle).Height;
                 // The needle summary sits below its pivot; reserve its real caption row before fitting the scalar.
-                valueBudget = Math.Min(valueBudget, Math.Max(0, captionBottom - cy - stroke - gap / 2 - gap / 3 - captionHeight));
+                valueBudget = Math.Min(valueBudget, Math.Max(0, captionBottom - valueTop - gap / 3 - captionHeight));
             }
             var valueStyle = LabelStyle(chart, context, builder, value, valueBudget,
-                context.Theme.Typography.ScalarValueSize, 700);
+                context.Theme.Typography.ScalarValueSize, 700, minimumDefaultSize: needle ? context.Theme.Typography.DataLabelSize : .1);
             var valueHeight = Math.Min(valueBudget, builder.MeasureText(value, valueStyle).Height);
-            var valueTop = needle ? cy + stroke + gap / 2 : cy - valueHeight / 2;
+            if (!needle) valueTop = cy - valueHeight / 2;
             VisualRadialPrimitives.Text(builder, value, new ChartRect(cx - radius * .7, valueTop, radius * 1.4, valueHeight),
                 valueStyle, "gauge-label", "series-0-gauge-label");
             var captionTop = valueTop + valueHeight + gap / 3;
