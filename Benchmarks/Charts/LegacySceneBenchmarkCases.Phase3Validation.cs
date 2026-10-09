@@ -66,11 +66,11 @@ public static partial class LegacySceneBenchmarkCases {
                 }
                 break;
             case "treemap":
-                var tiles = Role(root, "treemap-tile").ToDictionary(element => Index(element, "data-cfx-point"));
-                Require(tiles.Count == chart.Series[0].Points.Count, "Treemap source-tile count changed.");
-                for (var index = 0; index < chart.Series[0].Points.Count; index++) {
-                    Require(tiles.TryGetValue(index, out var tile), "A treemap source tile was lost.");
-                    Require(Near(Parse(tile!, "data-cfx-value"), chart.Series[0].Points[index].Y)
+                var tiles = Role(root, "treemap-tile").ToDictionary(element => (string)element.Attribute("data-cfx-target-id")!);
+                Require(tiles.Count == chart.Series[0].TreemapItems.Count, "Treemap source-tile count changed.");
+                for (var index = 0; index < chart.Series[0].TreemapItems.Count; index++) {
+                    Require(tiles.TryGetValue(chart.Series[0].TreemapItems[index].Id, out var tile), "A treemap source tile was lost.");
+                    Require(Near(Parse(tile!, "data-cfx-value"), chart.Series[0].TreemapItems[index].Value!.Value)
                         && (string?)tile!.Attribute("data-cfx-label") == "Pool " + (index + 1), "Treemap source data changed."); RequireDrawing(tile!);
                 }
                 break;

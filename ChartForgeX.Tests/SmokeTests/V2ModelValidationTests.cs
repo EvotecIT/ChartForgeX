@@ -28,7 +28,6 @@ public sealed class V2ModelValidationTests {
     [InlineData(ChartSeriesKind.Pie)]
     [InlineData(ChartSeriesKind.Donut)]
     [InlineData(ChartSeriesKind.Funnel)]
-    [InlineData(ChartSeriesKind.Treemap)]
     [InlineData(ChartSeriesKind.Polar)]
     [InlineData(ChartSeriesKind.PolarArea)]
     [InlineData(ChartSeriesKind.RadialBar)]
@@ -42,12 +41,19 @@ public sealed class V2ModelValidationTests {
     [InlineData(ChartSeriesKind.Candlestick)]
     [InlineData(ChartSeriesKind.RangeArea)]
     [InlineData(ChartSeriesKind.BoxPlot)]
-    [InlineData(ChartSeriesKind.Sankey)]
-    [InlineData(ChartSeriesKind.Tree)]
     [InlineData(ChartSeriesKind.Gantt)]
     [InlineData(ChartSeriesKind.Gauge)]
     public void PreparationDoesNotTreatIncompleteTuplesAsEmptyData(ChartSeriesKind kind) {
         Reject(Raw(kind, new ChartPoint(0, 1)));
+    }
+
+    [Theory]
+    [InlineData(ChartSeriesKind.Tree)]
+    [InlineData(ChartSeriesKind.Sunburst)]
+    [InlineData(ChartSeriesKind.Sankey)]
+    [InlineData(ChartSeriesKind.Treemap)]
+    public void TypedRelationshipFamiliesRejectRawPointsAtConstruction(ChartSeriesKind kind) {
+        Assert.Throws<ArgumentException>(() => new ChartSeries("Raw relationship", kind, new[] { new ChartPoint(0, 1) }));
     }
 
     [Theory]
@@ -59,6 +65,7 @@ public sealed class V2ModelValidationTests {
     [InlineData(ChartSeriesKind.RadialBar, "radial.no-data")]
     [InlineData(ChartSeriesKind.LayeredRadial, "radial.no-data")]
     [InlineData(ChartSeriesKind.Tree, "hierarchy.no-data")]
+    [InlineData(ChartSeriesKind.Treemap, "hierarchy.no-data")]
     [InlineData(ChartSeriesKind.Sankey, "sankey.no-data")]
     [InlineData(ChartSeriesKind.WordCloud, "specialty.no-data")]
     public void EmptyNativeFamiliesRetainTheirNoDataContract(ChartSeriesKind kind, string diagnostic) {
@@ -71,7 +78,7 @@ public sealed class V2ModelValidationTests {
 
     [Fact]
     public void ZeroWeightsRenderWithoutInventingPositiveObservations() {
-        foreach (var kind in new[] { ChartSeriesKind.Pie, ChartSeriesKind.Donut, ChartSeriesKind.Treemap, ChartSeriesKind.Pictorial, ChartSeriesKind.WordCloud, ChartSeriesKind.PolarArea }) {
+        foreach (var kind in new[] { ChartSeriesKind.Pie, ChartSeriesKind.Donut, ChartSeriesKind.Pictorial, ChartSeriesKind.WordCloud, ChartSeriesKind.PolarArea }) {
             var chart = Raw(kind, new ChartPoint(1, 0), new ChartPoint(2, 0));
             var prepared = chart.Prepare(new VisualRenderContext());
             Assert.All(chart.Series[0].Points, point => Assert.Equal(0, point.Y));

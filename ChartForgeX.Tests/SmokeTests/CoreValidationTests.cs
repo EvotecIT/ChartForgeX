@@ -82,8 +82,8 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartParetoItem("Bad", -1), "Pareto items should reject negative values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartParetoItem("Bad", double.NaN), "Pareto items should reject non-finite values.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddTreemap("Empty", Array.Empty<ChartTreemapItem>()), "Treemaps should reject empty item sets.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTreemapItem("Bad", -1), "Treemap items should reject negative values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTreemapItem("Bad", double.NaN), "Treemap items should reject non-finite values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTreemapItem("Bad", "Bad", value: -1), "Treemap items should reject negative values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTreemapItem("Bad", "Bad", value: double.NaN), "Treemap items should reject non-finite values.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddPictorial("Empty", Array.Empty<ChartPictorialItem>()), "Pictorial charts should reject empty item sets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartPictorialItem("Bad", -1), "Pictorial items should reject negative values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartPictorialItem("Bad", double.NaN), "Pictorial items should reject non-finite values.");
@@ -218,12 +218,18 @@ internal static partial class SmokeTests {
         var malformedGantt = Chart.Create();
         malformedGantt.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Gantt, Points(1, 2)));
         AssertThrows<InvalidOperationException>(() => malformedGantt.ToPng(), "Gantt renderers should reject malformed public series instead of rendering a blank chart.");
-        foreach (var kind in new[] { ChartSeriesKind.Sankey, ChartSeriesKind.Tree, ChartSeriesKind.Sunburst }) {
-            AssertThrows<ArgumentException>(() => new ChartSeries("Raw", kind, Points(1)), "Relationship constructors require typed nodes and links.");
+        foreach (var kind in new[] { ChartSeriesKind.Sankey, ChartSeriesKind.Tree, ChartSeriesKind.Sunburst, ChartSeriesKind.Treemap }) {
+            AssertThrows<ArgumentException>(() => new ChartSeries("Raw", kind, Points(1)), "Relationship constructors require typed nodes, links, or items.");
             var incompatible = Chart.Create();
             var raw = new ChartSeries("Raw", kind, Array.Empty<ChartPoint>());
             incompatible.Series.Add(raw);
-            Assert(incompatible.ToSvg().Contains("no-data"), "An empty relationship series remains a native no-data scene.");
+            var prepared = incompatible.Prepare(new VisualRenderContext());
+            var diagnostic = kind == ChartSeriesKind.Sankey ? "sankey.no-data" : "hierarchy.no-data";
+            Assert(prepared.Diagnostics.Any(item => item.Code == diagnostic), "An empty relationship series retains its native no-data diagnostic.");
+            Assert(!prepared.Scene.Nodes.OfType<VisualSceneGroup>().Any(group =>
+                group.Metadata.TryGetValue("data-cfx-target-kind", out var targetKind) && (targetKind == "node" || targetKind == "link")),
+                "An empty relationship series does not invent interactive node or link targets.");
+            Assert(!string.IsNullOrWhiteSpace(prepared.ToSvg()), "An empty relationship series still exports its native frame.");
             raw.Points.Add(new ChartPoint(0, 1));
             AssertThrows<InvalidOperationException>(() => incompatible.ToSvg(), "Relationship SVG exports reject added raw points.");
             AssertThrows<InvalidOperationException>(() => incompatible.ToPng(), "Relationship PNG exports reject added raw points.");

@@ -66,7 +66,7 @@ internal static partial class SmokeTests {
             Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddRadar("Radar", Points(92, 74, 88)),
             Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddPolarArea("Polar", Points(92, 74, 88)),
             Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddFunnel("Funnel", Points(420, 318, 174)),
-            Chart.Create().WithSize(640, 360).AddTreemap("Treemap", new[] { new ChartTreemapItem("A", 50), new ChartTreemapItem("B", 30), new ChartTreemapItem("C", 20) }),
+            Chart.Create().WithSize(640, 360).AddTreemap("Treemap", new[] { new ChartTreemapItem("A", "A", value: 50), new ChartTreemapItem("B", "B", value: 30), new ChartTreemapItem("C", "C", value: 20) }),
             Chart.Create().WithSize(640, 360).AddPictorial("Pictorial", new[] { new ChartPictorialItem("A", 50), new ChartPictorialItem("B", 30), new ChartPictorialItem("C", 20) }, ChartPictorialShape.Diamond),
             Chart.Create().WithSize(640, 360).AddWordCloud("WordCloud", new[] { new ChartWordCloudItem("Alpha", 50), new ChartWordCloudItem("Beta", 30), new ChartWordCloudItem("Gamma", 20) }),
             Chart.Create().WithSize(640, 360).AddTimelineItem("Timeline", timelineStart, timelineStart.AddDays(14)),

@@ -13,6 +13,8 @@ internal static class ChartLegendVisibility {
             if (chart.Options.ShowHeatmapScale && (series.Kind == ChartSeriesKind.CalendarHeatmap
                 || (series.Kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap) && !series.IsCategoricalHeatmapRow)) return true;
             if (chart.Options.ShowMapScaleLegend && series.Kind is ChartSeriesKind.DottedMap or ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) return true;
+            if (series.Kind == ChartSeriesKind.Treemap && series.ShowInLegend && chart.Options.Treemap.ShowColorScaleLegend
+                && (chart.Options.Treemap.ColorScale != null || System.Linq.Enumerable.Any(series.TreemapItems, item => item.ColorValue.HasValue))) return true;
         }
         return ForEntries(chart, entryCount);
     }

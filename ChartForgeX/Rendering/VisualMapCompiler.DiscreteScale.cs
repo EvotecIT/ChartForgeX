@@ -67,15 +67,7 @@ internal static partial class VisualMapCompiler {
     }
 
     private static string[] BandCaptions(Chart chart) {
-        var bands = chart.Options.MapColorScale!.Bands;
-        var bounds = ChartNumericFormatter.FormatScaleValues(chart.Options, bands.Take(bands.Count - 1).Select(band => band.UpperBound!.Value).ToArray());
-        var captions = new string[bands.Count];
-        for (var index = 0; index < bands.Count; index++) {
-            var interval = bands.Count == 1 ? "All values" : index == 0 ? "< " + bounds[0]
-                : index == bands.Count - 1 ? "≥ " + bounds[index - 1] : bounds[index - 1] + " ≤ value < " + bounds[index];
-            captions[index] = bands[index].Label == null ? interval : bands[index].Label + " · " + interval;
-        }
-        return captions;
+        return ChartColorScaleLegend.BandCaptions(chart.Options, chart.Options.MapColorScale!);
     }
 
     private static bool HasMissingMapValues(Chart chart) =>

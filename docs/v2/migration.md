@@ -21,9 +21,21 @@ Every `ChartNode(id, label)` needs a non-empty, unique ID. Labels may repeat. Fl
 
 Keep node order explicit when preserving an existing layout or ordinal styling. The former order was first endpoint appearance in the link list. `WithPointColor`, fill-pattern, and data-label style overrides use node input ordinals for these families; semantic Sankey states use IDs. The collections copy the supplied inputs, and prepared exports remain detached from later model changes. The Mermaid CSV adapter maps its language-defined endpoint identities into nodes and assigns separate flow IDs at the adapter boundary.
 
-Tree weights remain authored values and affect link emphasis rather than node placement. Sunburst leaves retain their authored positive weights; internal rendered values sum their leaves rather than their incoming branch weights. Tiny fractions are preserved without a minimum-weight clamp. Finite leaf aggregates are required, and angular ratios are normalized before multiplication. Flat Treemap input remains unchanged.
+Tree weights remain authored values and affect link emphasis rather than node placement. Sunburst leaves retain their authored positive weights; internal rendered values sum their leaves rather than their incoming branch weights. Tiny fractions are preserved without a minimum-weight clamp. Finite leaf aggregates are required, and angular ratios are normalized before multiplication.
 
 Node and link groups retain authored IDs, labels, owning series, and actual `data-cfx-source-node-index` / `data-cfx-source-link-index` ordinals. SVG `data-cfx-target-kind` and `data-cfx-target-id` supply normalized node/link identities; HTML selection events expose those same IDs without invented `point` or `sourcePoint` ordinals. Parent, child, source, and target attributes now contain authored node IDs. Update selectors that assumed numeric node ordinals or labels as identities.
+
+## Hierarchical Treemap
+
+Replace `ChartTreemapItem(label, value)` with `ChartTreemapItem(id, label, parentId: null, value: size, colorValue: null)`. There is no label-derived identity overload. Flat items remain roots when `ParentId` is null. Preserve input order to retain ordinal point-color, pattern, and label-style overrides.
+
+Add group items with null `Value` and reference their IDs from child items. A leaf requires finite `Value >= 0`; a group rejects supplied `Value` and aggregates its descendant leaves. IDs must be unique and non-empty, parent references must exist, and cycles, self-parenting, depth above 512, and non-finite group or forest sums are rejected before adding a series. Labels may repeat. Single leaves and multiple roots are supported. Zero sizes retain metadata without a fabricated positive area.
+
+Read `ChartSeries.TreemapItems` and `Nodes` rather than `Points` or `XAxisLabels`. `SourcePointCount` is zero and `TreeLinks` is empty: parent references are item facts, not authored weight-one links. Treemap groups and leaves expose normalized `node` targets, owning series, authored item IDs/labels, `data-cfx-source-node-index`, parent IDs, depth, and rendered aggregate or raw leaf `data-cfx-value`. Leaves also retain `data-cfx-authored-value`. Replace selectors based on `data-cfx-point` with `data-cfx-target-id`; HTML selection emits the same node IDs without fake point ordinals.
+
+Supply optional finite `ColorValue` independently of size. `ConfigureTreemap` or `ChartOptions.Treemap` configures `GroupPadding`, `Gap`, `ShowGroupLabels`, `ColorScale`, `ShowColorScaleLegend`, and `ColorLegendTitle`. The scale uses supplied color observations, honors fixed bounds, and retains missing values as missing rather than zero. Default independent color uses the theme's sequential ramp. A custom no-data color and discrete named bands use the generic scale owner. Native SVG/PNG share geometry and scale swatches; prepared exports are detached from later option or source changes.
+
+The Mermaid Treemap adapter retains section nodes and parent containment. Its language has no authored ID syntax, so it assigns distinct source-order IDs at the adapter boundary and keeps labels unchanged, including repeated labels.
 
 ## Numeric color scales
 

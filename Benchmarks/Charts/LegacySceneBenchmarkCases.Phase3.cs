@@ -43,7 +43,7 @@ public static partial class LegacySceneBenchmarkCases {
                 chart.AddDottedMap("Locations", MapItems());
                 break;
             case "treemap":
-                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartTreemapItem("Pool " + (index + 1), 10 + (index * 17) % 73)));
+                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartTreemapItem("pool-" + (index + 1), "Pool " + (index + 1), value: 10 + (index * 17) % 73)));
                 break;
             case "sankey":
                 chart.AddSankey("Requests", new[] { new ChartNode("Input A", "Input A"), new ChartNode("Queue A", "Queue A"), new ChartNode("Queue B", "Queue B"), new ChartNode("Input B", "Input B"), new ChartNode("Complete", "Complete"), new ChartNode("Retry", "Retry") }, SankeyLinks());
@@ -101,6 +101,8 @@ public static partial class LegacySceneBenchmarkCases {
                 source.Append('|').Append(series.Kind).Append(':').Append(series.Name);
                 foreach (var node in series.Nodes) source.Append("|node:").Append(node.Id).Append(':').Append(node.Label);
                 foreach (var flow in series.FlowLinks) source.Append("|flow:").Append(flow.Id).Append(':').Append(flow.SourceId).Append(':').Append(flow.TargetId).Append(':').Append(Numeric(flow.Value));
+                foreach (var item in series.TreemapItems) source.Append("|treemap:").Append(item.Id).Append(':').Append(item.Label).Append(':').Append(item.ParentId)
+                    .Append(':').Append(item.Value.HasValue ? Numeric(item.Value.Value) : "").Append(':').Append(item.ColorValue.HasValue ? Numeric(item.ColorValue.Value) : "");
                 foreach (var point in series.Points) source.Append('|').Append(Numeric(point.X)).Append(',').Append(Numeric(point.Y)).Append(',').Append(point.BreakBefore);
             }
             if (fixture == "map") foreach (var point in MapItems()) source.Append('|').Append(point.Label).Append(':').Append(Numeric(point.Value!.Value));

@@ -354,7 +354,7 @@ public sealed class ThemedSvgShareTests {
             case "sankey":
                 return Host(tokens).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Fixed", "Fixed"), new ChartNode("Monitoring", "Monitoring") }, new[] { new ChartFlowLink("flow-1", "Assessment", "Fixed", 50), new ChartFlowLink("flow-2", "Monitoring", "Fixed", 20) });
             case "treemap":
-                return Host(tokens).AddTreemap("Files", new[] { new ChartTreemapItem("One", 50), new ChartTreemapItem("Two", 30), new ChartTreemapItem("Three", 20) });
+                return Host(tokens).AddTreemap("Files", new[] { new ChartTreemapItem("One", "One", value: 50), new ChartTreemapItem("Two", "Two", value: 30), new ChartTreemapItem("Three", "Three", value: 20) });
             case "line":
                 return Host(tokens).AddLine("Inbound", Points(1, 3, 2, 5)).AddLine("Outbound", Points(2, 1, 3, 2));
             case "bars":

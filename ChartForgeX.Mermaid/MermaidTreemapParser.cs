@@ -31,6 +31,7 @@ internal static class MermaidTreemapParser {
         if (LeafCount(document) == 0) Add(result, document.HeaderSpan.Line, document.HeaderSpan.Column, document.HeaderSpan.Length, MermaidDiagnosticSeverity.Error, "Mermaid treemap diagrams require at least one leaf node with a value.");
         foreach (var node in document.Nodes) {
             if (node.IsLeaf && node.Children.Count > 0) Add(result, node.Span.Line, node.Span.Column, node.Span.Length, MermaidDiagnosticSeverity.Error, "Mermaid treemap leaf nodes with values cannot have child nodes.");
+            if (!node.IsLeaf && node.Children.Count == 0) Add(result, node.Span.Line, node.Span.Column, node.Span.Length, MermaidDiagnosticSeverity.Error, "Mermaid treemap sections require child nodes; leaves require a value.");
         }
     }
 

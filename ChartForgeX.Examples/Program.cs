@@ -270,11 +270,11 @@ var findingsTreemap = Chart.Create()
     .WithSize(920, 560)
     .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
     .AddTreemap("Finding share", new[] {
-        new ChartTreemapItem("Authentication", 34),
-        new ChartTreemapItem("Certificate lifecycle", 24),
-        new ChartTreemapItem("DNS hygiene", 18),
-        new ChartTreemapItem("Policy drift", 14),
-        new ChartTreemapItem("Monitoring gaps", 10)
+        new ChartTreemapItem("Authentication", "Authentication", value: 34),
+        new ChartTreemapItem("Certificate lifecycle", "Certificate lifecycle", value: 24),
+        new ChartTreemapItem("DNS hygiene", "DNS hygiene", value: 18),
+        new ChartTreemapItem("Policy drift", "Policy drift", value: 14),
+        new ChartTreemapItem("Monitoring gaps", "Monitoring gaps", value: 10)
     });
 
 SaveChart(findingsTreemap, "findings-composition-treemap-light");

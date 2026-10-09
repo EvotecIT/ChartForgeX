@@ -702,6 +702,31 @@ Tree and Sunburst require one connected root and one incoming link per child. Tr
 
 Sankey accepts directed `ChartFlowLink(id, sourceId, targetId, value)` records. Parallel flows use different IDs, and Sankey rejects cycles and self-links. `WithSankeyNodeState(id, state)` follows the node ID through input reordering or label changes. Series expose immutable `Nodes`, `FlowLinks`, and `TreeLinks`; these families have no numeric `Points`. See the [migration guide](docs/v2/migration.md#hierarchy-and-flow-identities) for replaced signatures and metadata, and the [configured examples](ChartForgeX.Examples/V2GalleryModels.Relationships.cs) for repeated labels and parallel flows.
 
+## Hierarchical Treemap
+
+Treemap item IDs identify nodes independently of repeated display labels. A group contains its descendants and aggregates their leaf sizes; a nullable color value controls a separate numeric color scale:
+
+```csharp
+var chart = Chart.Create().AddTreemap("Allocation", new[] {
+    new ChartTreemapItem("north", "North"),
+    new ChartTreemapItem("north-team", "Team", parentId: "north"),
+    new ChartTreemapItem("north-support", "Support", parentId: "north-team", value: 5, colorValue: -2),
+    new ChartTreemapItem("south", "South"),
+    new ChartTreemapItem("south-support", "Support", parentId: "south", value: 8, colorValue: 3),
+    new ChartTreemapItem("research", "Research", value: 3)
+}).ConfigureTreemap(options => {
+    options.GroupPadding = 6;
+    options.Gap = 3;
+    options.ColorLegendTitle = "Change (%)";
+    options.ColorScale = ChartColorScale.Diverging(
+        ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(229, 229, 233), ChartColor.FromRgb(204, 104, 52), 0);
+});
+```
+
+Leaves require finite non-negative `Value`; groups require null `Value`, and their rendered value is the sum of their leaves. Forests, standalone leaves, and zero sizes are supported. Zero sizes retain their source facts without a minimum-area rectangle. `ColorValue` is optional and may be negative. Its observed domain is independent of size, and an explicit scale range remains authoritative. Missing color values use the scale's `NoDataColor` or the theme's neutral paint. Named discrete bands use the same `ChartColorScale.Discrete` API as maps.
+
+`ChartOptions.Treemap` controls group padding, sibling gaps, group labels, and the color legend. `ChartSeries.TreemapItems` is an immutable snapshot; `Points` remains empty. Point styling overrides use item input ordinals, while SVG and HTML targets retain item IDs through input reordering or label renaming. See the [migration guide](docs/v2/migration.md#hierarchical-treemap) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Treemap.cs).
+
 ## Chart catalog
 
 The catalog is broad enough for generated reports, dashboards, operational summaries, and static documentation:

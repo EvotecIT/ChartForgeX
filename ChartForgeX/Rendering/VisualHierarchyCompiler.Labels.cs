@@ -10,12 +10,12 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualHierarchyCompiler {
     private static void Label(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
-        ChartColor fill, int pointIndex, string role, bool center = false) {
+        ChartColor fill, int pointIndex, string role, bool center = false, SvgPaint? fillPaint = null, double insetLimit = 8, int maximumLines = 2) {
         var style = LabelStyle(chart, context, fill, pointIndex);
-        var inset = Math.Min(8, Math.Min(bounds.Width, bounds.Height) / 5);
+        var inset = Math.Min(insetLimit, Math.Min(bounds.Width, bounds.Height) / 5);
         double width = Math.Max(0, bounds.Width - inset * 2), height = Math.Max(0, bounds.Height - inset * 2);
         var metrics = builder.MeasureText("M", style);
-        int count = Math.Min(2, (int)Math.Floor(height / metrics.LineHeight));
+        int count = Math.Min(maximumLines, (int)Math.Floor(height / metrics.LineHeight));
         if (count < 1 || width < 6) { builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.")); return; }
         var paragraphs = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var lines = paragraphs.Length == 1 && count > 1 ? ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, width,
@@ -33,7 +33,7 @@ internal static partial class VisualHierarchyCompiler {
         style.Alignment = center ? TextAlignment.Center : TextAlignment.Left;
         double y = center ? bounds.Y + (bounds.Height - builder.MeasureText(displayed, style).Height) / 2 : bounds.Y + inset;
         var paint = VisualChartPaint.ExplicitDataLabelColor(chart, pointIndex) ? VisualChartPaint.Text(style)
-            : SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(chart.Series[0], pointIndex));
+            : fillPaint.HasValue ? SvgPaint.Contrast(fill, fillPaint.Value) : SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(chart.Series[0], pointIndex));
         builder.Text(displayed, center ? bounds.X + bounds.Width / 2 : bounds.X + inset, y + builder.TextAscent(style), style, role, paint: paint);
     }
 
