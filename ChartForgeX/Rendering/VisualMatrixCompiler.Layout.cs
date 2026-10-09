@@ -10,12 +10,12 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMatrixCompiler {
     private static MatrixLayout MeasureMatrix(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
-        ChartSeries[] rows, double[] columns, bool categorical) {
+        ChartSeries[] rows, double[] columns, bool categorical, Func<double, string> formatColumn) {
         var style = VisualStateSceneTools.TickStyle(chart, context); var gap = context.Theme.Spacing;
         var x = chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels;
         var y = chart.Options.ShowAxes && chart.Options.YAxis.Visible;
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground });
-        var widest = columns.Select(value => ChartAxisValueFormatter.Format(chart.Options.XAxis, value, null, columns))
+        var widest = columns.Select(formatColumn)
             .Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
         var lineHeight = builder.MeasureText("Mg", style).Height;
         // The shared rotated-label owner already bounds its reach to 40% of the canvas.
@@ -61,17 +61,17 @@ internal static partial class VisualMatrixCompiler {
     }
 
     private static void MatrixAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ChartRect plot,
-        double[] columns, double cellWidth, double gap, MatrixLayout layout) {
+        double[] columns, double cellWidth, double gap, MatrixLayout layout, Func<double, string> formatColumn) {
         var style = VisualStateSceneTools.TickStyle(chart, context);
         if (chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels) {
             var angle = ChartHeatmapColumnLabels.Angle(chart);
-            var width = columns.Select(value => builder.MeasureText(ChartAxisValueFormatter.Format(chart.Options.XAxis, value, null, columns), style).Width).DefaultIfEmpty(0).Max();
+            var width = columns.Select(value => builder.MeasureText(formatColumn(value), style).Width).DefaultIfEmpty(0).Max();
             var pitch = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Width / (columns.Length + .5) : cellWidth + gap;
             var step = Math.Abs(angle) < .001 ? 1 : ChartHeatmapColumnLabels.Step(chart, pitch, builder.MeasureText("Mg", style).Height, width);
             if (step > 1) builder.AddDiagnostic(new VisualDiagnostic("matrix.column-label-density",
                 "Some column captions were omitted to keep measured rotated labels separated; all complete captions remain in descriptive regions."));
             for (var index = 0; index < columns.Length; index++) {
-                var text = ChartAxisValueFormatter.Format(chart.Options.XAxis, columns[index], null, columns);
+                var text = formatColumn(columns[index]);
                 var x = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Left + (index + .5) * plot.Width / (columns.Length + .5)
                     : plot.Left + index * (cellWidth + gap) + cellWidth / 2;
                 if (index % step != 0) {

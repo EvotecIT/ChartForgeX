@@ -28,6 +28,7 @@ internal static partial class VisualPolarCompiler {
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, PolarLayout geometry,
         double[] categories, string[] axes, RadialValueScale scale, bool radar, List<PolarLabel> labels) {
         var colors = context.Theme.Resolve(context.ThemeMode); var style = TickStyle(chart, context);
+        var formatTick = ChartAxisValueFormatter.Create(chart.Options.YAxis, scale.Ticks, chart.Options.ValueFormatter);
         for (var index = 0; index < scale.Ticks.Count; index++) {
             var tick = scale.Ticks[index]; if (tick <= scale.Minimum) continue;
             var r = geometry.Radius * scale.Normalize(tick);
@@ -37,7 +38,7 @@ internal static partial class VisualPolarCompiler {
                 else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, "polar-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             }
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !scale.IsMaximum(tick)) {
-                var text = ChartAxisValueFormatter.Format(chart.Options.YAxis, tick, chart.Options.ValueFormatter, scale.Ticks);
+                var text = formatTick(tick);
                 var anchor = new ChartPoint(geometry.Cx + context.Theme.Spacing / 2, geometry.Cy - r);
                 AddLabel(builder, labels, text, anchor, style, (radar ? "radar" : "polar") + "-radius-label-" + index,
                     radar ? "radar-ring-label" : "polar-radius-label", plot, new[] { new LabelCandidate(0, 0, 0, 0), new LabelCandidate(0, 0, 0, 1) }, 20);

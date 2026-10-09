@@ -10,12 +10,13 @@ public static partial class V2GalleryModels {
     /// <summary>Creates an actual source model for every chart kind, without selecting a renderer or export backend.</summary>
     public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
         var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel))
+        var precisionVariant = (variant is "precision" or "compact-precision") && kind == ChartSeriesKind.TrendLine;
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (variant is "options" or "compact-options" || funnelVariant ? GeometryOptions(kind, variant) : null)
+        var chart = (precisionVariant ? AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant ? GeometryOptions(kind, variant) : null)
             ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
-        chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
         if (variant == "options" && kind == ChartSeriesKind.Area) {
             chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
             chart.Series[0].StateRole = ChartSeriesState.Warning;

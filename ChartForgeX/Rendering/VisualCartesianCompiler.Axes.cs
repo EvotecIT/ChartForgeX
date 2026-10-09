@@ -14,6 +14,8 @@ internal static partial class VisualCartesianCompiler {
     private sealed class AxisLabelCache {
         private readonly Dictionary<ChartAxis, Dictionary<double, string>> _labels = new();
         private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _ticks = new();
+        private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _captionTicks = new();
+        private readonly Dictionary<ChartAxis, Func<double, string>> _formatters = new();
         internal ChartAxis? HorizontalValueAxis { get; set; }
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
         internal void Set(ChartAxis axis, double value, string text) {
@@ -26,11 +28,21 @@ internal static partial class VisualCartesianCompiler {
             _ticks[axis] = ChartTicks.GenerateInside(axis, minimum, maximum).Concat(axis.Labels.Select(label => label.Value))
                 .Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray();
         }
-        internal IReadOnlyList<double> Ticks(ChartAxis axis, double minimum, double maximum) => _ticks.TryGetValue(axis, out var ticks)
-            ? ticks.Where(value => value >= minimum && value <= maximum).ToArray() : AxisTicks(axis, minimum, maximum);
+        internal IReadOnlyList<double> Ticks(ChartAxis axis, double minimum, double maximum) {
+            var ticks = _ticks.TryGetValue(axis, out var authored) ? authored.Where(value => value >= minimum && value <= maximum).ToArray()
+                : AxisTicks(axis, minimum, maximum);
+            if (!_captionTicks.TryGetValue(axis, out var previous) || !previous.SequenceEqual(ticks)) {
+                _captionTicks[axis] = ticks;
+                _formatters.Remove(axis);
+            }
+            return ticks;
+        }
         internal string Format(ChartAxis axis, double value, Func<double, string>? fallback, IReadOnlyList<double> ticks) {
             if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
-            if (!labels.TryGetValue(value, out var text)) labels.Add(value, text = ChartAxisValueFormatter.Format(axis, value, fallback, ticks));
+            if (labels.TryGetValue(value, out var text)) return text;
+            if (!_formatters.TryGetValue(axis, out var formatter)) _formatters.Add(axis, formatter = ChartAxisValueFormatter.Create(axis, ticks, fallback));
+            text = formatter(value);
+            if (axis.Scale == ChartScaleKind.Time || axis.LabelFormatter != null || fallback != null) labels.Add(value, text);
             return text;
         }
     }
