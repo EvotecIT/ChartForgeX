@@ -26,12 +26,14 @@ public static partial class V2Examples {
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
             if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
             if (RelationshipOptionFamilies.Contains(kind)) variants.Add("options");
+            if (kind == ChartSeriesKind.TrendLine) { variants.Add("precision"); variants.Add("compact-precision"); }
             if (!curated) {
                 if (SparseFamilies.Contains(kind)) variants.Add("sparse");
                 if (OptionFamilies.Contains(kind) && !variants.Contains("options")) variants.Add("options");
             }
             foreach (var variant in variants) {
-                var chart = V2GalleryModels.Create(kind, variant, mode); var title = V2GalleryModels.Title(kind);
+                var precision = variant is "precision" or "compact-precision";
+                var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? "Small signed drift" : V2GalleryModels.Title(kind);
                 if (!chart.Series.Any(series => series.Kind == kind)) throw new InvalidOperationException("The gallery factory did not create its declared chart kind: " + kind);
                 var family = FamilyName(kind); var id = "family-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 var compact = IsCompactVariant(variant);
@@ -40,7 +42,8 @@ public static partial class V2Examples {
                 // options example intentionally demonstrates an explicitly requested legend.
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
-                var subtitle = variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
+                var subtitle = precision ? "Measured differences stay in their original units"
+                    : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
                     : variant == "stage-bars-horizontal" ? "Horizontal stage bars; extents remain proportional"
                     : variant is "options" or "compact-options" && GeometryOptionFamilies.Contains(kind) ? GeometrySubtitle(kind)
                     : variant switch { "sparse" => "Missing observations remain visible as gaps", "options" => "Explore configured marks, scales and labels", "compact" => "The same data in a compact view", _ => "Explore the data, then download the chart" };

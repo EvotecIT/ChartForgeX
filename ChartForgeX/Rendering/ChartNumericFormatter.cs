@@ -14,24 +14,47 @@ internal static class ChartNumericFormatter {
         return ChartValueFormat.InvariantCompact.Format(value);
     }
 
-    /// <summary>Keeps default scale captions distinct for tiny dimensions and readable for extreme magnitudes; authored formatters stay authoritative.</summary>
+    /// <summary>Preserves authored value formats and refines ambiguous default scale captions.</summary>
     internal static string[] FormatScaleValues(ChartOptions options, IReadOnlyList<double> values) {
         var captions = new string[values.Count];
         for (var index = 0; index < values.Count; index++) captions[index] = FormatValue(options, values[index]);
-        if (!ReferenceEquals(options.ValueFormat, ChartValueFormat.ExistingValue)) return captions;
-        var needsPrecision = false;
-        for (var index = 0; index < values.Count; index++) {
-            if (captions[index].Length > 24 || values[index] != 0 && captions[index] == FormatValue(options, 0)) needsPrecision = true;
-            for (var other = 0; other < index; other++)
-                if (values[index] != values[other] && captions[index] == captions[other]) needsPrecision = true;
-        }
-        if (!needsPrecision) return captions;
-        for (var index = 0; index < values.Count; index++) captions[index] = values[index].ToString("G6", CultureInfo.InvariantCulture);
-        for (var index = 0; index < values.Count; index++) for (var other = 0; other < index; other++)
-            if (values[index] != values[other] && captions[index] == captions[other]) {
-                for (var value = 0; value < values.Count; value++) captions[value] = values[value].ToString("R", CultureInfo.InvariantCulture);
-                return captions;
-            }
+        if (ReferenceEquals(options.ValueFormat, ChartValueFormat.ExistingValue)) RefineDefaults(values, captions, FormatValue(options, 0));
         return captions;
     }
+
+    internal static string[] FormatCompactScaleValues(IReadOnlyList<double> values) {
+        var captions = new string[values.Count];
+        for (var index = 0; index < values.Count; index++) captions[index] = FormatCompact(values[index]);
+        RefineDefaults(values, captions, FormatCompact(0));
+        return captions;
+    }
+
+    internal static string FormatCompactAxisValue(double value) {
+        var caption = FormatCompact(value); var zero = FormatCompact(0);
+        return value == 0 ? zero : NeedsPrecision(value, caption, zero) ? ChartValueFormat.FormatSignificant(value) : caption;
+    }
+
+    // Caption comparison is linear in the number of values, including large numeric matrix columns.
+    private static void RefineDefaults(IReadOnlyList<double> values, string[] captions, string zero) {
+        for (var index = 0; index < values.Count; index++) if (values[index] == 0) captions[index] = zero;
+        if (!Ambiguous(values, captions, zero)) return;
+        for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : ChartValueFormat.FormatSignificant(values[index]);
+        if (!Ambiguous(values, captions, "0")) return;
+        for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : values[index].ToString("R", CultureInfo.InvariantCulture);
+    }
+
+    private static bool Ambiguous(IReadOnlyList<double> values, string[] captions, string zero) {
+        var seen = new Dictionary<string, double>(StringComparer.Ordinal);
+        for (var index = 0; index < values.Count; index++) {
+            if (NeedsPrecision(values[index], captions[index], zero)) return true;
+            if (seen.TryGetValue(captions[index], out var value) && value != values[index]) return true;
+            seen[captions[index]] = values[index];
+        }
+        return false;
+    }
+
+    private static bool IsZeroCaption(string caption, string zero) => caption == zero || caption == "-" + zero;
+
+    private static bool NeedsPrecision(double value, string caption, string zero) => caption.Length > 24
+        || value != 0 && IsZeroCaption(caption, zero);
 }

@@ -33,7 +33,8 @@ internal static partial class VisualMatrixCompiler {
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
         if (rows.Any(row => row.IsCategoricalHeatmapRow != categorical)) throw new InvalidOperationException("Numeric and categorical matrix rows cannot be mixed.");
         var categories = new ChartStateCategoryLegend(chart, colors.MutedForeground);
-        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical);
+        var formatColumn = ChartAxisValueFormatter.Create(chart.Options.XAxis, columns);
+        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn);
         var plot = layout.Plot;
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
         var gap = Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2,
@@ -81,7 +82,7 @@ internal static partial class VisualMatrixCompiler {
                         var blend = explicitColor.HasValue ? ChartColorBlend.Solid(explicitColor.Value, SvgColorRole.Series)
                             : ChartHeatmapSurface.CellBlend(chart, colors, series.Color, point.Y, min, max, VisualChartPaint.SeriesRole(series));
                         var fill = stateMark?.Surface ?? blend.Color;
-                        var column = ChartAxisValueFormatter.Format(chart.Options.XAxis, point.X, null, columns);
+                        var column = formatColumn(point.X);
                         var label = series.Name + ", " + column + ": " + (state?.Label ?? ChartNumericFormatter.FormatValue(chart.Options, point.Y));
                         if (!string.IsNullOrWhiteSpace(cell?.Tooltip)) label += ". " + cell!.Value.Tooltip;
                         var metadata = state == null ? new Dictionary<string, string>() : VisualStateSceneTools.StateMetadata(chart, state);
@@ -116,7 +117,7 @@ internal static partial class VisualMatrixCompiler {
                     }
                 }
             }
-            MatrixAxes(chart, context, builder, viewport, plot, columns, cellWidth, gap, layout);
+            MatrixAxes(chart, context, builder, viewport, plot, columns, cellWidth, gap, layout, formatColumn);
             if (!categorical && ScaleVisible(chart, context)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color);
         }
     }
