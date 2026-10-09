@@ -58,7 +58,7 @@ public static partial class RasterAnimationEncoder {
             var current = default(RasterAnimationFrame);
             ApngWriter.WriteCore(stream, source.Width, source.Height, source.FrameCount, options?.PlayCount ?? 0,
                 index => { current = index == 0 ? first : source.GetFrame(index, cancellationToken); first = default; return current.Image; },
-                _ => RasterFrameDelay.Apng(current.Duration), options?.PngCompressionLevel ?? 6, cancellationToken);
+                _ => RasterFrameDelay.Apng(current.Duration), options?.PngCompressionLevel ?? 6, cancellationToken, borrowedFrames: true);
         }
         cancellationToken.ThrowIfCancellationRequested();
     }

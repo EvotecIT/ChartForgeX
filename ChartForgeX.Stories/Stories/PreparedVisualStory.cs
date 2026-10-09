@@ -123,9 +123,13 @@ public sealed partial class PreparedVisualStory {
     }
 
     private void EnsureSceneCoverage(int count, int rate) {
+        EnsureSceneCoverage(count, index => TimeSpan.FromTicks(SampleTicks(index, rate)));
+    }
+
+    private void EnsureSceneCoverage(int count, Func<int, TimeSpan> sampleStart) {
         var visible = new bool[Chapters.Count];
         for (var i = 0; i < count; i++) {
-            var start = TimeSpan.FromTicks(SampleTicks(i, rate));
+            var start = sampleStart(i);
             var sample = i + 1 == count ? ContentDuration : start;
             var index = VisualStoryTimeline.FindScene(_story, Math.Min(sample.TotalSeconds, ContentDuration.TotalSeconds), out var timing);
             if (start < Chapters[index].Start) throw new InvalidOperationException("Frame cadence would reveal a scene before its boundary. Increase the frame rate or completed-state hold.");

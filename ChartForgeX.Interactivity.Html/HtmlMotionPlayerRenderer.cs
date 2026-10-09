@@ -18,6 +18,9 @@ public sealed class HtmlMotionPlayerRenderer {
         using var text = new StringReader(animatedSvg);
         using var reader = XmlReader.Create(text, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = 64L * 1024 * 1024 });
         var root = XDocument.Load(reader).Root ?? throw new ArgumentException("A motion SVG is required.", nameof(animatedSvg));
+        // XML nodes are emitted into text/html. Only elements and ordinary escaped text have the same inert meaning there.
+        if (root.DescendantNodes().Any(node => node is not XElement && node.GetType() != typeof(XText)))
+            throw new ArgumentException("Motion SVG must not contain processing instructions, comments or CDATA.", nameof(animatedSvg));
         var ns = XNamespace.Get("http://www.w3.org/2000/svg");
         if (root.Name != ns + "svg" || (string?)root.Attribute("data-cfx-story") != "visual" ||
             !double.TryParse((string?)root.Attribute("data-cfx-motion-duration"), NumberStyles.Float, CultureInfo.InvariantCulture, out var duration) ||
@@ -29,6 +32,11 @@ public sealed class HtmlMotionPlayerRenderer {
             if (element.Name.Namespace != ns || element.Name.LocalName != "svg" && element.Name.LocalName != "g" && element.Name.LocalName != "image" &&
                 element.Name.LocalName != "title" && element.Name.LocalName != "desc") throw new ArgumentException("The motion player accepts only sampled SVG image frames.", nameof(animatedSvg));
             foreach (var attribute in element.Attributes().ToArray()) {
+                if (attribute.IsNamespaceDeclaration && attribute.Value != "http://www.w3.org/2000/svg" && attribute.Value != "http://www.w3.org/1999/xlink")
+                    throw new ArgumentException("Motion SVG contains unsupported namespace declarations.", nameof(animatedSvg));
+                if (!attribute.IsNamespaceDeclaration && attribute.Name.NamespaceName.Length > 0 &&
+                    !(attribute.Name == XName.Get("href", "http://www.w3.org/1999/xlink")))
+                    throw new ArgumentException("Motion SVG contains unsupported namespaced attributes.", nameof(animatedSvg));
                 if (attribute.Name.LocalName.StartsWith("on", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Motion SVG must not contain event handlers.", nameof(animatedSvg));
                 if (attribute.Name.LocalName == "style") attribute.Remove();
                 else if (!attribute.IsNamespaceDeclaration && !attribute.Name.LocalName.StartsWith("data-", StringComparison.Ordinal) &&

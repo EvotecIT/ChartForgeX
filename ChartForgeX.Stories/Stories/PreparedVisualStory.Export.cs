@@ -31,6 +31,7 @@ public sealed partial class PreparedVisualStory {
         var total = Math.Max(1, (long)Math.Round(Duration.TotalSeconds * 100, MidpointRounding.AwayFromZero));
         var count = source.FrameCount;
         while (count > 1 && GifBoundary(count - 1, sampling.FramesPerSecond) >= total) count--;
+        EnsureSceneCoverage(count, index => TimeSpan.FromTicks(GifBoundary(index, sampling.FramesPerSecond) * TimeSpan.TicksPerMillisecond * 10));
         return new RasterAnimationSource(source.Width, source.Height, count, (index, cancellation) => {
             cancellation.ThrowIfCancellationRequested();
             var frame = index == count - 1

@@ -83,6 +83,9 @@ public sealed class StorySourceTimelineTests {
         Assert.Contains("ready", page);
         Assert.DoesNotContain("@keyframes", page);
         Assert.Throws<ArgumentException>(() => new HtmlMotionPlayerRenderer().RenderPage(svg.Replace("<g ", "<g onclick=\"alert(1)\" ", StringComparison.Ordinal)));
+        var rootEnd = svg.IndexOf('>', svg.IndexOf("<svg", StringComparison.Ordinal));
+        foreach (var active in new[] { "<?probe ><script>window.cfxProbe=1</script>?>", "<![CDATA[</svg><script>window.cfxProbe=1</script>]]>", "<!-- harmless XML-only node -->" })
+            Assert.Throws<ArgumentException>(() => new HtmlMotionPlayerRenderer().RenderPage(svg.Insert(rootEnd + 1, active)));
     }
 
     private static VisualStory Story(StorySourceTimeline editor) {
