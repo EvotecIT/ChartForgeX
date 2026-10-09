@@ -15,7 +15,7 @@
     });
     const sourceFacts = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points],[data-cfx-point][data-cfx-derived]'))
       .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint,
-        { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived }]));
+        { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived, identity: derivedPointIdentity(node) }]));
     svg.querySelectorAll('[data-cfx-role="legend-entry"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
@@ -32,6 +32,7 @@
         if (facts) {
           if (data.cfxSourcePoints === undefined && facts.points !== undefined) data.cfxSourcePoints = facts.points;
           if (data.cfxDerived === undefined && facts.derived !== undefined) data.cfxDerived = facts.derived;
+          if (data.cfxDerivedIdentity === undefined) data.cfxDerivedIdentity = facts.identity;
         }
       }
     });
