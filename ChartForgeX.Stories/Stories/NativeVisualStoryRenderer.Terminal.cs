@@ -17,7 +17,7 @@ internal static partial class NativeVisualStoryRenderer {
             surface.Theme, surface.Options, bounds, state.Marker, state.Active.Discarded);
     }
     private static void DrawTerminalViewport(VisualSceneBuilder parent, VisualStory story, VisualStoryTerminalSurface surface, ChartRect bounds, double? elapsed) {
-        var layout = TerminalStoryLayout.Build(surface.Terminal);
+        var layout = TerminalStoryLayout.BuildLogical(surface.Terminal);
         var tab = layout.Tabs.OrderByDescending(item => layout.TabOpacity(item.Tab.Id, elapsed)).First();
         var lines = new List<TerminalViewportLine>();
         foreach (var line in tab.Lines) {

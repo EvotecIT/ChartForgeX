@@ -6,6 +6,63 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class StoryReplayTests {
+    [Theory]
+    [InlineData(1200, true, 2)]
+    [InlineData(1200, false, 2)]
+    [InlineData(600, true, 4)]
+    [InlineData(600, false, 2)]
+    public void AuthoredViewportFitsLogicalLinesAgainstItsOwnWidth(int width, bool wrap, int expectedRows) {
+        var text = string.Concat(Enumerable.Repeat("0123456789", 7));
+        var terminal = TerminalStory.Create().WithWidth(480).WithTypography(24, 36).WithFinalPrompt(false)
+            .WithTiming(0, 42, .08).Command(text, 1).Output(text);
+        var story = VisualStory.Create("Logical terminal lines").WithSize(width, 500);
+        story.Scene("run", "Run", 3).Panel("terminal", new VisualStoryTerminalSurface(terminal, options: new VisualStoryTerminalOptions(wrap: wrap)));
+        story.Outcome("terminal", "Ready", "terminal");
+        var svg = story.Prepare().ToSvg();
+        var rows = XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "terminal-viewport-text").ToArray();
+        Assert.Equal(expectedRows, rows.Length);
+        if (width == 1200) {
+            Assert.Contains(text, rows[0].Value, StringComparison.Ordinal);
+            Assert.Contains(text, rows[1].Value);
+        }
+    }
+
+    [Fact]
+    public void ReplaySanitizesAllVisibleMetadataAndIdentifiesSelectedTabsInTheTranscript() {
+        const string ansiStart = "\u001b[31m";
+        const string ansiEnd = "\u001b[0m";
+        var replay = StoryReplay.Create(TimeSpan.FromSeconds(4), title: ansiStart + "Main" + ansiEnd)
+            .Marker(TimeSpan.Zero, ansiStart + "Build" + ansiEnd)
+            .OpenTab(TimeSpan.FromSeconds(1), "second", ansiStart + "Second" + ansiEnd)
+            .SelectTab(TimeSpan.FromSeconds(2), "main")
+            .Explain(TimeSpan.FromSeconds(3), ansiStart + "Result" + ansiEnd);
+        Assert.Equal("Main", replay.Title);
+        Assert.Equal("Build", replay.Events[0].Text);
+        Assert.Equal("Second", replay.Events[1].TabTitle);
+        Assert.Equal("Result", replay.Events[^1].Text);
+        var transcript = replay.ToTranscript();
+        Assert.DoesNotContain("\u001b", transcript, StringComparison.Ordinal);
+        Assert.Contains("OpenTab: Second [second]", transcript);
+        Assert.Contains("SelectTab: Main [main]", transcript);
+        Assert.Contains("Result", Story(replay).Prepare().ToSvg());
+        Assert.Throws<ArgumentException>(() => replay.Marker(TimeSpan.FromSeconds(3), "One\nTwo"));
+    }
+
+    [Fact]
+    public void AuthoredViewportRetainsCompleteTableCellsAndTheFinalPrompt() {
+        var text = string.Concat(Enumerable.Repeat("0123456789", 7));
+        var terminal = TerminalStory.Create().WithWidth(480).WithTypography(24, 36).WithDialect(TerminalDialect.Custom, text)
+            .Table(TerminalTable.Create().WithColumns("Value").AddRow(text));
+        var story = VisualStory.Create("Logical table and prompt").WithSize(1200, 500);
+        story.Scene("run", "Run", 3).Panel("terminal", new VisualStoryTerminalSurface(terminal, options: new VisualStoryTerminalOptions(wrap: false)));
+        story.Outcome("terminal", "Ready", "terminal");
+        var rows = XDocument.Parse(story.Prepare().ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "terminal-viewport-text").ToArray();
+        Assert.Equal(4, rows.Length);
+        Assert.Equal(text, rows[2].Value);
+        Assert.Equal(text, rows[3].Value);
+    }
+
     [Fact]
     public void ReplayPreservesTimedTabStateDirectoryClearAndProgressReplacement() {
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(10), workingDirectory: "~/demo")

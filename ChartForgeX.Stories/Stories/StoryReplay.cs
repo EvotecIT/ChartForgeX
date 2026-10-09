@@ -59,7 +59,7 @@ public sealed partial class StoryReplay {
     /// <summary>Clears displayed lines in the active tab without discarding recorded transcript events.</summary>
     public StoryReplay Clear(TimeSpan at) => Add(at, StoryReplayEventKind.Clear, string.Empty);
     /// <summary>Adds an explanation or chapter marker at a recorded timestamp.</summary>
-    public StoryReplay Marker(TimeSpan at, string label) => Add(at, StoryReplayEventKind.Marker, VisualStorySurface.RequireHeading(label, nameof(label)));
+    public StoryReplay Marker(TimeSpan at, string label) => Add(at, StoryReplayEventKind.Marker, Heading(label, nameof(label)));
     /// <summary>Changes the active tab's prompt directory.</summary>
     public StoryReplay ChangeDirectory(TimeSpan at, string directory) => Add(at, StoryReplayEventKind.Directory, OneLine(directory, nameof(directory)));
     /// <summary>Opens and activates a persistent session.</summary>
@@ -81,7 +81,7 @@ public sealed partial class StoryReplay {
     /// <summary>Returns a detached replay with an explanation inserted on the presentation clock, without inventing a recorded timestamp.</summary>
     public StoryReplay Explain(TimeSpan at, string label) {
         if (at < TimeSpan.Zero || at > Duration) throw new ArgumentOutOfRangeException(nameof(at));
-        var text = VisualStorySurface.RequireHeading(label, nameof(label));
+        var text = Heading(label, nameof(label));
         if (_events.Count >= MaximumEvents || _characters + text.Length > MaximumCharacters) throw new InvalidOperationException("Replay payload budget exceeded.");
         var copy = Capture(); var index = copy._events.FindIndex(item => item.Timestamp > at);
         copy._events.Insert(index < 0 ? copy._events.Count : index, new StoryReplayEvent(at, null, StoryReplayEventKind.Marker, text, "main"));
@@ -121,8 +121,14 @@ public sealed partial class StoryReplay {
         foreach (var item in _events) {
             output.Append('[').Append(item.Timestamp.ToString("c")).Append("; ").Append(item.OriginalTimestamp.HasValue ? "recorded " + item.OriginalTimestamp.Value.ToString("c") : "authored explanation").Append("] ");
             if (item.Kind == StoryReplayEventKind.Command) output.Append(state.Active.Tab.Prompt());
-            output.Append(item.Kind).Append(": ").AppendLine(item.Kind == StoryReplayEventKind.OpenTab ? item.TabTitle : item.Text);
-            state.Apply(item);
+            output.Append(item.Kind).Append(": ");
+            if (item.Kind == StoryReplayEventKind.OpenTab || item.Kind == StoryReplayEventKind.SelectTab) {
+                state.Apply(item);
+                output.AppendLine(state.Active.Tab.Title + " [" + item.TabId + "]");
+            } else {
+                output.AppendLine(item.Text);
+                state.Apply(item);
+            }
         }
         return output.ToString();
     }
@@ -151,6 +157,7 @@ public sealed partial class StoryReplay {
         return text;
     }
     private static string OneLine(string text, string name) => TerminalTextSanitizer.OneLine(BoundedText(text, name), name, "    ", false);
+    private static string Heading(string text, string name) => VisualStorySurface.RequireHeading(OneLine(text, name), name);
     private static void ValidateTone(TerminalTextTone tone) { if (!Enum.IsDefined(typeof(TerminalTextTone), tone)) throw new ArgumentOutOfRangeException(nameof(tone)); }
     private static TerminalTab Tab(string id, string title, TerminalDialect dialect, string directory, string? customPrompt) {
         id = VisualStorySurface.RequireIdentifier(id, nameof(id));
@@ -158,6 +165,6 @@ public sealed partial class StoryReplay {
         if (!Enum.IsDefined(typeof(TerminalDialect), dialect)) throw new ArgumentOutOfRangeException(nameof(dialect));
         var prompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt));
         if (dialect == TerminalDialect.Custom && prompt.Length == 0) throw new ArgumentException("A custom dialect requires its prompt.", nameof(customPrompt));
-        return new TerminalTab(id, VisualStorySurface.RequireHeading(title, nameof(title)), dialect, OneLine(directory, nameof(directory)), prompt, TerminalTheme.GraphiteDark(), TerminalTabIcon.Terminal);
+        return new TerminalTab(id, Heading(title, nameof(title)), dialect, OneLine(directory, nameof(directory)), prompt, TerminalTheme.GraphiteDark(), TerminalTabIcon.Terminal);
     }
 }
