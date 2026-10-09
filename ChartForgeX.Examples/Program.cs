@@ -264,6 +264,7 @@ var funnel = Chart.Create()
 SaveChart(funnel, "domain-remediation-funnel-dark");
 
 var findingsTreemap = Chart.Create()
+    .WithDataLabels()
     .WithTitle("Findings Composition")
     .WithSubtitle("Treemap tiles show proportional contribution by category")
     .WithTheme(ChartTheme.ReportLight())
@@ -331,6 +332,7 @@ var findingFlow = Chart.Create()
 SaveChart(findingFlow, "finding-flow-sankey-light");
 
 var controlHierarchy = Chart.Create()
+    .WithDataLabels()
     .WithTitle("Control Hierarchy Tree")
     .WithSubtitle("Static hierarchy map for ownership and remediation structure")
     .WithTheme(ChartTheme.ReportLight())

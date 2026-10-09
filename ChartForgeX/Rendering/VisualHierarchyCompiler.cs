@@ -86,7 +86,7 @@ internal static partial class VisualHierarchyCompiler {
                 builder.Rect(b, color, colors.Surface, context.Theme.AxisStrokeWidth, Math.Min(context.Theme.BarRadius, model.NodeHeight / 2), "tree-node-mark",
                     paint: new VisualScenePaintBinding(ChartRelationshipPaint.Paint(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 Pattern(builder, Rectangle(b), series, node.Index, color, "tree-node-pattern");
-                if (series.ShowDataLabels != false) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
+                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
             }
             builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", b, node.Label + ": level " + N(node.Depth)));
         }
@@ -113,6 +113,7 @@ internal static partial class VisualHierarchyCompiler {
                 metadata["data-cfx-authored-weight"] = N(node.IncomingValue);
                 metadata["data-cfx-source-link-index"] = N(series.Relationships!.IncomingLink(node.Index));
             }
+            metadata["data-cfx-geometry-status"] = sweep > 0 ? "visible" : "precision-collapse";
             metadata["data-cfx-percent"] = N(node.Value / total); metadata["data-cfx-start-angle"] = N(node.StartAngle); metadata["data-cfx-sweep"] = N(sweep);
             metadata["data-cfx-inner-radius"] = N(node.InnerRadius); metadata["data-cfx-outer-radius"] = N(node.OuterRadius);
             using (builder.PushGroup(ChartRelationshipMetadata.SourceId("node", node.Id), "sunburst-segment", metadata)) {
@@ -121,7 +122,7 @@ internal static partial class VisualHierarchyCompiler {
                 var pattern = Pattern(series, node.Index);
                 if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, pattern,
                     ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sunburst-pattern");
-                if (series.ShowDataLabels != false) SunburstLabel(chart, context, builder, model, node, color);
+                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) SunburstLabel(chart, context, builder, model, node, color);
             }
             var bounds = new ChartRect(model.CenterX - node.OuterRadius, model.CenterY - node.OuterRadius, node.OuterRadius * 2, node.OuterRadius * 2);
             builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "sunburst-segment", bounds, node.Label + ": " + formatted));

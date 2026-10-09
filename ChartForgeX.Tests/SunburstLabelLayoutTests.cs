@@ -65,7 +65,7 @@ public sealed class SunburstLabelLayoutTests {
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
     }
 
-    private static Chart Teams() => Chart.Create().AddSunburst("Teams", new[] { new ChartNode("All teams", "All teams"), new ChartNode("Engineering", "Engineering"), new ChartNode("Operations", "Operations"), new ChartNode("Platform", "Platform"), new ChartNode("Services", "Services"), new ChartNode("Support", "Support") }, new[] {
+    private static Chart Teams() => Chart.Create().WithDataLabels().AddSunburst("Teams", new[] { new ChartNode("All teams", "All teams"), new ChartNode("Engineering", "Engineering"), new ChartNode("Operations", "Operations"), new ChartNode("Platform", "Platform"), new ChartNode("Services", "Services"), new ChartNode("Support", "Support") }, new[] {
         new ChartTreeLink("All teams", "Engineering", 60), new ChartTreeLink("All teams", "Operations", 40),
         new ChartTreeLink("Engineering", "Platform", 35), new ChartTreeLink("Engineering", "Services", 25),
         new ChartTreeLink("Operations", "Support", 40)

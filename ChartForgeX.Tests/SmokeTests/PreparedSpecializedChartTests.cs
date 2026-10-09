@@ -75,7 +75,7 @@ internal static partial class SmokeTests {
     }
 
     private static void TreeLinksRenderHierarchy() {
-        var chart = Chart.Create().WithSize(900, 520).AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("Expiry monitoring", "Expiry monitoring") }, new[] {
+        var chart = Chart.Create().WithSize(900, 520).WithDataLabels().AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("Expiry monitoring", "Expiry monitoring") }, new[] {
             new ChartTreeLink("Security posture", "Mail authentication"), new("Security posture", "Certificate lifecycle"),
             new("Mail authentication", "SPF"), new("Mail authentication", "DKIM"), new("Certificate lifecycle", "Expiry monitoring")
         });
