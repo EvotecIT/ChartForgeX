@@ -63,7 +63,7 @@ footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid 
 .output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
 .output-control span{margin-right:8px}
 .output-control button{font-size:13px;padding:6px 12px}
-.full{width:100%;max-width:1100px;min-width:0}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
 .full svg,.full img{display:block;width:100%;height:auto}
 .export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
 .export-row nav{display:flex;flex-wrap:wrap;gap:18px}
