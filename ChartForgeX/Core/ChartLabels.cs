@@ -15,6 +15,8 @@ public sealed class ChartLabels {
     private string _more = "More";
     private string _noData = "No data";
     private string _color = "Color";
+    private string _allValues = "All values";
+    private string _value = "value";
     private string _untitledChart = "ChartForgeX chart";
     private const string DefaultLevel = "Level";
     private string _level = DefaultLevel;
@@ -48,11 +50,17 @@ public sealed class ChartLabels {
     /// <summary>Gets or sets the word at the strong end of calendar and map colour scales. Default <c>More</c>.</summary>
     public string More { get => _more; set => _more = Required(value, nameof(value)); }
 
-    /// <summary>Gets or sets the word for calendar days and map regions without a value, in the scale and in tooltips. Default <c>No data</c>.</summary>
+    /// <summary>Gets or sets the word for calendar days, map regions, and independent color measurements without a value, in scales and tooltips. Default <c>No data</c>.</summary>
     public string NoData { get => _noData; set => _noData = Required(value, nameof(value)); }
 
-    /// <summary>Gets or sets the default title of an independent numeric color legend. Default <c>Color</c>.</summary>
+    /// <summary>Gets or sets the default title and tooltip row name of an independent numeric color measurement. Default <c>Color</c>.</summary>
     public string Color { get => _color; set => _color = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the caption for a discrete color scale with one unbounded band. Default <c>All values</c>.</summary>
+    public string AllValues { get => _allValues; set => _allValues = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the word between the bounds of an interior discrete color band, for example <c>10 ≤ value &lt; 20</c>. Default <c>value</c>.</summary>
+    public string Value { get => _value; set => _value = Required(value, nameof(value)); }
 
     /// <summary>
     /// Gets or sets the accessible name of a chart without a title (the SVG <c>title</c> element and the HTML page title).

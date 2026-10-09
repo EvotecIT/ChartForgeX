@@ -40,10 +40,15 @@ internal static partial class VisualHierarchyCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode);
         // Keep stroke coverage inside the common content rectangle.
         plot = new ChartRect(plot.X + 1, plot.Y + 1, plot.Width - 2, plot.Height - 2);
-        using (builder.PushGroup("series-0", "hierarchy-series", new Dictionary<string, string> {
+        var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name,
             ["data-cfx-kind"] = series.Kind.ToString(), ["data-cfx-state"] = series.StateRole.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty
-        })) {
+        };
+        if (series.Kind == ChartSeriesKind.Treemap) {
+            metadata["data-cfx-label-color"] = chart.Options.Treemap.ColorLegendTitle ?? chart.Options.Labels.Color;
+            metadata["data-cfx-label-no-data"] = chart.Options.Labels.NoData;
+        }
+        using (builder.PushGroup("series-0", "hierarchy-series", metadata)) {
             if (series.Kind == ChartSeriesKind.Treemap) Treemap(chart, context, builder, plot, colors);
             else {
                 if (series.Kind == ChartSeriesKind.Tree) Tree(chart, context, builder, plot, colors);

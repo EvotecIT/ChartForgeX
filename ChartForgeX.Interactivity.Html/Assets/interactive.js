@@ -175,6 +175,12 @@
     const owner = node.closest ? node.closest('[data-cfx-label-' + key + ']') : null;
     return (owner && owner.getAttribute('data-cfx-label-' + key)) || fallback;
   };
+  const colorTooltipRows = (node) => {
+    const data = node.dataset || {};
+    const value = data.cfxColorValue !== undefined ? data.cfxColorValue
+      : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
+    return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -190,6 +196,7 @@
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
+    colorTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Kind', data.cfxKind);
     push('Percent', data.cfxPercent);
     push('Delta', data.cfxDelta);
@@ -480,7 +487,13 @@
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
-    if (legendTarget(item)) return data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
+    const reference = legendTarget(item);
+    if (reference) {
+      const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
+      const svg = item.closest('svg');
+      const mark = svg && referencedTargetNode(svg, { ...reference, seriesKey: seriesKey(item) });
+      return rows.concat(mark ? colorTooltipRows(mark) : []);
+    }
     const values = legendSeriesValues(item);
     if (!values.length) return [];
     if (data.cfxPoint !== undefined) {
