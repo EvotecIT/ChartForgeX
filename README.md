@@ -39,7 +39,7 @@ The core package renders SVG, script-free static HTML, PNG, JPEG, BMP, PPM, and 
 
 ## Shared prepared rendering
 
-The prepared pipeline lays out a supported chart once, then exports SVG and native PNG from the same detached scene. The shared context controls its logical size, frame, canonical light/dark palette and typography. The initial route supports selected Cartesian and pie/donut options plus small topology/sequence diagrams; unsupported options fail explicitly while the existing exporters remain available.
+The prepared pipeline lays out a chart once, then exports SVG and native PNG from the same detached scene. All 49 chart kinds, chart grids, topology, flow and sequence use this route. The shared context controls logical size, frame, light/dark palette and typography. Unsupported family combinations and options fail explicitly during preparation.
 
 ```csharp
 using ChartForgeX.Rendering;
