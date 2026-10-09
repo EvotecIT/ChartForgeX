@@ -67,6 +67,17 @@ public sealed class InteractivePolarHitBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [Fact]
+    public async Task NativeAnnotationTargetRetainsItsTooltipWithoutNearestPointGeometry() {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithYAxisBounds(0, 100)
+            .AddLine("Counts", new[] { new ChartPoint(1, 0), new ChartPoint(2, 0) }).AddHorizontalBand(80, 90, "Target");
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
+        await MoveToAsync(session.Page, "[data-cfx-role='annotation-band']");
+        Assert.Contains("80", await TooltipTextAsync(session.Page));
+        AssertNoConsoleErrors(session);
+    }
+
     private static string PolarContract(string html) => html.Insert(html.IndexOf("<svg ", StringComparison.Ordinal) + 5, "data-cfx-coordinate-system=\"polar\" ");
     private static Task<double[]> ScreenAsync(IPage page, double x, double y) => page.EvaluateAsync<double[]>(
         "point => { const svg=document.querySelector('.cfx-stage svg'); const p=svg.createSVGPoint(); p.x=point.x; p.y=point.y; const screen=p.matrixTransform(svg.getScreenCTM()); return [screen.x,screen.y]; }", new { x, y });

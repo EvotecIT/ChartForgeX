@@ -362,7 +362,8 @@
     const point = nearestPoint(root, event);
     if (!point) {
       hideCrosshair(root, crosshair);
-      hideTip(root, tip, false);
+      const hit = event.target instanceof Element ? event.target.closest(targetSelector) : null;
+      if (!hit || usesPolarCoordinates(hit)) hideTip(root, tip, false);
       clearHover(root, true, true);
       return;
     }
