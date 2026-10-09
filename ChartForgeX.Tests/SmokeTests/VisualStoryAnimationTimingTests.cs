@@ -23,10 +23,9 @@ internal static partial class SmokeTests {
                gifControls[1].DelayCentiseconds == 8 &&
                gifControls.Sum(static control => control.DelayCentiseconds) == 25,
             "GIF visual stories should use a residual final-frame delay so encoded playback matches the requested duration.");
-        Assert(apngControls.Length == 2 &&
-               apngControls[0].DelayNumerator == 17 &&
-               apngControls[1].DelayNumerator == 8 &&
-               apngControls.Sum(static control => control.DelayNumerator) == 25,
-            "APNG visual stories should use the same exact residual final-frame timing contract as GIF output.");
+        var apngDuration = apngControls.Sum(static control => control.DelayNumerator / (double)control.DelayDenominator);
+        Assert(apngControls.Length == 2 && System.Math.Abs(apngDuration - 0.25) < 0.00003 &&
+               System.Math.Abs(apngControls[0].DelayNumerator / (double)apngControls[0].DelayDenominator - 1d / 6) < 0.00002,
+            "APNG visual stories should retain rational frame cadence within their 16-bit fraction precision, including the residual final duration.");
     }
 }

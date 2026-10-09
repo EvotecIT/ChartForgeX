@@ -6,18 +6,37 @@ namespace ChartForgeX.Stories;
 /// <summary>Displays exact source text with optional renderer-neutral syntax spans.</summary>
 public sealed class VisualStorySourceSurface : VisualStorySurface {
     private readonly string _caption;
+    private readonly StorySourceText _source;
 
     /// <summary>Initializes a source surface.</summary>
-    public VisualStorySourceSurface(StorySourceText source, string? caption = null)
+    public VisualStorySourceSurface(StorySourceText source, string? caption = null, VisualStorySourceOptions? options = null)
         : base(VisualStorySurfaceKind.Source, AccessibleSourceText(source, caption), preserveAccessibleWhitespace: true) {
-        Source = source ?? throw new ArgumentNullException(nameof(source));
+        _source = source ?? throw new ArgumentNullException(nameof(source));
+        Options = options;
         _caption = string.IsNullOrWhiteSpace(caption)
             ? string.Empty
             : RequireText(caption!, nameof(caption));
     }
 
     /// <summary>Gets the exact source and semantic syntax spans.</summary>
-    public StorySourceText Source { get; }
+    public StorySourceText Source => Timeline?.Source ?? _source;
+
+    /// <summary>Initializes an animated editor from resolved source edits.</summary>
+    public VisualStorySourceSurface(StorySourceTimeline timeline, string? caption = null, VisualStorySourceOptions? options = null)
+        : this((timeline ?? throw new ArgumentNullException(nameof(timeline))).Source, caption, options ?? new VisualStorySourceOptions()) {
+        Timeline = timeline;
+    }
+    /// <summary>Gets optional readable editor viewport settings.</summary>
+    public VisualStorySourceOptions? Options { get; }
+    /// <summary>Gets optional authored editing playback.</summary>
+    public StorySourceTimeline? Timeline { get; }
+
+    internal VisualStorySourceSurface Capture() {
+        var source = StorySourceText.Create(Source.Text, Source.Language);
+        foreach (var span in Source.Spans) source.AddSpan(span);
+        return Timeline == null ? new VisualStorySourceSurface(source, _caption, Options)
+            : new VisualStorySourceSurface(Timeline.Capture(), _caption, Options);
+    }
 
     /// <summary>Gets accessibility text derived from the current source metadata.</summary>
     public override string AccessibleText => AccessibleSourceText(Source, _caption);
@@ -55,6 +74,8 @@ public sealed class VisualStoryTerminalSurface : VisualStorySurface {
 
     /// <summary>Gets the resolved terminal presentation.</summary>
     public TerminalStory Terminal { get; }
+
+    internal VisualStoryTerminalSurface Capture() => new(Terminal.Capture(), _accessibleHeading);
 
     /// <summary>Gets an accessibility transcript derived from the current terminal state.</summary>
     public override string AccessibleText => AccessibleTerminalText(Terminal, _accessibleHeading);

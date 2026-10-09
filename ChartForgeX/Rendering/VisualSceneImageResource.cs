@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
@@ -9,6 +10,15 @@ internal sealed class VisualSceneImageResource : VisualSceneNode {
         if (!IsSafeHref(href)) throw new ArgumentException("Image resources require a safe relative or HTTP(S) reference.", nameof(href));
         Href = href.Trim(); Bounds = bounds; PreserveAspectRatio = string.IsNullOrWhiteSpace(aspect) ? "xMidYMid meet" : aspect!.Trim(); Opacity = opacity;
     }
+    private VisualSceneImageResource(string svg, ChartRect bounds, string? aspect, double opacity, string? role, string? id, bool embedded) : base(role, id) {
+        // Only trusted, already resolved static SVG enters this internal seam; external host references use IsSafeHref.
+        if (svg == null) throw new ArgumentNullException(nameof(svg));
+        if (Encoding.UTF8.GetByteCount(svg) > 64L * 1024 * 1024) throw new ArgumentException("Embedded SVG exceeds the 64 MiB resource budget.", nameof(svg));
+        Href = "data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(svg));
+        Bounds = bounds; PreserveAspectRatio = string.IsNullOrWhiteSpace(aspect) ? "xMidYMid meet" : aspect!.Trim(); Opacity = opacity;
+    }
+    internal static VisualSceneImageResource EmbeddedSvg(string resolvedSvg, ChartRect bounds, string? aspect, double opacity, string? role, string? id) =>
+        new(resolvedSvg, bounds, aspect, opacity, role, id, embedded: true);
     internal string Href { get; }
     internal ChartRect Bounds { get; }
     internal string PreserveAspectRatio { get; }

@@ -89,7 +89,7 @@ public sealed class V2GalleryArtifactTests {
     }
 
     private static string FindRepository() {
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent)
+        for (var directory = new DirectoryInfo(TestRepository.Root); directory != null; directory = directory.Parent)
             if (File.Exists(Path.Combine(directory.FullName, "ChartForgeX.sln"))) return directory.FullName;
         throw new InvalidOperationException("The gallery artifact contract requires a source checkout.");
     }

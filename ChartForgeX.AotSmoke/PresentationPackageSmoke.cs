@@ -35,6 +35,18 @@ internal static class PresentationPackageSmoke {
         story.Outcome("ready", "Ready", "result");
         Require(story.ToSvg().Contains("Ready", StringComparison.Ordinal), "Stories scene SVG failed.");
         Require(story.ToPng().Length > 64, "Stories scene raster failed.");
+        var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
+            .Type("Ready", TimeSpan.FromSeconds(.5));
+        var editing = VisualStory.Create("AOT editing").WithSize(480, 320);
+        editing.Scene("edit", "Edit", 1).Panel("source", new VisualStorySourceSurface(editor));
+        editing.Outcome("source", "Ready", "source");
+        var prepared = editing.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
+        var sampling = new VisualStoryFrameOptions(2, maximumFrames: 2);
+        Require(prepared.ToSvg().Contains("Ready", StringComparison.Ordinal), "Stories prepared editor failed.");
+        using (var stream = new System.IO.MemoryStream()) {
+            prepared.WriteAnimation(stream, RasterAnimationFormat.Apng, sampling);
+            Require(stream.Length > 64 && stream.CanWrite, "Stories streaming APNG failed.");
+        }
         var terminal = TerminalStory.Create().WithTitle("Completed terminal").WithWidth(480)
             .WithPngOutputScale(1).WithFinalPrompt(false).Command("status", .1).Output("Ready");
         var terminalArtifact = terminal.ToVisualArtifact();

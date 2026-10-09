@@ -234,7 +234,7 @@ public sealed class DesignTokenJsonTests {
     }
 
     private static string FixturePath(params string[] parts) {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        var directory = new DirectoryInfo(TestRepository.Root);
         while (directory != null && !File.Exists(Path.Combine(directory.FullName, "ChartForgeX.sln"))) directory = directory.Parent;
         if (directory == null) throw new InvalidOperationException("Repository root was not found.");
         return Path.Combine(new[] { directory.FullName, "ChartForgeX.Tests", "Fixtures" }.Concat(parts).ToArray());

@@ -26,11 +26,12 @@ public sealed class PngTerminalStoryRenderer {
         TerminalStory story,
         double targetWidth,
         double targetHeight,
-        int outputScale) {
+        int outputScale,
+        double? elapsedSeconds = null) {
         ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
         var layout = BuildFittedLayout(story, out var fonts);
         var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
-        return RenderImage(story, layout, fonts, renderScale, null);
+        return RenderImage(story, layout, fonts, renderScale, elapsedSeconds);
     }
 
     internal static long EstimateFittedWorkingBytes(

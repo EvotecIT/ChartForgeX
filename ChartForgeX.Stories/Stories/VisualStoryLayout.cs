@@ -44,7 +44,7 @@ internal static class VisualStoryLayout {
 
         var weights = 0d;
         foreach (var panel in scene.Panels) weights += panel.Weight;
-        var horizontal = scene.Layout == VisualStorySceneLayout.Split;
+        var horizontal = scene.Layout == VisualStorySceneLayout.Split && !(story.ReflowPanels && story.Height > story.Width);
         var totalLength = (horizontal ? available.Width : available.Height) - PanelGap * (scene.Panels.Count - 1);
         var cursor = horizontal ? available.X : available.Y;
         for (var index = 0; index < scene.Panels.Count; index++) {

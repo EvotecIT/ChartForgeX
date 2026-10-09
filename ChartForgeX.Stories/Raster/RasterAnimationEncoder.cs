@@ -14,7 +14,7 @@ namespace ChartForgeX.Raster;
 /// with a 65,535 second maximum. Encoder working buffers and returned output share a 256 MiB ceiling;
 /// caller-owned input pixel buffers are excluded. The frame list and pixel buffers must remain unchanged while encoding.
 /// </remarks>
-public static class RasterAnimationEncoder {
+public static partial class RasterAnimationEncoder {
     /// <summary>Encodes frames into a new byte array.</summary>
     /// <param name="frames">One or more complete RGBA frames with matching dimensions.</param>
     /// <param name="format">The GIF or APNG container.</param>

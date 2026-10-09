@@ -58,7 +58,7 @@ internal static class ApngWriter {
             index => index == frameCount - 1 ? finalDelay : delay, 6, default);
     }
 
-    private static void WriteCore(
+    internal static void WriteCore(
         Stream stream,
         int width,
         int height,
