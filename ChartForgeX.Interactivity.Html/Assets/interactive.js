@@ -834,7 +834,18 @@
     const style = getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
     const box = node.getBoundingClientRect();
-    return box.width > 0 || box.height > 0;
+    if (box.width > 0 || box.height > 0) return true;
+    // Retained authored facts can have no filled geometry, while still belonging to the data component.
+    const data = node.dataset;
+    if (!data.cfxTargetKind || !data.cfxTargetId || !['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return false;
+    const svg = node.ownerSVGElement;
+    if (!svg) return false;
+    // The viewport detects hidden hosts; CSS-hidden inner groups need their own ancestor check.
+    for (let parent = node.parentElement; parent && parent !== svg; parent = parent.parentElement) {
+      if (getComputedStyle(parent).display === 'none') return false;
+    }
+    const viewport = svg.getBoundingClientRect();
+    return viewport.width > 0 && viewport.height > 0;
   };
   const keyboardTargets = (root) => {
     const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
@@ -1320,6 +1331,13 @@
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
+    // Authored relationship marks use node/link identity instead of numeric points.
+    const nativeHit = event.target instanceof Element ? event.target.closest('[data-cfx-target-kind="node"],[data-cfx-target-kind="link"]') : null;
+    if (nativeHit && root.contains(nativeHit) && usesPolarCoordinates(nativeHit)
+      && !nativeHit.closest('[data-cfx-role="legend-item"],.cfx-series-muted')
+      && !['zero', 'precision-collapse'].includes(nativeHit.dataset.cfxGeometryStatus)) {
+      return { node: nativeHit, x: event.clientX, y: event.clientY, distance: 0 };
+    }
     // Native SVG hit testing identifies curved marks more accurately than their rectangular envelopes.
     const hit = event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null;
     if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && !hit.classList.contains('cfx-series-muted')) {

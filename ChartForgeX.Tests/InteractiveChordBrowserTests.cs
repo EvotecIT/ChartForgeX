@@ -32,7 +32,12 @@ public sealed class InteractiveChordBrowserTests {
         foreach (var id in new[] { "north-standard", "north-priority", "south-north", "support-internal", "zero-transfer" }) {
             var fact = chart.Series[0].FlowLinks.Single(link => link.Id == id);
             var link = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id='" + id + "']");
-            await link.FocusAsync(); await page.Keyboard.PressAsync("Space");
+            // The authored zero fact follows support-internal, so it must be reached by real roving navigation.
+            if (id == "zero-transfer") await page.Keyboard.PressAsync("ArrowRight");
+            else await link.FocusAsync();
+            Assert.True(await link.EvaluateAsync<bool>("node => node === document.activeElement"));
+            Assert.Equal("0", await link.GetAttributeAsync("tabindex"));
+            await page.Keyboard.PressAsync("Space");
             using var record = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.selections.at(-1).target)"));
             var selected = record.RootElement;
             Assert.Equal(id, selected.GetProperty("targetId").GetString());
@@ -42,7 +47,15 @@ public sealed class InteractiveChordBrowserTests {
             Assert.Equal(fact.TargetId, await link.GetAttributeAsync("data-cfx-target"));
             Assert.Equal(await link.GetAttributeAsync("data-cfx-value"), selected.GetProperty("value").GetString());
             Assert.False(selected.TryGetProperty("point", out _)); Assert.False(selected.TryGetProperty("sourcePoint", out _));
+            if (id == "zero-transfer") {
+                Assert.Equal("zero", await link.GetAttributeAsync("data-cfx-geometry-status"));
+                Assert.Equal(0, await link.Locator("[data-cfx-role=chord-ribbon]").CountAsync());
+                Assert.Contains("0", await TooltipTextAsync(page));
+                await CaptureAsync(chart, page, name + "-zero-keyboard", html, native: false);
+            }
         }
+        await page.Keyboard.PressAsync("Space"); // Unpin the zero fact before checking native link hover.
+        await page.EvaluateAsync("() => document.activeElement.blur()");
         foreach (var id in new[] { "north-standard", "north-priority", "support-internal" }) {
             var link = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id='" + id + "']");
             var endpoint = await link.EvaluateAsync<double[]>("""
@@ -56,8 +69,21 @@ public sealed class InteractiveChordBrowserTests {
                     return [point.x, point.y];
                 }
                 """);
+            await MoveAwayAsync(page);
+            await page.EvaluateAsync("() => window.hovers = []");
+            Assert.False(await page.Locator(".cfx-interactive-chart").EvaluateAsync<bool>("root => root.dataset.cfxTooltipPinned === 'true'"), id);
+            Assert.Equal(id, await page.EvaluateAsync<string>("position => document.elementFromPoint(position[0], position[1]).closest('[data-cfx-target-kind]').dataset.cfxTargetId", endpoint));
+            await page.Mouse.MoveAsync((float)endpoint[0], (float)endpoint[1], new MouseMoveOptions { Steps = 4 });
+            Assert.Equal(id, await page.EvaluateAsync<string>("position => document.elementFromPoint(position[0], position[1]).closest('[data-cfx-target-kind]').dataset.cfxTargetId", endpoint));
+            await page.WaitForFunctionAsync("id => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && !tip.classList.contains('cfx-tooltip--pinned') && window.hovers.at(-1)?.target.targetId === id; }", id,
+                new PageWaitForFunctionOptions { Timeout = 5000 });
+            Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node => node.hidden"));
             await page.Mouse.ClickAsync((float)endpoint[0], (float)endpoint[1]);
             Assert.Equal(id, await page.EvaluateAsync<string>("() => window.selections.at(-1).target.targetId"));
+            // Selection can resize the compare tray; unpin the clicked identity before reading another hover.
+            await link.FocusAsync();
+            await page.Keyboard.PressAsync("Space");
+            await link.EvaluateAsync("node => node.blur()");
         }
         var node = page.Locator("[data-cfx-target-kind=node][data-cfx-target-id=north-support]");
         await node.FocusAsync(); await page.Keyboard.PressAsync("Space");
@@ -76,6 +102,8 @@ public sealed class InteractiveChordBrowserTests {
             """);
         await MoveAwayAsync(page);
         await page.EvaluateAsync("() => window.hovers = []");
+        Assert.Equal("north-support", await page.EvaluateAsync<string>("position => document.elementFromPoint(position[0], position[1]).closest('[data-cfx-target-kind]').dataset.cfxTargetId", position));
+        Assert.False(await page.Locator(".cfx-interactive-chart").EvaluateAsync<bool>("root => root.dataset.cfxTooltipPinned === 'true'"));
         await page.Mouse.MoveAsync((float)position[0], (float)position[1], new MouseMoveOptions { Steps = 4 });
         await page.WaitForFunctionAsync("() => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && !tip.classList.contains('cfx-tooltip--pinned') && tip.textContent.includes('26') && window.hovers.at(-1)?.target.targetId === 'north-support'; }");
         Assert.Contains("Support", await TooltipTextAsync(page)); Assert.Contains("26", await TooltipTextAsync(page));
@@ -92,15 +120,83 @@ public sealed class InteractiveChordBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(360, 320).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithTitle("No positive transfers")
             .AddChord("Transfers", new[] { new ChartNode("first", "Support"), new ChartNode("second", "Support") }, new[] { new ChartFlowLink("none", "first", "second", 0) });
-        var html = chart.ToInteractiveHtmlPage();
+        var html = chart.ToInteractiveHtmlPage().Replace("<main ", "<button id=\"before-chart\">Before chart</button><main ", StringComparison.Ordinal);
         await using var session = await OpenAsync(html, 384, 460);
         var page = session.Page;
         Assert.Equal(0, await page.Locator("[data-cfx-role=chord-ribbon], [data-cfx-role=chord-node-mark]").CountAsync());
         Assert.Equal("0", await page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=none]").GetAttributeAsync("data-cfx-value"));
         var target = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=none]");
-        await target.FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal(3, await page.Locator("[data-cfx-keyboard-component=data]").CountAsync());
+        Assert.Equal(1, await page.Locator("[data-cfx-keyboard-component=data][tabindex='0']").CountAsync());
+        await page.Locator("#before-chart").FocusAsync();
+        await page.Keyboard.PressAsync("Tab");
+        Assert.True(await target.EvaluateAsync<bool>("node => node === document.activeElement"));
+        foreach (var id in new[] { "first", "second" }) {
+            await page.Keyboard.PressAsync("ArrowRight");
+            Assert.Equal(id, await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
+        }
+        await page.Keyboard.PressAsync("Home");
+        Assert.True(await target.EvaluateAsync<bool>("node => node === document.activeElement"));
+        await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         await CaptureAsync(chart, page, "chord-zero-" + (dark ? "dark" : "light"), html); AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
+    [InlineData(0, "zero")]
+    [InlineData(double.Epsilon, "precision-collapse")]
+    public async Task SemanticOnlyChordFactsRespectHiddenLayoutAndMutedSeries(double value, string geometryStatus) {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(360, 320).WithLegend(true).AddChord("Transfers", new[] {
+            new ChartNode("a", "A"), new ChartNode("b", "B"), new ChartNode("c", "C"), new ChartNode("d", "D")
+        }, new[] { new ChartFlowLink("retained", "a", "b", value), new ChartFlowLink("visible", "c", "d", 1e308) });
+        var html = "<!doctype html><html><body><button id=\"show-chart\" onclick=\"document.getElementById('chart-host').style.display=''\">Show chart</button>" +
+            "<div id=\"chart-host\" style=\"display:none\">" + chart.ToInteractiveHtmlFragment() + "</div></body></html>";
+        await using var session = await OpenAsync(html);
+        var page = session.Page;
+        const string dataStop = "[data-cfx-keyboard-component=data][tabindex='0']";
+        var retained = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=retained]");
+        var visible = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=visible]");
+        Assert.Equal(geometryStatus, await retained.GetAttributeAsync("data-cfx-geometry-status"));
+        Assert.Equal(0, await page.Locator(dataStop).CountAsync());
+        await page.Locator("#show-chart").ClickAsync();
+        await page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-target-id=retained]').getAttribute('tabindex') === '0'", null,
+            new PageWaitForFunctionOptions { Timeout = 5000 });
+        await retained.FocusAsync();
+        Assert.True(await retained.EvaluateAsync<bool>("node => node === document.activeElement"));
+        await page.Keyboard.PressAsync("Space");
+        Assert.Equal("true", await retained.GetAttributeAsync("aria-selected"));
+        Assert.Equal(0, await retained.Locator("[data-cfx-role=chord-ribbon]").CountAsync());
+
+        // CSS hiding a semantic group must skip the retained fact even while the outer SVG has layout.
+        await retained.EvaluateAsync("node => node.style.display = 'none'");
+        await visible.FocusAsync();
+        await page.Keyboard.PressAsync("Home");
+        Assert.True(await visible.EvaluateAsync<bool>("node => node === document.activeElement"));
+        Assert.Equal("-1", await retained.GetAttributeAsync("tabindex"));
+        await retained.EvaluateAsync("node => node.style.display = ''");
+        await page.Keyboard.PressAsync("Home");
+        Assert.True(await retained.EvaluateAsync<bool>("node => node === document.activeElement"));
+
+        var series = page.Locator("[data-cfx-role=chord-series]");
+        foreach (var state in new[] { "display", "hidden", "aria-hidden" }) {
+            await series.EvaluateAsync("(node, state) => { if (state === 'display') node.style.display = 'none'; else node.setAttribute(state, state === 'hidden' ? '' : 'true'); }", state);
+            await page.Locator(Legend(0)).FocusAsync();
+            await page.Keyboard.PressAsync("Home"); // A keyboard refresh must remove the entire data component.
+            Assert.Equal(0, await page.Locator(dataStop).CountAsync());
+            await series.EvaluateAsync("(node, state) => { if (state === 'display') node.style.display = ''; else node.removeAttribute(state); }", state);
+            await page.Locator(Legend(0)).FocusAsync();
+            await page.Keyboard.PressAsync("Home");
+            Assert.Equal(1, await page.Locator(dataStop).CountAsync());
+        }
+
+        await page.Keyboard.PressAsync("Space");
+        Assert.Equal(0, await page.Locator(dataStop).CountAsync());
+        Assert.Equal(1, await page.Locator("[data-cfx-keyboard-component=legend][tabindex='0']").CountAsync());
+        await page.Keyboard.PressAsync("Space");
+        await page.Keyboard.PressAsync("Shift+Tab");
+        Assert.True(await retained.EvaluateAsync<bool>("node => node === document.activeElement"));
+        AssertNoConsoleErrors(session);
     }
 
     private static async Task CaptureAsync(Chart chart, IPage page, string name, string html, bool native = true) {

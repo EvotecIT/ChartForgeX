@@ -42,8 +42,9 @@ public sealed class InteractivePolarHitBrowserTests {
         Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-key"));
         Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node => node.hidden"));
         await page.Mouse.ClickAsync((float)painted[0], (float)painted[1]);
-        Assert.Equal("requests:0", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetId"));
-        Assert.Equal("0", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.sourcePoint"));
+        Assert.Equal("requests:derived:0", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetId"));
+        Assert.Equal(new[] { 0 }, await page.EvaluateAsync<int[]>("() => window.cfxSelections[0].target.sourcePoints"));
+        Assert.True(await page.EvaluateAsync<bool>("() => window.cfxSelections[0].target.sourcePoint === undefined"));
         AssertNoConsoleErrors(session);
     }
 

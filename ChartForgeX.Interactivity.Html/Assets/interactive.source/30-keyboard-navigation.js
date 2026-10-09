@@ -6,7 +6,18 @@
     const style = getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
     const box = node.getBoundingClientRect();
-    return box.width > 0 || box.height > 0;
+    if (box.width > 0 || box.height > 0) return true;
+    // Retained authored facts can have no filled geometry, while still belonging to the data component.
+    const data = node.dataset;
+    if (!data.cfxTargetKind || !data.cfxTargetId || !['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return false;
+    const svg = node.ownerSVGElement;
+    if (!svg) return false;
+    // The viewport detects hidden hosts; CSS-hidden inner groups need their own ancestor check.
+    for (let parent = node.parentElement; parent && parent !== svg; parent = parent.parentElement) {
+      if (getComputedStyle(parent).display === 'none') return false;
+    }
+    const viewport = svg.getBoundingClientRect();
+    return viewport.width > 0 && viewport.height > 0;
   };
   const keyboardTargets = (root) => {
     const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
