@@ -146,7 +146,7 @@ public sealed class V2MatrixTests {
     [Fact]
     public void PreparedMapBlendSharesScaleInterpolationAndRetainsStopOperands() {
         var low = ChartColor.FromHex("#102030"); var high = ChartColor.FromHex("#90a0b0");
-        var chart = Chart.Create(); chart.Options.MapColorScale = ChartMapColorScale.Sequential(low, high);
+        var chart = Chart.Create(); chart.Options.MapColorScale = ChartColorScale.Sequential(low, high);
         var colors = Context().Theme.Resolve(VisualThemeMode.Light);
         var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, null, 25, 0, 100);
         Assert.Equal(chart.Options.MapColorScale.ColorFor(25, 0, 100), blend.Color);

@@ -25,6 +25,14 @@ Tree weights remain authored values and affect link emphasis rather than node pl
 
 Node and link groups retain authored IDs, labels, owning series, and actual `data-cfx-source-node-index` / `data-cfx-source-link-index` ordinals. SVG `data-cfx-target-kind` and `data-cfx-target-id` supply normalized node/link identities; HTML selection events expose those same IDs without invented `point` or `sourcePoint` ordinals. Parent, child, source, and target attributes now contain authored node IDs. Update selectors that assumed numeric node ordinals or labels as identities.
 
+## Numeric color scales
+
+Replace `ChartMapColorScale` with `ChartColorScale`. Map calls keep their names: `WithMapColorScale`, `ChartOptions.MapColorScale`, `AddRegionHeatmap`, and `AddTileHeatmap` accept the generic scale. Design-token conversion uses `VisualDivergingRamp.ToColorScale(midpoint)` and `VisualDesignTokens.ToSequentialColorScale()`.
+
+`ChartColorScaleMode` distinguishes sequential, diverging, and discrete selection. Continuous factory and label calls retain their normal-domain interpolation and stop colors. Finite tiny ranges and extreme ranges keep their endpoints and midpoint without widening the domain. An inferred constant domain uses `LowColor` and reports that same constant throughout its legend; an explicit range still requires its maximum to exceed its minimum. `ColorFor(value)` works with a fixed continuous domain or discrete bands, while inferred continuous domains use `ColorFor(value, sourceMinimum, sourceMaximum)`. Values and source bounds must be finite and ordered.
+
+`Discrete(bands)` copies immutable `ChartColorBand` instances. Finite upper bounds are strictly ascending and exclusive; the final band has a null upper bound. The first band has no lower limit, and equality with a boundary selects the next band. `Bands` exposes a read-only list, and optional band names appear with their intervals in map legends. Discrete scales use those bounds directly and reject `WithValueRange`, `WithMidpoint`, and continuous endpoint labels. Only diverging scales accept `WithMidpoint`. Missing data keeps the optional `NoDataColor` and renderer/theme fallback policy; non-finite numbers are rejected rather than treated as missing.
+
 ## Raster image inputs and animation delays
 
 Pass `RgbaImage` directly to `VisualCanvas.AddImage` or the image overload of `AddHeroBadge` for an independent pixel snapshot used by SVG and raster output. `RgbaImage` itself retains the supplied array; the typed canvas call copies it. The raw paired SVG href and RGBA contract remains available for vector producers. See [Visual Canvas](../visual-canvas.md) for ownership and bounded file-input options.

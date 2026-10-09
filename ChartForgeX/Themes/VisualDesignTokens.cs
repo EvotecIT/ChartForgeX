@@ -101,12 +101,12 @@ public sealed partial class VisualDesignTokens {
         }
     }
 
-    /// <summary>Gets or sets the optional diverging ramp for values around a midpoint (see <see cref="VisualDivergingRamp.ToMapColorScale"/>).</summary>
+    /// <summary>Gets or sets the optional diverging ramp for values around a midpoint (see <see cref="VisualDivergingRamp.ToColorScale"/>).</summary>
     public VisualDivergingRamp? DivergingRamp { get; set; }
 
-    /// <summary>Returns a sequential map colour scale with every ramp colour, weakest to strongest, or null without a ramp.</summary>
-    public ChartMapColorScale? ToSequentialMapColorScale() =>
-        _sequentialRamp == null ? null : ChartMapColorScale.Sequential(_sequentialRamp);
+    /// <summary>Returns a sequential numeric color scale with every ramp color, weakest to strongest, or null without a ramp.</summary>
+    public ChartColorScale? ToSequentialColorScale() =>
+        _sequentialRamp == null ? null : ChartColorScale.Sequential(_sequentialRamp);
 
     /// <summary>Creates an independent copy.</summary>
     public VisualDesignTokens Clone() => new() {

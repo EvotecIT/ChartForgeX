@@ -113,6 +113,8 @@ internal static class ChartHeatmapSurface {
     public static double MapRatio(Chart chart, double value, double min, double max) {
         var scale = chart.Options.MapColorScale;
         if (scale == null) return Ratio(chart, value, min, max);
+        if (scale.Mode == ChartColorScaleMode.Discrete)
+            return scale.Bands.Count == 1 ? 0 : scale.BandIndex(value) / (double)(scale.Bands.Count - 1);
         var effectiveMin = scale.EffectiveMinimum(min);
         var effectiveMax = scale.EffectiveMaximum(max);
         return ContinuousRatio(value, effectiveMin, effectiveMax);
@@ -124,8 +126,7 @@ internal static class ChartHeatmapSurface {
             return InterpolateObservedRange(Math.Min(0, min), max, Clamp(ratio, 0, 1));
         var effectiveMin = scale?.EffectiveMinimum(min) ?? min;
         var effectiveMax = scale?.EffectiveMaximum(max) ?? max;
-        if (effectiveMax <= effectiveMin + 0.000001) effectiveMax = effectiveMin + 1;
-        return effectiveMin + (effectiveMax - effectiveMin) * Clamp(ratio, 0, 1);
+        return ChartMath.InterpolateRange(effectiveMin, effectiveMax, Clamp(ratio, 0, 1));
     }
 
     /// <summary>The most swatches a horizontal map scale draws; scales with more stops are sampled evenly.</summary>
@@ -138,6 +139,8 @@ internal static class ChartHeatmapSurface {
     /// diverging scale sits at the minimum or maximum, one arm has no range, so the swatches are spaced evenly instead.
     /// </summary>
     public static double[] MapScaleSteps(Chart chart, double min, double max) {
+        if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete)
+            throw new InvalidOperationException("Discrete scale legends draw bands rather than sampled numeric values.");
         var count = MapScaleStepCount(chart);
         var values = new double[count];
         if (SwatchPerStop(chart, min, max, out var scale)) {
@@ -162,13 +165,13 @@ internal static class ChartHeatmapSurface {
     public static int MapScaleMidpointStep(Chart chart, double min, double max, int stepCount) {
         if (SwatchPerStop(chart, min, max, out var scale) && scale!.MidpointIndex is int midpoint) return midpoint;
         if (scale != null && scale.Colors.Count > 3 && scale.MidpointCollapses(min, max)) {
-            return scale.EffectiveMidpoint(min, max) <= scale.EffectiveMinimum(min) + 0.000001 ? 0 : stepCount - 1;
+            return scale.EffectiveMidpoint(min, max) <= scale.EffectiveMinimum(min) ? 0 : stepCount - 1;
         }
 
         return stepCount / 2;
     }
 
-    private static bool SwatchPerStop(Chart chart, double min, double max, out ChartMapColorScale? scale) {
+    private static bool SwatchPerStop(Chart chart, double min, double max, out ChartColorScale? scale) {
         scale = chart.Options.MapColorScale;
         return scale != null && scale.Colors.Count > 3 && scale.Colors.Count <= MaximumMapScaleSteps && !scale.MidpointCollapses(min, max);
     }
@@ -286,19 +289,12 @@ internal static class ChartHeatmapSurface {
     public static double CalendarRatio(double value, double min, double max) =>
         max <= min ? 0 : ObservedRangeRatio(value, min, max);
 
-    public static double InterpolateObservedRange(double min, double max, double ratio) {
-        if (ratio <= 0) return min;
-        if (ratio >= 1) return max;
-        var span = max - min;
-        return double.IsInfinity(span) ? min * (1 - ratio) + max * ratio : min + span * ratio;
-    }
+    public static double InterpolateObservedRange(double min, double max, double ratio) => ChartMath.InterpolateRange(min, max, ratio);
 
     private static double ObservedRangeRatio(double value, double min, double max) {
-        var span = max - min;
-        // Scale both operands before subtraction when the finite observed range exceeds double.MaxValue.
-        return double.IsInfinity(span)
-            ? Clamp((value / 2 - min / 2) / (max / 2 - min / 2), 0, 1)
-            : Clamp((value - min) / span, 0, 1);
+        if (value <= min) return 0;
+        if (value >= max) return 1;
+        return Clamp(ChartMath.Normalize(value, min, max), 0, 1);
     }
 
     public static ChartColor MapNoDataColor(Chart chart) =>
@@ -311,5 +307,5 @@ internal static class ChartHeatmapSurface {
     }
 
     private static double ContinuousRatio(double value, double min, double max) =>
-        Clamp((value - min) / Math.Max(0.000001, max - min), 0, 1);
+        max <= min ? 0 : ObservedRangeRatio(value, min, max);
 }

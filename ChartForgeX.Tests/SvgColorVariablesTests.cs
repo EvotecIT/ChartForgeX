@@ -101,7 +101,7 @@ public sealed class SvgColorVariablesTests {
         // A caller's white text and the white card share RGB values but have different paint roles.
         var bars = Chart.Create().WithSize(640, 360).WithDesignTokens(Graphite)
             .AddTileMap("Sites", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 10), new ChartRegionMapItem("NY", 0) })
-            .WithMapColorScale(ChartMapColorScale.Sequential(ChartColor.FromHex("#EEF2F8"), ChartColor.FromHex("#1D4F9E")))
+            .WithMapColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#EEF2F8"), ChartColor.FromHex("#1D4F9E")))
             .WithTickLabelStyle(style => style.WithColor("#FFFFFF"));
         var svg = bars.WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToSvg();
         Assert.Matches("<text[^>]*fill=\"#FFFFFF\"", svg);

@@ -11,10 +11,12 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualMapCompiler {
     private static MapLayout ScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, double min, double max) {
         if (!chart.Options.ShowMapScaleLegend || !context.Frame.ShowLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
+        if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) return DiscreteScaleLayout(chart, context, builder, plot);
         var values = new[] { ChartHeatmapSurface.MapScaleValue(chart, min, max, 1), ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), ChartHeatmapSurface.MapScaleValue(chart, min, max, 0) };
-        var texts = new[] { ChartHeatmapSurface.MapHighLabel(chart) + " · " + ChartNumericFormatter.FormatValue(chart.Options, values[0]),
-            (ChartHeatmapSurface.MapMidpointLabel(chart) ?? "") + " " + ChartNumericFormatter.FormatValue(chart.Options, values[1]),
-            ChartHeatmapSurface.MapLowLabel(chart) + " · " + ChartNumericFormatter.FormatValue(chart.Options, values[2]) };
+        var captions = ChartNumericFormatter.FormatScaleValues(chart.Options, values);
+        var texts = new[] { ChartHeatmapSurface.MapHighLabel(chart) + " · " + captions[0],
+            (ChartHeatmapSurface.MapMidpointLabel(chart) ?? "") + " " + captions[1],
+            ChartHeatmapSurface.MapLowLabel(chart) + " · " + captions[2] };
         var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
         var height = texts.Concat(new[] { "Mg", chart.Series[0].Name, chart.Options.Labels.NoData })
             .Max(text => builder.MeasureText(text, style).Height);
@@ -31,12 +33,17 @@ internal static partial class VisualMapCompiler {
 
     private static void DrawScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors, double min, double max) {
         if (!chart.Options.ShowMapScaleLegend || !context.Frame.ShowLegend) return;
+        if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) {
+            DrawDiscreteScale(chart, context, builder, layout, colors);
+            return;
+        }
         var area = layout.Scale; var gap = context.Theme.Spacing; var style = TickStyle(chart, context);
         var row = layout.Texts.Concat(new[] { "Mg", chart.Series[0].Name, chart.Options.Labels.NoData })
             .Max(text => builder.MeasureText(text, style).Height);
-        var missing = (chart.Options.RegionMapDefinition?.Regions.Count ?? chart.Options.TileMapDefinition?.Regions.Count ?? 0) > chart.Series[0].Points.Count;
+        var missing = HasMissingMapValues(chart);
         var steps = ChartHeatmapSurface.MapScaleSteps(chart, min, max);
         using (builder.PushGroup("map-scale", "map-scale", new Dictionary<string, string> {
+            ["data-cfx-scale-mode"] = chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Diverging ? "diverging" : "sequential",
             ["data-cfx-min-value"] = N(ChartHeatmapSurface.MapScaleValue(chart, min, max, 0)),
             ["data-cfx-max-value"] = N(ChartHeatmapSurface.MapScaleValue(chart, min, max, 1)),
             ["data-cfx-midpoint-value"] = N(ChartHeatmapSurface.MapScaleMidpoint(chart, min, max))

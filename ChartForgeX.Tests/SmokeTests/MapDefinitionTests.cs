@@ -49,7 +49,7 @@ internal static partial class SmokeTests {
     }
 
     private static void MapColorScaleRendersCustomChoroplethColors() {
-        var scale = ChartMapColorScale
+        var scale = ChartColorScale
             .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 50)
             .WithValueRange(0, 100)
             .WithLabels("0", "50 median", ">100")
@@ -84,8 +84,8 @@ internal static partial class SmokeTests {
             Assert(chart.ToSvg().Contains("&gt;100", StringComparison.Ordinal), "SVG should escape custom endpoint captions.");
             Assert(prepared.ToPng().Length > 64, "Custom map scales should render natively.");
         }
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartMapColorScale.Sequential(ChartColor.White, ChartColor.Black).WithValueRange(10, 10), "Map color scale ranges should reject equal bounds.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartMapColorScale.Sequential(ChartColor.White, ChartColor.Black).WithMidpoint(double.NaN), "Map color scale midpoint values should reject non-finite values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartColorScale.Sequential(ChartColor.White, ChartColor.Black).WithValueRange(10, 10), "Map color scale ranges should reject equal bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartColorScale.Sequential(ChartColor.White, ChartColor.Black).WithMidpoint(double.NaN), "Map color scale midpoint values should reject non-finite values.");
     }
 
     private static void RegionHeatmapColorsEveryCustomRegionByValue() {
@@ -95,7 +95,7 @@ internal static partial class SmokeTests {
             new ChartMapRegion("C", "Gamma", "M0 10L10 10L10 20L0 20Z"),
             new ChartMapRegion("D", "Delta", "M10 10L20 10L20 20L10 20Z")
         });
-        var scale = ChartMapColorScale
+        var scale = ChartColorScale
             .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 5)
             .WithValueRange(0, 10);
 
@@ -121,7 +121,7 @@ internal static partial class SmokeTests {
     }
 
     private static void MapHeatmapsCanUseReportStyleRightScale() {
-        var scale = ChartMapColorScale
+        var scale = ChartColorScale
             .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 50)
             .WithValueRange(0, 100)
             .WithLabels("0", "50 median", ">100")
@@ -221,7 +221,7 @@ internal static partial class SmokeTests {
         Assert(definition.TryResolveRegion("PL", out plCode) && plCode == "PL911", "GeoJSON map definitions should resolve configured alias fields.");
         Assert(definition.Bounds.Width > 0 && definition.Bounds.Height > 0, "GeoJSON map definitions should derive valid path bounds.");
 
-        var scale = ChartMapColorScale.Sequential(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#065F46")).WithValueRange(0, 10);
+        var scale = ChartColorScale.Sequential(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#065F46")).WithValueRange(0, 10);
         var svg = Chart.Create()
             .WithSize(420, 260)
             .WithMapLabels(false)
