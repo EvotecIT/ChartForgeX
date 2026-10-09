@@ -9,7 +9,7 @@ using ChartForgeX.Typography;
 
 namespace ChartForgeX.Rendering;
 
-/// <summary>Compiles funnel stages, repeated pictograms and measured word-cloud terms.</summary>
+/// <summary>Compiles funnel stages, pyramid partitions, repeated pictograms and measured word-cloud terms.</summary>
 internal static partial class VisualSpecialtyCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         if (chart.Series.Count == 0 || !chart.Series[0].ShowInLegend) return Array.Empty<VisualLegendEntry>();
@@ -22,16 +22,17 @@ internal static partial class VisualSpecialtyCompiler {
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
-        if (chart.Series.Count != 1) throw new InvalidOperationException("Funnel, pictorial and word-cloud charts require a single series.");
+        if (chart.Series.Count != 1) throw new InvalidOperationException("Specialty charts require a single series.");
         var series = chart.Series[0];
-        if (series.Kind != ChartSeriesKind.Funnel && series.Kind != ChartSeriesKind.Pictorial && series.Kind != ChartSeriesKind.WordCloud)
-            throw new InvalidOperationException("This compiler supports only funnel, pictorial and word-cloud charts.");
+        if (series.Kind != ChartSeriesKind.Funnel && series.Kind != ChartSeriesKind.Pyramid && series.Kind != ChartSeriesKind.Pictorial && series.Kind != ChartSeriesKind.WordCloud)
+            throw new InvalidOperationException("This compiler supports only funnel, pyramid, pictorial and word-cloud charts.");
         if (series.Points.Any(point => double.IsNaN(point.X) || double.IsInfinity(point.X) || double.IsNaN(point.Y) || double.IsInfinity(point.Y) || point.Y < 0))
-            throw new InvalidOperationException("Funnel, pictorial and word-cloud values must be finite and non-negative.");
+            throw new InvalidOperationException("Specialty chart values must be finite and non-negative.");
         if (series.Points.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("specialty.no-data", "The chart has no source values.")); return; }
         if (plot.Width <= 0 || plot.Height <= 0) return;
         using (builder.PushClip(plot)) {
             if (series.Kind == ChartSeriesKind.Funnel) Funnel(chart, context, builder, plot);
+            else if (series.Kind == ChartSeriesKind.Pyramid) Pyramid(chart, context, builder, plot);
             else if (series.Kind == ChartSeriesKind.Pictorial) Pictorial(chart, context, builder, plot);
             else WordCloud(chart, context, builder, plot);
         }

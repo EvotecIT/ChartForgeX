@@ -12,7 +12,7 @@ public static partial class V2Examples {
         ChartSeriesKind.RadialBar, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
     };
     private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
-        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel
+        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel, ChartSeriesKind.Pyramid
     };
 
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
@@ -50,6 +50,7 @@ public static partial class V2Examples {
         ChartSeriesKind.StackedArea => "A normalized stack with middle-step boundaries",
         ChartSeriesKind.RangeArea => "Lower, middle and upper bounds share middle-step transitions",
         ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
+        ChartSeriesKind.Pyramid => "Reversed horizontal pyramid; areas encode values including zero",
         _ => "Configured chart geometry"
     };
 

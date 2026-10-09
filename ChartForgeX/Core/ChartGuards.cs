@@ -228,6 +228,7 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.Gantt) ValidateGantt(chart.Series);
         else if (kind == ChartSeriesKind.Sankey && (!preparing || chart.Series[0].Points.Count > 0)) ValidateSankey(chart.Series[0]);
         else if ((kind == ChartSeriesKind.Tree || kind == ChartSeriesKind.Sunburst) && (!preparing || chart.Series[0].Points.Count > 0)) ValidateTree(chart.Series[0]);
+        else if (kind == ChartSeriesKind.Pyramid) ChartPyramidWeights.Total(chart.Series[0].Points);
         else if (kind == ChartSeriesKind.Funnel || kind == ChartSeriesKind.Treemap || kind == ChartSeriesKind.Pie || kind == ChartSeriesKind.Donut || kind == ChartSeriesKind.PolarArea || kind == ChartSeriesKind.Pictorial || kind == ChartSeriesKind.ProgressBar || kind == ChartSeriesKind.WordCloud) ValidateNonNegativeValues(chart.Series[0], kind);
     }
 

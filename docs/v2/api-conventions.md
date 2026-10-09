@@ -109,6 +109,21 @@ Normalization changes geometry, bounds and total positions together. Raw observa
 
 `ChartOptions.Funnel` selects `StageBars` or `Cone` and `Vertical` or `Horizontal`. StageBars is the default: each stage's cross-axis extent is exactly its value divided by the largest value. Cone uses one value-bearing line per source stage and connects adjacent lines. Zero stages retain source slots and semantics without an invented width. A single cone stage has no connection region. Both forms use the shared prepared geometry in SVG and PNG.
 
+`AddPyramid` partitions a triangle in authored category order. `ChartOptions.Pyramid.ValueEncoding` defaults to `Height`: 50/30/20 uses .5/.3/.2 of the tip-to-base length. `Area` uses square-root cumulative boundaries so the polygon areas, rather than their lengths, follow those shares. `Orientation` selects vertical or horizontal output; `Reversed` mirrors the geometry while retaining source ordinals and category order. `AspectRatio` is base width divided by tip-to-base length in either orientation; a positive finite value fits and centers the triangle in the content remaining after measured label rails.
+
+```csharp
+var pyramid = Chart.Create().WithXLabels("Services", "Platform", "Support").WithDataLabels()
+    .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
+    .WithPyramid(options => {
+        options.ValueEncoding = ChartPyramidValueEncoding.Area;
+        options.Orientation = ChartOrientation.Horizontal;
+        options.Reversed = true;
+        options.AspectRatio = .75;
+    });
+```
+
+Pyramid values and their aggregate must be finite and non-negative. Zero values retain source facts and zero geometry; all-zero input emits a no-data diagnostic. A singleton occupies the entire triangle. Series/point paints, patterns, data-label styles and placement preferences use the common controls. Labels use a safe inner rectangle when readable and a measured outer rail otherwise. SVG metadata records the declared encoding, source value, value share, normalized length and normalized area; geometric shares never replace source values in tooltips or detached artifacts. A positive partition below floating-point boundary or coordinate precision retains its source value and emits a precision diagnostic rather than receiving an invented minimum size.
+
 `ChartOrientation` is the shared core orientation type, including `MermaidXYChartDocument.Orientation`. Replace `MermaidXYChartOrientation` references with `ChartForgeX.Core.ChartOrientation` when migrating parsed XY chart code.
 
 ## Enforcement boundary

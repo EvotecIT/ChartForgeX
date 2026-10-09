@@ -50,7 +50,8 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.Sankey => "Requests across processing stages", ChartSeriesKind.Tree => "Teams and their responsibilities",
         ChartSeriesKind.Sunburst => "Allocation through the team hierarchy", ChartSeriesKind.Treemap => "How work is allocated across teams",
         ChartSeriesKind.Pictorial => "Completed assessments by team", ChartSeriesKind.WordCloud => "Topics in service observations",
-        ChartSeriesKind.Funnel => "Requests from receipt to completion", ChartSeriesKind.Waterfall => "Changes in available capacity",
+        ChartSeriesKind.Funnel => "Requests from receipt to completion", ChartSeriesKind.Pyramid => "How work is allocated across services",
+        ChartSeriesKind.Waterfall => "Changes in available capacity",
         _ => throw new ArgumentOutOfRangeException(nameof(kind))
     };
 

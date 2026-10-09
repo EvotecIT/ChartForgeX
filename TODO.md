@@ -52,13 +52,13 @@ SVG and PNG charts share measured label placement, including data labels, target
 - Keep marketing/poster chart matrices honest by checking each advertised family against public API, SVG renderer, PNG renderer, smoke tests, generated examples, and website gallery tags.
 - When adding a future chart family, update the README catalog, public model/API, SVG and PNG renderers, smoke tests, generated examples, gallery metadata, and promotional imagery together.
 
-The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement and explicit funnel forms/orientation share native geometry owners. Further work should retain that API and source-value boundary:
+The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation and pyramid height/area partitions share native geometry owners. Further work should retain that API and source-value boundary:
 
 - [ ] Add common marker shape controls and explicit radar line/area semantics through shared mark geometry.
 - [ ] Extend histogram ingestion with authored boundaries, weighted aggregation and density for unequal widths.
 - [ ] Give hierarchy and flow records stable IDs separate from display labels, then qualify hierarchical treemap input and independent color dimensions.
 - [ ] Add general radial column/bar scales and stacks while retaining the existing progress-ring meaning.
-- [ ] Implement the missing chord and pyramid families with explicit value-encoding contracts.
+- [ ] Implement the missing chord family with an explicit value-encoding contract.
 - [ ] Extend typed adapter tooltip, crosshair, legend visibility and data-domain zoom policies; palette choice must not decide interaction behavior.
 - [ ] Qualify each increment with compact/wide light/dark SVG and native PNG, then maintain the ledger's remaining gaps and evidence limits.
 

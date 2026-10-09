@@ -92,28 +92,16 @@ internal static partial class VisualSpecialtyCompiler {
             inside = false;
             style = Style(chart, context, index, colors.Foreground);
         }
-        FunnelText(builder, text, bounds, style, "funnel-label", Id(index) + "-label", TextAlignment.Center,
+        StageText(builder, text, bounds, style, "funnel-label", Id(index) + "-label", TextAlignment.Center,
             VisualChartPaint.ExplicitDataLabelColor(chart, index) || !inside ? VisualChartPaint.Text(style)
-                : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)));
+                : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "funnel");
         if (index > 0 && stage.MetricsBounds.Width > 0 && stage.MetricsBounds.Height > 0) {
             var metrics = (retention.HasValue ? retention.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " retained" : "No initial baseline")
                 + "\n" + (drop.HasValue ? drop.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline");
-            FunnelText(builder, metrics, stage.MetricsBounds, Style(chart, context, index, colors.MutedForeground),
+            StageText(builder, metrics, stage.MetricsBounds, Style(chart, context, index, colors.MutedForeground),
                 "funnel-ratio", Id(index) + "-ratio", TextAlignment.Left,
-                VisualChartPaint.Text(Style(chart, context, index, colors.MutedForeground)));
+                VisualChartPaint.Text(Style(chart, context, index, colors.MutedForeground)), "funnel");
         }
     }
 
-    private static void FunnelText(VisualSceneBuilder builder, string text, ChartRect bounds, TextStyle style,
-        string role, string id, TextAlignment alignment, SvgPaint paint) {
-        var measured = builder.MeasureText(text, style);
-        var ratio = Math.Min(1, Math.Min(bounds.Width / Math.Max(1, measured.Width), bounds.Height / Math.Max(1, measured.Height)));
-        style = style.Clone();
-        // Preserve deliberately authored small type; automatic fitting never turns an ordinary label into tiny glyphs.
-        style.FontSize = Math.Max(Math.Min(10, style.EffectiveFontSize), style.EffectiveFontSize * ratio);
-        style.Baseline = TextBaseline.Normal;
-        if (bounds.Width <= 0 || bounds.Height < builder.MeasureText(text, style).Height)
-            builder.AddDiagnostic(new VisualDiagnostic("funnel.label-hidden", "A funnel label did not fit at a readable size; complete text remains in descriptive regions."));
-        VisualStateSceneTools.Text(builder, text, bounds, style, role, id, alignment, paint: paint);
-    }
 }

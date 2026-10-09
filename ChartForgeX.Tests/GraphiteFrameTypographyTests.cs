@@ -78,6 +78,7 @@ public sealed class GraphiteFrameTypographyTests {
             case ChartSeriesKind.Waterfall: return chart.AddWaterfall("Measure", points);
             case ChartSeriesKind.Radar: return chart.AddRadar("Measure", points);
             case ChartSeriesKind.Funnel: return chart.AddFunnel("Measure", points);
+            case ChartSeriesKind.Pyramid: return chart.AddPyramid("Measure", points);
             case ChartSeriesKind.Timeline: return chart.AddTimelineRange("Measure", 1, 3);
             case ChartSeriesKind.Gantt: return chart.AddGanttTask("Measure", 1, 3);
             case ChartSeriesKind.Sankey: return chart.AddSankey("Measure", new[] { new ChartSankeyLink("First", "Second", 30) });

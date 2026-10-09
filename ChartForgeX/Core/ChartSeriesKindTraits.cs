@@ -20,6 +20,7 @@ internal static class ChartSeriesKindTraits {
         ChartSeriesKind.Radar,
         ChartSeriesKind.Polar,
         ChartSeriesKind.Funnel,
+        ChartSeriesKind.Pyramid,
         ChartSeriesKind.Treemap,
         ChartSeriesKind.Timeline,
         ChartSeriesKind.StateTimeline,
@@ -64,6 +65,7 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.RadialBar ||
         kind == ChartSeriesKind.Waterfall ||
         kind == ChartSeriesKind.Funnel ||
+        kind == ChartSeriesKind.Pyramid ||
         kind == ChartSeriesKind.Pie ||
         kind == ChartSeriesKind.Donut ||
         kind == ChartSeriesKind.Treemap ||
@@ -93,6 +95,7 @@ internal static class ChartSeriesKindTraits {
             kind == ChartSeriesKind.LayeredRadial ||
             kind == ChartSeriesKind.Waterfall ||
             kind == ChartSeriesKind.Funnel ||
+            kind == ChartSeriesKind.Pyramid ||
             kind == ChartSeriesKind.Treemap ||
             kind == ChartSeriesKind.Sankey ||
             kind == ChartSeriesKind.Tree ||
@@ -107,6 +110,7 @@ internal static class ChartSeriesKindTraits {
 
     public static bool RequiresPositiveValues(ChartSeriesKind kind) {
         return kind == ChartSeriesKind.Funnel ||
+            kind == ChartSeriesKind.Pyramid ||
             kind == ChartSeriesKind.Treemap ||
             kind == ChartSeriesKind.Pie ||
             kind == ChartSeriesKind.Donut ||
