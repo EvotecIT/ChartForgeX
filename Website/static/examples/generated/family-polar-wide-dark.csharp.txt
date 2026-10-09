@@ -216,15 +216,19 @@ public static partial class V2GalleryModels {
     }
 
     private static Chart FlowRelationships(string variant) {
-        if (variant == "options") return Chart.Create().AddSankey("Requests", new[] {
-            new ChartNode("received", "Received"), new ChartNode("north", "North"), new ChartNode("south", "South"),
-            new ChartNode("north-support", "Support"), new ChartNode("south-support", "Support"), new ChartNode("completed", "Completed")
-        }, new[] {
-            new ChartFlowLink("received-north", "received", "north", 72), new ChartFlowLink("received-south", "received", "south", 28),
-            new ChartFlowLink("north-standard", "north", "north-support", 52), new ChartFlowLink("north-priority", "north", "north-support", 20),
-            new ChartFlowLink("south-standard", "south", "south-support", 28),
-            new ChartFlowLink("north-completed", "north-support", "completed", 72), new ChartFlowLink("south-completed", "south-support", "completed", 28)
-        }).WithSankeyNodeState("north-support", ChartSeriesState.Warning);
+        if (variant == "options") {
+            var configured = Chart.Create().AddSankey("Requests", new[] {
+                new ChartNode("received", "Received"), new ChartNode("north", "North"), new ChartNode("south", "South"),
+                new ChartNode("north-support", "Support"), new ChartNode("south-support", "Support"), new ChartNode("completed", "Completed")
+            }, new[] {
+                new ChartFlowLink("received-north", "received", "north", 72), new ChartFlowLink("received-south", "received", "south", 28),
+                new ChartFlowLink("north-standard", "north", "north-support", 52), new ChartFlowLink("north-priority", "north", "north-support", 20),
+                new ChartFlowLink("south-standard", "south", "south-support", 28),
+                new ChartFlowLink("north-completed", "north-support", "completed", 72), new ChartFlowLink("south-completed", "south-support", "completed", 28)
+            });
+            configured.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
+            return configured;
+        }
         return Chart.Create().AddSankey("Requests", new[] {
             new ChartNode("received", "Received"), new ChartNode("automatic", "Automatic"), new ChartNode("manual", "Manual"),
             new ChartNode("completed", "Completed"), new ChartNode("review", "Review")
