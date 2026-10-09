@@ -27,7 +27,7 @@ public static partial class V2GalleryModels {
         var scale = variant == "options" ? ChartColorScale.Discrete(new[] {
             new ChartColorBand(0, low, "Decline"), new ChartColorBand(10, colors.Border, "Steady"), new ChartColorBand(null, high, "Growth")
         }) : ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15).WithLabels("Decrease", "No change", "Increase");
-        var chart = Chart.Create().AddTreemap("Allocated work", items).ConfigureTreemap(options => {
+        var chart = Chart.Create().WithDataLabels(true).AddTreemap("Allocated work", items).ConfigureTreemap(options => {
             options.GroupPadding = variant == "options" ? 8 : 6;
             options.Gap = 3;
             options.ShowGroupLabels = true;

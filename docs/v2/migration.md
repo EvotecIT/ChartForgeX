@@ -54,6 +54,8 @@ Supply optional finite `ColorValue` independently of size. `ConfigureTreemap` or
 
 `WithPointLegend()` uses leaf keys when no numeric color legend is active; set `ShowColorScaleLegend = false` to use leaf keys with an independent color scale. Native keys retain `data-cfx-legend-target-kind="node"` and the authored ID in `data-cfx-legend-target-id`. HTML legend controls read the raw leaf value, toggle or isolate that item, and emit its `targetKind` / `targetId` alongside the owning series key. Synchronized charts resolve the ID rather than labels or input ordinals; a peer without that ID remains unchanged. Leaf keys retain their own distinct normalized `legend` identity and do not acquire Cartesian point facts.
 
+Captions follow the chart-level `WithDataLabels(...)` setting. A series-level `WithDataLabels(...)` overrides it; `UseChartDataLabels()` restores the chart setting. Group headers reserve space only when labels and `ShowGroupLabels` are enabled. Use `WithDataLabels()` in examples that display node captions.
+
 The Mermaid Treemap adapter retains section nodes and parent containment. Its language has no authored ID syntax, so it assigns distinct source-order IDs at the adapter boundary and keeps labels unchanged, including repeated labels.
 
 ## Numeric color scales

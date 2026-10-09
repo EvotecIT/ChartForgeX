@@ -16,12 +16,35 @@ public sealed class TreemapHierarchyTests {
         new ChartTreemapItem("south-support", "Support", "south-team", 8, 8), new ChartTreemapItem("reserve", "Reserve", "south-team", 0),
         new ChartTreemapItem("research", "Research", value: 3)
     };
-    internal static Chart Forest() => Chart.Create().AddTreemap("Allocation", ForestItems());
+    internal static Chart Forest() => Chart.Create().WithDataLabels(true).AddTreemap("Allocation", ForestItems());
     internal static PreparedVisual Prepare(Chart chart, bool legend = false) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(720, 460)), frame: new VisualFrame(showLegend: legend)));
     internal static XElement[] Targets(PreparedVisual prepared) => XDocument.Parse(prepared.ToSvg()).Descendants()
         .Where(element => (string?)element.Attribute("data-cfx-target-kind") == "node").ToArray();
     internal static double Number(XElement element, string name) => double.Parse(element.Attribute(name)!.Value, CultureInfo.InvariantCulture);
+
+    [Theory]
+    [InlineData(false, null, false)]
+    [InlineData(true, null, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, false)]
+    public void ResolvedLabelVisibilityControlsLeafCaptionsAndGroupHeaderSpace(bool chartLabels, bool? seriesLabels, bool visible) {
+        var chart = Chart.Create().WithDataLabels(chartLabels).AddTreemap("Work", new[] {
+            new ChartTreemapItem("parent", "Parent"),
+            new ChartTreemapItem("child", "Child", "parent", 6),
+            new ChartTreemapItem("other", "Other", "parent", 4)
+        }).ConfigureTreemap(options => { options.Gap = 0; options.GroupPadding = 0; });
+        chart.Series[0].ShowDataLabels = seriesLabels;
+        var prepared = Prepare(chart);
+        var nodes = XDocument.Parse(prepared.ToSvg()).Descendants().ToArray();
+        Assert.Equal(visible, nodes.Any(node => (string?)node.Attribute("data-cfx-role") == "treemap-label"));
+        Assert.Equal(visible, nodes.Any(node => (string?)node.Attribute("data-cfx-role") == "treemap-group-label"));
+        var parent = prepared.Regions.Single(region => region.Id == "series-0-node-parent").Bounds;
+        var childTop = prepared.Regions.Where(region => region.Role == "treemap-tile").Min(region => region.Bounds.Top);
+        if (visible) Assert.True(childTop > parent.Top, "Painted group captions need their measured header lane.");
+        else Assert.Equal(parent.Top, childTop);
+        Assert.Contains(prepared.Regions, region => region.Id == "series-0-node-child" && region.Label?.Contains("Child") == true);
+    }
 
     [Fact]
     public void ThreeLevelsAndRepeatedLabelsRetainTruthfulForestFactsAndContainment() {

@@ -713,7 +713,7 @@ Sankey accepts directed `ChartFlowLink(id, sourceId, targetId, value)` records. 
 Treemap item IDs identify nodes independently of repeated display labels. A group contains its descendants and aggregates their leaf sizes; a nullable color value controls a separate numeric color scale:
 
 ```csharp
-var chart = Chart.Create().AddTreemap("Allocation", new[] {
+var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
     new ChartTreemapItem("north", "North"),
     new ChartTreemapItem("north-team", "Team", parentId: "north"),
     new ChartTreemapItem("north-support", "Support", parentId: "north-team", value: 5, colorValue: -2),
