@@ -367,27 +367,6 @@
       moveTip(tip, event, point.node);
     }
   };
-  const focusAdjacentTarget = (root, node, key) => {
-    const targets = interactiveTargets(root);
-    if (!targets.length) return false;
-    const current = Math.max(0, targets.indexOf(node));
-    let next = current;
-    if (key === 'Home') next = 0;
-    else if (key === 'End') next = targets.length - 1;
-    else if (key === 'ArrowLeft' || key === 'ArrowUp') next = current <= 0 ? targets.length - 1 : current - 1;
-    else if (key === 'ArrowRight' || key === 'ArrowDown') next = current >= targets.length - 1 ? 0 : current + 1;
-    else return false;
-    const targetNode = targets[next];
-    if (!targetNode) return false;
-    const focusNode = targetFocusNode(targetNode);
-    if (focusNode.focus) {
-      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
-    }
-    const target = targetIdentity(targetNode);
-    emitHostEvent(root, 'cfxnavigate', { label: text(targetNode), target, index: next, count: targets.length, key });
-    emitSync(root, { action: 'navigate', label: text(targetNode), target, index: next, count: targets.length, key });
-    return true;
-  };
   const applySelectionByLabel = (root, label, selected) => {
     if (!label) return;
     root.querySelectorAll(targetSelector).forEach((node) => {

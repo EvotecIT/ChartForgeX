@@ -18,10 +18,10 @@
         applyInteractionState(root, detail.snapshot || detail.state || detail, true, detail.sync);
       });
     }
+    prepareKeyboardNavigation(root);
     const targets = interactiveTargets(root);
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
-      if (focusNode === node && !node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
       node.addEventListener('pointerenter', (event) => {
         setHover(root, node, true, true);
         showTip(root, tip, node, event);
@@ -31,14 +31,19 @@
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      focusNode.addEventListener('focus', (event) => {
-        setHover(root, node, true, true);
-        showTip(root, tip, node, event);
-      });
-      focusNode.addEventListener('blur', () => {
-        clearHover(root, true, true);
-        hideTip(root, tip, false);
-      });
+      // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
+      if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
+        focusNode.addEventListener('focus', (event) => {
+          refreshKeyboardNavigation(root, node);
+          if (hasFeature(root, 'KeyboardNavigation')) scrollKeyboardTargetIntoView(root, focusNode);
+          setHover(root, node, true, true);
+          showTip(root, tip, node, event);
+        });
+        focusNode.addEventListener('blur', () => {
+          clearHover(root, true, true);
+          hideTip(root, tip, false);
+        });
+      }
       focusNode.addEventListener('click', (event) => {
         event.stopPropagation();
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
@@ -50,22 +55,24 @@
           pinTip(root, tip, node, event);
         }
       });
-      focusNode.addEventListener('keydown', (event) => {
-        event.stopPropagation();
-        if (!hasFeature(root, 'KeyboardNavigation')) return;
+      if (hasFeature(root, 'KeyboardNavigation')) focusNode.addEventListener('keydown', (event) => {
+        if (!hasFeature(root, 'KeyboardNavigation') || event.defaultPrevented || event.target !== focusNode) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();
+          event.stopPropagation();
           toggleSeriesFocus(root, node, true, true);
           return;
         }
         if (focusAdjacentTarget(root, node, event.key)) {
           event.preventDefault();
+          event.stopPropagation();
           return;
         }
         if (event.key !== 'Enter' && event.key !== ' ') return;
         // Enter on a link must retain native navigation. Space selects the cell without following the link.
-        if (focusNode !== node && event.key === 'Enter') return;
+        if (event.key === 'Enter' && focusNode.matches('a[href]')) return;
         event.preventDefault();
+        event.stopPropagation();
         if (focusNode !== node) {
           toggleSelection(root, node);
           pinTip(root, tip, node, event);
