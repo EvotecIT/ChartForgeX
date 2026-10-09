@@ -20,7 +20,7 @@ public sealed class HistogramCountContractTests {
         Assert.True(layout.Maximum >= maximum);
         Assert.Equal(layout.Minimum, layout.GetLowerBound(0));
         Assert.Equal(layout.Maximum, layout.GetUpperBound(0));
-        Assert.Equal(layout.Maximum - layout.Minimum, layout.Width);
+        Assert.Equal(layout.Maximum - layout.Minimum, layout.GetWidth(0));
 
         var chart = Chart.Create().AddHistogram("Samples", new[] { minimum, 0.5 * minimum + 0.5 * maximum, maximum }, layout);
         Assert.Equal(3, Assert.Single(chart.Series[0].Points).Y);
@@ -56,7 +56,7 @@ public sealed class HistogramCountContractTests {
             Assert.Equal(1, rounded.Count);
             Assert.Equal(exact.Minimum, rounded.Minimum);
             Assert.Equal(exact.Maximum, rounded.Maximum);
-            Assert.Equal(exact.Width, rounded.Width);
+            Assert.Equal(exact.GetWidth(0), rounded.GetWidth(0));
         }
         var multiple = ChartHistogramBinLayout.FromCount(-1, 1, 2);
         Assert.Equal(2, multiple.Count);

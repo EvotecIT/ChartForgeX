@@ -7,16 +7,19 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Defines one reusable histogram binning scheme so multiple series can share identical bounds.
 /// </summary>
-public sealed class ChartHistogramBinLayout {
+public sealed partial class ChartHistogramBinLayout {
     private const int MaximumBoundaryValidationScanCount = 1_000_000;
     private readonly decimal? _decimalMinimum;
     private readonly decimal? _decimalWidth;
+    private readonly double _stepWidth;
+    private readonly double[]? _lowerBounds;
+    private readonly double[]? _upperBounds;
 
     private ChartHistogramBinLayout(double minimum, double maximum, int count, double width) {
         Minimum = minimum;
         Maximum = maximum;
         Count = count;
-        Width = width;
+        _stepWidth = width;
         if (width > 0 && TryConvertRoundTripDecimal(minimum, out var decimalMinimum) &&
             TryConvertRoundTripDecimal(width, out var decimalWidth) && decimalWidth > 0) {
             _decimalMinimum = decimalMinimum;
@@ -32,9 +35,6 @@ public sealed class ChartHistogramBinLayout {
 
     /// <summary>Gets the number of bins.</summary>
     public int Count { get; }
-
-    /// <summary>Gets the bin width. Only exact data-bounded layouts can have a narrower final bin.</summary>
-    public double Width { get; }
 
     /// <summary>Creates the requested count of equal-width bins with boundaries aligned to a nice decimal step where possible.</summary>
     public static ChartHistogramBinLayout FromCount(double minimum, double maximum, int binCount) => FromCount(minimum, maximum, binCount, true);
@@ -108,13 +108,13 @@ public sealed class ChartHistogramBinLayout {
     /// <summary>Gets the inclusive lower bound for a bin.</summary>
     public double GetLowerBound(int index) {
         ValidateIndex(index);
-        return Minimum + Width * index;
+        return _lowerBounds == null ? Minimum + _stepWidth * index : _lowerBounds[index];
     }
 
     /// <summary>Gets the upper bound for a bin. The final bin includes this value.</summary>
     public double GetUpperBound(int index) {
         ValidateIndex(index);
-        return index == Count - 1 ? Maximum : Minimum + Width * (index + 1);
+        return _upperBounds == null ? (index == Count - 1 ? Maximum : Minimum + _stepWidth * (index + 1)) : _upperBounds[index];
     }
 
     /// <summary>Gets the midpoint used for the bin's chart coordinate.</summary>
@@ -123,15 +123,19 @@ public sealed class ChartHistogramBinLayout {
         return lower + (GetUpperBound(index) - lower) / 2.0;
     }
 
+    /// <summary>Gets the actual width of a bin, including a shorter final bin or an authored unequal interval.</summary>
+    public double GetWidth(int index) => GetUpperBound(index) - GetLowerBound(index);
+
     internal int GetIndex(double value) {
         ChartGuards.Finite(value, nameof(value));
         if (value < Minimum || value > Maximum) {
             throw new ArgumentOutOfRangeException(nameof(value), value, "Histogram values must fall within the shared bin layout.");
         }
 
+        if (_lowerBounds != null) return GetAuthoredIndex(value);
         if (Count == 1 || value >= Maximum) return Count - 1;
         if (TryGetDecimalIndex(value, out var decimalIndex)) return Math.Max(0, Math.Min(Count - 1, decimalIndex));
-        var quotient = (value - Minimum) / Width;
+        var quotient = (value - Minimum) / _stepWidth;
         return Math.Max(0, Math.Min(Count - 1, (int)Math.Floor(quotient)));
     }
 

@@ -48,7 +48,7 @@ internal sealed partial class ChartStackLayout {
             } else group.Validate(series);
             seriesGroups[seriesIndex] = group;
             if (stacked) points[seriesIndex] = new ChartStackPoint[series.Points.Count];
-            else sourceValues[seriesIndex] = series.Points.Select(point => point.Y).ToArray();
+            else sourceValues[seriesIndex] = Enumerable.Range(0, series.Points.Count).Select(series.RenderedPointValue).ToArray();
             for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
                 var point = series.Points[pointIndex];
                 if (!stacked) continue;
@@ -57,7 +57,7 @@ internal sealed partial class ChartStackLayout {
                     bucket = new StackBucket(group, seriesIndex, pointIndex, point.X, point.Y >= 0);
                     buckets.Add(key, bucket);
                 }
-                bucket.Add(seriesIndex, pointIndex, point.Y);
+                bucket.Add(seriesIndex, pointIndex, series.RenderedPointValue(pointIndex), point.Y);
             }
         }
 
@@ -65,7 +65,7 @@ internal sealed partial class ChartStackLayout {
         foreach (var bucket in buckets.Values.OrderBy(value => value.Group.Kind).ThenBy(value => value.Group.Axis)
             .ThenBy(value => value.Coordinate).ThenBy(value => value.Group.Id).ThenByDescending(value => value.Positive)) {
             var target = bucket.Group.NormalizedTo;
-            var total = target.HasValue && bucket.SourceTotal != 0 ? (bucket.Positive ? target.Value : -target.Value) : bucket.SourceTotal;
+            var total = target.HasValue && bucket.SourceTotal != 0 ? (bucket.Positive ? target.Value : -target.Value) : bucket.Total;
             var baseline = 0d;
             var lastNonzero = bucket.Points.FindLastIndex(point => point.Value != 0);
             for (var index = 0; index < bucket.Points.Count; index++) {
@@ -81,7 +81,9 @@ internal sealed partial class ChartStackLayout {
             totals.Add(new ChartStackTotal(bucket.SeriesIndex, bucket.PointIndex, bucket.Group.Kind, bucket.Group.Axis,
                 bucket.Group.Key, bucket.Coordinate, bucket.Positive, total, bucket.SourceTotal, target));
         }
-        return new ChartStackLayout(points, sourceValues, seriesGroups, totals.ToArray(), zeroTotalCount);
+        var layout = new ChartStackLayout(points, sourceValues, seriesGroups, totals.ToArray(), zeroTotalCount);
+        layout.ValidateHistogramDensity(chart, coordinates);
+        return layout;
     }
 
     /// <summary>Resolves distinct stack or standalone-series slots within the supplied physical participants.</summary>
@@ -101,6 +103,7 @@ internal sealed partial class ChartStackLayout {
             Id = id; SeriesIndex = seriesIndex; Kind = series.Kind; Axis = series.YAxis;
             Key = series.StackGroup; NormalizedTo = series.NormalizedTo; Stacked = stacked;
             Interpolation = series.Interpolation; StepPosition = series.StepPosition;
+            HistogramEncoding = series.HistogramEncoding; HistogramAggregation = series.HistogramAggregation;
         }
         internal int Id { get; }
         internal int SeriesIndex { get; }
@@ -111,6 +114,8 @@ internal sealed partial class ChartStackLayout {
         internal bool Stacked { get; }
         private ChartInterpolation Interpolation { get; }
         private ChartStepPosition StepPosition { get; }
+        private ChartHistogramEncoding? HistogramEncoding { get; }
+        private ChartHistogramAggregation? HistogramAggregation { get; }
         internal bool Matches(ChartSeries series, bool stacked) => Stacked && stacked && Kind == series.Kind && Axis == series.YAxis
             && string.Equals(Key, series.StackGroup, StringComparison.Ordinal);
         internal void Validate(ChartSeries series) {
@@ -118,6 +123,9 @@ internal sealed partial class ChartStackLayout {
                 throw new InvalidOperationException("Every series in the same stack must use the same NormalizedTo target, including null for source units.");
             if (Kind == ChartSeriesKind.StackedArea && (Interpolation != series.Interpolation || StepPosition != series.StepPosition))
                 throw new InvalidOperationException("Every series in the same stacked-area group and axis must use the same Interpolation and StepPosition so shared boundaries align.");
+            if ((HistogramEncoding == ChartHistogramEncoding.Density || series.IsHistogramDensity) &&
+                (HistogramEncoding != series.HistogramEncoding || HistogramAggregation != series.HistogramAggregation))
+                throw new InvalidOperationException("A density histogram stack must contain only density histograms with the same aggregation.");
         }
     }
 
@@ -131,10 +139,11 @@ internal sealed partial class ChartStackLayout {
         internal double Coordinate { get; }
         internal bool Positive { get; }
         internal double SourceTotal { get; private set; }
+        internal double Total { get; private set; }
         internal List<(int Series, int Point, double Value)> Points { get; } = new();
-        internal void Add(int series, int point, double value) {
-            SourceTotal += value;
-            if (!ChartMath.IsFinite(SourceTotal)) throw new InvalidOperationException("Stack totals exceed the finite rendering range.");
+        internal void Add(int series, int point, double value, double sourceValue) {
+            Total += value; SourceTotal += sourceValue;
+            if (!ChartMath.IsFinite(SourceTotal) || !ChartMath.IsFinite(Total)) throw new InvalidOperationException("Stack totals exceed the finite rendering range.");
             Points.Add((series, point, value));
         }
     }

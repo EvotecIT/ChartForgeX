@@ -89,6 +89,13 @@ internal static class ChartGuards {
         for (var i = 0; i < chart.Series.Count; i++) {
             if (chart.Series[i] == null) throw new InvalidOperationException("Chart series collection must not contain null entries.");
             ValidateSeriesShape(chart.Series[i], preparing);
+            if (chart.Series[i].IsHistogramDensity) {
+                var valueAxis = chart.Series[i].YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+                if ((chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time) || valueAxis.Scale != ChartScaleKind.Linear)
+                    throw new InvalidOperationException("Histogram density requires a linear measurement and value scale; a time measurement scale is also supported.");
+                if (chart.Series[i].NormalizedTo.HasValue)
+                    throw new InvalidOperationException("Histogram density cannot be normalized because rectangular area must retain the raw aggregate.");
+            }
         }
 
         for (var i = 0; i < chart.Annotations.Count; i++) {
@@ -177,8 +184,8 @@ internal static class ChartGuards {
         }
 
         for (var index = 0; index < series.Points.Count; index++) {
-            if (series.Points[index].X != layout.GetCenter(index)) {
-                throw new InvalidOperationException("Histogram series points must retain their layout bin order and center coordinates.");
+            if (series.Points[index].X != layout.GetCenter(index) || series.Points[index].Y != (series.HistogramBins[index].Value ?? 0)) {
+                throw new InvalidOperationException("Histogram series points must retain their layout order, centers and raw aggregates; rebuild the histogram to change observations.");
             }
         }
     }

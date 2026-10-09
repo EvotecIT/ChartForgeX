@@ -28,7 +28,7 @@ public static partial class V2Examples {
                 primary = primaryIds.Contains(artifact.Id), seriesKinds = ArtifactKinds(artifact),
                 theme = artifact.Theme, width = artifact.Width, height = artifact.Height,
                 naturalAspect = (double)artifact.Width / artifact.Height,
-                compact = artifact.Variant == "compact" || artifact.Variant == "compact-options", source = artifact.Id + ".csharp.txt",
+                compact = IsCompactVariant(artifact.Variant), source = artifact.Id + ".csharp.txt",
                 svg = artifact.Id + ".svg", png = artifact.Id + ".png", html = artifact.Id + ".html",
                 thumbnail = artifact.Id + ".thumbnail.svg", thumbnailPng = artifact.Id + ".thumbnail.png",
                 thumbnailWidth = ThumbnailWidth, thumbnailHeight = ThumbnailHeight,

@@ -87,6 +87,7 @@ internal static partial class VisualCartesianCompiler {
         var width = layout.Width;
         var offset = layout.Offset;
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
+        AddHistogramSourceRegions(builder, series, index, plot);
         for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
             var point = series.Points[pointIndex];
             var stack = stacks.Point(index, pointIndex);
@@ -98,10 +99,12 @@ internal static partial class VisualCartesianCompiler {
                 left = histogramLeft;
                 barWidth = histogramWidth;
             }
-            var bounds = VisibleSegmentBounds(chart, new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y)), stack.Value);
+            var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
+            if (!series.IsHistogramDensity) bounds = VisibleSegmentBounds(chart, bounds, stack.Value);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stack)) {
-                DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors);
+                if (series.IsHistogramDensity) DrawDensityHistogramSurface(chart, context, builder, series, index, pointIndex, bounds, colors);
+                else DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors);
             }
             obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
             AddLabel(chart, context, series, index, pointIndex, new ChartPoint(left + barWidth / 2, y), bounds, resolvedLabel, labels);
@@ -143,7 +146,8 @@ internal static partial class VisualCartesianCompiler {
     private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle) {
         var value = series.Points[pointIndex].Y;
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
-            ? series.PointLabels[pointIndex]! : ChartNumericFormatter.FormatValue(chart.Options, value);
+            ? series.PointLabels[pointIndex]! : series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
+                ? chart.Options.Labels.NoData : ChartNumericFormatter.FormatValue(chart.Options, value);
         var style = seriesStyle;
         if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
             style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
@@ -161,6 +165,8 @@ internal static partial class VisualCartesianCompiler {
         ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null,
         TextMetrics? calloutMetrics = null) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
+        if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue &&
+            (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) return;
         var value = observationValue ?? series.Points[pointIndex].Y;
         var spacing = context.Theme.Spacing;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;

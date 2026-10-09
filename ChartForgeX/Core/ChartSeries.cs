@@ -61,7 +61,7 @@ public sealed partial class ChartSeries {
     /// </summary>
     public List<ChartPoint> Points { get; } = new();
 
-    /// <summary>Gets the number of source points supplied before explicit decimation.</summary>
+    /// <summary>Gets the number of source observations supplied before aggregation or explicit decimation.</summary>
     public int SourcePointCount { get; private set; }
 
     /// <summary>Gets the explicit decimation algorithm, or null when the series was not created through a decimating API.</summary>
@@ -130,11 +130,6 @@ public sealed partial class ChartSeries {
     /// Gets or sets the full heatmap column span for masked matrix rows.
     /// </summary>
     internal int? HeatmapColumnCount { get; set; }
-
-    /// <summary>
-    /// Gets or sets the shared histogram layout whose numeric bounds determine this bar series geometry.
-    /// </summary>
-    internal ChartHistogramBinLayout? HistogramBinLayout { get; set; }
 
     /// <summary>Gets categorical heatmap cells aligned with <see cref="Points"/>; empty for numeric heatmap rows.</summary>
     internal List<ChartHeatmapCell> HeatmapCells { get; } = new();

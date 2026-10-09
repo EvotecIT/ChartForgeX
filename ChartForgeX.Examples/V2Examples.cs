@@ -43,6 +43,7 @@ public static partial class V2Examples {
         if (!curated) WriteRadialLabels(output, artifacts);
         WriteDiagrams(output, artifacts);
         WriteFamilies(output, artifacts, curated);
+        WriteHistograms(output, artifacts);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);
     }

@@ -25,6 +25,10 @@ internal static class ChartHistogramBarSlot {
         var upper = map.X(upperBound);
         var binLeft = Math.Min(lower, upper);
         var binWidth = Math.Abs(upper - lower);
+        if (series.IsHistogramDensity) {
+            left = binLeft; width = binWidth;
+            return true;
+        }
         var groupedSeries = coordinateMap.SeriesIndices(seriesIndex, pointIndex);
         var slot = stacks.Slot(groupedSeries, seriesIndex);
         var groupCount = slot.Count;

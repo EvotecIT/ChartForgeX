@@ -16,8 +16,8 @@ internal static partial class SmokeTests {
             .AddHistogram("Latency samples", new[] { 1d, 2d, 2d, 3d, 5d }, 2, ChartColor.FromRgb(37, 99, 235));
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 2, "Histogram values should render one bar per requested bin.");
-        Assert(svg.Contains(">0-2.5</text>", StringComparison.Ordinal), "Histogram bins should render range labels.");
-        Assert(svg.Contains(">2.5-5</text>", StringComparison.Ordinal), "Histogram bins should render range labels.");
+        Assert(((string?)CartesianPoint(svg, 0, 0).Attribute("data-cfx-bin-lower")) == "0" && ((string?)CartesianPoint(svg, 0, 0).Attribute("data-cfx-bin-upper")) == "2.5", "Histogram output should identify the first source interval separately from axis labels.");
+        Assert(((string?)CartesianPoint(svg, 0, 1).Attribute("data-cfx-bin-lower")) == "2.5" && ((string?)CartesianPoint(svg, 0, 1).Attribute("data-cfx-bin-upper")) == "5", "Histogram output should identify the final inclusive source interval.");
         Assert(svg.Contains(">3</text>", StringComparison.Ordinal), "Histogram data labels should render bin counts.");
         Assert(chart.ToPng().Length > 64, "Histogram charts should render PNG output.");
     }
@@ -28,9 +28,9 @@ internal static partial class SmokeTests {
             .WithSize(640, 360)
             .AddHistogram("Requested width", new[] { 0d, 1d, 3d, 5d, 6d, 9d, 10d }, layout);
 
-        Assert(layout.Count == 4 && Math.Abs(layout.Width - 3) < 0.000001, "Histogram layouts should preserve the requested bin width.");
+        Assert(layout.Count == 4 && Math.Abs(layout.GetWidth(0) - 3) < 0.000001, "Histogram layouts should preserve the requested bin width.");
         Assert(chart.Series[0].Points.Select(point => point.Y).SequenceEqual(new[] { 2d, 2d, 1d, 2d }), "Histogram values should use the requested width when assigning bins.");
-        Assert(chart.Options.XAxisLabels.Select(label => label.Text).SequenceEqual(new[] { "0-3", "3-6", "6-9", "9-10" }), "Histogram labels should retain full-width bins and a final remainder bin.");
+        Assert(chart.Series[0].HistogramBins.Select(bin => (bin.LowerBound, bin.UpperBound)).SequenceEqual(new[] { (0d, 3d), (3d, 6d), (6d, 9d), (9d, 10d) }), "Histogram aggregates should retain full-width bins and a final remainder bin.");
         var bars = SvgDocument.Parse(chart.ToSvg()).Root.FindByTag("rect")
             .Where(element => element.GetAttribute("data-cfx-role") == "bar")
             .ToArray();
@@ -58,7 +58,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromCount(1e16, 1e16 + 8, 5, roundBounds: false), "Exact count-based histogram layouts should reject collapsed bounds in the middle of a layout.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(1e16, 1e16 + 10, 4.75, roundBounds: false), "Exact width-based histogram layouts should reject a final remainder bin whose lower bound rounds to the maximum.");
         var largeExactLayout = ChartHistogramBinLayout.FromCount(Math.Pow(2, 52), Math.Pow(2, 52) + 2_000_000_000, 1_000_000_000);
-        Assert(largeExactLayout.Count == 1_000_000_000 && largeExactLayout.Width == 2, "Large layouts with clearly separated exact bounds should avoid per-bin validation.");
+        Assert(largeExactLayout.Count == 1_000_000_000 && largeExactLayout.GetWidth(0) == 2, "Large layouts with clearly separated exact bounds should avoid per-bin validation.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(0, 10, 0), "Histogram layouts should reject zero bin widths.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddHistogram("Outside", new[] { 11d }, layout), "Shared histogram layouts should reject values outside their bounds.");
     }

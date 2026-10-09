@@ -32,9 +32,9 @@ public sealed class V2GalleryBrowserMatrixTests {
                     return binary ? response.blob() : response.text();
                 };
                 const manifest = JSON.parse(await fetchAsset('manifest.json'));
-                const artifacts = manifest.artifacts.filter(item => item.id.startsWith('family-')
+                const artifacts = manifest.artifacts.filter(item => (item.id.startsWith('family-') || item.family === 'histogram')
                     && ['light', 'dark'].includes(item.theme));
-                const standard = artifacts.filter(item => ['wide', 'compact'].includes(item.variant));
+                const standard = artifacts.filter(item => item.id.startsWith('family-') && ['wide', 'compact'].includes(item.variant));
                 if (standard.length !== expected.families.length * 4)
                     defects.push('The family matrix must contain one wide and compact export per theme and kind.');
                 for (const { kind, family } of expected.families) for (const variant of ['wide', 'compact']) for (const theme of ['light', 'dark']) {

@@ -178,6 +178,7 @@ internal static partial class VisualCartesianCompiler {
         var point = series.Points[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
         var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + Number(point.X) + ", " + Number(point.Y) + ")";
+        if (series.HistogramBinLayout != null) label = HistogramPointDescription(series, pointIndex, resolvedLabel.DisplayedText);
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(pointIndex),
@@ -190,6 +191,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         };
         if (stack.HasValue) AddStackMetadata(metadata, stack.Value);
+        if (series.HistogramBinLayout != null) AddHistogramMetadata(metadata, series, pointIndex);
         return builder.PushGroup(id, "point", metadata);
     }
 

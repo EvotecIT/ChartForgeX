@@ -26,10 +26,11 @@ internal sealed class ChartBarCoordinateMap {
         var nodes = CreateNodes(chart).OrderBy(node => node.Coordinate).ThenBy(node => node.SeriesIndex).ThenBy(node => node.PointIndex).ToArray();
         var activeGroups = new List<CoordinateGroup>();
         var allGroups = new List<CoordinateGroup>();
+        var equivalentLayouts = new Dictionary<(ChartHistogramBinLayout Left, ChartHistogramBinLayout Right), bool>();
         var nextId = 0;
         foreach (var node in nodes) {
             activeGroups.RemoveAll(group => !ChartMath.SameCoordinate(group.LastCoordinate, node.Coordinate));
-            var group = FindBestGroup(activeGroups, node);
+            var group = FindBestGroup(activeGroups, node, equivalentLayouts);
             if (group == null) {
                 group = new CoordinateGroup(new ChartBarCoordinateKey(nextId++, node.Coordinate));
                 activeGroups.Add(group);
@@ -75,12 +76,13 @@ internal sealed class ChartBarCoordinateMap {
         }
     }
 
-    private static CoordinateGroup? FindBestGroup(List<CoordinateGroup> groups, CoordinateNode node) {
+    private static CoordinateGroup? FindBestGroup(List<CoordinateGroup> groups, CoordinateNode node,
+        Dictionary<(ChartHistogramBinLayout Left, ChartHistogramBinLayout Right), bool> equivalentLayouts) {
         CoordinateGroup? best = null;
         var bestRank = int.MaxValue;
         var bestDistance = double.PositiveInfinity;
         foreach (var group in groups) {
-            if (!group.TryGetCompatibility(node, out var rank, out var distance)) continue;
+            if (!group.TryGetCompatibility(node, equivalentLayouts, out var rank, out var distance)) continue;
             if (rank > bestRank || rank == bestRank && distance >= bestDistance) continue;
             best = group;
             bestRank = rank;
@@ -116,14 +118,20 @@ internal sealed class ChartBarCoordinateMap {
             }
         }
 
-        internal bool TryGetCompatibility(CoordinateNode node, out int rank, out double distance) {
+        internal bool TryGetCompatibility(CoordinateNode node, Dictionary<(ChartHistogramBinLayout Left, ChartHistogramBinLayout Right), bool> equivalentLayouts,
+            out int rank, out double distance) {
             rank = int.MaxValue;
             distance = double.PositiveInfinity;
             if (_seriesIndices.Contains(node.SeriesIndex) || !ChartMath.SameCoordinate(LastCoordinate, node.Coordinate)) return false;
 
             if (node.Layout != null && _lastHistogramNode.HasValue) {
                 var histogramNode = _lastHistogramNode.Value;
-                if (EquivalentLayouts(node.Layout, histogramNode.Layout!)) {
+                var pair = (node.Layout, histogramNode.Layout!);
+                if (!equivalentLayouts.TryGetValue(pair, out var equivalent)) {
+                    equivalent = pair.Item1.HasEquivalentBins(pair.Item2);
+                    equivalentLayouts.Add(pair, equivalent);
+                }
+                if (equivalent) {
                     if (node.BinIndex != histogramNode.BinIndex) return false;
                 } else if (!EquivalentBounds(node, histogramNode)) {
                     return false;
@@ -165,10 +173,6 @@ internal sealed class ChartBarCoordinateMap {
         internal ChartHistogramBinLayout Layout { get; }
         internal int BinIndex { get; }
     }
-
-    private static bool EquivalentLayouts(ChartHistogramBinLayout left, ChartHistogramBinLayout right) =>
-        left.Count == right.Count && ChartMath.SameCoordinate(left.Minimum, right.Minimum) &&
-        ChartMath.SameCoordinate(left.Maximum, right.Maximum) && ChartMath.SameCoordinate(left.Width, right.Width);
 
     private static bool EquivalentBounds(CoordinateNode left, CoordinateNode right) =>
         ChartMath.SameCoordinate(left.Layout!.GetLowerBound(left.BinIndex), right.Layout!.GetLowerBound(right.BinIndex)) &&

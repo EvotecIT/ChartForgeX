@@ -7,7 +7,7 @@ public static partial class V2Examples {
 
     private static string GroupFor(string family) => family switch {
         "line" or "step-line" or "area" or "step-area" or "stacked-area" or "range-band" or "range-area" or "trend-line" or "cartesian" => "trends",
-        "scatter" or "bubble" or "error-bar" or "box-plot" or "candlestick" or "ohlc" or "polar" or "radar" => "distribution",
+        "scatter" or "bubble" or "histogram" or "error-bar" or "box-plot" or "candlestick" or "ohlc" or "polar" or "radar" => "distribution",
         "pie" or "donut" or "polar-area" or "treemap" or "sunburst" or "funnel" or "pictorial" => "proportion",
         "gauge" or "circle" or "radial-bar" or "layered-radial" or "bullet" or "progress-bar" => "indicators",
         "heatmap" or "hexbin-heatmap" or "calendar-heatmap" or "dotted-map" or "tile-map" or "region-map" => "matrices-maps",
@@ -17,6 +17,8 @@ public static partial class V2Examples {
     };
 
     private static int GroupOrder(string family) => Array.FindIndex(CatalogGroups, group => group.Id == GroupFor(family));
+
+    private static bool IsCompactVariant(string variant) => variant == "compact" || variant.StartsWith("compact-", StringComparison.Ordinal);
 
     private static string FamilyLabel(string family) => family switch {
         "cartesian" => "Combination chart", "chart-grid" => "Chart grid", "circle" => "Circular progress",
@@ -30,6 +32,8 @@ public static partial class V2Examples {
         "wrapped-legend" => "Long legend", "long-title" => "Long title", "missing" => "Missing observations",
         "zero" => "Zero values", "empty" => "Empty data", "dense" => "Dense data", "options" => "Configured options",
         "sparse" => "Sparse data", "shapes" => "Node shapes", "above-labels" => "Outer labels", "below-labels" => "Inner labels",
+        "density" => "Density", "compact-density" => "Compact density", "sum" => "Sum", "compact-sum" => "Compact sum",
+        "mean" => "Mean", "compact-mean" => "Compact mean",
         _ => FamilyLabel(variant)
     };
 }

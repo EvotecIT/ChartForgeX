@@ -31,20 +31,20 @@ public sealed class NiceNumericLayoutTests {
     public void CountBinsUseAlignedEqualRoundWidths(double minimum, double maximum, int count) {
         var bins = ChartHistogramBinLayout.FromCount(minimum, maximum, count);
         Assert.True(bins.Minimum <= minimum && bins.Maximum >= maximum);
-        Assert.Equal(Math.Round(bins.Minimum / bins.Width), bins.Minimum / bins.Width, 9);
-        for (var i = 0; i < bins.Count; i++) Assert.Equal(bins.Width, bins.GetUpperBound(i) - bins.GetLowerBound(i), 9);
+        Assert.Equal(Math.Round(bins.Minimum / bins.GetWidth(0)), bins.Minimum / bins.GetWidth(0), 9);
+        for (var i = 0; i < bins.Count; i++) Assert.Equal(bins.GetWidth(0), bins.GetWidth(i), 9);
         if (minimum == 28) Assert.Equal(new[] { 25d, 50d, 75d, 100d }, Enumerable.Range(0, bins.Count).Select(bins.GetLowerBound).Append(bins.Maximum));
     }
 
     [Fact]
     public void WidthBinsAlignAndExactModeRetainsTheRemainder() {
         var bins = ChartHistogramBinLayout.FromWidth(2, 10, 3);
-        Assert.Equal(0, bins.Minimum); Assert.Equal(12, bins.Maximum); Assert.Equal(3, bins.Width);
+        Assert.Equal(0, bins.Minimum); Assert.Equal(12, bins.Maximum); Assert.Equal(3, bins.GetWidth(0));
         var exact = ChartHistogramBinLayout.FromWidth(2, 10, 3, roundBounds: false);
         Assert.Equal(2, exact.Minimum); Assert.Equal(10, exact.Maximum);
         Assert.Equal(2, exact.GetUpperBound(2) - exact.GetLowerBound(2));
         var chart = Chart.Create().AddHistogram("rounded", new[] { 28d, 52d, 98d }, 3);
-        Assert.Equal(new[] { "25-50", "50-75", "75-100" }, chart.Options.XAxisLabels.Select(label => label.Text));
+        Assert.Equal(new[] { (25d, 50d), (50d, 75d), (75d, 100d) }, chart.Series[0].HistogramBins.Select(bin => (bin.LowerBound, bin.UpperBound)));
         Assert.Equal(3, chart.Series[0].Points.Sum(point => point.Y));
     }
 }
