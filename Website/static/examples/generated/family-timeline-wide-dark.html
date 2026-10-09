@@ -456,14 +456,14 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
-                .WithFunnel(options =&gt; {
+                .ConfigureFunnel(options =&gt; {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
         if (kind == ChartSeriesKind.Pyramid) {
             var chart = Chart.Create().WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).WithDataLabels()
                 .AddPyramid(&quot;Allocation&quot;, new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
-                .WithPyramid(options =&gt; {
+                .ConfigurePyramid(options =&gt; {
                     options.ValueEncoding = ChartPyramidValueEncoding.Area;
                     options.Orientation = ChartOrientation.Horizontal;
                     options.Reversed = true;
@@ -854,14 +854,14 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
-                .WithFunnel(options =&gt; {
+                .ConfigureFunnel(options =&gt; {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
         if (kind == ChartSeriesKind.Pyramid) {
             var chart = Chart.Create().WithXLabels(&quot;Services&quot;, &quot;Platform&quot;, &quot;Support&quot;, &quot;Unassigned&quot;).WithDataLabels()
                 .AddPyramid(&quot;Allocation&quot;, new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
-                .WithPyramid(options =&gt; {
+                .ConfigurePyramid(options =&gt; {
                     options.ValueEncoding = ChartPyramidValueEncoding.Area;
                     options.Orientation = ChartOrientation.Horizontal;
                     options.Reversed = true;
