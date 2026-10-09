@@ -25,7 +25,10 @@ public static partial class V2Examples {
             var variants = new List<string> { "wide", "compact" };
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
             if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
-            if (RelationshipOptionFamilies.Contains(kind)) variants.Add("options");
+            if (RelationshipOptionFamilies.Contains(kind)) {
+                variants.Add("options");
+                if (kind == ChartSeriesKind.Sankey) variants.Add("compact-options");
+            }
             if (kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge) { variants.Add("precision"); variants.Add("compact-precision"); }
             if (!curated) {
                 if (SparseFamilies.Contains(kind)) variants.Add("sparse");
