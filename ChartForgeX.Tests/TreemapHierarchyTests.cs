@@ -83,9 +83,26 @@ public sealed class TreemapHierarchyTests {
         }));
         Assert.Equal(3, Targets(zero).Length);
         Assert.All(Targets(zero), node => Assert.Equal(0, Number(node, "data-cfx-value")));
+        Assert.All(Targets(zero), node => Assert.Equal("zero", (string?)node.Attribute("data-cfx-geometry-status")));
         Assert.DoesNotContain(zero.Scene.Nodes.OfType<VisualSceneRectangle>(), rectangle => rectangle.Role is "treemap-tile-mark" or "treemap-group-mark");
         Assert.All(zero.Regions, region => { Assert.Equal(0, region.Bounds.Width); Assert.Equal(0, region.Bounds.Height); });
         Assert.Contains(zero.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.no-data");
+    }
+
+    [Fact]
+    public void PrecisionCollapsedPositiveLeafRetainsRawFactWithoutGeometry() {
+        var prepared = Prepare(Chart.Create().AddTreemap("Allocation", new[] {
+            new ChartTreemapItem("group", "Group"), new ChartTreemapItem("visible", "Main allocation", "group", 1),
+            new ChartTreemapItem("tiny", "Small allocation", "group", 1e-20)
+        }));
+        var nodes = Targets(prepared).ToDictionary(node => (string)node.Attribute("data-cfx-target-id")!);
+        Assert.Equal("visible", (string?)nodes["visible"].Attribute("data-cfx-geometry-status"));
+        Assert.Equal("precision-collapse", (string?)nodes["tiny"].Attribute("data-cfx-geometry-status"));
+        Assert.Equal("treemap-unpainted-value", (string?)nodes["tiny"].Attribute("data-cfx-role"));
+        Assert.Equal(1e-20, Number(nodes["tiny"], "data-cfx-value"));
+        Assert.Equal(1e-20, Number(nodes["tiny"], "data-cfx-authored-value")); Assert.Empty(nodes["tiny"].Elements());
+        var region = prepared.Regions.Single(item => item.Id == "series-0-node-tiny");
+        Assert.Equal(0, region.Bounds.Width); Assert.Equal(0, region.Bounds.Height);
     }
 
     [Fact]
