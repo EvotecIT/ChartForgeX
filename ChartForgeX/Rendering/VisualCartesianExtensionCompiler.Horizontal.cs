@@ -24,7 +24,7 @@ internal static partial class VisualCartesianCompiler {
             using (ObservationGroup(builder, series, index, item, item, 1, bounds, label, stack, ("category", point.X), ("value", point.Y), ("base", stack.Base)))
                 DrawBarSurface(chart, context, builder, series, item, bounds, PointColor(series, index, item, colors), colors, "horizontal-bar", horizontal: true, direction: direction);
             obstacles.Add(new LabelObstacle(PointId(index, item), bounds));
-            AddHorizontalLabel(chart, context, series, index, item, new ChartPoint(endX, y), bounds, point.Y, label, labels);
+            AddHorizontalLabel(chart, context, series, index, item, new ChartPoint(endX, y), bounds, point.Y, direction, label, labels);
         }
     }
 
@@ -41,22 +41,14 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void AddHorizontalLabel(Chart chart, VisualRenderContext context, ChartSeries series, int index, int item, ChartPoint anchor,
-        ChartRect bounds, double value, ResolvedPointLabel label, List<LabelPlacementRequest> labels) {
+        ChartRect bounds, double value, double direction, ResolvedPointLabel label, List<LabelPlacementRequest> labels) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || label.Text.Length == 0) return;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
-        if (placement == ChartDataLabelPlacement.Auto && ChartStackLayout.Participates(chart, series)) placement = ChartDataLabelPlacement.Inside;
-        if (placement != ChartDataLabelPlacement.Auto) {
-            if (placement == ChartDataLabelPlacement.Left) anchor = new ChartPoint(bounds.Left, anchor.Y);
-            if (placement == ChartDataLabelPlacement.Right) anchor = new ChartPoint(bounds.Right, anchor.Y);
-            if (placement == ChartDataLabelPlacement.Above) anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top);
-            if (placement == ChartDataLabelPlacement.Below) anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Bottom);
-            AddLabel(chart, context, series, index, item, anchor, bounds, label, labels, value);
-            return;
-        }
-        var spacing = context.Theme.Spacing;
-        labels.Add(new LabelPlacementRequest(label.Text, anchor, label.Style, value >= 0
-            ? new[] { new LabelCandidate(spacing, 0, 0, .5), new LabelCandidate(-spacing, 0, 1, .5) }
-            : new[] { new LabelCandidate(-spacing, 0, 1, .5), new LabelCandidate(spacing, 0, 0, .5) }) { AssociatedMarkId = PointId(index, item) });
+        if (placement == ChartDataLabelPlacement.Left) anchor = new ChartPoint(bounds.Left, anchor.Y);
+        if (placement == ChartDataLabelPlacement.Right) anchor = new ChartPoint(bounds.Right, anchor.Y);
+        if (placement == ChartDataLabelPlacement.Above) anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top);
+        if (placement == ChartDataLabelPlacement.Below) anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Bottom);
+        AddLabel(chart, context, series, index, item, anchor, bounds, label, labels, value, barDirection: direction, horizontal: true);
     }
 
     private static (ChartAxis Value, ChartAxis Category) HorizontalAxes(Chart chart, AxisLabelCache cache) {

@@ -50,8 +50,19 @@ public static partial class V2Examples {
                 WriteModel(output, artifacts, chart, id, family, title, variant, subtitle, mode, width, height, legend,
                     "V2GalleryModels.Create(ChartSeriesKind." + kind + ", " + Literal(variant) + ", VisualThemeMode." + mode + ")", chart.Series.Select(series => series.Kind.ToString()).Distinct().ToArray());
             }
+            if (kind == ChartSeriesKind.RadialBar) WriteNumericRadialAxes(output, artifacts, mode);
         }
         WriteExpandedDiagrams(output, artifacts, curated);
+    }
+
+    private static void WriteNumericRadialAxes(string output, ICollection<ProofArtifact> artifacts, VisualThemeMode mode) {
+        foreach (var compact in new[] { false, true }) {
+            var variant = compact ? "compact-dual-axes" : "dual-axes";
+            var id = "family-radial-bar-" + variant + "-" + mode.ToString().ToLowerInvariant();
+            WriteModel(output, artifacts, V2GalleryModels.CreateRadialBarScales(), id, "radial-bar", "Requests and resolution rate", variant,
+                "Request counts and percentages use independent scales", mode, compact ? 360 : 800, compact ? 360 : 440, true,
+                "V2GalleryModels.CreateRadialBarScales()", new[] { "RadialBar" });
+        }
     }
 
     private static string GeometrySubtitle(ChartSeriesKind kind) => kind switch {

@@ -109,7 +109,7 @@ internal static partial class VisualCartesianCompiler {
                 else DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors, direction: direction);
             }
             obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
-            AddLabel(chart, context, series, index, pointIndex, new ChartPoint(left + barWidth / 2, y), bounds, resolvedLabel, labels);
+            AddLabel(chart, context, series, index, pointIndex, new ChartPoint(left + barWidth / 2, y), bounds, resolvedLabel, labels, barDirection: direction);
         }
     }
 
@@ -167,14 +167,15 @@ internal static partial class VisualCartesianCompiler {
 
     private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
         ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null,
-        TextMetrics? calloutMetrics = null) {
+        TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
         if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue &&
             (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) return;
         var value = observationValue ?? series.Points[pointIndex].Y;
         var spacing = context.Theme.Spacing;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
-        if (placement == ChartDataLabelPlacement.Auto && series.Kind == ChartSeriesKind.Bar && ChartStackLayout.Participates(chart, series))
+        var bar = series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar;
+        if (placement == ChartDataLabelPlacement.Auto && bar && ChartStackLayout.Participates(chart, series))
             placement = ChartDataLabelPlacement.Inside;
         var candidates = new List<LabelCandidate>();
         var leftOffset = mark.Left - anchor.X - spacing;
@@ -194,20 +195,26 @@ internal static partial class VisualCartesianCompiler {
             var above = placement == ChartDataLabelPlacement.Above;
             foreach (var alignment in new[] { .5, 0, 1 }) candidates.Add(new LabelCandidate(0, above ? -spacing : spacing, alignment, above ? 1 : 0));
         }
+        else if (horizontal) {
+            var positive = barDirection.GetValueOrDefault(value) >= 0;
+            candidates.Add(new LabelCandidate(positive ? spacing : -spacing, 0, positive ? 0 : 1, .5));
+            candidates.Add(new LabelCandidate(positive ? -spacing : spacing, 0, positive ? 1 : 0, .5));
+        }
         else {
-            candidates.Add(new LabelCandidate(0, value >= 0 ? -spacing : spacing, .5, value >= 0 ? 1 : 0));
+            var positive = barDirection.GetValueOrDefault(value) >= 0;
+            candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, .5, positive ? 1 : 0));
             candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
             candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
             // A label beside the value edge can fit above a sloping envelope even when a
             // centered side label would intersect it and the top lane lacks a full gap.
-            candidates.Add(new LabelCandidate(rightOffset, 0, 0, value >= 0 ? 1 : 0));
-            candidates.Add(new LabelCandidate(leftOffset, 0, 1, value >= 0 ? 1 : 0));
-            candidates.Add(new LabelCandidate(rightOffset, value >= 0 ? -spacing : spacing, 0, value >= 0 ? 1 : 0));
-            candidates.Add(new LabelCandidate(leftOffset, value >= 0 ? -spacing : spacing, 1, value >= 0 ? 1 : 0));
+            candidates.Add(new LabelCandidate(rightOffset, 0, 0, positive ? 1 : 0));
+            candidates.Add(new LabelCandidate(leftOffset, 0, 1, positive ? 1 : 0));
+            candidates.Add(new LabelCandidate(rightOffset, positive ? -spacing : spacing, 0, positive ? 1 : 0));
+            candidates.Add(new LabelCandidate(leftOffset, positive ? -spacing : spacing, 1, positive ? 1 : 0));
             // Local extrema can have strokes on both sides of the first candidate. Try a
             // second lane before shortening the label, then the opposite vertical side.
-            candidates.Add(new LabelCandidate(0, value >= 0 ? -spacing * 2 : spacing * 2, .5, value >= 0 ? 1 : 0));
-            candidates.Add(new LabelCandidate(0, value >= 0 ? spacing : -spacing, .5, value >= 0 ? 0 : 1));
+            candidates.Add(new LabelCandidate(0, positive ? -spacing * 2 : spacing * 2, .5, positive ? 1 : 0));
+            candidates.Add(new LabelCandidate(0, positive ? spacing : -spacing, .5, positive ? 0 : 1));
             foreach (var alignment in new[] { .5, 0, 1 }) {
                 candidates.Add(new LabelCandidate(0, mark.Top - anchor.Y - spacing, alignment, 1));
                 candidates.Add(new LabelCandidate(0, mark.Bottom - anchor.Y + spacing, alignment, 0));
@@ -241,7 +248,7 @@ internal static partial class VisualCartesianCompiler {
             }
         }
         var inside = placement == ChartDataLabelPlacement.Inside || placement == ChartDataLabelPlacement.Center;
-        var autoInside = placement == ChartDataLabelPlacement.Auto && series.Kind == ChartSeriesKind.Bar;
+        var autoInside = placement == ChartDataLabelPlacement.Auto && bar;
         if (autoInside) candidates.Add(new LabelCandidate(mark.Left + mark.Width / 2 - anchor.X, mark.Top + mark.Height / 2 - anchor.Y, .5, .5));
         var style = resolvedLabel.Style;
         var insideStyle = style;
