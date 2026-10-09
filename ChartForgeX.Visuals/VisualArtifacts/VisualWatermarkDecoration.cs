@@ -52,7 +52,8 @@ public static class VisualWatermarkDecoration {
 
     /// <summary>Creates a detached watermarked artifact with static presentation resolved using the supplied core options.</summary>
     /// <remarks>Watermarks and rendering options are captured before presentation is attached to the copied envelope.
-    /// An empty watermark array still returns an independent envelope. Semantic model changes retain ordinary producer
+    /// An empty watermark array still returns an independent envelope. Applied layers are recorded in the
+    /// presentation.watermarks metadata entry. Semantic model changes retain ordinary producer
     /// behavior; this operation does not freeze or take ownership of a model or borrowed image buffers.</remarks>
     public static VisualArtifact ToWatermarkedArtifact(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions,
         params VisualWatermark[] watermarks) {

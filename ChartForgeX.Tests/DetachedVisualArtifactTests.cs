@@ -128,8 +128,10 @@ public sealed class DetachedVisualArtifactTests {
         Assert.Contains("<html lang=\"pl-PL\">", first.ToHtmlPage(options));
         Assert.Equal(PaintWithoutWatermarks(originalSvg), PaintWithoutWatermarks(firstSvg));
         Assert.NotEqual(originalPng, firstPng);
-        Assert.Equal(originalJson, first.ToInterchangeJson());
-        Assert.Equal(originalJson, second.ToInterchangeJson());
+        var decoratedEnvelope = VisualArtifactInterchangeEnvelope.FromJson(originalJson);
+        decoratedEnvelope.Extensions["presentation.watermarks"] = "1";
+        Assert.Equal(decoratedEnvelope.ToJson(), first.ToInterchangeJson());
+        Assert.Equal(decoratedEnvelope.ToJson(), second.ToInterchangeJson());
         watermark.OffsetX = 50;
         options.Topology.PngOutputScale = 1;
         Assert.Equal(firstSvg, first.ToSvg());
