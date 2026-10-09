@@ -11,8 +11,15 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
         var fonts = TerminalTabRasterFonts.Resolve(story);
         var layout = PngTerminalStoryRenderer.BuildLayout(story, fonts);
         var delayCentiseconds = QuantizedDelayCentiseconds(animation.FramesPerSecond);
-        var totalSeconds = layout.DurationSeconds + animation.EndHoldSeconds;
-        var frameCount = Math.Max(2, (int)Math.Ceiling(totalSeconds * 100 / delayCentiseconds) + 1);
+        // Keep the regular cadence at or below the requested frame rate. Completion
+        // can therefore land just after the logical end; measure the explicit hold
+        // from that first completed sample, and retain it for at least one centisecond.
+        var completionFrame = (int)Math.Ceiling(layout.DurationSeconds * 100 / delayCentiseconds);
+        var completionCentiseconds = checked(completionFrame * delayCentiseconds);
+        var holdCentiseconds = Math.Max(1, (int)Math.Round(animation.EndHoldSeconds * 100, MidpointRounding.AwayFromZero));
+        var totalCentiseconds = checked(completionCentiseconds + holdCentiseconds);
+        var frameCount = checked((totalCentiseconds + delayCentiseconds - 1) / delayCentiseconds);
+        var finalDelayCentiseconds = totalCentiseconds - checked((frameCount - 1) * delayCentiseconds);
         if (frameCount > animation.MaximumFrames) {
             throw new InvalidOperationException(
                 "Animated terminal story requires " + frameCount +
@@ -53,7 +60,7 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
                 checked((int)outputHeight),
                 frameCount,
                 delayCentiseconds,
-                delayCentiseconds,
+                finalDelayCentiseconds,
                 animation.Loop,
                 maximumEncodedBytes,
                 index => PngTerminalStoryRenderer.RenderImage(
@@ -70,7 +77,12 @@ internal sealed class TerminalStoryAnimatedRasterRenderer {
             images.Add(PngTerminalStoryRenderer.RenderImage(story, layout, fonts, animation.OutputScale, elapsed));
         }
 
-        var frames = AnimatedRasterFrames.Create(images, delayCentiseconds, animation.Loop, format.GetDisplayName());
+        var frames = AnimatedRasterFrames.Create(
+            images,
+            delayCentiseconds,
+            finalDelayCentiseconds,
+            animation.Loop,
+            format.GetDisplayName());
         return AnimatedRasterEncoder.EncodeBoundedGif(frames, maximumEncodedBytes);
     }
 

@@ -57,8 +57,13 @@ public sealed class NativeTopologyDuplicateEdgeTests {
             }
         }
         var tour = Assert.Single(xml.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-motion-tour-path");
-        var reference = Assert.Single(xml.Descendants(), element => element.Name.LocalName == "mpath");
-        Assert.Equal("#" + (string?)tour.Attribute("id"), (string?)reference.Attribute("href"));
+        var references = xml.Descendants().Where(element => element.Name.LocalName == "mpath").ToArray();
+        Assert.NotEmpty(references);
+        Assert.All(references, reference => Assert.Equal("#" + (string?)tour.Attribute("id"), (string?)reference.Attribute("href")));
+        foreach (var role in new[] { "topology-motion-marker", "topology-motion-halo", "topology-motion-surface", "topology-motion-outline" }) {
+            var layer = Assert.Single(xml.Descendants(), element => (string?)element.Attribute("data-cfx-role") == role);
+            Assert.Contains(layer.Elements(), element => element.Name.LocalName == "animateMotion");
+        }
         Assert.StartsWith("animation-", (string?)tour.Attribute("id"), StringComparison.Ordinal);
         Assert.All(xml.Descendants().Where(element => element.Name.LocalName is "animate" or "animateMotion"), element => {
             Assert.Equal(loop ? "indefinite" : "1", (string?)element.Attribute("repeatCount"));
