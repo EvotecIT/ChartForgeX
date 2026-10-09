@@ -730,6 +730,7 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered) { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column) { opacity: 0 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-in { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"] { text-decoration: line-through; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
