@@ -32,7 +32,7 @@ public sealed class SankeyVisualDefaultsTests {
         var chart = Flow();
         var authored = ChartColor.FromHex("#7D3F98");
         chart.Series[0].WithPointColor(0, authored);
-        chart.Options.SankeyNodeStates[chart.Series[0].Nodes[1].Id] = ChartSeriesState.Warning;
+        chart.Series[0].WithNodeState(chart.Series[0].Nodes[1].Id, ChartSeriesState.Warning);
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);
         var nodes = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "sankey-node-mark").ToArray();

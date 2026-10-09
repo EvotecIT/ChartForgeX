@@ -71,7 +71,7 @@ public sealed class PreparedHierarchySankeyTests {
     [InlineData(VisualThemeMode.Dark)]
     public void SankeyFractionalRibbonsAndNodesShareOneExactWeightScale(VisualThemeMode mode) {
         var chart = Chart.Create().AddSankey("Flows", new[] { new ChartNode("Source", "Source"), new ChartNode("Tiny", "Tiny"), new ChartNode("Large", "Large") }, new[] { new ChartFlowLink("flow-1", "Source", "Tiny", .001), new ChartFlowLink("flow-2", "Source", "Large", 1) });
-        chart.Options.SankeyNodeStates[chart.Series[0].Nodes[0].Id] = ChartSeriesState.Danger;
+        chart.Series[0].WithNodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
         var prepared = chart.Prepare(Context(mode: mode)); var xml = XDocument.Parse(prepared.ToSvg());
         var links = Role(xml, "sankey-link").OrderBy(e => Number(e, "data-cfx-value")).ToArray();
         Assert.Equal(1000, Number(links[1], "data-cfx-width") / Number(links[0], "data-cfx-width"), 9);
@@ -91,7 +91,7 @@ public sealed class PreparedHierarchySankeyTests {
             chart.Options.ValueFormatter = value => "value " + value.ToString("0.0", CultureInfo.InvariantCulture);
             chart.Series[0].FillPattern = ChartFillPattern.DiagonalForward;
             var prepared = chart.Prepare(Context()); string svg = prepared.ToSvg(); byte[] png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
-            chart.Series[0].Points.Clear(); chart.Series[0].Color = ChartColor.Black; chart.Options.SankeyNodeStates.Clear();
+            chart.Series[0].Points.Clear(); chart.Series[0].Color = ChartColor.Black; if (chart.Series[0].Nodes.Count > 0) chart.Series[0].WithNodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
             chart.Options.ValueFormatter = _ => "changed"; chart.Series[0].DataLabelStyle.FontSize = 30;
             Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         }

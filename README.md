@@ -700,7 +700,7 @@ var chart = Chart.Create().AddSunburst("Teams", nodes, links);
 
 Tree and Sunburst require one connected root and one incoming link per child. Tree placement is unweighted; Sunburst sectors use leaf weights, and internal values sum their leaves. Authored incoming weights remain available separately, including positive fractions below one millionth.
 
-Sankey accepts directed `ChartFlowLink(id, sourceId, targetId, value)` records. Parallel flows use different IDs, and Sankey rejects cycles and self-links. `WithSankeyNodeState(id, state)` follows the node ID through input reordering or label changes. Series expose immutable `Nodes`, `FlowLinks`, and `TreeLinks`; these families have no numeric `Points`. See the [migration guide](docs/v2/migration.md#hierarchy-and-flow-identities) for replaced signatures and metadata, and the [configured examples](ChartForgeX.Examples/V2GalleryModels.Relationships.cs) for repeated labels and parallel flows.
+Sankey accepts directed `ChartFlowLink(id, sourceId, targetId, value)` records. Parallel flows use different IDs, and Sankey rejects cycles and self-links. `chart.Series[0].WithNodeState(id, state)` follows the node ID through input reordering or label changes. Semantic node states are scoped to their series, and `NodeStates` is a read-only view. Series expose immutable `Nodes`, `FlowLinks`, and `TreeLinks`; these families have no numeric `Points`. See the [migration guide](docs/v2/migration.md#hierarchy-and-flow-identities) for replaced signatures and metadata, and the [configured examples](ChartForgeX.Examples/V2GalleryModels.Relationships.cs) for repeated labels and parallel flows.
 
 ## Chart catalog
 

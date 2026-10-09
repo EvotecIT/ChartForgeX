@@ -74,7 +74,8 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
         var nodes = new[] { new ChartNode("output", "Support"), new ChartNode("input", "Renamed support") };
         var chart = Chart.Create().WithSize(640, 350).AddSankey("Traffic", nodes, new[] {
             new ChartFlowLink("priority", "input", "output", 8), new ChartFlowLink("standard", "input", "output", 5)
-        }).WithSankeyNodeState("input", ChartSeriesState.Warning);
+        });
+        chart.Series[0].WithNodeState("input", ChartSeriesState.Warning);
         var html = chart.ToInteractiveHtmlPage();
         await using var session = await OpenAsync(html);
         var page = session.Page;
