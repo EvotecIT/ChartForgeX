@@ -37,7 +37,7 @@ internal static class StoryReplayExamples {
             .Marker(TimeSpan.FromSeconds(76), "Return to the completed report")
             .Clear(TimeSpan.FromSeconds(76))
             .ChangeDirectory(TimeSpan.FromSeconds(77), "~/out")
-            .Command(TimeSpan.FromSeconds(78), "Get-Item report.html")
+            .Command(TimeSpan.FromSeconds(78), "Get-Item report*")
             .Output(TimeSpan.FromSeconds(79), "report.html\n24 checks passed", TerminalTextTone.Success);
         var replay = recording.CompressPauses(TimeSpan.FromSeconds(1.5))
             .Explain(TimeSpan.FromSeconds(5), "Idle waits shortened; original times retained.");
