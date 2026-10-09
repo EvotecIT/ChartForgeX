@@ -253,7 +253,7 @@ internal static partial class SmokeTests {
             });
         treemap.Series[0].WithPointColor(1, "#8B5CF6");
         var treemapTile = System.Xml.Linq.XDocument.Parse(treemap.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile"
-            && (string?)element.Attribute("data-cfx-point") == "1");
+            && (string?)element.Attribute("data-cfx-target-id") == "Edge");
         Assert(treemapTile.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile-mark" && (string?)element.Attribute("fill") == "#8B5CF6"),
             "The authored treemap tile should use its point-specific color in SVG.");
         Assert(PreparedFamily(treemap).Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Any(node => node.Role == "treemap-tile-mark" && node.Fill!.Value.Equals(ChartColor.FromHex("#8B5CF6"))),

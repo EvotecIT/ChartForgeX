@@ -26,7 +26,9 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [InlineData(ChartSeriesKind.Pictorial, "pictorial-fill", "fill")]
     [InlineData(ChartSeriesKind.WordCloud, "word-cloud-text", "fill")]
     public void PreparedMarksKeepStateAndAuthoredSeriesDistinctWithEqualRgb(ChartSeriesKind kind, string role, string attribute) {
-        var chart = V2GalleryModels.Create(kind);
+        var chart = kind == ChartSeriesKind.Treemap ? Chart.Create().AddTreemap("Values", new[] {
+            new ChartTreemapItem("first", "First", value: 3), new ChartTreemapItem("second", "Second", value: 2)
+        }) : V2GalleryModels.Create(kind);
         foreach (var series in chart.Series) series.StateRole = ChartSeriesState.Danger;
         var context = Context(); var variables = Variables();
         var prepared = chart.Prepare(context);
@@ -34,6 +36,18 @@ public sealed partial class V2PreparedFamilyPaintTests {
         foreach (var series in chart.Series) series.Color = Shared;
         var explicitSeries = chart.Prepare(context);
         Assert.All(Paints(explicitSeries, variables, role, attribute), paint => Assert.Contains("var(--series,", paint));
+    }
+
+    [Fact]
+    public void QuantitativeTreemapFactoryKeepsFillAndGeometryWithStatusOutlines() {
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Treemap);
+        var context = Context(); var variables = Variables();
+        var original = chart.Prepare(context);
+        chart.Series[0].StateRole = ChartSeriesState.Danger;
+        var prepared = chart.Prepare(context);
+        Assert.Equal(Paints(original, variables, "treemap-tile-mark", "fill"), Paints(prepared, variables, "treemap-tile-mark", "fill"));
+        Assert.Equal(original.Regions.Select(region => region.Bounds), prepared.Regions.Select(region => region.Bounds));
+        Assert.All(Paints(prepared, variables, "treemap-tile-mark", "stroke"), paint => Assert.Contains("var(--status,", paint));
     }
 
     [Fact]
