@@ -16,7 +16,7 @@
     if (node.closest('[data-cfx-role="legend-item"]')) return false;
     // Prepared marks carry their source identity on a containing semantic group.
     // Bind that group once instead of also binding its labels, decorations and individual shapes.
-    const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node]');
+    const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-series][data-cfx-value]:not([data-cfx-point])');
     return !owner;
   };
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
@@ -107,7 +107,7 @@
       node.setAttribute('data-cfx-target-id', id);
     });
   };
-  const text = (node) => {
+  const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
@@ -116,7 +116,7 @@
     if (label) parts.push(label);
     else if (data.cfxRole) parts.push(data.cfxRole.replace(/-/g, ' '));
     if (data.cfxSeries !== undefined && !label) parts.push(seriesLabel(node));
-    if (data.cfxPoint !== undefined) parts.push('Point ' + data.cfxPoint);
+    if (data.cfxPoint !== undefined && (!tooltipTitle || !label)) parts.push('Point ' + data.cfxPoint);
     const value = data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '';
     if (value) parts.push('Value ' + value);
     return parts.join(' / ');
@@ -151,6 +151,8 @@
     const owner = node.closest ? node.closest('[data-cfx-label-' + key + ']') : null;
     return (owner && owner.getAttribute('data-cfx-label-' + key)) || fallback;
   };
+  const percentFormat = new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 2 });
+  const percentText = (value) => value === undefined || value === '' ? value : percentFormat.format(Number(value));
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -164,7 +166,7 @@
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
-    push('Percent', data.cfxPercent);
+    push('Percent', percentText(data.cfxPercent));
     push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
     metadataRows(node).forEach((row) => push(row.name, row.value));
@@ -174,7 +176,7 @@
     if ((node.dataset || {}).cfxRole === 'legend-item') return renderLegendTip(tip, node);
     const root = node.closest && node.closest('.cfx-interactive-chart');
     if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
-    const label = text(node);
+    const label = text(node, true);
     if (!label) return false;
     tip.replaceChildren();
     const title = document.createElement('div');

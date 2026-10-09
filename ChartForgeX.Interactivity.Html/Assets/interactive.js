@@ -16,7 +16,7 @@
     if (node.closest('[data-cfx-role="legend-item"]')) return false;
     // Prepared marks carry their source identity on a containing semantic group.
     // Bind that group once instead of also binding its labels, decorations and individual shapes.
-    const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node]');
+    const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-series][data-cfx-value]:not([data-cfx-point])');
     return !owner;
   };
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
@@ -107,7 +107,7 @@
       node.setAttribute('data-cfx-target-id', id);
     });
   };
-  const text = (node) => {
+  const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
@@ -116,7 +116,7 @@
     if (label) parts.push(label);
     else if (data.cfxRole) parts.push(data.cfxRole.replace(/-/g, ' '));
     if (data.cfxSeries !== undefined && !label) parts.push(seriesLabel(node));
-    if (data.cfxPoint !== undefined) parts.push('Point ' + data.cfxPoint);
+    if (data.cfxPoint !== undefined && (!tooltipTitle || !label)) parts.push('Point ' + data.cfxPoint);
     const value = data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '';
     if (value) parts.push('Value ' + value);
     return parts.join(' / ');
@@ -151,6 +151,8 @@
     const owner = node.closest ? node.closest('[data-cfx-label-' + key + ']') : null;
     return (owner && owner.getAttribute('data-cfx-label-' + key)) || fallback;
   };
+  const percentFormat = new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 2 });
+  const percentText = (value) => value === undefined || value === '' ? value : percentFormat.format(Number(value));
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -164,7 +166,7 @@
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
-    push('Percent', data.cfxPercent);
+    push('Percent', percentText(data.cfxPercent));
     push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
     metadataRows(node).forEach((row) => push(row.name, row.value));
@@ -174,7 +176,7 @@
     if ((node.dataset || {}).cfxRole === 'legend-item') return renderLegendTip(tip, node);
     const root = node.closest && node.closest('.cfx-interactive-chart');
     if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
-    const label = text(node);
+    const label = text(node, true);
     if (!label) return false;
     tip.replaceChildren();
     const title = document.createElement('div');
@@ -390,7 +392,8 @@
   const childPaint = (node, decoration, styles) => {
     if (!node) return null;
     const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
-    for (const shape of shapes) {
+    const primary = shapes.filter((shape) => shape.matches('[data-cfx-role^="circle-value"],[data-cfx-role^="gauge-value"],[data-cfx-role="gauge-needle"],[data-cfx-role="bullet-value"]'));
+    for (const shape of primary.concat(shapes)) {
       if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
       const paint = shapePaint(shape, styles);
       if (paint) return paint;
@@ -489,7 +492,7 @@
       data.cfxLabel = region ? region.label : node.getAttribute('aria-label') || '';
       if (match && match[2] !== undefined) data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
     });
-    svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"]').forEach((node) => {
+    svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"],[data-cfx-role="circle-chart"]').forEach((node) => {
       const data = node.dataset;
       if (data.cfxSeries === undefined) data.cfxSeries = '0';
       const item = series[Number(data.cfxSeries)];
@@ -505,6 +508,10 @@
       if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = xLabels.get(Number(data.cfxX)) || '';
       if (data.cfxRole === 'legend-item') return;
       const region = regions.get(data.cfxSourceId || '');
+      // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
+      if (region && data.cfxPoint === undefined && data.cfxValue !== undefined && data.cfxPercent !== undefined
+        && !node.hasAttribute('aria-label') && !node.hasAttribute('data-cfx-label'))
+        node.setAttribute('aria-label', region.label || item.name);
       if (!region || data.cfxPoint === undefined) return;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
@@ -1315,6 +1322,23 @@
     if (event.target instanceof Element && event.target.closest('[data-cfx-role="legend-item"]')) {
       // Legend items own their hover summary; the crosshair must not replace it.
       hideCrosshair(root, crosshair);
+      return;
+    }
+    // An explicitly valued series can be a native scalar datum without Cartesian point geometry.
+    const scalar = event.target instanceof Element ? event.target.closest('[data-cfx-target-kind="series"][data-cfx-value]') : null;
+    const scalarStyle = scalar && getComputedStyle(scalar);
+    if (scalar && root.contains(scalar)) {
+      hideCrosshair(root, crosshair);
+      if (scalar.closest('defs,[hidden],[aria-hidden="true"],[data-cfx-role="legend-item"],.cfx-series-muted')
+        || scalarStyle.display === 'none' || ['hidden', 'collapse'].includes(scalarStyle.visibility)
+        || ['zero', 'precision-collapse'].includes(scalar.dataset.cfxGeometryStatus)) {
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+        return;
+      }
+      if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(scalar)) || root.dataset.cfxHoverMode !== 'series')
+        setHover(root, scalar, true, true, 'series');
+      showTip(root, tip, scalar, event);
       return;
     }
     const point = nearestPoint(root, event);
