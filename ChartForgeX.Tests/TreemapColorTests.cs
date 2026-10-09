@@ -41,6 +41,55 @@ public sealed class TreemapColorTests {
     [Theory]
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]
+    public void NodeStateOutlinesPreserveQuantitativeFillGeometryAndPreparedFacts(VisualThemeMode mode) {
+        var chart = Colored();
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), themeMode: mode, frame: new VisualFrame(showLegend: true));
+        var original = chart.Prepare(context);
+        chart.Series[0].WithNodeState("a", ChartSeriesState.Warning);
+        var prepared = chart.Prepare(context); var svg = prepared.ToSvg();
+        var node = Targets(prepared).Single(target => (string?)target.Attribute("data-cfx-target-id") == "a");
+        var mark = OwnMark(node); var warning = context.Theme.Resolve(mode).Status.Medium.Fill;
+        Assert.Equal(original.Regions.Select(region => region.Bounds), prepared.Regions.Select(region => region.Bounds));
+        Assert.Equal("Warning", (string?)node.Attribute("data-cfx-state"));
+        Assert.Equal(9, Number(node, "data-cfx-value")); Assert.Equal(10, Number(node, "data-cfx-color-value"));
+        Assert.Equal(Red.ToCss(), (string?)mark.Attribute("fill")); Assert.Equal(warning.ToCss(), (string?)mark.Attribute("stroke"));
+        Assert.True(Number(mark, "stroke-width") > 0);
+        var scale = XDocument.Parse(svg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "treemap-color-scale");
+        Assert.Equal("10", (string?)scale.Attribute("data-cfx-min-value")); Assert.Equal("20", (string?)scale.Attribute("data-cfx-max-value"));
+        var native = PngReader.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        var bounds = prepared.Regions.Single(region => region.Id == "series-0-node-a").Bounds;
+        Pixel(native, bounds, Red);
+        Assert.True(ContainsPixel(native, bounds, warning), "Native state outline must retain its semantic color.");
+        chart.Series[0].WithNodeState("a", ChartSeriesState.None);
+        Assert.Equal(svg, prepared.ToSvg());
+        Assert.Equal("none", (string?)OwnMark(Targets(chart.Prepare(context)).Single(target => (string?)target.Attribute("data-cfx-target-id") == "a")).Attribute("stroke"));
+    }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void NodeStateWithoutColorScaleUsesSharedPaintAndExplicitOverrides(VisualThemeMode mode) {
+        var chart = Chart.Create().WithDataLabels(false).AddTreemap("States", new[] {
+            new ChartTreemapItem("a", "Same", value: 9), new ChartTreemapItem("b", "Same", value: 1)
+        });
+        chart.Series[0].StateRole = ChartSeriesState.Warning;
+        chart.Series[0].WithNodeState("a", ChartSeriesState.None);
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), themeMode: mode, frame: new VisualFrame(showLegend: false));
+        var colors = context.Theme.Resolve(mode);
+        var nodes = Targets(chart.Prepare(context)).ToDictionary(target => (string)target.Attribute("data-cfx-target-id")!);
+        Assert.Equal("None", (string?)nodes["a"].Attribute("data-cfx-state"));
+        Assert.Equal(colors.Palette[0].ToCss(), (string?)OwnMark(nodes["a"]).Attribute("fill"));
+        Assert.Equal("Warning", (string?)nodes["b"].Attribute("data-cfx-state"));
+        Assert.Equal(colors.Status.Medium.Fill.ToCss(), (string?)OwnMark(nodes["b"]).Attribute("fill"));
+        chart.Series[0].WithPointColor(1, Missing);
+        var prepared = chart.Prepare(context);
+        Assert.Equal(Missing.ToCss(), (string?)OwnMark(Targets(prepared).Single(target => (string?)target.Attribute("data-cfx-target-id") == "b")).Attribute("fill"));
+        Pixel(PngReader.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1))), prepared.Regions.Single(region => region.Id == "series-0-node-b").Bounds, Missing);
+    }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
     public void FixedScaleAndDiscreteBandsUseTheSamePaintInMarksLegendAndNativePixels(VisualThemeMode mode) {
         foreach (var scale in new[] {
             ChartColorScale.Sequential(Red, Blue).WithValueRange(0, 100).WithNoDataColor(Missing),
@@ -131,6 +180,15 @@ public sealed class TreemapColorTests {
     }
 
     private static ChartRect Bounds(XElement rectangle) => new(Number(rectangle, "x"), Number(rectangle, "y"), Number(rectangle, "width"), Number(rectangle, "height"));
+    private static bool ContainsPixel(RgbaImage image, ChartRect bounds, ChartColor expected) {
+        for (var y = Math.Max(0, (int)bounds.Y); y < Math.Min(image.Height, Math.Ceiling(bounds.Bottom)); y++)
+            for (var x = Math.Max(0, (int)bounds.X); x < Math.Min(image.Width, Math.Ceiling(bounds.Right)); x++) {
+                var offset = (y * image.Width + x) * 4;
+                if (image.Pixels[offset] == expected.R && image.Pixels[offset + 1] == expected.G
+                    && image.Pixels[offset + 2] == expected.B && image.Pixels[offset + 3] == expected.A) return true;
+            }
+        return false;
+    }
     private static void Pixel(RgbaImage image, ChartRect bounds, ChartColor expected) {
         var x = (int)(bounds.X + bounds.Width / 2); var y = (int)(bounds.Y + bounds.Height / 2); var offset = (y * image.Width + x) * 4;
         Assert.Equal(new[] { expected.R, expected.G, expected.B, expected.A }, image.Pixels.AsSpan(offset, 4).ToArray());

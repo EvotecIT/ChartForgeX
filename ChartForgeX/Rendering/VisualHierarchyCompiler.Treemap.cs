@@ -30,6 +30,7 @@ internal static partial class VisualHierarchyCompiler {
             metadata["data-cfx-full-label"] = full; metadata["data-cfx-depth"] = N(index.Depths[itemIndex]);
             metadata["data-cfx-value"] = N(value); metadata["data-cfx-formatted-value"] = formatted;
             metadata["data-cfx-leaf"] = children.Count == 0 ? "true" : "false";
+            metadata["data-cfx-state"] = ChartRelationshipPaint.State(series, itemIndex).ToString();
             if (item.ParentId != null) metadata["data-cfx-parent"] = item.ParentId;
             if (item.Value.HasValue) metadata["data-cfx-authored-value"] = N(item.Value.Value);
             if (item.ColorValue.HasValue) metadata["data-cfx-color-value"] = N(item.ColorValue.Value);
@@ -41,8 +42,14 @@ internal static partial class VisualHierarchyCompiler {
             using (builder.PushGroup(id, role, metadata)) {
                 if (visible) {
                     var blend = surface.Blend(itemIndex);
-                    builder.Rect(bounds, blend.Color, radius: Math.Min(context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) * .1),
-                        role: children.Count > 0 ? "treemap-group-mark" : "treemap-tile-mark", paint: VisualChartPaint.Fill(blend.Paint));
+                    var state = ChartRelationshipPaint.State(series, itemIndex);
+                    var outline = surface.Scale != null && state != ChartSeriesState.None
+                        ? ChartSeriesColours.State(state, colors, colors.Foreground) : (ChartColor?)null;
+                    var strokeWidth = outline.HasValue ? Math.Min(2, Math.Min(bounds.Width, bounds.Height) / 4) : 0;
+                    builder.Rect(bounds, blend.Color, stroke: outline, strokeWidth: strokeWidth,
+                        radius: Math.Min(context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) * .1),
+                        role: children.Count > 0 ? "treemap-group-mark" : "treemap-tile-mark",
+                        paint: new VisualScenePaintBinding(blend.Paint, outline.HasValue ? SvgPaint.Of(outline.Value, SvgColorRole.Status) : null));
                     Pattern(builder, Rectangle(bounds), series, itemIndex, blend.Color, "treemap-pattern");
                     if (series.ShowDataLabels != false) {
                         if (children.Count == 0) Label(chart, context, builder, full + "\n" + formatted, bounds, blend.Color, itemIndex, "treemap-label", fillPaint: blend.Paint);

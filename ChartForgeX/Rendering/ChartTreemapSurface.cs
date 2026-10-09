@@ -30,7 +30,7 @@ internal sealed class ChartTreemapSurface {
             return ChartColorBlend.Solid(custom, SvgColorRole.Series);
         if (Scale != null) return _series.TreemapItems[index].ColorValue is double value
             ? Scale.BlendFor(value, Minimum, Maximum) : ChartColorScaleSurface.NoData(Scale, _colors);
-        var color = _series.Color ?? ChartSeriesColours.State(_series.StateRole, _colors, _colors.Palette[index % _colors.Palette.Count]);
-        return ChartColorBlend.Solid(color, VisualChartPaint.SeriesRole(_series, index));
+        var color = ChartRelationshipPaint.Color(_series, index, _colors);
+        return ChartColorBlend.Solid(color, ChartRelationshipPaint.Role(_series, index));
     }
 }

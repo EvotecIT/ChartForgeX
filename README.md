@@ -721,11 +721,14 @@ var chart = Chart.Create().AddTreemap("Allocation", new[] {
     options.ColorScale = ChartColorScale.Diverging(
         ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(229, 229, 233), ChartColor.FromRgb(204, 104, 52), 0);
 });
+chart.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
 ```
 
 Leaves require finite non-negative `Value`; groups require null `Value`, and their rendered value is the sum of their leaves. Forests, standalone leaves, and zero sizes are supported. Zero sizes retain their source facts without a minimum-area rectangle. `ColorValue` is optional and may be negative. Its observed domain is independent of size, and an explicit scale range remains authoritative. Missing color values use the scale's `NoDataColor` or the theme's neutral paint. Named discrete bands use the same `ChartColorScale.Discrete` API as maps.
 
 `ChartOptions.Treemap` controls group padding, sibling gaps, group labels, and the color legend. `ChartSeries.TreemapItems` is an immutable snapshot; `Points` remains empty. Point styling overrides use item input ordinals, while SVG and HTML targets retain item IDs through input reordering or label renaming. See the [migration guide](docs/v2/migration.md#hierarchical-treemap) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Treemap.cs).
+
+`WithNodeState(id, state)` applies semantic styling by item ID. With a numeric color scale, the state appears as an outline and preserves the quantitative fill. Without a scale, shared state colors supply the fill unless an explicit color overrides them.
 
 `WithPointLegend()` shows leaf keys when no numeric color legend is active. In interactive HTML, a leaf key reads its own value and toggles or isolates that node. Linked charts resolve leaf keys by ID even when their labels or input order differ.
 

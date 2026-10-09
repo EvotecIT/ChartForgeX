@@ -48,6 +48,12 @@ public sealed class InteractiveTreemapBrowserTests {
         Assert.Equal("0", await reserve.GetAttributeAsync("data-cfx-value")); Assert.Equal(0, await reserve.Locator("rect, path").CountAsync());
         await page.EvaluateAsync("() => { window.selections = []; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.selections.push(event.detail)); }");
         var support = page.Locator("[data-cfx-node=south-support]");
+        if (variant == "options") {
+            var warning = VisualTheme.Graphite().Resolve(mode).Status.Medium.Fill;
+            Assert.Equal("Warning", await support.GetAttributeAsync("data-cfx-state"));
+            Assert.Equal($"rgb({warning.R}, {warning.G}, {warning.B})",
+                await support.Locator(":scope > [data-cfx-role=treemap-tile-mark]").EvaluateAsync<string>("node => getComputedStyle(node).stroke"));
+        }
         await support.FocusAsync(); await page.Keyboard.PressAsync("Space");
         using var detail = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.selections.at(-1).target)"));
         Assert.Equal("south-support", detail.RootElement.GetProperty("targetId").GetString());
