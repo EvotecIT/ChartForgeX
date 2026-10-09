@@ -14,8 +14,6 @@ public sealed partial class ChartOptions {
     public ChartLineMarkerMode? LineMarkerMode { get => _lineMarkerMode; set { if (value.HasValue && !Enum.IsDefined(typeof(ChartLineMarkerMode), value.Value)) throw new ArgumentOutOfRangeException(nameof(value)); _lineMarkerMode = value; } }
     /// <summary>Gets or sets the maximum displayed pie or donut slices, including an aggregate Other slice.</summary>
     public int MaximumPieSlices { get => _maximumPieSlices; set { if (value < 2) throw new ArgumentOutOfRangeException(nameof(value)); _maximumPieSlices = value; } }
-    /// <summary>Gets explicit semantic roles for Sankey nodes, keyed by their authored node ID.</summary>
-    public System.Collections.Generic.Dictionary<string, ChartSeriesState> SankeyNodeStates { get; } = new(StringComparer.Ordinal);
 }
 
 /// <summary>Controls optional markers without removing the full series data or interaction targets.</summary>

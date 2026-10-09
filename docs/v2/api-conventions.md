@@ -33,6 +33,7 @@ Immutable render requests use constructors and read-only properties. They do not
 | `VisualRenderOptions` | Raster scale, supersampling and working pixel budget. These do not change logical layout. |
 | `VisualDiagnostic` | A stable code, human explanation and the existing shared `Diagnostics.VisualDiagnosticSeverity`. |
 | `VisualSemanticRegion` | Stable ID, role, descriptive rectangular extent and optional text. It is not an exact hit-test shape. |
+| `ChartSeries.WithNodeState(id, state)` | Mutable semantic styling keyed by an existing authored node ID, scoped to that series. `NodeStates` exposes a read-only view; preparation snapshots the resulting paint. |
 
 Keep the numeric scene and painter implementation internal. Public signatures use core-owned types and do not reference Visuals, Stories, browser hosts, their encoders or their policy objects. Static rendering is script-free. Optional animation, interaction and composition have the ownership described in the architecture and [consumer migration guide](migration.md).
 

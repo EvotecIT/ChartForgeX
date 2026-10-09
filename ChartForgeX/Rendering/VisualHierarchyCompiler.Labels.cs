@@ -33,16 +33,13 @@ internal static partial class VisualHierarchyCompiler {
         style.Alignment = center ? TextAlignment.Center : TextAlignment.Left;
         double y = center ? bounds.Y + (bounds.Height - builder.MeasureText(displayed, style).Height) / 2 : bounds.Y + inset;
         var paint = VisualChartPaint.ExplicitDataLabelColor(chart, pointIndex) ? VisualChartPaint.Text(style)
-            : SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(chart.Series[0], pointIndex));
+            : SvgPaint.Contrast(fill, ChartRelationshipPaint.Role(chart.Series[0], pointIndex));
         builder.Text(displayed, center ? bounds.X + bounds.Width / 2 : bounds.X + inset, y + builder.TextAscent(style), style, role, paint: paint);
     }
 
     /// <summary>Resolves the same authored caption typography for rectangular and radial hierarchy marks.</summary>
     private static TextStyle LabelStyle(Chart chart, VisualRenderContext context, ChartColor fill, int pointIndex) {
-        var series = chart.Series[0];
-        var fallback = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = ChartColorMath.AccessibleTextOnBackground(fill) };
-        var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(fallback));
-        if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null) style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
+        var style = ChartRelationshipPaint.LabelStyle(chart, context, pointIndex, ChartColorMath.AccessibleTextOnBackground(fill));
         style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
         return style;
     }

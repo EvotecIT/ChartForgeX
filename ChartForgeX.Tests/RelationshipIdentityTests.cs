@@ -78,9 +78,9 @@ public sealed class RelationshipIdentityTests {
         var nodes = SupportNodes().AsEnumerable().Reverse().Select(node => new ChartNode(node.Id, node.Id == "north-support" ? "Customer care" : node.Label)).ToArray();
         var second = Add(Chart.Create(), kind, nodes, SupportBranches().AsEnumerable().Reverse());
         if (kind == ChartSeriesKind.Sankey) {
-            first.WithSankeyNodeState("north-support", ChartSeriesState.Warning);
-            second.WithSankeyNodeState("north-support", ChartSeriesState.Warning);
-            Assert.Throws<ArgumentException>(() => second.WithSankeyNodeState("Support", ChartSeriesState.Danger));
+            first.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
+            second.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
+            Assert.Throws<ArgumentException>(() => second.Series[0].WithNodeState("Support", ChartSeriesState.Danger));
         }
         var old = Targets(first).ToDictionary(e => (string)e.Attribute("data-cfx-source-id")!, StringComparer.Ordinal);
         var reordered = Targets(second);
@@ -146,7 +146,7 @@ public sealed class RelationshipIdentityTests {
         var links = kind == ChartSeriesKind.Sankey ? (IList)chart.Series[0].FlowLinks : (IList)chart.Series[0].TreeLinks;
         Assert.Throws<NotSupportedException>(() => links.Clear());
         chart.Series[0].PointLabels.Add("Changed"); chart.Series[0].DataLabelStyle.FontSize = 30;
-        chart.Series[0].Color = ChartColor.Black; chart.Options.SankeyNodeStates.Clear();
+        chart.Series[0].Color = ChartColor.Black; chart.Series[0].WithNodeState("root", ChartSeriesState.Danger);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 
