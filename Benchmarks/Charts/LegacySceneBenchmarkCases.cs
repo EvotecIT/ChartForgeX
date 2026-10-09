@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using System.Xml.Linq;
 
-/// <summary>Equivalent legacy public-API workloads; this type can load against the frozen pre-v2 assembly.</summary>
+/// <summary>Equivalent public-export workloads compiled against either the current or frozen legacy product API.</summary>
 public static partial class LegacySceneBenchmarkCases {
     private static string _tokens = "";
     internal const int Width = 800, Height = 440;
@@ -56,7 +56,7 @@ public static partial class LegacySceneBenchmarkCases {
     private static ChartPoint[] Points(int series) => Enumerable.Range(0, 7)
         .Select(index => new ChartPoint(index + 1, 20 + series * 14 + index * (series + 3) % 23)).ToArray();
 
-    /// <summary>The legacy model has no public prepared-scene boundary.</summary>
+    /// <summary>Public-export lanes do not measure preparation separately.</summary>
     public static object Prepare(object model) => throw new NotSupportedException("Legacy prepared-scene operations are not measured.");
 
     /// <summary>Renders through the existing public export surface.</summary>

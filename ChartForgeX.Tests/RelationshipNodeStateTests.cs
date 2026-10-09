@@ -32,4 +32,22 @@ public sealed class RelationshipNodeStateTests {
         var authored = ChartColor.FromHex("#24567A"); chart.Series[0].WithPointColor(1, authored);
         Assert.Equal(authored.ToCss(), Fill(chart.Prepare(context)));
     }
+    [Fact]
+    public void SunburstRootNoneOverrideKeepsSeriesPaintProvenanceInHostVariables() {
+        var chart = Chart.Create().AddSunburst("State", new[] { new ChartNode("root", "Root"), new ChartNode("leaf", "Leaf") },
+            new[] { new ChartTreeLink("root", "leaf", 3) });
+        chart.Series[0].StateRole = ChartSeriesState.Warning;
+        chart.Series[0].WithNodeState("root", ChartSeriesState.None);
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)));
+        var blue = context.Theme.Resolve(context.ThemeMode).Palette[0];
+        var variables = new SvgColorVariables().Add("--host-status", blue, SvgColorRole.Status)
+            .Add("--host-series", blue, SvgColorRole.Series);
+        var root = XDocument.Parse(chart.Prepare(context).ToSvg(new VisualSvgOptions("state", variables))).Descendants()
+            .Single(node => (string?)node.Attribute("data-cfx-target-id") == "root");
+        Assert.Equal("None", (string?)root.Attribute("data-cfx-state"));
+        var fill = root.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "sunburst-segment-mark").Attribute("fill")!.Value;
+        Assert.Contains("var(--host-series,", fill, StringComparison.Ordinal);
+        Assert.DoesNotContain("var(--host-status,", fill, StringComparison.Ordinal);
+    }
+
 }

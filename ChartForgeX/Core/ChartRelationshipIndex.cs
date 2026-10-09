@@ -74,7 +74,12 @@ internal sealed class ChartRelationshipIndex {
             endpoints[i] = chord ? incoming[i] + outgoing[i] : Math.Max(incoming[i], outgoing[i]);
             if (double.IsInfinity(endpoints[i])) throw new ArgumentException("Chord incoming plus outgoing endpoint aggregates must remain finite.", nameof(links));
         }
-        if (!chord) TopologicalOrder(snapshot.Length, sources, targets, false, out _);
+        if (!chord) {
+            for (var i = 0; i < snapshot.Length; i++)
+                if (incoming[i] == 0 && outgoing[i] == 0)
+                    throw new ArgumentException("Sankey nodes must be referenced by at least one flow.", nameof(nodes));
+            TopologicalOrder(snapshot.Length, sources, targets, false, out _);
+        }
         return new ChartRelationshipIndex(snapshot, flows, Array.Empty<ChartTreeLink>(), indexes, sources, targets, -1, Array.Empty<double>(), incoming, outgoing, endpoints);
     }
 
