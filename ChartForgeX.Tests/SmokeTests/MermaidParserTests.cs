@@ -409,7 +409,7 @@ line [40, 61, 80]";
         Assert(!result.HasErrors, "Mermaid XY chart parser should parse title, axes, orientation, and series: " + MermaidDiagnostics(result));
         var document = result.Document ?? throw new InvalidOperationException("Mermaid XY chart parser should produce a document.");
         Assert(document.Kind == MermaidDiagramKind.XYChart, "Mermaid XY chart parser should produce an XY chart document.");
-        Assert(document.Orientation == MermaidXYChartOrientation.Horizontal, "Mermaid XY chart parser should parse horizontal orientation.");
+        Assert(document.Orientation == ChartOrientation.Horizontal, "Mermaid XY chart parser should parse horizontal orientation.");
         Assert(document.Title == "Adoption Trend", "Mermaid XY chart parser should parse quoted titles.");
         Assert(document.XAxis.Title == "Quarter" && document.XAxis.Labels.Count == 3, "Mermaid XY chart parser should parse x-axis labels and title.");
         Assert(document.XAxis.Labels[1] == "Q2 launch", "Mermaid XY chart parser should parse quoted category labels.");

@@ -25,7 +25,7 @@ ChartForgeX renders polished charts, animated visual stories, visual blocks, top
 
 Cartesian series are clipped to the plot rectangle in SVG and PNG. Markers whose centers are inside the plot retain their radius at its edge. Use `chart.WithPlotClipping(false)` when a report intentionally needs series overflow.
 
-Automatic linear domains use evenly spaced round ticks; explicit axis bounds remain authoritative. Histogram counts use equal-width bins aligned to multiples of a nice decimal step (1, 2, 2.5, 5 or 10 times a power of ten). `ChartHistogramBinLayout.FromWidth` preserves the chosen width and extends both edges to its multiples. Use the overload with `roundBounds: false` for exact data-bounded intervals, including a shorter final remainder bin. A single requested bin spanning negative and positive values needs two aligned bins because zero is a boundary.
+Automatic linear domains use evenly spaced round ticks; explicit axis bounds remain authoritative. Histogram counts use equal-width bins aligned to multiples of a nice decimal step (1, 2, 2.5, 5 or 10 times a power of ten). `ChartHistogramBinLayout.FromWidth` preserves the chosen width and extends both edges to its multiples. Use the overload with `roundBounds: false` for exact data-bounded intervals, including a shorter final remainder bin. A single requested bin spanning negative and positive values retains the data bounds as one interval.
 
 PNG chart grids and mixed visual grids render their children at the density of the destination panel. A 2x dashboard therefore retains the text and line detail of its charts and scorecards rendered alone at 2x, including panels enlarged by the grid layout.
 

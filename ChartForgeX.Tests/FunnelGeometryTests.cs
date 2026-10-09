@@ -173,7 +173,10 @@ public sealed class FunnelGeometryTests {
             Assert.Equal(CrossExtent(marks[0], orientation) * .25, CrossExtent(marks[2], orientation), 8);
         }
         var svg = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
-        Assert.All(Roles(svg, "funnel-label").Concat(Roles(svg, "funnel-ratio")), element =>
+        var svgText = Roles(svg, "funnel-label").Concat(Roles(svg, "funnel-ratio"))
+            .SelectMany(group => group.Descendants().Where(element => element.Name.LocalName == "text")).ToArray();
+        Assert.Equal(labels.Concat(ratios).Sum(label => label.Text.Lines.Count), svgText.Length);
+        Assert.All(svgText, element =>
             Assert.True(double.Parse(element.Attribute("font-size")!.Value, CultureInfo.InvariantCulture) >= 10));
         Assert.NotEmpty(prepared.ToPng());
     }

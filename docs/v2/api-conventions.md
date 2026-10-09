@@ -109,6 +109,8 @@ Normalization changes geometry, bounds and total positions together. Raw observa
 
 `ChartOptions.Funnel` selects `StageBars` or `Cone` and `Vertical` or `Horizontal`. StageBars is the default: each stage's cross-axis extent is exactly its value divided by the largest value. Cone uses one value-bearing line per source stage and connects adjacent lines. Zero stages retain source slots and semantics without an invented width. A single cone stage has no connection region. Both forms use the shared prepared geometry in SVG and PNG.
 
+`ChartOrientation` is the shared core orientation type, including `MermaidXYChartDocument.Orientation`. Replace `MermaidXYChartOrientation` references with `ChartForgeX.Core.ChartOrientation` when migrating parsed XY chart code.
+
 ## Enforcement boundary
 
 `V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.
