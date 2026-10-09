@@ -156,7 +156,7 @@ public sealed class SvgVisualCanvasRenderer {
             .Attribute("x", x)
             .Attribute("y", text.Y + text.FontSize)
             .Attribute("text-anchor", anchor)
-            .Attribute("fill", text.Color.ToCss())
+            .Attribute("fill", text.ResolveColor(theme).ToCss())
             .Attribute("font-family", theme.FontFamily)
             .Attribute("font-size", text.FontSize)
             .Attribute("font-weight", VisualCanvasFontWeights.Css(weight))
