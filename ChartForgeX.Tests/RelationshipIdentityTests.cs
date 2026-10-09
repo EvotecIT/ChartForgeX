@@ -112,6 +112,7 @@ public sealed class RelationshipIdentityTests {
         Reject(valid, new[] { new ChartTreeLink("a", "missing") });
         Reject(valid, new[] { new ChartTreeLink("a", "a") });
         Reject(valid, new[] { new ChartTreeLink("a", "b"), new ChartTreeLink("b", "a") });
+        Reject(valid.Concat(new[] { new ChartNode("unused", "Unused") }), new[] { new ChartTreeLink("a", "b") });
         if (kind != ChartSeriesKind.Sankey) {
             Reject(valid, new[] { default(ChartTreeLink) });
             Reject(SupportNodes(), new[] { new ChartTreeLink("north", "north-support"), new ChartTreeLink("south", "north-support") });
