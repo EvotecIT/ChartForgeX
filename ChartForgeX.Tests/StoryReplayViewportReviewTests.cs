@@ -1,4 +1,7 @@
+using System.Globalization;
 using System.Xml.Linq;
+using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Stories;
 using ChartForgeX.Terminal;
 using Xunit;
@@ -78,8 +81,24 @@ public sealed class StoryReplayViewportReviewTests {
         Assert.Single(viewport);
         Assert.StartsWith("#", (string?)viewport[0].Attribute("fill"));
         var image = prepared.ToPng(timestamp);
-        Assert.NotEqual(prepared.ToPng(TimeSpan.FromSeconds(start)), image);
-        Assert.NotEqual(prepared.ToPng(TimeSpan.FromSeconds(start + 1)), image);
+        var before = prepared.ToPng(TimeSpan.FromSeconds(start));
+        var after = prepared.ToPng(TimeSpan.FromSeconds(start + 1));
+        Assert.NotEqual(before, image);
+        Assert.NotEqual(after, image);
+        var pixels = PngReader.Decode(image);
+        var first = rows.Single(row => row.Value == "FIRST");
+        var second = rows.Single(row => row.Value == "SECOND");
+        // Separate rows and saturated ink on black isolate each session's fade,
+        // including attenuation by a mistakenly repainted tab background.
+        Assert.True(InkCount(pixels, first, ChartColor.FromHex("#00FF00"), progress) >= 8, "The incoming session must retain its faded green glyphs.");
+        Assert.True(InkCount(pixels, second, ChartColor.FromHex("#FF0000"), 1 - progress) >= 8, "The outgoing session must retain its faded red glyphs.");
+        Assert.Equal(0, InkCount(PngReader.Decode(before), first, ChartColor.FromHex("#00FF00"), progress));
+        Assert.Equal(0, InkCount(PngReader.Decode(after), second, ChartColor.FromHex("#FF0000"), 1 - progress));
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture);
+            File.WriteAllBytes(Path.Combine(capture, "terminal-fade-" + progress.ToString("0.00", CultureInfo.InvariantCulture) + ".png"), image);
+        }
     }
 
     [Theory]
@@ -98,9 +117,31 @@ public sealed class StoryReplayViewportReviewTests {
         Assert.True(source.AdditionalWorkingBytes >= (surface.AccessibleText.Length + prepared.ToTranscript().Length) * 2L);
     }
 
-    private static TerminalStory TransitionTerminal() => TerminalStory.Create().WithFinalPrompt(false).WithTiming(0, 42, 0).WithTabHold(0)
-        .Output("FIRST").OpenTab("other", "Other", TerminalDialect.Bash, "~/src", TerminalTheme.GraphiteDark(), transitionSeconds: 0)
-        .Output("SECOND").SelectTab("main", 1);
+    private static TerminalStory TransitionTerminal() {
+        var theme = TerminalTheme.GraphiteDark();
+        theme.Background = ChartColor.FromHex("#000000");
+        theme.Success = ChartColor.FromHex("#00FF00");
+        theme.Error = ChartColor.FromHex("#FF0000");
+        return TerminalStory.Create().WithTheme(theme).WithFinalPrompt(false).WithTiming(0, 42, 0).WithTabHold(0)
+            .Output("FIRST", TerminalTextTone.Success).OpenTab("other", "Other", TerminalDialect.Bash, "~/src", theme, transitionSeconds: 0)
+            .Blank().Output("SECOND", TerminalTextTone.Error).SelectTab("main", 1);
+    }
+
+    private static int InkCount(RgbaImage image, XElement row, ChartColor color, double opacity) {
+        var text = row.Descendants().Single(element => element.Name.LocalName == "text");
+        double Number(string attribute) => double.Parse((string)text.Attribute(attribute)!, CultureInfo.InvariantCulture);
+        var x = Number("x"); var y = Number("y"); var size = Number("font-size");
+        var expected = new[] { color.R * opacity, color.G * opacity, color.B * opacity };
+        var count = 0;
+        for (var py = Math.Max(0, (int)Math.Floor(y - size - 2)); py < Math.Min(image.Height, Math.Ceiling(y + 2)); py++) {
+            for (var px = Math.Max(0, (int)Math.Floor(x)); px < Math.Min(image.Width, Math.Ceiling(x + row.Value.Length * size)); px++) {
+                var offset = (py * image.Width + px) * 4;
+                if (Math.Abs(image.Pixels[offset] - expected[0]) <= 4 && Math.Abs(image.Pixels[offset + 1] - expected[1]) <= 4 &&
+                    Math.Abs(image.Pixels[offset + 2] - expected[2]) <= 4) count++;
+            }
+        }
+        return count;
+    }
 
     private static VisualStory Story(TerminalStory terminal, int width, int height, VisualStoryTerminalOptions? options = null) {
         var story = VisualStory.Create("Authored terminal viewport").WithSize(width, height);
