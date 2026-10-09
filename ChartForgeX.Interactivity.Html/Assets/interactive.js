@@ -83,10 +83,24 @@
     const mapped = sourceIndices.split(',')[index];
     return mapped === undefined || mapped === '' ? data.cfxPoint : mapped;
   };
+  const derivedPointIdentity = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxDerivedIdentity !== undefined) return data.cfxDerivedIdentity;
+    const derived = data.cfxDerived || 'aggregate';
+    // Layout ordinals do not identify equivalent summaries in charts with different partitions.
+    if (derived === 'histogram-bin' && data.cfxBinLower !== undefined && data.cfxBinUpper !== undefined)
+      return [derived, String(Number(data.cfxBinLower)), String(Number(data.cfxBinUpper)), data.cfxBinUpperInclusive || 'false',
+        data.cfxHistogramAggregation || 'count', data.cfxHistogramEncoding || 'value'].join(':');
+    if (derived === 'timeline-run' && data.cfxStart !== undefined && data.cfxEnd !== undefined)
+      return [derived, String(Number(data.cfxStart)), String(Number(data.cfxEnd))].join(':');
+    if (derived === 'radial-slice' && data.cfxPoint === '-1' && hasSourcePointCollection(node))
+      return derived + ':sources:' + sourcePointCollection(node).slice().sort((a, b) => a - b).join(',');
+    return derived + ':' + (data.cfxPoint ?? '0');
+  };
   const pointTargetId = (node) => {
     const data = node.dataset || {};
     const derived = hasDerivedPointIdentity(node);
-    const point = derived ? 'derived:' + (data.cfxDerived || 'aggregate') + ':' + (data.cfxPoint ?? '0') : sourcePointIndex(node) ?? '0';
+    const point = derived ? 'derived:' + derivedPointIdentity(node) : sourcePointIndex(node) ?? '0';
     return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
   };
   const renderedTargetKind = (node) => {
@@ -388,7 +402,7 @@
     });
     const sourceFacts = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points],[data-cfx-point][data-cfx-derived]'))
       .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint,
-        { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived }]));
+        { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived, identity: derivedPointIdentity(node) }]));
     svg.querySelectorAll('[data-cfx-role="legend-entry"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
@@ -405,6 +419,7 @@
         if (facts) {
           if (data.cfxSourcePoints === undefined && facts.points !== undefined) data.cfxSourcePoints = facts.points;
           if (data.cfxDerived === undefined && facts.derived !== undefined) data.cfxDerived = facts.derived;
+          if (data.cfxDerivedIdentity === undefined) data.cfxDerivedIdentity = facts.identity;
         }
       }
     });
@@ -722,7 +737,9 @@
   };
   const seriesTarget = (node) => {
     const data = node.dataset || {};
-    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node) };
+    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node),
+      targetKind: data.cfxPoint === undefined ? 'series' : 'point',
+      targetId: data.cfxPoint === undefined ? seriesKey(node) : pointTargetId(node) };
   };
   const seriesTargetToken = (target) => target ? [target.series ?? '', target.point ?? ''].join(':') : '';
   const matchesLocalSeriesTarget = (node, target) => {
@@ -739,6 +756,12 @@
     if (target.point === undefined) {
       const localSeries = (matchingSeries[0].dataset || {}).cfxSeries;
       return localSeries === undefined ? null : { series: localSeries, seriesKey: target.seriesKey, label: target.label };
+    }
+    if (target.targetId) {
+      const exact = matchingSeries.find((item) => (item.dataset || {}).cfxPoint !== undefined && pointTargetId(item) === target.targetId)
+        || Array.from(root.querySelectorAll('[data-cfx-series][data-cfx-point]'))
+          .find((item) => seriesKey(item) === target.seriesKey && pointTargetId(item) === target.targetId);
+      return exact ? seriesTarget(exact) : null;
     }
     const exactLabel = matchingSeries.find((item) => (item.dataset || {}).cfxLabel === target.label);
     const exactPoint = matchingSeries.find((item) => (item.dataset || {}).cfxPoint === String(target.point));
@@ -772,7 +795,10 @@
         return;
       }
       node.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
-      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries);
+      // A point's containing series must remain transparent to emphasis; dim its other point groups instead.
+      const pointContainer = target && target.point !== undefined && data.cfxSeries === String(target.series)
+        && role === 'series' && data.cfxPoint === undefined;
+      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !pointContainer);
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
@@ -829,6 +855,7 @@
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
     root.removeAttribute('data-cfx-hover-mode');
+    root.removeAttribute('data-cfx-hover-unit');
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
@@ -843,27 +870,33 @@
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
-    return sameSeries && (!pointUnits || data.cfxPoint === String(target.point));
+    return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
     if (!target) return false;
+    const nodes = Array.from(root.querySelectorAll(targetSelector));
+    const localNode = nodes.find((node) => matchesTargetIdentity(node, target));
+    if (!localNode && target.targetKind && target.targetId) return false;
+    // A peer's equivalent mark may have a different local point ordinal or series position.
+    const localTarget = localNode ? targetIdentity(localNode) : target;
     const hoverMode = mode === 'shared' ? 'shared' : 'series';
-    const pointUnits = hoverMode === 'series' && pointLegendUnits(root, target);
+    const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
     let matched = false;
-    root.querySelectorAll(targetSelector).forEach((node) => {
-      const hovered = matchesTargetIdentity(node, target);
-      const related = !hovered && targetRelated(node, target);
+    nodes.forEach((node) => {
+      const hovered = matchesTargetIdentity(node, localTarget);
+      const related = !hovered && targetRelated(node, localTarget);
       if (hovered || related) matched = true;
       setNodeHovered(node, hovered, related);
-      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, target, pointUnits));
-      if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', target.point !== undefined && node.dataset.cfxPoint === String(target.point));
+      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, localTarget, pointUnits));
+      if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', localTarget.point !== undefined && node.dataset.cfxPoint === String(localTarget.point));
     });
     if (matched) {
       root.dataset.cfxHovering = 'true';
       root.dataset.cfxHoverMode = hoverMode;
-      root.dataset.cfxHoverLabel = target.label || target.role || target.id || '';
+      root.dataset.cfxHoverUnit = pointUnits ? 'point' : 'series';
+      root.dataset.cfxHoverLabel = localTarget.label || localTarget.role || localTarget.id || '';
     }
     return matched;
   };

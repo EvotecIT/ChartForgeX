@@ -18,7 +18,8 @@ internal static partial class VisualRadialCompiler {
                 chart.Series[0].Kind, slice.Pattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey,
                 paint: VisualChartPaint.Series(chart.Series[0], slice.Color, slice.PointIndex),
                 value: ChartNumericFormatter.FormatValue(chart.Options, slice.Value),
-                percentage: (total > 0 ? slice.Value / total : 0).ToString("0.#%", CultureInfo.InvariantCulture))).ToArray();
+                percentage: (total > 0 ? slice.Value / total : 0).ToString("0.#%", CultureInfo.InvariantCulture),
+                metadata: Metadata(chart, slice, total > 0 ? slice.Value / total : 0, null))).ToArray();
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {

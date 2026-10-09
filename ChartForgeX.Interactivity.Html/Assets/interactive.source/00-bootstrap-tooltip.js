@@ -83,10 +83,24 @@
     const mapped = sourceIndices.split(',')[index];
     return mapped === undefined || mapped === '' ? data.cfxPoint : mapped;
   };
+  const derivedPointIdentity = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxDerivedIdentity !== undefined) return data.cfxDerivedIdentity;
+    const derived = data.cfxDerived || 'aggregate';
+    // Layout ordinals do not identify equivalent summaries in charts with different partitions.
+    if (derived === 'histogram-bin' && data.cfxBinLower !== undefined && data.cfxBinUpper !== undefined)
+      return [derived, String(Number(data.cfxBinLower)), String(Number(data.cfxBinUpper)), data.cfxBinUpperInclusive || 'false',
+        data.cfxHistogramAggregation || 'count', data.cfxHistogramEncoding || 'value'].join(':');
+    if (derived === 'timeline-run' && data.cfxStart !== undefined && data.cfxEnd !== undefined)
+      return [derived, String(Number(data.cfxStart)), String(Number(data.cfxEnd))].join(':');
+    if (derived === 'radial-slice' && data.cfxPoint === '-1' && hasSourcePointCollection(node))
+      return derived + ':sources:' + sourcePointCollection(node).slice().sort((a, b) => a - b).join(',');
+    return derived + ':' + (data.cfxPoint ?? '0');
+  };
   const pointTargetId = (node) => {
     const data = node.dataset || {};
     const derived = hasDerivedPointIdentity(node);
-    const point = derived ? 'derived:' + (data.cfxDerived || 'aggregate') + ':' + (data.cfxPoint ?? '0') : sourcePointIndex(node) ?? '0';
+    const point = derived ? 'derived:' + derivedPointIdentity(node) : sourcePointIndex(node) ?? '0';
     return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
   };
   const renderedTargetKind = (node) => {
