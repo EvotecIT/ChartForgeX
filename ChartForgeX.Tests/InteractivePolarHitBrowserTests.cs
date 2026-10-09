@@ -27,7 +27,7 @@ public sealed class InteractivePolarHitBrowserTests {
         // Existing producers supply the fixture; the explicit coordinate contract keeps this adapter test independent of new Core APIs.
         await using var session = await OpenAsync(PolarContract(chart.ToInteractiveHtmlPage()), compact ? 360 : 680, 480);
         var page = session.Page;
-        var targetId = await page.Locator("[data-cfx-role='point'][data-cfx-point='0']").GetAttributeAsync("data-cfx-target-id");
+        var targetId = await page.Locator("[data-cfx-role='radial-point'][data-cfx-point='0']").GetAttributeAsync("data-cfx-target-id");
         Assert.False(string.IsNullOrWhiteSpace(targetId));
         await page.EvaluateAsync("() => { window.cfxSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.cfxSelections.push(event.detail)); }");
         var angle = mark.Start + mark.Sweep * .985;

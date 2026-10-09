@@ -30,7 +30,7 @@ public sealed class InteractiveNestedTargetBrowserTests {
         await page.EvaluateAsync("() => { window.selections = []; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.selections.push(event.detail.target)); }");
         var child = page.Locator("[data-cfx-node=south]");
         Assert.Equal("-1", await child.GetAttributeAsync("tabindex"));
-        Assert.Equal(1, await page.Locator("[data-cfx-node][tabindex='0']").CountAsync());
+        Assert.Equal(1, await page.Locator("[data-cfx-keyboard-component='data'][tabindex='0']").CountAsync());
         Assert.Equal(0, await child.Locator("[tabindex], [data-cfx-target-kind]").CountAsync());
         await child.ClickAsync();
         Assert.Equal(1, await page.EvaluateAsync<int>("() => window.selections.length"));
@@ -45,7 +45,7 @@ public sealed class InteractiveNestedTargetBrowserTests {
         Assert.Equal("false", await child.GetAttributeAsync("aria-selected"));
         await page.Keyboard.PressAsync("ArrowLeft");
         Assert.Equal("north", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
-        Assert.Equal(1, await page.Locator("[data-cfx-node][tabindex='0']").CountAsync());
+        Assert.Equal(1, await page.Locator("[data-cfx-keyboard-component='data'][tabindex='0']").CountAsync());
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(capture)) {
             Directory.CreateDirectory(capture);
