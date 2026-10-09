@@ -116,6 +116,45 @@ public sealed class PyramidGeometryTests {
     }
 
     [Theory]
+    [InlineData(false, ChartPyramidValueEncoding.Height)]
+    [InlineData(true, ChartPyramidValueEncoding.Height)]
+    [InlineData(false, ChartPyramidValueEncoding.Area)]
+    [InlineData(true, ChartPyramidValueEncoding.Area)]
+    public void FiniteRoundedAggregateIsAcceptedInBothOrdersWithoutChangingSourceWeights(bool maximumFirst, ChartPyramidValueEncoding encoding) {
+        var values = maximumFirst ? new[] { double.MaxValue, 1d } : new[] { 1d, double.MaxValue };
+        var chart = Pyramid(values).WithPyramid(options => options.ValueEncoding = encoding);
+        var prepared = chart.Prepare(new VisualRenderContext());
+        var stages = Stages(prepared.Scene);
+        Assert.Equal(values, chart.Series[0].Points.Select(point => point.Y));
+        Assert.Equal(values, stages.Select(stage => Number(stage, "data-cfx-value")));
+        var group = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "pyramid-chart");
+        Assert.Equal(double.MaxValue, Number(group, "data-cfx-total"));
+        var tinyIndex = maximumFirst ? 1 : 0;
+        Assert.Equal("series-0-point-" + tinyIndex, stages[tinyIndex].Id);
+        Assert.Equal("false", stages[tinyIndex].Metadata["data-cfx-zero"]);
+        Assert.Equal("true", stages[tinyIndex].Metadata["data-cfx-geometry-collapsed"]);
+        Assert.True(Number(stages[tinyIndex], "data-cfx-value-fraction") > 0);
+        Assert.Single(Marks(prepared.Scene));
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "pyramid.precision");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TrueAggregateOverflowIsRejectedInBothOrdersBeforeAppendAndAtPreparationOrLayout(bool maximumFirst) {
+        var values = maximumFirst ? new[] { double.MaxValue, 1E292 } : new[] { 1E292, double.MaxValue };
+        var chart = Pyramid(7, 8);
+        var existingSeries = Assert.Single(chart.Series);
+        var existingPoints = existingSeries.Points.ToArray();
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.AddPyramid("Overflow", Points(values)));
+        Assert.Same(existingSeries, Assert.Single(chart.Series));
+        Assert.Equal(existingPoints, existingSeries.Points);
+        for (var index = 0; index < values.Length; index++) existingSeries.Points[index] = new ChartPoint(index + 1, values[index]);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Prepare(new VisualRenderContext()));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Compile(chart));
+    }
+
+    [Theory]
     [InlineData(ChartPyramidValueEncoding.Height)]
     [InlineData(ChartPyramidValueEncoding.Area)]
     public void PositiveWeightsBelowBoundaryPrecisionKeepTheirSourceFactAndExplicitDiagnostic(ChartPyramidValueEncoding encoding) {

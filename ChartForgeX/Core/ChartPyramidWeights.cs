@@ -12,9 +12,10 @@ internal static class ChartPyramidWeights {
             ChartGuards.Finite(point.X, nameof(points));
             ChartGuards.Finite(point.Y, nameof(points));
             if (point.Y < 0) throw new ArgumentOutOfRangeException(nameof(points), "Pyramid values must be non-negative.");
-            if (point.Y > double.MaxValue - total)
+            var nextTotal = total + point.Y;
+            if (double.IsInfinity(nextTotal))
                 throw new ArgumentOutOfRangeException(nameof(points), "The sum of pyramid values must be finite.");
-            total += point.Y;
+            total = nextTotal;
         }
         return total;
     }
