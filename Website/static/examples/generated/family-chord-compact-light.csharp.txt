@@ -13,9 +13,9 @@ using ChartForgeX.VisualBlocks;
 // The licensed font fixtures are included beside the gallery outputs.
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
-var model = V2GalleryModels.Create(ChartSeriesKind.Sunburst, "options", VisualThemeMode.Light);
-var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Light,
-    new VisualFrame("Allocation through the team hierarchy", "Explore configured marks, scales and labels", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
+var model = V2GalleryModels.Create(ChartSeriesKind.Chord, "compact", VisualThemeMode.Light);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Light,
+    new VisualFrame("Transfers between teams", "The same data in a compact view", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 System.IO.File.WriteAllText("visual.svg", prepared.ToSvg());
 System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
