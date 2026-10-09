@@ -163,7 +163,7 @@
     push('Series', seriesLabel(node));
     push('Point', data.cfxPoint);
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
-    push('Y', data.cfxY || data.cfxValue);
+    push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
     push('End', data.cfxEnd);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
