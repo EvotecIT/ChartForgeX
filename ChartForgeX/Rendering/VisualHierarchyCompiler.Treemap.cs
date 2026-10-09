@@ -37,6 +37,7 @@ internal static partial class VisualHierarchyCompiler {
             else if (surface.Scale != null) metadata["data-cfx-color-missing"] = "true";
             var id = ChartRelationshipMetadata.SourceId("node", item.Id);
             var visible = tiles.TryGetValue(itemIndex, out var tile);
+            metadata["data-cfx-geometry-status"] = visible ? "visible" : value == 0 ? "zero" : "precision-collapse";
             var role = visible ? children.Count > 0 ? "treemap-group" : "treemap-tile" : value == 0 ? "treemap-zero-value" : "treemap-unpainted-value";
             var bounds = visible ? tile.Rect : new ChartRect(areas.Content.X, areas.Content.Y, 0, 0);
             using (builder.PushGroup(id, role, metadata)) {
