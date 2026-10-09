@@ -68,7 +68,7 @@ public sealed class HtmlMotionPlayerRenderer {
             "</div><div class=\"cfx-motion-controls\"><button type=\"button\" data-action=\"play\" aria-label=\"Play story\">Play</button>" +
             "<button type=\"button\" data-action=\"restart\" aria-label=\"Restart story\">Restart</button><output aria-live=\"off\">0:00</output>" +
             "<input type=\"range\" min=\"0\" max=\"" + duration.ToString("0.#########", CultureInfo.InvariantCulture) + "\" step=\"0.01\" value=\"0\" aria-label=\"Story position\">" +
-            "<label>Speed <select data-action=\"speed\"><option value=\"0.5\">0.5Ã—</option><option value=\"1\" selected>1Ã—</option><option value=\"1.5\">1.5Ã—</option><option value=\"2\">2Ã—</option></select></label>" +
+            "<label>Speed <select data-action=\"speed\"><option value=\"0.5\">0.5×</option><option value=\"1\" selected>1×</option><option value=\"1.5\">1.5×</option><option value=\"2\">2×</option></select></label>" +
             "</div><nav class=\"cfx-motion-chapters\" aria-label=\"Story chapters\"></nav><details><summary>Read the transcript</summary><pre>" + WebUtility.HtmlEncode(transcript) +
             "</pre></details></main><script>" + Script + "</script></body></html>";
     }
