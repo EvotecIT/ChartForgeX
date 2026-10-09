@@ -31,12 +31,13 @@ internal static partial class VisualCartesianCompiler {
         return captions;
     }
 
-    private static ChartRect ReserveVerticalTotalGutters(ChartRect bounds,
+    private static ChartRect ReserveVerticalTotalGutters(Chart chart, ChartRect bounds,
         IReadOnlyList<VerticalStackCaption> totals, double spacing) {
         spacing = Math.Max(2, spacing);
         var top = 0d; var bottom = 0d;
         foreach (var total in totals) {
-            if (total.Total.Positive) top = Math.Max(top, total.Metrics.Height + spacing);
+            var axis = total.Total.Axis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            if (BarValueDirection(axis, total.Total.Value) > 0) top = Math.Max(top, total.Metrics.Height + spacing);
             else bottom = Math.Max(bottom, total.Metrics.Height + spacing);
         }
         // Retain measured space outside the value mapper rather than relying on its
@@ -55,6 +56,8 @@ internal static partial class VisualCartesianCompiler {
         foreach (var caption in captions) {
             var total = caption.Total;
             var value = total.Value;
+            var axis = total.Axis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            var positive = BarValueDirection(axis, value) > 0;
             var mapper = total.Axis == ChartAxisSide.Secondary ? secondary! : primary;
             var layout = ResolveBarLayout(chart, context, plot, mapper, stacks, total.SeriesIndex);
             var center = mapper.X(total.Coordinate) + layout.Offset;
@@ -74,9 +77,9 @@ internal static partial class VisualCartesianCompiler {
                 ["data-cfx-axis"] = total.Axis.ToString().ToLowerInvariant()
             })) { }
             labels.Add(new LabelPlacementRequest(text, anchor, style, new[] {
-                new LabelCandidate(0, value >= 0 ? -context.Theme.Spacing : context.Theme.Spacing, .5, value >= 0 ? 1 : 0),
-                new LabelCandidate(right - anchor.X + context.Theme.Spacing, 0, 0, value >= 0 ? 0 : 1),
-                new LabelCandidate(left - anchor.X - context.Theme.Spacing, 0, 1, value >= 0 ? 0 : 1)
+                new LabelCandidate(0, positive ? -context.Theme.Spacing : context.Theme.Spacing, .5, positive ? 1 : 0),
+                new LabelCandidate(right - anchor.X + context.Theme.Spacing, 0, 0, positive ? 0 : 1),
+                new LabelCandidate(left - anchor.X - context.Theme.Spacing, 0, 1, positive ? 0 : 1)
             }, priority: 1) { AssociatedMarkId = id, MeasuredSize = caption.Metrics });
         }
     }

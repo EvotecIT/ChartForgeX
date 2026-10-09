@@ -29,7 +29,14 @@ public static partial class V2GalleryModels {
             }
             if (kind == ChartSeriesKind.Bar) chart.WithYAxis("Share (%)");
             else chart.WithXAxis("Share (%)");
-            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis).WithBounds(0, 100).WithLabelFormatter(Percent);
+            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis)
+                .WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == "compact-options");
+            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Waterfall) {
+            var chart = Basic(kind, variant)!;
+            chart.Options.XAxis.WithReversal();
             return chart;
         }
         if (kind == ChartSeriesKind.StackedArea) {

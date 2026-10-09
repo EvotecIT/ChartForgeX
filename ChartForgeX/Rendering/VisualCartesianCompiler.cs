@@ -96,8 +96,8 @@ internal static partial class VisualCartesianCompiler {
             ? ResolveHorizontalTotals(chart, context, builder, colors, stacks) : Array.Empty<HorizontalStackTotal>();
         var verticalTotals = !horizontal && chart.Options.ShowStackTotals && stacks.HasBarStacks
             ? ResolveVerticalTotals(chart, context, builder, colors, stacks) : null;
-        if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(plot, horizontalTotals, context.Theme.Spacing);
-        if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(plot, verticalTotals, context.Theme.Spacing);
+        if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(chart, plot, horizontalTotals, context.Theme.Spacing);
+        if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(chart, plot, verticalTotals, context.Theme.Spacing);
         // Axis measurement and total lanes can change the final radius-to-plot ratio.
         if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks)) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);

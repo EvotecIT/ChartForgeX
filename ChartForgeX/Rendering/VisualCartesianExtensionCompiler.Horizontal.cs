@@ -18,10 +18,11 @@ internal static partial class VisualCartesianCompiler {
             var point = series.Points[item]; var stack = stacks.Point(index, item);
             var startX = stack.Base == 0 ? map.XBaseline() : map.X(stack.Base); var endX = map.X(stack.End);
             var y = map.Y(point.X) + offset;
-            var bounds = VisibleSegmentBounds(chart, new ChartRect(Math.Min(startX, endX), y - height / 2, Math.Abs(endX - startX), height), stack.Value, horizontal: true);
+            var direction = MappedBarDirection(chart.Options.XAxis, stack.Value, startX, endX, horizontal: true);
+            var bounds = VisibleSegmentBounds(chart, new ChartRect(Math.Min(startX, endX), y - height / 2, Math.Abs(endX - startX), height), direction, horizontal: true);
             var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y));
             using (ObservationGroup(builder, series, index, item, item, 1, bounds, label, stack, ("category", point.X), ("value", point.Y), ("base", stack.Base)))
-                DrawBarSurface(chart, context, builder, series, item, bounds, PointColor(series, index, item, colors), colors, "horizontal-bar", horizontal: true);
+                DrawBarSurface(chart, context, builder, series, item, bounds, PointColor(series, index, item, colors), colors, "horizontal-bar", horizontal: true, direction: direction);
             obstacles.Add(new LabelObstacle(PointId(index, item), bounds));
             AddHorizontalLabel(chart, context, series, index, item, new ChartPoint(endX, y), bounds, point.Y, label, labels);
         }

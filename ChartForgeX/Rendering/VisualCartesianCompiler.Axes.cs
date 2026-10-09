@@ -23,8 +23,7 @@ internal static partial class VisualCartesianCompiler {
         internal void SetTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _ticks[axis] = ticks;
         internal void IncludeValueTicks(ChartAxis axis, double minimum, double maximum) {
             if (axis.Labels.Count == 0) return;
-            _ticks[axis] = ChartTicks.GenerateInside(axis, minimum, maximum).Concat(axis.Labels.Select(label => label.Value))
-                .Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray();
+            _ticks[axis] = ChartTicks.ForValueAxis(axis, minimum, maximum);
         }
         internal IReadOnlyList<double> Ticks(ChartAxis axis, double minimum, double maximum) => _ticks.TryGetValue(axis, out var ticks)
             ? ticks.Where(value => value >= minimum && value <= maximum).ToArray() : ChartTicks.ForAxis(axis, minimum, maximum);

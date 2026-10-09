@@ -100,12 +100,14 @@ internal static partial class VisualCartesianCompiler {
                 left = histogramLeft;
                 barWidth = histogramWidth;
             }
+            var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            var direction = MappedBarDirection(axis, stack.Value, baseY, y);
             var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
-            if (!series.IsHistogramDensity) bounds = VisibleSegmentBounds(chart, bounds, stack.Value);
+            if (!series.IsHistogramDensity) bounds = VisibleSegmentBounds(chart, bounds, direction);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stack)) {
                 if (series.IsHistogramDensity) DrawDensityHistogramSurface(chart, context, builder, series, index, pointIndex, bounds, colors);
-                else DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors);
+                else DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors, direction: direction);
             }
             obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
             AddLabel(chart, context, series, index, pointIndex, new ChartPoint(left + barWidth / 2, y), bounds, resolvedLabel, labels);
