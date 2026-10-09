@@ -371,7 +371,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels("Received", "Reviewed", "Qualified", "Completed").WithDataLabels()
                 .AddFunnel("Requests", new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
-                .WithFunnel(options => {
+                .ConfigureFunnel(options => {
                     options.Form = variant == "stage-bars-horizontal" ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == "cone-vertical" ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
