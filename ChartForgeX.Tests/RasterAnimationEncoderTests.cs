@@ -6,6 +6,22 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class RasterAnimationEncoderTests {
+    [Theory]
+    [InlineData(1)]
+    [InlineData(6)]
+    [InlineData(9.999)]
+    public void SubMinimumGifFramesDoNotShortenFollowingRepresentableDurations(double milliseconds) {
+        var image = new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 });
+        var frames = new[] {
+            new RasterAnimationFrame(image, TimeSpan.FromMilliseconds(milliseconds)),
+            new RasterAnimationFrame(image, TimeSpan.FromMilliseconds(106))
+        };
+        var bytes = RasterAnimationEncoder.Encode(frames, RasterAnimationFormat.Gif);
+        Assert.Equal(new[] { 10d, 110d }, ReadControls(bytes, RasterAnimationFormat.Gif).Durations);
+        Assert.Equal(bytes, RasterAnimationEncoder.Encode(new RasterAnimationSource(1, 1, frames.Length,
+            (index, _) => frames[index]), RasterAnimationFormat.Gif));
+    }
+
     [Fact]
     public void GifRationalCadenceKeepsOneClockForRetainedAndStreamedFramesIncludingZeroDelays() {
         var image = new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 });
