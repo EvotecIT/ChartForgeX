@@ -60,6 +60,7 @@ internal static partial class VisualScheduleCompiler {
                     var sources = Enumerable.Range(0, series.Points.Count).Where(index => series.Points[index].X >= segment.Start && series.Points[index].Y <= segment.End &&
                         series.PointLabels[index] == segment.State.Key).ToArray();
                     metadata["data-cfx-source-points"] = string.Join(",", sources);
+                    metadata["data-cfx-derived"] = "timeline-run";
                     var id = VisualStateSceneTools.SourceId(lane.SeriesIndex, segment.PointIndex);
                     using (VisualStateSceneTools.Mark(builder, id, "state-timeline-segment", bounds, model.SegmentSummary(lane, segment), metadata)) {
                         if (!visible) continue;
