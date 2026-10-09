@@ -117,7 +117,8 @@ public sealed class GraphiteFamilyTests {
     public void FlatFunnelAndSankeyRetainTheirWeightedSourceData() {
         var funnel = Chart.Create().WithXLabels("Detected", "Fixed").AddFunnel("Stages", new[] { new ChartPoint(1, 1234), new ChartPoint(2, 600) });
         Assert.Equal(new[] { "1234", "600" }, Roles(Literal(funnel), "funnel-stage").Select(stage => (string?)stage.Attribute("data-cfx-value")));
-        var sankey = Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("Done", "Done"), new ChartNode("B", "B") }, new[] { new ChartFlowLink("flow-1", "A", "Done", 30), new("flow-2", "B", "Done", 20) }).WithSankeyNodeState("Done", ChartSeriesState.Neutral);
+        var sankey = Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("Done", "Done"), new ChartNode("B", "B") }, new[] { new ChartFlowLink("flow-1", "A", "Done", 30), new("flow-2", "B", "Done", 20) });
+        sankey.Series[0].WithNodeState("Done", ChartSeriesState.Neutral);
         var links = Roles(Literal(sankey), "sankey-link");
         Assert.Equal(new[] { "30", "20" }, links.Select(link => (string?)link.Attribute("data-cfx-value")));
         Assert.Equal(1.5, Number(links[0], "data-cfx-width") / Number(links[1], "data-cfx-width"), 6);

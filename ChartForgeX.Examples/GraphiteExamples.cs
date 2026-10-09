@@ -62,7 +62,7 @@ internal static class GraphiteExamples {
         var sankey=Frame("Remediation flow","Source-coloured links",556,324).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Remediated", "Remediated"), new ChartNode("In progress", "In progress"), new ChartNode("Overdue", "Overdue"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("GPO", "GPO") }, new[] {
             new ChartFlowLink("flow-1", "Assessment","Remediated",360),new("flow-2", "Assessment","In progress",110),new("flow-3", "Assessment","Overdue",50),new("flow-4", "Monitoring","Remediated",170),new("flow-5", "Monitoring","In progress",90),new("flow-6", "Monitoring","Overdue",50),new("flow-7", "GPO","Remediated",80),new("flow-8", "GPO","In progress",50),new("flow-9", "GPO","Overdue",40)
         });
-        sankey.WithSankeyNodeState("Remediated",ChartSeriesState.Neutral).WithSankeyNodeState("In progress",ChartSeriesState.Warning).WithSankeyNodeState("Overdue",ChartSeriesState.Danger);
+        sankey.Series[0].WithNodeState("Remediated",ChartSeriesState.Neutral).WithNodeState("In progress",ChartSeriesState.Warning).WithNodeState("Overdue",ChartSeriesState.Danger);
         var heat=Frame("Activity by hour","Sequential ramp; zero is neutral",616,304).WithXLabels(Enumerable.Range(0,24).Select(i=>new[]{0,6,12,18,23}.Contains(i)?i.ToString("00"):"").ToArray());
         var days=new[]{"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
         for(var d=0;d<7;d++)heat.AddHeatmapRow(days[d],Enumerable.Range(0,24).Select(h=>new ChartPoint(h+1,HeatLevel(d,h))));

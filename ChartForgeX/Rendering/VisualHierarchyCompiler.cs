@@ -61,13 +61,14 @@ internal static partial class VisualHierarchyCompiler {
             using (builder.PushGroup(ChartRelationshipMetadata.SourceId("link", target.Id), "tree-link", metadata))
                 builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(x1, y1), ChartPathCommand.CubicTo(mid, y1, mid, y2, x2, y2) }),
                     stroke: ChartColorMath.WithOpacity(color, .65), strokeWidth: width, role: "tree-link-path",
-                    paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, source.Index).WithOpacity(ChartColorMath.WithOpacity(color, .65), .65)));
+                    paint: VisualChartPaint.Stroke(ChartRelationshipPaint.Paint(series, color, source.Index).WithOpacity(ChartColorMath.WithOpacity(color, .65), .65)));
             var bounds = new ChartRect(x1, Math.Min(y1, y2) - width / 2, x2 - x1, Math.Abs(y2 - y1) + width);
             builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("link", target.Id), "tree-link", bounds, metadata["data-cfx-full-label"]));
         }
         foreach (var node in model.Nodes) {
             var b = new ChartRect(node.X, node.Y, model.NodeWidth, model.NodeHeight); var color = Color(series, node.Index, colors, node.Depth);
             var metadata = ChartRelationshipMetadata.Node(series, node.Id, node.Label, node.Index);
+            metadata["data-cfx-state"] = ChartRelationshipPaint.State(series, node.Index).ToString();
             metadata["data-cfx-depth"] = N(node.Depth);
             if (node.Depth > 0) {
                 var incoming = model.Links[series.Relationships!.IncomingLink(node.Index)];
@@ -78,7 +79,7 @@ internal static partial class VisualHierarchyCompiler {
             }
             using (builder.PushGroup(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", metadata)) {
                 builder.Rect(b, color, colors.Surface, context.Theme.AxisStrokeWidth, Math.Min(context.Theme.BarRadius, model.NodeHeight / 2), "tree-node-mark",
-                    paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
+                    paint: new VisualScenePaintBinding(ChartRelationshipPaint.Paint(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 Pattern(builder, Rectangle(b), series, node.Index, color, "tree-node-pattern");
                 if (series.ShowDataLabels != false) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
             }
@@ -93,13 +94,14 @@ internal static partial class VisualHierarchyCompiler {
         foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) {
             double sweep = node.EndAngle - node.StartAngle;
             var color = Color(series, node.Index, colors, node.Depth == 0 ? 0 : node.Index + node.Depth - 1);
-            var paint = VisualChartPaint.Series(series, color, node.Index);
-            if (node.Depth == 0 && !series.Color.HasValue && series.StateRole == ChartSeriesState.None) {
+            var paint = ChartRelationshipPaint.Paint(series, color, node.Index);
+            if (node.Depth == 0 && !ChartRelationshipPaint.HasExplicitColor(series, node.Index) && ChartRelationshipPaint.State(series, node.Index) == ChartSeriesState.None) {
                 var source = color; color = ChartColorMath.Blend(colors.Surface, source, .28);
                 paint = SvgPaint.Mix(color, colors.Surface, SvgColorRole.Surface, source, VisualChartPaint.SeriesRole(series, node.Index), .28);
             }
             string formatted = ChartNumericFormatter.FormatValue(chart.Options, node.Value);
             var metadata = ChartRelationshipMetadata.Node(series, node.Id, node.Label, node.Index);
+            metadata["data-cfx-state"] = ChartRelationshipPaint.State(series, node.Index).ToString();
             metadata["data-cfx-depth"] = N(node.Depth); metadata["data-cfx-value"] = N(node.Value);
             if (node.Parent >= 0) {
                 metadata["data-cfx-parent"] = model.Nodes[node.Parent].Id;
@@ -124,9 +126,8 @@ internal static partial class VisualHierarchyCompiler {
     private static string Id(string role, int index) => "series-0-" + role + "-" + N(index);
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);
     private static bool Finite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
-    private static ChartColor Color(ChartSeries series, int index, VisualThemeColors colors, int? paletteIndex = null) => index < series.PointColors.Count && series.PointColors[index].HasValue
-        ? series.PointColors[index]!.Value : series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Palette[(paletteIndex ?? index) % colors.Palette.Count]);
-    private static ChartFillPattern Pattern(ChartSeries series, int index) => index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern;
+    private static ChartColor Color(ChartSeries series, int index, VisualThemeColors colors, int? paletteIndex = null) => ChartRelationshipPaint.Color(series, index, colors, paletteIndex);
+    private static ChartFillPattern Pattern(ChartSeries series, int index) => ChartRelationshipPaint.Pattern(series, index);
     private static ChartPath Rectangle(ChartRect b) => new(new[] { ChartPathCommand.MoveTo(b.X, b.Y), ChartPathCommand.LineTo(b.Right, b.Y), ChartPathCommand.LineTo(b.Right, b.Bottom), ChartPathCommand.LineTo(b.X, b.Bottom) });
     private static void Pattern(VisualSceneBuilder builder, ChartPath path, ChartSeries series, int index, ChartColor color, string role) {
         var pattern = Pattern(series, index); if (pattern != ChartFillPattern.None) builder.Pattern(path, pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: role);

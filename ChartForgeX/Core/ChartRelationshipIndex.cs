@@ -75,6 +75,9 @@ internal sealed partial class ChartRelationshipIndex {
             if (double.IsInfinity(incoming[targets[i]]) || double.IsInfinity(outgoing[sources[i]]))
                 throw new ArgumentException("Sankey node aggregates must remain finite.", nameof(links));
         }
+        for (var i = 0; i < snapshot.Length; i++)
+            if (incoming[i] == 0 && outgoing[i] == 0)
+                throw new ArgumentException("Sankey nodes must be referenced by at least one flow.", nameof(nodes));
         TopologicalOrder(snapshot.Length, sources, targets, false, out _, out var depths);
         return new ChartRelationshipIndex(snapshot, flows, Array.Empty<ChartTreeLink>(), indexes, sources, targets, -1, Array.Empty<double>(),
             depths: depths, flowIncomingValues: incoming, flowOutgoingValues: outgoing);

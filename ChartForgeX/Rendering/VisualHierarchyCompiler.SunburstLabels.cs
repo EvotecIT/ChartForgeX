@@ -42,7 +42,7 @@ internal static partial class VisualHierarchyCompiler {
             foreach (var degrees in node.Depth == 0 || Math.Abs(tangent) < .001 ? new[] { 0d } : new[] { 0d, tangent }) {
                 if (!SunburstCaptionFits(node, x - model.CenterX, y - model.CenterY, measured, degrees)) continue;
                 var paint = VisualChartPaint.ExplicitDataLabelColor(chart, node.Index) ? VisualChartPaint.Text(style)
-                    : SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(chart.Series[0], node.Index));
+                    : SvgPaint.Contrast(fill, ChartRelationshipPaint.Role(chart.Series[0], node.Index));
                 style.Alignment = TextAlignment.Center;
                 using (Math.Abs(degrees) < .001 ? null : builder.PushRotation(degrees, x, y))
                     builder.Text(text, x, y - measured.Height / 2 + builder.TextAscent(style), style, "sunburst-label",

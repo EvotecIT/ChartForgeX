@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
-    /// <summary>Gets the immutable authored node identities of a Sankey, Tree, Sunburst or Treemap series, in input order.</summary>
+    /// <summary>Gets immutable authored relationship nodes, in input order.</summary>
     public IReadOnlyList<ChartNode> Nodes => Relationships?.Nodes ?? Array.Empty<ChartNode>();
 
     /// <summary>Gets the immutable authored flows of a Sankey series, in input order.</summary>
@@ -15,6 +16,21 @@ public sealed partial class ChartSeries {
 
     /// <summary>Gets the immutable authored groups and leaves of a Treemap series, in input order.</summary>
     public IReadOnlyList<ChartTreemapItem> TreemapItems => Relationships?.TreemapItems ?? Array.Empty<ChartTreemapItem>();
+
+    private readonly Dictionary<string, ChartSeriesState> _nodeStates = new(StringComparer.Ordinal);
+    private IReadOnlyDictionary<string, ChartSeriesState>? _nodeStatesView;
+
+    /// <summary>Gets semantic states keyed by authored node ID, scoped to this relationship series.</summary>
+    public IReadOnlyDictionary<string, ChartSeriesState> NodeStates => _nodeStatesView ??= new ReadOnlyDictionary<string, ChartSeriesState>(_nodeStates);
+
+    /// <summary>Assigns a semantic state to an existing authored node without relying on display labels or input ordinals.</summary>
+    public ChartSeries WithNodeState(string id, ChartSeriesState state) {
+        if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Node ID must not be empty.", nameof(id));
+        if (!Enum.IsDefined(typeof(ChartSeriesState), state)) throw new ArgumentOutOfRangeException(nameof(state));
+        if (Relationships?.ContainsNode(id) != true) throw new ArgumentException("The series has no authored node with this ID.", nameof(id));
+        _nodeStates[id] = state;
+        return this;
+    }
 
     internal ChartRelationshipIndex? Relationships { get; private set; }
     internal bool HasSourceData => Points.Count > 0 || Nodes.Count > 0;
