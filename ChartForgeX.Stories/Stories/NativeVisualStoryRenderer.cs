@@ -58,7 +58,7 @@ internal static partial class NativeVisualStoryRenderer {
             FitText(builder, label, story.Width - padding - labelWidth, story.Height - 13, labelWidth, 11, theme.Success, 700);
         }
         return new PreparedVisual(builder.Build(), new VisualAccessibility {
-            Name = story.Title + " — " + scene.Title, Description = transcript, Language = "en"
+            Name = story.Title + " — " + scene.Title, Description = transcript
         });
     }
 

@@ -26,7 +26,7 @@ public sealed class HtmlVisualStoryRenderer {
         if (story == null) throw new ArgumentNullException(nameof(story));
         var light = ChartColorMath.RelativeLuminance(story.Theme.Background) > 0.5;
         var html = new StringBuilder();
-        html.Append("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">")
+        html.Append("<!doctype html><html><head><meta charset=\"utf-8\">")
             .Append("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">")
             .Append("<title>").Append(Escape(story.Title)).Append("</title>")
             .Append("<style>html{color-scheme:").Append(light ? "light" : "dark")

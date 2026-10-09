@@ -84,7 +84,7 @@ public sealed class VisualStoryTerminalSurface : VisualStorySurface {
 
     private static string AccessibleTerminalText(TerminalStory terminal, string? heading) {
         if (terminal == null) throw new ArgumentNullException(nameof(terminal));
-        var transcript = string.Join(Environment.NewLine, TerminalStoryLayout.Build(terminal).TranscriptLines);
+        var transcript = terminal.ToTranscript();
         if (string.IsNullOrWhiteSpace(heading)) return transcript;
         return RequireText(heading!, nameof(heading)) + Environment.NewLine + transcript;
     }
