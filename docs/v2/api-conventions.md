@@ -114,7 +114,7 @@ Normalization changes geometry, bounds and total positions together. Raw observa
 ```csharp
 var pyramid = Chart.Create().WithXLabels("Services", "Platform", "Support").WithDataLabels()
     .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
-    .WithPyramid(options => {
+    .ConfigurePyramid(options => {
         options.ValueEncoding = ChartPyramidValueEncoding.Area;
         options.Orientation = ChartOrientation.Horizontal;
         options.Reversed = true;

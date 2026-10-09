@@ -23,7 +23,7 @@ public sealed class PyramidGeometryTests {
         Assert.False(chart.Options.Pyramid.Reversed); Assert.Null(chart.Options.Pyramid.AspectRatio);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Pyramid.ValueEncoding = (ChartPyramidValueEncoding)99);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Pyramid.Orientation = (ChartOrientation)99);
-        Assert.Throws<ArgumentNullException>(() => chart.WithPyramid(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.ConfigurePyramid(null!));
         foreach (var ratio in new[] { 0d, -1, double.NaN, double.PositiveInfinity })
             Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Pyramid.AspectRatio = ratio);
         foreach (var values in new[] { new[] { 1d, -1 }, new[] { 1d, double.NaN }, new[] { double.PositiveInfinity }, new[] { double.MaxValue, double.MaxValue } }) {
@@ -46,7 +46,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartOrientation.Horizontal, false, ChartPyramidValueEncoding.Area)]
     [InlineData(ChartOrientation.Horizontal, true, ChartPyramidValueEncoding.Area)]
     public void IndependentLengthsAreasAndNativePixelsFollowTheDeclaredEncoding(ChartOrientation orientation, bool reversed, ChartPyramidValueEncoding encoding) {
-        var chart = Pyramid(50, 30, 20).WithPyramid(options => { options.Orientation = orientation; options.Reversed = reversed; options.ValueEncoding = encoding; });
+        var chart = Pyramid(50, 30, 20).ConfigurePyramid(options => { options.Orientation = orientation; options.Reversed = reversed; options.ValueEncoding = encoding; });
         var scene = Compile(chart); var marks = Marks(scene); var stages = Stages(scene);
         var expected = new[] { .5, .3, .2 };
         var areas = marks.Select(PolygonArea).ToArray();
@@ -80,7 +80,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartPyramidValueEncoding.Height)]
     [InlineData(ChartPyramidValueEncoding.Area)]
     public void ZeroSingletonAndAllZeroInputsKeepHonestGeometryAndSourceSlots(ChartPyramidValueEncoding encoding) {
-        var scene = Compile(Pyramid(0, 50, 0, 50, 0).WithPyramid(options => options.ValueEncoding = encoding));
+        var scene = Compile(Pyramid(0, 50, 0, 50, 0).ConfigurePyramid(options => options.ValueEncoding = encoding));
         Assert.Equal(2, Marks(scene).Length); Assert.Equal(5, Stages(scene).Length);
         foreach (var index in new[] { 0, 2, 4 }) {
             Assert.Equal(0, Number(Stages(scene)[index], "data-cfx-length-fraction"));
@@ -88,9 +88,9 @@ public sealed class PyramidGeometryTests {
             Assert.Equal("true", Stages(scene)[index].Metadata["data-cfx-zero"]);
             Assert.Equal(0, scene.Regions.Single(region => region.Id == "series-0-point-" + index).Bounds.Height);
         }
-        var singleton = Compile(Pyramid(8).WithPyramid(options => options.ValueEncoding = encoding));
+        var singleton = Compile(Pyramid(8).ConfigurePyramid(options => options.ValueEncoding = encoding));
         Assert.Equal(400 * 240 / 2d, PolygonArea(Assert.Single(Marks(singleton))), 8);
-        var empty = Compile(Pyramid(0, 0, 0).WithPyramid(options => options.ValueEncoding = encoding));
+        var empty = Compile(Pyramid(0, 0, 0).ConfigurePyramid(options => options.ValueEncoding = encoding));
         Assert.Empty(Marks(empty)); Assert.Equal(3, Stages(empty).Length);
         Assert.All(Stages(empty), stage => {
             Assert.Equal(0, Number(stage, "data-cfx-area-fraction"));
@@ -122,7 +122,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(true, ChartPyramidValueEncoding.Area)]
     public void FiniteRoundedAggregateIsAcceptedInBothOrdersWithoutChangingSourceWeights(bool maximumFirst, ChartPyramidValueEncoding encoding) {
         var values = maximumFirst ? new[] { double.MaxValue, 1d } : new[] { 1d, double.MaxValue };
-        var chart = Pyramid(values).WithPyramid(options => options.ValueEncoding = encoding);
+        var chart = Pyramid(values).ConfigurePyramid(options => options.ValueEncoding = encoding);
         var prepared = chart.Prepare(new VisualRenderContext());
         var stages = Stages(prepared.Scene);
         Assert.Equal(values, chart.Series[0].Points.Select(point => point.Y));
@@ -158,7 +158,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartPyramidValueEncoding.Height)]
     [InlineData(ChartPyramidValueEncoding.Area)]
     public void PositiveWeightsBelowBoundaryPrecisionKeepTheirSourceFactAndExplicitDiagnostic(ChartPyramidValueEncoding encoding) {
-        var scene = Compile(Pyramid(1, 1E-20).WithPyramid(options => options.ValueEncoding = encoding));
+        var scene = Compile(Pyramid(1, 1E-20).ConfigurePyramid(options => options.ValueEncoding = encoding));
         Assert.Single(Marks(scene));
         var tiny = Stages(scene)[1];
         Assert.Equal("1E-20", tiny.Metadata["data-cfx-value"]);
@@ -173,7 +173,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartOrientation.Vertical)]
     [InlineData(ChartOrientation.Horizontal)]
     public void AspectRatioFitsAndCentersTheTriangleWithoutChangingTheEncoding(ChartOrientation orientation) {
-        var chart = Pyramid(50, 30, 20).WithPyramid(options => { options.Orientation = orientation; options.AspectRatio = 1.5; });
+        var chart = Pyramid(50, 30, 20).ConfigurePyramid(options => { options.Orientation = orientation; options.AspectRatio = 1.5; });
         var marks = Marks(Compile(chart));
         var cross = orientation == ChartOrientation.Vertical ? marks.Max(mark => Extent(mark, true)) : marks.Max(mark => Extent(mark, false));
         var process = marks.Sum(mark => Extent(mark, orientation == ChartOrientation.Horizontal));
@@ -190,7 +190,7 @@ public sealed class PyramidGeometryTests {
     [Fact]
     public void PreparedPaintPatternsReadableLabelsAndDetachedExportsSurviveSourceMutation() {
         var chart = Pyramid(50, 30, 20, 0).WithDataLabels().WithSize(360, 360).WithPointLegend()
-            .WithPyramid(options => { options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = true; });
+            .ConfigurePyramid(options => { options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = true; });
         chart.Series[0].WithPointFillPattern(1, ChartFillPattern.Crosshatch).WithPointLabel(0, "Complete")
             .WithPointDataLabelStyle(0, style => { style.Color = ChartColor.FromHex("#B14091"); style.FontWeight = "700"; });
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360))));
@@ -231,7 +231,7 @@ public sealed class PyramidGeometryTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Pyramid(50, 30, 20, 0).WithSize(596, 338).WithDataLabels()
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .WithPyramid(options => { options.Orientation = ChartOrientation.Horizontal; options.Reversed = true; });
+            .ConfigurePyramid(options => { options.Orientation = ChartOrientation.Horizontal; options.Reversed = true; });
         chart.Series[0].WithInteractionKey("allocation");
         await using var session = await InteractiveChartBrowser.OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;

@@ -55,7 +55,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Pyramid) {
             var chart = Chart.Create().WithXLabels("Services", "Platform", "Support", "Unassigned").WithDataLabels()
                 .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
-                .WithPyramid(options => {
+                .ConfigurePyramid(options => {
                     options.ValueEncoding = ChartPyramidValueEncoding.Area;
                     options.Orientation = ChartOrientation.Horizontal;
                     options.Reversed = true;
