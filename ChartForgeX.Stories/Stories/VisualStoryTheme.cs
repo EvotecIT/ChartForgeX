@@ -82,6 +82,12 @@ public sealed class VisualStoryTheme {
     /// <summary>Creates the default premium dark visual-story theme.</summary>
     public static VisualStoryTheme PremiumDark() => new();
 
+    /// <summary>Creates a visual-story theme from the shared Graphite light design tokens.</summary>
+    public static VisualStoryTheme GraphiteLight() => VisualDesignTokens.GraphiteLight().ApplyTo(new VisualStoryTheme());
+
+    /// <summary>Creates a visual-story theme from the shared Graphite dark design tokens.</summary>
+    public static VisualStoryTheme GraphiteDark() => VisualDesignTokens.GraphiteDark().ApplyTo(new VisualStoryTheme());
+
     /// <summary>Creates a light visual-story theme suitable for documentation and printing.</summary>
     public static VisualStoryTheme Light() => new() {
         Background = ChartColor.FromHex("#E9EEF5"),
