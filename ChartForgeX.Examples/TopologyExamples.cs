@@ -10,10 +10,6 @@ internal static class TopologyExamples {
         Directory.CreateDirectory(target);
         WriteAll(target);
         CopyGeneratedArtifactsToRoot(target, output);
-
-        var artifacts = Path.Combine(FindRepositoryRoot(), "artifacts", "topology-demo");
-        Directory.CreateDirectory(artifacts);
-        WriteAll(artifacts);
     }
 
     private static void CopyGeneratedArtifactsToRoot(string source, string output) {
@@ -379,18 +375,6 @@ internal static class TopologyExamples {
             .AddEdge("worker-sql", "worker", "sql", "412 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "P95", "/service-map/worker-sql")
             .AddEdge("team-api", "team", "api", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved, href: "/service-map/team-api")
             .AddEdge("team-worker", "team", "worker", "owns", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved, href: "/service-map/team-worker");
-    }
-
-    private static string FindRepositoryRoot() {
-        var current = AppContext.BaseDirectory;
-        while (!string.IsNullOrWhiteSpace(current)) {
-            if (File.Exists(Path.Combine(current, "ChartForgeX.sln"))) return current;
-            var parent = Directory.GetParent(current);
-            if (parent == null) break;
-            current = parent.FullName;
-        }
-
-        return AppContext.BaseDirectory;
     }
 
     private static string Escape(string value) => value.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");

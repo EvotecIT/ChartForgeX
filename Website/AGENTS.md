@@ -13,7 +13,7 @@ ChartForgeX publishes its project page, curated demos, documentation, and comple
 - content/project-docs and content/examples hold human-authored hub content.
 - static/examples/promoted-cases.json describes source-linked curated demos. Its schema is owned by the Evotec Website repository at https://evotec.xyz/schemas/project-demos.schema.json.
 - data/gallery.json and static/examples/generated hold the complete generated gallery. Keep these artifacts source-linked and consistent with the example build.
-- build/Sync-GeneratedExamples.ps1 updates gallery metadata and committed examples from ChartForgeX.Examples/bin/Release/net8.0/output, preserving existing metadata by artifact URL.
+- build/Sync-GeneratedExamples.ps1 updates the single catalog from ChartForgeX.Examples/bin/Release/net8.0/output-v2 and selected promoted demo assets from output. Metadata comes from the prepared-scene manifest.
 
 The Evotec Website repository owns routing, layout, search, SEO, the project-demo schema, deployment, and the source lock that selects a ChartForgeX commit. Update the ChartForgeX content before bumping that lock. Do not reintroduce a dedicated site.json, pipeline.json, theme shell, or links to chartforgex.evotec.xyz or the retired GitHub Pages site.
 
@@ -28,6 +28,7 @@ pwsh ./Build.ps1 -Configuration Release -SkipAot -SkipPack
 Then refresh the checked-in gallery when example output changes:
 
 ```powershell
+dotnet run --project ./ChartForgeX.Examples -c Release --no-build -- --v2-only --v2-curated
 pwsh ./Website/build/Sync-GeneratedExamples.ps1
 ```
 

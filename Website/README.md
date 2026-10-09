@@ -8,7 +8,8 @@ The content in this folder is consumed by the Evotec Website project:
 - `content/examples/` contains source-linked examples.
 - `static/examples/promoted-cases.json` supplies curated demos and points to `data/gallery.json`.
 - `data/gallery.json` indexes the complete visual catalog; `static/examples/generated/` contains its SVG, PNG, and HTML artifacts.
-- `build/Sync-GeneratedExamples.ps1` refreshes the gallery from the repository's example output while preserving existing metadata by artifact URL.
+- `static/examples/generated/catalog.html` is the single catalog, with matching light/dark examples, native thumbnails, SVG, PNG and C# source in the same directory.
+- `build/Sync-GeneratedExamples.ps1` refreshes that catalog and its metadata from the prepared-scene manifest, plus the selected source-linked demo assets declared by `promoted-cases.json`.
 
 `WebsiteArtifacts/project-manifest.json` declares the hub-ingested paths. The Evotec Website repository owns the page shell, routes, project-demo schema, source lock, deployment, and live availability. Its source lock must select a ChartForgeX commit containing the updated manifest before the gallery can appear on the hub.
 
@@ -16,6 +17,7 @@ To refresh generated content, run from the ChartForgeX repository root:
 
 ```powershell
 pwsh ./Build.ps1 -Configuration Release -SkipAot -SkipPack
+dotnet run --project ./ChartForgeX.Examples -c Release --no-build -- --v2-only --v2-curated
 pwsh ./Website/build/Sync-GeneratedExamples.ps1
 ```
 

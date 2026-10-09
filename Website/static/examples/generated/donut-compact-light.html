@@ -1,0 +1,294 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="light" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Findings by category &#183; Donut</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:1100px;min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Donut</p><h1>Findings by category</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="donut-wide-light.html" data-theme-link data-light-href="donut-wide-light.html" data-dark-href="donut-wide-dark.html">Standard &#183; Findings by category</a></span><span><a href="family-donut-wide-light.html" data-theme-link data-light-href="family-donut-wide-light.html" data-dark-href="family-donut-wide-dark.html">Standard &#183; Services contributing to revenue</a></span><span class="current-variant"><a href="donut-compact-light.html" data-theme-link data-light-href="donut-compact-light.html" data-dark-href="donut-compact-dark.html" aria-current="page">Compact &#183; Findings by category</a></span><span><a href="family-donut-compact-light.html" data-theme-link data-light-href="family-donut-compact-light.html" data-dark-href="family-donut-compact-dark.html">Compact &#183; Services contributing to revenue</a></span><span><a href="donut-explicit-status-light.html" data-theme-link data-light-href="donut-explicit-status-light.html" data-dark-href="donut-explicit-status-dark.html">Status colors</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Findings by category" aria-labelledby="donut-compact-light-title" aria-describedby="donut-compact-light-description"><title id="donut-compact-light-title">Findings by category</title><desc id="donut-compact-light-description">Chart with 1 data series: Findings.</desc><defs><clipPath id="donut-compact-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="donut-compact-light-clip-5" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="58.5"/></clipPath><clipPath id="donut-compact-light-clip-7" clipPathUnits="userSpaceOnUse"><rect x="24" y="79.578" width="10" height="10"/></clipPath><clipPath id="donut-compact-light-clip-15" clipPathUnits="userSpaceOnUse"><rect x="158.915" y="79.578" width="10" height="10"/></clipPath><clipPath id="donut-compact-light-clip-23" clipPathUnits="userSpaceOnUse"><rect x="24" y="99.078" width="10" height="10"/></clipPath><clipPath id="donut-compact-light-clip-31" clipPathUnits="userSpaceOnUse"><rect x="158.915" y="99.078" width="10" height="10"/></clipPath><clipPath id="donut-compact-light-clip-39" clipPathUnits="userSpaceOnUse"><rect x="24" y="118.578" width="10" height="10"/></clipPath><clipPath id="donut-compact-light-clip-47" clipPathUnits="userSpaceOnUse"><rect x="158.915" y="118.578" width="10" height="10"/></clipPath><clipPath id="donut-compact-light-clip-55" clipPathUnits="userSpaceOnUse"><rect x="24" y="146.15" width="312" height="189.85"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#donut-compact-light-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Findings by category</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">One prepared scene for SVG and native PNG</text></g></g><g clip-path="url(#donut-compact-light-clip-5)"><g id="donut-compact-light-node-6" data-cfx-source-id="legend-series-0-point-6" data-cfx-role="legend-entry" aria-label="Day 7: 38 (18.7%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-light-clip-7)"><rect x="24" y="79.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#2A78D6" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="42" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 7</text></g><g data-cfx-role="legend-percentage"><text x="110.574" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">18.7%</text></g><g data-cfx-role="legend-value"><text x="89.396" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">38</text></g></g><g id="donut-compact-light-node-14" data-cfx-source-id="legend-series-0-point-5" data-cfx-role="legend-entry" aria-label="Day 6: 35 (17.2%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-light-clip-15)"><rect x="158.915" y="79.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#1D4F9E" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="176.915" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 6</text></g><g data-cfx-role="legend-percentage"><text x="245.489" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">17.2%</text></g><g data-cfx-role="legend-value"><text x="224.311" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">35</text></g></g><g id="donut-compact-light-node-22" data-cfx-source-id="legend-series-0-point-4" data-cfx-role="legend-entry" aria-label="Day 5: 32 (15.8%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-light-clip-23)"><rect x="24" y="99.078" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#5B7F00" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="42" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 5</text></g><g data-cfx-role="legend-percentage"><text x="110.574" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">15.8%</text></g><g data-cfx-role="legend-value"><text x="89.396" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">32</text></g></g><g id="donut-compact-light-node-30" data-cfx-source-id="legend-series-0-point-3" data-cfx-role="legend-entry" aria-label="Day 4: 29 (14.3%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-light-clip-31)"><rect x="158.915" y="99.078" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#C24FA8" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="176.915" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 4</text></g><g data-cfx-role="legend-percentage"><text x="245.489" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">14.3%</text></g><g data-cfx-role="legend-value"><text x="224.311" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">29</text></g></g><g id="donut-compact-light-node-38" data-cfx-source-id="legend-series-0-point-2" data-cfx-role="legend-entry" aria-label="Day 3: 26 (12.8%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-light-clip-39)"><rect x="24" y="118.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#7B61E8" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="42" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 3</text></g><g data-cfx-role="legend-percentage"><text x="110.574" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">12.8%</text></g><g data-cfx-role="legend-value"><text x="89.396" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">26</text></g></g><g id="donut-compact-light-node-46" data-cfx-source-id="legend-series-0-point-other" data-cfx-role="legend-entry" aria-label="Other: 43 (21.2%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-light-clip-47)"><rect x="158.915" y="118.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#F8F9FA" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="176.915" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Other</text></g><g data-cfx-role="legend-percentage"><text x="246.885" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">21.2%</text></g><g data-cfx-role="legend-value"><text x="225.708" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">43</text></g></g></g><g clip-path="url(#donut-compact-light-clip-55)"><g data-cfx-role="radial-point" data-cfx-label="Day 7" data-cfx-pattern="None" data-cfx-percent="0.18719211822660098" data-cfx-pin-state-colors="false" data-cfx-point="6" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="6" data-cfx-value="38"><path d="M 180 158.15 A 82.925 82.925 0 0 1 256.551 209.193 L 227.462 221.308 A 51.414 51.414 0 0 0 180 189.662 Z" id="donut-compact-light-node-57" data-cfx-source-id="series-0-point-6" data-cfx-role="donut-slice" fill="#2A78D6" stroke="#F8F9FA" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Day 6" data-cfx-pattern="None" data-cfx-percent="0.17241379310344829" data-cfx-pin-state-colors="false" data-cfx-point="5" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="5" data-cfx-value="35"><path d="M 256.551 209.193 A 82.925 82.925 0 0 1 244.025 293.775 L 219.696 273.749 A 51.414 51.414 0 0 0 227.462 221.308 Z" id="donut-compact-light-node-60" data-cfx-source-id="series-0-point-5" data-cfx-role="donut-slice" fill="#1D4F9E" stroke="#F8F9FA" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Day 5" data-cfx-pattern="None" data-cfx-percent="0.15763546798029557" data-cfx-pin-state-colors="false" data-cfx-point="4" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="4" data-cfx-value="32"><path d="M 244.025 293.775 A 82.925 82.925 0 0 1 171.034 323.514 L 174.441 292.187 A 51.414 51.414 0 0 0 219.696 273.749 Z" id="donut-compact-light-node-63" data-cfx-source-id="series-0-point-4" data-cfx-role="donut-slice" fill="#5B7F00" stroke="#F8F9FA" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Day 4" data-cfx-pattern="None" data-cfx-percent="0.14285714285714285" data-cfx-pin-state-colors="false" data-cfx-point="3" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="3" data-cfx-value="29"><path d="M 171.034 323.514 A 82.925 82.925 0 0 1 109.957 285.465 L 136.573 268.597 A 51.414 51.414 0 0 0 174.441 292.187 Z" id="donut-compact-light-node-66" data-cfx-source-id="series-0-point-3" data-cfx-role="donut-slice" fill="#C24FA8" stroke="#F8F9FA" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Day 3" data-cfx-pattern="None" data-cfx-percent="0.12807881773399016" data-cfx-pin-state-colors="false" data-cfx-point="2" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="2" data-cfx-value="26"><path d="M 109.957 285.465 A 82.925 82.925 0 0 1 99.449 221.374 L 130.059 228.86 A 51.414 51.414 0 0 0 136.573 268.597 Z" id="donut-compact-light-node-69" data-cfx-source-id="series-0-point-2" data-cfx-role="donut-slice" fill="#7B61E8" stroke="#F8F9FA" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Other" data-cfx-pattern="None" data-cfx-percent="0.21182266009852216" data-cfx-pin-state-colors="false" data-cfx-point="-1" data-cfx-series="0" data-cfx-source-patterns="None,None" data-cfx-source-points="0,1" data-cfx-value="43"><path d="M 99.449 221.374 A 82.925 82.925 0 0 1 180 158.15 L 180 189.662 A 51.414 51.414 0 0 0 130.059 228.86 Z" id="donut-compact-light-node-72" data-cfx-source-id="series-0-point-other" data-cfx-role="donut-slice" fill="#F8F9FA" stroke="#F8F9FA" stroke-width="2" fill-rule="evenodd"/></g><g id="donut-compact-light-node-74" data-cfx-source-id="series-0-center" data-cfx-role="donut-center" aria-label="203&#10;Findings" data-cfx-center-caption="Findings" data-cfx-center-value="203"><g data-cfx-role="donut-total-label"><text x="164.795" y="234.11" font-family="CFX Proof Carlito" font-size="20" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">203</text></g><g data-cfx-role="donut-title"><text x="159.861" y="260.931" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Findings</text></g></g></g></svg></div><div class="full" data-visual-theme="light" data-output-format="png"><img src="donut-compact-light.png" width="360" height="360" alt="Findings by category" loading="lazy" decoding="async"></div><div class="full" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Findings by category" aria-labelledby="donut-compact-dark-title" aria-describedby="donut-compact-dark-description"><title id="donut-compact-dark-title">Findings by category</title><desc id="donut-compact-dark-description">Chart with 1 data series: Findings.</desc><defs><clipPath id="donut-compact-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="donut-compact-dark-clip-5" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="58.5"/></clipPath><clipPath id="donut-compact-dark-clip-7" clipPathUnits="userSpaceOnUse"><rect x="24" y="79.578" width="10" height="10"/></clipPath><clipPath id="donut-compact-dark-clip-15" clipPathUnits="userSpaceOnUse"><rect x="158.915" y="79.578" width="10" height="10"/></clipPath><clipPath id="donut-compact-dark-clip-23" clipPathUnits="userSpaceOnUse"><rect x="24" y="99.078" width="10" height="10"/></clipPath><clipPath id="donut-compact-dark-clip-31" clipPathUnits="userSpaceOnUse"><rect x="158.915" y="99.078" width="10" height="10"/></clipPath><clipPath id="donut-compact-dark-clip-39" clipPathUnits="userSpaceOnUse"><rect x="24" y="118.578" width="10" height="10"/></clipPath><clipPath id="donut-compact-dark-clip-47" clipPathUnits="userSpaceOnUse"><rect x="158.915" y="118.578" width="10" height="10"/></clipPath><clipPath id="donut-compact-dark-clip-55" clipPathUnits="userSpaceOnUse"><rect x="24" y="146.15" width="312" height="189.85"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#donut-compact-dark-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Findings by category</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">One prepared scene for SVG and native PNG</text></g></g><g clip-path="url(#donut-compact-dark-clip-5)"><g id="donut-compact-dark-node-6" data-cfx-source-id="legend-series-0-point-6" data-cfx-role="legend-entry" aria-label="Day 7: 38 (18.7%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-dark-clip-7)"><rect x="24" y="79.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#3987E5" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="42" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 7</text></g><g data-cfx-role="legend-percentage"><text x="110.574" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">18.7%</text></g><g data-cfx-role="legend-value"><text x="89.396" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">38</text></g></g><g id="donut-compact-dark-node-14" data-cfx-source-id="legend-series-0-point-5" data-cfx-role="legend-entry" aria-label="Day 6: 35 (17.2%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-dark-clip-15)"><rect x="158.915" y="79.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#5A7FD8" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="176.915" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 6</text></g><g data-cfx-role="legend-percentage"><text x="245.489" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">17.2%</text></g><g data-cfx-role="legend-value"><text x="224.311" y="88.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">35</text></g></g><g id="donut-compact-dark-node-22" data-cfx-source-id="legend-series-0-point-4" data-cfx-role="legend-entry" aria-label="Day 5: 32 (15.8%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-dark-clip-23)"><rect x="24" y="99.078" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#6F9120" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="42" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 5</text></g><g data-cfx-role="legend-percentage"><text x="110.574" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">15.8%</text></g><g data-cfx-role="legend-value"><text x="89.396" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">32</text></g></g><g id="donut-compact-dark-node-30" data-cfx-source-id="legend-series-0-point-3" data-cfx-role="legend-entry" aria-label="Day 4: 29 (14.3%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-dark-clip-31)"><rect x="158.915" y="99.078" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#C9579F" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="176.915" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 4</text></g><g data-cfx-role="legend-percentage"><text x="245.489" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">14.3%</text></g><g data-cfx-role="legend-value"><text x="224.311" y="107.528" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">29</text></g></g><g id="donut-compact-dark-node-38" data-cfx-source-id="legend-series-0-point-2" data-cfx-role="legend-entry" aria-label="Day 3: 26 (12.8%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-dark-clip-39)"><rect x="24" y="118.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#8A74EE" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="42" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Day 3</text></g><g data-cfx-role="legend-percentage"><text x="110.574" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">12.8%</text></g><g data-cfx-role="legend-value"><text x="89.396" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">26</text></g></g><g id="donut-compact-dark-node-46" data-cfx-source-id="legend-series-0-point-other" data-cfx-role="legend-entry" aria-label="Other: 43 (21.2%)" data-cfx-series-key="Findings" data-cfx-state="None"><g clip-path="url(#donut-compact-dark-clip-47)"><rect x="158.915" y="118.578" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#111317" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="176.915" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Other</text></g><g data-cfx-role="legend-percentage"><text x="246.885" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">21.2%</text></g><g data-cfx-role="legend-value"><text x="225.708" y="127.028" font-family="CFX Proof Carlito" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">43</text></g></g></g><g clip-path="url(#donut-compact-dark-clip-55)"><g data-cfx-role="radial-point" data-cfx-label="Day 7" data-cfx-pattern="None" data-cfx-percent="0.18719211822660098" data-cfx-pin-state-colors="false" data-cfx-point="6" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="6" data-cfx-value="38"><path d="M 180 158.15 A 82.925 82.925 0 0 1 256.551 209.193 L 227.462 221.308 A 51.414 51.414 0 0 0 180 189.662 Z" id="donut-compact-dark-node-57" data-cfx-source-id="series-0-point-6" data-cfx-role="donut-slice" fill="#3987E5" stroke="#111317" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Day 6" data-cfx-pattern="None" data-cfx-percent="0.17241379310344829" data-cfx-pin-state-colors="false" data-cfx-point="5" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="5" data-cfx-value="35"><path d="M 256.551 209.193 A 82.925 82.925 0 0 1 244.025 293.775 L 219.696 273.749 A 51.414 51.414 0 0 0 227.462 221.308 Z" id="donut-compact-dark-node-60" data-cfx-source-id="series-0-point-5" data-cfx-role="donut-slice" fill="#5A7FD8" stroke="#111317" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Day 5" data-cfx-pattern="None" data-cfx-percent="0.15763546798029557" data-cfx-pin-state-colors="false" data-cfx-point="4" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="4" data-cfx-value="32"><path d="M 244.025 293.775 A 82.925 82.925 0 0 1 171.034 323.514 L 174.441 292.187 A 51.414 51.414 0 0 0 219.696 273.749 Z" id="donut-compact-dark-node-63" data-cfx-source-id="series-0-point-4" data-cfx-role="donut-slice" fill="#6F9120" stroke="#111317" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Day 4" data-cfx-pattern="None" data-cfx-percent="0.14285714285714285" data-cfx-pin-state-colors="false" data-cfx-point="3" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="3" data-cfx-value="29"><path d="M 171.034 323.514 A 82.925 82.925 0 0 1 109.957 285.465 L 136.573 268.597 A 51.414 51.414 0 0 0 174.441 292.187 Z" id="donut-compact-dark-node-66" data-cfx-source-id="series-0-point-3" data-cfx-role="donut-slice" fill="#C9579F" stroke="#111317" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Day 3" data-cfx-pattern="None" data-cfx-percent="0.12807881773399016" data-cfx-pin-state-colors="false" data-cfx-point="2" data-cfx-series="0" data-cfx-source-patterns="None" data-cfx-source-points="2" data-cfx-value="26"><path d="M 109.957 285.465 A 82.925 82.925 0 0 1 99.449 221.374 L 130.059 228.86 A 51.414 51.414 0 0 0 136.573 268.597 Z" id="donut-compact-dark-node-69" data-cfx-source-id="series-0-point-2" data-cfx-role="donut-slice" fill="#8A74EE" stroke="#111317" stroke-width="2" fill-rule="evenodd"/></g><g data-cfx-role="radial-point" data-cfx-label="Other" data-cfx-pattern="None" data-cfx-percent="0.21182266009852216" data-cfx-pin-state-colors="false" data-cfx-point="-1" data-cfx-series="0" data-cfx-source-patterns="None,None" data-cfx-source-points="0,1" data-cfx-value="43"><path d="M 99.449 221.374 A 82.925 82.925 0 0 1 180 158.15 L 180 189.662 A 51.414 51.414 0 0 0 130.059 228.86 Z" id="donut-compact-dark-node-72" data-cfx-source-id="series-0-point-other" data-cfx-role="donut-slice" fill="#111317" stroke="#111317" stroke-width="2" fill-rule="evenodd"/></g><g id="donut-compact-dark-node-74" data-cfx-source-id="series-0-center" data-cfx-role="donut-center" aria-label="203&#10;Findings" data-cfx-center-caption="Findings" data-cfx-center-value="203"><g data-cfx-role="donut-total-label"><text x="164.795" y="234.11" font-family="CFX Proof Carlito" font-size="20" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">203</text></g><g data-cfx-role="donut-title"><text x="159.861" y="260.931" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Findings</text></g></g></g></svg></div><div class="full" data-visual-theme="dark" data-output-format="png"><img src="donut-compact-dark.png" width="360" height="360" alt="Findings by category" loading="lazy" decoding="async"></div></section><div class="export-row"><span>360 × 360 pixels</span><nav aria-label="Download outputs"><a href="donut-compact-light.svg" data-theme-link data-light-href="donut-compact-light.svg" data-dark-href="donut-compact-dark.svg" download>Download SVG</a><a href="donut-compact-light.png" data-theme-link data-light-href="donut-compact-light.png" data-dark-href="donut-compact-dark.png" download>Download PNG</a><a href="donut-compact-light.csharp.txt" data-theme-link data-light-href="donut-compact-light.csharp.txt" data-dark-href="donut-compact-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Register the included Carlito font files to reproduce the exported typography.</p><pre data-visual-theme="light"><code data-example-source>using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+
+// The generated gallery includes these licensed font fixtures beside the outputs.
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var chart = Chart.Create();
+chart.WithXLabels(&quot;Day 1&quot;, &quot;Day 2&quot;, &quot;Day 3&quot;, &quot;Day 4&quot;, &quot;Day 5&quot;, &quot;Day 6&quot;, &quot;Day 7&quot;);
+chart.AddDonut(&quot;Findings&quot;, new ChartPoint[] { new ChartPoint(1, 20), new ChartPoint(2, 23), new ChartPoint(3, 26), new ChartPoint(4, 29), new ChartPoint(5, 32), new ChartPoint(6, 35), new ChartPoint(7, 38) });
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Light,
+    new VisualFrame(&quot;Findings by category&quot;, &quot;One prepared scene for SVG and native PNG&quot;, showSurface: false), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = chart.Prepare(context);
+System.IO.File.WriteAllText(&quot;chart.svg&quot;, prepared.ToSvg());
+System.IO.File.WriteAllBytes(&quot;chart.png&quot;, prepared.ToPng());
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+
+// The generated gallery includes these licensed font fixtures beside the outputs.
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var chart = Chart.Create();
+chart.WithXLabels(&quot;Day 1&quot;, &quot;Day 2&quot;, &quot;Day 3&quot;, &quot;Day 4&quot;, &quot;Day 5&quot;, &quot;Day 6&quot;, &quot;Day 7&quot;);
+chart.AddDonut(&quot;Findings&quot;, new ChartPoint[] { new ChartPoint(1, 20), new ChartPoint(2, 23), new ChartPoint(3, 26), new ChartPoint(4, 29), new ChartPoint(5, 32), new ChartPoint(6, 35), new ChartPoint(7, 38) });
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Dark,
+    new VisualFrame(&quot;Findings by category&quot;, &quot;One prepared scene for SVG and native PNG&quot;, showSurface: false), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = chart.Prepare(context);
+System.IO.File.WriteAllText(&quot;chart.svg&quot;, prepared.ToSvg());
+System.IO.File.WriteAllBytes(&quot;chart.png&quot;, prepared.ToPng());
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>

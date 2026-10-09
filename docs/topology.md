@@ -420,7 +420,7 @@ The SVG title and description of a diagram come from `WithAccessibility` when se
 
 HtmlForgeX can later provide cards, toolbars, sidebars, filters, tabs, inspectors, and event panels around the SVG. TestimoX or another product can later collect and calculate product-specific health, then convert that data into `TopologyChart`. ChartForgeX should not connect to Active Directory, hardcode TestimoX data, or implement dashboard page layout.
 
-The example console app writes sample diagrams to `artifacts/topology-demo/` and to the normal generated example output folder. They intentionally use sample data only and demonstrate how a host can map its own product concepts onto the generic topology model:
+The example console app writes sample diagrams to the `topology-demo/` subdirectory of its output folder and copies the focused previews to that output root. Use `--output <directory>` to select a review location. The diagrams use sample data and demonstrate how a host can map its own product concepts onto the generic topology model:
 
 - `site-topology.svg`
 - `replication-mesh.svg`

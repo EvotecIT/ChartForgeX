@@ -137,16 +137,6 @@ internal static partial class SmokeTests {
         Assert(qualityWorkflow.Contains("yum_packages+=(gcc)", StringComparison.Ordinal) && qualityWorkflow.Contains("yum install -y \"${yum_packages[@]}\"", StringComparison.Ordinal), "Quality workflow should install only missing RHEL Native AOT prerequisites.");
         Assert(qualityWorkflow.Contains("apk_packages+=(build-base)", StringComparison.Ordinal) && qualityWorkflow.Contains("apk_packages+=(zlib-dev)", StringComparison.Ordinal), "Quality workflow should install only missing Alpine Native AOT prerequisites.");
 
-        var exampleSyncScript = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "Website", "build", "Sync-GeneratedExamples.ps1"));
-        Assert(exampleSyncScript.Contains("function Write-Utf8NoBom", StringComparison.Ordinal), "Example sync script should centralize generated text writing.");
-        Assert(exampleSyncScript.Contains("function Read-Utf8Text", StringComparison.Ordinal), "Example sync script should centralize UTF-8 reads for Windows PowerShell 5.1 round-tripping.");
-        Assert(exampleSyncScript.Contains("[System.IO.Path]::GetFullPath($Path)", StringComparison.Ordinal), "Example sync writer should support new output files without requiring Resolve-Path.");
-        Assert(exampleSyncScript.Contains("New-Item -ItemType Directory -Force -Path $directory", StringComparison.Ordinal), "Example sync writer should create missing output directories for custom gallery paths.");
-        Assert(exampleSyncScript.Contains("Read-Utf8Text -Path $GalleryPath | ConvertFrom-Json", StringComparison.Ordinal), "Example sync script should read existing gallery metadata as UTF-8 before rewriting it without a BOM.");
-        Assert(exampleSyncScript.Contains("'(^|-)line($|-)|trend|sparkline|step-line' = 'Line'", StringComparison.Ordinal), "Example sync script should not infer Line from timeline slugs.");
-        Assert(!exampleSyncScript.Contains("'line|trend|sparkline|step-line' = 'Line'", StringComparison.Ordinal), "Example sync script should boundary-scope Line tag inference.");
-        Assert(!exampleSyncScript.Contains("regional|region|travel", StringComparison.Ordinal), "Example sync script should not infer Map tags from generic regional wording.");
-
         var exampleProject = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "ChartForgeX.Examples.csproj"));
         var exampleProgram = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "Program.cs"));
         var markupExamples = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "ChartForgeX.Examples", "MarkupExamples.cs"));

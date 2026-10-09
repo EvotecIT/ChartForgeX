@@ -9,7 +9,7 @@ public static partial class V2Examples {
     private const string ProofFont = "CFX Proof Carlito";
     private static readonly string[] Variants = { "wide", "compact", "long-title", "wrapped-legend", "surface", "empty", "zero", "missing", "dense", "explicit-status", "explicit-series" };
 
-    /// <summary>Writes the isolated review matrix, or selected publication fixtures, without changing the legacy gallery.</summary>
+    /// <summary>Writes the complete review matrix or the selected fixtures for the public catalog.</summary>
     public static void Write(string output, bool curated = false) {
         Directory.CreateDirectory(output);
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
