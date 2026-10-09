@@ -23,6 +23,8 @@ Keep node order explicit when preserving an existing layout or ordinal styling. 
 
 Tree weights remain authored values and affect link emphasis rather than node placement. Sunburst leaves retain their authored positive weights; internal rendered values sum their leaves rather than their incoming branch weights. Tiny fractions are preserved without a minimum-weight clamp. Finite leaf aggregates are required, and angular ratios are normalized before multiplication. Flat Treemap input remains unchanged.
 
+Sankey node totals must remain finite and are validated before adding a series. Tiny or large finite flows retain proportional node and ribbon thickness. SVG scale metadata uses `data-cfx-weight-reference` and `data-cfx-normalized-weight-scale` instead of an absolute `data-cfx-weight-scale`; divide a raw weight by the reference before multiplying by the normalized scale.
+
 Node and link groups retain authored IDs, labels, owning series, and actual `data-cfx-source-node-index` / `data-cfx-source-link-index` ordinals. SVG `data-cfx-target-kind` and `data-cfx-target-id` supply normalized node/link identities; HTML selection events expose those same IDs without invented `point` or `sourcePoint` ordinals. Parent, child, source, and target attributes now contain authored node IDs. Update selectors that assumed numeric node ordinals or labels as identities.
 
 ## Raster image inputs and animation delays

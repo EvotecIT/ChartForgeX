@@ -31,7 +31,8 @@ internal static partial class VisualSankeyCompiler {
         ChartSankeyLayout.Layout(model, nodePlot, 10, gap: Math.Max(12, context.Theme.Spacing * 1.5));
         using (builder.PushGroup("series-0", "sankey-series", new Dictionary<string, string> {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name,
-            ["data-cfx-state"] = series.StateRole.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty, ["data-cfx-weight-scale"] = N(model.Scale)
+            ["data-cfx-state"] = series.StateRole.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
+            ["data-cfx-weight-reference"] = N(model.WeightReference), ["data-cfx-normalized-weight-scale"] = N(model.NormalizedWeightScale)
         })) {
             foreach (var link in model.Links) {
                 var source = model.Nodes[link.Source]; var target = model.Nodes[link.Target]; var color = Color(chart, colors, source.Index);

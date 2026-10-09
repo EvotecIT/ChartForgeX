@@ -20,14 +20,14 @@ internal static class ChartSankeyLayout {
         var count = facts.Nodes.Count;
         for (var i = 0; i < facts.FlowLinks.Count; i++)
             links.Add(new ChartSankeyLayoutLink(i, facts.FlowLinks[i].Id, facts.Source(i), facts.Target(i), facts.FlowLinks[i].Value));
-        var nodes = Enumerable.Range(0, count).Select(i => new ChartSankeyNode(i, facts.Nodes[i].Id, facts.Nodes[i].Label)).ToList();
+        var nodes = Enumerable.Range(0, count).Select(i => new ChartSankeyNode(i, facts.Nodes[i].Id, facts.Nodes[i].Label) {
+            Incoming = facts.FlowIncomingValues[i], Outgoing = facts.FlowOutgoingValues[i]
+        }).ToList();
         var incoming = new int[count]; var outgoing = new List<int>[count];
         for (int i = 0; i < count; i++) outgoing[i] = new List<int>();
         foreach (var link in links) {
-            nodes[link.Source].Outgoing += link.Value; nodes[link.Target].Incoming += link.Value;
             outgoing[link.Source].Add(link.Target); incoming[link.Target]++;
         }
-        if (nodes.Any(n => !Finite(n.Value))) throw new InvalidOperationException("Sankey aggregate weights exceed the finite range.");
         var ready = new Queue<int>(Enumerable.Range(0, count).Where(i => incoming[i] == 0));
         while (ready.Count > 0) {
             int source = ready.Dequeue();
@@ -50,28 +50,30 @@ internal static class ChartSankeyLayout {
             throw new NotSupportedException("Sankey columns require a wider common viewport.");
         if (orderNodes) Order(nodes, links, model.MaxLayer);
         else foreach (var node in nodes) node.Order = node.Index;
+        // Divide by a finite authored magnitude first. Raw column sums and pixels/weight
+        // can overflow even when all node totals and the proportional geometry are valid.
+        model.WeightReference = nodes.Max(n => n.Value);
         double scale = double.PositiveInfinity;
         for (int layer = 0; layer <= model.MaxLayer; layer++) {
             var column = nodes.Where(n => n.Layer == layer).ToArray(); if (column.Length == 0) continue;
-            double total = column.Sum(n => n.Value), available = plot.Height - (column.Length - 1) * gap;
-            if (!Finite(total)) throw new InvalidOperationException("Sankey column weights exceed the finite range.");
+            double total = column.Sum(n => n.Value / model.WeightReference), available = plot.Height - (column.Length - 1) * gap;
             if (available <= 0) throw new NotSupportedException("Sankey nodes require a taller common viewport.");
             if (total > 0) scale = Math.Min(scale, available / total);
         }
         if (!Finite(scale) || scale <= 0) throw new NotSupportedException("Sankey weights cannot be represented in the available viewport.");
-        model.Scale = scale;
+        model.NormalizedWeightScale = scale;
         for (int layer = 0; layer <= model.MaxLayer; layer++) {
             var column = nodes.Where(n => n.Layer == layer).OrderBy(n => n.Order).ThenBy(n => n.Index).ToArray();
-            double height = column.Sum(n => n.Value * scale) + Math.Max(0, column.Length - 1) * gap;
+            double height = column.Sum(n => model.Thickness(n.Value)) + Math.Max(0, column.Length - 1) * gap;
             double y = plot.Y + (plot.Height - height) / 2;
             foreach (var node in column) {
                 node.X = plot.X + layer / (double)model.MaxLayer * (plot.Width - model.NodeWidth);
-                node.Y = y; node.Height = node.Value * scale; y += node.Height + gap;
+                node.Y = y; node.Height = model.Thickness(node.Value); y += node.Height + gap;
             }
         }
         var from = new double[nodes.Count]; var to = new double[nodes.Count];
         foreach (var link in links.OrderBy(l => nodes[l.Source].Layer).ThenBy(l => nodes[l.Source].Y).ThenBy(l => nodes[l.Target].Y).ThenBy(l => l.Index)) {
-            link.Width = link.Value * scale;
+            link.Width = model.Thickness(link.Value);
             link.SourceY = nodes[link.Source].Y + from[link.Source] + link.Width / 2;
             link.TargetY = nodes[link.Target].Y + to[link.Target] + link.Width / 2;
             from[link.Source] += link.Width; to[link.Target] += link.Width;
@@ -114,7 +116,9 @@ internal sealed class ChartSankeyModel {
     internal List<ChartSankeyLayoutLink> Links { get; }
     internal int MaxLayer { get; }
     internal double NodeWidth { get; set; }
-    internal double Scale { get; set; }
+    internal double WeightReference { get; set; }
+    internal double NormalizedWeightScale { get; set; }
+    internal double Thickness(double value) => value / WeightReference * NormalizedWeightScale;
 }
 internal sealed class ChartSankeyNode {
     internal ChartSankeyNode(int index, string id, string label) { Index = index; Id = id; Label = label; }
