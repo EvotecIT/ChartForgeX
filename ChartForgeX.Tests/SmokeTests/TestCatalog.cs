@@ -759,6 +759,8 @@ internal static partial class SmokeTests {
         ("Overlay SVG elements expose data metadata", OverlaySvgElementsExposeDataMetadata),
         ("Waterfall series render cumulative change bars", WaterfallSeriesRenderCumulativeChangeBars),
         ("Waterfall honors axes visibility", WaterfallHonorsAxesVisibility),
+        ("Waterfall automatic labels follow mapped value ends", WaterfallAutomaticLabelsFollowMappedValueEnds),
+        ("Waterfall contained labels use drawn fill and preserve authored ink", WaterfallContainedLabelsUseDrawnFill),
         ("Radar series render polar polygons", RadarSeriesRenderPolarPolygons),
         ("Radar honors axes and grid visibility", RadarHonorsAxesAndGridVisibility),
         ("Radar negative explicit maximum infers compatible minimum", RadarNegativeExplicitMaximumInfersCompatibleMinimum),

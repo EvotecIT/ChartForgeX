@@ -37,7 +37,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Waterfall) {
             var chart = Basic(kind, variant)!;
             chart.Options.XAxis.WithReversal();
-            return chart;
+            chart.Options.YAxis.WithReversal();
+            return chart.WithDataLabels();
         }
         if (kind == ChartSeriesKind.StackedArea) {
             var chart = Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Share (%)")
