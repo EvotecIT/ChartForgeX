@@ -639,6 +639,7 @@ internal static partial class ExpressiveExamples {
         .AddWordCloud("Themes", WordCloudTerms());
 
     private static Chart CreateControlPartition() => Chart.Create()
+        .WithDataLabels()
         .WithTitle("Control Coverage Partition")
         .WithSubtitle("Sunburst hierarchy chart using the Aurora theme")
         .WithTheme(ChartTheme.Aurora())
