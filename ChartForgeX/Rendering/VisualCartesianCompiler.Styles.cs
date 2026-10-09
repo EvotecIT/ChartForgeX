@@ -6,19 +6,29 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
+    // Positive surface direction means toward the right for horizontal bars and
+    // toward the top for vertical bars, including when a subpixel extent collapses.
+    private static double BarValueDirection(ChartAxis axis, double value) => axis.Reversed ? -value : value;
+
+    private static double MappedBarDirection(ChartAxis axis, double value, double baseline, double endpoint, bool horizontal = false) {
+        if (value == 0) return 0;
+        var direction = horizontal ? endpoint - baseline : baseline - endpoint;
+        return direction != 0 ? direction : BarValueDirection(axis, value);
+    }
+
     // A nonzero capsule must retain colored ink at ordinary output density. Anchor
     // its minimum painted extent at the base without changing the numeric source.
-    private static ChartRect VisibleSegmentBounds(Chart chart, ChartRect bounds, double value, bool horizontal = false) {
-        if (value == 0 || chart.Options.ResolvePreparedBarVisualStyle().Kind != ChartBarStyle.SegmentedCapsule) return bounds;
+    private static ChartRect VisibleSegmentBounds(Chart chart, ChartRect bounds, double direction, bool horizontal = false) {
+        if (direction == 0 || chart.Options.ResolvePreparedBarVisualStyle().Kind != ChartBarStyle.SegmentedCapsule) return bounds;
         if (horizontal && bounds.Width < 1)
-            return new ChartRect(value > 0 ? bounds.Left : bounds.Right - 1, bounds.Top, 1, bounds.Height);
+            return new ChartRect(direction > 0 ? bounds.Left : bounds.Right - 1, bounds.Top, 1, bounds.Height);
         if (!horizontal && bounds.Height < 1)
-            return new ChartRect(bounds.Left, value > 0 ? bounds.Bottom - 1 : bounds.Top, bounds.Width, 1);
+            return new ChartRect(bounds.Left, direction > 0 ? bounds.Bottom - 1 : bounds.Top, bounds.Width, 1);
         return bounds;
     }
 
     private static void DrawBarSurface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
-        int pointIndex, ChartRect bounds, ChartColor color, VisualThemeColors colors, string role = "bar", bool range = false, bool horizontal = false, double? value = null, SvgColorRole? sourceRole = null) {
+        int pointIndex, ChartRect bounds, ChartColor color, VisualThemeColors colors, string role = "bar", bool range = false, bool horizontal = false, double direction = 0, SvgColorRole? sourceRole = null) {
         var style = chart.Options.ResolvePreparedBarVisualStyle();
         var resolvedRole = sourceRole ?? VisualChartPaint.SeriesRole(series, pointIndex);
         var sourcePaint = SvgPaint.Of(color, resolvedRole);
@@ -31,9 +41,8 @@ internal static partial class VisualCartesianCompiler {
             DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, ChartColorMath.WithOpacity(color, style.BodyOpacity), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), role + "-pattern");
             if (bounds.Width <= 0 || bounds.Height <= 0) return;
             if (!range) {
-                var signedValue = value ?? series.Points[pointIndex].Y;
-                var geometry = horizontal ? ChartSegmentedBarGeometry.Horizontal(style, bounds.Left, bounds.Top, bounds.Width, bounds.Height, signedValue)
-                    : ChartSegmentedBarGeometry.Vertical(style, bounds.Left, bounds.Top, bounds.Width, bounds.Height, signedValue);
+                var geometry = horizontal ? ChartSegmentedBarGeometry.Horizontal(style, bounds.Left, bounds.Top, bounds.Width, bounds.Height, direction)
+                    : ChartSegmentedBarGeometry.Vertical(style, bounds.Left, bounds.Top, bounds.Width, bounds.Height, direction);
                 DrawSegmentedCap(builder, geometry, style, color, role, sourcePaint);
             }
         } else {

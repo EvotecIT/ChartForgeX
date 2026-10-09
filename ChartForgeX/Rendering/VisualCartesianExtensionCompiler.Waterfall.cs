@@ -32,12 +32,17 @@ internal static partial class VisualCartesianCompiler {
                 ["data-cfx-delta"] = Number(step.Delta), ["data-cfx-label"] = label.DisplayedText, ["data-cfx-derived-total"] = step.IsTotal ? "true" : "false",
                 ["data-cfx-source-count"] = Number(step.IsTotal ? series.Points.Count : 1), ["aria-label"] = description
             })) {
-                if (previous.HasValue && !step.IsTotal && !series.Points[item].BreakBefore)
-                    builder.Line(previous.Value.Right, startY, bounds.Left, startY, ChartColorMath.WithOpacity(colors.MutedForeground, ChartVisualPrimitives.WaterfallConnectorOpacity),
+                if (previous.HasValue && !step.IsTotal && !series.Points[item].BreakBefore) {
+                    var nextOnRight = bounds.Left + bounds.Width / 2 >= previous.Value.Left + previous.Value.Width / 2;
+                    builder.Line(nextOnRight ? previous.Value.Right : previous.Value.Left, startY, nextOnRight ? bounds.Left : bounds.Right, startY,
+                        ChartColorMath.WithOpacity(colors.MutedForeground, ChartVisualPrimitives.WaterfallConnectorOpacity),
                         ChartVisualPrimitives.WaterfallConnectorStrokeWidth, role: "waterfall-connector", dash: new[] { ChartVisualPrimitives.WaterfallConnectorDash, ChartVisualPrimitives.WaterfallConnectorGap },
                         paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text).WithOpacity(
                             ChartColorMath.WithOpacity(colors.MutedForeground, ChartVisualPrimitives.WaterfallConnectorOpacity), ChartVisualPrimitives.WaterfallConnectorOpacity)));
-                DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "waterfall-bar", value: step.Delta, sourceRole: SemanticMarkPaintRole(series, item));
+                }
+                var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+                DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "waterfall-bar",
+                    direction: MappedBarDirection(axis, step.Delta, startY, endY), sourceRole: SemanticMarkPaintRole(series, item));
             }
             obstacles.Add(new LabelObstacle(id, bounds));
             AddLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, label, labels, step.IsTotal ? step.End : step.Delta, id);

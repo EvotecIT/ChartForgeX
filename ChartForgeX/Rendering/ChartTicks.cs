@@ -14,6 +14,14 @@ internal static class ChartTicks {
         axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray()
             : GenerateInside(axis, minimum, maximum);
 
+    /// <summary>Keeps generated numeric value ticks alongside authored label positions within the visible domain.</summary>
+    internal static IReadOnlyList<double> ForValueAxis(ChartAxis axis, double minimum, double maximum) {
+        var generated = GenerateInside(axis, minimum, maximum);
+        if (axis.Labels.Count == 0) return generated;
+        return PreserveFormatting(generated, generated.Concat(axis.Labels.Select(label => label.Value))
+            .Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray());
+    }
+
     public static IReadOnlyList<double> Generate(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Generate(axis, min, max, false) ?? new NumericTimeTicks(Generate(min, max, axis.TickCount));

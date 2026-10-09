@@ -41,6 +41,10 @@ public static partial class V2GalleryModels {
             if (kind == ChartSeriesKind.Donut) chart.WithDonutCenterText("184", "Reviewed");
         }
         if (variant == "options" && kind == ChartSeriesKind.ProgressRing) chart.WithRadialProgressRadiusScale(.85).WithRadialProgressStrokeScale(1.2);
+        if (variant == "options" && kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar) {
+            chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
+            chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, "20 · Target"));
+        }
         return chart;
     }
 }

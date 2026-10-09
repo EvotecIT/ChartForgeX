@@ -54,8 +54,8 @@ internal sealed class RadialValueScale {
         if (!ChartMath.IsFinite(minimum) || !ChartMath.IsFinite(maximum) || maximum <= minimum)
             throw new InvalidOperationException(chartName + " axis bounds cannot form a finite visible domain.");
 
-        var generatedTicks = axis.Labels.Count > 0 || axis.Minimum.HasValue || axis.Maximum.HasValue
-            ? ChartTicks.ForAxis(axis, minimum, maximum) : ChartTicks.Generate(axis, minimum, maximum);
+        var generatedTicks = axis.Labels.Count > 0 ? ChartTicks.ForValueAxis(axis, minimum, maximum)
+            : axis.Minimum.HasValue || axis.Maximum.HasValue ? ChartTicks.ForAxis(axis, minimum, maximum) : ChartTicks.Generate(axis, minimum, maximum);
         var ticks = ChartTicks.PreserveFormatting(generatedTicks, generatedTicks.Where(tick => tick >= minimum).ToArray());
         if (ticks.Count > 0 && !axis.Maximum.HasValue) maximum = Math.Max(maximum, ticks[ticks.Count - 1]);
         return new RadialValueScale(axis, minimum, maximum, ticks);

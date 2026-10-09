@@ -98,10 +98,12 @@ internal static partial class VisualCartesianCompiler {
                 left = histogramLeft;
                 barWidth = histogramWidth;
             }
-            var bounds = VisibleSegmentBounds(chart, new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y)), stack.Value);
+            var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            var direction = MappedBarDirection(axis, stack.Value, baseY, y);
+            var bounds = VisibleSegmentBounds(chart, new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y)), direction);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stack)) {
-                DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors);
+                DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors, direction: direction);
             }
             obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
             AddLabel(chart, context, series, index, pointIndex, new ChartPoint(left + barWidth / 2, y), bounds, resolvedLabel, labels);

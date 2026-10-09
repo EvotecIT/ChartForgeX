@@ -38,11 +38,11 @@ internal static partial class VisualCartesianCompiler {
         return totals;
     }
 
-    private static ChartRect ReserveHorizontalTotalGutters(ChartRect bounds, IReadOnlyList<HorizontalStackTotal> totals, double spacing) {
+    private static ChartRect ReserveHorizontalTotalGutters(Chart chart, ChartRect bounds, IReadOnlyList<HorizontalStackTotal> totals, double spacing) {
         spacing = Math.Max(2, spacing);
         var left = 0d; var right = 0d;
         foreach (var total in totals) {
-            if (total.Value > 0) right = Math.Max(right, total.Metrics.Width + spacing);
+            if (BarValueDirection(chart.Options.XAxis, total.Value) > 0) right = Math.Max(right, total.Metrics.Width + spacing);
             else left = Math.Max(left, total.Metrics.Width + spacing);
         }
         // Keep a positive data viewport even when authored captions exceed available
@@ -56,7 +56,7 @@ internal static partial class VisualCartesianCompiler {
     private static void AddHorizontalTotals(Chart chart, IReadOnlyList<HorizontalStackTotal> totals, VisualRenderContext context,
         VisualSceneBuilder builder, ChartRect plot, ChartMapper map, ChartStackLayout stacks, List<LabelPlacementRequest> labels) {
         foreach (var total in totals) {
-            var positive = total.Value > 0;
+            var positive = BarValueDirection(chart.Options.XAxis, total.Value) > 0;
             var layout = ResolveHorizontalBarLayout(chart, context, plot, map, stacks, total.Total.SeriesIndex);
             var point = new ChartPoint(map.X(total.Value), map.Y(total.Total.Coordinate) + layout.Offset);
             builder.AddRegion(new VisualSemanticRegion(total.Id, "stack-total", new ChartRect(point.X, point.Y, 0, 0),
