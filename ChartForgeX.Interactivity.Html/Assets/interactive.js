@@ -339,14 +339,20 @@
     if (styles.has(node)) return styles.get(node);
     const style = getComputedStyle(node); styles.set(node, style); return style;
   };
-  const paintNodeVisible = (node, styles) => {
+  const paintAncestorsVisible = (node, styles) => {
     if (!node || node.closest('defs,[hidden]')) return false;
     for (let ancestor = node; ancestor; ancestor = ancestor.parentElement) {
       const style = paintStyle(ancestor, styles);
-      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' || Number(style.opacity) === 0) return false;
+      if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }
     // aria-hidden changes accessibility exposure, not whether SVG marks are painted.
     return true;
+  };
+  const paintNodeVisible = (node, styles) => {
+    if (!paintAncestorsVisible(node, styles)) return false;
+    // Visibility is inherited, and a painted descendant can explicitly restore it.
+    const style = paintStyle(node, styles);
+    return style.visibility !== 'hidden' && style.visibility !== 'collapse';
   };
   const solidPaintColour = (value, opacity) => value && value !== 'none' && value !== 'transparent'
     && !/^url\(/i.test(value) && !/^rgba\(.*[,]\s*0(?:\.0+)?\s*\)$|\/\s*0(?:\.0+)?%?\s*\)$/i.test(value)
@@ -403,7 +409,7 @@
     }
     return null;
   };
-  const observationPaint = (node, styles) => paintNodeVisible(node, styles)
+  const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
     ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
   const paintColour = (node, styles = new Map()) => {
     if (!node) return '';

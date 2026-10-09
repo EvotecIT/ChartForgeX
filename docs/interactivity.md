@@ -30,7 +30,7 @@ There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `I
 
 `HtmlChartInteractionOptions.TooltipMode` selects the readout independently of the theme or palette. The default, `HtmlChartTooltipMode.SharedX`, shows one visible observation per series at the target's numeric x coordinate. When several observations share that x, the tooltip uses the pointed or focused observation for its series and the first eligible observation for each other series. Rows retain full source values and sort by declared state, then descending value. Muted series, hidden marks, and missing or non-finite values are omitted. Swatches follow the painted marks, including point colour overrides, gradient fills, and host SVG properties; marker-free lines use their line paint.
 
-Visibility follows the primary data mark and its ancestors. Hidden line markers retain a shared row while the series path remains visible. Charts marked `AsDecorative()` retain pointer tooltips because `aria-hidden` affects accessibility exposure, not painted visibility.
+Visibility follows the primary data mark. An ancestor's `display:none` or zero opacity hides its descendants; a mark can restore inherited `visibility:hidden` with `visibility:visible`. Hidden line markers retain a shared row while the series path remains visible. Charts marked `AsDecorative()` retain pointer tooltips because `aria-hidden` affects accessibility exposure, not painted visibility.
 
 Use `Single` to inspect the pointed or focused target and its metadata:
 

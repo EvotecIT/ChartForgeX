@@ -69,6 +69,65 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
     }
 
     [Theory]
+    [InlineData(false, false, 700)]
+    [InlineData(true, true, 340)]
+    public async Task VisiblePrimaryMarksOverrideInheritedHiddenVisibility(bool wrapMark, bool dark, int width) {
+        if (!Enabled) return;
+        var chart = Frame(dark, "Restored mark visibility")
+            .AddScatter("Current", new[] { new ChartPoint(1, 7), new ChartPoint(2, 5) })
+            .AddScatter("Baseline", new[] { new ChartPoint(1, 2), new ChartPoint(2, 1) });
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
+        var page = session.Page;
+        var mark = Point(1, 0) + " [data-cfx-role='marker']";
+        var ancestor = Point(1, 0);
+        if (wrapMark) {
+            await page.Locator(mark).EvaluateAsync("node => { const wrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g'); wrapper.dataset.tooltipHostWrapper = ''; node.replaceWith(wrapper); wrapper.appendChild(node); }");
+            ancestor += " [data-tooltip-host-wrapper]";
+        }
+        await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = ancestor + " { visibility:hidden !important; } " + mark + " { visibility:visible !important; }" });
+        await page.Locator(Point(0, 0)).FocusAsync();
+        var restoredRows = await RowsAsync(page);
+        var ancestorVisibility = await page.Locator(ancestor).EvaluateAsync<string>("node => getComputedStyle(node).visibility");
+        var markVisibility = await page.Locator(mark).EvaluateAsync<string>("node => getComputedStyle(node).visibility");
+        await RecordAsync(page, "tooltip-restored-mark-" + (wrapMark ? "wrapper" : "point") + "-" + (dark ? "dark" : "light"), new { restoredRows, ancestorVisibility, markVisibility });
+        Assert.Equal("hidden", ancestorVisibility);
+        Assert.Equal("visible", markVisibility);
+        Assert.NotNull(await page.Locator(mark).BoundingBoxAsync());
+        Assert.Equal(new[] { "Current", "Baseline" }, restoredRows.Select(row => row[0]).ToArray());
+        Assert.Equal(new[] { "7", "2" }, restoredRows.Select(row => row[1]).ToArray());
+        await page.Locator(mark).EvaluateAsync("node => node.style.setProperty('visibility', 'hidden', 'important')");
+        await page.Locator(Point(0, 0)).BlurAsync();
+        await page.Locator(Point(0, 0)).FocusAsync();
+        Assert.Equal(new[] { "Current" }, (await RowsAsync(page)).Select(row => row[0]).ToArray());
+        AssertNoConsoleErrors(session);
+    }
+
+    [Fact]
+    public async Task VisibleLinePathOverridesInheritedHiddenSeriesVisibility() {
+        if (!Enabled) return;
+        var chart = Frame(true, "Restored connected surface").WithLineMarkers(ChartLineMarkerMode.All)
+            .AddLine("Current", ChartPoints.FromValues(3, 7, 5))
+            .AddLine("Baseline", ChartPoints.FromValues(1, 2, 1), ChartColor.FromHex("#7b61e8"));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), 340, 560);
+        var page = session.Page;
+        const string series = "[data-cfx-role='series'][data-cfx-series='1']";
+        const string path = series + " [data-cfx-role='line']";
+        await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = series + " { visibility:hidden !important; } " + path + " { visibility:visible !important; } " + series + " [data-cfx-role='marker'] { display:none !important; }" });
+        await page.Locator(Point(0, 1)).FocusAsync();
+        var restoredRows = await RowsAsync(page);
+        await RecordAsync(page, "tooltip-restored-line-series-dark", new { restoredRows });
+        Assert.Equal("hidden", await page.Locator(series).EvaluateAsync<string>("node => getComputedStyle(node).visibility"));
+        Assert.Equal("visible", await page.Locator(path).EvaluateAsync<string>("node => getComputedStyle(node).visibility"));
+        Assert.Equal(new[] { "Current", "Baseline" }, restoredRows.Select(row => row[0]).ToArray());
+        Assert.Equal("rgb(123, 97, 232)", restoredRows[1][2]);
+        await page.Locator(path).EvaluateAsync("node => node.style.setProperty('visibility', 'hidden', 'important')");
+        await page.Locator(Point(0, 1)).BlurAsync();
+        await page.Locator(Point(0, 1)).FocusAsync();
+        Assert.Equal(new[] { "Current" }, (await RowsAsync(page)).Select(row => row[0]).ToArray());
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
     [InlineData(false, 700)]
     [InlineData(true, 340)]
     public async Task HiddenLineMarkersRetainVisibleSeriesPaintButHiddenPathsDoNotUseLegendPaint(bool dark, int width) {
