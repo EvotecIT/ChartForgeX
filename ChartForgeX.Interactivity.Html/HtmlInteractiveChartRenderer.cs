@@ -157,7 +157,6 @@ public sealed partial class HtmlInteractiveChartRenderer {
         }
 
         writer.StartElement("div").Attribute("class", "cfx-frame").EndStartElement().Line()
-            .RawTrusted(BuildResetControl(options))
             .StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
             .RawTrusted(prepared.ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope), chart.Options.SvgColorVariables))).Line()
             .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
@@ -168,6 +167,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .EndElement().Line()
             .RawTrusted(BuildRevealLayer(options))
             .EndElement().Line()
+            .RawTrusted(BuildResetControl(options))
             .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line()

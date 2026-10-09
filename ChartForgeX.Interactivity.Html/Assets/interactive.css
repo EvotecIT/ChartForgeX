@@ -102,13 +102,11 @@ body {
   outline: none;
 }
 
-/* Contextual reset: a small ghost button in the frame corner, shown only after the view changes. */
+/* Contextual reset clears chart content and appears below the stage only after the view changes. */
 .cfx-reset {
-  position: absolute;
-  z-index: 13;
-  top: 8px;
-  right: 8px;
-  display: inline-flex;
+  display: flex;
+  width: max-content;
+  margin: 8px 8px 0 auto;
   align-items: center;
   height: 28px;
   padding: 0 10px;
@@ -699,7 +697,7 @@ body {
 
 /* Graphite keeps host controls separate from the chart's single frame. */
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-stage { background: transparent; border: 0; padding: 0; }
-/* The frame hugs the chart card so the reset control sits in the card corner, not the page corner. */
+/* The frame hugs the chart card and aligns its contextual control with the card edge. */
 .cfx-interactive-chart[data-cfx-look="graphite"]:not([data-cfx-responsive-layout="fit"]) .cfx-frame { width: fit-content; max-width: 100%; margin-inline: auto; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-muted);
