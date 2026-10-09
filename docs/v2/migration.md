@@ -66,6 +66,8 @@ Replace `ChartMapColorScale` with `ChartColorScale`. Map calls keep their names:
 
 `Discrete(bands)` copies immutable `ChartColorBand` instances. Finite upper bounds are strictly ascending and exclusive; the final band has a null upper bound. The first band has no lower limit, and equality with a boundary selects the next band. `Bands` exposes a read-only list, and optional band names appear with their intervals in map legends. Discrete scales use those bounds directly and reject `WithValueRange`, `WithMidpoint`, and continuous endpoint labels. Only diverging scales accept `WithMidpoint`. Missing data keeps the optional `NoDataColor` and renderer/theme fallback policy; non-finite numbers are rejected rather than treated as missing.
 
+Map and Treemap discrete legends use `ChartLabels.AllValues` for a single unbounded band and `ChartLabels.Value` between interior bounds. For example, `chart.WithLabels(labels => { labels.AllValues = "Wszystkie wartości"; labels.Value = "wartość"; })` produces localized interval captions while their numeric metadata remains invariant. Band names and numeric value formatting remain independent choices.
+
 ## Raster image inputs and animation delays
 
 Pass `RgbaImage` directly to `VisualCanvas.AddImage` or the image overload of `AddHeroBadge` for an independent pixel snapshot used by SVG and raster output. `RgbaImage` itself retains the supplied array; the typed canvas call copies it. The raw paired SVG href and RGBA contract remains available for vector producers. See [Visual Canvas](../visual-canvas.md) for ownership and bounded file-input options.

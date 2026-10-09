@@ -18,7 +18,13 @@
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
-    if (legendTarget(item)) return data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
+    const reference = legendTarget(item);
+    if (reference) {
+      const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
+      const svg = item.closest('svg');
+      const mark = svg && referencedTargetNode(svg, { ...reference, seriesKey: seriesKey(item) });
+      return rows.concat(mark ? colorTooltipRows(mark) : []);
+    }
     const values = legendSeriesValues(item);
     if (!values.length) return [];
     if (data.cfxPoint !== undefined) {

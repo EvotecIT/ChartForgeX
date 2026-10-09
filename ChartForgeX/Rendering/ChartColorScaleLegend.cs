@@ -36,8 +36,8 @@ internal static class ChartColorScaleLegend {
         var bounds = ChartNumericFormatter.FormatScaleValues(options, bands.Take(bands.Count - 1).Select(band => band.UpperBound!.Value).ToArray());
         var captions = new string[bands.Count];
         for (var index = 0; index < bands.Count; index++) {
-            var interval = bands.Count == 1 ? "All values" : index == 0 ? "< " + bounds[0]
-                : index == bands.Count - 1 ? "≥ " + bounds[index - 1] : bounds[index - 1] + " ≤ value < " + bounds[index];
+            var interval = bands.Count == 1 ? options.Labels.AllValues : index == 0 ? "< " + bounds[0]
+                : index == bands.Count - 1 ? "≥ " + bounds[index - 1] : bounds[index - 1] + " ≤ " + options.Labels.Value + " < " + bounds[index];
             captions[index] = bands[index].Label == null ? interval : bands[index].Label + " · " + interval;
         }
         return captions;

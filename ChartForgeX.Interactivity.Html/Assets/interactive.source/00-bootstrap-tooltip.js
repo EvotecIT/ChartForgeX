@@ -210,6 +210,12 @@
   };
   const percentFormat = new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 2 });
   const percentText = (value) => value === undefined || value === '' ? value : percentFormat.format(Number(value));
+  const colorTooltipRows = (node) => {
+    const data = node.dataset || {};
+    const value = data.cfxColorValue !== undefined ? data.cfxColorValue
+      : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
+    return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -223,6 +229,7 @@
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
+    colorTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Percent', percentText(data.cfxPercent));
     push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
