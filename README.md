@@ -683,7 +683,7 @@ Scenario timelines are also typed and opt in. Chart and topology scenarios suppo
 
 ## Stable hierarchy and flow IDs
 
-Sankey, Tree, and Sunburst use immutable nodes with IDs separate from display labels. Links reference IDs, so two departments can each have a node named “Support”:
+Sankey, Chord, Tree, and Sunburst use immutable nodes with IDs separate from display labels. Links reference IDs, so two departments can each have a node named “Support”:
 
 ```csharp
 var nodes = new[] {
@@ -700,7 +700,9 @@ var chart = Chart.Create().AddSunburst("Teams", nodes, links);
 
 Tree and Sunburst require one connected root and one incoming link per child. Tree placement is unweighted; Sunburst sectors use leaf weights, and internal values sum their leaves. Authored incoming weights remain available separately, including positive fractions below one millionth.
 
-Sankey accepts directed `ChartFlowLink(id, sourceId, targetId, value)` records. Parallel flows use different IDs, and Sankey rejects cycles and self-links. `chart.Series[0].WithNodeState(id, state)` follows the node ID through input reordering or label changes. Semantic node states are scoped to their series, and `NodeStates` is a read-only view. Series expose immutable `Nodes`, `FlowLinks`, and `TreeLinks`; these families have no numeric `Points`. See the [migration guide](docs/v2/migration.md#hierarchy-and-flow-identities) for replaced signatures and metadata, and the [configured examples](ChartForgeX.Examples/V2GalleryModels.Relationships.cs) for repeated labels and parallel flows.
+Sankey accepts directed `ChartFlowLink(id, sourceId, targetId, value)` records. Parallel flows use different IDs, and Sankey requires positive weights and rejects cycles and self-links. Chord uses the same facts for circular weighted ribbons and accepts reciprocal, cyclic, self, and zero flows. `WithChord` configures circular span, node gaps and thickness, label content, opacity, and target direction cues. See the [chord guide](docs/chord.md) for allocation and zero-value limits.
+
+`chart.Series[0].WithNodeState(id, state)` follows the node ID through input reordering or label changes. Its `NodeStates` view is read-only and belongs to that series. Series expose immutable `Nodes`, `FlowLinks`, and `TreeLinks`; these families have no numeric `Points`. See the [migration guide](docs/v2/migration.md#hierarchy-and-flow-identities) for replaced signatures and metadata, and the [configured examples](ChartForgeX.Examples/V2GalleryModels.Relationships.cs) for repeated labels and parallel flows.
 
 ## Chart catalog
 
@@ -714,7 +716,7 @@ The catalog is broad enough for generated reports, dashboards, operational summa
 | Heatmaps and calendars | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `AddCalendarHeatmap`, `ChartCalendarHeatmapItem`, `AddHeatmapCategoryRow`, `ChartHeatmapCell`, `AddHourWeekdayHeatmap`, `ChartTimedValue`, `ChartTimeAggregation`, `HeatmapRelativeScale` |
 | Maps | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints`, `AddRegionMap`, `AddTileMap`, `ChartMapCatalog`, `ChartMapCatalogEntry`, `ChartMapCatalogEntryKind`, `EmbeddedEntries`, `ExternalEntries`, `Load`, `FromAssetDirectory`, `ChartMapDefinition`, `ChartMapRegion`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithRegionMapBounds`, `WithRegionMapCoordinateBounds`, `AddMapBaseLayer`, `AddMapBoundaryLayer` |
 | KPI and radial visuals | `AddGauge`, `AddCircle`, `AddRadialBar`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolar`, `AddPolarArea` |
-| Hierarchy and flow | `AddFunnel`, `AddTreemap`, `AddSankey`, `ChartNode`, `ChartFlowLink`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `AddPie`, `AddDonut` |
+| Hierarchy and flow | `AddFunnel`, `AddTreemap`, `AddSankey`, `AddChord`, `WithChord`, `ChartChordOptions`, `ChartNode`, `ChartFlowLink`, `WithNodeState`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `AddPie`, `AddDonut` |
 | Pictorial and progress | `AddPictorial`, `ChartPictorialItem`, `ChartPictorialShape`, `ChartPictorialShape.Person`, `WithPictorialShape`, `WithPictorialColumns`, `WithPictorialMaximum`, `WithPictorialValuePerSymbol`, `WithPictorialValues`, `WithPictorialSymbolScale`, `WithPictorialEmptyOpacity`, `WithPictorialSvgPath`, `AddProgressBars`, `ChartProgressItem`, `WithProgressMaximum`, `WithProgressValues`, `WithProgressHandles`, `WithProgressBarThickness`, `WithProgressTrackOpacity` |
 | Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `LabelPlacementService`, `LabelPlacementRequest`, `LabelCandidate`, `LabelObstacle`, `PlacedLabel`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithRadialBarCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialBarRadiusScale`, `WithRadialBarStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |

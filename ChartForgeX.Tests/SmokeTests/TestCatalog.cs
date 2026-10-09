@@ -746,6 +746,7 @@ internal static partial class SmokeTests {
         ("Text style overrides render across roles", TextStyleOverridesRenderAcrossRoles),
         ("Gantt tasks render progress dependencies and milestones", GanttTasksRenderProgressDependenciesAndMilestones),
         ("Sankey links render weighted flows", SankeyLinksRenderWeightedFlows),
+        ("Chord series renders directed weighted native flows", ChordSeriesRendersDirectedWeightedNativeFlows),
         ("Tree links render hierarchy", TreeLinksRenderHierarchy),
         ("Sunburst links render radial hierarchy", SunburstLinksRenderRadialHierarchy),
         ("Hierarchy and flow SVG expose data metadata", HierarchyAndFlowSvgExposeDataMetadata),

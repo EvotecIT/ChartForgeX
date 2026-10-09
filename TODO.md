@@ -2,7 +2,7 @@
 
 ## Consumer migration: Phase 5
 
-All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
+All implemented chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
 
 - [x] Inspect current owner and consumer branches, package boundaries and the public package state.
 - [x] Qualify the PowerBGInfo candidate with installed PowerShell 5.1/7 module types and observed wallpapers.
@@ -55,6 +55,7 @@ SVG and PNG charts share measured label placement, including data labels, target
 - Extend hierarchical Treemap input with explicit IDs, parent containment/headers, leaf-size aggregation, and an independent numeric color dimension. Reuse the typed node/index owner and shared color-scale owner; flat Treemap remains the current input contract.
 - Extend Sunburst with an independent numeric color dimension/scale and an explicit authored-parent value policy. Its current sectors aggregate leaf weights and preserve authored incoming weights separately.
 - Add Sankey alignment, ordering, gap, and style options through its canonical layout. Authored node/flow IDs and parallel flows are supported independently of labels.
+- Extend weighted Chord with deliberate ordering strategies, per-flow styles, and an independent quantitative color dimension. Its native scene retains directed reciprocal, parallel, self, and raw zero flows in source order; circular span, node gaps/thickness, opacity, target cues, and measured labels are configurable.
 
 ## Topology
 

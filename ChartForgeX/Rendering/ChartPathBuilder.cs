@@ -6,6 +6,21 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartPathBuilder {
+    /// <summary>Appends clockwise circular cubic segments, bounded to a quarter turn for native path parity.</summary>
+    internal static void AddCircularArc(List<ChartPathCommand> commands, double cx, double cy, double radius, double start, double sweep) {
+        if (sweep <= 0) return;
+        var segments = Math.Max(1, (int)Math.Ceiling(sweep / (Math.PI / 2)));
+        var step = sweep / segments;
+        var tangent = 4d / 3 * Math.Tan(step / 4);
+        for (var index = 0; index < segments; index++) {
+            var from = start + index * step; var to = from + step;
+            var x1 = cx + Math.Cos(from) * radius; var y1 = cy + Math.Sin(from) * radius;
+            var x2 = cx + Math.Cos(to) * radius; var y2 = cy + Math.Sin(to) * radius;
+            commands.Add(ChartPathCommand.CubicTo(x1 - Math.Sin(from) * radius * tangent, y1 + Math.Cos(from) * radius * tangent,
+                x2 + Math.Sin(to) * radius * tangent, y2 - Math.Cos(to) * radius * tangent, x2, y2));
+        }
+    }
+
     public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartSeriesKind kind, bool smooth) {
         if (points == null) throw new ArgumentNullException(nameof(points));
         var commands = new List<ChartPathCommand>();

@@ -10,6 +10,7 @@ internal sealed class ChartRelationshipIndex {
     internal IReadOnlyList<ChartFlowLink> FlowLinks { get; }
     internal IReadOnlyList<double> FlowIncomingValues { get; }
     internal IReadOnlyList<double> FlowOutgoingValues { get; }
+    internal IReadOnlyList<double> FlowEndpointValues { get; }
     internal IReadOnlyList<ChartTreeLink> TreeLinks { get; }
     internal IReadOnlyList<double> HierarchyValues { get; }
     internal int Root { get; }
@@ -20,11 +21,12 @@ internal sealed class ChartRelationshipIndex {
 
     private ChartRelationshipIndex(ChartNode[] nodes, ChartFlowLink[] sankeyLinks, ChartTreeLink[] treeLinks,
         Dictionary<string, int> nodeIndexes, int[] sources, int[] targets, int root, double[] hierarchyValues,
-        double[]? flowIncomingValues = null, double[]? flowOutgoingValues = null) {
+        double[]? flowIncomingValues = null, double[]? flowOutgoingValues = null, double[]? flowEndpointValues = null) {
         Nodes = Array.AsReadOnly(nodes);
         FlowLinks = Array.AsReadOnly(sankeyLinks);
         FlowIncomingValues = Array.AsReadOnly(flowIncomingValues ?? Array.Empty<double>());
         FlowOutgoingValues = Array.AsReadOnly(flowOutgoingValues ?? Array.Empty<double>());
+        FlowEndpointValues = Array.AsReadOnly(flowEndpointValues ?? Array.Empty<double>());
         TreeLinks = Array.AsReadOnly(treeLinks);
         HierarchyValues = Array.AsReadOnly(hierarchyValues);
         _nodeIndexes = nodeIndexes;
@@ -40,11 +42,15 @@ internal sealed class ChartRelationshipIndex {
     internal int IncomingLink(int nodeIndex) => _incomingLinks[nodeIndex];
     internal bool ContainsNode(string id) => _nodeIndexes.ContainsKey(id);
 
-    internal static ChartRelationshipIndex Sankey(IEnumerable<ChartNode> nodes, IEnumerable<ChartFlowLink> links) {
-        var snapshot = SnapshotNodes(nodes, out var indexes);
+    internal static ChartRelationshipIndex Sankey(IEnumerable<ChartNode> nodes, IEnumerable<ChartFlowLink> links) => Flow(nodes, links, chord: false);
+
+    internal static ChartRelationshipIndex Chord(IEnumerable<ChartNode> nodes, IEnumerable<ChartFlowLink> links) => Flow(nodes, links, chord: true);
+
+    private static ChartRelationshipIndex Flow(IEnumerable<ChartNode> nodes, IEnumerable<ChartFlowLink> links, bool chord) {
+        var snapshot = SnapshotNodes(nodes, out var indexes, allowEmpty: chord);
         if (links == null) throw new ArgumentNullException(nameof(links));
         var flows = links.ToArray();
-        if (flows.Length == 0) throw new ArgumentException("Sankey charts require at least one link.", nameof(links));
+        if (!chord && flows.Length == 0) throw new ArgumentException("Sankey charts require at least one link.", nameof(links));
         var sources = new int[flows.Length];
         var targets = new int[flows.Length];
         var incoming = new double[snapshot.Length];
@@ -52,16 +58,24 @@ internal sealed class ChartRelationshipIndex {
         var ids = new HashSet<string>(StringComparer.Ordinal);
         for (var i = 0; i < flows.Length; i++) {
             var link = flows[i];
-            if (string.IsNullOrWhiteSpace(link.Id) || !ids.Add(link.Id)) throw new ArgumentException("Sankey link IDs must be non-empty and unique.", nameof(links));
-            ValidateWeight(link.Value);
-            Resolve(indexes, link.SourceId, link.TargetId, sources, targets, i);
+            if (string.IsNullOrWhiteSpace(link.Id) || !ids.Add(link.Id)) throw new ArgumentException("Flow link IDs must be non-empty and unique.", nameof(links));
+            if (chord) {
+                if (double.IsNaN(link.Value) || double.IsInfinity(link.Value) || link.Value < 0)
+                    throw new ArgumentException("Chord flow weights must be finite and non-negative.", nameof(links));
+            } else ValidateWeight(link.Value);
+            Resolve(indexes, link.SourceId, link.TargetId, sources, targets, i, allowSelf: chord);
             incoming[targets[i]] += link.Value;
             outgoing[sources[i]] += link.Value;
             if (double.IsInfinity(incoming[targets[i]]) || double.IsInfinity(outgoing[sources[i]]))
-                throw new ArgumentException("Sankey node aggregates must remain finite.", nameof(links));
+                throw new ArgumentException("Flow node aggregates must remain finite.", nameof(links));
         }
-        TopologicalOrder(snapshot.Length, sources, targets, false, out _);
-        return new ChartRelationshipIndex(snapshot, flows, Array.Empty<ChartTreeLink>(), indexes, sources, targets, -1, Array.Empty<double>(), incoming, outgoing);
+        var endpoints = new double[snapshot.Length];
+        for (var i = 0; i < endpoints.Length; i++) {
+            endpoints[i] = chord ? incoming[i] + outgoing[i] : Math.Max(incoming[i], outgoing[i]);
+            if (double.IsInfinity(endpoints[i])) throw new ArgumentException("Chord incoming plus outgoing endpoint aggregates must remain finite.", nameof(links));
+        }
+        if (!chord) TopologicalOrder(snapshot.Length, sources, targets, false, out _);
+        return new ChartRelationshipIndex(snapshot, flows, Array.Empty<ChartTreeLink>(), indexes, sources, targets, -1, Array.Empty<double>(), incoming, outgoing, endpoints);
     }
 
     internal static ChartRelationshipIndex Hierarchy(IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links, bool aggregateLeaves) {
@@ -83,10 +97,10 @@ internal sealed class ChartRelationshipIndex {
         return new ChartRelationshipIndex(snapshot, Array.Empty<ChartFlowLink>(), branches, indexes, sources, targets, root, values);
     }
 
-    private static ChartNode[] SnapshotNodes(IEnumerable<ChartNode> nodes, out Dictionary<string, int> indexes) {
+    private static ChartNode[] SnapshotNodes(IEnumerable<ChartNode> nodes, out Dictionary<string, int> indexes, bool allowEmpty = false) {
         if (nodes == null) throw new ArgumentNullException(nameof(nodes));
         var snapshot = nodes.ToArray();
-        if (snapshot.Length == 0) throw new ArgumentException("Relationship charts require explicit nodes.", nameof(nodes));
+        if (!allowEmpty && snapshot.Length == 0) throw new ArgumentException("Relationship charts require explicit nodes.", nameof(nodes));
         indexes = new Dictionary<string, int>(StringComparer.Ordinal);
         for (var i = 0; i < snapshot.Length; i++) {
             var node = snapshot[i];
@@ -101,10 +115,10 @@ internal sealed class ChartRelationshipIndex {
         if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentException("Relationship weights must be finite and positive.", "links");
     }
 
-    private static void Resolve(Dictionary<string, int> nodes, string source, string target, int[] sources, int[] targets, int index) {
+    private static void Resolve(Dictionary<string, int> nodes, string source, string target, int[] sources, int[] targets, int index, bool allowSelf = false) {
         if (string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(target) || !nodes.TryGetValue(source, out var from) || !nodes.TryGetValue(target, out var to))
             throw new ArgumentException("Links must reference existing node IDs.", "links");
-        if (from == to) throw new ArgumentException("Links must connect distinct nodes.", "links");
+        if (!allowSelf && from == to) throw new ArgumentException("Links must connect distinct nodes.", "links");
         sources[index] = from;
         targets[index] = to;
     }

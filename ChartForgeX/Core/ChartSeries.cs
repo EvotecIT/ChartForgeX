@@ -611,7 +611,7 @@ public sealed partial class ChartSeries {
         if (!Enum.IsDefined(typeof(ChartSeriesKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown series kind.");
         Kind = kind;
         Points.AddRange(ChartGuards.Points(points, nameof(points)));
-        if (IsRelationshipKind(kind) && Points.Count > 0) throw new ArgumentException("Relationship series use typed nodes and links. Use AddSankey, AddTree, or AddSunburst.", nameof(points));
+        if (IsRelationshipKind(kind) && Points.Count > 0) throw new ArgumentException("Relationship series use typed nodes and links. Use AddSankey, AddChord, AddTree, or AddSunburst.", nameof(points));
         SourcePointCount = Points.Count;
     }
 

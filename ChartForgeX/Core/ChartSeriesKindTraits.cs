@@ -26,6 +26,7 @@ internal static class ChartSeriesKindTraits {
         ChartSeriesKind.GanttLane,
         ChartSeriesKind.Gantt,
         ChartSeriesKind.Sankey,
+        ChartSeriesKind.Chord,
         ChartSeriesKind.Tree,
         ChartSeriesKind.Sunburst,
         ChartSeriesKind.Pictorial,
@@ -95,6 +96,7 @@ internal static class ChartSeriesKindTraits {
             kind == ChartSeriesKind.Funnel ||
             kind == ChartSeriesKind.Treemap ||
             kind == ChartSeriesKind.Sankey ||
+            kind == ChartSeriesKind.Chord ||
             kind == ChartSeriesKind.Tree ||
             kind == ChartSeriesKind.Sunburst ||
             kind == ChartSeriesKind.Pictorial ||

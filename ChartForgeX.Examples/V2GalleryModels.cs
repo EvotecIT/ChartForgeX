@@ -45,6 +45,7 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.Gantt => "Project delivery in March 2026", ChartSeriesKind.StateTimeline => "Availability throughout the day",
         ChartSeriesKind.GanttLane => "Incidents and recovery in parallel",
         ChartSeriesKind.Sankey => "Requests across processing stages", ChartSeriesKind.Tree => "Teams and their responsibilities",
+        ChartSeriesKind.Chord => "Transfers between teams",
         ChartSeriesKind.Sunburst => "Allocation through the team hierarchy", ChartSeriesKind.Treemap => "How work is allocated across teams",
         ChartSeriesKind.Pictorial => "Completed assessments by team", ChartSeriesKind.WordCloud => "Topics in service observations",
         ChartSeriesKind.Funnel => "Requests from receipt to completion", ChartSeriesKind.Waterfall => "Changes in available capacity",

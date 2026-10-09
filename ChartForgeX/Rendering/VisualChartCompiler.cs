@@ -24,6 +24,7 @@ internal static class VisualChartCompiler {
             ChartSeriesKind.DottedMap or ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap => VisualChartFamily.Map,
             ChartSeriesKind.Tree or ChartSeriesKind.Sunburst or ChartSeriesKind.Treemap => VisualChartFamily.Hierarchy,
             ChartSeriesKind.Sankey => VisualChartFamily.Sankey,
+            ChartSeriesKind.Chord => VisualChartFamily.Chord,
             ChartSeriesKind.Funnel or ChartSeriesKind.Pictorial or ChartSeriesKind.WordCloud => VisualChartFamily.Specialty,
             _ => throw new NotSupportedException("The chart has no native scene producer.")
         };
@@ -41,6 +42,7 @@ internal static class VisualChartCompiler {
         VisualChartFamily.Map => VisualMapCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Hierarchy => VisualHierarchyCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Sankey => VisualSankeyCompiler.LegendEntries(chart, colors),
+        VisualChartFamily.Chord => VisualChordCompiler.LegendEntries(chart, colors),
         _ => VisualSpecialtyCompiler.LegendEntries(chart, colors)
     };
 
@@ -57,9 +59,10 @@ internal static class VisualChartCompiler {
             case VisualChartFamily.Map: VisualMapCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Hierarchy: VisualHierarchyCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Sankey: VisualSankeyCompiler.Build(chart, context, builder, content); break;
+            case VisualChartFamily.Chord: VisualChordCompiler.Build(chart, context, builder, content); break;
             default: VisualSpecialtyCompiler.Build(chart, context, builder, content); break;
         }
     }
 }
 
-internal enum VisualChartFamily { Cartesian, Radial, Gauge, RadialProgress, Polar, Scalar, Matrix, Schedule, Map, Hierarchy, Sankey, Specialty }
+internal enum VisualChartFamily { Cartesian, Radial, Gauge, RadialProgress, Polar, Scalar, Matrix, Schedule, Map, Hierarchy, Sankey, Chord, Specialty }
