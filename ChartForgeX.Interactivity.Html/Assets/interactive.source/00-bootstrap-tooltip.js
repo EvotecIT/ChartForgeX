@@ -70,9 +70,10 @@
     return node.dataset.cfxSourcePoints.split(',').filter((value) => value.trim() !== '')
       .map(Number).filter((value) => Number.isSafeInteger(value) && value >= 0);
   };
+  const hasDerivedPointIdentity = (node) => hasSourcePointCollection(node) || (node.dataset || {}).cfxDerived !== undefined;
   const sourcePointIndex = (node) => {
     const data = node.dataset || {};
-    if (hasSourcePointCollection(node)) return undefined;
+    if (hasDerivedPointIdentity(node)) return undefined;
     if (data.cfxSourcePoint !== undefined) return data.cfxSourcePoint;
     if (data.cfxPoint === undefined || data.cfxSeries === undefined) return data.cfxPoint;
     const svg = node.closest('svg');
@@ -84,7 +85,8 @@
   };
   const pointTargetId = (node) => {
     const data = node.dataset || {};
-    const point = hasSourcePointCollection(node) ? 'derived:' + (data.cfxPoint ?? '0') : sourcePointIndex(node) ?? '0';
+    const derived = hasDerivedPointIdentity(node);
+    const point = derived ? 'derived:' + (data.cfxDerived || 'aggregate') + ':' + (data.cfxPoint ?? '0') : sourcePointIndex(node) ?? '0';
     return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
   };
   const renderedTargetKind = (node) => {

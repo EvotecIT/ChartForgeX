@@ -63,10 +63,16 @@ public sealed class HistogramOptionsTests {
         Assert.Equal(aggregation == ChartHistogramAggregation.Mean ? "false" : "true", empty.Metadata["data-cfx-bin-has-value"]);
         Assert.Equal(aggregation != ChartHistogramAggregation.Mean, empty.Metadata.ContainsKey("data-cfx-y"));
         Assert.Equal(aggregation != ChartHistogramAggregation.Mean, empty.Metadata.ContainsKey("data-cfx-bin-value"));
-        Assert.Contains(prepared.Regions, region => region.Role == "source-observation" && region.Label == "x=2 y=-9");
+        var source = chart.Series[0].HistogramSourcePoints;
+        Assert.Equal(observations, source);
+        Assert.Equal(-9, source[bins[1].SourceIndices[0]].Y);
+        Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<ChartPoint>)source)[0] = new ChartPoint(99, 99));
         var svg = prepared.ToSvg();
         observations[0] = new ChartPoint(99, 99);
         chart.Series[0].Points.Clear();
+        Assert.Equal(.25, source[0].X); Assert.Equal(6, source[0].Y);
+        Assert.Equal("0,1", Point(prepared, 0, 0).Metadata["data-cfx-source-points"]);
+        Assert.Equal("2", Point(prepared, 0, 0).Metadata["data-cfx-bin-count"]);
         Assert.Equal(svg, prepared.ToSvg());
     }
 
@@ -204,7 +210,9 @@ public sealed class HistogramOptionsTests {
         Assert.Equal(new[] { 1d, 3d }, chart.Series[0].HistogramBins.Select(bin => bin.Value!.Value));
         var prepared = Prepare(chart);
         Assert.Equal(3, Bounds(prepared, 0, 1).Width / Bounds(prepared, 0, 0).Width, 8);
-        Assert.Contains(prepared.Regions, region => region.Id == "series-0-source-0" && region.Label == "x=3 y=1");
+        Assert.Equal(new[] { 3d, 0d, 1d, 4d }, chart.Series[0].HistogramSourcePoints.Select(point => point.X));
+        Assert.All(chart.Series[0].HistogramSourcePoints, point => Assert.Equal(1, point.Y));
+        Assert.Equal("0,2,3", Point(prepared, 0, 1).Metadata["data-cfx-source-points"]);
         var empty = ChartDataset<double>.Empty.Bin(value => value, layout);
         Assert.Equal(layout.Count, empty.Count);
         Assert.Equal(layout.Count, Chart.Create().AddHistogram("Empty typed", empty).Series[0].Points.Count);

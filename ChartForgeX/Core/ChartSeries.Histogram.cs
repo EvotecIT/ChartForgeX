@@ -17,7 +17,6 @@ public sealed partial class ChartSeries {
     /// <summary>Gets immutable aggregates in layout order, including empty intervals.</summary>
     public IReadOnlyList<ChartHistogramBin> HistogramBins { get; private set; } = Array.Empty<ChartHistogramBin>();
 
-    internal IReadOnlyList<ChartPoint> HistogramSourcePoints { get; private set; } = Array.Empty<ChartPoint>();
     internal bool IsHistogramDensity => HistogramEncoding == ChartHistogramEncoding.Density;
     internal double RenderedPointValue(int index) => HistogramBinLayout == null ? Points[index].Y : HistogramBins[index].RenderedValue;
 

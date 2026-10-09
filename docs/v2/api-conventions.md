@@ -135,6 +135,8 @@ var means = Chart.Create().AddHistogram("Quantity", observations, bins,
 
 Typed data uses `dataset.Bin(selector, layout)` and `AddHistogram(name, bins, encoding)`. Typed and scalar count layouts share the same rounding. A typed histogram requires the complete ordered partition and retains source rows; use `AddBar` for a selected or reordered set of bins.
 
+`ChartSeries.HistogramSourcePoints` retains an immutable copy of the input observations in their original order. Each bin's `SourceIndices` indexes that collection; X is the measurement and Y is the supplied quantity, or one for scalar count input. Input array changes and edits to the series' aggregate points do not change this source snapshot. Prepared bin extents, aggregate values and contributor identities also remain detached from later model edits.
+
 Migration: replace the former global `layout.Width` with `layout.GetWidth(index)`, because the last regular bin and authored bins can have different widths. Histogram layout, aggregation and encoding are read-only series facts. Labels, paints and styles can change after ingestion; to change bin X/Y aggregates, rebuild from observations so source statistics stay consistent.
 
 ## Point markers and radial forms
@@ -154,6 +156,12 @@ chart.Series[0].ConfigureMarkers(markers => {
 `ChartForgeX.Core.ChartLineAreaForm` is the shared form type for `ChartSeries.Radar.Form` and `MetricCard.MiniSparklineStyle`. Its values are `Area = 0` and `Line = 1`; both models default to Area. Metric cards select the same form through `WithMiniSparklineStyle`.
 
 `AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `ConfigureRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity. Missing categories retain the existing zero-imputation behavior; an explicit missing-category policy is separate work.
+
+## Aggregate source snapshots
+
+`ChartSeries.TrendLineSourcePoints` retains the original regression observations in input order, and `ChartSeries.BoxPlotSourceSamples` retains the unsorted samples supplied to the raw-value box plot overload. These read-only collections are independent of caller-owned arrays and the fitted endpoints or summary points. A box plot built from authored five-number summaries has an empty raw sample collection.
+
+Migration: use these typed source collections and `HistogramSourcePoints` in place of raw `source-observation` or `source-sample` region labels. Retain the series' collection when original rows are needed after preparation. `PreparedVisual.Regions` describes rendered aggregate marks; it does not expose a typed raw observation store. Its mark facts and exported SVG/PNG remain detached, and interactive histogram events retain each bin's contributor indices. Keeping source data separate avoids creating and embedding a rendering-region object for every unrendered row.
 
 ## Enforcement boundary
 
