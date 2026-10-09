@@ -126,11 +126,13 @@ internal static class VisualGaugeCompiler {
             }
             var valueStyle = LabelStyle(chart, context, builder, value, valueBudget,
                 context.Theme.Typography.ScalarValueSize, 700, minimumDefaultSize: needle ? context.Theme.Typography.DataLabelSize : .1);
+            var captionTop = 0d;
+            if (needle) valueStyle = FitNeedleSummary(chart, context, builder, value, caption, data.Ratio,
+                cy, radius, stroke, captionBottom, valueBudget, out valueTop, out valueBudget, out captionTop);
             var valueHeight = Math.Min(valueBudget, builder.MeasureText(value, valueStyle).Height);
-            if (!needle) valueTop = cy - valueHeight / 2;
+            if (!needle) { valueTop = cy - valueHeight / 2; captionTop = valueTop + valueHeight + gap / 3; }
             VisualRadialPrimitives.Text(builder, value, new ChartRect(cx - radius * .7, valueTop, radius * 1.4, valueHeight),
                 valueStyle, "gauge-label", "series-0-gauge-label");
-            var captionTop = valueTop + valueHeight + gap / 3;
             var captionStyle = LabelStyle(chart, context, builder, caption, Math.Max(0, captionBottom - captionTop),
                 context.Theme.Typography.DataLabelSize, muted: true, minimumDefaultSize: context.Theme.Typography.DataLabelSize);
             VisualRadialPrimitives.Text(builder, caption, new ChartRect(cx - radius * .75, captionTop, radius * 1.5,
@@ -138,6 +140,58 @@ internal static class VisualGaugeCompiler {
                 captionStyle, "gauge-title", "series-0-gauge-title");
         }
         CircularLabels(chart, context, builder, plot, data, target, min, max, cx, cy, radius, stroke, start, sweep, labelHeight);
+    }
+
+    private static TextStyle FitNeedleSummary(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
+        string value, string caption, double ratio, double cy, double radius, double stroke,
+        double bottom, double maximumHeight, out double top, out double permittedHeight, out double captionTop) {
+        var gap = context.Theme.Spacing;
+        var angle = Math.PI * 5 / 6 + Math.PI * 4 / 3 * ratio;
+        var captionStyle = LabelStyle(chart, context, builder, caption, bottom - cy,
+            context.Theme.Typography.DataLabelSize, muted: true, minimumDefaultSize: context.Theme.Typography.DataLabelSize);
+        var captionHeight = string.IsNullOrEmpty(caption) ? 0 : builder.MeasureText(caption, captionStyle).Height;
+        TextStyle Style(double height) => LabelStyle(chart, context, builder, value, height,
+            context.Theme.Typography.ScalarValueSize, 700, minimumDefaultSize: context.Theme.Typography.DataLabelSize);
+        double ClearTop(string text, TextStyle style, double width) {
+            var fitted = ChartTextFitting.TrimEnd(text, style.FontSize, width, (part, _) => builder.MeasureText(part, style).Width);
+            var measured = builder.MeasureText(fitted, style).Width;
+            var portable = new TextMeasurementContext(style.Font);
+            var displayed = TextCaseTransformer.Apply(fitted, style.TextCase, CultureInfo.InvariantCulture);
+            var envelope = measured;
+            foreach (var line in TextLineScanner.Enumerate(displayed))
+                envelope = Math.Max(envelope, portable.Measure(line.Read(displayed), style.EffectiveFontSize, style.Font.Weight >= 600));
+            // SVG keeps the native row's left edge, while the host may select a wider fallback face.
+            // Reserve that portable extent on the descending needle's side without changing the authored font.
+            var half = Math.Cos(angle) > 0 ? envelope - measured / 2 : measured / 2;
+            var down = Math.Sin(angle); var sideways = Math.Abs(Math.Cos(angle));
+            var depth = down > 0 && sideways > .000001
+                ? Math.Min((radius - stroke) * down, half * down / sideways) : 0;
+            return cy + Math.Max(stroke / 3 + gap / 2,
+                depth + Math.Max(1, context.Theme.SeriesStrokeWidth) / 2 + gap / 2);
+        }
+        bool Fits(TextStyle style) {
+            var start = ClearTop(value, style, radius * 1.4);
+            var height = builder.MeasureText(value, style).Height;
+            var captionStart = Math.Max(start + height + gap / 3, ClearTop(caption, captionStyle, radius * 1.5));
+            return height <= maximumHeight + .000001 && captionStart + captionHeight <= bottom + .000001;
+        }
+        var result = Style(maximumHeight);
+        if (!Fits(result)) {
+            var low = 0d; var high = maximumHeight;
+            // Both the row height and its needle clearance depend on the resolved font width.
+            // Find the largest fitting default; authored font sizes retain the usual overflow policy.
+            for (var attempt = 0; attempt < 12; attempt++) {
+                var middle = (low + high) / 2; var candidate = Style(middle);
+                if (Fits(candidate)) { low = middle; result = candidate; }
+                else high = middle;
+            }
+        }
+        var fits = Fits(result);
+        top = fits ? ClearTop(value, result, radius * 1.4) : bottom;
+        permittedHeight = fits ? maximumHeight : 0;
+        captionTop = fits ? Math.Max(top + builder.MeasureText(value, result).Height + gap / 3,
+            ClearTop(caption, captionStyle, radius * 1.5)) : bottom;
+        return result;
     }
 
     private static void CircularLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,

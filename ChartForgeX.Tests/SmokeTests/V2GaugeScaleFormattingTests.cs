@@ -167,6 +167,56 @@ public sealed class V2GaugeScaleFormattingTests {
         Assert.NotEmpty(prepared.ToPng());
     }
 
+    [Theory]
+    [InlineData(0d, false, 360, 360)]
+    [InlineData(.1, false, 360, 360)]
+    [InlineData(.9, false, 360, 360)]
+    [InlineData(1d, false, 360, 360)]
+    [InlineData(0d, true, 360, 360)]
+    [InlineData(.1, true, 360, 360)]
+    [InlineData(.9, true, 360, 360)]
+    [InlineData(1d, true, 360, 360)]
+    [InlineData(0d, false, 800, 440)]
+    [InlineData(.1, false, 800, 440)]
+    [InlineData(.9, false, 800, 440)]
+    [InlineData(1d, false, 800, 440)]
+    [InlineData(0d, true, 800, 440)]
+    [InlineData(.1, true, 800, 440)]
+    [InlineData(.9, true, 800, 440)]
+    [InlineData(1d, true, 800, 440)]
+    public void NeedleEndpointsKeepMeasuredValueAndCaptionClearOfTheirStroke(double ratio, bool dark, int width, int height) {
+        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTitle("Range")
+            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).WithGauge(options => options.Form = ChartGaugeForm.Needle);
+        var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
+        var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gauge-needle");
+        var obstacle = new LabelMarkShape(new[] { new List<ChartForgeX.Primitives.ChartPoint> { line.Start, line.End } }, false, line.StrokeWidth);
+        foreach (var role in new[] { "gauge-label", "gauge-title" }) {
+            var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == role);
+            var bounds = new ChartForgeX.Primitives.ChartRect(text.Text.Lines.Min(text.LineLeft), text.Baseline - text.Text.Ascent,
+                text.Text.Metrics.Width, text.Text.Metrics.Height);
+            Assert.False(obstacle.Intersects(bounds), role + " must clear the actual needle stroke.");
+            Assert.True(text.Text.Size >= context.Theme.Typography.DataLabelSize);
+            Assert.Equal(Assert.Single(prepared.Regions, region => region.Role == role).Label, string.Join("\n", text.Text.Lines.Select(item => item.Text)));
+        }
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
+        Capture(prepared, "needle-clearance-" + ratio.ToString("0.0", CultureInfo.InvariantCulture) + "-" + width + "-" + (dark ? "dark" : "light"));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Fact]
+    public void NeedleEndpointPreservesUnfittableAuthoredSummaryInSemanticRegions() {
+        var chart = Chart.Create().WithSize(360, 360).WithLegend(false).WithTitle("Range")
+            .AddGauge("Tolerance", 1_000_005, 1_000_001, 1_000_005).WithGauge(options => options.Form = ChartGaugeForm.Needle);
+        chart.Series[0].DataLabelStyle.FontSize = 40;
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role is "gauge-label" or "gauge-title");
+        Assert.Contains(prepared.Regions, region => region.Role == "gauge-label" && region.Label == "1000005");
+        Assert.Contains(prepared.Regions, region => region.Role == "gauge-title" && region.Label == "Tolerance");
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
     private static bool IsScaleRole(string? role) => role is "gauge-min-label" or "gauge-max-label" or "gauge-tick-label-1" or "gauge-tick-label-2" or "gauge-tick-label-3";
     private static string[] ScaleCaptions(PreparedVisual prepared) => prepared.Regions.Where(region => IsScaleRole(region.Role)).Select(region => region.Label!).ToArray();
 
