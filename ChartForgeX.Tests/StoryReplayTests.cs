@@ -6,6 +6,19 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class StoryReplayTests {
+    [Fact]
+    public void NativeTerminalViewportUsesExactCompletionAndPartialElementTicks() {
+        var terminal = TerminalStory.Create().WithDialect(TerminalDialect.Custom, ">").WithFinalPrompt(false)
+            .WithTiming(.1, 42, 0).Command(new string('A', 89), 1);
+        var story = VisualStory.Create("Exact terminal typing").WithSize(1200, 400);
+        story.Scene("run", "Run", 2).Panel("terminal", new VisualStoryTerminalSurface(terminal, options: new VisualStoryTerminalOptions()));
+        story.Outcome("terminal", "Ready", "terminal");
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
+        Assert.Equal(">" + new string('A', 62), Visible(prepared.ToSvg(TimeSpan.FromTicks(8_000_000))));
+        Assert.Equal(">" + new string('A', 89), Visible(prepared.ToSvg(TimeSpan.FromTicks(11_000_000))));
+        Assert.Equal(prepared.ToPng(TimeSpan.FromSeconds(1.5)), prepared.ToPng(TimeSpan.FromTicks(11_000_000)));
+    }
+
     [Theory]
     [InlineData(1200, true, 2)]
     [InlineData(1200, false, 2)]

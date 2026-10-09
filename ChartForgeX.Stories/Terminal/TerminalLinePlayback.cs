@@ -9,16 +9,15 @@ internal static class TerminalLinePlayback {
     internal static TerminalLineState At(TerminalRenderedLine line, double? elapsedSeconds) {
         if (!elapsedSeconds.HasValue) return new TerminalLineState(true, 1, 1, 0);
         var elapsed = elapsedSeconds.Value;
-        if (elapsed < line.StartSeconds) return new TerminalLineState(false, 0, 0, 0);
-        var progress = line.DurationSeconds <= 0 ? 1 : Math.Max(0, Math.Min(1, (elapsed - line.StartSeconds) / line.DurationSeconds));
+        if (!StoryPlaybackClock.Started(elapsed, line.StartSeconds)) return new TerminalLineState(false, 0, 0, 0);
+        var progress = StoryPlaybackClock.Progress(elapsed, line.StartSeconds, line.DurationSeconds);
         if (line.IsCommand) return new TerminalLineState(true, progress, 1, 0);
         var eased = 1 - Math.Pow(1 - progress, 3);
         return new TerminalLineState(true, progress, eased, (1 - eased) * 3);
     }
-    internal static string CommandText(TerminalRenderedLine line, double progress) {
-        if (progress >= 1) return line.Text;
+    internal static string CommandText(TerminalRenderedLine line, double elapsed) {
         var elements = TerminalTextWidth.VisibleElements(line.Text).ToArray();
-        var count = Math.Max(0, Math.Min(elements.Length, (int)Math.Floor(elements.Length * progress)));
+        var count = StoryPlaybackClock.Elements(elements.Length, elapsed, line.StartSeconds, line.DurationSeconds);
         return string.Concat(elements.Take(count));
     }
     internal static ChartColor ToneColor(TerminalTheme theme, TerminalTextTone tone) => tone switch {

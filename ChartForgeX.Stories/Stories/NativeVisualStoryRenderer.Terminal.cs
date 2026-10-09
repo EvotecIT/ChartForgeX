@@ -23,10 +23,10 @@ internal static partial class NativeVisualStoryRenderer {
         foreach (var line in tab.Lines) {
             var state = TerminalLinePlayback.At(line, elapsed);
             if (!state.Visible) continue;
-            var text = line.IsCommand && elapsed.HasValue ? TerminalLinePlayback.CommandText(line, state.Progress) : line.Text;
+            var text = line.IsCommand && elapsed.HasValue ? TerminalLinePlayback.CommandText(line, elapsed.Value) : line.Text;
             lines.Add(new TerminalViewportLine(text, line.IsCommand ? TerminalTextTone.Accent : line.Tone, state.Opacity));
         }
-        DrawTerminal(parent, story, tab.Tab, layout.Tabs.Where(item => !elapsed.HasValue || item.OpenSeconds <= elapsed.Value).Select(item => item.Tab).ToArray(),
+        DrawTerminal(parent, story, tab.Tab, layout.Tabs.Where(item => layout.TabVisible(item.Tab.Id, elapsed)).Select(item => item.Tab).ToArray(),
             lines, tab.Tab.Theme, surface.Options!, bounds, string.Empty, 0);
     }
 
