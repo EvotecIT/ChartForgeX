@@ -100,7 +100,7 @@ internal static partial class VisualCartesianCompiler {
             var slope = (last.Y - first.Y) / (last.X - first.X);
             var intercept = first.Y - slope * first.X;
             builder.PushGroup(SeriesId(index) + "-regression", "regression", new Dictionary<string, string> {
-                ["data-cfx-slope"] = Number(slope), ["data-cfx-intercept"] = Number(intercept), ["data-cfx-source-count"] = Number(series.TrendSourcePoints.Count)
+                ["data-cfx-slope"] = Number(slope), ["data-cfx-intercept"] = Number(intercept), ["data-cfx-source-count"] = Number(series.TrendLineSourcePoints.Count)
             }).Dispose();
         }
         obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(new[] { points.ToList() }, false, SeriesStroke(series, context), plot)));

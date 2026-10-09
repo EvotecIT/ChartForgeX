@@ -126,7 +126,7 @@ public sealed class V2CartesianExtensionTests {
         points[1] = new ChartPoint(2, 999); samples[0] = 999;
         Assert.Equal(3, trend.Series[0].SourcePointCount); Assert.Equal(6, box.Series[0].SourcePointCount);
         var preparedTrend = trend.Prepare(new VisualRenderContext()); var preparedBox = box.Prepare(new VisualRenderContext());
-        var trendSource = trend.Series[0].TrendSourcePoints; var boxSource = box.Series[0].BoxPlotSourceSamples;
+        var trendSource = trend.Series[0].TrendLineSourcePoints; var boxSource = box.Series[0].BoxPlotSourceSamples;
         Assert.Equal(8, trendSource[1].Y); Assert.Equal(new[] { 8d, 1d, 3d, 9d, 6d, 2d }, boxSource);
         Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<ChartPoint>)trendSource)[0] = new ChartPoint(1, 999));
         Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<double>)boxSource)[0] = 999);

@@ -22,7 +22,7 @@ public sealed class AggregateSemanticExtentTests {
                 break;
             case ChartSeriesKind.TrendLine:
                 chart.AddTrendLine("Regression", observations);
-                Assert.Equal(observations, chart.Series[0].TrendSourcePoints);
+                Assert.Equal(observations, chart.Series[0].TrendLineSourcePoints);
                 break;
             case ChartSeriesKind.BoxPlot:
                 chart.AddBoxPlot("Distribution", 1, observations.Select(point => point.Y));

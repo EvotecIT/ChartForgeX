@@ -141,7 +141,7 @@ Migration: replace the former global `layout.Width` with `layout.GetWidth(index)
 
 ## Aggregate source snapshots
 
-`ChartSeries.TrendSourcePoints` retains the original regression observations in input order, and `ChartSeries.BoxPlotSourceSamples` retains the unsorted samples supplied to the raw-value box plot overload. These read-only collections are independent of caller-owned arrays and the fitted endpoints or summary points. A box plot built from authored five-number summaries has an empty raw sample collection.
+`ChartSeries.TrendLineSourcePoints` retains the original regression observations in input order, and `ChartSeries.BoxPlotSourceSamples` retains the unsorted samples supplied to the raw-value box plot overload. These read-only collections are independent of caller-owned arrays and the fitted endpoints or summary points. A box plot built from authored five-number summaries has an empty raw sample collection.
 
 Migration: use these typed source collections and `HistogramSourcePoints` in place of raw `source-observation` or `source-sample` region labels. Retain the series' collection when original rows are needed after preparation. `PreparedVisual.Regions` describes rendered aggregate marks; it does not expose a typed raw observation store. Its mark facts and exported SVG/PNG remain detached, and interactive histogram events retain each bin's contributor indices. Keeping source data separate avoids creating and embedding a rendering-region object for every unrendered row.
 

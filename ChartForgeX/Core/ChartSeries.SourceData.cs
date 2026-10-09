@@ -20,7 +20,7 @@ public sealed partial class ChartSeries {
     /// Input and endpoint edits do not rewrite this ingestion snapshot. Preparation captures fitted mark facts;
     /// callers retaining original observations use this typed snapshot rather than semantic region labels.
     /// </remarks>
-    public IReadOnlyList<ChartPoint> TrendSourcePoints { get; private set; } = Array.Empty<ChartPoint>();
+    public IReadOnlyList<ChartPoint> TrendLineSourcePoints { get; private set; } = Array.Empty<ChartPoint>();
 
     /// <summary>Gets the raw box plot's immutable sample values in original input order; empty for authored summaries or other series.</summary>
     /// <remarks>
@@ -37,10 +37,10 @@ public sealed partial class ChartSeries {
         SourcePointCount = snapshot.Length;
     }
 
-    internal void SetTrendSourcePoints(IReadOnlyList<ChartPoint> points) {
+    internal void SetTrendLineSourcePoints(IReadOnlyList<ChartPoint> points) {
         var snapshot = new ChartPoint[points.Count];
         for (var index = 0; index < snapshot.Length; index++) snapshot[index] = points[index];
-        TrendSourcePoints = Array.AsReadOnly(snapshot);
+        TrendLineSourcePoints = Array.AsReadOnly(snapshot);
         SourcePointCount = snapshot.Length;
     }
 }
