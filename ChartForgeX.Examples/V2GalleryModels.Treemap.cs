@@ -5,21 +5,21 @@ using ChartForgeX.Themes;
 public static partial class V2GalleryModels {
     private static Chart Treemap(string variant, VisualThemeMode mode) {
         var items = variant == "sparse" ? new[] {
-            new ChartTreemapItem("independent", "Independent team", value: 100, colorValue: 7),
-            new ChartTreemapItem("reserve", "Reserve", value: 0)
+            new ChartHierarchyItem("independent", "Independent team", value: 100, colorValue: 7),
+            new ChartHierarchyItem("reserve", "Reserve", value: 0)
         } : new[] {
-            new ChartTreemapItem("north", "North"),
-            new ChartTreemapItem("north-services", "Services", parentId: "north"),
-            new ChartTreemapItem("north-support", "Support", parentId: "north-services", value: 18, colorValue: -4),
-            new ChartTreemapItem("north-research", "Research", parentId: "north-services", value: 12, colorValue: 11),
-            new ChartTreemapItem("north-platform", "Platform", parentId: "north", value: 18, colorValue: 3),
-            new ChartTreemapItem("south", "South"),
-            new ChartTreemapItem("south-services", "Services", parentId: "south"),
-            new ChartTreemapItem("south-support", "Support", parentId: "south-services", value: 22, colorValue: 8),
-            new ChartTreemapItem("south-field", "Field", parentId: "south-services", value: 15, colorValue: 1),
-            new ChartTreemapItem("south-operations", "Operations", parentId: "south", value: 15),
-            new ChartTreemapItem("research", "Independent research", value: 8, colorValue: 14),
-            new ChartTreemapItem("reserve", "Reserve", value: 0)
+            new ChartHierarchyItem("north", "North"),
+            new ChartHierarchyItem("north-services", "Services", parentId: "north"),
+            new ChartHierarchyItem("north-support", "Support", parentId: "north-services", value: 18, colorValue: -4),
+            new ChartHierarchyItem("north-research", "Research", parentId: "north-services", value: 12, colorValue: 11),
+            new ChartHierarchyItem("north-platform", "Platform", parentId: "north", value: 18, colorValue: 3),
+            new ChartHierarchyItem("south", "South"),
+            new ChartHierarchyItem("south-services", "Services", parentId: "south"),
+            new ChartHierarchyItem("south-support", "Support", parentId: "south-services", value: 22, colorValue: 8),
+            new ChartHierarchyItem("south-field", "Field", parentId: "south-services", value: 15, colorValue: 1),
+            new ChartHierarchyItem("south-operations", "Operations", parentId: "south", value: 15),
+            new ChartHierarchyItem("research", "Independent research", value: 8, colorValue: 14),
+            new ChartHierarchyItem("reserve", "Reserve", value: 0)
         };
         var colors = VisualTheme.Graphite().Resolve(mode);
         var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);

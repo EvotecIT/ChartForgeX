@@ -14,10 +14,10 @@ internal static partial class VisualHierarchyCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         var series = chart.Series[0];
         if (!series.ShowInLegend) return Array.Empty<VisualLegendEntry>();
-        if (series.Kind == ChartSeriesKind.Treemap) {
-            var surface = new ChartTreemapSurface(chart, colors);
-            if (surface.Scale != null && chart.Options.Treemap.ShowColorScaleLegend) return Array.Empty<VisualLegendEntry>();
-            if (chart.Options.ShowPointLegend) return series.TreemapItems.Select((item, index) => (item, index))
+        if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
+            var surface = new ChartHierarchySurface(chart, colors);
+            if (surface.Scale != null && surface.ShowLegend) return Array.Empty<VisualLegendEntry>();
+            if (series.Kind == ChartSeriesKind.Treemap && chart.Options.ShowPointLegend) return series.HierarchyItems.Select((item, index) => (item, index))
                 .Where(entry => series.Relationships!.Children(entry.index).Count == 0)
                 .Select(entry => {
                     var blend = surface.Blend(entry.index);
@@ -44,10 +44,14 @@ internal static partial class VisualHierarchyCompiler {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name,
             ["data-cfx-kind"] = series.Kind.ToString(), ["data-cfx-state"] = series.StateRole.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty
         };
-        if (series.Kind == ChartSeriesKind.Treemap) {
-            metadata["data-cfx-label-color"] = chart.Options.Treemap.ColorLegendTitle ?? chart.Options.Labels.Color;
+        if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
+            var surface = new ChartHierarchySurface(chart, colors);
+            metadata["data-cfx-label-color"] = surface.Title ?? chart.Options.Labels.Color;
             metadata["data-cfx-label-no-data"] = chart.Options.Labels.NoData;
+            metadata["data-cfx-label-authored-value"] = chart.Options.Labels.AuthoredValue;
+            metadata["data-cfx-label-remainder"] = chart.Options.Labels.Remainder;
         }
+        if (series.Kind == ChartSeriesKind.Sunburst) metadata["data-cfx-parent-value-policy"] = chart.Options.Sunburst.ParentValuePolicy.ToString();
         using (builder.PushGroup("series-0", "hierarchy-series", metadata)) {
             if (series.Kind == ChartSeriesKind.Treemap) Treemap(chart, context, builder, plot, colors);
             else {
@@ -97,46 +101,8 @@ internal static partial class VisualHierarchyCompiler {
         }
     }
 
-    private static void Sunburst(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
-        var model = ChartSunburstLayout.Compute(chart, plot); var series = chart.Series[0];
-        double total = model.Nodes[model.Root].Value;
-        if (!Finite(total)) throw new InvalidOperationException("Sunburst aggregate weights exceed the supported finite range.");
-        foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) {
-            double sweep = node.EndAngle - node.StartAngle;
-            var color = Color(series, node.Index, colors, node.Depth == 0 ? 0 : node.Index + node.Depth - 1);
-            var paint = ChartRelationshipPaint.Paint(series, color, node.Index);
-            if (node.Depth == 0 && !ChartRelationshipPaint.HasExplicitColor(series, node.Index) && ChartRelationshipPaint.State(series, node.Index) == ChartSeriesState.None) {
-                var source = color; color = ChartColorMath.Blend(colors.Surface, source, .28);
-                paint = SvgPaint.Mix(color, colors.Surface, SvgColorRole.Surface, source, ChartRelationshipPaint.Role(series, node.Index), .28);
-            }
-            string formatted = ChartNumericFormatter.FormatValue(chart.Options, node.Value);
-            var metadata = ChartRelationshipMetadata.Node(series, node.Id, node.Label, node.Index);
-            metadata["data-cfx-state"] = ChartRelationshipPaint.State(series, node.Index).ToString();
-            metadata["data-cfx-depth"] = N(node.Depth); metadata["data-cfx-value"] = N(node.Value);
-            if (node.Parent >= 0) {
-                metadata["data-cfx-parent"] = model.Nodes[node.Parent].Id;
-                metadata["data-cfx-authored-weight"] = N(node.IncomingValue);
-                metadata["data-cfx-source-link-index"] = N(series.Relationships!.IncomingLink(node.Index));
-            }
-            metadata["data-cfx-geometry-status"] = sweep > 0 ? "visible" : "precision-collapse";
-            metadata["data-cfx-percent"] = N(node.Value / total); metadata["data-cfx-start-angle"] = N(node.StartAngle); metadata["data-cfx-sweep"] = N(sweep);
-            metadata["data-cfx-inner-radius"] = N(node.InnerRadius); metadata["data-cfx-outer-radius"] = N(node.OuterRadius);
-            using (builder.PushGroup(ChartRelationshipMetadata.SourceId("node", node.Id), "sunburst-segment", metadata)) {
-                builder.Slice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, color, colors.Surface, 1, "sunburst-segment-mark",
-                    paint: new VisualScenePaintBinding(paint, SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
-                var pattern = Pattern(series, node.Index);
-                if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, pattern,
-                    ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sunburst-pattern");
-                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) SunburstLabel(chart, context, builder, model, node, color);
-            }
-            var bounds = new ChartRect(model.CenterX - node.OuterRadius, model.CenterY - node.OuterRadius, node.OuterRadius * 2, node.OuterRadius * 2);
-            builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "sunburst-segment", bounds, node.Label + ": " + formatted));
-        }
-    }
-
     private static string Id(string role, int index) => "series-0-" + role + "-" + N(index);
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);
-    private static bool Finite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
     private static ChartColor Color(ChartSeries series, int index, VisualThemeColors colors, int? paletteIndex = null) => ChartRelationshipPaint.Color(series, index, colors, paletteIndex);
     private static ChartFillPattern Pattern(ChartSeries series, int index) => ChartRelationshipPaint.Pattern(series, index);
     private static ChartPath Rectangle(ChartRect b) => new(new[] { ChartPathCommand.MoveTo(b.X, b.Y), ChartPathCommand.LineTo(b.Right, b.Y), ChartPathCommand.LineTo(b.Right, b.Bottom), ChartPathCommand.LineTo(b.X, b.Bottom) });

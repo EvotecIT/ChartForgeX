@@ -14,9 +14,9 @@ public sealed class TreemapLegendPaintTests {
         var blue = ChartColor.FromRgb(0, 0, 255);
         var missing = ChartColor.FromRgb(13, 47, 81);
         var chart = Chart.Create().WithPointLegend().AddTreemap("Colors", new[] {
-            new ChartTreemapItem("low", "Low", value: 4, colorValue: 0),
-            new ChartTreemapItem("explicit", "Explicit", value: 3, colorValue: 100),
-            new ChartTreemapItem("missing", "Missing", value: 2)
+            new ChartHierarchyItem("low", "Low", value: 4, colorValue: 0),
+            new ChartHierarchyItem("explicit", "Explicit", value: 3, colorValue: 100),
+            new ChartHierarchyItem("missing", "Missing", value: 2)
         }).ConfigureTreemap(options => {
             options.ColorScale = ChartColorScale.Sequential(red, blue).WithValueRange(0, 100).WithNoDataColor(missing);
             options.ShowColorScaleLegend = false;
@@ -31,7 +31,7 @@ public sealed class TreemapLegendPaintTests {
         MatchingPaint(xml, "missing", "--host-missing");
 
         var status = Chart.Create().WithPointLegend().WithLegend().AddTreemap("States", new[] {
-            new ChartTreemapItem("warning", "Warning", value: 1)
+            new ChartHierarchyItem("warning", "Warning", value: 1)
         });
         status.Series[0].WithNodeState("warning", ChartSeriesState.Warning);
         var context = VisualExportRequest.ForChart(status).Context;
@@ -45,7 +45,7 @@ public sealed class TreemapLegendPaintTests {
     [Fact]
     public void HierarchySeriesKeyRetainsItsCanonicalStatusPaint() {
         var chart = Chart.Create().WithLegend().AddTreemap("Allocation", new[] {
-            new ChartTreemapItem("one", "One", value: 1)
+            new ChartHierarchyItem("one", "One", value: 1)
         });
         chart.Series[0].StateRole = ChartSeriesState.Warning;
         var context = VisualExportRequest.ForChart(chart).Context;

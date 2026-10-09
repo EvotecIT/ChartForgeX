@@ -7,15 +7,15 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void HierarchyAndFlowSvgExposeDataMetadata() {
         var treemap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddTreemap("Findings", new[] {
-            new ChartTreemapItem("Critical", "Critical", value: 50),
-            new ChartTreemapItem("High", "High", value: 28)
+            new ChartHierarchyItem("Critical", "Critical", value: 50),
+            new ChartHierarchyItem("High", "High", value: 28)
         }).ToSvg();
         FamilyMetadata(treemap, "treemap-tile", ("node", "Critical"), ("source-node-index", "0"), ("label", "Critical"), ("value", "50"));
         var positionedTreemap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithLegend(true).WithLegendPosition(ChartLegendPosition.Right)
             .AddTreemap("Findings", new[] {
-                new ChartTreemapItem("Critical", "Critical", value: 50),
-                new ChartTreemapItem("High", "High", value: 28)
+                new ChartHierarchyItem("Critical", "Critical", value: 50),
+                new ChartHierarchyItem("High", "High", value: 28)
             });
         var positioned = PreparedFamily(positionedTreemap);
         var tile = positioned.Regions.First(region => region.Role == "treemap-tile");
@@ -31,10 +31,7 @@ internal static partial class SmokeTests {
         FamilyMetadata(tree, "tree-node", ("node", "Root"), ("source-node-index", "0"), ("depth", "0"), ("label", "Root"));
         FamilyMetadata(tree, "tree-link", ("parent", "Root"), ("child", "Mail"), ("value", "3"), ("source-label", "Root"), ("target-label", "Mail"));
 
-        var sunburst = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddSunburst("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("Mail", "Mail"), new ChartNode("SPF", "SPF") }, new[] {
-            new ChartTreeLink("Root", "Mail", 3),
-            new ChartTreeLink("Mail", "SPF", 2)
-        }).ToSvg();
+        var sunburst = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddSunburst("Hierarchy", new[] { new ChartHierarchyItem("Root", "Root"), new ChartHierarchyItem("Mail", "Mail", "Root", 3), new ChartHierarchyItem("SPF", "SPF", "Mail", 2) }).ToSvg();
         FamilyMetadata(sunburst, "sunburst-segment", ("node", "Root"), ("source-node-index", "0"), ("depth", "0"), ("label", "Root"));
         FamilyMetadata(sunburst, "sunburst-segment", ("node", "Mail"), ("parent", "Root"), ("source-node-index", "1"), ("depth", "1"), ("label", "Mail"));
 

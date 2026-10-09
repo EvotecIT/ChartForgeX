@@ -18,7 +18,7 @@ public sealed class InteractiveTreemapRetainedFactsBrowserTests {
     [InlineData(true, true)]
     public async Task AuthoredZeroAndCollapsedLeavesRoveAndSelectWithoutFilledGeometry(bool allZero, bool compactDark) {
         if (!Enabled) return;
-        var items = new List<ChartTreemapItem> { new("group", "Allocated work"), new("reserve", "Reserve", "group", 0) };
+        var items = new List<ChartHierarchyItem> { new("group", "Allocated work"), new("reserve", "Reserve", "group", 0) };
         if (allZero) items.Add(new("standalone", "Standalone", value: 0));
         else { items.Add(new("visible", "Main allocation", "group", 1)); items.Add(new("tiny", "Small allocation", "group", 1e-20)); }
         var chart = Chart.Create().WithSize(compactDark ? 340 : 680, compactDark ? 340 : 400).WithLegend(false)

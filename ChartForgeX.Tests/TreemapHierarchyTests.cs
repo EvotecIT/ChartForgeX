@@ -9,12 +9,12 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class TreemapHierarchyTests {
-    internal static ChartTreemapItem[] ForestItems() => new[] {
-        new ChartTreemapItem("north", "North"), new ChartTreemapItem("north-team", "Team", "north"),
-        new ChartTreemapItem("north-support", "Support", "north-team", 5, -2), new ChartTreemapItem("north-dev", "Development", "north-team", 10, 3),
-        new ChartTreemapItem("south", "South"), new ChartTreemapItem("south-team", "Team", "south"),
-        new ChartTreemapItem("south-support", "Support", "south-team", 8, 8), new ChartTreemapItem("reserve", "Reserve", "south-team", 0),
-        new ChartTreemapItem("research", "Research", value: 3)
+    internal static ChartHierarchyItem[] ForestItems() => new[] {
+        new ChartHierarchyItem("north", "North"), new ChartHierarchyItem("north-team", "Team", "north"),
+        new ChartHierarchyItem("north-support", "Support", "north-team", 5, -2), new ChartHierarchyItem("north-dev", "Development", "north-team", 10, 3),
+        new ChartHierarchyItem("south", "South"), new ChartHierarchyItem("south-team", "Team", "south"),
+        new ChartHierarchyItem("south-support", "Support", "south-team", 8, 8), new ChartHierarchyItem("reserve", "Reserve", "south-team", 0),
+        new ChartHierarchyItem("research", "Research", value: 3)
     };
     internal static Chart Forest() => Chart.Create().WithDataLabels(true).AddTreemap("Allocation", ForestItems());
     internal static PreparedVisual Prepare(Chart chart, bool legend = false) => chart.Prepare(new VisualRenderContext(
@@ -30,9 +30,9 @@ public sealed class TreemapHierarchyTests {
     [InlineData(true, false, false)]
     public void ResolvedLabelVisibilityControlsLeafCaptionsAndGroupHeaderSpace(bool chartLabels, bool? seriesLabels, bool visible) {
         var chart = Chart.Create().WithDataLabels(chartLabels).AddTreemap("Work", new[] {
-            new ChartTreemapItem("parent", "Parent"),
-            new ChartTreemapItem("child", "Child", "parent", 6),
-            new ChartTreemapItem("other", "Other", "parent", 4)
+            new ChartHierarchyItem("parent", "Parent"),
+            new ChartHierarchyItem("child", "Child", "parent", 6),
+            new ChartHierarchyItem("other", "Other", "parent", 4)
         }).ConfigureTreemap(options => { options.Gap = 0; options.GroupPadding = 0; });
         chart.Series[0].ShowDataLabels = seriesLabels;
         var prepared = Prepare(chart);
@@ -50,7 +50,7 @@ public sealed class TreemapHierarchyTests {
     public void ThreeLevelsAndRepeatedLabelsRetainTruthfulForestFactsAndContainment() {
         var chart = Forest(); var series = chart.Series[0]; var prepared = Prepare(chart);
         var nodes = Targets(prepared).ToDictionary(element => (string)element.Attribute("data-cfx-target-id")!);
-        Assert.Equal(9, series.TreemapItems.Count); Assert.Equal(9, series.Nodes.Count);
+        Assert.Equal(9, series.HierarchyItems.Count); Assert.Equal(9, series.Nodes.Count);
         Assert.Empty(series.Points); Assert.Empty(series.TreeLinks); Assert.Equal(0, series.SourcePointCount);
         Assert.Equal(15, Number(nodes["north"], "data-cfx-value")); Assert.Equal(8, Number(nodes["south"], "data-cfx-value"));
         Assert.Equal(2, Number(nodes["south-support"], "data-cfx-depth"));
@@ -66,12 +66,12 @@ public sealed class TreemapHierarchyTests {
         });
         // This checks rendered rectangles independently of the hierarchy layout helper.
         var bounds = prepared.Regions.Where(region => region.Role is "treemap-tile" or "treemap-group").ToDictionary(region => region.Id);
-        foreach (var item in series.TreemapItems.Where(item => item.ParentId != null && (item.Value ?? 1) > 0)) {
+        foreach (var item in series.HierarchyItems.Where(item => item.ParentId != null && (item.Value ?? 1) > 0)) {
             var child = bounds["series-0-node-" + item.Id].Bounds; var parent = bounds["series-0-node-" + item.ParentId].Bounds;
             Assert.True(child.Left > parent.Left && child.Right < parent.Right && child.Top > parent.Top && child.Bottom < parent.Bottom);
             Assert.Contains(nodes[item.Id].Ancestors(), ancestor => (string?)ancestor.Attribute("data-cfx-target-id") == item.ParentId);
         }
-        foreach (var siblings in series.TreemapItems.Where(item => !item.Value.HasValue || item.Value > 0).GroupBy(item => item.ParentId)) {
+        foreach (var siblings in series.HierarchyItems.Where(item => !item.Value.HasValue || item.Value > 0).GroupBy(item => item.ParentId)) {
             var rectangles = siblings.Select(item => bounds["series-0-node-" + item.Id].Bounds).ToArray();
             for (var i = 0; i < rectangles.Length; i++) for (var j = i + 1; j < rectangles.Length; j++) Assert.False(Overlap(rectangles[i], rectangles[j]));
         }
@@ -86,7 +86,7 @@ public sealed class TreemapHierarchyTests {
     [InlineData(1e308, 3e307)]
     public void LeafSizesPreserveRatiosAcrossTinyAndLargeFiniteRanges(double first, double second) {
         var chart = Chart.Create().AddTreemap("Sizes", new[] {
-            new ChartTreemapItem("group", "Group"), new ChartTreemapItem("first", "First", "group", first), new ChartTreemapItem("second", "Second", "group", second)
+            new ChartHierarchyItem("group", "Group"), new ChartHierarchyItem("first", "First", "group", first), new ChartHierarchyItem("second", "Second", "group", second)
         }).WithDataLabels(false).ConfigureTreemap(options => { options.Gap = 0; options.GroupPadding = 0; options.ShowGroupLabels = false; });
         var prepared = Prepare(chart); var nodes = Targets(prepared).ToDictionary(element => (string)element.Attribute("data-cfx-target-id")!);
         Assert.Equal(first, Number(nodes["first"], "data-cfx-value")); Assert.Equal(second, Number(nodes["second"], "data-cfx-authored-value"));
@@ -99,10 +99,10 @@ public sealed class TreemapHierarchyTests {
 
     [Fact]
     public void SingletonAndZeroForestsKeepSourcesWithoutFabricatedPositiveArea() {
-        var single = Prepare(Chart.Create().AddTreemap("One", new[] { new ChartTreemapItem("one", "One", value: 7) }));
+        var single = Prepare(Chart.Create().AddTreemap("One", new[] { new ChartHierarchyItem("one", "One", value: 7) }));
         Assert.Single(Targets(single)); Assert.Single(single.Regions, region => region.Role == "treemap-tile");
         var zero = Prepare(Chart.Create().AddTreemap("Zero", new[] {
-            new ChartTreemapItem("group", "Group"), new ChartTreemapItem("leaf", "Leaf", "group", 0), new ChartTreemapItem("standalone", "Standalone", value: 0)
+            new ChartHierarchyItem("group", "Group"), new ChartHierarchyItem("leaf", "Leaf", "group", 0), new ChartHierarchyItem("standalone", "Standalone", value: 0)
         }));
         Assert.Equal(3, Targets(zero).Length);
         Assert.All(Targets(zero), node => Assert.Equal(0, Number(node, "data-cfx-value")));
@@ -115,8 +115,8 @@ public sealed class TreemapHierarchyTests {
     [Fact]
     public void PrecisionCollapsedPositiveLeafRetainsRawFactWithoutGeometry() {
         var prepared = Prepare(Chart.Create().AddTreemap("Allocation", new[] {
-            new ChartTreemapItem("group", "Group"), new ChartTreemapItem("visible", "Main allocation", "group", 1),
-            new ChartTreemapItem("tiny", "Small allocation", "group", 1e-20)
+            new ChartHierarchyItem("group", "Group"), new ChartHierarchyItem("visible", "Main allocation", "group", 1),
+            new ChartHierarchyItem("tiny", "Small allocation", "group", 1e-20)
         }));
         var nodes = Targets(prepared).ToDictionary(node => (string)node.Attribute("data-cfx-target-id")!);
         Assert.Equal("visible", (string?)nodes["visible"].Attribute("data-cfx-geometry-status"));
@@ -132,34 +132,34 @@ public sealed class TreemapHierarchyTests {
     public void InvalidItemsReferencesCyclesAndAggregatesAreAtomic() {
         var chart = Chart.Create().AddLine("Existing", new[] { new ChartPoint(1, 2) }); var existing = chart.Series[0];
         var invalid = new[] {
-            Array.Empty<ChartTreemapItem>(), new[] { default(ChartTreemapItem) },
-            new[] { new ChartTreemapItem("same", "First", value: 1), new ChartTreemapItem("same", "Second", value: 2) },
-            new[] { new ChartTreemapItem("leaf", "Leaf") },
-            new[] { new ChartTreemapItem("leaf", "Leaf", "missing", 1) },
-            new[] { new ChartTreemapItem("self", "Self", "self", 1) },
-            new[] { new ChartTreemapItem("a", "A", "b"), new ChartTreemapItem("b", "B", "a") },
-            new[] { new ChartTreemapItem("group", "Group", value: 1), new ChartTreemapItem("leaf", "Leaf", "group", 2) },
-            new[] { new ChartTreemapItem("group", "Group"), new ChartTreemapItem("a", "A", "group", double.MaxValue), new ChartTreemapItem("b", "B", "group", double.MaxValue) },
-            new[] { new ChartTreemapItem("a", "A", value: double.MaxValue), new ChartTreemapItem("b", "B", value: double.MaxValue) }
+            Array.Empty<ChartHierarchyItem>(), new[] { default(ChartHierarchyItem) },
+            new[] { new ChartHierarchyItem("same", "First", value: 1), new ChartHierarchyItem("same", "Second", value: 2) },
+            new[] { new ChartHierarchyItem("leaf", "Leaf") },
+            new[] { new ChartHierarchyItem("leaf", "Leaf", "missing", 1) },
+            new[] { new ChartHierarchyItem("self", "Self", "self", 1) },
+            new[] { new ChartHierarchyItem("a", "A", "b"), new ChartHierarchyItem("b", "B", "a") },
+            new[] { new ChartHierarchyItem("group", "Group", value: 1), new ChartHierarchyItem("leaf", "Leaf", "group", 2) },
+            new[] { new ChartHierarchyItem("group", "Group"), new ChartHierarchyItem("a", "A", "group", double.MaxValue), new ChartHierarchyItem("b", "B", "group", double.MaxValue) },
+            new[] { new ChartHierarchyItem("a", "A", value: double.MaxValue), new ChartHierarchyItem("b", "B", value: double.MaxValue) }
         };
         foreach (var items in invalid) {
             Assert.Throws<ArgumentException>(() => chart.AddTreemap("Invalid", items));
             Assert.Same(existing, Assert.Single(chart.Series)); Assert.Equal(2, existing.Points[0].Y);
         }
-        Assert.Throws<ArgumentException>(() => new ChartTreemapItem(" ", "Label", value: 1));
-        Assert.Throws<ArgumentException>(() => new ChartTreemapItem("id", " ", value: 1));
-        Assert.Throws<ArgumentException>(() => new ChartTreemapItem("id", "Label", " ", 1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartTreemapItem("id", "Label", value: -1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartTreemapItem("id", "Label", value: double.NaN));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartTreemapItem("id", "Label", value: 1, colorValue: double.PositiveInfinity));
+        Assert.Throws<ArgumentException>(() => new ChartHierarchyItem(" ", "Label", value: 1));
+        Assert.Throws<ArgumentException>(() => new ChartHierarchyItem("id", " ", value: 1));
+        Assert.Throws<ArgumentException>(() => new ChartHierarchyItem("id", "Label", " ", 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartHierarchyItem("id", "Label", value: -1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartHierarchyItem("id", "Label", value: double.NaN));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartHierarchyItem("id", "Label", value: 1, colorValue: double.PositiveInfinity));
     }
 
     [Fact]
     public void SourceSnapshotsAndPreparedExportsSurviveInputAndOptionChanges() {
         var items = ForestItems().ToList(); var chart = Chart.Create().AddTreemap("Allocation", items);
         var prepared = Prepare(chart, true); var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
-        items.Clear(); Assert.Equal(9, chart.Series[0].TreemapItems.Count);
-        Assert.Throws<NotSupportedException>(() => ((IList)chart.Series[0].TreemapItems).Clear());
+        items.Clear(); Assert.Equal(9, chart.Series[0].HierarchyItems.Count);
+        Assert.Throws<NotSupportedException>(() => ((IList)chart.Series[0].HierarchyItems).Clear());
         Assert.Equal(svg, Prepare(chart, true).ToSvg());
         chart.Options.Treemap.Gap = 40; chart.Options.Treemap.ShowGroupLabels = false; chart.Options.Treemap.ColorScale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White);
         chart.Series[0].WithPointColor(2, ChartColor.Black); chart.Series[0].DataLabelStyle.FontSize = 40;
@@ -169,7 +169,7 @@ public sealed class TreemapHierarchyTests {
     [Fact]
     public void ReorderingAndRenamingKeepNodeIdentityWhileSourceOrdinalsFollowInput() {
         var original = Targets(Prepare(Forest())).ToDictionary(node => (string)node.Attribute("data-cfx-target-id")!);
-        var reordered = ForestItems().AsEnumerable().Reverse().Select(item => new ChartTreemapItem(item.Id, item.Id == "south-support" ? "Customer care" : item.Label, item.ParentId, item.Value, item.ColorValue));
+        var reordered = ForestItems().AsEnumerable().Reverse().Select(item => new ChartHierarchyItem(item.Id, item.Id == "south-support" ? "Customer care" : item.Label, item.ParentId, item.Value, item.ColorValue));
         var nodes = Targets(Prepare(Chart.Create().AddTreemap("Allocation", reordered)));
         foreach (var node in nodes) {
             var id = (string)node.Attribute("data-cfx-target-id")!;
@@ -182,9 +182,9 @@ public sealed class TreemapHierarchyTests {
 
     [Fact]
     public void ForestDepthSharesTheExistingBoundedHierarchyPolicy() {
-        var items = Enumerable.Range(0, 513).Select(i => new ChartTreemapItem("node-" + i, "Node", i == 0 ? null : "node-" + (i - 1), i == 512 ? 1 : null)).ToArray();
-        Assert.Equal(513, Chart.Create().AddTreemap("Bounded", items).Series[0].TreemapItems.Count);
-        var deeper = items.Take(512).Append(new ChartTreemapItem("node-512", "Node", "node-511")).Append(new ChartTreemapItem("node-513", "Leaf", "node-512", 1));
+        var items = Enumerable.Range(0, 513).Select(i => new ChartHierarchyItem("node-" + i, "Node", i == 0 ? null : "node-" + (i - 1), i == 512 ? 1 : null)).ToArray();
+        Assert.Equal(513, Chart.Create().AddTreemap("Bounded", items).Series[0].HierarchyItems.Count);
+        var deeper = items.Take(512).Append(new ChartHierarchyItem("node-512", "Node", "node-511")).Append(new ChartHierarchyItem("node-513", "Leaf", "node-512", 1));
         Assert.Throws<ArgumentException>(() => Chart.Create().AddTreemap("Too deep", deeper));
     }
 

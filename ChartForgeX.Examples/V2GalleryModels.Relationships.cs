@@ -1,7 +1,7 @@
 using ChartForgeX.Core;
 
 public static partial class V2GalleryModels {
-    private static Chart TeamRelationships(ChartSeriesKind kind, string variant) {
+    private static Chart TeamRelationships(string variant) {
         var configured = variant == "options";
         var nodes = new[] {
             new ChartNode("all", "All teams"), new ChartNode("engineering", "Engineering"), new ChartNode("operations", "Operations"),
@@ -14,7 +14,7 @@ public static partial class V2GalleryModels {
             new ChartTreeLink("operations", "operations-support", 40)
         };
         var chart = Chart.Create().WithDataLabels();
-        return kind == ChartSeriesKind.Tree ? chart.AddTree("Teams", nodes, links) : chart.AddSunburst("Teams", nodes, links);
+        return chart.AddTree("Teams", nodes, links);
     }
 
     private static Chart FlowRelationships(string variant) {

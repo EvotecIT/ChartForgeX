@@ -12,10 +12,10 @@ public sealed partial class Chart {
     /// <param name="items">The authored groups and leaves. Standalone root leaves also support flat treemaps.</param>
     /// <param name="color">An optional base color. When null, the theme palette colors the tiles.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddTreemap(string name, IEnumerable<ChartTreemapItem> items, ChartColor? color = null) {
+    public Chart AddTreemap(string name, IEnumerable<ChartHierarchyItem> items, ChartColor? color = null) {
         EnsureCanAddSeries();
         var series = new ChartSeries(name, ChartSeriesKind.Treemap, Array.Empty<ChartPoint>()) { Color = color };
-        series.SetRelationships(ChartRelationshipIndex.Treemap(items));
+        series.SetRelationships(ChartRelationshipIndex.AreaHierarchy(items, allowForest: true, requireNullGroups: true));
         AppendSeries(series);
         return this;
     }

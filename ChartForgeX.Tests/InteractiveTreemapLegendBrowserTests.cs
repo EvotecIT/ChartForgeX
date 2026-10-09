@@ -17,12 +17,12 @@ public sealed class InteractiveTreemapLegendBrowserTests {
     private static string Node(string id) => "[data-cfx-target-kind=node][data-cfx-target-id='" + id + "']";
     private static Chart Model(bool dark, bool reordered = false, bool missing = false) {
         var items = new[] {
-            new ChartTreemapItem("north", "North"), new ChartTreemapItem("services", "Services", "north"),
-            new ChartTreemapItem(FirstId, "Support", "services", 6), new ChartTreemapItem("sibling", "Support", "services", 3),
-            new ChartTreemapItem("south", "South"), new ChartTreemapItem("other", "Support", "south", 2)
+            new ChartHierarchyItem("north", "North"), new ChartHierarchyItem("services", "Services", "north"),
+            new ChartHierarchyItem(FirstId, "Support", "services", 6), new ChartHierarchyItem("sibling", "Support", "services", 3),
+            new ChartHierarchyItem("south", "South"), new ChartHierarchyItem("other", "Support", "south", 2)
         }.AsEnumerable();
         if (missing) items = items.Where(item => item.Id != FirstId);
-        if (reordered) items = items.Reverse().Select(item => new ChartTreemapItem(item.Id,
+        if (reordered) items = items.Reverse().Select(item => new ChartHierarchyItem(item.Id,
             item.Id == FirstId ? "Customer care" : item.Label, item.ParentId, item.Value, item.ColorValue));
         var chart = Chart.Create().WithPointLegend().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithTitle("Work by team").AddTreemap("Allocation", items);
@@ -132,8 +132,8 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().WithDataLabels().WithPointLegend().WithSize(540, 350)
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).AddTreemap("Sizes", new[] {
-                new ChartTreemapItem("large", "Large", value: 1e308),
-                new ChartTreemapItem("tiny", "Tiny", value: 1e-310), new ChartTreemapItem("zero", "Zero", value: 0)
+                new ChartHierarchyItem("large", "Large", value: 1e308),
+                new ChartHierarchyItem("tiny", "Tiny", value: 1e-310), new ChartHierarchyItem("zero", "Zero", value: 0)
             });
         var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html);
         foreach (var id in new[] { "tiny", "zero" }) {
@@ -186,9 +186,9 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         var missing = ChartColor.FromRgb(13, 47, 81);
         var chart = Chart.Create().WithPointLegend().WithSize(width, 360)
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).AddTreemap("Colors", new[] {
-                new ChartTreemapItem("low", "Low", value: 4, colorValue: 0),
-                new ChartTreemapItem("explicit", "Explicit", value: 3, colorValue: 100),
-                new ChartTreemapItem("missing", "Missing", value: 2)
+                new ChartHierarchyItem("low", "Low", value: 4, colorValue: 0),
+                new ChartHierarchyItem("explicit", "Explicit", value: 3, colorValue: 100),
+                new ChartHierarchyItem("missing", "Missing", value: 2)
             }).ConfigureTreemap(options => {
                 options.ColorScale = ChartColorScale.Sequential(red, blue).WithValueRange(0, 100).WithNoDataColor(missing);
                 options.ShowColorScaleLegend = false;

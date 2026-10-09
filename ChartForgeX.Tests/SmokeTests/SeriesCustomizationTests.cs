@@ -247,9 +247,9 @@ internal static partial class SmokeTests {
         var treemap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(540, 320)
             .AddTreemap("Spend", new[] {
-                new ChartTreemapItem("Core", "Core", value: 48),
-                new ChartTreemapItem("Edge", "Edge", value: 28),
-                new ChartTreemapItem("Long tail", "Long tail", value: 12)
+                new ChartHierarchyItem("Core", "Core", value: 48),
+                new ChartHierarchyItem("Edge", "Edge", value: 28),
+                new ChartHierarchyItem("Long tail", "Long tail", value: 12)
             });
         treemap.Series[0].WithPointColor(1, "#8B5CF6");
         var treemapTile = System.Xml.Linq.XDocument.Parse(treemap.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile"

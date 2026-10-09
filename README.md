@@ -687,7 +687,7 @@ Scenario timelines are also typed and opt in. Chart and topology scenarios suppo
 
 ## Stable hierarchy and flow IDs
 
-Sankey, Chord, Tree, and Sunburst use immutable nodes with IDs separate from display labels. Links reference IDs, so two departments can each have a node named “Support”:
+Sankey, Chord, and Tree use immutable nodes with IDs separate from display labels. Links reference IDs, so two departments can each have a node named “Support”:
 
 ```csharp
 var nodes = new[] {
@@ -699,10 +699,10 @@ var links = new[] {
     new ChartTreeLink("teams", "north", 5), new ChartTreeLink("teams", "south", 8),
     new ChartTreeLink("north", "north-support", 5), new ChartTreeLink("south", "south-support", 8)
 };
-var chart = Chart.Create().AddSunburst("Teams", nodes, links);
+var chart = Chart.Create().AddTree("Teams", nodes, links);
 ```
 
-Tree and Sunburst require one connected root and one incoming link per child. Tree placement is unweighted; Sunburst sectors use leaf weights, and internal values sum their leaves. Authored incoming weights remain available separately, including positive fractions below one millionth.
+Tree requires one connected root and one incoming link per child. Node placement is unweighted; authored branch weights affect link emphasis.
 
 Sankey accepts directed `ChartFlowLink(id, sourceId, targetId, value)` records. Parallel flows use different IDs, and Sankey requires positive weights and rejects cycles and self-links. Chord uses the same facts for circular weighted ribbons and accepts reciprocal, cyclic, self, and zero flows. `ConfigureChord` configures circular span, node gaps and thickness, label content, opacity, and target direction cues. See the [chord guide](docs/chord.md) for allocation and zero-value limits.
 
@@ -710,18 +710,42 @@ Sankey accepts directed `ChartFlowLink(id, sourceId, targetId, value)` records. 
 
 `chart.Series[0].WithNodeState(id, state)` follows the node ID through input reordering or label changes. Its `NodeStates` view is read-only and belongs to that series. Series expose immutable `Nodes`, `FlowLinks`, and `TreeLinks`; these families have no numeric `Points`. See the [migration guide](docs/v2/migration.md#hierarchy-and-flow-identities) for replaced signatures and metadata, and the [configured examples](ChartForgeX.Examples/V2GalleryModels.Relationships.cs) for repeated labels and parallel flows.
 
+## Hierarchical Sunburst
+
+Sunburst and Treemap share `ChartHierarchyItem(id, label, parentId, value, colorValue)`. Sunburst requires one root and uses the authored item order for siblings. By default, `LeafAggregate` sizes every group from its descendant leaves and retains any provided group value as a separate fact. Select `AuthoredTotal` for inclusive parent totals:
+
+```csharp
+var chart = Chart.Create().WithDataLabels().AddSunburst("Allocation", new[] {
+    new ChartHierarchyItem("all", "All teams", value: 20, colorValue: 0),
+    new ChartHierarchyItem("north", "North", "all", value: 10, colorValue: -2),
+    new ChartHierarchyItem("north-support", "Support", "north", value: 6, colorValue: 5),
+    new ChartHierarchyItem("south-support", "Support", "all", value: 4)
+}).ConfigureSunburst(options => {
+    options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal;
+    options.ColorLegendTitle = "Change (%)";
+    options.ColorScale = ChartColorScale.Sequential(
+        ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(204, 104, 52));
+});
+```
+
+Here North uses 10 units, its child uses 6, and its outer ring leaves 4 units unallocated. The root leaves another 6 units unallocated. A null group value derives its resolved children; a supplied total smaller than those children is rejected, with bounded floating-point closure allowed. Leaves require finite non-negative values. A positive singleton fills a circle; zero values and positive values too small to form distinct angles retain their facts without painted sectors. No minimum size is added.
+
+`ColorValue` remains independent on each group and leaf, including zero and missing measurements. Colors neither inherit from parents nor aggregate from children. The shared `ChartColorScale` supports inferred or fixed continuous domains, named discrete bands, and missing-data paint. `ChartOptions.Sunburst` controls its legend and value policy. With a scale, semantic states use outlines; explicit ordinal colors, patterns, and label overrides remain available.
+
+`ChartSeries.HierarchyItems` is a copied read-only collection. Node targets retain IDs, authored and resolved values, remainder, depth, and parent facts. Interactive tooltips show size and color separately; differing provided group values and positive remainders have their own rows. `ChartLabels.AuthoredValue`, `Remainder`, `Color`, and `NoData` localize those rows. See the [migration guide](docs/v2/migration.md#sunburst-parent-values) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Sunburst.cs).
+
 ## Hierarchical Treemap
 
 Treemap item IDs identify nodes independently of repeated display labels. A group contains its descendants and aggregates their leaf sizes; a nullable color value controls a separate numeric color scale:
 
 ```csharp
 var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
-    new ChartTreemapItem("north", "North"),
-    new ChartTreemapItem("north-team", "Team", parentId: "north"),
-    new ChartTreemapItem("north-support", "Support", parentId: "north-team", value: 5, colorValue: -2),
-    new ChartTreemapItem("south", "South"),
-    new ChartTreemapItem("south-support", "Support", parentId: "south", value: 8, colorValue: 3),
-    new ChartTreemapItem("research", "Research", value: 3)
+    new ChartHierarchyItem("north", "North"),
+    new ChartHierarchyItem("north-team", "Team", parentId: "north"),
+    new ChartHierarchyItem("north-support", "Support", parentId: "north-team", value: 5, colorValue: -2),
+    new ChartHierarchyItem("south", "South"),
+    new ChartHierarchyItem("south-support", "Support", parentId: "south", value: 8, colorValue: 3),
+    new ChartHierarchyItem("research", "Research", value: 3)
 }).ConfigureTreemap(options => {
     options.GroupPadding = 6;
     options.Gap = 3;
@@ -734,7 +758,7 @@ chart.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
 
 Leaves require finite non-negative `Value`; groups require null `Value`, and their rendered value is the sum of their leaves. Forests, standalone leaves, and zero sizes are supported. Zero sizes retain their source facts without a minimum-area rectangle. `ColorValue` is optional and may be negative. Its observed domain is independent of size, and an explicit scale range remains authoritative. Missing color values use the scale's `NoDataColor` or the theme's neutral paint. Named discrete bands use the same `ChartColorScale.Discrete` API as maps.
 
-`ChartOptions.Treemap` controls group padding, sibling gaps, group labels, and the color legend. `ChartSeries.TreemapItems` is an immutable snapshot; `Points` remains empty. Point styling overrides use item input ordinals, while SVG and HTML targets retain item IDs through input reordering or label renaming. See the [migration guide](docs/v2/migration.md#hierarchical-treemap) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Treemap.cs).
+`ChartOptions.Treemap` controls group padding, sibling gaps, group labels, and the color legend. `ChartSeries.HierarchyItems` is an immutable snapshot; `Points` remains empty. Point styling overrides use item input ordinals, while SVG and HTML targets retain item IDs through input reordering or label renaming. See the [migration guide](docs/v2/migration.md#hierarchical-treemap) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Treemap.cs).
 
 Interactive tooltips show area and color as separate values, including missing color data. `ColorLegendTitle` names the color tooltip row; otherwise it uses `ChartLabels.Color`. `WithLabels` localizes that name, `NoData`, and the discrete legend's `AllValues` and `Value` words.
 
@@ -772,7 +796,7 @@ chart.Series[1].WithStackGroup("work");
 | Heatmaps and calendars | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `AddCalendarHeatmap`, `ChartCalendarHeatmapItem`, `AddHeatmapCategoryRow`, `ChartHeatmapCell`, `AddHourWeekdayHeatmap`, `ChartTimedValue`, `ChartTimeAggregation`, `HeatmapRelativeScale` |
 | Maps | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints`, `AddRegionMap`, `AddTileMap`, `ChartMapCatalog`, `ChartMapCatalogEntry`, `ChartMapCatalogEntryKind`, `EmbeddedEntries`, `ExternalEntries`, `Load`, `FromAssetDirectory`, `ChartMapDefinition`, `ChartMapRegion`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithRegionMapBounds`, `WithRegionMapCoordinateBounds`, `AddMapBaseLayer`, `AddMapBoundaryLayer` |
 | KPI and radial visuals | `AddGauge`, `AddCircle`, `AddProgressRing`, `AddRadialBar`, `AddRadialColumn`, `ChartRadialGeometryOptions`, `WithRadialGeometry`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolar`, `AddPolarArea` |
-| Hierarchy and flow | `AddFunnel`, `AddPyramid`, `AddTreemap`, `AddSankey`, `ConfigureSankey`, `ChartSankeyOptions`, `AddChord`, `ConfigureChord`, `ChartChordOptions`, `ChartNode`, `ChartFlowLink`, `WithNodeState`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `AddPie`, `AddDonut` |
+| Hierarchy and flow | `AddFunnel`, `AddPyramid`, `AddTreemap`, `AddSankey`, `ConfigureSankey`, `ChartSankeyOptions`, `AddChord`, `ConfigureChord`, `ChartChordOptions`, `ChartNode`, `ChartFlowLink`, `WithNodeState`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `ChartHierarchyItem`, `ConfigureSunburst`, `ChartSunburstOptions`, `ChartHierarchyValuePolicy`, `AddPie`, `AddDonut` |
 | Pictorial and progress | `AddPictorial`, `ChartPictorialItem`, `ChartPictorialShape`, `ChartPictorialShape.Person`, `WithPictorialShape`, `WithPictorialColumns`, `WithPictorialMaximum`, `WithPictorialValuePerSymbol`, `WithPictorialValues`, `WithPictorialSymbolScale`, `WithPictorialEmptyOpacity`, `WithPictorialSvgPath`, `AddProgressBars`, `ChartProgressItem`, `WithProgressMaximum`, `WithProgressValues`, `WithProgressHandles`, `WithProgressBarThickness`, `WithProgressTrackOpacity` |
 | Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `LabelPlacementService`, `LabelPlacementRequest`, `LabelCandidate`, `LabelObstacle`, `PlacedLabel`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithProgressRingCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialProgressRadiusScale`, `WithRadialProgressStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |

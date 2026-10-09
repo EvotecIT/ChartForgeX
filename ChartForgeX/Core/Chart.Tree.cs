@@ -9,7 +9,7 @@ public sealed partial class Chart {
     public Chart AddTree(string name, IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links, ChartColor? color = null) {
         EnsureCanAddSeries();
         var series = new ChartSeries(name, ChartSeriesKind.Tree, Array.Empty<ChartPoint>()) { Color = color };
-        series.SetRelationships(ChartRelationshipIndex.Hierarchy(nodes, links, aggregateLeaves: false));
+        series.SetRelationships(ChartRelationshipIndex.Hierarchy(nodes, links));
         AppendSeries(series);
         return this;
     }

@@ -17,7 +17,7 @@ public sealed class RelationshipNodeStateTests {
         var nodes = new[] { new ChartNode("root", "Support"), new ChartNode("leaf", "Support") };
         var chart = kind switch {
             ChartSeriesKind.Tree => Chart.Create().AddTree("State", nodes, new[] { new ChartTreeLink("root", "leaf", 3) }),
-            ChartSeriesKind.Sunburst => Chart.Create().AddSunburst("State", nodes, new[] { new ChartTreeLink("root", "leaf", 3) }),
+            ChartSeriesKind.Sunburst => Chart.Create().AddSunburst("State", new[] { new ChartHierarchyItem("root", "Support"), new ChartHierarchyItem("leaf", "Support", "root", 3) }),
             ChartSeriesKind.Sankey => Chart.Create().AddSankey("State", nodes, new[] { new ChartFlowLink("flow", "root", "leaf", 3) }),
             _ => Chart.Create().AddChord("State", nodes, new[] { new ChartFlowLink("flow", "root", "leaf", 3) })
         };
@@ -34,8 +34,7 @@ public sealed class RelationshipNodeStateTests {
     }
     [Fact]
     public void SunburstRootNoneOverrideKeepsSeriesPaintProvenanceInHostVariables() {
-        var chart = Chart.Create().AddSunburst("State", new[] { new ChartNode("root", "Root"), new ChartNode("leaf", "Leaf") },
-            new[] { new ChartTreeLink("root", "leaf", 3) });
+        var chart = Chart.Create().AddSunburst("State", new[] { new ChartHierarchyItem("root", "Root"), new ChartHierarchyItem("leaf", "Leaf", "root", 3) });
         chart.Series[0].StateRole = ChartSeriesState.Warning;
         chart.Series[0].WithNodeState("root", ChartSeriesState.None);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)));

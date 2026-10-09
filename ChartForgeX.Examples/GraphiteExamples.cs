@@ -74,7 +74,7 @@ internal static class GraphiteExamples {
         results["area"]=Frame("Single area","Flat 12 percent fill").AddArea("Volume",Points(20,40,28,60,37));
         results["narrow-donut"]=Frame("Findings","List beneath the donut",360,510).WithXLabels("Mail","TLS","DNSSEC","Policy","Monitoring","Other").AddDonut("Findings",Points(356,268,214,188,142,116));
         results["horizontal"]=Frame("Horizontal counts","Square baselines and value-end corners").WithXLabels("One","Two","Three").WithDataLabels().AddHorizontalBar("Counts",Points(50,30,20));
-        results["treemap"]=Frame("Storage distribution","Flat tiles with readable ink").WithDataLabels().AddTreemap("Files",new[]{new ChartTreemapItem("One", "One", value: 50),new("Two", "Two", value: 30),new("Three", "Three", value: 20)});
+        results["treemap"]=Frame("Storage distribution","Flat tiles with readable ink").WithDataLabels().AddTreemap("Files",new[]{new ChartHierarchyItem("One", "One", value: 50),new("Two", "Two", value: 30),new("Three", "Three", value: 20)});
         results["tree"]=Frame("Hierarchy","Shared flat surfaces and labels").WithDataLabels().AddTree("Structure", new[] { new ChartNode("Root", "Root"), new ChartNode("One", "One"), new ChartNode("Two", "Two"), new ChartNode("Three", "Three") }, new[]{new ChartTreeLink("Root","One"),new("Root","Two"),new("One","Three")});
         results["timeline"]=Frame("Delivery timeline","Flat intervals").AddTimelineRange("Plan",1,3).AddTimelineRange("Build",3,7).AddTimelineRange("Review",6,9);
         results["gantt"]=Frame("Delivery schedule","Flat tasks and progress").AddGanttTask("Plan",1,3,1).AddGanttTask("Build",3,7,.65,0).AddGanttTask("Review",6,9,.2,1);

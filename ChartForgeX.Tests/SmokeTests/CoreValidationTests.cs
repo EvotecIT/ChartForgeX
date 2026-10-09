@@ -81,9 +81,9 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => Chart.Create().AddPareto("Zero", new[] { new ChartParetoItem("A", 0), new ChartParetoItem("B", 0) }), "Pareto charts should reject all-zero item sets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartParetoItem("Bad", -1), "Pareto items should reject negative values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartParetoItem("Bad", double.NaN), "Pareto items should reject non-finite values.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddTreemap("Empty", Array.Empty<ChartTreemapItem>()), "Treemaps should reject empty item sets.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTreemapItem("Bad", "Bad", value: -1), "Treemap items should reject negative values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTreemapItem("Bad", "Bad", value: double.NaN), "Treemap items should reject non-finite values.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddTreemap("Empty", Array.Empty<ChartHierarchyItem>()), "Treemaps should reject empty item sets.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartHierarchyItem("Bad", "Bad", value: -1), "Treemap items should reject negative values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartHierarchyItem("Bad", "Bad", value: double.NaN), "Treemap items should reject non-finite values.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddPictorial("Empty", Array.Empty<ChartPictorialItem>()), "Pictorial charts should reject empty item sets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartPictorialItem("Bad", -1), "Pictorial items should reject negative values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartPictorialItem("Bad", double.NaN), "Pictorial items should reject non-finite values.");
@@ -137,10 +137,10 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A") }, new[] { new ChartTreeLink("A", "A") }), "Tree charts should reject self links.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("C", "C"), new ChartNode("B", "B") }, new[] { new ChartTreeLink("A", "C"), new ChartTreeLink("B", "C") }), "Tree charts should reject multiple parents for a child.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C"), new ChartNode("D", "D") }, new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("C", "D") }), "Tree charts should reject multiple roots.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") }, Array.Empty<ChartTreeLink>()), "Sunburst charts should reject empty link sets.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartNode("A", "A") }, new[] { new ChartTreeLink("A", "A") }), "Sunburst charts should reject self links.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartNode("A", "A"), new ChartNode("C", "C"), new ChartNode("B", "B") }, new[] { new ChartTreeLink("A", "C"), new ChartTreeLink("B", "C") }), "Sunburst charts should reject multiple parents for a child.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C"), new ChartNode("D", "D") }, new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("C", "D") }), "Sunburst charts should reject multiple roots.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", Array.Empty<ChartHierarchyItem>()), "Sunburst charts should reject empty item sets.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartHierarchyItem("A", "A", "A", 1) }), "Sunburst charts should reject self links.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartHierarchyItem("A", "A", value: 1), new ChartHierarchyItem("A", "Another A", value: 2) }), "Sunburst charts should reject duplicate identities.");
+        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartHierarchyItem("A", "A"), new ChartHierarchyItem("B", "B", "A", 1), new ChartHierarchyItem("C", "C"), new ChartHierarchyItem("D", "D", "C", 1) }), "Sunburst charts should reject multiple roots.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddHorizontalBand(1, 2, opacity: 1.5), "Band opacity should reject values outside zero to one.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddMeanLine("Mean", Array.Empty<ChartPoint>()), "Mean overlays should reject empty source points.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddStandardDeviationBand("Sigma", Points(10)), "Standard deviation bands should reject single-point source data.");

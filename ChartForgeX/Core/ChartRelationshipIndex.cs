@@ -12,7 +12,7 @@ internal sealed partial class ChartRelationshipIndex {
     internal IReadOnlyList<double> FlowOutgoingValues { get; }
     internal IReadOnlyList<double> FlowEndpointValues { get; }
     internal IReadOnlyList<ChartTreeLink> TreeLinks { get; }
-    internal IReadOnlyList<ChartTreemapItem> TreemapItems { get; }
+    internal IReadOnlyList<ChartHierarchyItem> HierarchyItems { get; }
     internal IReadOnlyList<double> HierarchyValues { get; }
     internal IReadOnlyList<int> Depths { get; }
     internal IReadOnlyList<int> Roots { get; }
@@ -23,18 +23,20 @@ internal sealed partial class ChartRelationshipIndex {
     private readonly int[] _incomingLinks;
     private readonly int[] _parents;
     private readonly IReadOnlyList<int>[] _children;
+    private readonly int[] _hierarchyOrder;
 
     private ChartRelationshipIndex(ChartNode[] nodes, ChartFlowLink[] flowLinks, ChartTreeLink[] treeLinks,
         Dictionary<string, int> nodeIndexes, int[] sources, int[] targets, int root, double[] hierarchyValues,
         double[]? flowIncomingValues = null, double[]? flowOutgoingValues = null, double[]? flowEndpointValues = null,
-        ChartTreemapItem[]? treemapItems = null, int[]? depths = null) {
+        ChartHierarchyItem[]? hierarchyItems = null, int[]? depths = null, int[]? hierarchyOrder = null) {
         Nodes = Array.AsReadOnly(nodes);
         FlowLinks = Array.AsReadOnly(flowLinks);
         FlowIncomingValues = Array.AsReadOnly(flowIncomingValues ?? Array.Empty<double>());
         FlowOutgoingValues = Array.AsReadOnly(flowOutgoingValues ?? Array.Empty<double>());
         FlowEndpointValues = Array.AsReadOnly(flowEndpointValues ?? Array.Empty<double>());
         TreeLinks = Array.AsReadOnly(treeLinks);
-        TreemapItems = Array.AsReadOnly(treemapItems ?? Array.Empty<ChartTreemapItem>());
+        HierarchyItems = Array.AsReadOnly(hierarchyItems ?? Array.Empty<ChartHierarchyItem>());
+        _hierarchyOrder = hierarchyOrder ?? Array.Empty<int>();
         HierarchyValues = Array.AsReadOnly(hierarchyValues);
         Depths = Array.AsReadOnly(depths ?? Array.Empty<int>());
         _nodeIndexes = nodeIndexes;
@@ -100,7 +102,7 @@ internal sealed partial class ChartRelationshipIndex {
             flowIncomingValues: incoming, flowOutgoingValues: outgoing, flowEndpointValues: endpoints, depths: depths);
     }
 
-    internal static ChartRelationshipIndex Hierarchy(IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links, bool aggregateLeaves) {
+    internal static ChartRelationshipIndex Hierarchy(IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links) {
         var snapshot = SnapshotNodes(nodes, out var indexes);
         if (links == null) throw new ArgumentNullException(nameof(links));
         var branches = links.ToArray();
@@ -114,13 +116,8 @@ internal sealed partial class ChartRelationshipIndex {
             (sources[i], targets[i]) = Resolve(indexes, link.ParentId, link.ChildId);
             if (!children.Add(link.ChildId)) throw new ArgumentException("Hierarchy child IDs can only have one incoming link.", nameof(links));
         }
-        var order = TopologicalOrder(snapshot.Length, sources, targets, true, out var root, out var depths);
-        var values = aggregateLeaves ? new double[snapshot.Length] : Array.Empty<double>();
-        if (aggregateLeaves) {
-            for (var i = 0; i < branches.Length; i++) values[targets[i]] = branches[i].Value;
-            AggregateLeaves(values, sources, targets, order, nameof(links));
-        }
-        return new ChartRelationshipIndex(snapshot, Array.Empty<ChartFlowLink>(), branches, indexes, sources, targets, root, values, depths: depths);
+        TopologicalOrder(snapshot.Length, sources, targets, true, out var root, out var depths);
+        return new ChartRelationshipIndex(snapshot, Array.Empty<ChartFlowLink>(), branches, indexes, sources, targets, root, Array.Empty<double>(), depths: depths);
     }
 
     private static ChartNode[] SnapshotNodes(IEnumerable<ChartNode> nodes, out Dictionary<string, int> indexes, string parameter = "nodes", bool allowEmpty = false) {

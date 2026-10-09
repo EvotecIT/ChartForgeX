@@ -77,11 +77,11 @@ public static partial class LegacySceneBenchmarkCases {
                 }
 #else
                 var tiles = Role(root, "treemap-tile").ToDictionary(element => (string)element.Attribute("data-cfx-target-id")!);
-                Require(tiles.Count == chart.Series[0].TreemapItems.Count, "Treemap source-tile count changed.");
-                for (var index = 0; index < chart.Series[0].TreemapItems.Count; index++) {
-                    Require(tiles.TryGetValue(chart.Series[0].TreemapItems[index].Id, out var tile), "A treemap source tile was lost.");
-                    Require(Near(Parse(tile!, "data-cfx-value"), chart.Series[0].TreemapItems[index].Value!.Value)
-                        && (string?)tile!.Attribute("data-cfx-label") == chart.Series[0].TreemapItems[index].Label, "Treemap source data changed."); RequireDrawing(tile!);
+                Require(tiles.Count == chart.Series[0].HierarchyItems.Count, "Treemap source-tile count changed.");
+                for (var index = 0; index < chart.Series[0].HierarchyItems.Count; index++) {
+                    Require(tiles.TryGetValue(chart.Series[0].HierarchyItems[index].Id, out var tile), "A treemap source tile was lost.");
+                    Require(Near(Parse(tile!, "data-cfx-value"), chart.Series[0].HierarchyItems[index].Value!.Value)
+                        && (string?)tile!.Attribute("data-cfx-label") == chart.Series[0].HierarchyItems[index].Label, "Treemap source data changed."); RequireDrawing(tile!);
                 }
 #endif
                 break;

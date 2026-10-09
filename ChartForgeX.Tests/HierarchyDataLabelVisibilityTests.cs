@@ -53,9 +53,9 @@ public sealed class HierarchyDataLabelVisibilityTests {
         .Count(element => (string?)element.Attribute("data-cfx-role") == role);
     private static byte[] Pixels(PreparedVisual prepared) => prepared.ToRgba(new VisualRenderOptions(supersampling: 1)).Pixels;
     private static Chart Model(ChartSeriesKind kind) {
-        if (kind == ChartSeriesKind.Treemap) return Chart.Create().AddTreemap("Allocation", new[] { new ChartTreemapItem("alpha", "Alpha", value: 7), new ChartTreemapItem("beta", "Beta", value: 3) });
+        if (kind == ChartSeriesKind.Treemap) return Chart.Create().AddTreemap("Allocation", new[] { new ChartHierarchyItem("alpha", "Alpha", value: 7), new ChartHierarchyItem("beta", "Beta", value: 3) });
         var nodes = new[] { new ChartNode("all", "All"), new ChartNode("alpha", "Alpha"), new ChartNode("beta", "Beta") };
         var links = new[] { new ChartTreeLink("all", "alpha", 7), new ChartTreeLink("all", "beta", 3) };
-        return kind == ChartSeriesKind.Tree ? Chart.Create().AddTree("Allocation", nodes, links) : Chart.Create().AddSunburst("Allocation", nodes, links);
+        return kind == ChartSeriesKind.Tree ? Chart.Create().AddTree("Allocation", nodes, links) : Chart.Create().AddSunburst("Allocation", new[] { new ChartHierarchyItem("all", "All"), new ChartHierarchyItem("alpha", "Alpha", "all", 7), new ChartHierarchyItem("beta", "Beta", "all", 3) });
     }
 }
