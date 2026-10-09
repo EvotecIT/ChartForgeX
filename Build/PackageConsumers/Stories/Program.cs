@@ -50,6 +50,8 @@ internal static class Program {
         var prepared = editing.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
         PackageAssertions.Owner(typeof(PreparedVisualStory), "ChartForgeX.Stories");
         PackageAssertions.Require(PackageAssertions.Contains(prepared.ToSvg(), "Write-Output Ready"), "Prepared source is missing.");
+        PackageAssertions.Gif(RasterAnimationEncoder.Encode(prepared.FrameSource(RasterAnimationFormat.Gif,
+            new VisualStoryFrameOptions(2, maximumFrames: 2)), RasterAnimationFormat.Gif, new RasterAnimationOptions { PlayCount = 1 }));
         using (var stream = new System.IO.MemoryStream()) {
             prepared.WriteAnimation(stream, RasterAnimationFormat.Apng, new VisualStoryFrameOptions(2, maximumFrames: 2));
             PackageAssertions.Apng(stream.ToArray());

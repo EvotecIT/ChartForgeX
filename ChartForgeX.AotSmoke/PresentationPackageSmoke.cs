@@ -43,6 +43,8 @@ internal static class PresentationPackageSmoke {
         var prepared = editing.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
         var sampling = new VisualStoryFrameOptions(2, maximumFrames: 2);
         Require(prepared.ToSvg().Contains("Ready", StringComparison.Ordinal), "Stories prepared editor failed.");
+        Require(RasterAnimationEncoder.Encode(prepared.FrameSource(RasterAnimationFormat.Gif, sampling), RasterAnimationFormat.Gif,
+            new RasterAnimationOptions { PlayCount = 1 }).Length > 64, "Stories container-specific frame source failed.");
         using (var stream = new System.IO.MemoryStream()) {
             prepared.WriteAnimation(stream, RasterAnimationFormat.Apng, sampling);
             Require(stream.Length > 64 && stream.CanWrite, "Stories streaming APNG failed.");

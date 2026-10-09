@@ -3,12 +3,12 @@
 ## Story playback and sharing
 
 - [x] Audit scene, terminal, source, export and consumer boundaries against the current theme baseline.
-- [ ] Qualify prepared story snapshots, one playback clock, timestamp frames and bounded GIF/APNG producers.
-- [ ] Qualify source typing, selection, replacement, fixed text size and landscape/square/portrait examples.
-- [ ] Qualify optional browser playback controls, chapters, keyboard use and accessible transcripts.
-- [ ] Integrate the prepared frame contract through thin ImagePlayground authoring and replay surfaces.
+- [x] Qualify prepared story snapshots, one playback clock, timestamp frames and bounded GIF/APNG producers.
+- [x] Qualify source typing, selection, replacement, fixed text size and landscape/square/portrait examples.
+- [x] Qualify optional browser playback controls, chapters, keyboard use and accessible transcripts.
+- [x] Integrate the prepared frame contract through thin ImagePlayground authoring and replay surfaces.
 - MP4 integration is deferred. The prepared frame source provides the future encoder boundary.
-- [ ] Complete consumer/package proof, independent review, CI settlement and artifact cleanup.
+- [ ] Settle the Stories owner and dependent consumer PR checks and reviews. Local source and package qualification do not establish public package readiness.
 
 ## Consumer migration: Phase 5
 
