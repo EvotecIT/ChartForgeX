@@ -46,7 +46,7 @@ public static partial class LegacySceneBenchmarkCases {
                 chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartTreemapItem("Pool " + (index + 1), 10 + (index * 17) % 73)));
                 break;
             case "sankey":
-                chart.AddSankey("Requests", SankeyLinks());
+                chart.AddSankey("Requests", new[] { new ChartNode("Input A", "Input A"), new ChartNode("Queue A", "Queue A"), new ChartNode("Queue B", "Queue B"), new ChartNode("Input B", "Input B"), new ChartNode("Complete", "Complete"), new ChartNode("Retry", "Retry") }, SankeyLinks());
                 break;
             default: throw new ArgumentOutOfRangeException(nameof(fixture));
         }
@@ -59,11 +59,11 @@ public static partial class LegacySceneBenchmarkCases {
         new ChartMapPoint("Sydney", 151.2, -33.9, 48), new ChartMapPoint("Cape Town", 18.4, -33.9, 56)
     };
 
-    private static ChartSankeyLink[] SankeyLinks() => new[] {
-        new ChartSankeyLink("Input A", "Queue A", 24), new ChartSankeyLink("Input A", "Queue B", 16),
-        new ChartSankeyLink("Input B", "Queue A", 12), new ChartSankeyLink("Input B", "Queue B", 18),
-        new ChartSankeyLink("Queue A", "Complete", 30), new ChartSankeyLink("Queue A", "Retry", 6),
-        new ChartSankeyLink("Queue B", "Complete", 27), new ChartSankeyLink("Queue B", "Retry", 7)
+    private static ChartFlowLink[] SankeyLinks() => new[] {
+        new ChartFlowLink("flow-1", "Input A", "Queue A", 24), new ChartFlowLink("flow-2", "Input A", "Queue B", 16),
+        new ChartFlowLink("flow-3", "Input B", "Queue A", 12), new ChartFlowLink("flow-4", "Input B", "Queue B", 18),
+        new ChartFlowLink("flow-5", "Queue A", "Complete", 30), new ChartFlowLink("flow-6", "Queue A", "Retry", 6),
+        new ChartFlowLink("flow-7", "Queue B", "Complete", 27), new ChartFlowLink("flow-8", "Queue B", "Retry", 7)
     };
 
     private static TopologyChart CreateTopology() {
@@ -99,10 +99,11 @@ public static partial class LegacySceneBenchmarkCases {
             foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
             foreach (var series in chart.Series) {
                 source.Append('|').Append(series.Kind).Append(':').Append(series.Name);
+                foreach (var node in series.Nodes) source.Append("|node:").Append(node.Id).Append(':').Append(node.Label);
+                foreach (var flow in series.FlowLinks) source.Append("|flow:").Append(flow.Id).Append(':').Append(flow.SourceId).Append(':').Append(flow.TargetId).Append(':').Append(Numeric(flow.Value));
                 foreach (var point in series.Points) source.Append('|').Append(Numeric(point.X)).Append(',').Append(Numeric(point.Y)).Append(',').Append(point.BreakBefore);
             }
             if (fixture == "map") foreach (var point in MapItems()) source.Append('|').Append(point.Label).Append(':').Append(Numeric(point.Value!.Value));
-            if (fixture == "sankey") foreach (var link in SankeyLinks()) source.Append('|').Append(link.Source).Append(':').Append(link.Target).Append(':').Append(Numeric(link.Value));
             source.Append('|').Append(Numeric(chart.Options.ProgressMaximum)).Append("|calendar-first-day=Monday");
         }
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source.ToString())));

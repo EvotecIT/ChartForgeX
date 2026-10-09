@@ -317,15 +317,15 @@ var findingFlow = Chart.Create()
     .WithTheme(ChartTheme.ReportLight())
     .WithSize(1040, 600)
     .WithDataLabels()
-    .AddSankey("Findings", new[] {
-        new ChartSankeyLink("Discovered", "Validated", 72),
-        new ChartSankeyLink("Discovered", "Accepted risk", 18),
-        new ChartSankeyLink("Validated", "Owner remediation", 48),
-        new ChartSankeyLink("Validated", "Monitoring", 24),
-        new ChartSankeyLink("Owner remediation", "Closed", 34),
-        new ChartSankeyLink("Owner remediation", "Retesting", 14),
-        new ChartSankeyLink("Retesting", "Closed", 10),
-        new ChartSankeyLink("Retesting", "Monitoring", 4)
+    .AddSankey("Findings", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Owner remediation", "Owner remediation"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("Closed", "Closed"), new ChartNode("Retesting", "Retesting") }, new[] {
+        new ChartFlowLink("flow-1", "Discovered", "Validated", 72),
+        new ChartFlowLink("flow-2", "Discovered", "Accepted risk", 18),
+        new ChartFlowLink("flow-3", "Validated", "Owner remediation", 48),
+        new ChartFlowLink("flow-4", "Validated", "Monitoring", 24),
+        new ChartFlowLink("flow-5", "Owner remediation", "Closed", 34),
+        new ChartFlowLink("flow-6", "Owner remediation", "Retesting", 14),
+        new ChartFlowLink("flow-7", "Retesting", "Closed", 10),
+        new ChartFlowLink("flow-8", "Retesting", "Monitoring", 4)
     });
 
 SaveChart(findingFlow, "finding-flow-sankey-light");
@@ -335,7 +335,7 @@ var controlHierarchy = Chart.Create()
     .WithSubtitle("Static hierarchy map for ownership and remediation structure")
     .WithTheme(ChartTheme.ReportLight())
     .WithSize(1040, 600)
-    .AddTree("Control hierarchy", new[] {
+    .AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("DNS hygiene", "DNS hygiene"), new ChartNode("SPF alignment", "SPF alignment"), new ChartNode("DKIM rotation", "DKIM rotation"), new ChartNode("Expiry monitoring", "Expiry monitoring"), new ChartNode("SAN inventory", "SAN inventory"), new ChartNode("DNSSEC rollout", "DNSSEC rollout"), new ChartNode("Stale record cleanup", "Stale record cleanup") }, new[] {
         new ChartTreeLink("Security posture", "Mail authentication", 3),
         new ChartTreeLink("Security posture", "Certificate lifecycle", 2),
         new ChartTreeLink("Security posture", "DNS hygiene", 2),

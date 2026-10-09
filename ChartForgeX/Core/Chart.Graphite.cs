@@ -9,14 +9,6 @@ public sealed partial class Chart {
         view.Options = Options.PanelView();
         return view;
     }
-    /// <summary>Assigns a semantic colour to a named Sankey node.</summary>
-    public Chart WithSankeyNodeState(string name, ChartSeriesState state) {
-        if (!Enum.IsDefined(typeof(ChartSeriesState), state)) throw new ArgumentOutOfRangeException(nameof(state));
-        var index = Options.SankeyNodeLabels.IndexOf(name);
-        if (index < 0) throw new ArgumentException("The chart has no Sankey node with that name.", nameof(name));
-        Options.SankeyNodeStates[index] = state;
-        return this;
-    }
     /// <summary>Omits the outer chart frame and padding when the host already provides them.</summary>
     public Chart WithHostFrame(bool hostOwnsFrame = true) { Options.HostOwnsFrame = hostOwnsFrame; return this; }
     /// <summary>Sets optional line markers while keeping all data available for interaction and accessibility.</summary>

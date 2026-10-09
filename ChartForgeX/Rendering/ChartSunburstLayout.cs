@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -8,12 +7,14 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal sealed class ChartSunburstNode {
-    public ChartSunburstNode(int index, string label) {
+    public ChartSunburstNode(int index, string id, string label) {
         Index = index;
+        Id = id;
         Label = label;
     }
 
     public int Index { get; }
+    public string Id { get; }
     public string Label { get; }
     public int Parent { get; set; } = -1;
     public List<int> Children { get; } = new();
@@ -46,32 +47,20 @@ internal sealed class ChartSunburstModel {
 internal static class ChartSunburstLayout {
     public static ChartSunburstModel Compute(Chart chart, ChartRect plot) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Sunburst);
-        if (series == null || series.Points.Count < 2) return ChartSunburstModel.Empty;
-        var nodeCount = chart.Options.TreeNodeLabels.Count;
-        for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-            var endpoints = series.Points[i];
-            var parent = Math.Max(0, (int)Math.Round(endpoints.X));
-            var child = Math.Max(0, (int)Math.Round(endpoints.Y));
-            nodeCount = Math.Max(nodeCount, Math.Max(parent, child) + 1);
-        }
-
-        if (nodeCount == 0) return ChartSunburstModel.Empty;
+        if (series?.Relationships == null) return ChartSunburstModel.Empty;
+        var facts = series.Relationships;
         var nodes = new List<ChartSunburstNode>();
-        for (var i = 0; i < nodeCount; i++) nodes.Add(new ChartSunburstNode(i, NodeLabel(chart, i)));
-        for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-            var endpoints = series.Points[i];
-            var valuePoint = series.Points[i + 1];
-            var parent = Math.Max(0, (int)Math.Round(endpoints.X));
-            var child = Math.Max(0, (int)Math.Round(endpoints.Y));
+        for (var i = 0; i < facts.Nodes.Count; i++)
+            nodes.Add(new ChartSunburstNode(i, facts.Nodes[i].Id, facts.Nodes[i].Label) { Value = facts.HierarchyValues[i] });
+        for (var i = 0; i < facts.TreeLinks.Count; i++) {
+            var parent = facts.Source(i);
+            var child = facts.Target(i);
             nodes[parent].Children.Add(child);
             nodes[child].Parent = parent;
-            nodes[child].IncomingValue = Math.Max(0.000001, valuePoint.Y);
+            nodes[child].IncomingValue = facts.TreeLinks[i].Value;
         }
-
-        var root = nodes.FindIndex(node => node.Parent < 0);
-        if (root < 0) return ChartSunburstModel.Empty;
+        var root = facts.Root;
         AssignDepths(nodes, root, 0);
-        ComputeValues(nodes, root);
         var maxDepth = Math.Max(0, nodes.Max(node => node.Depth));
         var radius = Math.Max(1, Math.Min(plot.Width, plot.Height) * 0.46);
         var ringWidth = radius / Math.Max(1, maxDepth + 1);
@@ -91,18 +80,6 @@ internal static class ChartSunburstLayout {
         foreach (var child in nodes[node].Children) AssignDepths(nodes, child, depth + 1);
     }
 
-    private static double ComputeValues(List<ChartSunburstNode> nodes, int node) {
-        if (nodes[node].Children.Count == 0) {
-            nodes[node].Value = Math.Max(0.000001, nodes[node].IncomingValue);
-            return nodes[node].Value;
-        }
-
-        var total = 0.0;
-        foreach (var child in nodes[node].Children) total += ComputeValues(nodes, child);
-        nodes[node].Value = Math.Max(0.000001, total);
-        return nodes[node].Value;
-    }
-
     private static void AssignAngles(List<ChartSunburstNode> nodes, int node, double start, double end) {
         nodes[node].StartAngle = start;
         nodes[node].EndAngle = end;
@@ -110,12 +87,11 @@ internal static class ChartSunburstLayout {
         var childStart = start;
         var total = nodes[node].Children.Sum(child => nodes[child].Value);
         foreach (var child in nodes[node].Children) {
-            var sweep = total <= 0 ? 0 : (end - start) * nodes[child].Value / total;
+            var sweep = total <= 0 ? 0 : (nodes[child].Value / total) * (end - start);
             AssignAngles(nodes, child, childStart, childStart + sweep);
             childStart += sweep;
         }
     }
 
-    private static string NodeLabel(Chart chart, int index) =>
-        index >= 0 && index < chart.Options.TreeNodeLabels.Count ? chart.Options.TreeNodeLabels[index] : "Node " + (index + 1).ToString(CultureInfo.InvariantCulture);
+
 }

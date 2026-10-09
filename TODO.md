@@ -55,7 +55,9 @@ SVG and PNG charts share measured label placement, including data labels, target
 
 The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation and pyramid height/area partitions share native geometry owners. Further work should retain that API and source-value boundary:
 
-- [ ] Give hierarchy and flow records stable IDs separate from display labels, then qualify hierarchical treemap input and independent color dimensions.
+- Extend hierarchical Treemap input with explicit IDs, parent containment/headers, leaf-size aggregation, and an independent numeric color dimension. Reuse the typed node/index owner and shared color-scale owner; flat Treemap remains the current input contract.
+- Extend Sunburst with an independent numeric color dimension/scale and an explicit authored-parent value policy. Its current sectors aggregate leaf weights and preserve authored incoming weights separately.
+- Add Sankey alignment, ordering, gap, and style options through its canonical layout. Authored node/flow IDs and parallel flows are supported independently of labels.
 - [ ] Add general radial column/bar scales and stacks while retaining the existing progress-ring meaning.
 - [ ] Implement the missing chord family with an explicit value-encoding contract.
 - [ ] Extend typed adapter tooltip, crosshair, legend visibility and data-domain zoom policies; palette choice must not decide interaction behavior.

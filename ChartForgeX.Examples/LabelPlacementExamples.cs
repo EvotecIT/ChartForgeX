@@ -29,10 +29,10 @@ public static class LabelPlacementExamples {
             .AddMapRouteBetweenPoints("London to Warsaw", "London", "Warsaw")
             .AddMapRouteBetweenPoints("Berlin to Rome", "Berlin", "Rome");
         var sankey = Chart.Create().WithTitle("Finding flow").WithSize(760, 460).WithTheme(theme).WithDataLabels()
-            .AddSankey("Findings", new[] {
-                new ChartSankeyLink("Discovered", "Validated", 72), new ChartSankeyLink("Discovered", "Accepted risk", 18),
-                new ChartSankeyLink("Validated", "Remediation", 48), new ChartSankeyLink("Validated", "Monitoring", 24),
-                new ChartSankeyLink("Remediation", "Closed", 34), new ChartSankeyLink("Remediation", "Retesting", 14)
+            .AddSankey("Findings", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Remediation", "Remediation"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("Closed", "Closed"), new ChartNode("Retesting", "Retesting") }, new[] {
+                new ChartFlowLink("flow-1", "Discovered", "Validated", 72), new ChartFlowLink("flow-2", "Discovered", "Accepted risk", 18),
+                new ChartFlowLink("flow-3", "Validated", "Remediation", 48), new ChartFlowLink("flow-4", "Validated", "Monitoring", 24),
+                new ChartFlowLink("flow-5", "Remediation", "Closed", 34), new ChartFlowLink("flow-6", "Remediation", "Retesting", 14)
             });
         return new[] { ("bullet", bullet), ("funnel", funnel), ("gauge", gauge), ("europe-routes", map), ("sankey", sankey) };
     }

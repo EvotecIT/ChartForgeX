@@ -2,9 +2,6 @@ using System.Text;
 using ChartForgeX.Themes;
 
 public static partial class V2Examples {
-    private static readonly string[] ModelSourceFiles = {
-        "V2GalleryModels.cs", "V2GalleryModels.Ranges.cs", "V2GalleryModels.Radial.cs", "V2GalleryModels.MatrixMap.cs", "V2GalleryModels.Specialty.cs", "V2GalleryModels.Diagrams.cs", "V2GalleryModels.Options.cs", "V2GalleryModels.Histograms.cs", "V2GalleryModels.Markers.cs"
-    };
     private static string ModelSnippet(string expression, string title, string subtitle, VisualThemeMode mode, int width, int height, bool? legend, string artifactKind) {
         var source = new StringBuilder("using System;\nusing System.Linq;\nusing System.Globalization;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\nusing ChartForgeX.Typography;\nusing ChartForgeX.VisualArtifacts;\nusing ChartForgeX.VisualBlocks;\n\n");
         source.Append("// The licensed font fixtures are included beside the gallery outputs.\nFontRegistry.Register(\"").Append(ProofFont)
@@ -15,9 +12,11 @@ public static partial class V2Examples {
             .Append("var prepared = model.Prepare(context);\nSystem.IO.File.WriteAllText(\"visual.svg\", prepared.ToSvg());\nSystem.IO.File.WriteAllBytes(\"visual.png\", prepared.ToPng());\n")
             .Append("System.IO.File.WriteAllText(\"visual.html\", prepared.ToArtifact(\"example\", VisualArtifactKind.").Append(artifactKind).Append(").ToHtmlPage());\n\n");
         // Embed the compiled factory sources, so the downloadable program cannot drift from the model used to render its row.
-        foreach (var file in ModelSourceFiles) {
-            using var stream = typeof(V2Examples).Assembly.GetManifestResourceStream("ChartForgeX.Examples." + file)
-                ?? throw new InvalidOperationException("Gallery model source is missing: " + file);
+        var assembly = typeof(V2Examples).Assembly;
+        foreach (var resource in assembly.GetManifestResourceNames().Where(name => name.StartsWith("ChartForgeX.Examples.V2GalleryModels", StringComparison.Ordinal)
+            && name.EndsWith(".cs", StringComparison.Ordinal)).OrderBy(name => name, StringComparer.Ordinal)) {
+            using var stream = assembly.GetManifestResourceStream(resource)
+                ?? throw new InvalidOperationException("Gallery model source is missing: " + resource);
             using var reader = new StreamReader(stream);
             foreach (var line in reader.ReadToEnd().Split('\n')) if (!line.StartsWith("using ", StringComparison.Ordinal)) source.AppendLine(line.TrimEnd('\r'));
         }

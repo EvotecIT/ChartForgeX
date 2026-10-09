@@ -49,7 +49,7 @@ public sealed class SunburstLabelLayoutTests {
                 text.Text.Metrics.Width, text.Text.Metrics.Height);
             Assert.True(new LabelMarkShape(contours, true, 0).Contains(caption), original + " must fit its actual rendered segment.");
         }
-        Assert.Equal(chart.Options.TreeNodeLabels.Count, labels.Count);
+        Assert.Equal(chart.Series[0].Nodes.Count, labels.Count);
         Assert.Equal(labels.Count, prepared.Regions.Count(region => region.Role == "sunburst-segment"));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
     }
@@ -60,12 +60,12 @@ public sealed class SunburstLabelLayoutTests {
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)),
             frame: new VisualFrame(showLegend: false)));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "sunburst-label");
-        Assert.Equal(chart.Options.TreeNodeLabels.Count, prepared.Regions.Count(region => region.Role == "sunburst-segment"));
-        Assert.All(chart.Options.TreeNodeLabels, label => Assert.Contains(prepared.Regions, region => region.Label!.StartsWith(label + ":", StringComparison.Ordinal)));
+        Assert.Equal(chart.Series[0].Nodes.Count, prepared.Regions.Count(region => region.Role == "sunburst-segment"));
+        Assert.All(chart.Series[0].Nodes.Select(node => node.Label), label => Assert.Contains(prepared.Regions, region => region.Label!.StartsWith(label + ":", StringComparison.Ordinal)));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
     }
 
-    private static Chart Teams() => Chart.Create().AddSunburst("Teams", new[] {
+    private static Chart Teams() => Chart.Create().AddSunburst("Teams", new[] { new ChartNode("All teams", "All teams"), new ChartNode("Engineering", "Engineering"), new ChartNode("Operations", "Operations"), new ChartNode("Platform", "Platform"), new ChartNode("Services", "Services"), new ChartNode("Support", "Support") }, new[] {
         new ChartTreeLink("All teams", "Engineering", 60), new ChartTreeLink("All teams", "Operations", 40),
         new ChartTreeLink("Engineering", "Platform", 35), new ChartTreeLink("Engineering", "Services", 25),
         new ChartTreeLink("Operations", "Support", 40)

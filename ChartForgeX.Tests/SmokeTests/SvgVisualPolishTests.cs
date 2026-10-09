@@ -105,7 +105,7 @@ internal static partial class SmokeTests {
         var treeChart = Chart.Create()
             .WithSize(1040, 600)
             .WithTheme(ChartTheme.ReportLight())
-            .AddTree("Control hierarchy", new[] {
+            .AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("DNS hygiene", "DNS hygiene"), new ChartNode("SPF alignment", "SPF alignment"), new ChartNode("DKIM rotation", "DKIM rotation"), new ChartNode("Expiry monitoring", "Expiry monitoring"), new ChartNode("SAN inventory", "SAN inventory"), new ChartNode("DNSSEC rollout", "DNSSEC rollout"), new ChartNode("Stale record cleanup", "Stale record cleanup") }, new[] {
                 new ChartTreeLink("Security posture", "Mail authentication", 3),
                 new ChartTreeLink("Security posture", "Certificate lifecycle", 2),
                 new ChartTreeLink("Security posture", "DNS hygiene", 2),

@@ -116,6 +116,7 @@ internal static class ChartGuards {
     private static void ValidateSeriesShape(ChartSeries series, bool preparing) {
         series.ValidateInterpolation();
         series.ValidateMarkerAndRadarOptions();
+        if (ChartSeries.IsRelationshipKind(series.Kind)) series.ValidateRelationships(preparing);
         if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
             && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea)
             throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, stacked-area, range-band, range-area, and scatter series.");
@@ -234,8 +235,6 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.StateTimeline) ValidateStateTimeline(chart);
         else if (kind == ChartSeriesKind.GanttLane) ValidateGanttLanes(chart);
         else if (kind == ChartSeriesKind.Gantt) ValidateGantt(chart.Series);
-        else if (kind == ChartSeriesKind.Sankey && (!preparing || chart.Series[0].Points.Count > 0)) ValidateSankey(chart.Series[0]);
-        else if ((kind == ChartSeriesKind.Tree || kind == ChartSeriesKind.Sunburst) && (!preparing || chart.Series[0].Points.Count > 0)) ValidateTree(chart.Series[0]);
         else if (kind == ChartSeriesKind.Pyramid) ChartPyramidWeights.Total(chart.Series[0].Points);
         else if (kind == ChartSeriesKind.Funnel || kind == ChartSeriesKind.Treemap || kind == ChartSeriesKind.Pie || kind == ChartSeriesKind.Donut || kind == ChartSeriesKind.PolarArea || kind == ChartSeriesKind.Pictorial || kind == ChartSeriesKind.ProgressBar || kind == ChartSeriesKind.WordCloud) ValidateNonNegativeValues(chart.Series[0], kind);
     }
@@ -346,83 +345,10 @@ internal static class ChartGuards {
         }
     }
 
-    private static void ValidateSankey(ChartSeries series) {
-        if (series.Points.Count < 2 || series.Points.Count % 2 != 0) throw new InvalidOperationException("Sankey charts require complete source-target/value point pairs.");
-        var nodeCount = 0;
-        var outgoing = new Dictionary<int, List<int>>();
-        for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-            var source = RoundedNonNegativeIndex(series.Points[i].X, "Sankey source indexes");
-            var target = RoundedNonNegativeIndex(series.Points[i].Y, "Sankey target indexes");
-            if (source == target) throw new InvalidOperationException("Sankey links must connect distinct source and target nodes.");
-            if (series.Points[i + 1].Y <= 0) throw new InvalidOperationException("Sankey link values must be positive.");
-            nodeCount = Math.Max(nodeCount, Math.Max(source, target) + 1);
-            AddEdge(outgoing, source, target);
-        }
-
-        ValidateAcyclic(outgoing, nodeCount, "Sankey links must not contain cycles.");
-    }
-
-    private static void ValidateTree(ChartSeries series) {
-        if (series.Points.Count < 2 || series.Points.Count % 2 != 0) throw new InvalidOperationException("Tree charts require complete parent-child/value point pairs.");
-        var nodeCount = 0;
-        var outgoing = new Dictionary<int, List<int>>();
-        var parents = new Dictionary<int, int>();
-        for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-            var parent = RoundedNonNegativeIndex(series.Points[i].X, "Tree parent indexes");
-            var child = RoundedNonNegativeIndex(series.Points[i].Y, "Tree child indexes");
-            if (parent == child) throw new InvalidOperationException("Tree links must connect distinct parent and child nodes.");
-            if (series.Points[i + 1].Y <= 0) throw new InvalidOperationException("Tree link values must be positive.");
-            if (parents.ContainsKey(child)) throw new InvalidOperationException("Tree child nodes can only have one parent.");
-            parents[child] = parent;
-            nodeCount = Math.Max(nodeCount, Math.Max(parent, child) + 1);
-            AddEdge(outgoing, parent, child);
-        }
-
-        var roots = Enumerable.Range(0, nodeCount).Where(index => !parents.ContainsKey(index)).ToArray();
-        if (roots.Length != 1) throw new InvalidOperationException("Tree charts require exactly one root node.");
-        ValidateAcyclic(outgoing, nodeCount, "Tree links must not contain cycles.");
-        var visited = new bool[nodeCount];
-        VisitConnected(roots[0]);
-        if (visited.Any(value => !value)) throw new InvalidOperationException("Tree links must form one connected hierarchy.");
-
-        void VisitConnected(int node) {
-            if (visited[node]) return;
-            visited[node] = true;
-            if (outgoing.TryGetValue(node, out var children)) foreach (var child in children) VisitConnected(child);
-        }
-    }
-
-    private static int RoundedNonNegativeIndex(double value, string message) {
-        var index = WholeNumberIndex(value, message);
-        if (index < 0) throw new InvalidOperationException(message + " must be non-negative.");
-        return index;
-    }
-
     private static int WholeNumberIndex(double value, string message) {
         var index = (int)Math.Round(value);
         if (Math.Abs(value - index) > 0.000001) throw new InvalidOperationException(message + " must be whole-number indexes.");
         return index;
     }
 
-    private static void AddEdge(Dictionary<int, List<int>> outgoing, int source, int target) {
-        if (!outgoing.TryGetValue(source, out var targets)) {
-            targets = new List<int>();
-            outgoing[source] = targets;
-        }
-
-        targets.Add(target);
-    }
-
-    private static void ValidateAcyclic(Dictionary<int, List<int>> outgoing, int nodeCount, string message) {
-        var state = new int[nodeCount];
-        for (var i = 0; i < state.Length; i++) Visit(i);
-
-        void Visit(int node) {
-            if (state[node] == 1) throw new InvalidOperationException(message);
-            if (state[node] == 2) return;
-            state[node] = 1;
-            if (outgoing.TryGetValue(node, out var targets)) foreach (var target in targets) Visit(target);
-            state[node] = 2;
-        }
-    }
 }

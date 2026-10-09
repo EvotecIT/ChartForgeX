@@ -597,10 +597,6 @@ public sealed partial class ChartOptions {
     // Set only by the standalone Sparkline owner; general chart bars keep their coordinate-based layout.
     internal int SparklineSampleCount { get; set; }
 
-    internal List<string> SankeyNodeLabels { get; } = new();
-
-    internal List<string> TreeNodeLabels { get; } = new();
-
     internal void SetWordCloudFontRange(double minimum, double maximum) {
         ChartGuards.Finite(minimum, nameof(minimum));
         ChartGuards.Finite(maximum, nameof(maximum));

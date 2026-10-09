@@ -32,7 +32,7 @@ public sealed class SankeyVisualDefaultsTests {
         var chart = Flow();
         var authored = ChartColor.FromHex("#7D3F98");
         chart.Series[0].WithPointColor(0, authored);
-        chart.Options.SankeyNodeStates[1] = ChartSeriesState.Warning;
+        chart.Series[0].WithNodeState(chart.Series[0].Nodes[1].Id, ChartSeriesState.Warning);
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);
         var nodes = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "sankey-node-mark").ToArray();
@@ -65,18 +65,18 @@ public sealed class SankeyVisualDefaultsTests {
         var chart = Chart.Create().WithSize(360, 360).WithPngFont(font)
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithTitle("Request routing").WithSubtitle("Observed weighted flows")
-            .AddSankey("Requests", new[] {
-                new ChartSankeyLink("Received", "Automatic", 72), new ChartSankeyLink("Received", "Manual", 28),
-                new ChartSankeyLink("Automatic", "Completed", 65), new ChartSankeyLink("Automatic", "Review", 7),
-                new ChartSankeyLink("Manual", "Completed", 20), new ChartSankeyLink("Manual", "Review", 8)
+            .AddSankey("Requests", new[] { new ChartNode("Received", "Received"), new ChartNode("Automatic", "Automatic"), new ChartNode("Manual", "Manual"), new ChartNode("Completed", "Completed"), new ChartNode("Review", "Review") }, new[] {
+                new ChartFlowLink("flow-1", "Received", "Automatic", 72), new ChartFlowLink("flow-2", "Received", "Manual", 28),
+                new ChartFlowLink("flow-3", "Automatic", "Completed", 65), new ChartFlowLink("flow-4", "Automatic", "Review", 7),
+                new ChartFlowLink("flow-5", "Manual", "Completed", 20), new ChartFlowLink("flow-6", "Manual", "Review", 8)
             });
         var authored = ChartColor.FromHex("#7D3F98");
         chart.Series[0].WithPointDataLabelStyle(0, style => { style.Color = authored; style.FontSize = 13; style.Underline = true; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "sankey-node-label").ToArray();
         Assert.Equal(new[] { "Received 100", "Automatic 72", "Manual 28", "Completed 85", "Review 15" },
-            labels.OrderBy(label => label.Id, StringComparer.Ordinal).Select(label => string.Join(" ", label.Text.Lines.Select(line => line.Text))));
-        var source = Assert.Single(labels, label => label.Id == "series-0-node-label-0");
+            labels.OrderBy(label => Array.FindIndex(chart.Series[0].Nodes.ToArray(), node => label.Id == "series-0-node-label-" + node.Id)).Select(label => string.Join(" ", label.Text.Lines.Select(line => line.Text))));
+        var source = Assert.Single(labels, label => label.Id == "series-0-node-label-Received");
         Assert.Equal(2, source.Text.Lines.Count); Assert.Equal(13, source.Text.Size); Assert.Equal(authored, source.Color);
         Assert.True(source.Text.Style.Underline); Assert.Equal(TextAlignment.Right, source.Alignment);
         Assert.All(labels.Where(label => label != source), label => { Assert.Equal(12, label.Text.Size); Assert.Equal(TextAlignment.Left, label.Alignment); });
@@ -93,7 +93,7 @@ public sealed class SankeyVisualDefaultsTests {
     [Fact]
     public void UnbreakableDenseCaptionsRetainCompleteNodeSemanticsAndReportTheirFittingLimit() {
         var name = new string('W', 60);
-        var chart = Chart.Create().WithSize(360, 240).AddSankey("Requests", new[] { new ChartSankeyLink(name, "Completed", 100) });
+        var chart = Chart.Create().WithSize(360, 240).AddSankey("Requests", new[] { new ChartNode(name, name), new ChartNode("Completed", "Completed") }, new[] { new ChartFlowLink("flow-7", name, "Completed", 100) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Contains(prepared.Regions, region => region.Role == "sankey-node" && region.Label == name + " 100");
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "sankey.label-overflow");
@@ -101,7 +101,7 @@ public sealed class SankeyVisualDefaultsTests {
             text => Assert.Equal(12, text.Text.Size));
     }
 
-    private static Chart Flow() => Chart.Create().AddSankey("Requests", new[] {
-        new ChartSankeyLink("Automatic", "Completed", 70), new ChartSankeyLink("Manual", "Completed", 30)
+    private static Chart Flow() => Chart.Create().AddSankey("Requests", new[] { new ChartNode("Automatic", "Automatic"), new ChartNode("Completed", "Completed"), new ChartNode("Manual", "Manual") }, new[] {
+        new ChartFlowLink("flow-8", "Automatic", "Completed", 70), new ChartFlowLink("flow-9", "Manual", "Completed", 30)
     });
 }

@@ -7,6 +7,9 @@ public static partial class V2Examples {
     private static readonly ChartSeriesKind[] SparseFamilies = {
         ChartSeriesKind.Line, ChartSeriesKind.Area, ChartSeriesKind.Scatter, ChartSeriesKind.RangeArea, ChartSeriesKind.Heatmap, ChartSeriesKind.CalendarHeatmap
     };
+    private static readonly ChartSeriesKind[] RelationshipOptionFamilies = {
+        ChartSeriesKind.Tree, ChartSeriesKind.Sunburst, ChartSeriesKind.Sankey
+    };
     private static readonly ChartSeriesKind[] OptionFamilies = {
         ChartSeriesKind.Bar, ChartSeriesKind.Area, ChartSeriesKind.HorizontalBar, ChartSeriesKind.Pie, ChartSeriesKind.Donut, ChartSeriesKind.Gauge, ChartSeriesKind.Bullet,
         ChartSeriesKind.RadialBar, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
@@ -21,6 +24,7 @@ public static partial class V2Examples {
             var variants = new List<string> { "wide", "compact" };
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
             if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
+            if (RelationshipOptionFamilies.Contains(kind)) variants.Add("options");
             if (!curated) {
                 if (SparseFamilies.Contains(kind)) variants.Add("sparse");
                 if (OptionFamilies.Contains(kind) && !variants.Contains("options")) variants.Add("options");

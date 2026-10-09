@@ -75,10 +75,10 @@ public static partial class LegacySceneBenchmarkCases {
                 }
                 break;
             case "sankey":
-                var links = Role(root, "sankey-link").ToDictionary(element => ((string)element.Attribute("data-cfx-source-label")!, (string)element.Attribute("data-cfx-target-label")!));
+                var links = Role(root, "sankey-link").ToDictionary(element => (string)element.Attribute("data-cfx-target-id")!);
                 var expectedLinks = SankeyLinks(); Require(links.Count == expectedLinks.Length, "Sankey source-link count changed.");
                 foreach (var link in expectedLinks) {
-                    Require(links.TryGetValue((link.Source, link.Target), out var mark), "A Sankey source link was lost.");
+                    Require(links.TryGetValue(link.Id, out var mark), "A Sankey source link was lost.");
                     Require(Near(Parse(mark!, "data-cfx-value"), link.Value), "Sankey source value changed."); RequireDrawing(mark!);
                 }
                 break;

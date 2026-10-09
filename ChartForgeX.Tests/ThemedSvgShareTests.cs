@@ -352,7 +352,7 @@ public sealed class ThemedSvgShareTests {
             case "funnel":
                 return Host(tokens).WithXLabels("Detected", "Fixed", "Verified").AddFunnel("Findings", Points(100, 75, 60));
             case "sankey":
-                return Host(tokens).AddSankey("Flow", new[] { new ChartSankeyLink("Assessment", "Fixed", 50), new ChartSankeyLink("Monitoring", "Fixed", 20) });
+                return Host(tokens).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Fixed", "Fixed"), new ChartNode("Monitoring", "Monitoring") }, new[] { new ChartFlowLink("flow-1", "Assessment", "Fixed", 50), new ChartFlowLink("flow-2", "Monitoring", "Fixed", 20) });
             case "treemap":
                 return Host(tokens).AddTreemap("Files", new[] { new ChartTreemapItem("One", 50), new ChartTreemapItem("Two", 30), new ChartTreemapItem("Three", 20) });
             case "line":

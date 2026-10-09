@@ -11,7 +11,7 @@ internal static partial class SmokeTests {
         var chart = Chart.Create()
             .WithSize(760, 520)
             .WithTheme(ChartTheme.Aurora())
-            .AddSunburst("Control partition", new[] {
+            .AddSunburst("Control partition", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("DNS hygiene", "DNS hygiene"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("Expiry monitoring", "Expiry monitoring") }, new[] {
                 new ChartTreeLink("Security posture", "Mail authentication", 42),
                 new ChartTreeLink("Security posture", "Certificate lifecycle", 28),
                 new ChartTreeLink("Security posture", "DNS hygiene", 18),

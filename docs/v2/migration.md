@@ -4,6 +4,29 @@ This guide records the breaking-release target and the observed consumer contrac
 
 Qualify consumer candidates from their intended branches. A primary checkout, remote source, local project reference and installed NuGet package are different evidence boundaries; source migration alone does not establish an installed consumer or a public release.
 
+## Hierarchy and flow identities
+
+Replace the label-based relationship overloads with explicit nodes and links:
+
+| Previous call or member | Current contract |
+| --- | --- |
+| `AddSankey(name, links, color)` | `AddSankey(name, nodes, links, color)` |
+| `ChartSankeyLink(source, target, value)` | `ChartFlowLink(id, sourceId, targetId, value)` |
+| `AddTree(name, links, color)` / `AddSunburst(name, links, color)` | Pass `IEnumerable<ChartNode>` before the links. |
+| `ChartTreeLink(parent, child, value)` | `ChartTreeLink(parentId, childId, value = 1)` |
+| `Chart.WithSankeyNodeState(...)` / `ChartOptions.SankeyNodeStates` | Use `chart.Series[0].WithNodeState(id, state)`; `ChartSeries.NodeStates` is a read-only view with ordinal ID comparison. |
+| Endpoint/weight pairs in `ChartSeries.Points` | Read immutable `Nodes`, `FlowLinks`, or `TreeLinks`. `Points` is empty and `SourcePointCount` is zero. |
+
+Every `ChartNode(id, label)` needs a non-empty, unique ID. Labels may repeat. Flow IDs are also non-empty and unique, including parallel flows between the same nodes. A tree child's ID identifies its one incoming branch. References, positive finite weights, and the family graph constraints are validated before a series is added. Invalid additions leave existing chart data unchanged. Empty relationship series still produce the native prepared no-data scene; nonempty raw point lists are rejected.
+
+Keep node order explicit when preserving an existing layout or ordinal styling. The former order was first endpoint appearance in the link list. `WithPointColor`, fill-pattern, and data-label style overrides use node input ordinals for these families; semantic node states use IDs and are scoped to their series. State assignment validates ID membership and enum values before mutation. The collections copy the supplied inputs, and prepared exports remain detached from later model changes. The Mermaid CSV adapter maps its language-defined endpoint identities into nodes and assigns separate flow IDs at the adapter boundary.
+
+Tree weights remain authored values and affect link emphasis rather than node placement. Sunburst leaves retain their authored positive weights; internal rendered values sum their leaves rather than their incoming branch weights. Tiny fractions are preserved without a minimum-weight clamp. Finite leaf aggregates are required, and angular ratios are normalized before multiplication. Flat Treemap input remains unchanged.
+
+Sankey node totals must remain finite and are validated before adding a series. Tiny or large finite flows retain proportional node and ribbon thickness. SVG scale metadata uses `data-cfx-weight-reference` and `data-cfx-normalized-weight-scale` instead of an absolute `data-cfx-weight-scale`; divide a raw weight by the reference before multiplying by the normalized scale.
+
+Node and link groups retain authored IDs, labels, owning series, and actual `data-cfx-source-node-index` / `data-cfx-source-link-index` ordinals. SVG `data-cfx-target-kind` and `data-cfx-target-id` supply normalized node/link identities; HTML selection events expose those same IDs without invented `point` or `sourcePoint` ordinals. Parent, child, source, and target attributes now contain authored node IDs. Update selectors that assumed numeric node ordinals or labels as identities.
+
 ## Raster image inputs and animation delays
 
 Pass `RgbaImage` directly to `VisualCanvas.AddImage` or the image overload of `AddHeroBadge` for an independent pixel snapshot used by SVG and raster output. `RgbaImage` itself retains the supplied array; the typed canvas call copies it. The raw paired SVG href and RGBA contract remains available for vector producers. See [Visual Canvas](../visual-canvas.md) for ownership and bounded file-input options.

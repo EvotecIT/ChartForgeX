@@ -53,7 +53,7 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [Fact]
     public void SankeyNodeStateOverridesAndFunnelContrastInkUseTheirAuthoredRoles() {
         var sankey = V2GalleryModels.Create(ChartSeriesKind.Sankey);
-        sankey.Options.SankeyNodeStates[0] = ChartSeriesState.Danger;
+        sankey.Series[0].WithNodeState(sankey.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
         var nodePaints = Paints(sankey.Prepare(Context()), Variables(), "sankey-node-mark", "fill");
         Assert.All(nodePaints, paint => Assert.Contains("var(--status,", paint));
         sankey.Series[0].WithPointColor(1, Shared);

@@ -13,7 +13,7 @@ internal static class ChartAccessibleDescription {
         if (calendar != null) return calendar.DescriptionFacts();
         if (ChartSeriesKindTraits.IsSpatialMapKind(chart.Series[0].Kind))
             return VisualMapCompiler.DescriptionFacts(chart, false);
-        var names = chart.Series.Where(series => series.Points.Count > 0 && series.SemanticRole != "point-callout")
+        var names = chart.Series.Where(series => series.HasSourceData && series.SemanticRole != "point-callout")
             .Select(series => series.Name).ToArray();
         return new ChartDescriptionFacts(names.Length == 0 ? ChartDescriptionKind.NoPoints : ChartDescriptionKind.Series,
             chart.Title, names, names.Length);
