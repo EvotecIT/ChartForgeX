@@ -43,7 +43,7 @@ public sealed class PngVisualCanvasRenderer {
     private static void RenderLayer(RgbaCanvas canvas, VisualCanvasLayer layer, VisualCanvasTheme theme) {
         if (layer is VisualCanvasTextLayer text) {
             var face = VisualCanvasTextFace.Resolve(theme.FontFamily, text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
-            DrawText(canvas, text.X, text.Y, text.Width, text.Text, text.FontSize, text.Color, text.Alignment, face);
+            DrawText(canvas, text.X, text.Y, text.Width, text.Text, text.FontSize, text.ResolveColor(theme), text.Alignment, face);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
             DrawHeroTitle(canvas, hero, theme);
         } else if (layer is VisualCanvasKeyValueBlockLayer keyValue) {

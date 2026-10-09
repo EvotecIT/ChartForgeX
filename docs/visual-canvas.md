@@ -6,6 +6,8 @@ Install `ChartForgeX.Visuals` for the canvas API. Add `ChartForgeX.Stories` when
 
 Use it when the output needs explicit placement, layered backgrounds, side rails, central hero typography, badges, or host-provided image slots. `VisualGrid` remains the right surface for rows and columns of charts or visual blocks.
 
+Omit the color in `AddText(x, y, width, text, fontSize)` or the five-argument `VisualCanvasTextLayer` constructor to follow the canvas primary foreground (`VisualCanvasTheme.HeroTitleColor`). Shared design tokens map that role to their foreground, so existing uncolored layers follow a later light/dark theme change in SVG, PNG and HTML. The existing color-taking overloads and subsequent `Color` assignments remain explicit, including white, transparent and custom colors.
+
 The first canvas primitives are intentionally generic:
 
 - vertical background color treatment
@@ -249,7 +251,7 @@ The canonical font reader applies `avar` version 1 mapping, TrueType `gvar` cont
 
 SVG `<text>` rasterized by `SvgRasterizer` picks its face the same way from its computed `font-family` stack, `font-weight` (numbers from 1 to 1000, `normal`, `bold`, and `bolder`/`lighter` relative to the parent), and `font-style` (`italic` or `oblique`), whether they come from attributes, `style="..."`, a stylesheet, an ancestor `<g>`, or a `<tspan>`. Text without a `font-family` uses the sans-serif fallback. Each run is placed so its face's own baseline sits on the `y` coordinate, as a browser places it.
 
-`VisualCanvas` uses `VisualCanvasTheme.TextMeasurementMode = TextMeasurementMode.InstalledFonts` by default. Its fitting and line metrics use the same font resolution and shaping as raster text. Register the application's font files when layout must remain identical across generating hosts. Set `TextMeasurementMode.PortableEstimate` explicitly for legacy host-independent estimated layout; unresolved fonts also retain the portable fallback.
+`VisualCanvas` defaults to `VisualCanvasTheme.TextMeasurementMode = TextMeasurementMode.PortableEstimate`. Its fitting uses portable estimates or explicitly registered faces, independently of installed fonts. Set `TextMeasurementMode.InstalledFonts` to opt into host-dependent metrics. Register the application's font files when layout must remain identical across generating hosts; unresolved fonts retain the portable fallback.
 
 `VisualCanvasTheme.FontFamily` (set directly or through `VisualDesignTokens`), a key/value block's `FontFamilyName`, and `MonospaceFontFamily` for hero badge symbols are resolved at the weights the SVG output writes: 500 for plain text and values, 800 for emphasized text, tile icons, and feature icons, 850 for hero titles and badges, and 700, 650, and 500 for tile labels, values, and details. PNG draws the matching registered or installed face. Only a family without a bold face is emboldened. Call `block.MeasureHeight(canvas.Theme)` to measure a key/value block with the canvas's measurement mode.
 

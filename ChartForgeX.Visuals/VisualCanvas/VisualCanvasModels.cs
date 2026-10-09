@@ -207,7 +207,7 @@ public sealed class VisualCanvasTheme {
     public ChartColor Accent { get; set; } = ChartColor.FromHex("#2F80FF");
     /// <summary>Gets or sets the secondary accent used by hero badges and backdrop highlights.</summary>
     public ChartColor SecondaryAccent { get; set; } = ChartColor.FromHex("#22A7FF");
-    /// <summary>Gets or sets the first default hero title color.</summary>
+    /// <summary>Gets or sets the primary canvas foreground used by default hero titles and text layers without an explicit color.</summary>
     public ChartColor HeroTitleColor { get; set; } = ChartColor.FromHex("#F8FAFC");
     /// <summary>Gets or sets the secondary default hero title color.</summary>
     public ChartColor HeroTitleAccentColor { get; set; } = ChartColor.FromHex("#2F80FF");
@@ -355,11 +355,21 @@ public sealed partial class VisualCanvas {
     /// <summary>Analyzes canvas layer bounds and built-in text fitting decisions without rendering.</summary>
     public VisualCanvasLayoutReport AnalyzeLayout() => VisualCanvasLayoutAnalyzer.Analyze(this);
 
-    /// <summary>Adds a plain text layer.</summary>
+    /// <summary>Adds a plain text layer using the canvas primary foreground at render time.</summary>
+    public VisualCanvas AddText(double x, double y, double width, string text, double fontSize, TextAlignment alignment = TextAlignment.Left, bool emphasized = false) =>
+        AddLayer(new VisualCanvasTextLayer(x, y, width, text, fontSize) { Alignment = alignment, Emphasized = emphasized });
+
+    /// <summary>Adds a plain text layer with an explicit color.</summary>
     public VisualCanvas AddText(double x, double y, double width, string text, double fontSize, ChartColor color, TextAlignment alignment = TextAlignment.Left, bool emphasized = false) =>
         AddLayer(new VisualCanvasTextLayer(x, y, width, text, fontSize, color) { Alignment = alignment, Emphasized = emphasized });
 
-    /// <summary>Adds a plain text layer using anchor-based placement.</summary>
+    /// <summary>Adds a plain text layer using anchor-based placement and the canvas primary foreground.</summary>
+    public VisualCanvas AddText(VisualCanvasPlacement placement, double width, string text, double fontSize, TextAlignment alignment = TextAlignment.Left, bool emphasized = false) {
+        var bounds = ResolvePlacement(placement, width, Math.Max(1, fontSize * 1.25));
+        return AddText(bounds.X, bounds.Y, bounds.Width, text, fontSize, alignment, emphasized);
+    }
+
+    /// <summary>Adds a plain text layer using anchor-based placement and an explicit color.</summary>
     public VisualCanvas AddText(VisualCanvasPlacement placement, double width, string text, double fontSize, ChartColor color, TextAlignment alignment = TextAlignment.Left, bool emphasized = false) {
         var bounds = ResolvePlacement(placement, width, Math.Max(1, fontSize * 1.25));
         return AddText(bounds.X, bounds.Y, bounds.Width, text, fontSize, color, alignment, emphasized);
@@ -565,36 +575,6 @@ public sealed class VisualCanvasTextRun {
 
     /// <summary>Gets or sets the run color.</summary>
     public ChartColor Color { get; set; }
-}
-
-/// <summary>Plain text layer.</summary>
-public sealed class VisualCanvasTextLayer : VisualCanvasLayer {
-    private string _text;
-    private double _fontSize;
-
-    /// <summary>Initializes a plain text layer.</summary>
-    /// <param name="x">The text X coordinate.</param>
-    /// <param name="y">The text Y coordinate.</param>
-    /// <param name="width">The text width used for alignment and clipping.</param>
-    /// <param name="text">The text to render.</param>
-    /// <param name="fontSize">The font size.</param>
-    /// <param name="color">The text color.</param>
-    public VisualCanvasTextLayer(double x, double y, double width, string text, double fontSize, ChartColor color) : base(x, y, width, Math.Max(1, fontSize * 1.25)) {
-        _text = text ?? throw new ArgumentNullException(nameof(text));
-        FontSize = fontSize;
-        Color = color;
-    }
-
-    /// <summary>Gets or sets the text.</summary>
-    public string Text { get => _text; set => _text = value ?? throw new ArgumentNullException(nameof(value)); }
-    /// <summary>Gets or sets the font size.</summary>
-    public double FontSize { get => _fontSize; set { ValidatePositive(value, nameof(value)); _fontSize = value; Height = Math.Max(Height, value * 1.25); } }
-    /// <summary>Gets or sets the text color.</summary>
-    public ChartColor Color { get; set; }
-    /// <summary>Gets or sets the text alignment.</summary>
-    public TextAlignment Alignment { get; set; }
-    /// <summary>Gets or sets whether the text should use the emphasized raster/SVG treatment.</summary>
-    public bool Emphasized { get; set; }
 }
 
 /// <summary>Large multi-color headline layer.</summary>
