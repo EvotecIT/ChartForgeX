@@ -45,6 +45,7 @@ public sealed class InteractiveMissingCategoryBrowserTests {
         Assert.Equal(8, identities.Distinct().Count());
 
         await observedZero.FocusAsync();
+        Assert.Contains("Value 0", await page.Locator(".cfx-tooltip__title").InnerTextAsync(), StringComparison.Ordinal);
         foreach (var category in new[] { 2, 3 }) {
             var local = roots.Nth(0).Locator(Target(category));
             var peer = roots.Nth(1).Locator(Target(category));
@@ -55,12 +56,18 @@ public sealed class InteractiveMissingCategoryBrowserTests {
                 Assert.Equal("", await node.GetAttributeAsync("data-cfx-source-points"));
                 Assert.Null(await node.GetAttributeAsync("data-cfx-point"));
                 Assert.Null(await node.GetAttributeAsync("data-cfx-source-point"));
+                Assert.Null(await node.GetAttributeAsync("data-cfx-value"));
+                Assert.Null(await node.GetAttributeAsync("data-cfx-y"));
+                Assert.Equal("No observation", await node.GetAttributeAsync("data-cfx-status"));
                 if (hiddenMarkers) Assert.Equal(1, await node.Locator("[data-cfx-browser-hit-area='true']").CountAsync());
             }
             await page.Keyboard.PressAsync("ArrowRight");
             Assert.Equal("target-source:category:" + category,
                 await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
             await page.Keyboard.PressAsync("Space");
+            Assert.Contains("No observation", await page.Locator(".cfx-tooltip__title").InnerTextAsync(), StringComparison.Ordinal);
+            Assert.DoesNotContain("Value", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+            Assert.DoesNotContain("Y", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
             foreach (var root in new[] { roots.Nth(0), roots.Nth(1) }) {
                 Assert.Equal("true", await root.Locator(Target(category)).GetAttributeAsync("aria-selected"));
                 Assert.Equal(category - 1, await root.Locator(TargetMarks + "[aria-selected='true']").CountAsync());
@@ -79,6 +86,7 @@ public sealed class InteractiveMissingCategoryBrowserTests {
                         Assert.False(target.TryGetProperty("point", out _));
                         Assert.False(target.TryGetProperty("sourcePoint", out _));
                         Assert.Empty(target.GetProperty("sourcePoints").EnumerateArray());
+                        Assert.Equal("", target.GetProperty("value").GetString());
                     }
                 }
             }

@@ -531,6 +531,10 @@
         data.cfxRegion = item.key + ':category:' + Number(data.cfxCategory);
         delete data.cfxPoint;
         delete data.cfxSourcePoint;
+        delete data.cfxValue;
+        delete data.cfxY;
+        data.cfxLabel = item.name + ' / Category ' + data.cfxCategory + ' / No observation';
+        data.cfxStatus = 'No observation';
       }
       if (data.cfxPoint !== undefined && data.cfxSourcePoint === undefined && data.cfxSourcePoints === undefined) {
         const point = Number(data.cfxPoint);
