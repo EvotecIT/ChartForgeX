@@ -685,7 +685,7 @@ Scenario timelines are also typed and opt in. Chart and topology scenarios suppo
 
 The catalog is broad enough for generated reports, dashboards, operational summaries, and static documentation:
 
-Configure line, area and range geometry on `ChartSeries` with `WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle)`; `Linear` and `Smooth` use the same path owner. Bar and stacked-area series use `WithStackGroup("region")` for independent stacks and `WithNormalization(100)` for percentage geometry. Raw values and labels retain their source units; format the value axis as percentages separately. Funnel anatomy is explicit through `WithFunnel(options => { options.Form = ChartFunnelForm.Cone; options.Orientation = ChartOrientation.Horizontal; })`. The default funnel uses proportional vertical stage bars. See [geometry conventions](docs/v2/api-conventions.md#chart-geometry) and the configured gallery examples for limits and migration details.
+Configure line, area and range geometry on `ChartSeries` with `WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle)`; `Linear` and `Smooth` use the same path owner. Bar and stacked-area series use `WithStackGroup("region")` for independent stacks and `WithNormalization(100)` for percentage geometry. Raw values and labels retain their source units; format the value axis as percentages separately. Funnel anatomy is explicit through `ConfigureFunnel(options => { options.Form = ChartFunnelForm.Cone; options.Orientation = ChartOrientation.Horizontal; })`. The default funnel uses proportional vertical stage bars. See [geometry conventions](docs/v2/api-conventions.md#chart-geometry) and the configured gallery examples for limits and migration details.
 
 | Family | APIs |
 | --- | --- |
