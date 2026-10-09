@@ -8,6 +8,62 @@ namespace ChartForgeX.Tests;
 
 public sealed class GaugeScalePrecisionBrowserTests {
     [Theory]
+    [InlineData(false, 0d, 360, 360)]
+    [InlineData(false, .1, 360, 360)]
+    [InlineData(false, .9, 360, 360)]
+    [InlineData(false, 1d, 360, 360)]
+    [InlineData(true, 0d, 360, 360)]
+    [InlineData(true, .1, 360, 360)]
+    [InlineData(true, .9, 360, 360)]
+    [InlineData(true, 1d, 360, 360)]
+    [InlineData(false, 0d, 800, 440)]
+    [InlineData(false, .1, 800, 440)]
+    [InlineData(false, .9, 800, 440)]
+    [InlineData(false, 1d, 800, 440)]
+    [InlineData(true, 0d, 800, 440)]
+    [InlineData(true, .1, 800, 440)]
+    [InlineData(true, .9, 800, 440)]
+    [InlineData(true, 1d, 800, 440)]
+    public async Task NeedleAtScaleEdgesClearsMeasuredSummaryInRenderedSvg(bool dark, double ratio, int width, int height) {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTitle("Range")
+            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).WithGauge(options => options.Form = ChartGaugeForm.Needle);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var html = "<!doctype html><html><body style='margin:24px;background:" + (dark ? "#111827" : "#fff") + "'>"
+            + prepared.ToSvg() + "<img style='display:block' width='" + width + "' height='" + height + "' src='data:image/png;base64," + Convert.ToBase64String(prepared.ToPng()) + "'></body></html>";
+        await using var session = await OpenAsync(html, width + 48, height * 2 + 96);
+        await session.Page.EvaluateAsync("async () => { await document.fonts.ready; await document.querySelector('img').decode(); }");
+        var overlap = await session.Page.EvaluateAsync<bool>("""
+            () => {
+                const svg = document.querySelector('svg'), line = svg.querySelector('[data-cfx-role="gauge-needle"]');
+                const x0 = line.x1.baseVal.value, y0 = line.y1.baseVal.value;
+                const dx = line.x2.baseVal.value - x0, dy = line.y2.baseVal.value - y0;
+                const margin = Number(line.getAttribute('stroke-width')) / 2;
+                return ['gauge-label', 'gauge-title'].some(role => {
+                    const label = svg.querySelector('[data-cfx-role="' + role + '"]');
+                    if (!label || !label.textContent.trim()) throw new Error('A gauge summary row was omitted');
+                    for (const text of label.querySelectorAll('text'))
+                        if (parseFloat(getComputedStyle(text).fontSize) < 10) throw new Error('A gauge summary row is microscopic');
+                    const box = label.getBBox(); let low = 0, high = 1;
+                    for (const [p, q] of [[-dx,x0-box.x+margin],[dx,box.x+box.width+margin-x0],[-dy,y0-box.y+margin],[dy,box.y+box.height+margin-y0]]) {
+                        if (Math.abs(p) < 1e-10) { if (q < 0) return false; }
+                        else { const bound = q / p; if (p < 0) low = Math.max(low,bound); else high = Math.min(high,bound); }
+                    }
+                    return low <= high;
+                });
+            }
+            """);
+        Assert.False(overlap, "The rendered Needle stroke must clear the value and caption glyph boxes.");
+        var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(output)) {
+            Directory.CreateDirectory(output);
+            await session.Page.ScreenshotAsync(new() { Path = Path.Combine(output, "needle-clearance-" + ratio + "-" + width + "-" + (dark ? "dark" : "light") + ".png"), FullPage = true });
+        }
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
     [InlineData(ChartGaugeForm.Arc, false, 800, 440)]
     [InlineData(ChartGaugeForm.Needle, false, 800, 440)]
     [InlineData(ChartGaugeForm.Linear, false, 800, 440)]
