@@ -29,13 +29,15 @@ internal static partial class VisualNumericRadialCompiler {
         var tickLabels = scales.ToDictionary(pair => pair.Key, pair => pair.Value.Ticks.Select(value =>
             ChartAxisValueFormatter.Format(Axis(chart, pair.Key), value,
                 pair.Key == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxisValueFormatter : chart.Options.ValueFormatter, pair.Value.Ticks)).ToArray());
-        var geometry = Layout(chart, context, builder, plot, categoryLabels, tickLabels.Values.SelectMany(values => values));
+        var geometry = Layout(chart, context, builder, plot, categoryLabels, tickLabels, bars);
         if (geometry.Outer <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.insufficient-space", "The frame leaves no space for numeric radial marks."));
             return;
         }
         var labels = new List<RadialSeriesLabel>();
-        var obstacles = chart.Series.Any(series => series.ShowDataLabels ?? chart.Options.ShowDataLabels) ? new List<LabelObstacle>() : null;
+        // Axis captions and totals also need mark avoidance when point captions are off.
+        var obstacles = chart.Options.ShowAxes || chart.Options.ShowStackTotals || chart.Series.Any(series => series.ShowDataLabels ?? chart.Options.ShowDataLabels)
+            ? new List<LabelObstacle>() : null;
         foreach (var total in stacks.Totals.Where(total => total.NormalizedTo.HasValue && total.SourceValue == 0))
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.stack-zero-total", "A normalized zero-only stack remains at its baseline; its source observations are retained."));
         using (builder.PushClip(plot)) {

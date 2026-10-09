@@ -10,17 +10,25 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualNumericRadialCompiler {
     private static RadialSeriesGeometry Layout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        IReadOnlyList<string> categories, IEnumerable<string> valueLabels) {
+        IReadOnlyList<string> categories, Dictionary<ChartAxisSide, string[]> valueLabels, bool bars) {
         var style = TickStyle(chart, context);
-        var texts = chart.Options.ShowAxes ? categories.Concat(valueLabels).ToArray() : Array.Empty<string>();
+        var texts = chart.Options.ShowAxes ? categories.Concat(valueLabels.Values.SelectMany(labels => labels)).ToArray() : Array.Empty<string>();
         var width = texts.Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
         var height = texts.Select(text => builder.MeasureText(text, style).Height).DefaultIfEmpty(0).Max();
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - Math.Min(plot.Width * .22, width) - context.Theme.Spacing,
             plot.Height / 2 - Math.Min(plot.Height * .18, height) - context.Theme.Spacing));
+        // Each visible radial-bar scale gets a measured perimeter lane. Reserving the
+        // widest caption's diagonal separates its ink at every tick angle and keeps
+        // the outer lane inside the same SVG/PNG viewport, including styled text.
+        var lane = bars && chart.Options.ShowAxes && valueLabels.Count > 1 && valueLabels.Keys.All(side => Axis(chart, side).Visible)
+            ? valueLabels.Values.SelectMany(labels => labels).Select(text => builder.MeasureText(text, style))
+                .Select(metrics => Math.Sqrt(metrics.Width * metrics.Width + metrics.Height * metrics.Height)).DefaultIfEmpty(0).Max() + context.Theme.Spacing
+            : 0;
+        radius = Math.Max(0, radius - lane);
         var options = chart.Options.RadialGeometry;
         return new RadialSeriesGeometry(plot.Left + plot.Width / 2, plot.Top + plot.Height / 2, radius,
             radius * options.InnerRadiusRatio, options.StartAngleDegrees % 360 * Math.PI / 180,
-            (options.EndAngleDegrees - options.StartAngleDegrees) * Math.PI / 180);
+            (options.EndAngleDegrees - options.StartAngleDegrees) * Math.PI / 180, lane);
     }
 
     private static RadialSeriesMark Mark(Chart chart, RadialSeriesGeometry geometry, RadialValueScale scale, double baseline, double end,
@@ -61,7 +69,8 @@ internal static partial class VisualNumericRadialCompiler {
                     var value = scale.Ticks[index]; var ratio = scale.Normalize(value);
                     if (bars && geometry.Sweep == Math.PI * 2 && value == scale.Maximum) continue;
                     var angle = geometry.Start + (bars ? ratio * geometry.Sweep : pair.Key == ChartAxisSide.Secondary ? geometry.Sweep : 0);
-                    var radius = bars ? geometry.Outer : geometry.Inner + ratio * (geometry.Outer - geometry.Inner);
+                    var radius = bars ? geometry.Outer + (pair.Key == ChartAxisSide.Secondary ? geometry.TickLane : 0)
+                        : geometry.Inner + ratio * (geometry.Outer - geometry.Inner);
                     if (chart.Options.ShowGrid && pair.Key == ChartAxisSide.Primary) {
                         if (bars) {
                             var first = On(geometry, angle, geometry.Inner); var last = On(geometry, angle, geometry.Outer);
@@ -80,7 +89,8 @@ internal static partial class VisualNumericRadialCompiler {
                     }
                 }
                 if (chart.Options.ShowAxes && axis.Visible && axis.ShowLine) {
-                    if (bars) VisualRadialPrimitives.Arc(builder, geometry.Cx, geometry.Cy, geometry.Outer, context.Theme.AxisStrokeWidth,
+                    if (bars) VisualRadialPrimitives.Arc(builder, geometry.Cx, geometry.Cy,
+                        geometry.Outer + (pair.Key == ChartAxisSide.Secondary ? geometry.TickLane : 0), context.Theme.AxisStrokeWidth,
                         geometry.Start, geometry.Sweep, colors.Axis, "radial-value-rule", paint: SvgPaint.Of(colors.Axis, SvgColorRole.Axis));
                     else {
                         var angle = geometry.Start + (pair.Key == ChartAxisSide.Secondary ? geometry.Sweep : 0);
@@ -97,23 +107,28 @@ internal static partial class VisualNumericRadialCompiler {
             var radius = bars ? geometry.Inner + (physical + .5) * (geometry.Outer - geometry.Inner) / categories.Length : geometry.Outer + gap;
             var anchor = On(geometry, angle, radius);
             AddLabel(builder, labels, categoryLabels[index], anchor, style, "radial-category-label-" + index, "radial-category-label", plot,
-                bars ? new LabelCandidate(-gap, 0, 1, .5)
+                bars ? BeforeStartRay(angle, gap)
                     : new LabelCandidate(0, 0, Math.Cos(angle) > .3 ? 0 : Math.Cos(angle) < -.3 ? 1 : .5, Math.Sin(angle) > .3 ? 0 : Math.Sin(angle) < -.3 ? 1 : .5), 100);
         }
     }
 
     private static ChartPoint On(RadialSeriesGeometry geometry, double angle, double radius) =>
         new(geometry.Cx + Math.Cos(angle) * radius, geometry.Cy + Math.Sin(angle) * radius);
+    private static LabelCandidate BeforeStartRay(double angle, double gap) {
+        var dx = Math.Sin(angle); var dy = -Math.Cos(angle);
+        return new LabelCandidate(dx * gap, dy * gap, dx > .3 ? 0 : dx < -.3 ? 1 : .5, dy > .3 ? 0 : dy < -.3 ? 1 : .5);
+    }
     private static TextStyle TickStyle(Chart chart, VisualRenderContext context) => chart.Options.TickLabelStyle.Resolve(new TextStyle {
         Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = context.Theme.Resolve(context.ThemeMode).MutedForeground
     });
 
     private sealed class RadialSeriesGeometry {
-        internal RadialSeriesGeometry(double cx, double cy, double outer, double inner, double start, double sweep) {
-            Cx = cx; Cy = cy; Outer = outer; Inner = inner; Start = start; Sweep = sweep;
+        internal RadialSeriesGeometry(double cx, double cy, double outer, double inner, double start, double sweep, double tickLane) {
+            Cx = cx; Cy = cy; Outer = outer; Inner = inner; Start = start; Sweep = sweep; TickLane = tickLane;
         }
         internal double Cx { get; } internal double Cy { get; } internal double Outer { get; }
         internal double Inner { get; } internal double Start { get; } internal double Sweep { get; }
+        internal double TickLane { get; }
     }
     private sealed class RadialSeriesMark {
         internal RadialSeriesMark(double start, double sweep, double inner, double outer, ChartPoint end, ChartPoint center, ChartPoint offset, bool clipped) {

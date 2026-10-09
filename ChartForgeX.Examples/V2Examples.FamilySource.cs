@@ -3,7 +3,7 @@ using ChartForgeX.Themes;
 
 public static partial class V2Examples {
     private static readonly string[] ModelSourceFiles = {
-        "V2GalleryModels.cs", "V2GalleryModels.Ranges.cs", "V2GalleryModels.Radial.cs", "V2GalleryModels.MatrixMap.cs", "V2GalleryModels.Specialty.cs", "V2GalleryModels.Diagrams.cs", "V2GalleryModels.Options.cs"
+        "V2GalleryModels.cs", "V2GalleryModels.Ranges.cs", "V2GalleryModels.Radial.cs", "V2GalleryModels.NumericRadial.cs", "V2GalleryModels.MatrixMap.cs", "V2GalleryModels.Specialty.cs", "V2GalleryModels.Diagrams.cs", "V2GalleryModels.Options.cs"
     };
     private static string ModelSnippet(string expression, string title, string subtitle, VisualThemeMode mode, int width, int height, bool? legend, string artifactKind) {
         var source = new StringBuilder("using System;\nusing System.Linq;\nusing System.Globalization;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\nusing ChartForgeX.Typography;\nusing ChartForgeX.VisualArtifacts;\nusing ChartForgeX.VisualBlocks;\n\n");
