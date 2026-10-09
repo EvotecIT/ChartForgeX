@@ -26,7 +26,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
         var shared = mode == HtmlChartTooltipMode.SharedX;
-        Assert.Equal(shared ? new[] { "Current", "Baseline" } : new[] { "Role", "Series", "Point", "X", "Y", "Kind" },
+        Assert.Equal(shared ? new[] { "Current", "Baseline" } : new[] { "Series", "X", "Y" },
             await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
         Assert.Equal(shared ? "Tue" : await page.Locator(Point(0, 1)).GetAttributeAsync("aria-label"),
             await page.Locator(".cfx-tooltip__title").InnerTextAsync());
@@ -171,7 +171,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         var target = page.Locator("[data-cfx-keyboard-component='data']").First;
         await target.FocusAsync();
         Assert.Contains("North", await page.Locator(".cfx-tooltip__title").InnerTextAsync(), StringComparison.Ordinal);
-        Assert.Contains("Role", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        Assert.DoesNotContain("Role", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
         Assert.Equal("7", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd").InnerTextAsync());
         foreach (var mode in new[] { HtmlChartTooltipMode.Single, HtmlChartTooltipMode.SharedX }) {
             await page.SetContentAsync(Lines(ChartTheme.Light()).ToInteractiveHtmlPage(options => {
@@ -198,7 +198,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         Assert.Equal("37", await target.GetAttributeAsync("data-cfx-value"));
         Assert.Equal("37", await target.GetAttributeAsync("data-cfx-y"));
         Assert.Equal("37", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd").InnerTextAsync());
-        Assert.Contains("Role", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        Assert.DoesNotContain("Role", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
         AssertNoConsoleErrors(session);
     }
 
