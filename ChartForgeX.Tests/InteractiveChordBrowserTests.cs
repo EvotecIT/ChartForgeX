@@ -199,6 +199,42 @@ public sealed class InteractiveChordBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [Theory]
+    [InlineData(false, 360)]
+    [InlineData(true, 360)]
+    [InlineData(false, 800)]
+    [InlineData(true, 800)]
+    public async Task HiddenNodeCaptionsPreserveVisibleRadiusAndKeyboardZeroFacts(bool dark, int width) {
+        if (!Enabled) return;
+        Chart Frame(Chart chart) => chart.WithSize(width, width < 500 ? 320 : 460)
+            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithTitle("Directed transfers");
+        var baseline = Frame(PreparedChordLabelReservationTests.ZeroCaptionChart(false, false));
+        var chart = Frame(PreparedChordLabelReservationTests.ZeroCaptionChart(true, true));
+        chart.Series[0].WithPointLabel(2, new string('W', 180));
+        var baselineNode = PreparedChordTests.Role(baseline.Prepare(VisualExportRequest.ForChart(baseline).Context), "chord-node")
+            .Single(node => (string?)node.Attribute("data-cfx-target-id") == "north");
+        var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
+        await using var session = await OpenAsync(html, width + 24, width < 500 ? 460 : 600);
+        var page = session.Page;
+        var name = "chord-hidden-caption-" + width + "-" + (dark ? "dark" : "light");
+        await CaptureAsync(chart, page, name, html);
+        AssertNoConsoleErrors(session);
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory))
+            await File.WriteAllTextAsync(Path.Combine(directory, name + "-console.json"), JsonSerializer.Serialize(session.ConsoleLog));
+        Assert.Equal((string?)baselineNode.Attribute("data-cfx-outer-radius"),
+            await page.Locator("[data-cfx-target-kind=node][data-cfx-target-id=north]").GetAttributeAsync("data-cfx-outer-radius"));
+        Assert.Equal(2, await page.Locator("[data-cfx-role=chord-node-label]").CountAsync());
+        var semantic = page.Locator("[data-cfx-target-kind=node][data-cfx-target-id=semantic]");
+        Assert.Equal("zero", await semantic.GetAttributeAsync("data-cfx-geometry-status"));
+        Assert.Equal("0", await semantic.GetAttributeAsync("data-cfx-value"));
+        var zero = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=zero]");
+        await zero.FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal("true", await zero.GetAttributeAsync("aria-selected"));
+        Assert.Contains("0", await TooltipTextAsync(page));
+        AssertNoConsoleErrors(session);
+    }
+
     private static async Task CaptureAsync(Chart chart, IPage page, string name, string html, bool native = true) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;
