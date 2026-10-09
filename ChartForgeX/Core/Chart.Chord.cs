@@ -16,7 +16,7 @@ public sealed partial class Chart {
     }
 
     /// <summary>Configures the circular allocation, ribbons, and labels used by native chord exports.</summary>
-    public Chart WithChord(Action<ChartChordOptions> configure) {
+    public Chart ConfigureChord(Action<ChartChordOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(Options.Chord);
         return this;

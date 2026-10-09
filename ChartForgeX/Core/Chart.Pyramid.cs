@@ -20,7 +20,7 @@ public sealed partial class Chart {
 
     /// <summary>Configures pyramid value encoding, orientation, geometric reversal and aspect ratio.</summary>
     /// <remarks>Options can be configured before or after adding the pyramid series.</remarks>
-    public Chart WithPyramid(Action<ChartPyramidOptions> configure) {
+    public Chart ConfigurePyramid(Action<ChartPyramidOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(Options.Pyramid);
         return this;

@@ -65,6 +65,50 @@ public sealed class V2ApiConventionTests {
     }
 
     [Fact]
+    public void FamilyConfigurationCallbacks_EditExistingOptionsAndReturnTheirBuilder() {
+        var chart = Chart.Create().AddRadar("Signal", new[] { new ChartPoint(1, 50), new ChartPoint(2, 70) });
+        var funnel = chart.Options.Funnel;
+        var pyramid = chart.Options.Pyramid;
+        var chord = chart.Options.Chord;
+        Assert.Same(chart, chart.ConfigureFunnel(options => {
+            Assert.Same(funnel, options);
+            options.Orientation = ChartOrientation.Horizontal;
+        }));
+        Assert.Same(chart, chart.ConfigurePyramid(options => {
+            Assert.Same(pyramid, options);
+            options.ValueEncoding = ChartPyramidValueEncoding.Area;
+        }));
+        Assert.Same(chart, chart.ConfigureChord(options => {
+            Assert.Same(chord, options);
+            options.RibbonOpacity = .2;
+        }));
+        Assert.Same(funnel, chart.Options.Funnel);
+        Assert.Same(pyramid, chart.Options.Pyramid);
+        Assert.Same(chord, chart.Options.Chord);
+        Assert.Equal(ChartOrientation.Horizontal, chart.Options.Funnel.Orientation);
+        Assert.Equal(ChartPyramidValueEncoding.Area, chart.Options.Pyramid.ValueEncoding);
+        Assert.Equal(.2, chart.Options.Chord.RibbonOpacity);
+
+        var series = chart.Series[0];
+        var markers = series.Markers;
+        var radar = series.Radar;
+        Assert.Same(series, series.ConfigureMarkers(options => {
+            Assert.Same(markers, options);
+            options.Radius = 7;
+        }));
+        Assert.Same(series, series.ConfigureRadar(options => {
+            Assert.Same(radar, options);
+            options.FillOpacity = .4;
+        }));
+        Assert.Same(markers, series.Markers);
+        Assert.Same(radar, series.Radar);
+        Assert.Equal(7d, series.Markers.Radius);
+        Assert.Equal(.4, series.Radar.FillOpacity);
+        Assert.Single(chart.Series);
+        Assert.Equal(2, series.Points.Count);
+    }
+
+    [Fact]
     public void ContractSignatures_ReuseCanonicalColorSeverityAndCoreOnlyOwnership() {
         var colors = typeof(VisualThemeColors).GetProperties().Where(property => property.PropertyType.IsValueType && !property.PropertyType.IsEnum);
         Assert.NotEmpty(colors);

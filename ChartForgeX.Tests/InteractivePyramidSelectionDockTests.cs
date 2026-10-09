@@ -21,7 +21,7 @@ public sealed class InteractivePyramidSelectionDockTests {
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithXLabels("Services", "Platform", "Support")
             .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
-            .WithPyramid(options => { options.Orientation = orientation; options.Reversed = true; options.ValueEncoding = ChartPyramidValueEncoding.Area; });
+            .ConfigurePyramid(options => { options.Orientation = orientation; options.Reversed = true; options.ValueEncoding = ChartPyramidValueEncoding.Area; });
         await using var session = await InteractiveChartBrowser.OpenAsync(chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = layout), width, height);
         var page = session.Page;
         var before = await InteractiveChartBrowser.BoxAsync(page, ".cfx-stage svg");

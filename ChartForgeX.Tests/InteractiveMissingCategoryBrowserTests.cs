@@ -117,7 +117,7 @@ public sealed class InteractiveMissingCategoryBrowserTests {
             .AddRadarLine("Target", peer ? target.AsEnumerable().Reverse() : target);
         chart.Series[0].WithInteractionKey("actual-source");
         chart.Series[1].WithInteractionKey("target-source");
-        if (hiddenMarkers) chart.Series[1].WithMarkers(markers => markers.Enabled = false);
+        if (hiddenMarkers) chart.Series[1].ConfigureMarkers(markers => markers.Enabled = false);
         return chart;
     }
 

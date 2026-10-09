@@ -14,7 +14,7 @@ public static partial class V2GalleryModels {
             new ChartFlowLink("zero-transfer", "north-support", "south-support", 0)
         });
         if (configured) {
-            chart.WithChord(options => {
+            chart.ConfigureChord(options => {
                 options.StartAngleDegrees = -120;
                 options.SweepAngleDegrees = 300;
                 options.NodeGapDegrees = 5;

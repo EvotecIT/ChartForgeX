@@ -13,7 +13,7 @@ public static partial class V2GalleryModels {
                 chart.AddLine(positions[index].ToString(), points);
                 chart.Series[index].WithInterpolation(ChartInterpolation.Step, positions[index]);
                 var shape = new[] { ChartMarkerShape.Square, ChartMarkerShape.Diamond, ChartMarkerShape.Triangle }[index];
-                chart.Series[index].WithMarkers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
+                chart.Series[index].ConfigureMarkers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
             }
             return chart;
         }
@@ -59,14 +59,14 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels("Received", "Reviewed", "Qualified", "Completed").WithDataLabels()
                 .AddFunnel("Requests", new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
-                .WithFunnel(options => {
+                .ConfigureFunnel(options => {
                     options.Form = variant == "stage-bars-horizontal" ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == "cone-vertical" ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
         if (kind == ChartSeriesKind.Pyramid) {
             var chart = Chart.Create().WithXLabels("Services", "Platform", "Support", "Unassigned").WithDataLabels()
                 .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
-                .WithPyramid(options => {
+                .ConfigurePyramid(options => {
                     options.ValueEncoding = ChartPyramidValueEncoding.Area;
                     options.Orientation = ChartOrientation.Horizontal;
                     options.Reversed = true;
