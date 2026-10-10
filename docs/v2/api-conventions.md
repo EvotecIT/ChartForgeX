@@ -153,7 +153,18 @@ waterfall.Series[0].WithPointColor(2, "#A5358A");
 
 Typed input lives in the immutable `ChartSeries.WaterfallItems` snapshot; `Points` is empty and cannot be mixed into that series. `DeltaValue` is null on checkpoints. `SourcePointCount` counts supplied deltas, while point colors, labels, fill patterns, data-label styles and point legends index all authored items. Existing axis labels and formatters own category captions; `ChartOptions.Labels.Change`, `.Subtotal` and `.Total` localize the default readout and checkpoint captions. Bar paint and stroke use the shared series controls.
 
-Native marks and point legends preserve the distinction between item positions and numeric source ordinals. A delta retains its raw value and `data-cfx-source-point`; a checkpoint exposes its kind, calculated value and contributor ordinals through `data-cfx-derived` and `data-cfx-source-points`, with no invented source point or delta. Captions refer to the owning mark. Prepared SVG/PNG and static artifact output retain those facts after model changes. Portable editable chart-series interchange, opening balances and horizontal waterfalls remain separate capabilities.
+`ChartOptions.Waterfall.Orientation` defaults to `ChartOrientation.Vertical`. Configure a horizontal waterfall before or after adding either input form:
+
+```csharp
+waterfall.ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
+    .WithXAxis("Running balance").WithYAxis("Stage");
+waterfall.Options.XAxis.WithBounds(-50, 150);
+waterfall.Options.YAxis.WithReversal();
+```
+
+The physical X axis owns horizontal values, bounds, scale, reversal and tick formatting. The physical Y axis owns categories, bounds, reversal and category captions. Each item's `X` remains its category coordinate; orientation never sorts items or changes accumulation. Explicit Y category labels take precedence; `WithXLabels` supplies a fallback when Y has no explicit labels. Resolved category captions agree across the native axis, marks, point legends and HTML readouts, including custom formatters and time categories. Horizontal waterfalls require one series on the primary axis. Vertical secondary-axis behavior is unchanged.
+
+Native marks and point legends preserve the distinction between item positions and numeric source ordinals. A delta retains its raw value and `data-cfx-source-point`; a checkpoint exposes its kind, calculated value and contributor ordinals through `data-cfx-derived` and `data-cfx-source-points`, with no invented source point or delta. `data-cfx-category-label` carries the resolved caption and `data-cfx-orientation` records the layout. Captions refer to the owning mark. Prepared SVG/PNG and static artifact output retain those facts after model changes. Portable editable chart-series interchange and opening balances remain separate capabilities.
 
 ## Sankey layout
 

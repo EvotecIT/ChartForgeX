@@ -32,7 +32,7 @@ internal static class VisualChartCompiler {
     }
 
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(VisualChartFamily family, Chart chart, VisualThemeColors colors, ChartAxisValueFormatter.Cache? axisLabels = null) => family switch {
-        VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors),
+        VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors, axisLabels),
         VisualChartFamily.Radial => VisualRadialCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Gauge => VisualGaugeCompiler.LegendEntries(chart, colors),
         VisualChartFamily.RadialProgress => VisualRadialProgressCompiler.LegendEntries(chart, colors),
@@ -54,7 +54,7 @@ internal static class VisualChartCompiler {
             || family == VisualChartFamily.Hierarchy && chart.Series[0].Kind == ChartSeriesKind.Sunburst
             ? builder.PushGroup(null, "coordinate-system", new Dictionary<string, string> { ["data-cfx-coordinate-system"] = "polar" }) : null;
         switch (family) {
-            case VisualChartFamily.Cartesian: VisualCartesianCompiler.BuildInViewport(chart, context, builder, content); break;
+            case VisualChartFamily.Cartesian: VisualCartesianCompiler.BuildInViewport(chart, context, builder, content, axisLabels); break;
             case VisualChartFamily.Radial: VisualRadialCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Gauge: VisualGaugeCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.RadialProgress: VisualRadialProgressCompiler.Build(chart, context, builder, content); break;

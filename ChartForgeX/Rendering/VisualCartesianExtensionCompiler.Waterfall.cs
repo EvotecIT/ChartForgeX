@@ -9,41 +9,53 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawPreparedWaterfall(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
+        IReadOnlyDictionary<double, string> categories) {
         var series = chart.Series[index]; var steps = ChartWaterfallSteps.Create(series);
-        var coordinates = steps.Select(step => map.X(step.X)).OrderBy(value => value).ToArray(); var spacing = plot.Width;
+        var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
+        var coordinates = steps.Select(step => horizontal ? map.Y(step.X) : map.X(step.X)).OrderBy(value => value).ToArray();
+        var spacing = horizontal ? plot.Height : plot.Width;
         for (var item = 1; item < coordinates.Length; item++) if (coordinates[item] > coordinates[item - 1]) spacing = Math.Min(spacing, coordinates[item] - coordinates[item - 1]);
         var width = Math.Min(spacing * .8, ChartMarkSurface.WaterfallBarWidth(spacing));
         ChartRect? previous = null;
         for (var item = 0; item < steps.Count; item++) {
-            var step = steps[item]; var x = map.X(step.X); var startY = map.YOrBaseline(step.Start); var endY = map.YOrBaseline(step.End);
-            var bounds = new ChartRect(x - width / 2, Math.Min(startY, endY), width, Math.Abs(startY - endY));
+            var step = steps[item]; var category = horizontal ? map.Y(step.X) : map.X(step.X);
+            var start = horizontal ? map.XOrBaseline(step.Start) : map.YOrBaseline(step.Start);
+            var end = horizontal ? map.XOrBaseline(step.End) : map.YOrBaseline(step.End);
+            var bounds = horizontal ? new ChartRect(Math.Min(start, end), category - width / 2, Math.Abs(start - end), width)
+                : new ChartRect(category - width / 2, Math.Min(start, end), width, Math.Abs(start - end));
             var color = WaterfallColor(series, index, step, colors);
             var label = ResolveObservationLabel(chart, context, series, item, colors,
                 () => (step.IsCheckpoint || step.Value < 0 ? string.Empty : "+") + Value(chart, step.Value));
             var id = WaterfallId(index, step);
-            var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-            var direction = MappedBarDirection(axis, step.Value, startY, endY);
+            var axis = horizontal ? chart.Options.XAxis : series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            var direction = MappedBarDirection(axis, step.Value, start, end, horizontal);
+            if (horizontal) bounds = VisibleSegmentBounds(chart, bounds, direction, horizontal: true);
             var fillRole = SemanticMarkPaintRole(series, item);
-            var description = series.Name + ": " + label.DisplayedText + " start=" + Number(step.Start) + " end=" + Number(step.End)
+            var description = series.Name + ": " + categories[step.X] + " " + label.DisplayedText + " start=" + Number(step.Start) + " end=" + Number(step.End)
                 + " " + WaterfallValueName(chart, step) + "=" + Number(step.Value);
             builder.AddRegion(new VisualSemanticRegion(id, WaterfallRole(step), bounds, description));
-            var metadata = WaterfallMetadata(chart, index, step); metadata["data-cfx-label"] = label.DisplayedText; metadata["aria-label"] = description;
+            var metadata = WaterfallMetadata(chart, index, step, categories[step.X]); metadata["data-cfx-label"] = label.DisplayedText; metadata["aria-label"] = description;
             using (builder.PushGroup(id, WaterfallRole(step), metadata)) {
                 if (previous.HasValue && step.Kind != ChartWaterfallItemKind.Total) {
-                    var nextOnRight = bounds.Left + bounds.Width / 2 >= previous.Value.Left + previous.Value.Width / 2;
-                    var connectorY = step.IsCheckpoint ? endY : startY;
-                    builder.Line(nextOnRight ? previous.Value.Right : previous.Value.Left, connectorY, nextOnRight ? bounds.Left : bounds.Right, connectorY,
+                    var nextIncreasing = category >= (horizontal ? previous.Value.Top + previous.Value.Height / 2 : previous.Value.Left + previous.Value.Width / 2);
+                    var connector = step.IsCheckpoint ? end : start;
+                    var previousEdge = horizontal ? nextIncreasing ? previous.Value.Bottom : previous.Value.Top : nextIncreasing ? previous.Value.Right : previous.Value.Left;
+                    var nextEdge = horizontal ? nextIncreasing ? bounds.Top : bounds.Bottom : nextIncreasing ? bounds.Left : bounds.Right;
+                    builder.Line(horizontal ? connector : previousEdge, horizontal ? previousEdge : connector,
+                        horizontal ? connector : nextEdge, horizontal ? nextEdge : connector,
                         ChartColorMath.WithOpacity(colors.MutedForeground, ChartVisualPrimitives.WaterfallConnectorOpacity),
                         ChartVisualPrimitives.WaterfallConnectorStrokeWidth, role: "waterfall-connector", dash: new[] { ChartVisualPrimitives.WaterfallConnectorDash, ChartVisualPrimitives.WaterfallConnectorGap },
                         paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text).WithOpacity(
                             ChartColorMath.WithOpacity(colors.MutedForeground, ChartVisualPrimitives.WaterfallConnectorOpacity), ChartVisualPrimitives.WaterfallConnectorOpacity)));
                 }
                 DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "waterfall-bar",
-                    direction: direction, sourceRole: fillRole);
+                    horizontal: horizontal, direction: direction, sourceRole: fillRole);
             }
             obstacles.Add(new LabelObstacle(id, bounds));
-            AddLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, label, labels, step.Value, id,
+            if (horizontal) AddHorizontalLabel(chart, context, series, index, item, new ChartPoint(end, category), bounds, step.Value, direction, label, labels,
+                id, color, fillRole);
+            else AddLabel(chart, context, series, index, item, new ChartPoint(category, end), bounds, label, labels, step.Value, id,
                 barDirection: direction, markFill: color, markFillRole: fillRole);
             previous = bounds;
         }

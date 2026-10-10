@@ -17,11 +17,13 @@ internal static partial class VisualCartesianCompiler {
         HasSeriesPaint(series, step.ItemIndex) ? PointColor(series, seriesIndex, step.ItemIndex, colors)
         : step.IsCheckpoint ? colors.Status.Medium.Fill : step.Value >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
 
-    private static Dictionary<string, string> WaterfallMetadata(Chart chart, int seriesIndex, ChartWaterfallStep step) {
+    private static Dictionary<string, string> WaterfallMetadata(Chart chart, int seriesIndex, ChartWaterfallStep step, string category) {
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(step.ItemIndex),
             ["data-cfx-x"] = Number(step.X), ["data-cfx-start"] = Number(step.Start), ["data-cfx-end"] = Number(step.End),
             ["data-cfx-value"] = Number(step.Value), ["data-cfx-waterfall-kind"] = WaterfallKind(step),
+            ["data-cfx-category-label"] = category,
+            ["data-cfx-orientation"] = chart.Options.Waterfall.Orientation == ChartOrientation.Horizontal ? "horizontal" : "vertical",
             ["data-cfx-label-waterfall-value"] = WaterfallValueName(chart, step),
             ["data-cfx-derived-total"] = step.Kind == ChartWaterfallItemKind.Total ? "true" : "false",
             ["data-cfx-source-count"] = Number(step.SourceIndices.Count)
@@ -38,16 +40,16 @@ internal static partial class VisualCartesianCompiler {
         return metadata;
     }
 
-    private static IReadOnlyList<VisualLegendEntry> WaterfallLegendEntries(Chart chart, ChartSeries series, VisualThemeColors colors) {
+    private static IReadOnlyList<VisualLegendEntry> WaterfallLegendEntries(Chart chart, ChartSeries series, VisualThemeColors colors, ChartAxisValueFormatter.Cache cache) {
         var entries = new List<VisualLegendEntry>();
+        var categories = ChartWaterfallCategoryLabels.Resolve(chart, cache);
         foreach (var step in ChartWaterfallSteps.Create(series).Where(step => !step.IsAppendedTotal)) {
-            var label = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, step.X)
-                ?? (step.IsCheckpoint ? WaterfallValueName(chart, step) : "Item " + Number(step.ItemIndex + 1));
+            var label = categories[step.X];
             var point = step.ItemIndex;
             var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
             var color = WaterfallColor(series, 0, step, colors); var paint = SvgPaint.Of(color, SemanticMarkPaintRole(series, point));
             entries.Add(new VisualLegendEntry(label, color, WaterfallId(0, step), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
-                marker: VisualMarkerScene.Legend(chart, series, color, paint, point, pattern), paint: paint, metadata: WaterfallMetadata(chart, 0, step)));
+                marker: VisualMarkerScene.Legend(chart, series, color, paint, point, pattern), paint: paint, metadata: WaterfallMetadata(chart, 0, step, label)));
         }
         return entries;
     }

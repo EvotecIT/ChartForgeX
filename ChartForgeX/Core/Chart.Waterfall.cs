@@ -5,6 +5,14 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
+    /// <summary>Configures the waterfall value direction without changing ordered source items.</summary>
+    /// <remarks>Horizontal waterfalls use the primary X value axis and Y category axis. Configure before or after adding the series.</remarks>
+    public Chart ConfigureWaterfall(Action<ChartWaterfallOptions> configure) {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        configure(Options.Waterfall);
+        return this;
+    }
+
     /// <summary>Adds signed changes and one automatically appended final total.</summary>
     /// <param name="name">The series name.</param>
     /// <param name="points">Changes in input order. X supplies the category coordinate and Y supplies the raw change.</param>

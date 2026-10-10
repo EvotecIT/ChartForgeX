@@ -11,15 +11,19 @@ namespace ChartForgeX.Tests;
 
 public sealed class WaterfallCheckpointBrowserTests {
     [Theory]
-    [InlineData(360, false)]
-    [InlineData(360, true)]
-    [InlineData(900, false)]
-    [InlineData(900, true)]
-    public async Task PointerCaptionsKeyboardAndPointLegendsRetainCheckpointAndRawDeltaFacts(int width, bool dark) {
+    [InlineData(360, false, false)]
+    [InlineData(360, true, false)]
+    [InlineData(900, false, false)]
+    [InlineData(900, true, false)]
+    [InlineData(360, false, true)]
+    [InlineData(360, true, true)]
+    [InlineData(900, false, true)]
+    [InlineData(900, true, true)]
+    public async Task PointerCaptionsKeyboardAndPointLegendsRetainCheckpointAndRawDeltaFacts(int width, bool dark, bool horizontal) {
         if (!Enabled) return;
-        var chart = Create(width, dark);
+        var chart = Create(width, dark, horizontal);
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
-        var name = "waterfall-checkpoints-" + width + "-" + (dark ? "dark" : "light");
+        var name = "waterfall-checkpoints-" + (horizontal ? "horizontal-" : "vertical-") + width + "-" + (dark ? "dark" : "light");
         if (!string.IsNullOrWhiteSpace(capture)) {
             Directory.CreateDirectory(capture);
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -41,6 +45,8 @@ public sealed class WaterfallCheckpointBrowserTests {
         var subtotalX = (float)(subtotalBox.X + subtotalBox.Width * .2); var subtotalY = (float)(subtotalBox.Y + subtotalBox.Height * .25);
         await page.Mouse.MoveAsync(subtotalX, subtotalY, new MouseMoveOptions { Steps = 4 });
         AssertRows(await TooltipRowsAsync(page), "Subtotal", "-130", "Start", "90", "End", "-40");
+        Assert.Equal(new[] { "Category", "Costs" }, (await TooltipRowsAsync(page)).Skip(2).Take(2));
+        Assert.Equal("Costs", await subtotal.GetAttributeAsync("data-cfx-x-label"));
         Assert.Null(await subtotal.GetAttributeAsync("data-cfx-source-point"));
         Assert.Equal("2", await subtotal.GetAttributeAsync("data-cfx-source-points"));
         var subtotalId = await subtotal.GetAttributeAsync("data-cfx-target-id");
@@ -61,8 +67,10 @@ public sealed class WaterfallCheckpointBrowserTests {
         var captionBox = await caption.BoundingBoxAsync() ?? throw new InvalidOperationException("The total caption was not painted.");
         await page.Mouse.MoveAsync((float)(captionBox.X + captionBox.Width * .4), (float)(captionBox.Y + captionBox.Height * .5), new MouseMoveOptions { Steps = 4 });
         AssertRows(await TooltipRowsAsync(page), "Total", "30", "Start", "0", "End", "30");
+        Assert.Equal(new[] { "Category", horizontal ? "Step 7" : "Balance" }, (await TooltipRowsAsync(page)).Skip(2).Take(2));
         await page.Mouse.ClickAsync((float)(captionBox.X + captionBox.Width * .4), (float)(captionBox.Y + captionBox.Height * .5));
         var total = page.Locator(Mark(6));
+        Assert.Equal(horizontal ? "Step 7" : "Balance", await total.GetAttributeAsync("data-cfx-x-label"));
         Assert.Equal("true", await total.GetAttributeAsync("aria-selected"));
         Assert.Equal(3, await page.EvaluateAsync<int>("() => window.waterfallSelections.length"));
         Assert.Equal(await total.GetAttributeAsync("data-cfx-target-id"), await page.EvaluateAsync<string>("() => window.waterfallSelections.at(-1).targetId"));
@@ -78,10 +86,13 @@ public sealed class WaterfallCheckpointBrowserTests {
         await MoveAwayAsync(page);
         var delta = page.Locator(Mark(7));
         var deltaLegend = page.Locator("[data-cfx-role='legend-item'][data-cfx-point='7']");
+        Assert.Equal(horizontal ? "Step 8" : "Late", await delta.GetAttributeAsync("data-cfx-x-label"));
+        Assert.Equal(await delta.GetAttributeAsync("data-cfx-x-label"), await deltaLegend.GetAttributeAsync("data-cfx-x-label"));
         Assert.Equal("4", await delta.GetAttributeAsync("data-cfx-source-point"));
         Assert.Equal(await delta.GetAttributeAsync("data-cfx-target-id"), await deltaLegend.GetAttributeAsync("data-cfx-target-id"));
         await deltaLegend.FocusAsync();
         AssertRows(await TooltipRowsAsync(page), "Change", "-20", "Start", "30", "End", "10");
+        Assert.Equal(horizontal ? "Step 8" : "Late", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         var subtotalLegend = page.Locator("[data-cfx-role='legend-item'][data-cfx-point='4']");
         Assert.Equal(subtotalId, await subtotalLegend.GetAttributeAsync("data-cfx-target-id"));
         await subtotalLegend.FocusAsync();
@@ -102,7 +113,7 @@ public sealed class WaterfallCheckpointBrowserTests {
         Assert.DoesNotContain("Delta", rows); Assert.DoesNotContain("Value", rows); Assert.DoesNotContain("Y", rows);
     }
 
-    private static Chart Create(int width, bool dark) {
+    private static Chart Create(int width, bool dark, bool horizontal) {
         var chart = Chart.Create().WithSize(width, 440).WithTitle("Waterfall checkpoints")
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithFontFamily("Carlito")
             .WithPointLegend().WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside).WithBarStyle(ChartBarStyle.Flat)
@@ -114,6 +125,16 @@ public sealed class WaterfallCheckpointBrowserTests {
             });
         chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         chart.Series[0].WithInteractionKey("movement").WithPointColor(4, "#A5358A").WithPointFillPattern(4, ChartFillPattern.Crosshatch);
+        if (horizontal) {
+            chart.ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
+                .WithDataLabelPlacement(ChartDataLabelPlacement.Auto);
+            if (dark) {
+                chart.WithBarStyle(ChartBarStyle.SegmentedCapsule);
+                chart.Options.XAxis.WithReversal();
+            }
+            chart.Options.YAxis.WithReversal().WithLabelFormatter(value => "Step " + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
+            chart.Options.YAxis.Labels.Add(new ChartAxisLabel(5, "Costs"));
+        }
         return chart;
     }
 
