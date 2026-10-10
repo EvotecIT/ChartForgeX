@@ -289,9 +289,9 @@
   };
   const moveTip = (tip, event, node) => {
     updateTooltipPointer(tip, node, event);
-    if (!event || tip.hidden) return;
-    let clientX = event.clientX;
-    let clientY = event.clientY;
+    if (tip.hidden) return;
+    let clientX = event && event.clientX;
+    let clientY = event && event.clientY;
     if ((!Number.isFinite(clientX) || !Number.isFinite(clientY)) && node && node.getBoundingClientRect) {
       const rect = node.getBoundingClientRect();
       clientX = rect.left + rect.width / 2;
@@ -390,6 +390,14 @@
   const hideTip = (root, tip, force) => {
     cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
+    // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
+    const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
+    const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
+    if (focused && tooltipReadoutAvailable(focused)) {
+      if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(focused))) setHover(root, focused, true, true);
+      showTip(root, tip, focused);
+      return;
+    }
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');
     root.removeAttribute('data-cfx-tooltip-pinned');
@@ -422,7 +430,7 @@
   };
   const paintAncestorsVisible = (node, styles) => {
     if (!node || node.closest('defs,[hidden]')) return false;
-    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement) {
+    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement || ancestor.getRootNode().host) {
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }
@@ -613,13 +621,27 @@
   const tooltipRequests = new WeakMap();
   const pendingTooltips = new Set();
   let tooltipObserver = null;
+  const tooltipObservedTrees = new Set();
+  // A closed shadow tree is still reachable from its chart. Keep every enclosing tree in the lifetime boundary.
+  const tooltipRootTrees = (root) => {
+    const trees = [];
+    for (let tree = root.getRootNode(); tree; tree = tree.host && tree.host.getRootNode()) trees.push(tree);
+    return trees;
+  };
   const tooltipDelay = (root) => {
     const value = Number(root.dataset.cfxTooltipDelay || 0);
     return Number.isInteger(value) && value >= 0 && value <= 2147483647 ? value : 0;
   };
   const removePendingTooltip = (request) => {
     pendingTooltips.delete(request);
-    if (!pendingTooltips.size && tooltipObserver) { tooltipObserver.disconnect(); tooltipObserver = null; }
+    if (!pendingTooltips.size && tooltipObserver) {
+      tooltipObserver.disconnect(); tooltipObserver = null; tooltipObservedTrees.clear();
+    } else if (tooltipObserver && Array.from(tooltipObservedTrees).some(tree =>
+      !Array.from(pendingTooltips).some(pending => pending.trees.includes(tree)))) {
+      // A shared observer cannot unobserve one tree. Rebuild through the same watcher to release canceled hosts.
+      tooltipObserver.disconnect(); tooltipObservedTrees.clear();
+      for (const pending of pendingTooltips) watchPendingTooltips(pending);
+    }
   };
   const cancelTooltipRequest = (root) => {
     const request = tooltipRequests.get(root);
@@ -634,7 +656,13 @@
   const currentPointerTooltip = (root, event) => {
     if (!event || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY) || !hasFeature(root, 'Tooltips')) return null;
     // The event's old hit can outlive a scroll, reflow or host update. Resolve the actual native surface again.
-    const hit = document.elementFromPoint(event.clientX, event.clientY);
+    let hit = root.ownerDocument.elementFromPoint(event.clientX, event.clientY);
+    const trees = tooltipRootTrees(root);
+    // Descend only through the actual enclosing host hit: outer dialogs must continue to obscure the chart.
+    for (let index = trees.length - 2; index >= 0; index--) {
+      if (hit !== trees[index].host) return null;
+      hit = trees[index].elementFromPoint(event.clientX, event.clientY);
+    }
     if (!hit || !root.contains(hit)) return null;
     const legend = hit && hit.closest('[data-cfx-role="legend-item"]');
     if (legend && root.contains(legend) && pointerTargetPaint(legend)) return legend;
@@ -642,17 +670,21 @@
     const point = acquiredTooltipPoint(root, candidates);
     return point && point.node;
   };
-  const watchPendingTooltips = () => {
-    if (tooltipObserver) return;
+  const watchPendingTooltips = (request) => {
     // Observe only while a request is queued, so a detached or briefly replaced host cannot retain a long timer.
-    tooltipObserver = new MutationObserver((records) => {
-      for (const request of Array.from(pendingTooltips)) {
+    if (!tooltipObserver) tooltipObserver = new MutationObserver((records) => {
+      for (const pending of Array.from(pendingTooltips)) {
         const removed = records.some(record => record.type === 'childList'
-          && Array.from(record.removedNodes).some(node => node.contains(request.root) || node.contains(request.node) || node.contains(request.tip)));
-        if (removed || !tooltipRequestAvailable(request)) cancelTooltipRequest(request.root);
+          && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)
+            || pending.trees.some(tree => tree.host && node.contains(tree.host))));
+        if (removed || !tooltipRequestAvailable(pending)) cancelTooltipRequest(pending.root);
       }
     });
-    tooltipObserver.observe(document.documentElement, { childList: true, attributes: true, subtree: true });
+    for (const tree of request.trees) {
+      if (tooltipObservedTrees.has(tree)) continue;
+      tooltipObserver.observe(tree, { childList: true, attributes: true, subtree: true });
+      tooltipObservedTrees.add(tree);
+    }
   };
   const requestPointerTip = (root, tip, node, event) => {
     const key = targetKey(targetIdentity(node));
@@ -664,10 +696,10 @@
     }
     cancelTooltipRequest(root);
     tip.hidden = true;
-    const request = { root, tip, node, key, event, shown: false };
+    const request = { root, tip, node, key, event, shown: false, trees: tooltipRootTrees(root) };
     tooltipRequests.set(root, request);
     pendingTooltips.add(request);
-    watchPendingTooltips();
+    watchPendingTooltips(request);
     request.timer = window.setTimeout(() => {
       removePendingTooltip(request);
       request.timer = undefined;
@@ -1646,7 +1678,10 @@
         y: usesPolarCoordinates(hit) || summary ? event.clientY : box.top + box.height / 2, distance: 0, exact: true, summary };
       if (!summary) return { native, observation: hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit) ? native : null };
     }
-    if (!searchNearest) return { native, observation: null };
+    // Sparse-plot inference starts on the native stage surface, never on an unrelated host veil.
+    // Explicit native targets and mapped captions retain their own acquisition contract.
+    const plotSurface = event.target === stage || event.target instanceof SVGElement && stage.querySelector('svg')?.contains(event.target);
+    if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
       if (!usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
@@ -1709,8 +1744,8 @@
     const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
     if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
-      hideTip(root, tip, false);
       clearHover(root, true, true);
+      hideTip(root, tip, false);
       return;
     }
     const point = tooltipPoint || guidePoint;

@@ -7,7 +7,7 @@
   };
   const paintAncestorsVisible = (node, styles) => {
     if (!node || node.closest('defs,[hidden]')) return false;
-    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement) {
+    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement || ancestor.getRootNode().host) {
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }

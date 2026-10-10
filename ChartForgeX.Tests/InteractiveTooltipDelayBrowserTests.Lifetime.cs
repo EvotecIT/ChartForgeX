@@ -92,12 +92,19 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         if (!Enabled) return;
         await using var session = await OpenAsync(Observations(false).ToInteractiveHtmlPage(options => ConfigureDelay(options, "exact")), 950, 760);
         var page = session.Page;
-        await TraceAsync(page);
+        await MountFragmentAsync(page, "light");
+        await RecordHostExpiryAsync(page);
         await PointerAsync(page, Point(0, 0));
-        await page.EvaluateAsync("() => { const root=document.querySelector('.cfx-interactive-chart'), parent=root.parentElement; root.remove(); parent.append(root); }");
+        await page.EvaluateAsync("() => { const root=window.hostedChart, parent=root.parentElement; window.detachedTimer=window.hostTimerTrace.queued.at(-1); root.remove(); parent.append(root); }");
         await Task.Delay(Delay + 80);
-        Assert.True(await TipHiddenAsync(page));
+        var canceled = await HostReceiptAsync(page);
+        await CaptureDelayAsync(page, "delay-light-detach-reattach", canceled, session);
+        var timer = canceled.GetProperty("detachedTimer").GetInt32();
+        Assert.Contains(timer, canceled.GetProperty("timers").GetProperty("canceled").EnumerateArray().Select(item => item.GetInt32()));
+        Assert.DoesNotContain(timer, canceled.GetProperty("timers").GetProperty("fired").EnumerateArray().Select(item => item.GetInt32()));
+        // A real new pointerenter after reinsertion owns a fresh request, independently of the canceled timer.
         await MoveAwayAsync(page);
+        Assert.True(await TipHiddenAsync(page));
         await PointerAsync(page, Point(0, 0));
         Assert.True(await TipHiddenAsync(page));
         await WaitForTipAsync(page);
