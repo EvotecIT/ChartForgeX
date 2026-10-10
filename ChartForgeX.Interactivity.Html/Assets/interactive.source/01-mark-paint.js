@@ -1,5 +1,11 @@
   // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
+  // Both readout lifetime and keyboard availability follow the same native paint inputs.
+  // Adapter state and paint-probe attributes are excluded so observing paint cannot observe itself.
+  const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
+    'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
+    'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
+    'stop-color', 'stop-opacity', 'font-size'];
   // Cache only for this render: host CSS can change between successive focus and pointer events.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);

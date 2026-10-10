@@ -435,6 +435,12 @@
   };
   // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
+  // Both readout lifetime and keyboard availability follow the same native paint inputs.
+  // Adapter state and paint-probe attributes are excluded so observing paint cannot observe itself.
+  const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
+    'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
+    'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
+    'stop-color', 'stop-opacity', 'font-size'];
   // Cache only for this render: host CSS can change between successive focus and pointer events.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
@@ -859,7 +865,7 @@
     for (const tree of state.trees) {
       if (tooltipPositionTrees.has(tree)) continue;
       tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
-        attributeFilter: ['hidden', 'class', 'style', 'data-cfx-interaction-features'], subtree: true });
+        attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
       tooltipPositionTrees.add(tree);
     }
   };
@@ -1624,7 +1630,7 @@
       refreshKeyboardNavigation(root);
     });
     paintObserver.observe(root, { subtree: true, attributes: true,
-      attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'clip-path'] });
+      attributeFilter: paintAvailabilityAttributes });
   };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) {
@@ -1876,6 +1882,8 @@
     if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
+  const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
+    : root._cfxBranchHighlights?.includes(node) ? 'root-branch' : 'series';
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
@@ -1885,8 +1893,8 @@
     if (!localNode && target.targetKind && target.targetId) return false;
     // A peer's equivalent mark may have a different local point ordinal or series position.
     const localTarget = localNode ? targetIdentity(localNode) : target;
-    if (mode !== 'shared' && root._cfxBranchHighlights?.includes(localNode)) return applyRootBranchHighlight(root, localNode);
-    const hoverMode = mode === 'shared' ? 'shared' : 'series';
+    const hoverMode = hoverModeForTarget(root, localNode, mode);
+    if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
     const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
     let matched = false;
@@ -2160,8 +2168,8 @@
     }
     const point = tooltipPoint || guidePoint;
     const key = targetKey(targetIdentity(point.node));
-    const mode = point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
-      ? crosshairHoverMode(event, point.node) : 'series';
+    const mode = hoverModeForTarget(root, point.node, point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
+      ? crosshairHoverMode(event, point.node) : 'series');
     const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
     if (changed) setHover(root, point.node, true, true, mode);
     if (guidePoint) showCrosshair(root, crosshair, guidePoint, event);

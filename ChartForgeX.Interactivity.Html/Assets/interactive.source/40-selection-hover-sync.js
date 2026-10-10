@@ -170,6 +170,8 @@
     if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
+  const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
+    : root._cfxBranchHighlights?.includes(node) ? 'root-branch' : 'series';
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
@@ -179,8 +181,8 @@
     if (!localNode && target.targetKind && target.targetId) return false;
     // A peer's equivalent mark may have a different local point ordinal or series position.
     const localTarget = localNode ? targetIdentity(localNode) : target;
-    if (mode !== 'shared' && root._cfxBranchHighlights?.includes(localNode)) return applyRootBranchHighlight(root, localNode);
-    const hoverMode = mode === 'shared' ? 'shared' : 'series';
+    const hoverMode = hoverModeForTarget(root, localNode, mode);
+    if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
     const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
     let matched = false;
@@ -454,8 +456,8 @@
     }
     const point = tooltipPoint || guidePoint;
     const key = targetKey(targetIdentity(point.node));
-    const mode = point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
-      ? crosshairHoverMode(event, point.node) : 'series';
+    const mode = hoverModeForTarget(root, point.node, point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
+      ? crosshairHoverMode(event, point.node) : 'series');
     const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
     if (changed) setHover(root, point.node, true, true, mode);
     if (guidePoint) showCrosshair(root, crosshair, guidePoint, event);

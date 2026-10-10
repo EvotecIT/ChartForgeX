@@ -130,7 +130,7 @@
       refreshKeyboardNavigation(root);
     });
     paintObserver.observe(root, { subtree: true, attributes: true,
-      attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'clip-path'] });
+      attributeFilter: paintAvailabilityAttributes });
   };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) {

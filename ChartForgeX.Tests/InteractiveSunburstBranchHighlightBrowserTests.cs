@@ -273,6 +273,10 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         var after = await page.EvaluateAsync<int[]>("() => [window.branchHoverNotifications.hover,window.branchHoverNotifications.sync,document.querySelectorAll('[data-cfx-highlight-outline]').length]");
         var retained = await page.EvaluateAsync<bool>("() => window.branchOutlines.every(outline=>outline.isConnected && document.querySelectorAll('[data-cfx-highlight-outline]')[window.branchOutlines.indexOf(outline)]===outline)");
         await Capture(session, html, "branch-hover-same-native-sector");
+        var captureDirectory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captureDirectory))
+            await File.WriteAllTextAsync(Path.Combine(captureDirectory, "branch-hover-same-native-sector.notifications.json"),
+                System.Text.Json.JsonSerializer.Serialize(new { before, after, retained }));
         Assert.Equal(before, after);
         Assert.True(retained);
         Assert.Equal("root-branch", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-mode"));

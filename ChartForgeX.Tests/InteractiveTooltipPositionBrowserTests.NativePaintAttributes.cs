@@ -121,7 +121,12 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
 
     private static async Task<double[]> AcquireNativePaintAttributeReadoutAsync(IPage page, bool pinned) {
         var pointer = await PointerAsync(page);
-        if (pinned) await page.Mouse.ClickAsync((float)pointer[0], (float)pointer[1]);
+        if (pinned) {
+            // MouseEvent click coordinates can be integral even when PointerEvent movement was fractional.
+            await page.Locator(Reading).EvaluateAsync("node=>node.addEventListener('click',event=>window.positionNativeClick=[event.clientX,event.clientY],{capture:true,once:true})");
+            await page.Mouse.ClickAsync((float)pointer[0], (float)pointer[1]);
+            pointer = await page.EvaluateAsync<double[]>("()=>window.positionNativeClick");
+        }
         await SettleObservedPositionAsync(page);
         return pointer;
     }

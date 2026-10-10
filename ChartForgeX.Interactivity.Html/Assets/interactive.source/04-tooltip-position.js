@@ -73,7 +73,7 @@
     for (const tree of state.trees) {
       if (tooltipPositionTrees.has(tree)) continue;
       tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
-        attributeFilter: ['hidden', 'class', 'style', 'data-cfx-interaction-features'], subtree: true });
+        attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
       tooltipPositionTrees.add(tree);
     }
   };
