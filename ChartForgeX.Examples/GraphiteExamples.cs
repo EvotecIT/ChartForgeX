@@ -25,9 +25,14 @@ internal static class GraphiteExamples {
                 item.Value.SavePng(Path.Combine(output, name + ".png"));
                 item.Value.SaveHtml(Path.Combine(output, name + ".html"));
                 if (item.Key == "line") item.Value.SaveInteractiveHtml(Path.Combine(output,name+"-interactive.html"),
-                    options => { options.Tooltip.Mode = HtmlChartTooltipMode.SharedX; options.Crosshair.ShowLabel = false; });
+                    options => {
+                        options.Tooltip.Mode = HtmlChartTooltipMode.SharedX;
+                        options.Tooltip.DelayMilliseconds = 360;
+                        options.Crosshair.ShowLabel = false;
+                    });
                 var nativeWidth = item.Value.Options.Size.Width;
                 gallery.Append("<h2>").Append(item.Key).Append("</h2><div class='pair'><img alt='SVG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".svg'><img alt='PNG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".png'></div>");
+                if (item.Key == "line") gallery.Append("<p><a href='").Append(name).Append("-interactive.html'>Explore pointer tooltips with a 360 ms delay</a></p>");
             }
             var theme=dark?ChartTheme.GraphiteDark():ChartTheme.GraphiteLight();
             var metric=MetricCard.Create().WithSize(300,200).WithTheme(theme).WithMetric("Coverage","98.4%").WithCaption("Assets reporting")

@@ -652,28 +652,32 @@
   const tooltipRequests = new WeakMap();
   const pendingTooltips = new Set();
   let tooltipObserver = null;
-  const tooltipObservedTrees = new Set();
+  const tooltipObservedNodes = new Map();
   // A closed shadow tree is still reachable from its chart. Keep every enclosing tree in the lifetime boundary.
   const tooltipRootTrees = (root) => {
     const trees = [];
     for (let tree = root.getRootNode(); tree; tree = tree.host && tree.host.getRootNode()) trees.push(tree);
     return trees;
   };
+  const tooltipLifetimeNodes = (root) => {
+    const nodes = [];
+    for (let node = root; node; node = node.parentNode || node.host) nodes.push(node);
+    return nodes;
+  };
   const tooltipDelay = (root) => {
     const value = Number(root.dataset.cfxTooltipDelay || 0);
     return Number.isInteger(value) && value >= 0 && value <= 2147483647 ? value : 0;
   };
   const removePendingTooltip = (request) => {
-    pendingTooltips.delete(request);
+    if (!pendingTooltips.delete(request)) return;
     if (!pendingTooltips.size && tooltipObserver) {
-      tooltipObserver.disconnect(); tooltipObserver = null; tooltipObservedTrees.clear();
-    } else if (tooltipObserver && Array.from(tooltipObservedTrees).some(tree =>
-      !Array.from(pendingTooltips).some(pending => pending.trees.includes(tree)))) {
-      // A shared observer cannot unobserve one tree. Rebuild through the same watcher to release canceled hosts.
+      tooltipObserver.disconnect(); tooltipObserver = null; tooltipObservedNodes.clear();
+    } else if (tooltipObserver) {
+      // A shared observer cannot unobserve one node or downgrade its subtree boundary. Release canceled hosts.
       // Preserve queued removals for surviving requests before disconnect discards the native record queue.
       checkPendingTooltipMutations(tooltipObserver.takeRecords());
       if (!tooltipObserver) return;
-      tooltipObserver.disconnect(); tooltipObservedTrees.clear();
+      tooltipObserver.disconnect(); tooltipObservedNodes.clear();
       for (const pending of pendingTooltips) watchPendingTooltips(pending);
     }
   };
@@ -708,30 +712,35 @@
     for (const pending of Array.from(pendingTooltips)) {
       const removed = records.some(record => record.type === 'childList'
         && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)
-          || pending.trees.some(tree => tree.host && node.contains(tree.host))));
-      if (removed || !tooltipRequestAvailable(pending)) cancelTooltipRequest(pending.root);
+          || pending.nodes.some(boundary => node.contains(boundary))));
+      // Ancestor child-list delivery is needed for detach, but unrelated dashboard updates need no paint scan.
+      const paintChanged = records.some(record => pending.root.contains(record.target)
+        || record.type === 'attributes' && pending.nodes.includes(record.target));
+      if (removed || paintChanged && !tooltipRequestAvailable(pending)) cancelTooltipRequest(pending.root);
     }
   };
   const watchPendingTooltips = (request) => {
     // Observe only while a request is queued, so a detached or briefly replaced host cannot retain a long timer.
     if (!tooltipObserver) tooltipObserver = new MutationObserver(checkPendingTooltipMutations);
-    for (const tree of request.trees) {
-      if (tooltipObservedTrees.has(tree)) continue;
-      tooltipObserver.observe(tree, { childList: true, attributes: true, subtree: true });
-      tooltipObservedTrees.add(tree);
+    for (const node of request.nodes) {
+      const subtree = node === request.root;
+      if (tooltipObservedNodes.has(node) && (tooltipObservedNodes.get(node) || !subtree)) continue;
+      // Descendants belong to the chart. Enclosing elements and shadow hosts contribute only their own style and detach.
+      tooltipObserver.observe(node, { childList: true, attributes: node instanceof Element, subtree });
+      tooltipObservedNodes.set(node, subtree);
     }
   };
   const requestPointerTip = (root, tip, node, event) => {
     const key = targetKey(targetIdentity(node));
     const previous = tooltipRequests.get(root);
-    if (previous && previous.key === key) {
-      previous.node = node; previous.event = event;
+    if (previous && previous.key === key && (previous.pointerId === undefined || previous.pointerId === event.pointerId)) {
+      previous.node = node; previous.event = event; previous.pointerId = event.pointerId;
       if (previous.shown) displayTip(tip, node, event);
       return;
     }
     cancelTooltipRequest(root);
     tip.hidden = true;
-    const request = { root, tip, node, key, event, shown: false, trees: tooltipRootTrees(root) };
+    const request = { root, tip, node, key, event, pointerId: event.pointerId, shown: false, nodes: tooltipLifetimeNodes(root) };
     tooltipRequests.set(root, request);
     pendingTooltips.add(request);
     watchPendingTooltips(request);
@@ -750,10 +759,14 @@
   const rememberImmediateTooltip = (root, tip, node, event) => {
     if (tooltipDelay(root) > 0) tooltipRequests.set(root, { root, tip, node, event, key: targetKey(targetIdentity(node)), shown: true });
   };
+  const ownsTooltipPointer = (root, event) => {
+    const request = tooltipRequests.get(root);
+    return !(event instanceof PointerEvent) || !request || request.pointerId === undefined || request.pointerId === event.pointerId;
+  };
   const updateTooltipPointer = (tip, node, event) => {
     if (!(event instanceof PointerEvent)) return;
     const root = tip.closest('.cfx-interactive-chart'), request = root && tooltipRequests.get(root);
-    if (request && !request.shown && request.key === targetKey(targetIdentity(node))) request.event = event;
+    if (request && !request.shown && ownsTooltipPointer(root, event) && request.key === targetKey(targetIdentity(node))) request.event = event;
   };
   const retainPointerTip = (root, event) => {
     const request = tooltipRequests.get(root);
@@ -2452,11 +2465,15 @@
       [node, ...labels].forEach(surface => {
         surface.addEventListener('pointerenter', (event) => {
           if (!pointerTargetPaint(node)) return;
+          if (!ownsTooltipPointer(root, event)) hideCrosshair(root, crosshair);
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
-        surface.addEventListener('pointermove', (event) => moveTip(tip, event, node));
+        surface.addEventListener('pointermove', (event) => {
+          if (ownsTooltipPointer(root, event)) moveTip(tip, event, node);
+        });
         surface.addEventListener('pointerleave', (event) => {
+          if (!ownsTooltipPointer(root, event)) return;
           clearHover(root, true, true);
           if (!retainPointerTip(root, event)) hideTip(root, tip, false);
         });
@@ -2590,6 +2607,10 @@
       if (hasFeature(root, 'StepPlayback') && initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) startScenarioPlayback(root, initialRoute, 0, false, true);
     }
     if (stage) {
+      stage.addEventListener('pointerenter', (event) => {
+        // A new contact can acquire sparse plot space before any native mark receives its own entry.
+        if (!ownsTooltipPointer(root, event)) updateNearestPoint(root, crosshair, tip, event);
+      });
       stage.addEventListener('wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
         event.preventDefault();
@@ -2618,6 +2639,7 @@
       });
       stage.addEventListener('pointermove', (event) => {
         if (!drag || drag.id !== event.pointerId) {
+          if (!ownsTooltipPointer(root, event)) return;
           updateNearestPoint(root, crosshair, tip, event);
           return;
         }
@@ -2653,13 +2675,15 @@
         stage.releasePointerCapture(event.pointerId);
         drag = null;
       });
-      stage.addEventListener('pointerleave', () => {
+      stage.addEventListener('pointerleave', (event) => {
+        if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      stage.addEventListener('pointercancel', () => {
-        drag = null;
+      stage.addEventListener('pointercancel', (event) => {
+        if (drag && drag.id === event.pointerId) drag = null;
+        if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);

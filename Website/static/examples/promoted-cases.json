@@ -306,6 +306,58 @@
       }
     },
     {
+      "id": "graphite-light-delayed-tooltips",
+      "title": "Delayed pointer tooltips in a light chart",
+      "category": "charts",
+      "summary": "A weekly check trend with immediate hover guides and shared readouts after the pointer remains on an observation for 360 ms.",
+      "alt": "Light line chart showing passed checks, warnings, and failures across seven days.",
+      "useCase": "Keep pointer exploration quiet while preserving immediate keyboard access and explicit tooltip pinning.",
+      "capabilities": ["delayed tooltips", "interactive HTML", "shared readouts", "keyboard access"],
+      "source": {
+        "path": "ChartForgeX.Examples/GraphiteExamples.cs",
+        "entry": "GraphiteExamples.Write(output, pngOutputScale)",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/GraphiteExamples.cs"
+      },
+      "build": {
+        "command": "dotnet run --project ./ChartForgeX.Examples -c Release -- --graphite-only",
+        "outputPath": "ChartForgeX.Examples/bin/Release/net8.0/output/graphite-light-line-interactive.html"
+      },
+      "artifacts": {
+        "preview": "/examples/generated/graphite-light-line.png",
+        "html": "/examples/generated/graphite-light-line-interactive.html",
+        "svg": "/examples/generated/graphite-light-line.svg",
+        "png": "/examples/generated/graphite-light-line.png",
+        "width": 1192,
+        "height": 676
+      }
+    },
+    {
+      "id": "graphite-dark-delayed-tooltips",
+      "title": "Delayed pointer tooltips in a dark chart",
+      "category": "charts",
+      "summary": "The same weekly check trend in a dark theme, with shared readouts after a stable 360 ms pointer dwell.",
+      "alt": "Dark line chart showing passed checks, warnings, and failures across seven days.",
+      "useCase": "Explore a dark dashboard without flashing readouts as the pointer passes between observations.",
+      "capabilities": ["delayed tooltips", "interactive HTML", "dark theme", "shared readouts"],
+      "source": {
+        "path": "ChartForgeX.Examples/GraphiteExamples.cs",
+        "entry": "GraphiteExamples.Write(output, pngOutputScale)",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/GraphiteExamples.cs"
+      },
+      "build": {
+        "command": "dotnet run --project ./ChartForgeX.Examples -c Release -- --graphite-only",
+        "outputPath": "ChartForgeX.Examples/bin/Release/net8.0/output/graphite-dark-line-interactive.html"
+      },
+      "artifacts": {
+        "preview": "/examples/generated/graphite-dark-line.png",
+        "html": "/examples/generated/graphite-dark-line-interactive.html",
+        "svg": "/examples/generated/graphite-dark-line.svg",
+        "png": "/examples/generated/graphite-dark-line.png",
+        "width": 1192,
+        "height": 676
+      }
+    },
+    {
       "id": "theme-font-showcase-grid",
       "title": "Theme and typography showcase",
       "category": "visual-systems",

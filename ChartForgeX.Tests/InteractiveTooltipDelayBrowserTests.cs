@@ -44,7 +44,8 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await CentreReadableTargetAsync(page, Point(0, 0));
         await TraceAsync(page);
         var position = await PointerAsync(page, Point(0, 0));
-        Assert.True(await TipHiddenAsync(page));
+        var entry = await TraceStateAsync(page);
+        Assert.True(entry.GetProperty("entry")[0].GetProperty("hidden").GetBoolean());
         Assert.NotNull(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-key"));
         Assert.Equal(!guide, await page.Locator(".cfx-crosshair").IsHiddenAsync());
         // Crossing from native paint into nearby stage space keeps the same acquired observation.
@@ -55,7 +56,6 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         }
         Assert.False(await TipHiddenAsync(page));
         var trace = await TraceStateAsync(page);
-        Assert.True(trace.GetProperty("entry")[0].GetProperty("hidden").GetBoolean());
         AssertDelay(trace);
         Assert.Equal(1, trace.GetProperty("shown").GetArrayLength());
         var rows = await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key]").AllTextContentsAsync();
