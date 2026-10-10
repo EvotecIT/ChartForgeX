@@ -9,5 +9,5 @@ public static partial class V2GalleryModels {
             .Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)));
 
     private static Chart GaugePrecision() => Chart.Create().AddLinearGauge("Tolerance", 1.003, 1.001, 1.005)
-        .WithGauge(options => options.Target = 1.0025);
+        .ConfigureGauge(options => options.Target = 1.0025);
 }

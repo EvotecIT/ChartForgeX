@@ -26,13 +26,13 @@ public sealed class InteractiveSunburstBrowserTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, variant, mode)
             .WithSize(width, width < 500 ? 360 : 460).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithTitle("Przydział pracy").WithSubtitle(inclusive ? "Inclusive parent totals retain unallocated remainder" : "Leaf totals size sectors; measured color stays independent")
-            .WithLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
+            .ConfigureLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
         chart.Options.Sunburst.ColorLegendTitle = "Zmiana <&>";
         chart.Series[0].WithInteractionKey("allocation-source");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         chart.Options.Sunburst.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.LeafAggregate : ChartHierarchyValuePolicy.AuthoredTotal;
-        chart.WithLabels(labels => { labels.AuthoredValue = "Changed"; labels.Remainder = "Changed"; labels.NoData = "Changed"; });
+        chart.ConfigureLabels(labels => { labels.AuthoredValue = "Changed"; labels.Remainder = "Changed"; labels.NoData = "Changed"; });
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 510 : 610);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var name = "sunburst-" + variant + "-" + width + "-" + (dark ? "dark" : "light");

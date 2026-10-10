@@ -116,6 +116,24 @@ public sealed class V2ApiConventionTests {
     }
 
     [Fact]
+    public void TypedBuilderConfigurationCallbacks_UseConfigureAndReturnTheirReceiver() {
+        var callbacks = new[] { typeof(Chart).Assembly, typeof(VisualGrid).Assembly }
+            .SelectMany(assembly => assembly.GetExportedTypes())
+            .SelectMany(Methods)
+            .Where(method => method.Name.StartsWith("With", StringComparison.Ordinal) || method.Name.StartsWith("Configure", StringComparison.Ordinal))
+            .Where(method => method.GetParameters().Any(parameter => parameter.ParameterType.IsGenericType
+                && parameter.ParameterType.GetGenericTypeDefinition() == typeof(Action<>)))
+            .ToArray();
+        Assert.NotEmpty(callbacks);
+        foreach (var method in callbacks) {
+            Assert.StartsWith("Configure", method.Name, StringComparison.Ordinal);
+            if (method.IsStatic) Assert.True(method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), inherit: false));
+            var receiver = method.IsStatic ? method.GetParameters()[0].ParameterType : method.DeclaringType;
+            Assert.Equal(receiver, method.ReturnType);
+        }
+    }
+
+    [Fact]
     public void ContractSignatures_ReuseCanonicalColorSeverityAndCoreOnlyOwnership() {
         var colors = typeof(VisualThemeColors).GetProperties().Where(property => property.PropertyType.IsValueType && !property.PropertyType.IsEnum);
         Assert.NotEmpty(colors);

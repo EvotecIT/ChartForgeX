@@ -99,7 +99,7 @@ public sealed class TextLanguageTests {
 
     [Fact]
     public void ChartAndPaginatedGridExportTheExplicitLanguage() {
-        var chart = Chart.Create().WithTitle("бб").WithTitleStyle(s => s.WithOpenTypeLanguage("SRB"));
+        var chart = Chart.Create().WithTitle("бб").ConfigureTitleStyle(s => s.WithOpenTypeLanguage("SRB"));
         var svg = chart.ToSvg();
         Assert.Contains("font-language-override:'SRB '", svg);
         var grid = new ChartGrid { Title = "бб" }; grid.TitleStyle.WithOpenTypeLanguage("BGR"); grid.Add(chart);
@@ -116,7 +116,7 @@ public sealed class TextLanguageTests {
             FontRegistry.Register("CFX Language Fitting", path);
             const string sourceLabel = "бббббб";
             var chart = Chart.Create().WithSize(360, 600).WithXLabels(sourceLabel).WithXAxisLabelAngle(0)
-                .WithTickLabelStyle(s => s.WithFontFamily("CFX Language Fitting").WithFontSize(100).WithWeight("400"))
+                .ConfigureTickLabelStyle(s => s.WithFontFamily("CFX Language Fitting").WithFontSize(100).WithWeight("400"))
                 .AddBar("Value", new[] { new ChartPoint(1, 1) });
             chart.Options.YAxis.Visible = false;
             chart.Options.TickLabelStyle.WithOpenTypeLanguage("BGR");
@@ -192,7 +192,7 @@ public sealed class TextLanguageTests {
         grid.SubtitleStyle.WithWeight(weight).WithOpenTypeLanguage(language);
         Assert.Contains("font-weight=\"" + weight + "\"", grid.ToSvg());
         var chart = Chart.Create().WithSize(360, 260).WithDataLabels()
-            .WithDataLabelStyle(s => s.WithWeight(weight).WithOpenTypeLanguage(language))
+            .ConfigureDataLabelStyle(s => s.WithWeight(weight).WithOpenTypeLanguage(language))
             .AddProgressRing("Language", new[] { new ChartPoint(0, 40) });
         Assert.Contains("font-weight=\"" + weight + "\"", chart.ToSvg());
         Assert.NotEmpty(chart.ToPng());

@@ -16,7 +16,7 @@ public sealed partial class Chart {
     /// <param name="role">The text role to style.</param>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithTextStyle(ChartTextRole role, System.Action<TextStyleOverride> configure) {
+    public Chart ConfigureTextStyle(ChartTextRole role, System.Action<TextStyleOverride> configure) {
         if (configure == null) throw new System.ArgumentNullException(nameof(configure));
         configure(Options.GetTextStyle(role));
         return this;
@@ -25,32 +25,32 @@ public sealed partial class Chart {
     /// <summary>
     /// Configures chart title text styling.
     /// </summary>
-    public Chart WithTitleStyle(System.Action<TextStyleOverride> configure) => WithTextStyle(ChartTextRole.Title, configure);
+    public Chart ConfigureTitleStyle(System.Action<TextStyleOverride> configure) => ConfigureTextStyle(ChartTextRole.Title, configure);
 
     /// <summary>
     /// Configures chart subtitle text styling.
     /// </summary>
-    public Chart WithSubtitleStyle(System.Action<TextStyleOverride> configure) => WithTextStyle(ChartTextRole.Subtitle, configure);
+    public Chart ConfigureSubtitleStyle(System.Action<TextStyleOverride> configure) => ConfigureTextStyle(ChartTextRole.Subtitle, configure);
 
     /// <summary>
     /// Configures axis title text styling.
     /// </summary>
-    public Chart WithAxisTitleStyle(System.Action<TextStyleOverride> configure) => WithTextStyle(ChartTextRole.AxisTitle, configure);
+    public Chart ConfigureAxisTitleStyle(System.Action<TextStyleOverride> configure) => ConfigureTextStyle(ChartTextRole.AxisTitle, configure);
 
     /// <summary>
     /// Configures axis tick and category label text styling.
     /// </summary>
-    public Chart WithTickLabelStyle(System.Action<TextStyleOverride> configure) => WithTextStyle(ChartTextRole.TickLabel, configure);
+    public Chart ConfigureTickLabelStyle(System.Action<TextStyleOverride> configure) => ConfigureTextStyle(ChartTextRole.TickLabel, configure);
 
     /// <summary>
     /// Configures legend label text styling.
     /// </summary>
-    public Chart WithLegendStyle(System.Action<TextStyleOverride> configure) => WithTextStyle(ChartTextRole.Legend, configure);
+    public Chart ConfigureLegendStyle(System.Action<TextStyleOverride> configure) => ConfigureTextStyle(ChartTextRole.Legend, configure);
 
     /// <summary>
     /// Configures data-label text styling.
     /// </summary>
-    public Chart WithDataLabelStyle(System.Action<TextStyleOverride> configure) => WithTextStyle(ChartTextRole.DataLabel, configure);
+    public Chart ConfigureDataLabelStyle(System.Action<TextStyleOverride> configure) => ConfigureTextStyle(ChartTextRole.DataLabel, configure);
 
     /// <summary>
     /// Sets an optional override color for data-label connector lines.

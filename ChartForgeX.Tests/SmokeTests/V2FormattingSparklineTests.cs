@@ -112,7 +112,7 @@ public sealed class V2FormattingSparklineTests {
     public void TableEmbeddingUsesTheSameGapSlotsInSvgAndRaster() {
         ChartTable Table(ChartMissingDataPolicy policy) => ChartTable.Create().WithSize(500, 220)
             .WithColumns("Trend").AddRow("Samples")
-            .WithRow(0, row => row.Cells[0].WithSparkline(new SparklineData(new double?[] { 0, 2, null, 3, 4 }, 0, 4, policy)));
+            .ConfigureRow(0, row => row.Cells[0].WithSparkline(new SparklineData(new double?[] { 0, 2, null, 3, 4 }, 0, 4, policy)));
         var gap = Table(ChartMissingDataPolicy.Gap); var connect = Table(ChartMissingDataPolicy.Connect);
         Assert.Equal(2, Roles(gap.ToSvg(), "table-cell-sparkline").Count());
         Assert.Single(Roles(connect.ToSvg(), "table-cell-sparkline"));

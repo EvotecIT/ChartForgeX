@@ -52,8 +52,8 @@ internal static partial class SmokeTests {
         var grid = ChartGrid.Create()
             .WithTitle("styled grid header")
             .WithSubtitle("GRID-LEVEL TYPOGRAPHY SHOULD MATCH CHART-LEVEL POLISH")
-            .WithTitleStyle(style => style.WithColor("#be123c").WithFontSize(32).WithFontFamily("Georgia, serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithStrikethrough(TextDecorationStyle.Wavy).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase))
-            .WithSubtitleStyle(style => style.WithColor("#0e7490").WithFontSize(15).WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithSubscript().WithTextCase(TextCaseTransform.Lowercase))
+            .ConfigureTitleStyle(style => style.WithColor("#be123c").WithFontSize(32).WithFontFamily("Georgia, serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithStrikethrough(TextDecorationStyle.Wavy).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase))
+            .ConfigureSubtitleStyle(style => style.WithColor("#0e7490").WithFontSize(15).WithItalic().WithUnderline(TextDecorationStyle.Dotted).WithSubscript().WithTextCase(TextCaseTransform.Lowercase))
             .WithPanelSize(260, 160)
             .Add(Chart.Create().WithTitle("Panel").WithSize(260, 160).AddLine("Values", Points(1, 2, 3)));
         var svg = grid.ToSvg();
@@ -81,8 +81,8 @@ internal static partial class SmokeTests {
         var italicRaster = ChartGrid.Create()
             .WithTitle("Italic Grid Header")
             .WithSubtitle("Italic Grid Subtitle")
-            .WithTitleStyle(style => style.WithItalic())
-            .WithSubtitleStyle(style => style.WithItalic())
+            .ConfigureTitleStyle(style => style.WithItalic())
+            .ConfigureSubtitleStyle(style => style.WithItalic())
             .WithPanelSize(260, 160)
             .Add(panel)
             .ToPng();
@@ -101,13 +101,13 @@ internal static partial class SmokeTests {
             .WithTheme(themedFont)
             .WithTitle("Inherited Grid Header")
             .WithSubtitle("Theme font inheritance")
-            .WithTitleStyle(style => style.WithFontFamily("Georgia, serif"))
-            .WithSubtitleStyle(style => style.WithFontFamily("Georgia, serif"))
+            .ConfigureTitleStyle(style => style.WithFontFamily("Georgia, serif"))
+            .ConfigureSubtitleStyle(style => style.WithFontFamily("Georgia, serif"))
             .WithPanelSize(260, 160)
             .Add(panel)
             .ToPng();
         Assert(inheritedFontRaster.SequenceEqual(explicitFontRaster), "PNG grid headers without a role font override should draw with the grid theme font used for measurement.");
-        AssertThrows<ArgumentNullException>(() => ChartGrid.Create().WithTitleStyle(null!), "Grid title styles should reject null callbacks.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().WithSubtitleStyle(style => style.WithFontSize(0)), "Grid subtitle styles should reject invalid font sizes.");
+        AssertThrows<ArgumentNullException>(() => ChartGrid.Create().ConfigureTitleStyle(null!), "Grid title styles should reject null callbacks.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartGrid.Create().ConfigureSubtitleStyle(style => style.WithFontSize(0)), "Grid subtitle styles should reject invalid font sizes.");
     }
 }

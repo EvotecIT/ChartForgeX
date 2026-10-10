@@ -18,12 +18,12 @@ internal static partial class SmokeTests {
             .WithXLabels("first quarter", "second quarter", "third quarter", "fourth quarter")
             .WithDataLabels()
             .WithLegendPosition(ChartLegendPosition.Right)
-            .WithTitleStyle(style => style.WithColor("#be123c").WithFontFamily("Comic Sans MS, cursive").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Wavy).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase).WithFontSize(24))
-            .WithSubtitleStyle(style => style.WithColor("#0e7490").WithItalic())
-            .WithAxisTitleStyle(style => style.WithColor("#7c3aed").WithUnderline(TextDecorationStyle.Double).WithTextCase(TextCaseTransform.Lowercase))
-            .WithTickLabelStyle(style => style.WithColor("#2563eb").WithWeight("650").WithItalic().WithTextCase(TextCaseTransform.Uppercase))
-            .WithLegendStyle(style => style.WithColor("#15803d").WithUnderline())
-            .WithDataLabelStyle(style => style.WithColor("#b45309").WithWeight("800").WithUnderline(TextDecorationStyle.Dotted))
+            .ConfigureTitleStyle(style => style.WithColor("#be123c").WithFontFamily("Comic Sans MS, cursive").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Wavy).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase).WithFontSize(24))
+            .ConfigureSubtitleStyle(style => style.WithColor("#0e7490").WithItalic())
+            .ConfigureAxisTitleStyle(style => style.WithColor("#7c3aed").WithUnderline(TextDecorationStyle.Double).WithTextCase(TextCaseTransform.Lowercase))
+            .ConfigureTickLabelStyle(style => style.WithColor("#2563eb").WithWeight("650").WithItalic().WithTextCase(TextCaseTransform.Uppercase))
+            .ConfigureLegendStyle(style => style.WithColor("#15803d").WithUnderline())
+            .ConfigureDataLabelStyle(style => style.WithColor("#b45309").WithWeight("800").WithUnderline(TextDecorationStyle.Dotted))
             .AddBar("North America adoption is intentionally long", Points(28, 41, 64, 83))
             .AddLine("Europe expansion is also intentionally long", Points(18, 35, 52, 74));
         var svg = chart.ToSvg();
@@ -45,29 +45,29 @@ internal static partial class SmokeTests {
         Assert(!svg.Contains("> font-style=", StringComparison.Ordinal) && !svg.Contains("> text-decoration=", StringComparison.Ordinal) && !svg.Contains("> baseline-shift=", StringComparison.Ordinal), "Streamed SVG typography must serialize as attributes rather than visible text.");
         Assert(chart.ToPng().Length > 64, "Styled text should render PNG output.");
         var regularTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("Raster Italic Title").AddLine("Values", Points(1, 3, 2)).ToPng();
-        var italicTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("Raster Italic Title").WithTitleStyle(style => style.WithItalic()).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var italicTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("Raster Italic Title").ConfigureTitleStyle(style => style.WithItalic()).AddLine("Values", Points(1, 3, 2)).ToPng();
         Assert(!regularTitle.SequenceEqual(italicTitle), "PNG chart titles should render italic pixels instead of silently using regular text.");
-        var normalWeightTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("Raster Weight Title").WithTitleStyle(style => style.WithWeight("normal")).AddLine("Values", Points(1, 3, 2)).ToPng();
-        var boldWeightTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("Raster Weight Title").WithTitleStyle(style => style.WithWeight("bold")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var normalWeightTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("Raster Weight Title").ConfigureTitleStyle(style => style.WithWeight("normal")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var boldWeightTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("Raster Weight Title").ConfigureTitleStyle(style => style.WithWeight("bold")).AddLine("Values", Points(1, 3, 2)).ToPng();
         Assert(!normalWeightTitle.SequenceEqual(boldWeightTitle), "PNG text styles should honor explicit normal and bold font weights.");
-        var serifTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("MMMM Raster Family iii").WithTitleStyle(style => style.WithFontFamily("serif")).AddLine("Values", Points(1, 3, 2)).ToPng();
-        var monospaceTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("MMMM Raster Family iii").WithTitleStyle(style => style.WithFontFamily("monospace")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var serifTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("MMMM Raster Family iii").ConfigureTitleStyle(style => style.WithFontFamily("serif")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var monospaceTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 220).WithTitle("MMMM Raster Family iii").ConfigureTitleStyle(style => style.WithFontFamily("monospace")).AddLine("Values", Points(1, 3, 2)).ToPng();
         var serifFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("serif", out _);
         var monospaceFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("monospace", out _);
         if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
             Assert(!serifTitle.SequenceEqual(monospaceTitle), "PNG text styles should honor role-specific font families when distinct platform fonts are available.");
         }
         var regularVerticalTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 240).WithYAxis("Engagement").AddLine("Values", Points(1, 3, 2)).ToPng();
-        var decoratedVerticalTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 240).WithYAxis("Engagement").WithAxisTitleStyle(style => style.WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Double).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase)).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var decoratedVerticalTitle = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(360, 240).WithYAxis("Engagement").ConfigureAxisTitleStyle(style => style.WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Double).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase)).AddLine("Values", Points(1, 3, 2)).ToPng();
         Assert(!regularVerticalTitle.SequenceEqual(decoratedVerticalTitle), "PNG rotated axis titles should preserve casing, baseline shifts, underline variants, and strikethrough during rotation.");
-        var bulletSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().WithDataLabelStyle(style => style.WithFontSize(15).WithTextCase(TextCaseTransform.Uppercase).WithUnderline(TextDecorationStyle.Dashed).WithStrikethrough(TextDecorationStyle.Dashed).WithSubscript()).AddBullet("control posture", 82, 90).ToSvg();
+        var bulletSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().ConfigureDataLabelStyle(style => style.WithFontSize(15).WithTextCase(TextCaseTransform.Uppercase).WithUnderline(TextDecorationStyle.Dashed).WithStrikethrough(TextDecorationStyle.Dashed).WithSubscript()).AddBullet("control posture", 82, 90).ToSvg();
         Assert(bulletSvg.Contains("CONTROL POSTURE", StringComparison.Ordinal), "Specialized SVG chart paths should apply casing before fitting.");
         Assert(bulletSvg.Contains("font-size=\"9.75\"", StringComparison.Ordinal), "Specialized SVG chart paths should apply script scaling exactly once.");
         Assert(System.Xml.Linq.XDocument.Parse(bulletSvg).Descendants().Any(element => element.Attribute("stroke-dasharray") != null
             && (string?)element.Attribute("data-cfx-role") == "text-decoration"), "Specialized SVG chart paths should preserve native dashed decoration geometry.");
-        AssertThrows<ArgumentNullException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTitleStyle(null!), "Text style callbacks should reject null callbacks.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTextStyle((ChartTextRole)999, _ => { }), "Text styles should reject unknown roles.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTitleStyle(style => style.WithFontSize(0)), "Text styles should reject non-positive font sizes.");
+        AssertThrows<ArgumentNullException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).ConfigureTitleStyle(null!), "Text style callbacks should reject null callbacks.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).ConfigureTextStyle((ChartTextRole)999, _ => { }), "Text styles should reject unknown roles.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).ConfigureTitleStyle(style => style.WithFontSize(0)), "Text styles should reject non-positive font sizes.");
     }
 
     private static void DonutAndRadialCenterLabelsAreOptional() {
@@ -101,7 +101,7 @@ internal static partial class SmokeTests {
             .WithPngOutputScale(2)
             .WithLegend(false)
             .WithDonutCenterText("60", "A")
-            .WithDataLabelStyle(style => style.WithColor("#ff00ff").WithFontSize(32))
+            .ConfigureDataLabelStyle(style => style.WithColor("#ff00ff").WithFontSize(32))
             .WithXLabels("Male", "Female")
             .AddDonut("Audience", Points(60.5, 39.5));
         var scriptedCenter = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
@@ -109,7 +109,7 @@ internal static partial class SmokeTests {
             .WithPngOutputScale(2)
             .WithLegend(false)
             .WithDonutCenterText("60", "A")
-            .WithDataLabelStyle(style => style.WithColor("#ff00ff").WithFontSize(32).WithSuperscript())
+            .ConfigureDataLabelStyle(style => style.WithColor("#ff00ff").WithFontSize(32).WithSuperscript())
             .WithXLabels("Male", "Female")
             .AddDonut("Audience", Points(60.5, 39.5));
         var regularCenterPixels = ReadPngRgba(regularCenter.ToPng(), out var centerWidth, out _);

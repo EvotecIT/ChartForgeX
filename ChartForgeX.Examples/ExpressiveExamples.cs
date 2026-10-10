@@ -259,8 +259,8 @@ internal static partial class ExpressiveExamples {
         return ChartGrid.Create()
             .WithTitle("People Infographic Showcase")
             .WithSubtitle("Demographic panels using pictorial people, donut split, rings, horizontal bars, and trend lines")
-            .WithTitleStyle(style => style.WithColor("#0F172A").WithWeight("900"))
-            .WithSubtitleStyle(style => style.WithColor("#475569"))
+            .ConfigureTitleStyle(style => style.WithColor("#0F172A").WithWeight("900"))
+            .ConfigureSubtitleStyle(style => style.WithColor("#475569"))
             .WithBrandKit(brand)
             .WithColumns(3)
             .WithPadding(28)
@@ -531,7 +531,7 @@ internal static partial class ExpressiveExamples {
                 new ChartInterval(3, 96, 142),
                 new ChartInterval(4, 128, 196)
             }, ChartColor.FromRgb(14, 165, 233));
-        chart.Series[0].WithPointColor(2, "#F97316").WithPointDataLabelStyle(2, style => style.WithColor("#9A3412").WithWeight("900"));
+        chart.Series[0].WithPointColor(2, "#F97316").ConfigurePointDataLabelStyle(2, style => style.WithColor("#9A3412").WithWeight("900"));
         return chart;
     }
 
@@ -571,7 +571,7 @@ internal static partial class ExpressiveExamples {
                 new ChartBoxPlot(2, 42, 56, 64, 82, 104),
                 new ChartBoxPlot(3, 86, 102, 118, 146, 188)
             }, ChartColor.FromRgb(96, 165, 250));
-        chart.Series[0].WithPointColor(1, "#A78BFA").WithPointDataLabelStyle(1, style => style.WithColor("#C4B5FD").WithUnderline());
+        chart.Series[0].WithPointColor(1, "#A78BFA").ConfigurePointDataLabelStyle(1, style => style.WithColor("#C4B5FD").WithUnderline());
         return chart;
     }
 
@@ -585,7 +585,7 @@ internal static partial class ExpressiveExamples {
             .WithDataLabels()
             .WithXLabels("W1", "W2", "W3", "W4")
             .AddCandlestick("Signal", SignalWindows());
-        chart.Series[0].WithPointColor(2, "#DB2777").WithPointDataLabelStyle(2, style => style.WithColor("#BE123C").WithWeight("900"));
+        chart.Series[0].WithPointColor(2, "#DB2777").ConfigurePointDataLabelStyle(2, style => style.WithColor("#BE123C").WithWeight("900"));
         return chart;
     }
 
@@ -616,7 +616,7 @@ internal static partial class ExpressiveExamples {
         chart.Series[0]
             .WithPointColor(0, "#F97316")
             .WithPointColor(1, "#14B8A6")
-            .WithPointDataLabelStyle(1, style => style.WithColor("#0F766E").WithWeight("900").WithUnderline());
+            .ConfigurePointDataLabelStyle(1, style => style.WithColor("#0F766E").WithWeight("900").WithUnderline());
         return chart;
     }
 

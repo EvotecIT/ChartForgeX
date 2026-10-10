@@ -105,8 +105,8 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         switch (family) {
             case "pie": chart.AddPie("Requests", ChartPoints.FromValues(8, 5)); break;
             case "gauge": chart.AddGauge("Capacity", 13, max: 13); break;
-            case "gauge-needle": chart.AddGauge("Capacity", 13, max: 13).WithGauge(options => options.Form = ChartGaugeForm.Needle); break;
-            case "gauge-linear": chart.AddGauge("Capacity", 13, max: 13).WithGauge(options => options.Form = ChartGaugeForm.Linear); break;
+            case "gauge-needle": chart.AddGauge("Capacity", 13, max: 13).ConfigureGauge(options => options.Form = ChartGaugeForm.Needle); break;
+            case "gauge-linear": chart.AddGauge("Capacity", 13, max: 13).ConfigureGauge(options => options.Form = ChartGaugeForm.Linear); break;
             case "sunburst": chart.AddSunburst("Teams", new[] { new ChartHierarchyItem("Teams", "Teams"), new ChartHierarchyItem("Support", "Support", "Teams", 8), new ChartHierarchyItem("Other", "Other", "Teams", 5) }); break;
             case "polar-area": chart.AddPolarArea("Requests", ChartPoints.FromValues(8, 5)); break;
         }

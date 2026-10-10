@@ -24,7 +24,7 @@ public sealed partial class Chart {
     /// <summary>
     /// Mutates a copy of the current reusable line visual tokens.
     /// </summary>
-    public Chart WithLineVisualStyle(Action<ChartLineVisualStyle> configure) {
+    public Chart ConfigureLineVisualStyle(Action<ChartLineVisualStyle> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         var style = Options.LineVisualStyle.Clone();
         configure(style);

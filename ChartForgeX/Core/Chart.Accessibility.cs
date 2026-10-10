@@ -8,7 +8,7 @@ public sealed partial class Chart {
     public VisualAccessibility Accessibility { get; } = new();
 
     /// <summary>Configures the chart text alternative and language metadata.</summary>
-    public Chart WithAccessibility(Action<VisualAccessibility> configure) {
+    public Chart ConfigureAccessibility(Action<VisualAccessibility> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(Accessibility);
         return this;

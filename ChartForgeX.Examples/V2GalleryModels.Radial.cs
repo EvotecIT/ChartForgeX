@@ -12,7 +12,7 @@ public static partial class V2GalleryModels {
             case ChartSeriesKind.Pie: chart.AddPie("Revenue", values); break;
             case ChartSeriesKind.Donut: chart.AddDonut("Revenue", values); break;
             case ChartSeriesKind.Gauge:
-                chart.AddGauge("Capacity", 76).WithGauge(options => {
+                chart.AddGauge("Capacity", 76).ConfigureGauge(options => {
                     options.Form = variant == "options" ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
                     options.Target = 85; options.Caption = "Available capacity";
                     options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));

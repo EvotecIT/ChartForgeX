@@ -37,7 +37,7 @@ public static class TableArtifactRendering {
             var values = new object?[row.Cells.Count];
             for (var cellIndex = 0; cellIndex < row.Cells.Count; cellIndex++) values[cellIndex] = row.Cells[cellIndex].DisplayText;
             preview.AddRow(values);
-            preview.WithRow(rowIndex, targetRow => {
+            preview.ConfigureRow(rowIndex, targetRow => {
                 for (var cellIndex = 0; cellIndex < row.Cells.Count; cellIndex++) {
                     targetRow.Cells[cellIndex].Status = row.Cells[cellIndex].Status == VisualStatus.None ? row.Status : row.Cells[cellIndex].Status;
                 }

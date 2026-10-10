@@ -71,7 +71,7 @@ public sealed class SankeyVisualDefaultsTests {
                 new ChartFlowLink("flow-5", "Manual", "Completed", 20), new ChartFlowLink("flow-6", "Manual", "Review", 8)
             });
         var authored = ChartColor.FromHex("#7D3F98");
-        chart.Series[0].WithPointDataLabelStyle(0, style => { style.Color = authored; style.FontSize = 13; style.Underline = true; });
+        chart.Series[0].ConfigurePointDataLabelStyle(0, style => { style.Color = authored; style.FontSize = 13; style.Underline = true; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "sankey-node-label").ToArray();
         Assert.Equal(new[] { "Received 100", "Automatic 72", "Manual 28", "Completed 85", "Review 15" },

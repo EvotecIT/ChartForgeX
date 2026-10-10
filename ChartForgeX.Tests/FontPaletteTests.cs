@@ -164,8 +164,8 @@ public sealed class FontPaletteTests {
     [Fact]
     public void SeriesAndPointLabelStylesEmitTheirEffectivePaletteDefinitions() {
         var chart = Chart.Create().WithDataLabels().AddBar("Observed", new[] { new ChartPoint(1, 5), new ChartPoint(2, 4) });
-        chart.Series[0].WithDataLabelStyle(s => s.WithFontFamily("CFX Series").WithColorPalette(3));
-        chart.Series[0].WithPointDataLabelStyle(0, s => s.WithFontFamily("CFX Point").WithColorPalette(4));
+        chart.Series[0].ConfigureDataLabelStyle(s => s.WithFontFamily("CFX Series").WithColorPalette(3));
+        chart.Series[0].ConfigurePointDataLabelStyle(0, s => s.WithFontFamily("CFX Point").WithColorPalette(4));
         var svg = chart.ToSvg();
         Assert.Contains("base-palette:3", svg); Assert.Contains("base-palette:4", svg);
         Assert.Contains("font-palette:--cfx-font-palette-3", svg);
@@ -215,7 +215,7 @@ public sealed class FontPaletteTests {
     [Fact]
     public void ChartGridPaginationAndHtmlExportNativePaletteRules() {
         WithRegisteredFont(_ => {
-            var chart = Chart.Create().WithTitle("😀").WithTitleStyle(s => s.WithFontFamily("CFX Palette").WithColorPalette(1));
+            var chart = Chart.Create().WithTitle("😀").ConfigureTitleStyle(s => s.WithFontFamily("CFX Palette").WithColorPalette(1));
             var svg = chart.ToSvg();
             Assert.Contains("@font-palette-values --cfx-font-palette-1", svg);
             Assert.Contains("font-palette:--cfx-font-palette-1", svg);

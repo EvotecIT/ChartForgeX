@@ -36,7 +36,7 @@ internal static partial class SmokeTests {
             .AddRow("worker", "Worker", "Warning", 91);
 
         table.Columns[1].Metadata["facet"] = "health";
-        table.WithRow(1, row => {
+        table.ConfigureRow(1, row => {
             row.Status = VisualStatus.Warning;
             row.Metadata["source"] = "probe";
             row.Cells[1].Status = VisualStatus.Warning;
@@ -67,7 +67,7 @@ internal static partial class SmokeTests {
             .AddColumn("state", "State", TableArtifactColumnType.Status)
             .AddRow("a", "Ada Lovelace", "Enabled")
             .AddRow("g", "Grace Hopper", "Disabled")
-            .WithRow(1, row => {
+            .ConfigureRow(1, row => {
                 row.Status = VisualStatus.Negative;
                 row.Cells[1].Status = VisualStatus.Negative;
             });
@@ -296,7 +296,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => VisualWatermark.FromImage(new byte[] { 0x52, 0x49, 0x46, 0x46 }, "image/png"), "Image watermarks should reject unsupported image bytes at construction.");
 
         var mutableChart = Chart.Create().WithSize(240, 140).WithTitle("Mutable");
-        mutableChart.WithAccessibility(accessibility => accessibility.WithTextAlternative("Mutable chart", "A mutable size chart.", "en"));
+        mutableChart.ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("Mutable chart", "A mutable size chart.", "en"));
         mutableChart.AddBar("Value", new[] { new ChartPoint(1, 2) });
         var mutableArtifact = mutableChart.ToVisualArtifact();
         Assert(mutableArtifact.Accessibility.Name == "Mutable chart" && mutableArtifact.Accessibility.Description == "A mutable size chart." && mutableArtifact.Accessibility.Language == "en", "Chart artifacts should preserve accessibility metadata for host adapters.");

@@ -95,9 +95,9 @@ internal static partial class SmokeTests {
         var chart = Chart.Create()
             .WithSize(520, 320)
             .WithDataLabels()
-            .WithDataLabelStyle(style => style.WithColor("#64748b"))
+            .ConfigureDataLabelStyle(style => style.WithColor("#64748b"))
             .AddBar("Styled labels", Points(10, 40, 22, 58));
-        chart.Series[0].WithDataLabelStyle(style => style.WithColor("#dc2626").WithWeight("900").WithUnderline().WithFontSize(13));
+        chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#dc2626").WithWeight("900").WithUnderline().WithFontSize(13));
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Series data-label styling should still render labels.");
         Assert(svg.Contains("fill=\"#DC2626\"", StringComparison.Ordinal), "Series data-label styles should override chart-level label color.");
@@ -105,17 +105,17 @@ internal static partial class SmokeTests {
         Assert(labels.Length == 4 && labels.All(label => label.Text.Style.Font.Weight == 900 && label.Text.Style.Underline
             && label.Text.Style.FontSize == 13), "Series data-label styles should override weight, decoration and size in the shared text snapshot.");
         Assert(chart.ToPng().Length > 64, "Series data-label styles should render PNG output.");
-        AssertThrows<ArgumentNullException>(() => chart.Series[0].WithDataLabelStyle(null!), "Series data-label style callbacks should reject null callbacks.");
-        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithDataLabelStyle(style => style.WithFontSize(0)), "Series data-label styles should reject invalid font sizes.");
+        AssertThrows<ArgumentNullException>(() => chart.Series[0].ConfigureDataLabelStyle(null!), "Series data-label style callbacks should reject null callbacks.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(0)), "Series data-label styles should reject invalid font sizes.");
     }
 
     private static void SpecializedSeriesDataLabelStylesOverrideChartDefaults() {
         var pie = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 280)
             .WithDataLabels()
-            .WithDataLabelStyle(style => style.WithColor("#64748b"))
+            .ConfigureDataLabelStyle(style => style.WithColor("#64748b"))
             .AddPie("Slices", Points(70, 30));
-        pie.Series[0].WithDataLabelStyle(style => style.WithColor("#0f766e").WithWeight("900").WithUnderline().WithFontSize(14));
+        pie.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#0f766e").WithWeight("900").WithUnderline().WithFontSize(14));
         var pieSvg = PreparedFamily(pie).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions());
         Assert(pieSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Pie data labels should render with series styles enabled.");
         var pieLabels = FamilyLabels(PreparedFamily(pie), "data-label");
@@ -125,9 +125,9 @@ internal static partial class SmokeTests {
         var heatmap = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(460, 300)
             .WithDataLabels()
-            .WithDataLabelStyle(style => style.WithColor("#64748b"))
+            .ConfigureDataLabelStyle(style => style.WithColor("#64748b"))
             .AddHeatmapRow("Styled", Points(95, 86, 72));
-        heatmap.Series[0].WithDataLabelStyle(style => style.WithColor("#dc2626").WithWeight("900"));
+        heatmap.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#dc2626").WithWeight("900"));
         var heatmapSvg = heatmap.ToSvg();
         Assert(heatmapSvg.Contains("fill=\"#DC2626\"", StringComparison.Ordinal) && heatmapSvg.Contains("font-weight=\"900\"", StringComparison.Ordinal), "Heatmap cell labels should honor per-series data-label style overrides.");
         Assert(heatmap.ToPng().Length > 64, "Heatmap series data-label styles should render PNG output.");
@@ -136,9 +136,9 @@ internal static partial class SmokeTests {
             .WithSize(460, 320)
             .WithXLabels("Reach", "Depth", "Trust")
             .WithDataLabels()
-            .WithDataLabelStyle(style => style.WithColor("#64748b"))
+            .ConfigureDataLabelStyle(style => style.WithColor("#64748b"))
             .AddRadar("Current", Points(92, 74, 88));
-        radar.Series[0].WithDataLabelStyle(style => style.WithColor("#7c3aed").WithWeight("900"));
+        radar.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#7c3aed").WithWeight("900"));
         Assert(FamilyLabels(PreparedFamily(radar), "radar-data-label").Any(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#7C3AED"))), "Radar data labels should honor per-series data-label color overrides.");
         Assert(radar.ToPng().Length > 64, "Radar series data-label styles should render PNG output.");
 
@@ -153,7 +153,7 @@ internal static partial class SmokeTests {
             .WithLegend(false)
             .WithDataLabels()
             .AddPolarArea("Polar", Points(92, 74, 88));
-        polarArea.Series[0].WithDataLabelStyle(style => style.WithColor("#0f766e").WithFontFamily("monospace").WithWeight("normal").WithItalic().WithUnderline().WithFontSize(16));
+        polarArea.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#0f766e").WithFontFamily("monospace").WithWeight("normal").WithItalic().WithUnderline().WithFontSize(16));
         var polarAreaSvg = PreparedFamily(polarArea).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions());
         var polarAreaPng = polarArea.ToPng();
         Assert(polarAreaSvg.Contains("fill=\"#0F766E\"", StringComparison.Ordinal) && polarAreaSvg.Contains("font-style=\"italic\"", StringComparison.Ordinal), "Polar-area labels should honor per-series data-label style overrides.");
@@ -162,9 +162,9 @@ internal static partial class SmokeTests {
         var waterfall = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(480, 320)
             .WithDataLabels()
-            .WithDataLabelStyle(style => style.WithColor("#64748b"))
+            .ConfigureDataLabelStyle(style => style.WithColor("#64748b"))
             .AddWaterfall("Delta", Points(18, -7, 12));
-        waterfall.Series[0].WithDataLabelStyle(style => style.WithColor("#b45309").WithWeight("900"));
+        waterfall.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#b45309").WithWeight("900"));
         Assert(waterfall.ToSvg().Contains("fill=\"#B45309\"", StringComparison.Ordinal), "Waterfall data labels should honor per-series data-label color overrides.");
         Assert(waterfall.ToPng().Length > 64, "Waterfall series data-label styles should render PNG output.");
     }
@@ -175,8 +175,8 @@ internal static partial class SmokeTests {
             .WithDataLabels()
             .AddBar("Styled labels", Points(12, 44, 26));
         chart.Series[0]
-            .WithDataLabelStyle(style => style.WithColor("#654321").WithWeight("700"))
-            .WithPointDataLabelStyle(1, style => style.WithColor("#123456").WithWeight("900").WithUnderline().WithFontSize(14));
+            .ConfigureDataLabelStyle(style => style.WithColor("#654321").WithWeight("700"))
+            .ConfigurePointDataLabelStyle(1, style => style.WithColor("#123456").WithWeight("900").WithUnderline().WithFontSize(14));
 
         var svg = chart.ToSvg();
         Assert(svg.Contains("fill=\"#123456\"", StringComparison.Ordinal), "Point data-label styles should override series label color.");
@@ -193,13 +193,13 @@ internal static partial class SmokeTests {
             .WithSize(420, 280)
             .WithDataLabels()
             .AddPie("Slices", Points(70, 30));
-        pie.Series[0].WithPointDataLabelStyle(1, style => style.WithColor("#0f3d5e").WithWeight("900"));
+        pie.Series[0].ConfigurePointDataLabelStyle(1, style => style.WithColor("#0f3d5e").WithWeight("900"));
         Assert(FamilyLabels(PreparedFamily(pie), "data-label").Any(label => label.Text.Style.Color.Equals(ChartColor.FromHex("#0F3D5E"))), "Pie slice labels should honor point-level data-label style overrides.");
         Assert(pie.ToPng().Length > 64, "Pie point data-label styles should render PNG output.");
 
-        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithPointDataLabelStyle(-1, _ => { }), "Point data-label styles should reject negative indexes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithPointDataLabelStyle(99, _ => { }), "Point data-label styles should reject missing point indexes.");
-        AssertThrows<ArgumentNullException>(() => chart.Series[0].WithPointDataLabelStyle(0, null!), "Point data-label styles should reject null callbacks.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].ConfigurePointDataLabelStyle(-1, _ => { }), "Point data-label styles should reject negative indexes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].ConfigurePointDataLabelStyle(99, _ => { }), "Point data-label styles should reject missing point indexes.");
+        AssertThrows<ArgumentNullException>(() => chart.Series[0].ConfigurePointDataLabelStyle(0, null!), "Point data-label styles should reject null callbacks.");
         AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].UseSeriesDataLabelStyle(99), "Clearing point data-label styles should reject missing point indexes.");
     }
 
@@ -403,7 +403,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].WithPointColor(99, "#F97316"), "Point colors should reject missing point indexes.");
         AssertThrows<ArgumentOutOfRangeException>(() => chart.Series[0].UseSeriesColor(99), "Clearing point colors should reject missing point indexes.");
         AssertThrows<ArgumentOutOfRangeException>(() => bubble.Series[0].WithPointColor(3, "#F97316"), "Tuple-backed point colors should reject indexes outside the logical item count.");
-        AssertThrows<ArgumentOutOfRangeException>(() => errorBar.Series[0].WithPointDataLabelStyle(2, _ => { }), "Tuple-backed point label styles should reject indexes outside the logical item count.");
+        AssertThrows<ArgumentOutOfRangeException>(() => errorBar.Series[0].ConfigurePointDataLabelStyle(2, _ => { }), "Tuple-backed point label styles should reject indexes outside the logical item count.");
         AssertThrows<ArgumentOutOfRangeException>(() => candlestick.Series[0].WithPointSliceOffset(2, 0.1), "Tuple-backed slice offsets should reject indexes outside the logical item count.");
     }
 

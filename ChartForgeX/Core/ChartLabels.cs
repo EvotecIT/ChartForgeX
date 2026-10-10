@@ -81,7 +81,7 @@ public sealed class ChartLabels {
     /// the chart description (the SVG <c>desc</c> element) and the accessible names of calendar, dotted map, region map,
     /// and tile map groups; <see cref="ChartDescriptionFacts.Kind"/> says which. Null (the default), or a function
     /// returning null or white space for a sentence, writes <see cref="ChartDescriptionFacts.EnglishText"/>. A description
-    /// set through <see cref="Chart.WithAccessibility"/> still wins and the function is not called for it. Exceptions
+    /// set through <see cref="Chart.ConfigureAccessibility"/> still wins and the function is not called for it. Exceptions
     /// thrown by the function are not caught; they surface from the render call.
     /// </summary>
     public Func<ChartDescriptionFacts, string?>? AccessibleTextFormatter { get; set; }

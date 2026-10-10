@@ -374,10 +374,10 @@ internal static class DashboardPatternExamples {
         .AddRow("Microsoft", "Software Engineer", "New York", "92", "", "")
         .AddRow("Asana", "Software Engineer", "New York", "92", "", "")
         .AddRow("Google", "Software Engineer", "New York", "92", "", "")
-        .WithRow(0, row => { row.Cells[4].WithBadge("22 new", VisualStatus.Info, Purple); row.Cells[5].WithSparkline(new[] { 12d, 16d, 13d, 19d, 22d }, color: Purple); })
-        .WithRow(1, row => { row.Cells[4].WithBadge("12 new", VisualStatus.Info, Purple); row.Cells[5].WithSparkline(new[] { 10d, 14d, 12d, 11d, 12d }, color: Purple); })
-        .WithRow(2, row => { row.Cells[4].WithBadge("2 new", VisualStatus.Neutral, SoftGray); row.Cells[5].WithMiniBars(new[] { 2d, 4d, 3d, 2d, 5d }, color: Purple); })
-        .WithRow(3, row => { row.Cells[4].WithBadge("32 new", VisualStatus.Info, Purple); row.Cells[5].WithSparkline(new[] { 18d, 24d, 22d, 29d, 32d }, color: Purple); });
+        .ConfigureRow(0, row => { row.Cells[4].WithBadge("22 new", VisualStatus.Info, Purple); row.Cells[5].WithSparkline(new[] { 12d, 16d, 13d, 19d, 22d }, color: Purple); })
+        .ConfigureRow(1, row => { row.Cells[4].WithBadge("12 new", VisualStatus.Info, Purple); row.Cells[5].WithSparkline(new[] { 10d, 14d, 12d, 11d, 12d }, color: Purple); })
+        .ConfigureRow(2, row => { row.Cells[4].WithBadge("2 new", VisualStatus.Neutral, SoftGray); row.Cells[5].WithMiniBars(new[] { 2d, 4d, 3d, 2d, 5d }, color: Purple); })
+        .ConfigureRow(3, row => { row.Cells[4].WithBadge("32 new", VisualStatus.Info, Purple); row.Cells[5].WithSparkline(new[] { 18d, 24d, 22d, 29d, 32d }, color: Purple); });
 
     private static VisualGrid PaymentAnalyticsGrid(int outputScale) => VisualGrid.Create()
         .WithTitle("Payment Analytics Dashboard")

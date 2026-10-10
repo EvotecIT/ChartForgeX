@@ -244,7 +244,7 @@ public sealed class FontVariationTests {
             var svg = grid.ToSvg(); Assert.Contains("font-variation-settings:", svg); Assert.Contains("font-language-override:", svg);
             Assert.Contains("font-variation-settings:", new HtmlChartGridRenderer().RenderFragment(grid));
             Assert.NotEmpty(grid.ToPng());
-            var chart = Chart.Create().WithSize(360, 260).WithDataLabels().WithDataLabelStyle(s => s.WithFontFamily("CFX Variation").WithVariation("wdth", 125)).AddProgressRing("HHHH", new[] { new ChartPoint(0, 40) });
+            var chart = Chart.Create().WithSize(360, 260).WithDataLabels().ConfigureDataLabelStyle(s => s.WithFontFamily("CFX Variation").WithVariation("wdth", 125)).AddProgressRing("HHHH", new[] { new ChartPoint(0, 40) });
             Assert.Contains("font-variation-settings:", chart.ToSvg()); Assert.NotEmpty(chart.ToPng());
         });
     }

@@ -25,7 +25,7 @@ public sealed class FlowArtifactLayoutTests {
             .AddConnector("x-review", "a-end", "Accepted")
             .AddConnector("x-review", "y-check", "Retry", FlowArtifactConnectorKind.Retry);
         flow.Direction = direction;
-        flow.WithStep("x-review", step => { step.Width = 150; step.Metadata["source.fact"] = "Retain source"; });
+        flow.ConfigureStep("x-review", step => { step.Width = 150; step.Metadata["source.fact"] = "Retain source"; });
         var before = flow.ToVisualArtifact().ToInterchangeJson();
         Assert.Equal(TopologyLayoutMode.Swimlane, flow.ToTopologyChart().LayoutMode);
         var prepared = flow.Prepare(VisualExportRequest.ForFlow(flow).Context);

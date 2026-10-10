@@ -6,9 +6,9 @@ These rules govern the shared prepared-rendering contracts and their model entry
 
 | Operation | Meaning | Example / rule |
 | --- | --- | --- |
-| `With*` | Set configuration on a mutable model builder and return that builder. Do not add data. | `chart.WithTitle("Capacity")` |
+| `With*` | Set a scalar value or configuration object on a mutable model builder and return that builder. Do not add data. | `chart.WithTitle("Capacity")`, `chart.WithBarVisualStyle(style)` |
 | `Add*` | Add model data or a semantic child and return the builder. Do not silently replace configuration. | `chart.AddLine("Used", points)` |
-| `Configure*` | Pass the existing sub-object to a typed callback, then return the builder. | `chart.ConfigureXAxis(axis => axis.Minimum = 0)` |
+| `Configure*` | Configure a sub-object through a typed callback, preserving the operation's ownership rules, then return the builder. | `chart.ConfigureXAxis(axis => axis.Minimum = 0)` |
 | `Prepare` | Validate and compile a model with an explicit render context; return a detached prepared result. | `chart.Prepare(context)` |
 | `To*` | Return an in-memory representation without writing a file or changing the model. | `prepared.ToSvg()`, `prepared.ToPng()`, `prepared.ToRgba()` |
 | `Save*` | Write to an explicitly supplied path or stream. Keep file ownership and format options visible. | File-saving helpers are outside the Phase 1 prepared contract. |
@@ -16,6 +16,12 @@ These rules govern the shared prepared-rendering contracts and their model entry
 | `Resolve` | Select a validated immutable view of an existing value. | `theme.Resolve(VisualThemeMode.Dark)` |
 
 Use domain names after prefixes. Avoid interchangeable `Set`, `Use`, `Build`, `Render`, `Options`, `Configure` and `With` methods for the same operation. A meaningful operation such as preparing, importing or exporting is not forced into a configuration prefix.
+
+Typed `Action<T>` configuration callbacks use `Configure*`, including callbacks that select a row, step or point by index or ID. Value and object setters keep `With*`; for example, `WithLineVisualStyle(style)` supplies a style while `ConfigureLineVisualStyle(style => ...)` configures it. The immutable `ChartColorScale.WithLabels(string?...)` copy operation retains its value arguments and name.
+
+The prefix does not promise uniform object identity or rollback. Axes, family options, labels, gauge options, accessibility and getter-owned text styles are edited in place. `ConfigureBarVisualStyle`, `ConfigureLineVisualStyle` and `ConfigureGridStyle` configure a clone of the current style, then install it through the copying setter after the callback succeeds. Retaining that working style does not give access to the installed copy. Point-label styling reuses an existing override or installs a newly configured one after success; its style list can expand before the callback runs.
+
+Chart and topology `ConfigureTheme` callbacks edit their stored theme in place. Chart-grid and visual-grid callbacks use the existing theme, or create a light theme when none is set and install it after success. Changes to an existing theme remain if the callback throws; a newly created grid theme is not installed on failure. Other callbacks that edit existing objects can also retain changes made before an exception. These ownership rules are preserved by the naming change.
 
 Immutable render requests use constructors and read-only properties. They do not expose `Add*` or `Configure*` mutation. The reviewed `VisualTheme.WithTypography(VisualTypography)` exception returns an independent paired theme with a replacement typography scale, preserving both palettes, geometry and effects without editing the source. Other immutable `With*` APIs need the same explicit copy-return contract and review. Existing mutable `FontSpec`, `VisualDesignTokens`, status-token and accessibility objects enter this boundary through snapshots or leave it through independent copies.
 
@@ -223,6 +229,6 @@ Numeric radial `Inside` and `Center` captions fit entirely within their painted 
 
 ## Enforcement boundary
 
-`V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.
+`V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Public typed configuration callbacks on the Core and Visuals `With*`/`Configure*` builder boundary must use `Configure*` and return their receiver. Data-adding callbacks and substantive exports keep their operation names. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.
 
 Each migrated family expands the reviewed API selection and adds its own data/layout/output fixtures. The old surface remains inventoried rather than being subjected to a blanket prefix rule during a partial migration. Do not weaken a current contract merely to pass the naming test, and do not claim that a naming check proves visual quality, package publication or consumer compatibility.

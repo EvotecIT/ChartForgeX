@@ -23,10 +23,10 @@ internal static partial class SmokeTests {
             .AddRow("D:", 0.91, "34 GB", "Warning")
             .WithStatusColumn("Status")
             .WithDenseMode();
-        table.WithRow(1, row => row.Cells[3].Status = VisualStatus.Warning);
-        table.WithRow(0, row => row.Cells[1].WithBadge("72%", VisualStatus.Positive, ChartColor.FromHex("#22C55E")));
-        table.WithRow(0, row => row.Cells[2].WithSparkline(new[] { 96d, 118d, 128d }, color: ChartColor.FromHex("#38BDF8")));
-        table.WithRow(1, row => row.Cells[2].WithMiniBars(new[] { 46d, 39d, 34d }, color: ChartColor.FromHex("#F97316")));
+        table.ConfigureRow(1, row => row.Cells[3].Status = VisualStatus.Warning);
+        table.ConfigureRow(0, row => row.Cells[1].WithBadge("72%", VisualStatus.Positive, ChartColor.FromHex("#22C55E")));
+        table.ConfigureRow(0, row => row.Cells[2].WithSparkline(new[] { 96d, 118d, 128d }, color: ChartColor.FromHex("#38BDF8")));
+        table.ConfigureRow(1, row => row.Cells[2].WithMiniBars(new[] { 46d, 39d, 34d }, color: ChartColor.FromHex("#F97316")));
 
         var tableSvg = table.ToSvg("visual-block-table");
         Assert(tableSvg.Contains("<svg", StringComparison.Ordinal), "ChartTable should render SVG.");
@@ -669,13 +669,13 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Status = (VisualStatus)999, "ChartTable cells should reject unknown status values.");
         AssertThrows<ArgumentException>(() => new ChartTableCell("bad").WithMiniBars(Array.Empty<double>()), "ChartTable cell mini bars should reject empty value sets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").WithMiniBars(new[] { double.NaN }), "ChartTable cell mini bars should reject non-finite values.");
-        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithSparkline(new[] { 1d })).ToSvg(), "ChartTable cell sparklines should require at least two values.");
-        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithMiniBars(new[] { 1d }, minimum: 2, maximum: 1)).ToSvg(), "ChartTable cell microvisual bounds should require maximum greater than minimum.");
+        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").ConfigureRow(0, row => row.Cells[0].WithSparkline(new[] { 1d })).ToSvg(), "ChartTable cell sparklines should require at least two values.");
+        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").ConfigureRow(0, row => row.Cells[0].WithMiniBars(new[] { 1d }, minimum: 2, maximum: 1)).ToSvg(), "ChartTable cell microvisual bounds should require maximum greater than minimum.");
         var excessiveMicroVisualValues = new double[513];
         for (var i = 0; i < excessiveMicroVisualValues.Length; i++) excessiveMicroVisualValues[i] = i;
-        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithMiniBars(excessiveMicroVisualValues)).ToSvg(), "ChartTable cell microvisuals should reject excessive point counts.");
+        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").ConfigureRow(0, row => row.Cells[0].WithMiniBars(excessiveMicroVisualValues)).ToSvg(), "ChartTable cell microvisuals should reject excessive point counts.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").MicroVisualKind = (ChartTableCellMicroVisualKind)999, "ChartTable cells should reject unknown microvisual kinds.");
-        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").WithRow(0, row => row.Cells[0].WithBadge(new string('x', 25))).ToSvg(), "ChartTable cell badges should stay compact.");
+        AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").ConfigureRow(0, row => row.Cells[0].WithBadge(new string('x', 25))).ToSvg(), "ChartTable cell badges should stay compact.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").BadgeStyle = (VisualBadgeStyle)999, "ChartTable cells should reject unknown badge styles.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartList.Create().Marker = (VisualListMarker)999, "ChartList marker property should reject unknown marker values.");
         AssertThrows<ArgumentNullException>(() => new ChartListItem("ok").Text = null!, "ChartList items should reject null text through the public setter.");

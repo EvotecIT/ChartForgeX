@@ -498,7 +498,7 @@ public sealed partial class ChartSeries {
     /// </summary>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithDataLabelStyle(Action<TextStyleOverride> configure) {
+    public ChartSeries ConfigureDataLabelStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(DataLabelStyle);
         return this;
@@ -510,7 +510,7 @@ public sealed partial class ChartSeries {
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointDataLabelStyle(int pointIndex, Action<TextStyleOverride> configure) {
+    public ChartSeries ConfigurePointDataLabelStyle(int pointIndex, Action<TextStyleOverride> configure) {
         ValidatePointIndex(pointIndex);
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         while (PointDataLabelStyles.Count <= pointIndex) PointDataLabelStyles.Add(null);

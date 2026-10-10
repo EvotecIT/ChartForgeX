@@ -59,7 +59,7 @@ public sealed class V2SpecialtyTests {
         var chart = Chart.Create().WithPictorialColumns(2).WithPictorialValuePerSymbol(1).WithPictorialEmptyOpacity(.3)
             .AddPictorial("People", new[] { new ChartPictorialItem("A", 3.5, color) }, ChartPictorialShape.Person);
         chart.Series[0].WithPointFillPattern(0, ChartFillPattern.DiagonalForward);
-        chart.Series[0].WithPointDataLabelStyle(0, style => style.WithColor("#AB1234"));
+        chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.WithColor("#AB1234"));
         var scene = Compile(chart);
         var symbols = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "pictorial-symbol").ToArray();
         Assert.Equal(4, symbols.Length); Assert.Equal("0.5", symbols[3].Metadata["data-cfx-fill"]);
@@ -82,7 +82,7 @@ public sealed class V2SpecialtyTests {
     public void RotatedWordCloudUsesActualStyledMetricsAndRetainsLimitedAndZeroWeightTerms() {
         var chart = Chart.Create().WithWordCloudAngles(90).WithWordCloudMaximumTerms(1).WithWordCloudFontRange(16, 40)
             .AddWordCloud("Words", new[] { new ChartWordCloudItem("office ffi", 80), new ChartWordCloudItem("Limited", 40), new ChartWordCloudItem("Zero", 0) });
-        chart.Series[0].WithPointDataLabelStyle(0, style => style.WithWeight("900").WithItalic().WithTextCase(TextCaseTransform.Uppercase));
+        chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.WithWeight("900").WithItalic().WithTextCase(TextCaseTransform.Uppercase));
         var scene = Compile(chart);
         var text = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "word-cloud-text");
         Assert.Equal("OFFICE FFI", Assert.Single(text.Text.Lines).Text);

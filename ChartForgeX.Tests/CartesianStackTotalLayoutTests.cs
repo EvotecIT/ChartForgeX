@@ -20,7 +20,7 @@ public sealed class CartesianStackTotalLayoutTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
         var chart = Chart.Create().WithSize(300, 220).WithAxes(false).WithLegend(false).WithHeader(false)
-            .WithPngFont(font).WithStackedBars().WithStackTotals().WithDataLabelStyle(style => style.WithFontSize(18))
+            .WithPngFont(font).WithStackedBars().WithStackTotals().ConfigureDataLabelStyle(style => style.WithFontSize(18))
             .WithYAxisBounds(sign < 0 ? -16 : sign > 0 ? 0 : -16, sign < 0 ? 0 : 16);
         chart.Options.YAxis.WithReversal(reversed);
         var signs = sign == 0 ? new[] { 1, -1 } : new[] { sign };

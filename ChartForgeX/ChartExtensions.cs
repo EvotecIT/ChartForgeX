@@ -23,7 +23,7 @@ public static partial class ChartExtensions {
     /// <param name="chart">The chart to configure.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current chart.</returns>
-    public static Chart WithTheme(this Chart chart, Action<ChartTheme> configure) {
+    public static Chart ConfigureTheme(this Chart chart, Action<ChartTheme> configure) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(chart.Options.Theme);
@@ -73,7 +73,7 @@ public static partial class ChartExtensions {
     /// <param name="grid">The chart grid to configure.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current chart grid.</returns>
-    public static ChartGrid WithTheme(this ChartGrid grid, Action<ChartTheme> configure) {
+    public static ChartGrid ConfigureTheme(this ChartGrid grid, Action<ChartTheme> configure) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         var theme = grid.Theme ?? ChartTheme.Light();

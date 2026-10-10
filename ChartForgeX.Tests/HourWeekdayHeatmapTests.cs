@@ -71,7 +71,7 @@ public sealed class HourWeekdayHeatmapTests {
         var titled = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithXAxis("Local hour").AddHourWeekdayHeatmap(new[] { sundayLate });
         Assert.Equal("Local hour", titled.XAxisTitle);
 
-        var localized = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithLabels(labels => labels.HourOfDay = "Godzina").AddHourWeekdayHeatmap(new[] { sundayLate });
+        var localized = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).ConfigureLabels(labels => labels.HourOfDay = "Godzina").AddHourWeekdayHeatmap(new[] { sundayLate });
         Assert.Equal("Godzina (UTC)", localized.XAxisTitle);
     }
 

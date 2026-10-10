@@ -46,7 +46,7 @@ public sealed class NumericRadialLabelTests {
         Assert.True(ChartColorMath.ContrastRatio(composed, label.Color) >= 4.5);
 
         var authored = ChartColor.FromHex("#D040E0");
-        chart.Series[0].WithDataLabelStyle(style => style.WithColor(authored));
+        chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor(authored));
         Assert.Equal(authored, Assert.Single(Captions(Prepare(chart, 600, 440))).Color);
     }
 

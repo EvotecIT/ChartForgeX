@@ -225,7 +225,7 @@ internal static class MapExamples {
             .WithLegend(false)
             .WithMapViewport(ChartMapViewport.Europe())
             .WithDataLabels()
-            .WithDataLabelStyle(style => style.WithFontSize(11.5))
+            .ConfigureDataLabelStyle(style => style.WithFontSize(11.5))
             .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
             .AddDottedMap("Revenue", new[] {
                 new ChartMapPoint("United Kingdom", -1.1743, 52.3555, 188, ChartColor.FromRgb(37, 99, 235)),

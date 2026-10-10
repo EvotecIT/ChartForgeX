@@ -4,6 +4,30 @@ This guide records the breaking-release target and the observed consumer contrac
 
 Qualify consumer candidates from their intended branches. A primary checkout, remote source, local project reference and installed NuGet package are different evidence boundaries; source migration alone does not establish an installed consumer or a public release.
 
+## Typed configuration callbacks
+
+Replace `With*` calls that accept typed configuration callbacks with `Configure*`. Rebuild callers compiled against the former methods. The value and object overloads keep their `With*` names; there are no forwarding aliases.
+
+| Previous callback | Current callback |
+| --- | --- |
+| `Chart.WithGauge`, `WithLabels`, `WithAccessibility` | `ConfigureGauge`, `ConfigureLabels`, `ConfigureAccessibility` |
+| `Chart.WithTextStyle` | `ConfigureTextStyle` |
+| `Chart.WithTitleStyle`, `WithSubtitleStyle` | `ConfigureTitleStyle`, `ConfigureSubtitleStyle` |
+| `Chart.WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle` | `ConfigureAxisTitleStyle`, `ConfigureTickLabelStyle`, `ConfigureLegendStyle` |
+| `Chart.WithDataLabelStyle` | `ConfigureDataLabelStyle` |
+| `Chart.WithBarVisualStyle`, `WithLineVisualStyle`, `WithGridStyle` | `ConfigureBarVisualStyle`, `ConfigureLineVisualStyle`, `ConfigureGridStyle` |
+| `ChartSeries.WithDataLabelStyle`, `WithPointDataLabelStyle` | `ConfigureDataLabelStyle`, `ConfigurePointDataLabelStyle` |
+| `ChartGrid.WithTitleStyle`, `WithSubtitleStyle` | `ConfigureTitleStyle`, `ConfigureSubtitleStyle` |
+| Chart, chart-grid, topology and visual-grid `WithTheme` callbacks | `ConfigureTheme` |
+| `TopologyChart.WithLabels`, `WithAccessibility` | `ConfigureLabels`, `ConfigureAccessibility` |
+| `VisualCanvas.WithAccessibility` | `ConfigureAccessibility` |
+| `ChartTable.WithRow`, `TableArtifact.WithRow` | `ConfigureRow(index, callback)` |
+| `FlowArtifact.WithStep`, `WithConnector` | `ConfigureStep(id, callback)`, `ConfigureConnector(index, callback)` |
+
+For example, use `chart.ConfigureLabels(labels => labels.NoData = "Brak danych")` and `chart.ConfigureBarVisualStyle(style => style.CornerRadius = 4)`. Supplying a complete style still uses `chart.WithBarVisualStyle(style)`. `ChartColorScale.WithLabels("Low", "Middle", "High")` still returns an immutable scale copy.
+
+Object ownership is unchanged. Getter-owned options, accessibility, labels and text styles are edited in place. Bar, line and grid-style callbacks configure a working clone and install a separate copy after success. Chart and topology theme callbacks edit the stored theme; chart-grid and visual-grid callbacks reuse an existing theme or install a newly created light theme after success. Mutations to existing objects can remain after a callback throws. See the [API conventions](api-conventions.md#operation-names) for point-label ownership and the complete naming boundary.
+
 ## Hierarchy and flow identities
 
 Replace the label-based relationship overloads with explicit nodes and links:
@@ -85,7 +109,7 @@ Replace `ChartMapColorScale` with `ChartColorScale`. Map calls keep their names:
 
 `Discrete(bands)` copies immutable `ChartColorBand` instances. Finite upper bounds are strictly ascending and exclusive; the final band has a null upper bound. The first band has no lower limit, and equality with a boundary selects the next band. `Bands` exposes a read-only list, and optional band names appear with their intervals in map legends. Discrete scales use those bounds directly and reject `WithValueRange`, `WithMidpoint`, and continuous endpoint labels. Only diverging scales accept `WithMidpoint`. Missing data keeps the optional `NoDataColor` and renderer/theme fallback policy; non-finite numbers are rejected rather than treated as missing.
 
-Map, Sunburst and Treemap discrete legends use `ChartLabels.AllValues` for a single unbounded band and `ChartLabels.Value` between interior bounds. For example, `chart.WithLabels(labels => { labels.AllValues = "Wszystkie wartości"; labels.Value = "wartość"; })` produces localized interval captions while their numeric metadata remains invariant. Band names and numeric value formatting remain independent choices.
+Map, Sunburst and Treemap discrete legends use `ChartLabels.AllValues` for a single unbounded band and `ChartLabels.Value` between interior bounds. For example, `chart.ConfigureLabels(labels => { labels.AllValues = "Wszystkie wartości"; labels.Value = "wartość"; })` produces localized interval captions while their numeric metadata remains invariant. Band names and numeric value formatting remain independent choices.
 
 ## Raster image inputs and animation delays
 
@@ -263,7 +287,7 @@ using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
 
 var chart = Chart.Create().WithTitle("CPU load")
-    .WithAccessibility(a => a.WithTextAlternative(
+    .ConfigureAccessibility(a => a.WithTextAlternative(
         "CPU load", "Synthetic CPU utilization.", "pl-PL"))
     .AddLine("CPU", new[] {
         new ChartPoint(0, 20), new ChartPoint(1, 35), new ChartPoint(2, 28)

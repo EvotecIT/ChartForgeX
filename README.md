@@ -287,7 +287,7 @@ var chart = Chart.Create()
     .WithXAxis("Run")
     .WithYAxis("Checks")
     .WithDesignTokens(VisualDesignTokens.GraphiteDark())
-    .WithAccessibility(accessibility => accessibility.WithTextAlternative(
+    .ConfigureAccessibility(accessibility => accessibility.WithTextAlternative(
         "Domain security checks",
         "Passed checks rise during the week while warnings and failures decline.",
         "en"))
@@ -337,7 +337,7 @@ Charts and diagrams share 24px default outer padding and a measured typography s
 
 Use `.WithHostFrame()` when the embedding host provides the surface and padding. `ChartGrid` and `VisualGrid` use 16 px gaps and 15 px panel titles. Value labels use compact numbers; SVG accessible names and numeric `data-cfx-*` attributes retain the full values.
 
-Arc gauges support targets and optional semantic bands through `.WithGauge(...)`; `ChartGaugeForm.Needle` selects a needle. `.AddLinearGauge("Readiness", 87)` uses neutral bullet bands, a thin measure and a value triangle. The named `ChartTheme.Light()`, `Dark()`, `ReportLight()`, `ReportDark()` and other presets remain available. `ChartBarStyle.Solid` and `SegmentedCapsule` opt into the earlier effect styles.
+Arc gauges support targets and optional semantic bands through `.ConfigureGauge(...)`; `ChartGaugeForm.Needle` selects a needle. `.AddLinearGauge("Readiness", 87)` uses neutral bullet bands, a thin measure and a value triangle. The named `ChartTheme.Light()`, `Dark()`, `ReportLight()`, `ReportDark()` and other presets remain available. `ChartBarStyle.Solid` and `SegmentedCapsule` opt into the earlier effect styles.
 
 The [approved look specification](docs/design/chart-look-spec.html) shows both themes and the family geometry. See the [1.0 migration notes](docs/1.0-migration.md#graphite-default-look) for changed rendering defaults.
 
@@ -401,7 +401,7 @@ var chart = Chart.Create()
     .WithXAxis("Environment")
     .WithYAxis("Checks")
     .WithXLabels("production", "staging", "development")
-    .WithTitleStyle(style => style
+    .ConfigureTitleStyle(style => style
         .WithColor("#7C3AED")
         .WithFontFamily("Aptos, Segoe UI, sans-serif")
         .WithFontSize(28)
@@ -409,10 +409,10 @@ var chart = Chart.Create()
         .WithItalic()
         .WithUnderline(TextDecorationStyle.Wavy)
         .WithTextCase(TextCaseTransform.TitleCase))
-    .WithTickLabelStyle(style => style
+    .ConfigureTickLabelStyle(style => style
         .WithColor("#2563EB")
         .WithTextCase(TextCaseTransform.Uppercase))
-    .WithDataLabelStyle(style => style
+    .ConfigureDataLabelStyle(style => style
         .WithStrikethrough(TextDecorationStyle.Dotted)
         .WithSuperscript())
     .AddBar("Passing", Points(98, 94, 91));
@@ -420,9 +420,9 @@ var chart = Chart.Create()
 
 `TextDecorationStyle` supports single, double, dotted, dashed, and wavy lines. `WithSubscript()` and `WithSuperscript()` select script placement. `TextCaseTransform` supports upper, lower, title, sentence, and toggle case; transforms are applied before measurement, fitting, wrapping, and rendering. SVG and HTML expose one native decoration-pattern value per text run, so when underline and strikethrough are combined with different patterns they use the underline pattern together; the raster owner can draw the two patterns independently.
 
-Select a font's localized forms with `TextStyle.OpenTypeLanguageTag = "SRB"`, or a chart role override such as `.WithTickLabelStyle(style => style.WithOpenTypeLanguage("SRB"))`. The tag selects that font's GSUB/GPOS language system for measurement and drawing, including fallback faces. Tags such as `SRB` (Serbian) and `TRK` (Turkish) are case-sensitive OpenType tags, not culture names. A missing tag uses the font's default system. Null keeps the default on a complete style and inherits on an override; `WithOpenTypeLanguage("normal")` resets an override to the default. SVG carries this choice through CSS `font-language-override`, so native SVG display also depends on the browser's support and available fonts. The `language-forms-showcase` gallery example uses localized Serbian italic labels.
+Select a font's localized forms with `TextStyle.OpenTypeLanguageTag = "SRB"`, or a chart role override such as `.ConfigureTickLabelStyle(style => style.WithOpenTypeLanguage("SRB"))`. The tag selects that font's GSUB/GPOS language system for measurement and drawing, including fallback faces. Tags such as `SRB` (Serbian) and `TRK` (Turkish) are case-sensitive OpenType tags, not culture names. A missing tag uses the font's default system. Null keeps the default on a complete style and inherits on an override; `WithOpenTypeLanguage("normal")` resets an override to the default. SVG carries this choice through CSS `font-language-override`, so native SVG display also depends on the browser's support and available fonts. The `language-forms-showcase` gallery example uses localized Serbian italic labels.
 
-Select variable-font axes with `FontSpec.FromFile(path).WithVariation("wght", 650).WithVariation("opsz", 20)`, or a chart role such as `.WithTickLabelStyle(style => style.WithVariation("wdth", 85))`. Measurement, fitting and raster drawing use the selected TrueType or CFF2 instance, including its advances and positioning. Axis tags are case-sensitive four-character ASCII letters or digits; values are finite and clamped to the font's declared range. Unknown axes are ignored. An empty `FontVariationSettings.Default` resets an override; otherwise overrides inherit. Weight and size do not automatically choose axes. SVG and HTML carry explicit axes through `font-variation-settings` and depend on the browser's fonts. The `variable-font-showcase` gallery example uses weight and optical-size axes.
+Select variable-font axes with `FontSpec.FromFile(path).WithVariation("wght", 650).WithVariation("opsz", 20)`, or a chart role such as `.ConfigureTickLabelStyle(style => style.WithVariation("wdth", 85))`. Measurement, fitting and raster drawing use the selected TrueType or CFF2 instance, including its advances and positioning. Axis tags are case-sensitive four-character ASCII letters or digits; values are finite and clamped to the font's declared range. Unknown axes are ignored. An empty `FontVariationSettings.Default` resets an override; otherwise overrides inherit. Weight and size do not automatically choose axes. SVG and HTML carry explicit axes through `font-variation-settings` and depend on the browser's fonts. The `variable-font-showcase` gallery example uses weight and optical-size axes.
 
 Font-authored GPOS device corrections adjust kerning and mark placement at the nearest whole logical font size. Measurement, fitting, and raster drawing share those positions; raising PNG export resolution preserves the layout. Native SVG text uses the browser's font engine. See [text rendering](docs/visual-canvas.md) for size, variation and hinting limits.
 
@@ -798,7 +798,7 @@ chart.Series[1].WithStackGroup("work");
 | KPI and radial visuals | `AddGauge`, `AddCircle`, `AddProgressRing`, `AddRadialBar`, `AddRadialColumn`, `ChartRadialGeometryOptions`, `WithRadialGeometry`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolar`, `AddPolarArea` |
 | Hierarchy and flow | `AddFunnel`, `AddPyramid`, `AddTreemap`, `AddSankey`, `ConfigureSankey`, `ChartSankeyOptions`, `AddChord`, `ConfigureChord`, `ChartChordOptions`, `ChartNode`, `ChartFlowLink`, `WithNodeState`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `ChartHierarchyItem`, `ConfigureSunburst`, `ChartSunburstOptions`, `ChartHierarchyValuePolicy`, `AddPie`, `AddDonut` |
 | Pictorial and progress | `AddPictorial`, `ChartPictorialItem`, `ChartPictorialShape`, `ChartPictorialShape.Person`, `WithPictorialShape`, `WithPictorialColumns`, `WithPictorialMaximum`, `WithPictorialValuePerSymbol`, `WithPictorialValues`, `WithPictorialSymbolScale`, `WithPictorialEmptyOpacity`, `WithPictorialSvgPath`, `AddProgressBars`, `ChartProgressItem`, `WithProgressMaximum`, `WithProgressValues`, `WithProgressHandles`, `WithProgressBarThickness`, `WithProgressTrackOpacity` |
-| Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `LabelPlacementService`, `LabelPlacementRequest`, `LabelCandidate`, `LabelObstacle`, `PlacedLabel`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `WithTextStyle`, `WithTitleStyle`, `WithSubtitleStyle`, `WithAxisTitleStyle`, `WithTickLabelStyle`, `WithLegendStyle`, `WithDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithProgressRingCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialProgressRadiusScale`, `WithRadialProgressStrokeScale` |
+| Text, labels, and legends | `FontSpec`, `TextStyle`, `TextStyleOverride`, `LabelPlacementService`, `LabelPlacementRequest`, `LabelCandidate`, `LabelObstacle`, `PlacedLabel`, `TextAlignment`, `TextDecorationStyle`, `TextBaseline`, `TextCaseTransform`, `WithLegendPosition`, `WithPointLegend`, `ChartTextRole`, `ConfigureTextStyle`, `ConfigureTitleStyle`, `ConfigureSubtitleStyle`, `ConfigureAxisTitleStyle`, `ConfigureTickLabelStyle`, `ConfigureLegendStyle`, `ConfigureDataLabelStyle`, `WithDonutCenterLabel`, `WithDonutCenterText`, `WithDonutInnerRadiusRatio`, `WithProgressRingCenterLabel`, `WithCircleStatusLabel`, `WithCircleRadiusScale`, `WithCircleStrokeScale`, `WithRadialProgressRadiusScale`, `WithRadialProgressStrokeScale` |
 | Branding and themes | `ChartBrandKit`, `WithBrandKit`, `ChartBrandKit.Executive()`, `PeopleInfographic()`, `Accessible()`, `ChartTheme.Aurora()`, `ChartTheme.Colorblind()`, `ChartTheme.DashboardLight()`, `ChartTheme.SaasDashboardLight()`, `ChartFontStacks`, `ChartPalettes.Vivid` |
 | Text-heavy and schedule visuals | `AddWordCloud`, `ChartWordCloudItem`, `WithWordCloudFontRange`, `WithWordCloudAngles`, `WithWordCloudMaximumTerms`, `WithWordCloudDensity`, `AddTimelineItem`, `AddTimelineRange`, `AddGanttTask`, `AddGanttMilestone`, `WithGanttToday` |
 | Status over time | `AddStateTimelineLane`, `ChartStateTimelineSegment`, `AddGanttLane`, `ChartGanttLaneItem`, `WithStateCategories`, `ChartStateCategory`, `LaneSummaryHeader` |
@@ -825,7 +825,7 @@ chart.Series[1].WithStackGroup("work");
 - `WithBarStyle(ChartBarStyle.Flat)` fills bars, horizontal bars and histograms with their colour only, at full opacity. The default `Solid` gives these bars a soft gradient and top highlight. Range bars use a solid body at 0.88 opacity (`Flat` uses full opacity); waterfall steps use solid fills in both modes.
 - Financial and interval marks share their stroke widths and opacity in SVG and PNG. Box plot body opacity applies once to the combined fill and stroke; candlestick and box outlines are centered on the body boundary. Pie and polar-area palette fills use the same fading gradient and closed borders, while an explicit point colour stays solid. Authored colour alpha is preserved in gradient stops. SVG-to-PNG linear gradients retain their colour planes under nonuniform scaling and shear. The `chart-mark-surfaces-showcase-grid` example covers translucent marks, hatching and offset slices.
 - Map outputs expose `data-cfx-label`, `data-cfx-projection`, `data-cfx-map-kind`, and `data-cfx-point-count`.
-- The automatic accessible text goes through `ChartLabels` too: `UntitledChart` names a chart without a title (and the HTML page takes `Accessibility.Language` as its `lang`), and `AccessibleTextFormatter` writes each automatic sentence from typed `ChartDescriptionFacts` (kind, title, series names, counts, calendar dates, map name): the SVG `desc` and the accessible names of calendar, dotted map, region map, and tile map groups. Returning null keeps `ChartDescriptionFacts.EnglishText`, so hosts can choose their own plural forms per kind. Topology diagrams take the same facts through `TopologyChart.Labels` (`TopologyLabels.UntitledTopology` and `AccessibleTextFormatter`, kind `Topology` with node, group, and edge counts), so one formatter can describe charts and diagrams. A description set through `WithAccessibility` still wins. Marks of static SVG (heatmap, calendar, hexbin, and map cells) keep their accessible names and hover titles but are not tab stops, so a keyboard user tabs past a chart as one image; the interactive HTML adapter makes them focusable.
+- The automatic accessible text goes through `ChartLabels` too: `UntitledChart` names a chart without a title (and the HTML page takes `Accessibility.Language` as its `lang`), and `AccessibleTextFormatter` writes each automatic sentence from typed `ChartDescriptionFacts` (kind, title, series names, counts, calendar dates, map name): the SVG `desc` and the accessible names of calendar, dotted map, region map, and tile map groups. Returning null keeps `ChartDescriptionFacts.EnglishText`, so hosts can choose their own plural forms per kind. Topology diagrams take the same facts through `TopologyChart.Labels` (`TopologyLabels.UntitledTopology` and `AccessibleTextFormatter`, kind `Topology` with node, group, and edge counts), so one formatter can describe charts and diagrams. A description set through `ConfigureAccessibility` still wins. Marks of static SVG (heatmap, calendar, hexbin, and map cells) keep their accessible names and hover titles but are not tab stops, so a keyboard user tabs past a chart as one image; the interactive HTML adapter makes them focusable.
 - Unsafe `javascript:`, `data:`, and `vbscript:` hrefs are skipped.
 
 ## Customization cookbook
@@ -845,7 +845,7 @@ Use brand kits when a whole report family needs consistent typography, palette, 
 ```csharp
 var branded = Chart.Create()
     .WithBrandKit(ChartBrandKit.Executive())
-    .WithTheme(theme => theme
+    .ConfigureTheme(theme => theme
         .WithSurfaceColors("#0F172A", "#111827", "#1F2937")
         .WithSemanticColors(success: "#22C55E", warning: "#F59E0B", danger: "#EF4444"));
 ```

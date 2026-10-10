@@ -28,7 +28,7 @@ public sealed class GaugeScalePrecisionBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTitle("Range")
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).WithGauge(options => options.Form = ChartGaugeForm.Needle);
+            .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).ConfigureGauge(options => options.Form = ChartGaugeForm.Needle);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = "<!doctype html><html><body style='margin:24px;background:" + (dark ? "#111827" : "#fff") + "'>"
             + prepared.ToSvg() + "<img style='display:block' width='" + width + "' height='" + height + "' src='data:image/png;base64," + Convert.ToBase64String(prepared.ToPng()) + "'></body></html>";
@@ -74,7 +74,7 @@ public sealed class GaugeScalePrecisionBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(width, height).WithLegend(false)
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .WithTitle("Measured range").AddGauge("Tolerance", 1.003, 1.001, 1.005).WithGauge(options => { options.Form = form; options.Target = 1.0025; });
+            .WithTitle("Measured range").AddGauge("Tolerance", 1.003, 1.001, 1.005).ConfigureGauge(options => { options.Form = form; options.Target = 1.0025; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var background = dark ? "#111827" : "#fff";
         var html = "<!doctype html><html><body style=\"margin:24px;background:" + background + ";color:" + (dark ? "#fff" : "#111827") + "\">SVG"
