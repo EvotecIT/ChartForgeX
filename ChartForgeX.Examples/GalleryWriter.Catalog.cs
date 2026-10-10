@@ -241,6 +241,10 @@ public static partial class GalleryWriter {
         new(
             "Interactive HTML Adapter",
             "Host-side HTML adapter demos for interactive chart review and synchronized dashboard exploration.",
+            "graphite-light-line-interactive",
+            "graphite-dark-line-interactive",
+            "sunburst-branch-highlight-light",
+            "sunburst-branch-highlight-dark",
             "domain-security-interactive",
             "reporting-state-timeline-interactive",
             "reporting-status-matrix-interactive",

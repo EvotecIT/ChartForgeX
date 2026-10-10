@@ -196,7 +196,7 @@ public sealed class V2RadialTests {
         Assert.Equal(2, calls);
 
         void RetainsPointLabels(XDocument document) {
-            Assert.Equal(2, document.Descendants().Attributes("data-cfx-full-label").Count());
+            Assert.Equal(2, document.Descendants().Count(element => element.Attribute("data-cfx-point") != null && element.Attribute("data-cfx-full-label") != null));
             for (var point = 0; point < 2; point++) {
                 var source = Assert.Single(document.Descendants(), element =>
                     (string?)element.Attribute("data-cfx-point") == point.ToString(CultureInfo.InvariantCulture));

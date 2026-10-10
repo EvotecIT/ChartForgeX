@@ -176,6 +176,9 @@ public sealed partial class MarkupChartParser {
             case "funnel":
                 chart.AddFunnel(name, points, ParseColor(color));
                 break;
+            case "pyramid":
+                chart.AddPyramid(name, points, ParseColor(color));
+                break;
             case "polararea":
                 chart.AddPolarArea(name, points);
                 break;

@@ -79,7 +79,7 @@ public sealed class ScheduleTickPlacementTests {
         var end = Start.AddHours(12);
         var chart = Chart.Create().WithSize(360, 360).WithTheme(ChartTheme.GraphiteLight()).WithPngFont(font)
             .WithLegend(false).WithXAxisTimeScale()
-            .WithTickLabelStyle(style => style.WithFontSize(fontSize).WithWeight("700").WithColor(TickColor));
+            .ConfigureTickLabelStyle(style => style.WithFontSize(fontSize).WithWeight("700").WithColor(TickColor));
         switch (kind) {
             case ChartSeriesKind.StateTimeline: chart.AddStateTimelineLane("Primary", new[] { new ChartStateTimelineSegment(Start, end, "up") }); break;
             case ChartSeriesKind.GanttLane: chart.AddGanttLane("Primary", new[] { new ChartGanttLaneItem(Start, end, "up") }); break;
