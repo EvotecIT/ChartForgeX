@@ -61,6 +61,9 @@ internal static partial class MermaidGanttParser {
     }
 
     private static DateTime AddClockDuration(DateTime start, double milliseconds) {
+        // Preserve every accepted DateTime exactly when no time is added, including
+        // submillisecond inputs at the ceiling that cannot round through a double.
+        if (milliseconds == 0) return start;
         // Day.js adds before JavaScript Date truncates the complete timestamp to milliseconds.
         // Truncating a scaled duration first loses precision (for example, 1.001 seconds).
         var epochTicks = new DateTime(1970, 1, 1).Ticks;

@@ -134,6 +134,28 @@ public sealed class MermaidGanttDurationTests {
     }
 
     [Theory]
+    [InlineData("0001-01-01T00:00:00.0000000", "0ms")]
+    [InlineData("9999-12-31T23:59:59.9999999", "0ms")]
+    [InlineData("9999-12-31T23:59:59.9999999", "0s")]
+    [InlineData("9999-12-31T23:59:59.9999999", "0m")]
+    [InlineData("9999-12-31T23:59:59.9999999", "0h")]
+    public void ZeroClockDurationsPreserveTheCompleteSupportedTimestamp(string start, string duration) {
+        var result = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DDTHH:mm:ss.fffffff\nTask :task, " + start + ", " + duration);
+        Assert.False(result.HasErrors);
+        var task = Assert.Single(result.Document!.Tasks);
+        Assert.Equal(DateTime.ParseExact(start, "yyyy-MM-dd'T'HH:mm:ss.fffffff", CultureInfo.InvariantCulture), task.Start);
+        Assert.Equal(task.Start, task.End);
+    }
+
+    [Fact]
+    public void PositiveClockDurationsBeyondTheTimestampCeilingRemainLocatedErrors() {
+        var result = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DDTHH:mm:ss.fffffff\nTask :task, 9999-12-31T23:59:59.9999999, 1ms");
+        Assert.True(result.HasErrors);
+        Assert.Empty(result.Document!.Tasks);
+        Assert.Contains(result.Diagnostics, item => item.Span.Line == 3 && item.Severity == MermaidDiagnosticSeverity.Error);
+    }
+
+    [Theory]
     [InlineData("9999-12-31", "1M")]
     [InlineData("9999-12-31", "1y")]
     [InlineData("2026-01-01", "99999999999999999999999999999999999999M")]
