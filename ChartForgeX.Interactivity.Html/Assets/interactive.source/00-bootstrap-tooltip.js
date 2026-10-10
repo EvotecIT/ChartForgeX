@@ -249,6 +249,7 @@
       push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
       push('End', data.cfxEnd);
     }
+    push(rowName(node, 'size', 'Size'), data.cfxSize);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
