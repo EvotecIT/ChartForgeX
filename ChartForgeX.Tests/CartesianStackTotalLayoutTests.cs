@@ -117,8 +117,11 @@ public sealed class CartesianStackTotalLayoutTests {
     [InlineData(true, false, -1)]
     [InlineData(true, true, -1)]
     public void CompactExactBoundsKeepEveryTotalOutsideItsMappedStack(bool horizontal, bool reversed, int sign) {
+        var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        Assert.True(File.Exists(font), "The existing Carlito fixture must make full-caption lane measurements repeatable.");
+        // Every caption fits with this face; wider system fonts may correctly keep a readable subset.
         var chart = Chart.Create().WithSize(300, 220).WithAxes(false).WithLegend(false).WithHeader(false)
-            .WithBarStyle(ChartBarStyle.Flat).WithStackedBars().WithStackTotals().WithDataLabels(false);
+            .WithPngFont(font).WithBarStyle(ChartBarStyle.Flat).WithStackedBars().WithStackTotals().WithDataLabels(false);
         var categories = horizontal ? new[] { 1 } : Enumerable.Range(1, 12).ToArray();
         var first = categories.Select(category => new ChartPoint(category, 10 * sign));
         var second = categories.Select(category => new ChartPoint(category, 20 * sign));
@@ -131,7 +134,16 @@ public sealed class CartesianStackTotalLayoutTests {
         var regions = prepared.Regions.Where(region => region.Role == "stack-total").ToArray();
         Assert.Equal(categories.Length, regions.Length); Assert.Equal(regions.Length, totals.Length);
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
+        var expected = (30 * sign).ToString(CultureInfo.InvariantCulture);
+        foreach (var region in regions) {
+            var source = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(node => node.Id == region.Id);
+            Assert.Equal(expected, source.Metadata["data-cfx-label"]);
+            Assert.Equal(expected, source.Metadata["data-cfx-source-total"]);
+        }
+        var boxes = totals.Select(total => new ChartRect(total.X, total.Baseline - total.Text.Ascent,
+            total.Text.Metrics.Width, total.Text.Metrics.Height)).ToArray();
         foreach (var total in totals) {
+            Assert.Equal(expected, total.Text.Lines.Single().Text);
             var anchor = regions.Single(region => total.Id == region.Id + "-label").Bounds;
             if (horizontal) {
                 if (sign > 0 != reversed) Assert.True(total.X >= anchor.X + 2);
@@ -141,6 +153,12 @@ public sealed class CartesianStackTotalLayoutTests {
                 if (sign > 0 != reversed) Assert.True(top + total.Text.Metrics.Height <= anchor.Y - 2);
                 else Assert.True(top >= anchor.Y + 2);
             }
+        }
+        for (var index = 0; index < boxes.Length; index++) {
+            Assert.True(LabelPlacementService.Contains(new ChartRect(0, 0, 300, 220), boxes[index]));
+            for (var other = index + 1; other < boxes.Length; other++)
+                Assert.False(boxes[index].Left < boxes[other].Right && boxes[index].Right > boxes[other].Left
+                    && boxes[index].Top < boxes[other].Bottom && boxes[index].Bottom > boxes[other].Top);
         }
         Assert.True(prepared.ToPng().Length > 64);
     }

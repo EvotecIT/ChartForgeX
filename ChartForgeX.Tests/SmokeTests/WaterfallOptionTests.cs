@@ -73,10 +73,12 @@ internal static partial class SmokeTests {
     }
 
     private static void WaterfallContainedLabelsUseDrawnFill() {
+        var font = System.IO.Path.Combine(System.AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        Assert(System.IO.File.Exists(font), "The existing Carlito fixture must make contained-caption pixel coverage repeatable.");
         foreach (var dark in new[] { false, true })
         foreach (var style in new[] { ChartBarStyle.Flat, ChartBarStyle.SegmentedCapsule })
         foreach (var paint in new[] { "status", "series", "point" }) {
-            var chart = WaterfallLabelSample(180, dark).WithBarStyle(style)
+            var chart = WaterfallLabelSample(180, dark).WithPngFont(font).WithBarStyle(style)
                 .AddWaterfall("Delta", Points(100), paint == "series" ? ChartColor.FromHex("#172554") : null);
             if (paint == "point") chart.Series[0].WithPointColor(0, ChartColor.FromHex("#172554"));
             chart.Options.YAxis.WithBounds(0, 100).WithReversal();
@@ -84,10 +86,21 @@ internal static partial class SmokeTests {
             var prepared = chart.Prepare(context);
             var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
             Assert(labels.Length == 2, "Compact Waterfall labels must retain both the source delta and derived total.");
+            Assert(labels.Select(label => label.Text.Lines.Single().Text).SequenceEqual(new[] { "+100", "100" }),
+                "Contained Waterfall captions must preserve the complete signed delta and derived total.");
+            Assert(!prepared.Diagnostics.Any(diagnostic => diagnostic.Code == "cartesian.data-label-overflow"),
+                "Both complete captions must fit without shortening or omission in the measured fixture.");
             var pixels = ReadPngRgba(prepared.ToPng(), out var width, out _);
             foreach (var label in labels) {
                 var bounds = WaterfallLabelBounds(label);
-                var mark = prepared.Regions.Single(region => region.Id + "-label" == label.Id).Bounds;
+                var region = prepared.Regions.Single(region => region.Id + "-label" == label.Id);
+                var mark = region.Bounds;
+                var source = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(node => node.Id == region.Id);
+                Assert(source.Metadata["data-cfx-label"] == label.Text.Lines.Single().Text
+                    && source.Metadata["data-cfx-delta"] == "100" && source.Metadata["data-cfx-source-count"] == "1"
+                    && source.Metadata["data-cfx-derived-total"] == (region.Role == "waterfall-total" ? "true" : "false")
+                    && source.Metadata["data-cfx-source-point"] == (region.Role == "waterfall-total" ? "-1" : "0"),
+                    "Contained captions must remain associated with their truthful source delta or derived total.");
                 var fill = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "waterfall-bar" && node.Bounds.Equals(mark)).Fill!.Value;
                 var backdrop = ChartStateMark.Backdrop(chart.Options, context.Theme.Resolve(context.ThemeMode), context.Frame);
                 var visibleFill = ChartColorMath.Blend(backdrop, ChartColor.FromRgb(fill.R, fill.G, fill.B), fill.A / 255d);
@@ -109,7 +122,7 @@ internal static partial class SmokeTests {
         }
 
         foreach (var level in new[] { "chart", "series", "point" }) {
-            var chart = WaterfallLabelSample(180, false).AddWaterfall("Delta", Points(100), ChartColor.FromHex("#172554"));
+            var chart = WaterfallLabelSample(180, false).WithPngFont(font).AddWaterfall("Delta", Points(100), ChartColor.FromHex("#172554"));
             chart.Options.YAxis.WithBounds(0, 100).WithReversal();
             if (level == "chart") chart.ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
             else if (level == "series") chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
