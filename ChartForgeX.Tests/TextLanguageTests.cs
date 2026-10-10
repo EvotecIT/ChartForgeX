@@ -99,7 +99,7 @@ public sealed class TextLanguageTests {
 
     [Fact]
     public void ChartAndPaginatedGridExportTheExplicitLanguage() {
-        var chart = Chart.Create().WithTitle("бб").WithTitleStyle(s => s.WithOpenTypeLanguage("SRB"));
+        var chart = Chart.Create().WithTitle("бб").ConfigureTitleStyle(s => s.WithOpenTypeLanguage("SRB"));
         var svg = chart.ToSvg();
         Assert.Contains("font-language-override:'SRB '", svg);
         var grid = new ChartGrid { Title = "бб" }; grid.TitleStyle.WithOpenTypeLanguage("BGR"); grid.Add(chart);
@@ -116,7 +116,7 @@ public sealed class TextLanguageTests {
             FontRegistry.Register("CFX Language Fitting", path);
             const string sourceLabel = "бббббб";
             var chart = Chart.Create().WithSize(360, 600).WithXLabels(sourceLabel).WithXAxisLabelAngle(0)
-                .WithTickLabelStyle(s => s.WithFontFamily("CFX Language Fitting").WithFontSize(100).WithWeight("400"))
+                .ConfigureTickLabelStyle(s => s.WithFontFamily("CFX Language Fitting").WithFontSize(100).WithWeight("400"))
                 .AddBar("Value", new[] { new ChartPoint(1, 1) });
             chart.Options.YAxis.Visible = false;
             chart.Options.TickLabelStyle.WithOpenTypeLanguage("BGR");
@@ -173,10 +173,10 @@ public sealed class TextLanguageTests {
         File.WriteAllBytes(path, Bytes());
         try {
             FontRegistry.Register("CFX Language Radial", path);
-            var chart = Chart.Create().AddRadialBar("бб", new[] { new ChartPoint(0, 40) });
-            chart.Options.ShowRadialBarCenterLabel = true;
+            var chart = Chart.Create().AddProgressRing("бб", new[] { new ChartPoint(0, 40) });
+            chart.Options.ShowProgressRingCenterLabel = true;
             var style = new TextStyleOverride().WithFontFamily("CFX Language Radial").WithWeight("400").WithOpenTypeLanguage("BGR");
-            var radius = RadialBarRingLayout.RequestedCenterRadius(chart, chart.Series[0], 300, "бб", 100, 1, style);
+            var radius = ProgressRingLayout.RequestedCenterRadius(chart, chart.Series[0], 300, "бб", 100, 1, style);
             Assert.True(radius * 2 >= Font().WithLanguage("BGR ").Measure("бб", 100) + 20, "The ring must reserve localized text and horizontal padding.");
         } finally { FontRegistry.Clear(); File.Delete(path); }
     }
@@ -192,8 +192,8 @@ public sealed class TextLanguageTests {
         grid.SubtitleStyle.WithWeight(weight).WithOpenTypeLanguage(language);
         Assert.Contains("font-weight=\"" + weight + "\"", grid.ToSvg());
         var chart = Chart.Create().WithSize(360, 260).WithDataLabels()
-            .WithDataLabelStyle(s => s.WithWeight(weight).WithOpenTypeLanguage(language))
-            .AddRadialBar("Language", new[] { new ChartPoint(0, 40) });
+            .ConfigureDataLabelStyle(s => s.WithWeight(weight).WithOpenTypeLanguage(language))
+            .AddProgressRing("Language", new[] { new ChartPoint(0, 40) });
         Assert.Contains("font-weight=\"" + weight + "\"", chart.ToSvg());
         Assert.NotEmpty(chart.ToPng());
     }

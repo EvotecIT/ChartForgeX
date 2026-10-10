@@ -57,7 +57,7 @@ public sealed class StorySyntaxPalette {
 /// <summary>
 /// Defines premium but restrained visual-story colors and typography.
 /// </summary>
-public sealed class VisualStoryTheme {
+public sealed partial class VisualStoryTheme {
     /// <summary>Gets or sets the outer background color.</summary>
     public ChartColor Background { get; set; } = ChartColor.FromHex("#050B16");
     /// <summary>Gets or sets the panel background color.</summary>

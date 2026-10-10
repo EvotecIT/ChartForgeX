@@ -95,13 +95,20 @@ public sealed class V2GalleryBrowserTests {
             // Compact is a navigation default, while the explicit Standard choice stays usable.
             await page.Locator(".variant-nav").GetByText("Standard", new LocatorGetByTextOptions { Exact = true }).ClickAsync();
             Assert.Equal("800", await page.Locator(".full[data-output-format=svg]:visible > svg").GetAttributeAsync("width"));
-            await page.Locator(".variant-nav").GetByText("Compact", new LocatorGetByTextOptions { Exact = true }).ClickAsync();
-            Assert.Equal("360", await page.Locator(".full[data-output-format=svg]:visible > svg").GetAttributeAsync("width"));
         }
+        await page.Locator(".variant-nav").GetByText("Compact", new LocatorGetByTextOptions { Exact = true }).ClickAsync();
+        var compactSvg = page.Locator(".full[data-output-format=svg]:visible > svg");
+        Assert.Equal("360", await compactSvg.GetAttributeAsync("width"));
+        Assert.True(await compactSvg.EvaluateAsync<bool>("svg => svg.getBoundingClientRect().width <= Number(svg.getAttribute('width')) + .01"));
         Assert.Equal(1, await page.Locator("pre[data-visual-theme]:visible").CountAsync());
         await page.Locator("[data-set-output=png]").ClickAsync();
         Assert.Equal(1, await page.Locator(".full[data-output-format=png]:visible").CountAsync());
         Assert.Equal(0, await page.Locator(".full[data-output-format=svg]:visible").CountAsync());
+        var compactPng = page.Locator(".full[data-output-format=png]:visible img");
+        Assert.True(await compactPng.EvaluateAsync<bool>("async img => { await img.decode(); return img.getBoundingClientRect().width <= Math.min(img.naturalWidth, Number(img.getAttribute('width'))) + .01; }"),
+            "Compact raster previews should retain their declared size while shrinking to fit narrow viewports.");
+        if (!string.IsNullOrWhiteSpace(captures))
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "example-compact-png-" + width + ".png") });
         await page.ReloadAsync();
         Assert.Equal("png", await page.Locator("html").GetAttributeAsync("data-output-view"));
         var downloads = await page.Locator(".export-row a").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.getAttribute('href'))");
