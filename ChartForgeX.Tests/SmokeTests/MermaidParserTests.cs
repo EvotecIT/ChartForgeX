@@ -734,7 +734,7 @@ Second : bad, 2026-01-01, nope";
 
         Assert(result.HasErrors, "Mermaid Gantt parser should reject invalid task metadata.");
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("after clauses", StringComparison.Ordinal)), "Invalid Gantt dependencies should explain earlier task id requirements.");
-        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("dates or durations", StringComparison.Ordinal)), "Invalid Gantt end values should explain the date-or-duration contract.");
+        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("dates, durations or until clauses", StringComparison.Ordinal)), "Invalid Gantt end values should explain the date, duration and until contract.");
     }
 
     private static void MermaidParserReportsRecognizedButUnimplementedFamilies() {

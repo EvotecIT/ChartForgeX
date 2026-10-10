@@ -22,10 +22,10 @@ public sealed class MermaidGanttDocument : MermaidDocument {
     /// <summary>Gets or sets the optional Mermaid tickInterval directive.</summary>
     public string? TickInterval { get; set; }
 
-    /// <summary>Gets or sets the optional Mermaid excludes directive.</summary>
+    /// <summary>Gets or sets merged tokens from Mermaid excludes directives.</summary>
     public string? Excludes { get; set; }
 
-    /// <summary>Gets or sets dates that override excluded days.</summary>
+    /// <summary>Gets or sets merged dates from includes directives that override excluded days.</summary>
     public string? Includes { get; set; }
 
     /// <summary>Gets or sets the first weekend day, friday or saturday.</summary>
@@ -67,6 +67,7 @@ public sealed class MermaidGanttTask : MermaidAstNode {
         Section = section;
         Start = start;
         End = end;
+        RenderEnd = end;
         Progress = progress;
         IsMilestone = milestone;
         Tags = new List<string>(tags ?? throw new ArgumentNullException(nameof(tags)));
@@ -83,11 +84,14 @@ public sealed class MermaidGanttTask : MermaidAstNode {
     /// <summary>Gets the optional section name.</summary>
     public string? Section { get; }
 
-    /// <summary>Gets the task start date/time.</summary>
+    /// <summary>Gets the authored/resolved task start date/time, including a milestone's range start.</summary>
     public DateTime Start { get; }
 
-    /// <summary>Gets the task end date/time.</summary>
+    /// <summary>Gets the scheduling end used by dependencies, including a milestone's range end and excluded dates.</summary>
     public DateTime End { get; }
+
+    /// <summary>Gets the visible bar endpoint before trailing excluded days; milestone rendering uses the scheduling range midpoint.</summary>
+    public DateTime RenderEnd { get; internal set; }
 
     /// <summary>Gets the rendered progress value from zero to one.</summary>
     public double Progress { get; }
@@ -100,6 +104,9 @@ public sealed class MermaidGanttTask : MermaidAstNode {
 
     /// <summary>Gets referenced dependency ids from after clauses.</summary>
     public List<string> DependencyIds { get; }
+
+    /// <summary>Gets referenced task ids from until end clauses.</summary>
+    public List<string> UntilTaskIds { get; } = new();
 
     /// <summary>Gets the resolved zero-based dependency index, or -1 when none is rendered.</summary>
     public int DependencyIndex { get; internal set; } = -1;

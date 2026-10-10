@@ -694,13 +694,13 @@ Gantt diagrams are parsed into `MermaidGanttDocument` and converted to native Ch
 Supported Gantt parsing includes:
 
 - `gantt` headers.
-- Optional `title`, `dateFormat`, `axisFormat`, `tickInterval`, `excludes`, and `todayMarker` statements.
+- Optional `title`, `dateFormat`, `axisFormat`, `tickInterval`, `excludes`, `includes`, `weekend`, and `todayMarker` statements.
 - `section` groups.
 - Task metadata with optional tags: `active`, `done`, `crit`, and `milestone`.
-- Task ids used by `after taskId` dependency clauses.
+- Task ids used by `after taskId` start dependencies and `until taskId` end references. Multiple `after` ids select the latest end; multiple `until` ids select the earliest start. `until` can reference later rows; `after` currently requires earlier rows for native dependency connectors.
 - Explicit start/end dates using the configured `dateFormat`.
 - Durations using `ms`, `s`, `m`, `h`, `d`, `w`, `M`, and `y` units. `M` means calendar months; `m` means minutes.
-- Milestones as zero-duration native ChartForgeX milestones.
+- Milestones retain their authored start/end range and render as native ChartForgeX milestone points at the range midpoint.
 
 For example, `Task :2026-01-31, 1M` ends on February 28, while `Task :2026-01-31, 1m` ends one minute after midnight on January 31. Calendar months and years clamp to the last valid day when necessary. Fractional months/years use the whole-number part; fractional days/weeks round to the nearest day. Clock durations retain millisecond precision. Excluded dates extend duration-based ends after that calculation.
 
@@ -734,7 +734,9 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes/includes, weekend selection, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Duration-based ends advance over excluded dates, with includes overriding exclusions; explicit end dates remain authored dates. `until` dependencies and broader date/configuration coverage remain open in the [support matrix](mermaid-support-matrix.md).
+The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes/includes, weekend selection, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Duration-based and `until` scheduling ends advance over excluded dates, with includes overriding exclusions; explicit end dates remain authored dates. `End` supplies dependency scheduling, while `RenderEnd` preserves Mermaid's visible bar endpoint before trailing excluded days. Interior exclusions can extend both values. Repeated `excludes` and `includes` declarations merge their tokens, and the final diagram calendar/date format applies to all tasks regardless of declaration order. Missing ids, circular date dependencies and an end before its start produce source diagnostics. `UntilTaskIds` retains end references independently of `DependencyIds`, and the artifact records their count as `mermaid.untilReferences`.
+
+For a milestone with a nonzero duration, `Start` and `End` now retain the range used by Mermaid dependency calculations. Callers that previously treated `Start` as its rendered point should compute the midpoint of that range. Zero-duration milestones and their rendering retain the same date. Broader date/axis/tick formats, forward `after` connectors and marker configuration remain open in the [support matrix](mermaid-support-matrix.md).
 
 ## XY Charts
 

@@ -4778,6 +4778,30 @@
       }
     },
     {
+      "name": "mermaid-gantt-references",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 20,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 493,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-swimlane-basic",
       "layout": {
         "heightMode": "natural",
