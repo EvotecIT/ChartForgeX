@@ -18,8 +18,11 @@ internal static partial class NativeVisualStoryRenderer {
         var font = FontSpec.FromFamily(story.Theme.MonospaceFontFamily);
         var builder = new VisualSceneBuilder(new VisualSize(story.Width, story.Height), font);
         var size = options.FontSize; var lineHeight = size * 1.5;
-        var chrome = options.FileName.Length == 0 ? 0 : 35;
-        if (chrome > 0) {
+        var style = story.Theme.WindowStyle;
+        var chrome = style == TerminalWindowStyle.Minimal ? (options.FileName.Length == 0 ? 0 : 35) : TerminalWindowChrome.HeaderHeight(style);
+        if (style != TerminalWindowStyle.Minimal && chrome > 0) {
+            DrawStoryWindowHeader(builder, bounds, style, story.Theme.TerminalPalette(), options.FileName.Length == 0 ? "Source" : options.FileName);
+        } else if (chrome > 0) {
             FitText(builder, options.FileName, bounds.X + 2, bounds.Y + 18, bounds.Width - 4, 14, story.Theme.Muted);
             builder.Line(bounds.X, bounds.Y + 27, bounds.X + bounds.Width, bounds.Y + 27, story.Theme.Border);
         }

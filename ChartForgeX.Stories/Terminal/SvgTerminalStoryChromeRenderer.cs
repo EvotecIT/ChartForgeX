@@ -27,6 +27,10 @@ internal static class SvgTerminalStoryChromeRenderer {
                 case TerminalWindowStyle.WindowsTerminal:
                     WriteWindowsTerminal(writer, story, layout);
                     break;
+                case TerminalWindowStyle.Linux:
+                    WriteActiveTitles(writer, story, layout, layout.Width / 2.0, 33, "middle");
+                    WriteWindowControls(writer, story, layout);
+                    break;
                 case TerminalWindowStyle.Minimal:
                     WriteActiveTitles(writer, story, layout, 28, 31, "start");
                     break;
@@ -76,6 +80,11 @@ internal static class SvgTerminalStoryChromeRenderer {
         WritePlus(writer, tabRight + 25, 31, theme.Muted.ToCss());
         writer.StartElement("path").Attribute("data-cfx-role", "terminal-tab-menu").Attribute("d", "M" + (tabRight + 52).ToString(CultureInfo.InvariantCulture) + " 28l4 4 4-4").Attribute("fill", "none").Attribute("stroke", theme.Muted.ToCss()).Attribute("stroke-width", 1.5).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
 
+        WriteWindowControls(writer, story, layout);
+    }
+
+    private static void WriteWindowControls(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout) {
+        var theme = story.Theme;
         var controlY = 31d;
         writer.StartElement("line").Attribute("data-cfx-role", "terminal-window-minimize").Attribute("x1", layout.Width - 106).Attribute("y1", controlY).Attribute("x2", layout.Width - 94).Attribute("y2", controlY).Attribute("stroke", theme.Text.ToCss()).Attribute("stroke-width", 1.3).EndEmptyElement().Line()
             .StartElement("rect").Attribute("data-cfx-role", "terminal-window-maximize").Attribute("x", layout.Width - 66).Attribute("y", controlY - 6).Attribute("width", 12).Attribute("height", 12).Attribute("fill", "none").Attribute("stroke", theme.Text.ToCss()).Attribute("stroke-width", 1.3).EndEmptyElement().Line();
