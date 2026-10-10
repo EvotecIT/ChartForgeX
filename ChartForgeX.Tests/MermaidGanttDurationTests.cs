@@ -37,13 +37,15 @@ public sealed class MermaidGanttDurationTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    [Fact]
-    public void DurationTimestampsMatchTheUpstreamConformanceFixture() {
+    [Theory]
+    [InlineData("gantt-duration-units")]
+    [InlineData("gantt-clock-precision")]
+    public void DurationTimestampsMatchTheUpstreamConformanceFixture(string name) {
         var fixtures = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures");
-        var result = new MermaidParser().ParseGantt(File.ReadAllText(Path.Combine(fixtures, "gantt-duration-units.mmd")));
+        var result = new MermaidParser().ParseGantt(File.ReadAllText(Path.Combine(fixtures, name + ".mmd")));
         Assert.False(result.HasErrors, string.Join("; ", result.Diagnostics.Select(item => item.Message)));
         var document = Assert.IsType<MermaidGanttDocument>(result.Document);
-        using var expected = JsonDocument.Parse(File.ReadAllText(Path.Combine(fixtures, "gantt-duration-units.expected.json")));
+        using var expected = JsonDocument.Parse(File.ReadAllText(Path.Combine(fixtures, name + ".expected.json")));
         var timestamps = expected.RootElement.GetProperty("taskTimestamps").EnumerateArray().ToArray();
         Assert.Equal(timestamps.Length, document.Tasks.Count);
         for (var index = 0; index < timestamps.Length; index++) {
@@ -62,6 +64,19 @@ public sealed class MermaidGanttDurationTests {
         Assert.Equal(tasks[0].End, tasks[1].Start);
         Assert.Equal(tasks[0].End.AddMinutes(1), tasks[1].End);
         Assert.Equal(new[] { "month" }, tasks[1].DependencyIds);
+    }
+
+    [Theory]
+    [InlineData("1S", "2026-01-01T00:00:01.000")]
+    [InlineData("1H", "2026-01-01T01:00:00.000")]
+    [InlineData("1D", "2026-01-02T00:00:00.000")]
+    [InlineData("1W", "2026-01-08T00:00:00.000")]
+    [InlineData("1MS", "2026-01-01T00:00:00.001")]
+    [InlineData("1 MINUTE", "2026-01-01T00:01:00.000")]
+    public void ExistingClockUnitAliasesRetainSourceCompatibility(string duration, string expectedEnd) {
+        var result = new MermaidParser().ParseGantt("gantt\nTask :task, 2026-01-01, " + duration);
+        Assert.False(result.HasErrors);
+        Assert.Equal(expectedEnd, Assert.Single(result.Document!.Tasks).End.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture));
     }
 
     [Theory]

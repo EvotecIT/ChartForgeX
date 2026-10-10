@@ -15,7 +15,8 @@ internal static partial class MermaidGanttParser {
             amount < 0 || double.IsInfinity(amount) || double.IsNaN(amount)) return false;
 
         var authoredUnit = text.Substring(index).Trim();
-        // Mermaid shorthand is case-sensitive: M means calendar months, m means minutes.
+        // Mermaid distinguishes M (months) from m (minutes). Other existing clock-unit
+        // aliases remain case-insensitive for ChartForgeX source compatibility.
         unit = authoredUnit == "M" ? "M" : authoredUnit.ToLowerInvariant();
         switch (unit) {
             case "ms": case "millisecond": case "milliseconds":
@@ -49,13 +50,22 @@ internal static partial class MermaidGanttParser {
             case "d": case "day": case "days":
                 return start.AddDays(Math.Floor(amount + 0.5));
             case "h": case "hour": case "hours":
-                return start.Add(TimeSpan.FromMilliseconds(Math.Truncate(amount * 3600000)));
+                return AddClockDuration(start, amount * 3600000);
             case "m": case "minute": case "minutes":
-                return start.Add(TimeSpan.FromMilliseconds(Math.Truncate(amount * 60000)));
+                return AddClockDuration(start, amount * 60000);
             case "s": case "second": case "seconds":
-                return start.Add(TimeSpan.FromMilliseconds(Math.Truncate(amount * 1000)));
+                return AddClockDuration(start, amount * 1000);
             default:
-                return start.Add(TimeSpan.FromMilliseconds(Math.Truncate(amount)));
+                return AddClockDuration(start, amount);
         }
+    }
+
+    private static DateTime AddClockDuration(DateTime start, double milliseconds) {
+        // Day.js adds before JavaScript Date truncates the complete timestamp to milliseconds.
+        // Truncating a scaled duration first loses precision (for example, 1.001 seconds).
+        var epochTicks = new DateTime(1970, 1, 1).Ticks;
+        var endMilliseconds = Math.Truncate((start.Ticks - epochTicks) / (double)TimeSpan.TicksPerMillisecond + milliseconds);
+        var endTicks = checked((long)endMilliseconds * TimeSpan.TicksPerMillisecond + epochTicks);
+        return new DateTime(endTicks, start.Kind);
     }
 }

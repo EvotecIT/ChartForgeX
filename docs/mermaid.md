@@ -704,6 +704,8 @@ Supported Gantt parsing includes:
 
 For example, `Task :2026-01-31, 1M` ends on February 28, while `Task :2026-01-31, 1m` ends one minute after midnight on January 31. Calendar months and years clamp to the last valid day when necessary. Fractional months/years use the whole-number part; fractional days/weeks round to the nearest day. Clock durations retain millisecond precision. Excluded dates extend duration-based ends after that calculation.
 
+ChartForgeX retains its existing case-insensitive clock-unit aliases, including `1H`, `1MS`, and `1 minute`, for source compatibility. These are ChartForgeX extensions to Mermaid shorthand. The calendar units `M` and `y` require an adjacent suffix and a complete numeric value, such as `1.5M`; forms such as `1 M`, `.5M`, and `1year` produce diagnostics.
+
 ```csharp
 using ChartForgeX.Mermaid;
 
