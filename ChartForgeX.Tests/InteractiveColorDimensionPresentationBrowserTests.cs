@@ -12,19 +12,23 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects captured cultural/custom text, empty output and raw identities across the six presentation owners.</summary>
 public sealed class InteractiveColorDimensionPresentationBrowserTests {
     [Theory]
-    [InlineData(ChartSeriesKind.TileMap, 360, false)]
-    [InlineData(ChartSeriesKind.TileMap, 800, true)]
-    [InlineData(ChartSeriesKind.Heatmap, 360, false)]
-    [InlineData(ChartSeriesKind.Heatmap, 800, true)]
-    [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false)]
-    [InlineData(ChartSeriesKind.CalendarHeatmap, 800, true)]
-    [InlineData(ChartSeriesKind.Treemap, 360, false)]
-    [InlineData(ChartSeriesKind.Treemap, 800, true)]
-    [InlineData(ChartSeriesKind.Scatter, 360, false)]
-    [InlineData(ChartSeriesKind.Scatter, 800, true)]
-    [InlineData(ChartSeriesKind.Bubble, 360, false)]
-    [InlineData(ChartSeriesKind.Bubble, 800, true)]
-    public async Task CapturedPresentationSurvivesPointerFocusPinAndLegendSummaryWithRawIdentities(ChartSeriesKind kind, int width, bool dark) {
+    [InlineData(ChartSeriesKind.TileMap, 360, false, false)]
+    [InlineData(ChartSeriesKind.TileMap, 800, true, false)]
+    [InlineData(ChartSeriesKind.Heatmap, 360, false, false)]
+    [InlineData(ChartSeriesKind.Heatmap, 800, true, false)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false, false)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap, 800, true, false)]
+    [InlineData(ChartSeriesKind.Treemap, 360, false, false)]
+    [InlineData(ChartSeriesKind.Treemap, 800, true, false)]
+    [InlineData(ChartSeriesKind.Scatter, 360, false, false)]
+    [InlineData(ChartSeriesKind.Scatter, 800, true, false)]
+    [InlineData(ChartSeriesKind.Bubble, 360, false, false)]
+    [InlineData(ChartSeriesKind.Bubble, 800, true, false)]
+    [InlineData(ChartSeriesKind.Scatter, 360, false, true)]
+    [InlineData(ChartSeriesKind.Scatter, 800, true, true)]
+    [InlineData(ChartSeriesKind.Bubble, 360, false, true)]
+    [InlineData(ChartSeriesKind.Bubble, 800, true, true)]
+    public async Task CapturedPresentationSurvivesPointerFocusPinAndLegendSummaryWithRawIdentities(ChartSeriesKind kind, int width, bool dark, bool shared) {
         if (!Enabled) return;
         var chart = ColorDimensionPresentationFixtures.Create(kind, width == 800 ? "discrete" : "positioned", width, dark);
         var sameValue = kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap;
@@ -34,7 +38,7 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
         var options = ColorDimensionPresentationFixtures.Options(chart, kind); options.Name = name; options.ValueFormat = format;
         if (kind == ChartSeriesKind.Treemap) chart.WithPointLegend().ConfigureTreemap(treemap => treemap.ShowColorScaleLegend = false);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single);
+        var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = shared ? HtmlChartTooltipMode.SharedX : HtmlChartTooltipMode.Single);
         options.Name = "Changed"; options.ValueFormat = ChartValueFormat.Custom(_ => throw new InvalidOperationException("Detached HTML must not rerun source formatting."));
         await using var session = await OpenAsync(html, width + 24, 620);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
@@ -91,13 +95,13 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
             _ => Point(0, item == "measured" ? 0 : item == "zero" ? 1 : 2)
         };
 
-        Task AssertRowAsync(string label, string value) => page.WaitForFunctionAsync("expected => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && Array.from(tip.querySelectorAll('dt')).some(term => term.textContent === expected.label && term.nextElementSibling.textContent === expected.value); }", new { label, value });
+        Task AssertRowAsync(string label, string value) => page.WaitForFunctionAsync("expected => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && Array.from(tip.querySelectorAll('dt')).some(term => term.textContent === expected.label && term.nextElementSibling.textContent === expected.value); }", new { label = shared ? label == "Y" ? "Samples" : "Samples · " + label : label, value });
 
         async Task CaptureAsync(string stage) {
             var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
             if (string.IsNullOrWhiteSpace(directory)) return;
             Directory.CreateDirectory(directory);
-            var file = Path.Combine(directory, "color-dimension-" + kind + "-" + width + "-" + (dark ? "dark" : "light"));
+            var file = Path.Combine(directory, "color-dimension-" + kind + "-" + width + "-" + (dark ? "dark" : "light") + (shared ? "-shared" : "-single"));
             if (stage == "pointer") { await File.WriteAllTextAsync(file + ".svg", prepared.ToSvg()); await File.WriteAllBytesAsync(file + ".png", prepared.ToPng()); }
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = file + "-" + stage + ".browser.png" });
             var state = await page.EvaluateAsync<JsonElement>("() => { const root = document.querySelector('.cfx-interactive-chart'); return { Focus: document.activeElement.dataset.cfxTargetId, Readout: root.querySelector('.cfx-tooltip').innerText, Pinned: root.dataset.cfxTooltipPinned, Selected: window.dimensionSelection }; }");
