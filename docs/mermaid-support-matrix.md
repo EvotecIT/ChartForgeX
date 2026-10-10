@@ -12,13 +12,13 @@ The current compatibility reference is **Mermaid.js 12.1.0**, pinned by [the tes
 - **Diagnostic-only family:** the header is recognized and source is retained, but no artifact is produced.
 - **Unknown family:** the header is not recognized and parsing returns an error.
 
-Thirty families have native render paths, ZenUML is diagnostic-only, and Agentflow and Railroad are unrecognized. Each native row still has open grammar, configuration or fidelity work; none of these counts establishes complete Mermaid compatibility. Existing smoke/artifact tests are evidence for their tested cases, not a claim that every upstream example passes.
+Thirty families have native render paths. ZenUML, Agentflow and Railroad are diagnostic-only: their headers are recognized and source is retained without an artifact. Each native row still has open grammar, configuration or fidelity work; none of these counts establishes complete Mermaid compatibility. Existing smoke/artifact tests are evidence for their tested cases, not a claim that every upstream example passes.
 
 ## Families With Native Render Paths
 
 | Family | Headers | Parser/model state | Render target | Current evidence | Remaining hardening |
 | --- | --- | --- | --- | --- | --- |
-| Flowchart | `flowchart`, `graph` | Typed nodes, edges, subgraphs, classes, styles, clicks, link styles, source spans | `TopologyChart` | Smoke parser/conversion/SVG/PNG tests; Markdown bridge test; `flowchart-basic.mmd` conformance fixture | Complete the expanded `@{ shape: ... }` catalog, icon/image metadata, edge IDs/properties, circle/cross markers, minimum lengths, nested/local-direction subgraphs and Markdown labels. Existing bracket shapes, chaining and selected metadata shapes are a subset. |
+| Flowchart | `flowchart`, `graph`, `flowchart-elk` | Typed nodes, edges, subgraphs, classes, styles, clicks, link styles, source spans; ELK header uses static layout with `CFXM003` | `TopologyChart` | Smoke parser/conversion/SVG/PNG tests; Markdown bridge test; `flowchart-basic.mmd` and `flowchart-elk.mmd` conformance fixtures | Complete the expanded `@{ shape: ... }` catalog, icon/image metadata, edge IDs/properties, circle/cross markers, minimum lengths, nested/local-direction subgraphs and Markdown labels. Existing bracket shapes, chaining and selected metadata shapes are a subset. |
 | Sequence | `sequenceDiagram` | Typed participants, messages, notes, activations, blocks, autonumber, links, source spans | `SequenceArtifact` | Smoke parser/conversion/SVG/PNG tests; Markdown bridge test; `sequence-basic.mmd` and `sequence-rich.mmd` conformance fixtures | Add participant creation/destruction and boxes; qualify newer message variants, nested parallel/critical branches, branch labels, notes and activation lifetimes. Source themes currently retain a fixed sequence palette. |
 | Class | `classDiagram` | Typed classes, namespaces, members, annotations, relationships, endpoint multiplicities, retained style statements | `TopologyChart` | Smoke parser/render test; Markdown bridge topology test; `class-basic.mmd` conformance fixture | Complete generic/member semantics, lollipop and two-way relationships, labeled/nested namespaces, notes, class/style application and safe link data. Retained statements are not styled output. |
 | State | `stateDiagram`, `stateDiagram-v2` | Typed states, composite groups, transitions, start/end markers, retained notes/classes | `TopologyChart` | Smoke parser/render tests; Markdown bridge topology test; `state-basic.mmd` conformance fixture | Render choice/fork/join and concurrent regions deliberately; complete multiline notes, nested composites and class application. Prevent unsupported declarations from being accepted as ordinary state labels. |
@@ -56,17 +56,10 @@ These families are detected and returned as `MermaidDocument` with raw body stat
 | Family | Header | Current state | Best next target | Notes |
 | --- | --- | --- | --- | --- |
 | ZenUML | `zenuml` | Recognized, raw statements retained, warning diagnostic | Sequence-like artifact after grammar evaluation | Keep separate from Mermaid sequence until semantic differences are understood. |
+| Agentflow | `agentflow-beta` | Recognized, raw source retained, `CFXM002`, no artifact | Typed workflows over reusable topology contracts | Semantic parsing and native rendering remain open. |
+| Railroad | `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta` | Recognized, raw source retained, `CFXM002`, no artifact | Typed grammar model and reusable railroad geometry | Body grammar is not validated by recognition. |
 
-## Missing Upstream Families
-
-The Mermaid 12.1.0 source registers both families below. They are absent from the CFX header dispatcher, rather than recognized diagnostic-only families.
-
-| Family | Headers | Current CFX state | Implementation target |
-| --- | --- | --- | --- |
-| [Agentflow](https://mermaid.js.org/syntax/agentflow.html) | `agentflow-beta` | Unknown-family error; no typed model or conformance fixture | Typed nested flows/global scope, collapsed containers, metadata, connectors and sequence/reference/failure edges over reusable topology scenes. Treat instructions/models/connectors as inert diagram data. |
-| [Railroad](https://github.com/mermaid-js/mermaid/blob/mermaid%4012.1.0/packages/mermaid/src/docs/syntax/railroad.md) | `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta` | Unknown-family errors; no typed grammar model or renderer | One product-neutral grammar-diagram model and native scene renderer, with separate notation parsers and bounded rule-reference/repetition layout. |
-
-Start with recognition and preserved-source diagnostics, then complete the semantic and artifact gates. ZenUML remains a separate grammar/license evaluation; translating it as ordinary Mermaid sequence syntax would discard meaning.
+Complete the semantic and artifact gates for [Agentflow](https://mermaid.js.org/syntax/agentflow.html) and the [Railroad dialects](https://github.com/mermaid-js/mermaid/blob/mermaid%4012.1.0/packages/mermaid/src/docs/syntax/railroad.md). Treat workflow instructions/models/connectors as inert diagram data, and reuse one product-neutral grammar model for the Railroad notations. ZenUML remains a separate grammar/license evaluation; translating it as ordinary Mermaid sequence syntax would discard meaning.
 
 ## Cross-Family Gaps
 

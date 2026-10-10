@@ -26,7 +26,7 @@ public sealed partial class MermaidParser {
 
         var descriptor = ResolveDiagramKind(header.Value.Text.Split(';')[0]);
         if (descriptor.Kind == MermaidDiagramKind.Unknown) {
-            Add(result, header.Value.Line, header.Value.Column, header.Value.Text.Length, MermaidDiagnosticSeverity.Error, "Unknown Mermaid diagram type '" + FirstToken(header.Value.Text) + "'.");
+            Add(result, header.Value.Line, header.Value.Column, header.Value.Text.Length, MermaidDiagnosticSeverity.Error, "Unknown Mermaid diagram type '" + FirstToken(header.Value.Text) + "'.", MermaidDiagnosticCodes.UnknownDiagram);
             return result;
         }
 
@@ -34,6 +34,10 @@ public sealed partial class MermaidParser {
         MermaidDocument document;
         if (descriptor.Kind == MermaidDiagramKind.Flowchart || descriptor.Kind == MermaidDiagramKind.Swimlane) {
             document = ParseFlowchart(source, lines, frontMatter, header.Value, descriptor, result);
+            if (Normalize(descriptor.HeaderKind) == "flowchartelk") {
+                Add(result, header.Value.Line, header.Value.Column, descriptor.HeaderKind.Length, MermaidDiagnosticSeverity.Warning,
+                    "The flowchart-elk header uses ChartForgeX static layout; ELK layout is not applied.", MermaidDiagnosticCodes.UnsupportedLayout);
+            }
         } else if (descriptor.Kind == MermaidDiagramKind.UseCase) {
             document = ParseUseCase(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Cynefin) {
@@ -99,7 +103,7 @@ public sealed partial class MermaidParser {
                 FrontMatter = frontMatter.Text
             };
             ReadRawBodyStatements(document, lines, header.Value.Line + 1);
-            Add(result, header.Value.Line, header.Value.Column, header.Value.Text.Length, MermaidDiagnosticSeverity.Warning, "Mermaid diagram kind '" + descriptor.HeaderKind + "' is recognized but not implemented yet.");
+            Add(result, header.Value.Line, header.Value.Column, header.Value.Text.Length, MermaidDiagnosticSeverity.Warning, "Mermaid diagram kind '" + descriptor.HeaderKind + "' is recognized but not implemented yet.", MermaidDiagnosticCodes.DiagnosticOnlyDiagram);
         }
 
         AddDirectives(document, lines, frontMatter.EndLine + 1, header.Value.Line - 1);
@@ -406,6 +410,7 @@ public sealed partial class MermaidParser {
         var direction = tokens.Count > 1 ? tokens[1] : string.Empty;
         switch (first) {
             case "flowchart":
+            case "flowchartelk":
             case "graph":
                 return new DiagramDescriptor(MermaidDiagramKind.Flowchart, tokens[0], direction);
             case "swimlanebeta":
@@ -478,6 +483,13 @@ public sealed partial class MermaidParser {
                 return new DiagramDescriptor(MermaidDiagramKind.TreeView, tokens[0], string.Empty);
             case "zenuml":
                 return new DiagramDescriptor(MermaidDiagramKind.ZenUml, tokens[0], string.Empty);
+            case "agentflowbeta":
+                return new DiagramDescriptor(MermaidDiagramKind.Agentflow, tokens[0], direction);
+            case "railroadbeta":
+            case "railroadebnfbeta":
+            case "railroadabnfbeta":
+            case "railroadpegbeta":
+                return new DiagramDescriptor(MermaidDiagramKind.Railroad, tokens[0], string.Empty);
             default:
                 return new DiagramDescriptor(MermaidDiagramKind.Unknown, tokens[0], string.Empty);
         }
@@ -525,11 +537,12 @@ public sealed partial class MermaidParser {
         return count;
     }
 
-    private static void Add<TDocument>(MermaidParseResult<TDocument> result, int line, int column, int length, MermaidDiagnosticSeverity severity, string message) where TDocument : MermaidDocument {
+    private static void Add<TDocument>(MermaidParseResult<TDocument> result, int line, int column, int length, MermaidDiagnosticSeverity severity, string message, string code = "") where TDocument : MermaidDocument {
         result.Diagnostics.Add(new MermaidDiagnostic {
             Span = new MermaidSourceSpan(line, column, length),
             Severity = severity,
-            Message = message
+            Message = message,
+            Code = code
         });
     }
 

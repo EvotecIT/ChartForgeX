@@ -34,9 +34,9 @@ The [Mermaid roadmap](../TODO.md#mermaid) plans newer-syntax adoption and regres
 
 Flowchart, sequence, class, state, entity relationship, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, treemap, swimlane, use case, and Cynefin diagrams have semantic implementations with static ChartForgeX rendering. Flowcharts, class diagrams, state diagrams, entity relationship diagrams, requirement diagrams, architecture diagrams, C4 diagrams, mindmaps, tree views, event modeling diagrams, kanban boards, swimlanes, use cases, and Cynefin diagrams render through `TopologyChart`; sequence diagrams render through `SequenceArtifact`; git graph diagrams render through `GitGraphBlock`; block diagrams render through `BlockLayoutBlock`; packet diagrams render through `PacketLayoutBlock`; Venn diagrams render through `VennDiagramBlock`; Ishikawa diagrams render through `FishboneDiagramBlock`; Wardley maps render through `WardleyMapBlock`; pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap diagrams render through native `Chart` models.
 
-Recognized but not yet semantically parsed families include ZenUML. These produce an inspectable `MermaidDocument` with retained raw body statements plus a warning that the family is not implemented yet.
+ZenUML (`zenuml`), Agentflow (`agentflow-beta`) and Railroad (`railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta`) produce an inspectable `MermaidDocument` with retained raw body statements and `IsDiagnosticOnly` set to `true`. They return warning `CFXM002` and no visual artifact while their semantic parser and native renderer are unavailable. Recognition does not validate the retained body grammar.
 
-Agentflow (`agentflow-beta`) and the Railroad primitive/EBNF/ABNF/PEG headers are not recognized yet. They follow the unknown-family error path; recognition and native implementation are tracked in the roadmap.
+Diagram selection diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for the `flowchart-elk` layout fallback, and `CFXM004` for native conversion failure. The Markdown bridge preserves these codes and maps source lines into the host document. Other parser diagnostics keep their located messages with an empty code until they are classified.
 
 Unknown diagram families produce a parser error.
 
@@ -79,7 +79,7 @@ Gantt duration calculations apply `excludes`, `includes`, and Friday/Saturday we
 
 Supported flowchart parsing includes:
 
-- `flowchart` and `graph` headers.
+- `flowchart`, `graph` and `flowchart-elk` headers. `flowchart-elk` retains flowchart semantics and emits `CFXM003` because the native static renderer uses ChartForgeX layout.
 - Directions such as `TD`, `TB`, `BT`, `LR`, and `RL`.
 - YAML-style frontmatter and Mermaid directive comments.
 - Common node references and labels.
@@ -93,7 +93,7 @@ Supported flowchart parsing includes:
 
 Flowcharts accept semicolon-separated statements, including statements on the header line. Semicolons inside quoted labels, node shapes, and pipe edge labels stay inside that label. Every retained statement carries its original line and column. Incomplete shapes, missing edge targets, and unmatched `subgraph`/`end` declarations produce located errors; unsupported trailing syntax is diagnosed instead of being silently discarded.
 
-The compact, quoted-shape, and modern flowchart fixtures compare node ids and edge endpoints with Mermaid.js. The calendar fixture compares task dates. Every conformance fixture also exercises static SVG and PNG export, Markdown fences, and deterministic interchange JSON in .NET.
+The compact, quoted-shape, and modern flowchart fixtures compare node ids and edge endpoints with Mermaid.js. The calendar fixtures compare task dates. Renderable fixtures in `fixtures/` also exercise static SVG and PNG export, Markdown fences, and deterministic interchange JSON in .NET. The `recognition/` corpus instead proves preserved source, diagnostic-only outcomes and upstream syntax acceptance.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -1216,7 +1216,7 @@ npm ci --ignore-scripts --no-audit --no-fund
 npm run validate
 ```
 
-`Build.ps1` runs the same conformance validation after the .NET test suite. Add fixtures here when expanding a supported Mermaid family so syntax compatibility is checked against Mermaid.js before ChartForgeX-specific rendering expectations are added.
+`Build.ps1` runs the same conformance validation after the .NET test suite. The default command validates both `fixtures/` and `recognition/`; pass a directory name to `node validate-mermaid.mjs` for a focused run. Add fixtures here when expanding a supported Mermaid family so syntax compatibility is checked against Mermaid.js before ChartForgeX-specific rendering expectations are added.
 
 ````markdown
 ```mermaid {#incident-flow title="Incident Flow" subtitle="Static preview" width=1180 height=720}

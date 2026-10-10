@@ -71,7 +71,11 @@ public enum MermaidDiagramKind {
     /// <summary>A UML use case diagram.</summary>
     UseCase,
     /// <summary>A Cynefin domain map.</summary>
-    Cynefin
+    Cynefin,
+    /// <summary>An agent workflow diagram.</summary>
+    Agentflow,
+    /// <summary>A railroad grammar diagram, including its EBNF, ABNF and PEG variants.</summary>
+    Railroad
 }
 
 /// <summary>
@@ -83,6 +87,9 @@ public class MermaidDocument {
 
     /// <summary>Gets or sets the Mermaid diagram family.</summary>
     public MermaidDiagramKind Kind { get; set; }
+
+    /// <summary>Gets whether the recognized family retains source without a semantic parser or native renderer.</summary>
+    public bool IsDiagnosticOnly => Kind == MermaidDiagramKind.ZenUml || Kind == MermaidDiagramKind.Agentflow || Kind == MermaidDiagramKind.Railroad;
 
     /// <summary>Gets or sets the full Mermaid source text.</summary>
     public string SourceText { get => _sourceText; set => _sourceText = value ?? throw new ArgumentNullException(nameof(value)); }
