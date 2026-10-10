@@ -18,9 +18,10 @@ public sealed partial class MermaidParser {
         for (var index = 0; index < lines.Length; index++) {
             var line = lines[index];
             var trimmed = line.Trim();
-            if (trimmed.Length > 0 && !trimmed.StartsWith("#", StringComparison.Ordinal) && LeadingWhitespace(line) <= rootIndent)
+            if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
+            if (LeadingWhitespace(line) <= rootIndent)
                 inConfiguration = LeadingWhitespace(line) == rootIndent && Regex.IsMatch(trimmed, @"^config\s*:", RegexOptions.CultureInvariant);
-            if (inConfiguration) length += line.Length + (index + 1 < lines.Length ? 1 : 0);
+            if (inConfiguration) length += line.Length + (length > 0 ? 1 : 0);
         }
         return length;
     }
