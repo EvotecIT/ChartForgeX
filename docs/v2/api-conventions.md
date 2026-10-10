@@ -243,6 +243,33 @@ Rounding stays inside each projected sector and clamps independently at its oute
 
 These options apply to their named families. A positive numeric radial radius on another populated family, or a positive Sunburst radius on a different family, fails preparation. Pie, Donut, PolarArea and Chord keep their existing sector geometry; progress rings keep their separate line-cap treatment.
 
+## Sunburst secondary captions
+
+`ChartSunburstOptions.SecondaryLabelFormatter` supplies optional authored text beneath each primary caption. Keep text in your own data keyed by `ChartHierarchyItem.Id`; the shared hierarchy input and its numeric size and color observations stay independent.
+
+```csharp
+var captions = new Dictionary<string, string> {
+    ["engineering"] = "Delivery teams",
+    ["operations-support"] = "Shared service"
+};
+var chart = Chart.Create().WithDataLabels()
+    .ConfigureSunburst(options => {
+        options.SecondaryLabelFormatter = context =>
+            captions.TryGetValue(context.Item.Id, out var text) ? text : null;
+        options.SecondaryLabelStyle.FontSize = 10;
+        options.SecondaryLabelSpacing = 2;
+    })
+    .AddSunburst("Allocation", hierarchy);
+```
+
+`ChartSunburstLabelContext.Item` is the copied authored item, whose nullable `Value` retains the supplied size. The context's `Value` is the size resolved under `ParentValuePolicy`; `FormattedValue` uses the existing chart value format. A formatter can include that formatted size deliberately, but its returned text never becomes a numeric observation.
+
+The formatter runs once for each compiled node, including nodes with hidden captions, zero sizes or collapsed geometry. Null, empty or whitespace output suppresses secondary text and preserves the primary-only SVG and PNG. Preparation snapshots text and resolved styles; later changes to a callback, its captured data or styling do not change a prepared export. Formatter exceptions propagate.
+
+Secondary typography inherits chart, series and ordinal node data-label styling at 80% of the primary font size, then applies `SecondaryLabelStyle`. Explicit secondary colors override inherited ink. `SecondaryLabelSpacing` defaults to two logical pixels and accepts finite, nonnegative values. Both runs share horizontal or upright tangential placement and fit inside the actual sector, including rounded corners. Primary content takes priority: secondary text wraps, shortens at text-element boundaries or is omitted before the primary caption loses content. Font sizes stay fixed; automatic shrinking and configurable sector padding are separate policies.
+
+Full secondary text remains in `data-cfx-secondary-label` and descriptive node regions even when no caption fits. The optional HTML adapter exposes it as plain text in pointer and keyboard tooltips, separately from size, color, supplied totals and remainders. IDs, numeric metadata and target counts stay unchanged. A non-null formatter on a populated non-Sunburst chart fails preparation; style or spacing configuration without a formatter remains inactive. Treemap retains its own label and numeric-value captions.
+
 ## Enforcement boundary
 
 `V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Public typed configuration callbacks on the Core and Visuals `With*`/`Configure*` builder boundary must use `Configure*` and return their receiver. Data-adding callbacks and substantive exports keep their operation names. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.
