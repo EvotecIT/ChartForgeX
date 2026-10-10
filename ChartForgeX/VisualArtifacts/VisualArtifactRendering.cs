@@ -45,13 +45,15 @@ public static partial class VisualArtifactRendering {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (artifact.Model is TopologyChart) TopologyHtmlRenderer.EnsureStatic(TopologyOptions(artifact, options));
         if (artifact.RenderSource == null && artifact.Model is PreparedVisual prepared) return RenderPreparedHtml(artifact, prepared, options);
-        if (artifact.RenderSource != null || artifact.Model is IStaticVisualSource) return WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title, artifact.ToSvg(options), artifact.Accessibility.Language, clipSvgViewport: true);
+        if (artifact.RenderSource != null || artifact.Model is IStaticVisualSource || options?.HtmlSizing is VisualArtifactHtmlSizing.FitToWidth or VisualArtifactHtmlSizing.PreserveSize)
+            return WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title, artifact.ToSvg(options), artifact.Accessibility.Language,
+                clipSvgViewport: artifact.RenderSource != null || artifact.Model is IStaticVisualSource, sizing: HtmlSizing(artifact, options));
         var html = artifact.Model switch {
             Chart chart => chart.ToHtmlPage(),
             ChartGrid grid => grid.ToHtmlPage(),
             TopologyChart topology => RenderTopologyHtml(artifact, topology, options),
             FlowArtifact flow => flow.ToHtmlPage(),
-            SequenceArtifact sequence => WrapSvgPage(sequence.Title.Length == 0 ? sequence.Id : sequence.Title, sequence.ToSvg(), artifact.Accessibility.Language),
+            SequenceArtifact sequence => WrapSvgPage(sequence.Title.Length == 0 ? sequence.Id : sequence.Title, sequence.ToSvg(), artifact.Accessibility.Language, sizing: HtmlSizing(artifact, options)),
             IVisualBlock block => block.ToHtmlPage(),
             _ => throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a supported HTML render model.")
         };
@@ -100,13 +102,6 @@ public static partial class VisualArtifactRendering {
 
     /// <summary>Saves a supported visual artifact model to PNG with artifact-wide options.</summary>
     public static void SavePng(this VisualArtifact artifact, string path, VisualArtifactRenderOptions? options) => File.WriteAllBytes(path, artifact.ToPng(options));
-
-    internal static string WrapSvgPage(string title, string svg, string? language = null, bool clipSvgViewport = false) {
-        var safeTitle = string.IsNullOrWhiteSpace(title) ? "ChartForgeX visual artifact" : title.Trim();
-        var safeLanguage = string.IsNullOrWhiteSpace(language) ? "en" : language!.Trim();
-        var svgOverflow = clipSvgViewport ? "hidden" : "visible";
-        return "<!doctype html><html lang=\"" + EscapeHtml(safeLanguage) + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(safeTitle) + "</title><style>html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f8fafc,#e2e8f0)}body{display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}.chartforgex-visual-artifact{max-width:100%;height:auto}.chartforgex-visual-artifact svg{display:block;max-width:100%;height:auto;overflow:" + svgOverflow + "}@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-artifact{max-width:none}}</style></head><body><div class=\"chartforgex-visual-artifact\">" + svg + "</div></body></html>";
-    }
 
     private static string WithDocumentLanguage(string html, string? language) {
         var safeLanguage = string.IsNullOrWhiteSpace(language) ? "en" : language!.Trim();
