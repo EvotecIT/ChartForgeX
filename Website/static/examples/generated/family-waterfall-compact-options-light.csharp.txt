@@ -15,7 +15,7 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var model = V2GalleryModels.Create(ChartSeriesKind.Waterfall, "compact-options", VisualThemeMode.Light);
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Light,
-    new VisualFrame("Changes in available capacity", "Reversed axes retain signed changes and the derived total", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("Changes in available capacity", "Explicit subtotals and a total retain the running balance on reversed axes", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 System.IO.File.WriteAllText("visual.svg", prepared.ToSvg());
 System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
@@ -303,7 +303,13 @@ public static partial class V2GalleryModels {
             return chart;
         }
         if (kind == ChartSeriesKind.Waterfall) {
-            var chart = Basic(kind, variant)!;
+            var chart = Chart.Create().WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance")
+                .WithYAxis("Running balance").AddWaterfall("Movement", new[] {
+                    ChartWaterfallItem.Delta(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                    ChartWaterfallItem.Total(7)
+                });
+            chart.Series[0].WithPointColor(4, "#A5358A");
             chart.Options.XAxis.WithReversal();
             chart.Options.YAxis.WithReversal();
             return chart.WithDataLabels();
