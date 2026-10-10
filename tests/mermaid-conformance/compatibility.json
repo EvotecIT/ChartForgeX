@@ -15,6 +15,10 @@
     }
   },
   "fixtures": {
+    "fixtures/gantt-axis-format.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "provenance": ["https://mermaid.js.org/syntax/gantt.html#output-date-format-on-the-axis", "https://github.com/d3/d3-time-format"]
+    },
     "fixtures/gantt-forward-after.mmd": {
       "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
       "provenance": "Authored forward and multiple after-reference regression from https://mermaid.js.org/syntax/gantt.html; resolved dates verified against all three pinned reference engines."

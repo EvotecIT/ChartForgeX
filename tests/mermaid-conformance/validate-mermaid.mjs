@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { isSyntaxRejection } from './reference-errors.mjs';
+import { timeFormat } from 'd3-time-format';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const manifest = JSON.parse(await readFile(join(root, 'compatibility.json'), 'utf8'));
@@ -147,6 +148,15 @@ for (const { folder, file, hasExpected } of files) {
         const pad = (value, length = 2) => String(value).padStart(length, '0');
         const timestamp = value => `${pad(value.getFullYear(), 4)}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}.${pad(value.getMilliseconds(), 3)}`;
         assert.deepEqual(diagram.db.getTasks().map(task => [task.id, timestamp(task.startTime), timestamp(task.endTime)]), expected.taskTimestamps);
+      }
+      if (expected.axisFormats) {
+        assert.equal(diagram.db.getAxisFormat(), expected.axisFormat);
+        const tasks = diagram.db.getTasks();
+        for (const contract of expected.axisFormats) {
+          const task = tasks.find(value => value.id === contract.id);
+          assert.ok(task, `Axis format task ${contract.id}`);
+          for (const [format, label] of contract.values) assert.equal(timeFormat(format)(task.startTime), label, `Axis format ${format}`);
+        }
       }
       if (expected.taskRenderEnds) {
         const day = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
