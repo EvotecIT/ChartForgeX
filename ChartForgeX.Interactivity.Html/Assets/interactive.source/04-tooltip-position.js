@@ -1,6 +1,7 @@
   // Screen placement belongs to the Html adapter; target acquisition supplies the canonical native node.
   const tooltipPositions = new WeakMap();
   const activeTooltipPositions = new Set();
+  const tooltipPositionTrees = new Set();
   let tooltipPositionFrame = 0, tooltipPositionObserver = null, tooltipPositionResize = null;
   const tooltipDirections = {
     top: [0, -1], 'top-right': [1, -1], right: [1, 0], 'bottom-right': [1, 1],
@@ -11,8 +12,18 @@
     tooltipPositions.delete(tip);
     if (state) activeTooltipPositions.delete(state);
     if (tooltipPositionResize && state) tooltipPositionResize.unobserve(state.stage);
-    if (activeTooltipPositions.size) return;
-    if (tooltipPositionObserver) { tooltipPositionObserver.disconnect(); tooltipPositionObserver = null; }
+    if (activeTooltipPositions.size) {
+      if (tooltipPositionObserver && Array.from(tooltipPositionTrees).some(tree =>
+        !Array.from(activeTooltipPositions).some(current => current.trees.includes(tree)))) {
+        // Drain surviving hosts' removals before rebuilding registrations to release unused shadow trees.
+        checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
+        if (!tooltipPositionObserver) return;
+        tooltipPositionObserver.disconnect(); tooltipPositionTrees.clear();
+        for (const current of activeTooltipPositions) watchTooltipPositionTrees(current);
+      }
+      return;
+    }
+    if (tooltipPositionObserver) { tooltipPositionObserver.disconnect(); tooltipPositionObserver = null; tooltipPositionTrees.clear(); }
     if (tooltipPositionResize) { tooltipPositionResize.disconnect(); tooltipPositionResize = null; }
     window.removeEventListener('resize', queueTooltipPositionRefresh);
     document.removeEventListener('scroll', queueTooltipPositionRefresh, true);
@@ -33,6 +44,24 @@
       }
     });
   };
+  const checkTooltipPositionMutations = (records) => {
+    for (const current of Array.from(activeTooltipPositions)) {
+      // A new delayed target can hide a shown readout. Release geometry without cancelling its new request.
+      if (current.tip.hidden) { forgetTooltipPosition(current.tip); continue; }
+      const removed = records.some(record => record.type === 'childList'
+        && Array.from(record.removedNodes).some(node => node.contains(current.root) || node.contains(current.node) || node.contains(current.tip)
+          || current.trees.some(tree => tree.host && node.contains(tree.host))));
+      if (removed || !tooltipPositionAvailable(current)) hideTip(current.root, current.tip, true);
+    }
+    queueTooltipPositionRefresh();
+  };
+  const watchTooltipPositionTrees = (state) => {
+    for (const tree of state.trees) {
+      if (tooltipPositionTrees.has(tree)) continue;
+      tooltipPositionObserver.observe(tree, { childList: true, attributes: true, attributeFilter: ['hidden', 'data-cfx-interaction-features'], subtree: true });
+      tooltipPositionTrees.add(tree);
+    }
+  };
   const watchTooltipPosition = (state) => {
     if (activeTooltipPositions.has(state)) return;
     activeTooltipPositions.add(state);
@@ -41,19 +70,10 @@
       window.addEventListener('resize', queueTooltipPositionRefresh);
       document.addEventListener('scroll', queueTooltipPositionRefresh, true);
       document.addEventListener('transitionend', queueTooltipPositionRefresh, true);
-      tooltipPositionObserver = new MutationObserver((records) => {
-        for (const current of Array.from(activeTooltipPositions)) {
-          // A new delayed target can hide a shown readout. Release geometry without cancelling its new request.
-          if (current.tip.hidden) { forgetTooltipPosition(current.tip); continue; }
-          const removed = records.some(record => record.type === 'childList'
-            && Array.from(record.removedNodes).some(node => node.contains(current.root) || node.contains(current.node) || node.contains(current.tip)));
-          if (removed || !tooltipPositionAvailable(current)) hideTip(current.root, current.tip, true);
-        }
-        queueTooltipPositionRefresh();
-      });
-      tooltipPositionObserver.observe(document.documentElement, { childList: true, attributes: true, attributeFilter: ['hidden', 'data-cfx-interaction-features'], subtree: true });
+      tooltipPositionObserver = new MutationObserver(checkTooltipPositionMutations);
       if (typeof ResizeObserver !== 'undefined') tooltipPositionResize = new ResizeObserver(queueTooltipPositionRefresh);
     }
+    watchTooltipPositionTrees(state);
     if (tooltipPositionResize) tooltipPositionResize.observe(state.stage);
   };
   const refreshTooltipPosition = (root) => {
@@ -64,7 +84,7 @@
     if (state.anchor === 'chart') return state.stage.getBoundingClientRect();
     const rect = state.node.getBoundingClientRect();
     if (state.anchor === 'node') return rect;
-    let x = state.event.clientX, y = state.event.clientY;
+    let x = state.event?.clientX, y = state.event?.clientY;
     if (!Number.isFinite(x) || !Number.isFinite(y)) { x = rect.left + rect.width / 2; y = rect.top + rect.height / 2; }
     if (!Number.isFinite(x) || !Number.isFinite(y)) { x = 24; y = 24; }
     return { left: x, right: x, top: y, bottom: y, width: 0, height: 0 };
@@ -99,12 +119,12 @@
     tip.style.top = (y - origin.top) / scaleY + 'px';
   };
   const positionTooltip = (tip, event, node) => {
-    if (!event || tip.hidden) return;
+    if (tip.hidden) return;
     const root = tip.closest('.cfx-interactive-chart'), stage = root && root.querySelector('.cfx-stage');
     if (!root || !stage || !node) return;
     let state = tooltipPositions.get(tip);
     const pinned = state && root.dataset.cfxTooltipPinned === 'true' && state.key === root.dataset.cfxPinnedTarget;
-    if (!state) { state = { root, tip, stage }; tooltipPositions.set(tip, state); }
+    if (!state) { state = { root, tip, stage, trees: tooltipRootTrees(root) }; tooltipPositions.set(tip, state); }
     if (!pinned) { state.node = node; state.key = targetKey(targetIdentity(node)); }
     state.event = event; state.anchor = root.dataset.cfxTooltipAnchor || 'pointer';
     placeTooltip(state);

@@ -2,6 +2,7 @@ using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Themes;
+using HtmlTinkerX;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
@@ -25,18 +26,18 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     private static Task WaitForTipAsync(IPage page) => page.WaitForFunctionAsync("() => !document.querySelector('.cfx-tooltip').hidden", null, new PageWaitForFunctionOptions { Timeout = 5000 });
     private static Task<bool> TipHiddenAsync(IPage page) => page.Locator(".cfx-tooltip").First.EvaluateAsync<bool>("tip => tip.hidden");
 
-    private static Task<JsonElement> GeometryAsync(IPage page, string selector = Reading) => page.EvaluateAsync<JsonElement>("""
-        selector => {
-            const node=document.querySelector(selector), root=node.closest('.cfx-interactive-chart'), tip=root.querySelector('.cfx-tooltip');
+    private static Task<JsonElement> GeometryAsync(IPage page, string selector = Reading, bool hosted = false) => page.EvaluateAsync<JsonElement>("""
+        ({selector,hosted}) => {
+            const node=(hosted?window.positionFocusChart:document).querySelector(selector), root=node.closest('.cfx-interactive-chart'), tip=root.querySelector('.cfx-tooltip');
             const rect=element=>{const b=element.getBoundingClientRect();return {x:b.left,y:b.top,width:b.width,height:b.height};};
             return {tip:rect(tip),node:rect(node),stage:rect(root.querySelector('.cfx-stage')),viewport:{width:innerWidth,height:innerHeight},
                 hidden:tip.hidden,pinned:root.dataset.cfxTooltipPinned==='true',text:tip.innerText,css:{left:tip.style.left,top:tip.style.top}};
         }
-        """, selector);
+        """, new { selector, hosted });
 
     private static async Task<JsonElement> AssertPositionAsync(IPage page, HtmlChartTooltipAnchor anchor, HtmlChartTooltipPlacement[] placements,
-        double gap = 14, double offsetX = 0, double offsetY = 0, double[]? pointer = null, string selector = Reading) {
-        var geometry = await GeometryAsync(page, selector);
+        double gap = 14, double offsetX = 0, double offsetY = 0, double[]? pointer = null, string selector = Reading, bool hosted = false) {
+        var geometry = await GeometryAsync(page, selector, hosted);
         Assert.False(geometry.GetProperty("hidden").GetBoolean());
         var tip = ScreenRect.Read(geometry.GetProperty("tip"));
         var node = ScreenRect.Read(geometry.GetProperty("node"));
@@ -68,11 +69,12 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         internal static ScreenRect Read(JsonElement value) => new(value.GetProperty("x").GetDouble(), value.GetProperty("y").GetDouble(), value.GetProperty("width").GetDouble(), value.GetProperty("height").GetDouble());
     }
 
-    private static async Task CaptureAsync(IPage page, string name, object observations) {
+    private static async Task CaptureAsync(IPage page, string name, object observations, HtmlBrowserSession? session = null) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;
         Directory.CreateDirectory(directory);
         await File.WriteAllTextAsync(Path.Combine(directory, name + ".json"), JsonSerializer.Serialize(observations));
+        if (session is not null) await File.WriteAllTextAsync(Path.Combine(directory, name + ".console.json"), JsonSerializer.Serialize(session.ConsoleLog));
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png") });
     }
 }
