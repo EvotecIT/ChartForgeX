@@ -90,7 +90,7 @@ internal static partial class VisualMatrixCompiler {
                         metadata["data-cfx-source-point"] = (pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex).ToString();
                         metadata["data-cfx-column"] = columnIndex.ToString(); metadata["data-cfx-x"] = VisualStateSceneTools.Number(point.X);
                         metadata["data-cfx-y"] = VisualStateSceneTools.Number(point.Y); metadata["data-cfx-value"] = VisualStateSceneTools.Number(point.Y);
-                        if (state == null) {
+                        if (state == null && chart.Options.HeatmapColorScale == null) {
                             var ratio = ChartHeatmapSurface.Ratio(chart, point.Y, min, max);
                             var status = ChartHeatmapSurface.CellStatus(chart, ratio);
                             if (status != null) metadata["data-cfx-status"] = status;

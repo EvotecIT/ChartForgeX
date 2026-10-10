@@ -21,10 +21,14 @@ internal static class ChartColorScaleLegend {
         return values;
     }
 
-    internal static int MidpointStep(ChartColorScale scale, double min, double max, int stepCount) {
+    /// <summary>Returns the midpoint's swatch-center index, fractional when a sampled ramp places it between values.</summary>
+    internal static double MidpointStep(ChartColorScale scale, double min, double max, int stepCount) {
         if (SwatchPerStop(scale, min, max) && scale.MidpointIndex is int midpoint) return midpoint;
         if (scale.Colors.Count > 3 && scale.MidpointCollapses(min, max))
             return scale.EffectiveMidpoint(min, max) <= scale.EffectiveMinimum(min) ? 0 : stepCount - 1;
+        if (scale.Mode == ChartColorScaleMode.Diverging && scale.EffectiveMaximum(max) > scale.EffectiveMinimum(min))
+            return (stepCount - 1) * Math.Max(0, Math.Min(1, ChartMath.Normalize(scale.EffectiveMidpoint(min, max),
+                scale.EffectiveMinimum(min), scale.EffectiveMaximum(max))));
         return stepCount / 2;
     }
 

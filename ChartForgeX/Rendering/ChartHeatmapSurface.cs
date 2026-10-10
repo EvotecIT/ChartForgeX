@@ -12,8 +12,9 @@ internal static class ChartHeatmapSurface {
         CellBlend(chart, colors, high, value, min, max).Color;
 
     internal static ChartColorBlend CellBlend(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max,
-        SvgColorRole highRole = SvgColorRole.Series) => chart.Options.HeatmapRelativeScale && value == 0 && min >= 0
-            ? ZeroBlend(colors) : ColorBlend(chart, colors, high, value, min, max, highRole);
+        SvgColorRole highRole = SvgColorRole.Series) => chart.Options.HeatmapColorScale?.BlendFor(value, min, max)
+            ?? (chart.Options.HeatmapRelativeScale && value == 0 && min >= 0
+                ? ZeroBlend(colors) : ColorBlend(chart, colors, high, value, min, max, highRole));
 
     internal static ChartColor Color(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max) =>
         ColorBlend(chart, colors, high, value, min, max).Color;
@@ -68,7 +69,8 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>Returns the colour of a matrix or hexbin heatmap cell as a blend, for SVG colour variables (see <see cref="CellColor(Chart, ChartColor?, double, double, double)"/>).</summary>
     public static ChartColorBlend CellBlend(Chart chart, ChartColor? highColor, double value, double min, double max) =>
-        (chart.Options.HeatmapRelativeScale || chart.Options.Theme.UseGraphiteLayout) && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max);
+        chart.Options.HeatmapColorScale?.BlendFor(value, min, max)
+            ?? ((chart.Options.HeatmapRelativeScale || chart.Options.Theme.UseGraphiteLayout) && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max));
 
     /// <summary>
     /// Returns whether a matrix or hexbin heatmap cell is strong, so the text on it takes the surface colour
@@ -152,10 +154,10 @@ internal static class ChartHeatmapSurface {
     }
 
     /// <summary>
-    /// Returns the swatch under the midpoint label of a horizontal map scale: the midpoint stop when each stop has its
-    /// own swatch, the end swatch when a many-step scale's midpoint sits at that end, otherwise the middle swatch.
+    /// Returns the midpoint label's swatch-center index: an exact stop for a per-stop ramp or a fractional position
+    /// between uniformly sampled values. Sequential, constant and default scales retain their established fallback.
     /// </summary>
-    public static int MapScaleMidpointStep(Chart chart, double min, double max, int stepCount) {
+    public static double MapScaleMidpointStep(Chart chart, double min, double max, int stepCount) {
         return chart.Options.MapColorScale is ChartColorScale scale ? ChartColorScaleLegend.MidpointStep(scale, min, max, stepCount) : stepCount / 2;
     }
 
@@ -231,6 +233,8 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>Returns <see cref="CalendarColor(Chart, ChartSeries, ChartColor?, double, double, double)"/> as a blend of its ramp, series, and surface colours.</summary>
     public static ChartColorBlend CalendarBlend(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {
+        if (chart.Options.HeatmapColorScale is ChartColorScale scale)
+            return pointColor.HasValue ? ChartColorBlend.Solid(pointColor.Value, SvgColorRole.Series) : scale.BlendFor(value, min, max);
         var ratio = CalendarRatio(value, min, max);
         if (!pointColor.HasValue && !series.Color.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
         // Counts use a neutral single-hue ramp from the first categorical colour; status colours stay reserved for status.
