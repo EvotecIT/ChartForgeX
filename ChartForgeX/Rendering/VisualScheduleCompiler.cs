@@ -87,7 +87,6 @@ internal static partial class VisualScheduleCompiler {
         builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         using (builder.PushGroup("gantt-lanes", "gantt-lanes", Window(model.Min, model.Max))) {
             Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, projection), model.FormatTick);
-            if (model.NowVisible) Now(chart, context, builder, layout, model.X(model.Now!.Value, projection), model.Now.Value);
             for (var rowIndex = 0; rowIndex < model.Rows.Count; rowIndex++) {
                 var row = model.Rows[rowIndex];
                 if (row.IsGroup) {
@@ -130,6 +129,7 @@ internal static partial class VisualScheduleCompiler {
                     }
                 }
             }
+            if (model.NowVisible) Now(chart, context, builder, layout, model.X(model.Now!.Value, projection), model.Now.Value);
         }
     }
 
