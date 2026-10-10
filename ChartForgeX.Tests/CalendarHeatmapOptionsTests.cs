@@ -32,7 +32,7 @@ public sealed class CalendarHeatmapOptionsTests {
     [Fact]
     public void DayAndMonthNamesAndScaleWords_AreLocalized() {
         // Small cells: weekday labels go on Monday, Wednesday, and Friday only.
-        var chart = TwoWeeks(DayOfWeek.Monday, GermanDays, GermanMonths).WithCalendarHeatmapCells(maximumSize: 9).WithLabels(labels => {
+        var chart = TwoWeeks(DayOfWeek.Monday, GermanDays, GermanMonths).WithCalendarHeatmapCells(maximumSize: 9).ConfigureLabels(labels => {
             labels.Less = "Weniger";
             labels.More = "Mehr";
             labels.NoData = "Keine Daten";
@@ -193,14 +193,14 @@ public sealed class CalendarHeatmapOptionsTests {
     [Fact]
     public void DateFormatter_NamesDaysInTheLabelsLanguage_AndKeepsIsoData() {
         var german = CultureInfo.GetCultureInfo("de-DE");
-        var chart = TwoWeeks(DayOfWeek.Monday).WithLabels(labels => labels.DateFormatter = day => day.ToString("D", german));
+        var chart = TwoWeeks(DayOfWeek.Monday).ConfigureLabels(labels => labels.DateFormatter = day => day.ToString("D", german));
         var cell = ByRole(XDocument.Parse(chart.ToSvg()), "calendar-cell").Single(element => (string?)element.Attribute("data-cfx-date") == "2026-09-07");
         var name = new DateTime(2026, 9, 7).ToString("D", german);
         Assert.Equal("Changes, " + name + ": 1", (string?)cell.Attribute("aria-label"));
         Assert.Equal("Changes, " + name + ": 1", cell.Tooltip());
         Assert.Null(cell.Attribute("tabindex"));
 
-        var iso = ByRole(XDocument.Parse(TwoWeeks(DayOfWeek.Monday).WithLabels(labels => labels.DateFormatter = _ => " ").ToSvg()), "calendar-cell")
+        var iso = ByRole(XDocument.Parse(TwoWeeks(DayOfWeek.Monday).ConfigureLabels(labels => labels.DateFormatter = _ => " ").ToSvg()), "calendar-cell")
             .Single(element => (string?)element.Attribute("data-cfx-date") == "2026-09-07");
         Assert.Equal("Changes, 2026-09-07: 1", (string?)iso.Attribute("aria-label"));
     }
