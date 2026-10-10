@@ -41,7 +41,7 @@ public sealed partial class Chart {
             new ChartPoint(minX, slope * minX + intercept),
             new ChartPoint(maxX, slope * maxX + intercept)
         }, color);
-        Series[Series.Count - 1].SetTrendSourcePoints(materialized);
+        Series[Series.Count - 1].SetTrendLineSourcePoints(materialized);
         return this;
     }
 }

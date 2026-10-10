@@ -103,8 +103,8 @@ internal sealed partial class VisualSceneBuilder {
 
     internal void SliceGradient(double cx, double cy, double outerRadius, double innerRadius, double startAngle, double sweep,
         ChartPoint start, ChartPoint end, IReadOnlyList<VisualGradientStop> stops,
-        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
-        Slice(cx, cy, outerRadius, innerRadius, startAngle, sweep, ChartColor.Transparent, stroke,strokeWidth, role, id, paint);
+        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null, double cornerRadius = 0) {
+        Slice(cx, cy, outerRadius, innerRadius, startAngle, sweep, ChartColor.Transparent, stroke, strokeWidth, role, id, paint, cornerRadius);
         ReplaceWithGradient(start, end, stops);
     }
 
@@ -115,6 +115,7 @@ internal sealed partial class VisualSceneBuilder {
         if (pattern == ChartFillPattern.None || strokeWidth == 0) return;
         var shape = SnapshotPath(clip, close: true);
         var contours = VisualSceneGeometry.Flatten(shape, 1);
+        if (!VisualSceneGeometry.HasEvenOddFillArea(contours)) return;
         var points = contours.SelectMany(contour => contour).ToArray();
         if (points.Length == 0) return;
         var left = points.Min(point => point.X); var top = points.Min(point => point.Y);
@@ -127,7 +128,11 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     internal void PatternSlice(double cx, double cy, double outerRadius, double innerRadius, double start, double sweep,
-        ChartFillPattern pattern, ChartColor color, double spacing = 8, double strokeWidth = 1.5, string? role = null, Themes.SvgPaint? paint = null) {
+        ChartFillPattern pattern, ChartColor color, double spacing = 8, double strokeWidth = 1.5, string? role = null, Themes.SvgPaint? paint = null, double cornerRadius = 0) {
+        NonNegative(cornerRadius, nameof(cornerRadius));
+        if (!ChartSlicePathGeometry.HasEncodedFillArea(cx, cy, outerRadius, innerRadius, start, sweep, cornerRadius)) return;
+        var rounded = ChartSlicePathGeometry.RoundedPath(cx, cy, outerRadius, innerRadius, start, sweep, cornerRadius);
+        if (rounded != null) { Pattern(rounded, pattern, color, spacing, strokeWidth, role, paint); return; }
         // Retain one numeric contour clip independent of either export backend.
         var slice = new VisualSceneSlice(cx, cy, outerRadius, innerRadius, start, sweep, color, null, 0, null, null);
         var contours = VisualSceneGeometry.Flatten(slice, 4);

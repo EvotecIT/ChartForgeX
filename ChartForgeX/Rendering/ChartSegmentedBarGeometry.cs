@@ -20,12 +20,12 @@ internal readonly struct ChartSegmentedBarGeometry {
     public ChartSegmentedLine Cap { get; }
     public ChartSegmentedLine Highlight { get; }
 
-    public static ChartSegmentedBarGeometry Vertical(ChartBarVisualStyle style, double x, double y, double width, double height, double value) {
+    public static ChartSegmentedBarGeometry Vertical(ChartBarVisualStyle style, double x, double y, double width, double height, double mappedDirection) {
         var radius = Math.Min(style.CornerRadius, width / 2.0);
         var capInset = Math.Min(style.CapInset, width / 2.0);
         var capThickness = Math.Min(height, Math.Min(style.CapThickness, Math.Max(2, width * 0.35)));
-        var capY = value >= 0 ? y + capThickness / 2.0 : y + height - capThickness / 2.0;
-        var direction = value >= 0 ? 1 : -1;
+        var capY = mappedDirection >= 0 ? y + capThickness / 2.0 : y + height - capThickness / 2.0;
+        var direction = mappedDirection >= 0 ? 1 : -1;
         var highlightY = capY - direction * HighlightOffset(capThickness);
         return new ChartSegmentedBarGeometry(
             radius,
@@ -36,12 +36,12 @@ internal readonly struct ChartSegmentedBarGeometry {
             new ChartSegmentedLine(x + capInset + capThickness * ChartVisualPrimitives.SegmentedCapHighlightInsetRatio, highlightY, x + width - capInset - capThickness * ChartVisualPrimitives.SegmentedCapHighlightInsetRatio, highlightY));
     }
 
-    public static ChartSegmentedBarGeometry Horizontal(ChartBarVisualStyle style, double x, double y, double width, double height, double value) {
+    public static ChartSegmentedBarGeometry Horizontal(ChartBarVisualStyle style, double x, double y, double width, double height, double mappedDirection) {
         var radius = Math.Min(style.CornerRadius, height / 2.0);
         var capInset = Math.Min(style.CapInset, height / 2.0);
         var capThickness = Math.Min(width, Math.Min(style.CapThickness, Math.Max(2, height * 0.35)));
-        var capX = value >= 0 ? x + width - capThickness / 2.0 : x + capThickness / 2.0;
-        var direction = value >= 0 ? 1 : -1;
+        var capX = mappedDirection >= 0 ? x + width - capThickness / 2.0 : x + capThickness / 2.0;
+        var direction = mappedDirection >= 0 ? 1 : -1;
         var highlightX = capX - direction * HighlightOffset(capThickness);
         return new ChartSegmentedBarGeometry(
             radius,

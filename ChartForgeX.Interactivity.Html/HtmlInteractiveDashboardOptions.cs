@@ -76,6 +76,17 @@ public sealed class HtmlInteractiveDashboardOptions {
     /// <summary>Gets or sets how every dashboard chart protects readability in narrow containers.</summary>
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
+    /// <summary>
+    /// Gets the tooltip content, acquisition, timing and position options shared by every dashboard chart.
+    /// </summary>
+    public HtmlChartTooltipOptions Tooltip { get; } = new HtmlChartTooltipOptions();
+
+    /// <summary>Gets the crosshair presentation options shared by every dashboard chart.</summary>
+    public HtmlChartCrosshairOptions Crosshair { get; } = new HtmlChartCrosshairOptions();
+
+    /// <summary>Gets the transient mark and branch emphasis options shared by every dashboard chart.</summary>
+    public HtmlChartHighlightOptions Highlight { get; } = new HtmlChartHighlightOptions();
+
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;
         var trimmed = value.Trim();

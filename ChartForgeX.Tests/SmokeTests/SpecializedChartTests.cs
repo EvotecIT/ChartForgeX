@@ -68,7 +68,8 @@ internal static partial class SmokeTests {
                 new ChartBubble(1, 24, 8),
                 new ChartBubble(2, 42, 18),
                 new ChartBubble(3, 31, 42)
-            }, ChartColor.FromRgb(37, 99, 235));
+            }, ChartColor.FromRgb(37, 99, 235))
+            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 2; bubble.MaximumRadius = 14; });
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"bubble\"") == 3, "Bubble charts should render one scaled marker per bubble.");
         Assert(CartesianMarkAttribute(svg, 0, 2, "bubble", "rx") > CartesianMarkAttribute(svg, 0, 0, "bubble", "rx"), "Larger bubble sizes must produce larger native marks.");
@@ -193,11 +194,14 @@ internal static partial class SmokeTests {
             .WithSize(640, 360)
             .WithDataLabels()
             .WithXLabels("Mon", "Tue", "Wed")
-            .AddStackedArea("Passed", Points(120, 160, 190), ChartColor.FromRgb(16, 185, 129))
+            .AddSmoothStackedArea("Passed", Points(120, 160, 190), ChartColor.FromRgb(16, 185, 129))
             .AddSmoothStackedArea("Warnings", Points(24, 18, 12), ChartColor.FromRgb(251, 191, 36));
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"area\"") == 2, "Stacked area charts should render one filled band per stacked series.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"line\"") == 2, "Stacked area charts should render one foreground upper boundary per series.");
+        Assert((string?)CartesianPoint(svg, 1, 0).Attribute("data-cfx-base") == "120"
+            && (string?)CartesianPoint(svg, 1, 2).Attribute("data-cfx-stack-end") == "202",
+            "Stacked area bands should start at the prior series value and end at the cumulative total.");
         Assert(System.Xml.Linq.XDocument.Parse(svg).Descendants().Any(element => element.Name.LocalName == "clipPath") && svg.Contains(">Warnings</text>", StringComparison.Ordinal), "Stacked area charts should keep using the shared cartesian plot clip and render legend labels.");
         Assert(chart.ToPng().Length > 64, "Stacked area charts should render PNG output.");
     }
@@ -422,8 +426,8 @@ internal static partial class SmokeTests {
             ("polar area", Chart.Create().WithXLabels(unsafeLabel, "Safe", "Also safe").AddPolarArea("Polar", Points(96, 88, 74)).ToSvg()),
             ("timeline", Chart.Create().AddTimelineItem(unsafeLabel, new DateTime(2026, 1, 1), new DateTime(2026, 2, 1)).ToSvg()),
             ("gantt", Chart.Create().AddGanttTask(unsafeLabel, new DateTime(2026, 1, 1), new DateTime(2026, 2, 1), 0.5).ToSvg()),
-            ("sankey", Chart.Create().WithDataLabels().AddSankey("Flow", new[] { new ChartSankeyLink(unsafeLabel, "Safe", 10) }).ToSvg()),
-            ("tree", Chart.Create().AddTree("Tree", new[] { new ChartTreeLink(unsafeLabel, "Safe") }).ToSvg()),
+            ("sankey", Chart.Create().WithDataLabels().AddSankey("Flow", new[] { new ChartNode(unsafeLabel, unsafeLabel), new ChartNode("Safe", "Safe") }, new[] { new ChartFlowLink("flow-1", unsafeLabel, "Safe", 10) }).ToSvg()),
+            ("tree", Chart.Create().AddTree("Tree", new[] { new ChartNode(unsafeLabel, unsafeLabel), new ChartNode("Safe", "Safe") }, new[] { new ChartTreeLink(unsafeLabel, "Safe") }).ToSvg()),
             ("gauge", Chart.Create().AddGauge(unsafeLabel, 87).ToSvg()),
             ("donut", Chart.Create().WithXLabels(unsafeLabel).AddDonut(unsafeLabel, Points(100)).ToSvg())
         };
