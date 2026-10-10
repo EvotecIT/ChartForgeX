@@ -20,7 +20,7 @@ internal static partial class VisualCartesianCompiler {
             var bounds = new ChartRect(x - width / 2, Math.Min(startY, endY), width, Math.Abs(startY - endY));
             var color = WaterfallColor(series, index, step, colors);
             var label = ResolveObservationLabel(chart, context, series, item, colors,
-                () => (step.IsCheckpoint || step.Value < 0 ? string.Empty : "+") + Value(chart, step.Value));
+                () => (step.Kind != ChartWaterfallItemKind.Delta || step.Value < 0 ? string.Empty : "+") + Value(chart, step.Value));
             var id = WaterfallId(index, step);
             var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
             var direction = MappedBarDirection(axis, step.Value, startY, endY);

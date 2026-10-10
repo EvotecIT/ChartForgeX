@@ -15,8 +15,12 @@ internal static class ChartWaterfallSteps {
         var cumulative = 0d; var checkpointBalance = 0d; var subtotal = 0d; var sourceIndex = 0; var checkpointSource = 0;
         for (var index = 0; index < items.Count; index++) {
             var item = items[index];
-            if (item.Kind == ChartWaterfallItemKind.Delta) {
-                var value = item.DeltaValue!.Value; var end = cumulative + value;
+            if (item.Kind == ChartWaterfallItemKind.OpeningBalance) {
+                var value = item.Value!.Value;
+                steps.Add(new ChartWaterfallStep(index, sourceIndex, item.X, item.Kind, value, 0, value, new[] { sourceIndex }));
+                cumulative = value; checkpointBalance = value; sourceIndex++; checkpointSource = sourceIndex;
+            } else if (item.Kind == ChartWaterfallItemKind.Delta) {
+                var value = item.Value!.Value; var end = cumulative + value;
                 RequireFinite(end);
                 steps.Add(new ChartWaterfallStep(index, sourceIndex, item.X, item.Kind, value, cumulative, end, new[] { sourceIndex }));
                 cumulative = end; subtotal += value; sourceIndex++;
@@ -61,6 +65,6 @@ internal readonly struct ChartWaterfallStep {
     internal double Start { get; }
     internal double End { get; }
     internal IReadOnlyList<int> SourceIndices { get; }
-    internal bool IsCheckpoint => Kind != ChartWaterfallItemKind.Delta;
+    internal bool IsCheckpoint => Kind == ChartWaterfallItemKind.Subtotal || Kind == ChartWaterfallItemKind.Total;
     internal bool IsAppendedTotal { get; }
 }

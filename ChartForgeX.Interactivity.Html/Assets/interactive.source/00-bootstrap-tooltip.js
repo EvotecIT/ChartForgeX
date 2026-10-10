@@ -219,7 +219,8 @@
   const waterfallTooltipRows = (node) => {
     const data = node.dataset || {};
     if (!data.cfxWaterfallKind) return [];
-    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : 'Change';
+    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal'
+      : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
     return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
       { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
       .filter((row) => row.value !== undefined && row.value !== '');
