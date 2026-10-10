@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "baselineSha": "9cd02a52af97426eab4bf64b9775ce93057e5986",
-  "candidateSha": "aeeb93978a7350ae0442cdadb819702dcf1baad9",
+  "candidateSha": "79d9856205b3cb55c7b32e7a9379966395490b58",
   "assemblies": {
-    "ChartForgeX": 864,
+    "ChartForgeX": 865,
     "ChartForgeX.Visuals": 81,
     "ChartForgeX.Stories": 63,
     "ChartForgeX.Interactivity": 30,
