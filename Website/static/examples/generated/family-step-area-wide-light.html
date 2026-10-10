@@ -626,6 +626,8 @@ public static partial class V2GalleryModels {
             var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options =&gt; {
                 options.CornerRadius = 6;
+                options.SecondaryLabelFormatter = context =&gt; context.Item.Id == &quot;all&quot; ? &quot;Allocation&quot; : context.Item.Id == &quot;engineering&quot; ? &quot;Delivery teams&quot;
+                    : context.Item.Id == &quot;operations-support&quot; ? &quot;Shared service&quot; : null;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
                 options.ColorLegendTitle = &quot;Change (%)&quot;;
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
@@ -1311,6 +1313,8 @@ public static partial class V2GalleryModels {
             var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options =&gt; {
                 options.CornerRadius = 6;
+                options.SecondaryLabelFormatter = context =&gt; context.Item.Id == &quot;all&quot; ? &quot;Allocation&quot; : context.Item.Id == &quot;engineering&quot; ? &quot;Delivery teams&quot;
+                    : context.Item.Id == &quot;operations-support&quot; ? &quot;Shared service&quot; : null;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
                 options.ColorLegendTitle = &quot;Change (%)&quot;;
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
