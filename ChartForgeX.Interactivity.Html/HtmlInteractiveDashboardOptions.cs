@@ -77,7 +77,7 @@ public sealed class HtmlInteractiveDashboardOptions {
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
     /// <summary>
-    /// Gets the tooltip content and pointer acquisition options shared by every dashboard chart.
+    /// Gets the tooltip content, pointer acquisition and timing options shared by every dashboard chart.
     /// </summary>
     public HtmlChartTooltipOptions Tooltip { get; } = new HtmlChartTooltipOptions();
 

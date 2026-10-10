@@ -275,14 +275,20 @@
     return true;
   };
   const showTip = (root, tip, node, event) => {
-    if (!hasFeature(root, 'Tooltips')) return;
-    if (root.dataset.cfxTooltipPinned === 'true') return;
+    if (!hasFeature(root, 'Tooltips') || root.dataset.cfxTooltipPinned === 'true') { cancelTooltipRequest(root); return; }
     if (!tooltipReadoutAvailable(node, event)) { hideTip(root, tip, false); return; }
-    if (!renderTip(tip, node)) return;
+    if (event instanceof PointerEvent && tooltipDelay(root) > 0) { requestPointerTip(root, tip, node, event); return; }
+    cancelTooltipRequest(root);
+    if (displayTip(tip, node, event)) rememberImmediateTooltip(root, tip, node, event);
+  };
+  const displayTip = (tip, node, event) => {
+    if (!renderTip(tip, node)) return false;
     tip.hidden = false;
     moveTip(tip, event, node);
+    return true;
   };
   const moveTip = (tip, event, node) => {
+    updateTooltipPointer(tip, node, event);
     if (!event || tip.hidden) return;
     let clientX = event.clientX;
     let clientY = event.clientY;
@@ -382,6 +388,7 @@
     return items;
   };
   const hideTip = (root, tip, force) => {
+    cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');
@@ -389,6 +396,7 @@
     root.removeAttribute('data-cfx-pinned-target');
   };
   const pinTip = (root, tip, node, event) => {
+    cancelTooltipRequest(root);
     if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);

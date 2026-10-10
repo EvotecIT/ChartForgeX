@@ -28,9 +28,9 @@
         showTip(root, tip, node, event);
       });
       node.addEventListener('pointermove', (event) => moveTip(tip, event, node));
-      node.addEventListener('pointerleave', () => {
+      node.addEventListener('pointerleave', (event) => {
         clearHover(root, true, true);
-        hideTip(root, tip, false);
+        if (!retainPointerTip(root, event)) hideTip(root, tip, false);
       });
       // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
