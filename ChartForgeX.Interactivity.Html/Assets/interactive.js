@@ -628,7 +628,7 @@
     tip.appendChild(list);
     return true;
   };
-  // Separately painted captions are pointer surfaces of their declared native point, never new observations.
+  // Separately painted captions are pointer surfaces of their declared native target, never new observations.
   const pointLabelTarget = (root, target) => {
     const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
     const point = label && label._cfxLabelTarget;
@@ -744,7 +744,7 @@
     const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
     svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
       const mark = marks.get(label.dataset.cfxLabelFor);
-      const point = mark && mark.closest('[data-cfx-point]');
+      const point = mark && mark.closest('[data-cfx-point],[data-cfx-target-kind]');
       if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text')) return;
       label._cfxLabelTarget = point;
       (point._cfxPointLabels ||= []).push(label);
