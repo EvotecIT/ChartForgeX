@@ -1676,6 +1676,8 @@
   // A producer's coordinate contract controls inferred geometry; native painted targets always retain their identity.
   const usesPolarCoordinates = (node) => !!node.closest('[data-cfx-coordinate-system="polar"]');
   const usesCartesianCoordinates = (node) => node.closest('[data-cfx-coordinate-system]')?.dataset.cfxCoordinateSystem === 'cartesian';
+  const inferredPlotSurfaceRoles = new Set(['background', 'frame-card', 'frame-card-shadow', 'content-surface',
+    'grid-x', 'grid-y', 'axis-x', 'axis-y', 'axis-secondary-y']);
   // Retain native summaries separately: an Exact line hit is not an inferred observation or crosshair.
   const pointerCandidates = (root, event, searchNearest) => {
     const stage = root.querySelector('.cfx-stage');
@@ -1694,7 +1696,10 @@
     }
     // Sparse-plot inference starts on the native stage surface, never on an unrelated host veil.
     // Explicit native targets and mapped captions retain their own acquisition contract.
-    const plotSurface = event.target === stage || event.target instanceof SVGElement && stage.querySelector('svg')?.contains(event.target);
+    const svg = stage.querySelector('svg');
+    const plotSurface = event.target === stage || event.target === svg || event.target instanceof SVGElement
+      && svg?.contains(event.target) && !event.target.closest('foreignObject')
+      && inferredPlotSurfaceRoles.has(event.target.dataset.cfxRole);
     if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
