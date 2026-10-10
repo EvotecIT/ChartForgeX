@@ -65,16 +65,33 @@ public sealed class InteractiveHeatmapColorScaleBrowserTests {
         if (kind == ChartSeriesKind.CalendarHeatmap) {
             Assert.Equal("region", selected.GetProperty("targetKind").GetString());
             Assert.Equal("2026-01-08", selected.GetProperty("targetId").GetString());
+            // Space pins the selected day's readout. Release that pin before inspecting a different day.
+            var root = page.Locator(".cfx-interactive-chart");
+            Assert.Equal("true", await root.GetAttributeAsync("data-cfx-tooltip-pinned"));
+            await page.Keyboard.PressAsync("Space");
+            Assert.Null(await root.GetAttributeAsync("data-cfx-tooltip-pinned"));
             var missing = page.Locator("[data-cfx-role='calendar-cell'][data-cfx-date='2026-01-06']");
+            var missingLabel = await missing.GetAttributeAsync("aria-label");
+            Assert.Equal("Observed, 2026-01-06: No data", missingLabel);
             await MoveAwayAsync(page); await missing.FocusAsync();
-            await page.WaitForFunctionAsync("() => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.textContent.includes('2026-01-06'); }");
-            Assert.DoesNotContain("Value", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+            await CaptureMissingAsync("missing-focus");
+            await page.WaitForFunctionAsync("label => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.querySelector('.cfx-tooltip__title').textContent === label && Array.from(tip.querySelectorAll('dt')).some(term => term.textContent === 'X' && term.nextElementSibling.textContent === '2026-01-06'); }", missingLabel);
+            var missingTerms = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync();
+            Assert.DoesNotContain("Value", missingTerms); Assert.DoesNotContain("Y", missingTerms);
+            Assert.DoesNotContain("Level", missingTerms); Assert.DoesNotContain("Status", missingTerms); Assert.DoesNotContain("Color", missingTerms);
             Assert.Null(await missing.GetAttributeAsync("data-cfx-value"));
             Assert.Null(await missing.GetAttributeAsync("data-cfx-point"));
+            Assert.Null(await missing.GetAttributeAsync("data-cfx-source-points"));
             await page.Keyboard.PressAsync("Space");
             var empty = await page.EvaluateAsync<JsonElement>("() => window.heatmapSelection");
+            Assert.Equal("region", empty.GetProperty("targetKind").GetString());
             Assert.Equal("2026-01-06", empty.GetProperty("targetId").GetString());
+            Assert.Equal(missingLabel, empty.GetProperty("label").GetString());
             Assert.Equal("", empty.GetProperty("value").GetString());
+            Assert.Equal(JsonValueKind.Null, empty.GetProperty("point").ValueKind);
+            Assert.Equal(JsonValueKind.Null, empty.GetProperty("sourcePoint").ValueKind);
+            Assert.Equal(JsonValueKind.Null, empty.GetProperty("sourcePoints").ValueKind);
+            await CaptureMissingAsync("missing-selected");
         }
         Assert.True(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth + 1"));
         Assert.Empty(errors); AssertNoConsoleErrors(session);
@@ -89,6 +106,29 @@ public sealed class InteractiveHeatmapColorScaleBrowserTests {
                 Selected = selected, Readout = await TooltipTextAsync(page), Errors = errors,
                 ConsoleErrors = session.ConsoleLog.Count(entry => entry.Type == HtmlTinkerX.HtmlConsoleMessageType.Error)
             }, new JsonSerializerOptions { WriteIndented = true }));
+        }
+
+        async Task CaptureMissingAsync(string stage) {
+            var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+            if (string.IsNullOrWhiteSpace(directory)) return;
+            Directory.CreateDirectory(directory);
+            var name = "heatmap-color-scale-" + kind + "-" + width + "-" + (dark ? "dark" : "light") + (explicitScale ? "-explicit-" : "-default-") + stage;
+            var state = await page.EvaluateAsync<JsonElement>("""
+                () => {
+                    const root = document.querySelector('.cfx-interactive-chart');
+                    const missing = root.querySelector('[data-cfx-role="calendar-cell"][data-cfx-date="2026-01-06"]');
+                    const tip = root.querySelector('.cfx-tooltip');
+                    return { Missing: {...missing.dataset}, NativeLabel: missing.getAttribute('aria-label'),
+                        FocusDate: document.activeElement.dataset.cfxDate, TooltipPinned: root.dataset.cfxTooltipPinned,
+                        PinnedTarget: root.dataset.cfxPinnedTarget, Readout: tip.innerText, Hidden: tip.hidden,
+                        Terms: Array.from(tip.querySelectorAll('dt'), term => term.textContent),
+                        Selected: window.heatmapSelection };
+                }
+                """);
+            await File.WriteAllTextAsync(Path.Combine(directory, name + ".runtime.json"), JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = true }));
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".browser.png") });
+            await File.WriteAllTextAsync(Path.Combine(directory, name + ".svg"), prepared.ToSvg());
+            await File.WriteAllBytesAsync(Path.Combine(directory, name + ".png"), prepared.ToPng());
         }
     }
 }
