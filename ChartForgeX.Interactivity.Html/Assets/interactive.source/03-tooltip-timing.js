@@ -24,6 +24,7 @@
     if (!event || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY) || !hasFeature(root, 'Tooltips')) return null;
     // The event's old hit can outlive a scroll, reflow or host update. Resolve the actual native surface again.
     const hit = document.elementFromPoint(event.clientX, event.clientY);
+    if (!hit || !root.contains(hit)) return null;
     const legend = hit && hit.closest('[data-cfx-role="legend-item"]');
     if (legend && root.contains(legend) && pointerTargetPaint(legend)) return legend;
     const candidates = pointerCandidates(root, { target: hit, clientX: event.clientX, clientY: event.clientY }, root.dataset.cfxTooltipRange !== 'exact');

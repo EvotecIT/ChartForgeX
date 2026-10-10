@@ -365,7 +365,7 @@
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
     const styles = new Map();
-    const hit = event.target instanceof Element ? event.target.closest(targetSelector) : null;
+    const hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest(targetSelector) : null);
     let native = null;
     if (hit && root.contains(hit) && pointerTargetPaint(hit, styles)) {
       const box = hit.getBoundingClientRect();
