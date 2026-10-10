@@ -24,7 +24,7 @@ public static partial class VisualsExtensions {
     /// <param name="grid">The visual grid to configure.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current visual grid.</returns>
-    public static VisualGrid WithTheme(this VisualGrid grid, Action<ChartTheme> configure) {
+    public static VisualGrid ConfigureTheme(this VisualGrid grid, Action<ChartTheme> configure) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         var theme = grid.Theme ?? ChartTheme.Light();

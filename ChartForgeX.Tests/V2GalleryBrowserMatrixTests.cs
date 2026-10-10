@@ -32,9 +32,10 @@ public sealed class V2GalleryBrowserMatrixTests {
                     return binary ? response.blob() : response.text();
                 };
                 const manifest = JSON.parse(await fetchAsset('manifest.json'));
-                const artifacts = manifest.artifacts.filter(item => item.id.startsWith('family-')
-                    && ['wide', 'compact'].includes(item.variant) && ['light', 'dark'].includes(item.theme));
-                if (artifacts.length !== expected.families.length * 4)
+                const artifacts = manifest.artifacts.filter(item => (item.id.startsWith('family-') || item.family === 'histogram')
+                    && ['light', 'dark'].includes(item.theme));
+                const standard = artifacts.filter(item => item.id.startsWith('family-') && ['wide', 'compact'].includes(item.variant));
+                if (standard.length !== expected.families.length * 4)
                     defects.push('The family matrix must contain one wide and compact export per theme and kind.');
                 for (const { kind, family } of expected.families) for (const variant of ['wide', 'compact']) for (const theme of ['light', 'dark']) {
                     // A trend example legitimately contains Scatter and TrendLine. Coverage belongs
@@ -189,7 +190,8 @@ public sealed class V2GalleryBrowserMatrixTests {
             Directory.CreateDirectory(captures);
             var report = new {
                 expectedChartKinds = Enum.GetValues<ChartSeriesKind>().Length,
-                expectedNativeExports = Enum.GetValues<ChartSeriesKind>().Length * 4,
+                minimumNativeExports = Enum.GetValues<ChartSeriesKind>().Length * 4,
+                validatedVariants = "All declared chart-family variants in light and dark",
                 defects,
                 consoleErrors = session.ConsoleLog.Where(entry => entry.Type == HtmlTinkerX.HtmlConsoleMessageType.Error).Select(entry => entry.Text).ToArray()
             };

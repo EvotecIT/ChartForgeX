@@ -110,6 +110,10 @@ public sealed class LabelPlacementService {
             if (requests[i].Bounds.HasValue) ValidateBounds(requests[i].Bounds!.Value);
             ChartGuards.Finite(requests[i].Padding, nameof(requests));
             if (requests[i].Padding < 0) throw new ArgumentOutOfRangeException(nameof(requests));
+            if (requests[i].MinimumLabelGap.HasValue) {
+                ChartGuards.Finite(requests[i].MinimumLabelGap!.Value, nameof(requests));
+                if (requests[i].MinimumLabelGap!.Value < 0) throw new ArgumentOutOfRangeException(nameof(requests));
+            }
             order.Add(i);
         }
         order.Sort((a, b) => { var priority = requests[b].Priority.CompareTo(requests[a].Priority); return priority == 0 ? a.CompareTo(b) : priority; });
@@ -132,7 +136,7 @@ public sealed class LabelPlacementService {
             }
             result ??= new PlacedLabel(request, string.Empty, default, true, -1);
             placed[index] = result;
-            if (!result.IsDropped) occupied.Add(result.Bounds, null);
+            if (!result.IsDropped) occupied.Add(result.Bounds, null, labelGap: request.MinimumLabelGap);
         }
         return Array.AsReadOnly(placed);
     }
@@ -142,6 +146,7 @@ public sealed class LabelPlacementService {
         if (text.Length == 0) return null;
         var metrics = !ellipsized && request.MeasuredSize.HasValue ? request.MeasuredSize.Value
             : measureText != null ? measureText(text, displayedStyle!) : MeasureDisplayed(text, request.Style);
+        metrics = VisualAxisText.RotatedMetrics(metrics, request.RotationDegrees);
         var decoration = text != request.Text ? request.DecorationSize : null;
         var width = metrics.Width + request.Padding * 2 + (decoration?.Width ?? 0);
         var height = metrics.Height + request.Padding * 2 + (decoration?.Height ?? 0);
@@ -150,7 +155,7 @@ public sealed class LabelPlacementService {
             var box = new ChartRect(request.Anchor.X + candidate.OffsetX - width * candidate.HorizontalAlignment,
                 request.Anchor.Y + candidate.OffsetY - height * candidate.VerticalAlignment, width, height);
             if (!Contains(scene, box) || request.Bounds.HasValue && !Contains(request.Bounds.Value, box)) continue;
-            if (occupied.Intersects(box, request.AssociatedMarkId)) continue;
+            if (occupied.Intersects(box, request.AssociatedMarkId, request.MinimumLabelGap, request.AllowLabelOverlap)) continue;
             return new PlacedLabel(request, text, box, false, i, ellipsized);
         }
         return null;

@@ -20,7 +20,7 @@ public sealed partial class Chart {
     /// </summary>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithGridStyle(System.Action<ChartGridLineStyle> configure) {
+    public Chart ConfigureGridStyle(System.Action<ChartGridLineStyle> configure) {
         if (configure == null) throw new System.ArgumentNullException(nameof(configure));
         var style = Options.GridLineStyle.Clone();
         configure(style);

@@ -32,7 +32,7 @@ public sealed class GraphiteFamilyTests {
 
     [Fact]
     public void LinearGaugePlacesValueAndTargetOnItsDeclaredScale() {
-        var chart = Chart.Create().AddLinearGauge("Readiness", 87).WithGauge(options => options.Target = 90);
+        var chart = Chart.Create().AddLinearGauge("Readiness", 87).ConfigureGauge(options => options.Target = 90);
         var svg = Literal(chart);
         var track = Assert.Single(Roles(svg, "gauge-track")); var value = Assert.Single(Roles(svg, "gauge-value"));
         Assert.Equal(Number(track, "height") / 3, Number(value, "height"), 3);
@@ -71,7 +71,7 @@ public sealed class GraphiteFamilyTests {
     [InlineData(74, ChartSeriesState.Warning)]
     [InlineData(87, ChartSeriesState.Quiet)]
     public void GaugeUsesDeclaredBandStateAcrossItsForms(double value, ChartSeriesState state) {
-        var chart = Chart.Create().AddGauge("Readiness", value).WithGauge(options => {
+        var chart = Chart.Create().AddGauge("Readiness", value).ConfigureGauge(options => {
             options.Target = 90; options.Bands.Add(new(0, 60, ChartSeriesState.Danger));
             options.Bands.Add(new(60, 80, ChartSeriesState.Warning)); options.Bands.Add(new(80, 100, ChartSeriesState.Quiet));
         });
@@ -117,7 +117,8 @@ public sealed class GraphiteFamilyTests {
     public void FlatFunnelAndSankeyRetainTheirWeightedSourceData() {
         var funnel = Chart.Create().WithXLabels("Detected", "Fixed").AddFunnel("Stages", new[] { new ChartPoint(1, 1234), new ChartPoint(2, 600) });
         Assert.Equal(new[] { "1234", "600" }, Roles(Literal(funnel), "funnel-stage").Select(stage => (string?)stage.Attribute("data-cfx-value")));
-        var sankey = Chart.Create().AddSankey("Flow", new[] { new ChartSankeyLink("A", "Done", 30), new("B", "Done", 20) }).WithSankeyNodeState("Done", ChartSeriesState.Neutral);
+        var sankey = Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("Done", "Done"), new ChartNode("B", "B") }, new[] { new ChartFlowLink("flow-1", "A", "Done", 30), new("flow-2", "B", "Done", 20) });
+        sankey.Series[0].WithNodeState("Done", ChartSeriesState.Neutral);
         var links = Roles(Literal(sankey), "sankey-link");
         Assert.Equal(new[] { "30", "20" }, links.Select(link => (string?)link.Attribute("data-cfx-value")));
         Assert.Equal(1.5, Number(links[0], "data-cfx-width") / Number(links[1], "data-cfx-width"), 6);

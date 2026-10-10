@@ -1,5 +1,5 @@
 name: Rendering history
-run-name: Rendering history · ${{ inputs.mode || 'CalibrationProof' }}
+run-name: Rendering history · ${{ github.event_name == 'pull_request' && 'FunctionalProof' || inputs.mode || 'Verify' }}
 
 on:
   pull_request:
@@ -32,7 +32,7 @@ concurrency:
 
 jobs:
   rendering-history:
-    # Benchmark path changes opt into functional calibration proof; ordinary product PRs do not time rendering.
+    # PRs validate real rendering and synthetic history contracts; live timing gates are manual or scheduled.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Rendering history (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
@@ -53,7 +53,7 @@ jobs:
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
-      HISTORY_MODE: ${{ github.event_name == 'pull_request' && 'CalibrationProof' || inputs.mode || 'Verify' }}
+      HISTORY_MODE: ${{ github.event_name == 'pull_request' && 'FunctionalProof' || inputs.mode || 'Verify' }}
       REFERENCE_RUN: ${{ inputs.reference_run_id }}
       HISTORY_PLATFORM: ${{ matrix.name }}
       GH_TOKEN: ${{ github.token }}
@@ -78,7 +78,7 @@ jobs:
           & ./Ignore/PowerForgeSource/Build/Build-Project.ps1 -ModuleOnly -RunMode Build -ModuleVersion 3.0.155 -ModuleFramework net8.0 -ModuleNoSign -ModuleSkipInstall -SourceRepositoryRoot (Resolve-Path ./Ignore/PowerForgeSource).Path -ExpectedSourceRevision f6a704092041a81841ec5154eb4fd028912f375e
           if (!$?) { throw 'Shared module build failed.' }
       - name: Restore only accepted main history
-        if: env.HISTORY_MODE != 'CalibrationProof'
+        if: env.HISTORY_MODE == 'Verify' || env.HISTORY_MODE == 'AcceptReference'
         run: |
           $ErrorActionPreference = 'Stop'
           $runId = $env:REFERENCE_RUN
@@ -97,7 +97,7 @@ jobs:
           gh run download $runId --repo $env:GITHUB_REPOSITORY --name "rendering-history-reference-$env:HISTORY_PLATFORM" --dir Ignore/Benchmarks/History
           if ($LASTEXITCODE) { throw 'Accepted history download failed.' }
           if (!(Test-Path Ignore/Benchmarks/History/history.json)) { throw 'Accepted history is missing.' }
-      - name: Measure and evaluate rendering history
+      - name: Validate rendering and evaluate history
         run: |
           $module = (Get-ChildItem Ignore/PowerForgeSource/Module/Artefacts/Unpacked -Recurse -Filter PSPublishModule.psd1 | Select-Object -First 1).FullName
           if (!$module) { throw 'Built shared module is missing.' }

@@ -354,7 +354,7 @@ public sealed partial class Chart {
     public Chart WithGanttToday(double? value) { Options.GanttToday = value; return this; }
 
     /// <summary>
-    /// Sets whether point and bar values should be rendered as data labels.
+    /// Sets chart-level data-label visibility. Explicit series overrides take precedence.
     /// </summary>
     /// <param name="visible">True to render data labels; otherwise false.</param>
     /// <returns>The current chart.</returns>
@@ -611,15 +611,6 @@ public sealed partial class Chart {
         AppendSeries(new ChartSeries(name, ChartSeriesKind.Bullet, points) { Color = color });
         return this;
     }
-
-    /// <summary>
-    /// Adds a waterfall series where each point y-value represents a positive or negative change.
-    /// </summary>
-    /// <param name="name">The series name.</param>
-    /// <param name="points">The waterfall steps. The x values identify categories and the y values set cumulative changes.</param>
-    /// <param name="color">An optional positive change color.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddWaterfall(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) => Add(name, ChartSeriesKind.Waterfall, points, color);
 
     /// <summary>
     /// Adds a radar series for comparing values across radial categories.
