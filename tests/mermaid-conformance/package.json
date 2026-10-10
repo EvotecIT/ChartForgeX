@@ -8,7 +8,9 @@
   "dependencies": {
     "dompurify": "3.4.16",
     "jsdom": "30.1.1",
-    "mermaid": "12.1.0"
+    "mermaid": "12.1.0",
+    "mermaid-10": "npm:mermaid@10.9.8",
+    "mermaid-11": "npm:mermaid@11.17.2"
   },
   "overrides": {
     "lodash-es": "4.18.1",
