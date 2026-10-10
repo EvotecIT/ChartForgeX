@@ -23,7 +23,7 @@ public static class MermaidRadarRendering {
             .WithLegend(document.ShowLegend)
             .WithXLabels(AxisLabels(document))
             .WithPolarGridShape(GraticuleShape(document));
-        chart.Options.PolarGridRingCount = document.Ticks ?? 5;
+        chart.Options.PolarGridRingCount = Math.Min(document.Ticks ?? 5, 32);
         chart.WithYAxisBounds(document.Minimum ?? 0, document.Maximum ?? ResolveMaximum(document));
         foreach (var curve in document.Curves) chart.AddRadar(curve.Label, Points(document, curve));
         return MermaidPresentation.Apply(chart, document);

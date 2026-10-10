@@ -81,7 +81,7 @@ internal sealed class RadialValueScale {
             ticks[index] = ratio == 0 ? Minimum : ratio == 1 ? Maximum
                 : ChartScaleTransform.Inverse(minimum * (1 - ratio) + maximum * ratio, _axis);
         }
-        return ticks;
+        return ChartTicks.PreserveFormatting(Ticks, ticks);
     }
 
     private static double AutomaticMinimum(ChartAxis axis, IReadOnlyList<double> values) {

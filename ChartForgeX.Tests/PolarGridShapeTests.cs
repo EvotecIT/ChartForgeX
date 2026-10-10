@@ -138,6 +138,7 @@ public sealed class PolarGridShapeTests {
     [InlineData(1)]
     [InlineData(3)]
     [InlineData(5)]
+    [InlineData(32)]
     public void MermaidTickCountProducesTheRequestedConcentricGuides(int count) {
         var result = new MermaidParser().ParseRadar("radar-beta\naxis A, B, C\ncurve c{17, 31, 73}\nticks " + count);
         Assert.False(result.HasErrors);
@@ -148,12 +149,25 @@ public sealed class PolarGridShapeTests {
 
     [Theory]
     [InlineData(0)]
-    [InlineData(101)]
+    [InlineData(-1)]
     public void UnboundedTickCountsProduceLocatedErrors(int count) {
         var result = MermaidRenderer.Render("radar-beta\naxis A, B, C\ncurve c{1, 2, 3}\nticks " + count);
         Assert.True(result.HasErrors);
         Assert.Null(result.Artifact);
         Assert.Contains(result.Diagnostics, item => item.Span.Line == 4);
+    }
+
+    [Theory]
+    [InlineData(33)]
+    [InlineData(101)]
+    public void MermaidCapsLargeGuideCountsWithALocatedWarningAndRetainedSourceValue(int count) {
+        var result = new MermaidParser().ParseRadar("radar-beta\naxis A, B, C\ncurve c{17, 31, 73}\nticks " + count);
+        Assert.False(result.HasErrors);
+        Assert.Equal(count, result.Document!.Ticks);
+        Assert.Contains(result.Diagnostics, item => item.Span.Line == 4 && item.Severity == MermaidDiagnosticSeverity.Warning);
+        Assert.Equal(32, result.Document.ToChart().Options.PolarGridRingCount);
+        Assert.Equal(32, Prepare(result.Document.ToChart()).Scene.Nodes.Count(node => node.Role == "radar-ring"));
+        Assert.Equal(count.ToString(System.Globalization.CultureInfo.InvariantCulture), result.Document.ToVisualArtifact().Metadata["mermaid.ticks"]);
     }
 
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);

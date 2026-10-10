@@ -224,8 +224,11 @@ internal static class MermaidRadarParser {
     }
 
     private static void ParseInteger(string text, MermaidSourceSpan span, Action<int> assign, MermaidParseResult<MermaidDocument> result, string keyword) {
-        if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value >= 1 && value <= 100) assign(value);
-        else Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Radar '" + keyword + "' must be an integer from one through one hundred.");
+        if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value >= 1) {
+            assign(value);
+            if (value > 32) Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Warning,
+                "Radar ticks exceeds Mermaid's maximum of 32 guides; rendering uses 32 and retains the authored value.");
+        } else Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Radar '" + keyword + "' must be a positive integer.");
     }
 
     private static bool TryParseDouble(string text, out double value) =>
