@@ -15,6 +15,28 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidFontSizeTests {
     [Theory]
+    [InlineData("participant A\nparticipant B\nparticipant C\nparticipant D\nD->>D: WWW")]
+    [InlineData("participant A as i\nparticipant B as i\nparticipant C as i\nparticipant D as i\nparticipant E as i\nparticipant F as i\nparticipant G as i\nparticipant H as i\nautonumber\nA->>B: i")]
+    public async Task LargestAcceptedSizeFitsLastLaneSelfMessagesAndGeneratedNumberText(string body) {
+        var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nsequenceDiagram\n" + body);
+        Assert.Empty(result.Diagnostics);
+        var artifact = result.Artifact!;
+        Assert.NotEmpty(artifact.ToSvg());
+        Assert.NotEmpty(artifact.ToPng());
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync(artifact.ToHtmlPage(), 960, 720);
+        if (!body.Contains("autonumber", StringComparison.Ordinal))
+            await session.Page.Locator(".chartforgex-visual-artifact").EvaluateAsync("element => element.scrollLeft = element.scrollWidth");
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        var name = body.Contains("autonumber", StringComparison.Ordinal) ? "sequence-font-256-autonumber" : "sequence-font-256-last-self";
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
+        File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), artifact.ToPng());
+    }
+
+    [Theory]
     [InlineData(1)]
     [InlineData(256)]
     public async Task AcceptedPixelLimitsKeepSequenceParticipantsMessagesAndNotesRenderable(int size) {

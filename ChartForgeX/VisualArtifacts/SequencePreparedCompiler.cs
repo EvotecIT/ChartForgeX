@@ -25,7 +25,8 @@ internal static partial class SequencePreparedCompiler {
         double inset = gap + nesting * 10 + stroke + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.Over) ? 32 : 0);
         double noteReserve = (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.LeftOf) ? noteWidth + gap : 0)
             + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.RightOf) ? noteWidth + gap : 0);
-        double width = Math.Max(model.Width, model.Padding * 2 + inset * 2 + noteReserve + (model.Messages.Any(m => m.SourceId == m.TargetId) ? 70 : 0)
+        double width = Math.Max(model.Width, model.Padding * 2 + inset * 2 + noteReserve
+            + (model.Messages.Any(m => m.SourceId == m.TargetId) ? SequencePreparedLayout.SelfMessageReserve(minimumLabelWidth) : 0)
             + model.Participants.Count * Math.Max(140, minimumLabelWidth + 28));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, Math.Max(model.Height, model.Padding * 2 + 512)), model.Padding),
             theme, model.ThemeMode, frame: new VisualFrame(showLegend: false));

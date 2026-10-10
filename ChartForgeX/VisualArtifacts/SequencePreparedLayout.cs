@@ -33,7 +33,7 @@ internal sealed partial class SequencePreparedLayout {
         double leftNote = model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.LeftOf) ? noteWidth + gap : 0;
         double rightNote = model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.RightOf) ? noteWidth + gap : 0;
         bool self = model.Messages.Any(m => m.SourceId == m.TargetId);
-        double left = plot.X + inset + leftNote, right = plot.Right - inset - rightNote - (self ? 70 : 0);
+        double left = plot.X + inset + leftNote, right = plot.Right - inset - rightNote - (self ? SelfMessageReserve(minimumLabelWidth) : 0);
         double laneWidth = (right - left) / model.Participants.Count;
         if (laneWidth < 64) throw new NotSupportedException("Prepared sequence participant lanes require a wider common viewport.");
         double boxWidth = Math.Min(Math.Max(160, minimumLabelWidth + 16), laneWidth - 12), top = plot.Y + gap + stroke, participantHeight = 0;
