@@ -80,6 +80,21 @@ public sealed class MermaidGanttDurationTests {
     }
 
     [Theory]
+    [InlineData("Gate :milestone, gate, 2026-01-01, 1ms\nTail :tail, after gate, 0ms")]
+    [InlineData("Gate :milestone, gate, 2026-01-01, 1ms\nTail :tail, after gate, 0.1ms")]
+    [InlineData("Gate :milestone, gate, 2026-01-01, 1ms\nTail :tail, after gate, 0s")]
+    [InlineData("Gate :milestone, gate, 2026-01-01, 1ms\nTail :tail, after gate, 0m")]
+    [InlineData("Gate :milestone, gate, 2026-01-01, 1ms\nTail :tail, after gate, 0h")]
+    [InlineData("dateFormat YYYY-MM-DDTHH:mm:ss.fffffff\nGate :gate, 2026-01-01T00:00:00.0005000, 0ms\nTail :tail, after gate, 0ms")]
+    public void NonnegativeClockDurationsPreserveLegacySubmillisecondStarts(string tasks) {
+        var result = new MermaidParser().ParseGantt("gantt\n" + tasks);
+        Assert.False(result.HasErrors);
+        Assert.Equal(2, result.Document!.Tasks.Count);
+        Assert.All(result.Document.Tasks, task => Assert.True(task.End >= task.Start));
+        Assert.Equal(result.Document.Tasks[0].End, result.Document.Tasks[1].Start);
+    }
+
+    [Theory]
     [InlineData("1month")]
     [InlineData("1months")]
     [InlineData("1year")]

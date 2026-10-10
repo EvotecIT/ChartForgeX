@@ -66,6 +66,8 @@ internal static partial class MermaidGanttParser {
         var epochTicks = new DateTime(1970, 1, 1).Ticks;
         var endMilliseconds = Math.Truncate((start.Ticks - epochTicks) / (double)TimeSpan.TicksPerMillisecond + milliseconds);
         var endTicks = checked((long)endMilliseconds * TimeSpan.TicksPerMillisecond + epochTicks);
-        return new DateTime(endTicks, start.Kind);
+        // ChartForgeX also accepts legacy DateTime inputs and milestone midpoints finer
+        // than one millisecond. A nonnegative duration must never move those backwards.
+        return new DateTime(Math.Max(start.Ticks, endTicks), start.Kind);
     }
 }
