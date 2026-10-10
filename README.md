@@ -779,12 +779,16 @@ var chart = Chart.Create().WithXLabels("North", "South")
     .AddRadialColumn("Requests", new[] { new ChartPoint(1, 1200), new ChartPoint(2, 800) })
     .AddRadialColumn("Follow-ups", new[] { new ChartPoint(1, 300), new ChartPoint(2, 200) })
     .WithYAxisBounds(0, 1600)
+    .WithXAxis("Region").WithYAxis("Requests")
+    .ConfigureXAxis(axis => axis.LabelAngle = -30)
     .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, innerRadiusRatio: 0.25));
 chart.Series[0].WithStackGroup("work");
 chart.Series[1].WithStackGroup("work");
 ```
 
-`ChartRadialGeometryOptions` sets clockwise start/end angles, inner radius, category spacing and series spacing. Series in the same named stack share a slot; positive and negative contributions stack separately. `ChartAxis.WithReversal()` reverses numeric projection or radial category order while keeping source values and tick labels aligned. Fixed nonzero bounds clip a baseline outside the visible domain. Numeric radial value axes support linear, logarithmic (positive values) and symmetric logarithmic scales. Axis titles, rotated radial labels, rounded sectors and mixed radial families remain outside this model. Compact text may be shortened or omitted with a diagnostic; complete observation labels remain in descriptive regions.
+`ChartRadialGeometryOptions` sets clockwise start/end angles, inner radius, category spacing and series spacing. Series in the same named stack share a slot; positive and negative contributions stack separately. `ChartAxis.WithReversal()` reverses numeric projection or radial category order while keeping source values and tick labels aligned. Fixed nonzero bounds clip a baseline outside the visible domain. Numeric radial value axes support linear, logarithmic (positive values) and symmetric logarithmic scales.
+
+Use `WithXAxis`, `WithYAxis` and `WithSecondaryYAxis` for horizontal axis titles inside the chart frame. Each axis has its own fixed `LabelAngle`; titles use `ConfigureAxisTitleStyle`, and tick/category captions use `ConfigureTickLabelStyle`. Hidden axes reserve no text space, while `ShowLine = false` hides only their rules. Compact text may be shortened or omitted with a diagnostic; complete labels remain in descriptive regions. Relative radial/tangential text orientation, label-density policies, rounded sectors and mixed radial families remain separate options.
 
 `AddProgressRing` renders the circular 0–100 progress rings and their center average. Existing percent-ring callers migrate from `AddRadialBar` to `AddProgressRing`; see the [migration guide](docs/v2/migration.md#numeric-radial-series-and-progress-rings).
 

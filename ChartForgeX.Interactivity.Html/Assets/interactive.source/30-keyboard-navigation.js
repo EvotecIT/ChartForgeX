@@ -8,7 +8,7 @@
     if (pointerTargetPaint(node)) return true;
     // Retained authored facts can have no filled geometry, while still belonging to the data component.
     const data = node.dataset;
-    if (!data.cfxTargetKind || !data.cfxTargetId || !['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return false;
+    if (!data.cfxTargetKind || !data.cfxTargetId || !retainedGeometryFact(node)) return false;
     const svg = node.ownerSVGElement;
     if (!svg) return false;
     // The viewport detects hidden hosts; CSS-hidden inner groups need their own ancestor check.

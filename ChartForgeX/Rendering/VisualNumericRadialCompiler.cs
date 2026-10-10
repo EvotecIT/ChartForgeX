@@ -32,10 +32,10 @@ internal static partial class VisualNumericRadialCompiler {
                 pair.Key == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxisValueFormatter : chart.Options.ValueFormatter);
             return pair.Value.Ticks.Select(format).ToArray();
         });
+        plot = AxisTitles(chart, context, builder, plot, scales);
         var geometry = Layout(chart, context, builder, plot, categoryLabels, tickLabels, bars);
         if (geometry.Outer <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.insufficient-space", "The frame leaves no space for numeric radial marks."));
-            return;
         }
         var labels = new List<RadialSeriesLabel>();
         // Axis captions and totals also need mark avoidance when point captions are off.
@@ -44,7 +44,7 @@ internal static partial class VisualNumericRadialCompiler {
         foreach (var total in stacks.Totals.Where(total => total.NormalizedTo.HasValue && total.SourceValue == 0))
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.stack-zero-total", "A normalized zero-only stack remains at its baseline; its source observations are retained."));
         using (builder.PushClip(plot)) {
-            Grid(chart, context, builder, plot, geometry, categoryLabels, categories, scales, tickLabels, bars, labels);
+            if (geometry.Outer > 0) Grid(chart, context, builder, plot, geometry, categoryLabels, categories, scales, tickLabels, bars, labels);
             var participants = Enumerable.Range(0, chart.Series.Count).ToArray();
             for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
                 var series = chart.Series[seriesIndex];
@@ -68,7 +68,7 @@ internal static partial class VisualNumericRadialCompiler {
                     }
                 }
             }
-            if (chart.Options.ShowStackTotals) StackTotals(chart, context, builder, plot, geometry, categories, coordinates, stacks, scales, bars, labels);
+            if (geometry.Outer > 0 && chart.Options.ShowStackTotals) StackTotals(chart, context, builder, plot, geometry, categories, coordinates, stacks, scales, bars, labels);
             DrawLabels(builder, plot, labels, obstacles, context.Theme.Spacing);
         }
     }
@@ -130,8 +130,8 @@ internal static partial class VisualNumericRadialCompiler {
             ["data-cfx-clipped"] = mark.Clipped ? "true" : "false",
             ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false"
         };
-        if (!mark.Painted && !mark.Clipped)
-            metadata["data-cfx-geometry-status"] = point.Y == 0 ? "zero" : "precision-collapse";
+        if (geometry.Outer <= 0) metadata["data-cfx-geometry-status"] = "layout-collapse";
+        else if (!mark.Painted && !mark.Clipped) metadata["data-cfx-geometry-status"] = point.Y == 0 ? "zero" : "precision-collapse";
         ChartStackLayout.AddMetadata(metadata, stack);
         var bounds = mark.Painted ? ChartSlicePathGeometry.Bounds(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep)
             : new ChartRect(mark.End.X, mark.End.Y, 0, 0);
@@ -153,7 +153,7 @@ internal static partial class VisualNumericRadialCompiler {
                     pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(110), role: "radial-fill-pattern");
             }
         }
-        if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
+        if (geometry.Outer > 0 && (series.ShowDataLabels ?? chart.Options.ShowDataLabels)) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
     }
 
     private static ChartAxis Axis(Chart chart, ChartAxisSide side) => side == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;

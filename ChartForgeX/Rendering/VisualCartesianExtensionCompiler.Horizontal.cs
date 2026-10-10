@@ -74,7 +74,7 @@ internal static partial class VisualCartesianCompiler {
         var axes = HorizontalAxes(chart, cache); var spacing = context.Theme.Spacing;
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
         var categories = HorizontalCategories(chart, range); var widest = 0d;
-        foreach (var category in categories) widest = Math.Max(widest, RotatedMetrics(builder.MeasureText(cache.Format(axes.Category, category, null, categories), style), axes.Category.LabelAngle).Width);
+        foreach (var category in categories) widest = Math.Max(widest, VisualAxisText.RotatedMetrics(builder.MeasureText(cache.Format(axes.Category, category, null, categories), style), axes.Category.LabelAngle).Width);
         var left = chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .35, widest + spacing) : 0;
         var bottom = chart.Options.XAxis.Visible ? TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache).Height + spacing : 0;
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground });

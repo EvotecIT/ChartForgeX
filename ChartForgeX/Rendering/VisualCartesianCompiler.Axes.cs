@@ -74,7 +74,7 @@ internal static partial class VisualCartesianCompiler {
         var ticks = labels.Ticks(axis, minimum, maximum);
         var width = 0d; var height = 0d;
         foreach (var tick in ticks) {
-            var metrics = RotatedMetrics(builder.MeasureText(labels.Format(axis, tick, fallback, ticks), style), axis.LabelAngle);
+            var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(labels.Format(axis, tick, fallback, ticks), style), axis.LabelAngle);
             width = Math.Max(width, metrics.Width); height = Math.Max(height, metrics.Height);
         }
         return new TextMetrics(width, height, height);
@@ -170,49 +170,26 @@ internal static partial class VisualCartesianCompiler {
                 priority: tick.Equals(ticks[0]) || tick.Equals(ticks[ticks.Count - 1]) ? 1 : 0));
         }
         // End ticks use the same bounds policy as intermediate ticks: labels cannot escape the measured frame.
-        foreach (var request in requests) request.MeasuredSize = RotatedMetrics(builder.MeasureText(request.Text, request.Style), axis.LabelAngle);
+        foreach (var request in requests) {
+            request.MeasuredSize = builder.MeasureText(request.Text, request.Style);
+            request.RotationDegrees = VisualAxisText.Angle(axis.LabelAngle);
+        }
         var gap = axis.LabelDensity == ChartLabelDensity.Dense ? 0 : axis.LabelDensity == ChartLabelDensity.Relaxed ? spacing * 2 : spacing / 2;
-        TextMetrics MeasureRotated(string text, TextStyle textStyle) => RotatedMetrics(builder.MeasureText(text, textStyle), axis.LabelAngle);
         var placement = new LabelPlacementService();
         // All explicitly permits overlaps; fitting still keeps each individual label inside its axis strip.
         var placed = axis.LabelDensity == ChartLabelDensity.All
-            ? requests.Select(request => placement.Place(new[] { request }, bounds, null, 0, MeasureRotated)[0]).ToArray()
-            : placement.Place(requests, bounds, null, gap, MeasureRotated);
+            ? requests.Select(request => placement.Place(new[] { request }, bounds, null, 0, builder.MeasureText)[0]).ToArray()
+            : placement.Place(requests, bounds, null, gap, builder.MeasureText);
         if (placed.Any(label => label.IsDropped || label.IsEllipsized))
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.axis-label-overflow", "Axis labels were shortened or omitted to remain within the available frame."));
-        foreach (var label in placed) {
-            if (label.IsDropped) continue;
-            var displayedStyle = DisplayedStyle(label.Request.Style);
-            displayedStyle.Alignment = TextAlignment.Left;
-            if (axis.LabelAngle == 0) builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle, role: role, paint: VisualChartPaint.Text(displayedStyle));
-            else {
-                var metrics = builder.MeasureText(label.Text, displayedStyle);
-                var cx = label.Bounds.Left + label.Bounds.Width / 2;
-                var cy = label.Bounds.Top + label.Bounds.Height / 2;
-                using (builder.PushRotation(axis.LabelAngle, cx, cy))
-                    builder.Text(label.Text, cx - metrics.Width / 2, cy - metrics.Height / 2 + builder.TextAscent(displayedStyle), displayedStyle, role: role, paint: VisualChartPaint.Text(displayedStyle));
-            }
-        }
+        foreach (var label in placed) VisualAxisText.Draw(builder, label, role);
     }
 
     private static void DrawAxisTitle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
         VisualThemeColors colors, TextAlignment alignment, string role) {
         var style = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground, Alignment = alignment });
-        builder.AddRegion(new VisualSemanticRegion(role, role, bounds, TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture)));
-        var fraction = alignment == TextAlignment.Right ? 1 : alignment == TextAlignment.Center ? .5 : 0;
-        var request = new LabelPlacementRequest(text, new ChartPoint(bounds.Left + bounds.Width * fraction, bounds.Top), style,
-            new[] { new LabelCandidate(0, 0, fraction, 0) }) { MeasuredSize = builder.MeasureText(text, style) };
-        var label = new LabelPlacementService().Place(new[] { request }, bounds, null, 2, builder.MeasureText)[0];
-        if (label.IsDropped || label.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("cartesian.axis-title-overflow", "An axis title was shortened or omitted within its measured frame."));
-        if (label.IsDropped) return;
-        var displayed = DisplayedStyle(style); displayed.Alignment = TextAlignment.Left;
-        builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayed), displayed, role: role, paint: VisualChartPaint.Text(displayed));
-    }
-
-    private static TextMetrics RotatedMetrics(TextMetrics metrics, double angle) {
-        if (angle == 0) return metrics;
-        var radians = angle * Math.PI / 180;
-        var cosine = Math.Abs(Math.Cos(radians)); var sine = Math.Abs(Math.Sin(radians));
-        return new TextMetrics(metrics.Width * cosine + metrics.Height * sine, metrics.Width * sine + metrics.Height * cosine, metrics.LineHeight);
+        style.Alignment = alignment;
+        VisualAxisText.Title(builder, text, bounds, style, role, null,
+            "cartesian.axis-title-overflow", "An axis title was shortened or omitted within its measured frame.");
     }
 }
