@@ -11,13 +11,11 @@ internal static partial class MermaidGanttParser {
         foreach (var statement in document.Statements) {
             var offset = StartsWithKeyword(statement.Text, "excludes") || StartsWithKeyword(statement.Text, "includes") ? 8 : 0;
             if (offset == 0) continue;
-            var requiresAnchor = false;
-            CalendarTokens(statement.Text.Substring(offset), document.DateFormat, null, _ => requiresAnchor = true);
-            if (requiresAnchor) {
-                Add(result, statement.Span.Line, statement.Span.Column, statement.Span.Length, MermaidDiagnosticSeverity.Error,
+            CalendarTokens(statement.Text.Substring(offset), document.DateFormat, null, (token, tokenOffset) => {
+                Add(result, statement.Span.Line, statement.Span.Column + offset + tokenOffset, token.Length, MermaidDiagnosticSeverity.Error,
                     "Gantt calendar dates using '" + document.DateFormat + "' require MermaidParseOptions.GanttDateAnchor or complete ISO dates.");
                 valid = false;
-            }
+            });
         }
         return valid;
     }
@@ -65,23 +63,28 @@ internal static partial class MermaidGanttParser {
         catch (OverflowException) { return false; }
     }
 
-    private static HashSet<string> CalendarTokens(string? value, string format, DateTime? dateAnchor, Action<string>? unrecognized = null) {
+    private static HashSet<string> CalendarTokens(string? value, string format, DateTime? dateAnchor, Action<string, int>? unrecognized = null) {
         var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var chunkOffset = 0;
         foreach (var chunk in (value ?? string.Empty).Split(',')) {
             var trimmed = chunk.Trim();
+            var sourceOffset = chunkOffset + chunk.IndexOf(trimmed, StringComparison.Ordinal);
+            chunkOffset += chunk.Length + 1;
             if (trimmed.Length == 0) continue;
             // Only complete lists of standalone dates/weekdays use whitespace shorthand.
             // An unrecognized timestamp must not lose its time through partial splitting.
             if (TryNormalizeCalendarDate(trimmed, format, out var date, dateAnchor)) tokens.Add(date);
             else {
-                var list = new List<string>(); var standalone = true;
+                var list = new List<string>(); var standalone = true; var tokenOffset = 0; var unknownOffset = 0;
                 foreach (var token in trimmed.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)) {
+                    tokenOffset = trimmed.IndexOf(token, tokenOffset, StringComparison.Ordinal);
                     if (TryNormalizeCalendarDate(token, format, out date, dateAnchor)) list.Add(date);
                     else if (IsCalendarKeyword(token)) list.Add(token);
-                    else { standalone = false; break; }
+                    else { standalone = false; unknownOffset = tokenOffset; break; }
+                    tokenOffset += token.Length;
                 }
                 if (standalone) tokens.UnionWith(list);
-                else { tokens.Add(trimmed); unrecognized?.Invoke(trimmed); }
+                else { tokens.Add(trimmed); unrecognized?.Invoke(trimmed.Substring(unknownOffset), sourceOffset + unknownOffset); }
             }
         }
         return tokens;

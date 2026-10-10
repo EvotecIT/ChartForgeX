@@ -16,12 +16,12 @@ internal static partial class MermaidGanttInputDateFormat {
         if (format.Length > 256) return false;
         try {
             format = format.Trim();
-            if (format == "X" || format == "x" || UsesMermaidFields(Parts(format))) return TryParseFields(input, format, out value, dateAnchor);
-            var nativeFormat = new StringBuilder(ExpandNativeFormat(MermaidGanttParser.ToDotNetDateFormat(format)));
-            var normalized = new StringBuilder(input.Trim());
-            return ApplyDateDefaults(normalized, nativeFormat, dateAnchor)
-                && DateTime.TryParseExact(normalized.ToString(), nativeFormat.ToString(), CultureInfo.InvariantCulture,
-                    DateTimeStyles.AssumeLocal | DateTimeStyles.NoCurrentDateDefault, out value);
+            if (format == "X" || format == "x") return TryParseFields(input, format, out value, dateAnchor);
+            if (UsesMermaidFields(Parts(format))) {
+                if (TryParseFields(input, format, out value, dateAnchor)) return true;
+                if (!IsNativeStandardFormat(format)) return false;
+            }
+            return TryParseNative(input, MermaidGanttParser.ToDotNetDateFormat(format), out value, dateAnchor);
         } catch (FormatException) { return false; }
         catch (RegexMatchTimeoutException) { return false; }
     }

@@ -752,6 +752,8 @@ Calendar dates use the configured input fields for parsing and normalization. Se
 
 Input formats without a year require `MermaidParseOptions.GanttDateAnchor`. Month/day fields use its year; a day without a month also uses its month; time-only fields use its complete date. An authored month or quarter without a day starts on that month's first day. Formats with an explicit year default omitted month/day fields to January 1. The anchor's time and `DateTimeKind` are ignored. Leap-day and day-of-year validation use the resolved year. The same policy applies to retained .NET/percent formats and calendar exclusions/inclusions; anchored dates are specific dates, while weekday and `weekends` rules recur.
 
+Retained .NET formats with offset fields and complete ISO fallback values normalize authored offsets to UTC and expose `DateTimeKind.Unspecified`, matching Mermaid `Z`/`ZZ` input. Values without offsets retain their authored wall-clock fields. Parsing does not apply the host timezone. Mermaid tokens take precedence for ambiguous single-character formats; if that interpretation fails, a standard .NET format can still accept its textual date, such as `dateFormat M` with `February 29` and a leap-year anchor.
+
 ```csharp
 using ChartForgeX.Markup.Mermaid;
 

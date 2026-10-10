@@ -124,14 +124,7 @@ internal static partial class MermaidGanttParser {
             if (MermaidGanttInputDateFormat.TryParseConfigured(text, dateFormat, out value, dateAnchor)) return true;
             // Legacy complete-date spellings remain available; unrestricted platform parsing
             // can silently acquire today's year or date from partial text.
-            var fallbackFormats = new[] {
-                "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-dd H:mm", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTH:mm",
-                "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", "yyyy-M-d", "yyyy-M-d H:mm", "yyyy-M-d H:mm:ss",
-                "MMMM d yyyy", "MMM d yyyy", "MMMM d, yyyy", "MMM d, yyyy", "d MMMM yyyy", "d MMM yyyy",
-                "M/d/yyyy", "M-d-yyyy", "yyyy/M/d", "o", "r"
-            };
-            return DateTime.TryParseExact(text.Trim(), fallbackFormats, CultureInfo.InvariantCulture,
-                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeLocal, out value);
+            return MermaidGanttInputDateFormat.TryParseCompleteFallback(text, out value);
         } catch (FormatException) { return false; }
         catch (RegexMatchTimeoutException) { return false; }
     }

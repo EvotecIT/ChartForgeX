@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Xml.Linq;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
@@ -53,6 +54,16 @@ public sealed class MermaidGanttDateAnchorTests {
         Assert.Empty(parsed.Diagnostics);
         Assert.Equal(expected.RootElement.GetProperty("taskTimestamps").EnumerateArray().Select(task => (task[0].GetString(), task[1].GetString(), task[2].GetString())),
             parsed.Document!.Tasks.Select(task => ((string?)task.Id, (string?)task.Start.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture), (string?)task.End.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture))));
+        var renderedTasks = XDocument.Parse(parsed.Document.ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "gantt-task").ToArray();
+        var timestamps = expected.RootElement.GetProperty("taskTimestamps").EnumerateArray().ToArray();
+        Assert.Equal(timestamps.Length, renderedTasks.Length);
+        for (var index = 0; index < timestamps.Length; index++) {
+            var start = DateTime.ParseExact(timestamps[index][1].GetString()!, "yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            var end = DateTime.ParseExact(timestamps[index][2].GetString()!, "yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            Assert.Equal(start.ToOADate(), (double)renderedTasks[index].Attribute("data-cfx-start")!, 6);
+            Assert.Equal(end.ToOADate(), (double)renderedTasks[index].Attribute("data-cfx-end")!, 6);
+        }
     }
 
     private static string Fixture(string name) => Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", name);
