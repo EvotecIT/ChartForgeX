@@ -81,7 +81,7 @@
     if (activeTooltipPositions.has(state)) return;
     activeTooltipPositions.add(state);
     if (!tooltipPositionObserver) {
-      // Shared listeners exist only while a node/chart readout is visible, including pinned readouts.
+      // Shared listeners exist only while a readout is visible, including pointer and pinned readouts.
       window.addEventListener('resize', queueTooltipPositionRefresh);
       document.addEventListener('scroll', queueTooltipPositionRefresh, true);
       document.addEventListener('transitionend', queueTooltipPositionRefresh, true);
@@ -156,5 +156,5 @@
     if (!tooltipPositionAvailable(state)) { hideTip(root, tip, true); return; }
     state.paintChanged = false;
     placeTooltip(state);
-    if (state.anchor !== 'pointer') watchTooltipPosition(state);
+    watchTooltipPosition(state);
   };
