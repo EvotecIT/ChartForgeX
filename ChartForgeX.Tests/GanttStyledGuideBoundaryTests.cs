@@ -3,6 +3,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
+using System.Xml.Linq;
 using Microsoft.Playwright;
 using Xunit;
 
@@ -56,6 +57,14 @@ public sealed class GanttStyledGuideBoundaryTests {
     public void NativeReferenceDashesRejectValuesThatCouldOverflowRasterScaling(double length) =>
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(dash: new[] { length, 1d }));
 
+    [Fact]
+    public void MaximumNativeReferenceStyleStillPaintsRasterInk() {
+        var chart = Chart.Create().WithSize(320, 360).WithLegend(false).WithGanttToday(2).AddGanttTask("Task", 1, 4);
+        chart.Options.GanttTodayStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 1024, dash: new[] { 1024d, .25d });
+        var pixels = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToRgba().Pixels;
+        Assert.Contains(Enumerable.Range(0, pixels.Length / 4), pixel => pixels[pixel * 4] == 255 && pixels[pixel * 4 + 1] == 0 && pixels[pixel * 4 + 2] == 255);
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
@@ -73,6 +82,9 @@ public sealed class GanttStyledGuideBoundaryTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var guide = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "gantt-now-line");
         var axis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "schedule-axis");
+        var svgGuide = Assert.Single(XDocument.Parse(prepared.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "gantt-now-line");
+        Assert.Equal("20", (string?)svgGuide.Attribute("stroke-width"));
+        Assert.Equal("12 16", (string?)svgGuide.Attribute("stroke-dasharray"));
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         var name = "gantt-wide-guide-" + (lanes ? "lanes-" : "classic-") + (after ? "max" : "min");
         if (!string.IsNullOrWhiteSpace(captures)) {
@@ -108,6 +120,8 @@ public sealed class GanttStyledGuideBoundaryTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "annotation-line");
         var axis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "schedule-axis");
+        var svgLine = Assert.Single(XDocument.Parse(prepared.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "annotation-line");
+        Assert.Equal("20", (string?)svgLine.Attribute("stroke-width"));
         Assert.InRange(line.Commands[0].X, axis.Start.X + line.StrokeWidth / 2, axis.End.X - line.StrokeWidth / 2);
     }
 }
