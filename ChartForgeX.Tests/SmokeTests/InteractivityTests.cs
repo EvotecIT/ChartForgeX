@@ -176,7 +176,9 @@ internal static partial class SmokeTests {
         Assert(linkedCell.Attribute("tabindex") == null && (string?)linkedCell.Attribute("data-cfx-point") == "0",
             "Linked cells should retain source identity without creating a second authored focus target.");
         Assert(html.Contains("action: 'navigate'", StringComparison.Ordinal), "Interactive keyboard traversal should synchronize hover context across grouped charts.");
-        Assert(html.Contains("Number.isFinite(clientX)", StringComparison.Ordinal) && html.Contains("node.getBoundingClientRect()", StringComparison.Ordinal) && html.Contains("tip.offsetWidth", StringComparison.Ordinal), "Interactive tooltips should position correctly for focus-driven keyboard navigation and narrow viewports.");
+        Assert(html.Contains("data-cfx-tooltip-anchor=\"pointer\"", StringComparison.Ordinal)
+            && html.Contains("data-cfx-tooltip-placements=\"bottom-right\"", StringComparison.Ordinal)
+            && html.Contains("data-cfx-tooltip-gap=\"14\"", StringComparison.Ordinal), "Interactive HTML should retain the default pointer placement policy in its public adapter metadata.");
         Assert(html.Contains("min-width: 0;", StringComparison.Ordinal) && html.Contains("flex-wrap: wrap;", StringComparison.Ordinal), "Interactive chrome should stay within narrow viewports instead of forcing horizontal overflow.");
         Assert(html.Contains("FocusTrail", StringComparison.Ordinal) && html.Contains("const recordFocusTrail = (root, target, emit, sync)", StringComparison.Ordinal) && html.Contains("'cfxtrail'", StringComparison.Ordinal), "Interactive HTML should support opt-in focus trail breadcrumbs from reusable target metadata.");
         Assert(html.Contains("data-cfx-trail-index", StringComparison.Ordinal) && html.Contains("action: 'trail'", StringComparison.Ordinal), "Interactive focus trails should render recent target order and synchronize across grouped charts.");

@@ -13,6 +13,11 @@ internal static class GraphiteExamples {
         foreach (var dark in new[] { false, true }) {
             var suffix = dark ? "dark" : "light";
             gallery.Append("<section class='").Append(suffix).Append("'><h2>").Append(suffix).Append("</h2>");
+            foreach (var anchor in Enum.GetValues<HtmlChartTooltipAnchor>()) {
+                var name = "graphite-" + suffix + "-tooltip-" + anchor.ToString().ToLowerInvariant();
+                File.WriteAllText(Path.Combine(output, name + ".html"), HtmlTooltipPositionExamples.CreatePage(anchor, dark));
+                gallery.Append("<p><a href='").Append(name).Append(".html'>").Append(anchor).Append(" tooltip placement</a></p>");
+            }
             foreach (var item in Create(dark)) {
                 var name = "graphite-" + suffix + "-" + item.Key;
                 item.Value.WithPngOutputScale(scale);

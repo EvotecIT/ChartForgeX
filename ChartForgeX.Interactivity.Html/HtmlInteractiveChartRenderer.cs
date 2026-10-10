@@ -146,6 +146,11 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-tooltip-range", options.Tooltip.Range.SerializedKind)
             .Attribute("data-cfx-tooltip-distance", options.Tooltip.Range.CssPixels?.ToString("R", CultureInfo.InvariantCulture))
             .Attribute("data-cfx-tooltip-delay", options.Tooltip.DelayMilliseconds.ToString(CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-tooltip-anchor", options.Tooltip.Position.Anchor.ToString().ToLowerInvariant())
+            .Attribute("data-cfx-tooltip-placements", options.Tooltip.Position.SerializedPlacements)
+            .Attribute("data-cfx-tooltip-gap", options.Tooltip.Position.Gap.ToString("R", CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-tooltip-offset-x", options.Tooltip.Position.OffsetX.ToString("R", CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-tooltip-offset-y", options.Tooltip.Position.OffsetY.ToString("R", CultureInfo.InvariantCulture))
             .Attribute("data-cfx-crosshair-label", options.Crosshair.ShowLabel ? "true" : "false")
             .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart))
             .EndStartElement().Line();

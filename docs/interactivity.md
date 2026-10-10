@@ -88,6 +88,26 @@ var html = chart.ToInteractiveHtmlPage(options => {
 
 Keyboard focus and explicit pins appear immediately and cancel pending pointer readouts. Hover emphasis, crosshair guides and dashboard synchronization remain immediate. The dashboard tooltip options apply the same delay to each child. Configuring a delay does not enable the `Tooltips` feature or affect native SVG and PNG exports.
 
+## Tooltip position
+
+`Tooltip.Position` selects the readout's screen anchor and placement independently of its content or acquisition range. `HtmlChartTooltipAnchor.Pointer` is the default and follows the latest pointer; keyboard focus uses the target's centre. `Node` uses the acquired native target's current bounds. `Chart` uses the displayed chart stage, excluding controls and compare panels; a narrow `Readable` chart uses its contained viewport rather than its wider SVG.
+
+`Placements` is a copied, read-only sequence of directions: `Top`, `TopRight`, `Right`, `BottomRight`, `Bottom`, `BottomLeft`, `Left`, and `TopLeft`. The adapter tries them in order using the rendered tooltip size and an 8 CSS pixel browser-viewport inset. If none fits, it clamps the first choice to that viewport. The default is one `BottomRight` placement with a 14 CSS pixel `Gap`. A diagonal placement applies the gap on both axes; `OffsetX` and `OffsetY` add signed CSS pixel offsets after anchoring. The gap must be finite and non-negative, and both offsets must be finite.
+
+```csharp
+chart.SaveInteractiveHtml("readings.html", options => {
+    options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
+    options.Tooltip.Position.Placements = new[] {
+        HtmlChartTooltipPlacement.Top,
+        HtmlChartTooltipPlacement.Bottom
+    };
+    options.Tooltip.Position.Gap = 12;
+    options.Tooltip.Position.OffsetX = 6;
+});
+```
+
+Visible node and chart readouts follow page or contained scrolling, resizing, and adapter zoom/pan changes, including pinned readouts. Delayed pointer readouts use the latest pointer and live anchor bounds when shown. Dashboard children receive independent copies of the same position settings. Placement settings do not enable tooltips or change native SVG and PNG exports. Executable pointer, node, and chart examples are in the Graphite gallery and `HtmlTooltipPositionExamples.CreatePage`.
+
 ## Semantic Series Identity
 
 Series ordinals are local rendering details. Synchronized dashboards therefore match legend, hover, and selection state by `data-cfx-series-key`, never by an ordinal from a different chart. The series name is the automatic key, so charts with the same named measure work without extra configuration. Set an explicit key when display labels differ but the underlying measure is the same:
