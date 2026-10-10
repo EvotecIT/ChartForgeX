@@ -10,6 +10,21 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GanttStyledGuideBoundaryTests {
+    [Fact]
+    public void OversizedCurrentTimeGuideKeepsTheNarrowReferenceAndTaskProjection() {
+        var chart = Chart.Create().WithSize(640, 360).WithLegend(false).AddGanttTask("Task", 1, 4)
+            .WithGanttToday(2.5).AddVerticalLine(1, "");
+        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 0);
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 20);
+        var control = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 1024);
+        var actual = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Equal(control.Regions.Select(region => region.Bounds), actual.Regions.Select(region => region.Bounds));
+        var axis = Assert.Single(actual.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "schedule-axis");
+        var guide = Assert.Single(actual.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "annotation-line");
+        Assert.InRange(guide.Commands[0].X, axis.Start.X + 10 - .001, axis.End.X - 10 + .001);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

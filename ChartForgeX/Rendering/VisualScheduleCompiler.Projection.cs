@@ -32,6 +32,8 @@ internal static partial class VisualScheduleCompiler {
         var bounds = new VisualAxisPaintBounds();
         bounds.Include(0, left); bounds.Include(1, right);
         foreach (var guide in guides) {
+            // Preserve task and containable-guide geometry when a wider stroke must clip.
+            if (guide.Y * 2 >= plot.Width) continue;
             largest = Math.Max(largest, guide.Y);
             var coordinate = left + guide.X * initial.Width;
             if (!axis.Minimum.HasValue && coordinate < guide.Y || !axis.Maximum.HasValue && plot.Width - coordinate < guide.Y) fits = false;
@@ -42,7 +44,7 @@ internal static partial class VisualScheduleCompiler {
             var width = plot.Width / (last - first);
             return new ChartRect(plot.Left - first * width, plot.Top, width, plot.Height);
         }
-        // An uncontainable stroke still uses the bounded clipping reservation.
+        // Conflicting containable extents still use the bounded clipping reservation.
         return MarkProjection(axis, plot, Math.Max(minimumExtent, largest), Math.Max(maximumExtent, largest));
     }
 

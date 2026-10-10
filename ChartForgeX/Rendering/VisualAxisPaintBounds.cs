@@ -18,8 +18,6 @@ internal sealed class VisualAxisPaintBounds {
         out double expandedMinimum, out double expandedMaximum) {
         expandedMinimum = minimum; expandedMaximum = maximum;
         if (_extents.Count == 0 || !(pixels > 0) || !(maximum > minimum) || fixedMinimum && fixedMaximum) return false;
-        // A mark wider than the viewport cannot be contained by changing the domain.
-        foreach (var extent in _extents) if (extent.Y * 2 >= pixels) return false;
         var low = maximum - minimum;
         if (TryPosition(low, out _)) return false;
         var high = low;
@@ -45,6 +43,8 @@ internal sealed class VisualAxisPaintBounds {
             var lower = fixedMinimum ? minimum : maximum - span;
             var upper = fixedMaximum ? maximum - span : minimum;
             foreach (var extent in _extents) {
+                // An uncontainable mark clips independently; it must not cancel other marks' gutters.
+                if (extent.Y * 2 >= pixels) continue;
                 var fraction = extent.Y / pixels;
                 // An authored bound is a clipping boundary, so only the other side expands.
                 if (!fixedMaximum) lower = Math.Max(lower, extent.X - (1 - fraction) * span);

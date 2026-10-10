@@ -58,6 +58,8 @@ internal static partial class VisualCartesianCompiler {
                 if (series.Kind == ChartSeriesKind.Dumbbell) Include(point.X, series.Points[raw + 1].Y, markerRadius, series.YAxis);
             }
         }
+        // References and markers share one fit: extending one side must preserve the other's pixel gutter.
+        IncludeReferenceExtents(chart, context, x, primaryY, chart.Options.YAxis);
         var changed = ExpandMarkerAxis(chart.Options.XAxis, x, plot.Width, range.MinX, range.MaxX, out var minX, out var maxX);
         range.SetXBounds(minX, maxX);
         changed |= ExpandMarkerAxis(chart.Options.YAxis, primaryY, plot.Height, range.MinY, range.MaxY, out var minY, out var maxY);
