@@ -118,6 +118,7 @@ internal static class ChartGuards {
     private static void ValidateSeriesShape(ChartSeries series, bool preparing) {
         series.ValidateInterpolation();
         series.ValidateMarkerAndRadarOptions();
+        series.ValidateFinancialOptions();
         if (ChartSeries.IsRelationshipKind(series.Kind)) series.ValidateRelationships(preparing);
         if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
             && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea)

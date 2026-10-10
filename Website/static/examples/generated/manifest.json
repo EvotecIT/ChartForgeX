@@ -292,6 +292,30 @@
     "family-candlestick-compact-light.svg",
     "family-candlestick-compact-light.thumbnail.png",
     "family-candlestick-compact-light.thumbnail.svg",
+    "family-candlestick-compact-options-dark.csharp.txt",
+    "family-candlestick-compact-options-dark.html",
+    "family-candlestick-compact-options-dark.png",
+    "family-candlestick-compact-options-dark.svg",
+    "family-candlestick-compact-options-dark.thumbnail.png",
+    "family-candlestick-compact-options-dark.thumbnail.svg",
+    "family-candlestick-compact-options-light.csharp.txt",
+    "family-candlestick-compact-options-light.html",
+    "family-candlestick-compact-options-light.png",
+    "family-candlestick-compact-options-light.svg",
+    "family-candlestick-compact-options-light.thumbnail.png",
+    "family-candlestick-compact-options-light.thumbnail.svg",
+    "family-candlestick-options-dark.csharp.txt",
+    "family-candlestick-options-dark.html",
+    "family-candlestick-options-dark.png",
+    "family-candlestick-options-dark.svg",
+    "family-candlestick-options-dark.thumbnail.png",
+    "family-candlestick-options-dark.thumbnail.svg",
+    "family-candlestick-options-light.csharp.txt",
+    "family-candlestick-options-light.html",
+    "family-candlestick-options-light.png",
+    "family-candlestick-options-light.svg",
+    "family-candlestick-options-light.thumbnail.png",
+    "family-candlestick-options-light.thumbnail.svg",
     "family-candlestick-wide-dark.csharp.txt",
     "family-candlestick-wide-dark.html",
     "family-candlestick-wide-dark.png",
@@ -832,6 +856,30 @@
     "family-ohlc-compact-light.svg",
     "family-ohlc-compact-light.thumbnail.png",
     "family-ohlc-compact-light.thumbnail.svg",
+    "family-ohlc-compact-options-dark.csharp.txt",
+    "family-ohlc-compact-options-dark.html",
+    "family-ohlc-compact-options-dark.png",
+    "family-ohlc-compact-options-dark.svg",
+    "family-ohlc-compact-options-dark.thumbnail.png",
+    "family-ohlc-compact-options-dark.thumbnail.svg",
+    "family-ohlc-compact-options-light.csharp.txt",
+    "family-ohlc-compact-options-light.html",
+    "family-ohlc-compact-options-light.png",
+    "family-ohlc-compact-options-light.svg",
+    "family-ohlc-compact-options-light.thumbnail.png",
+    "family-ohlc-compact-options-light.thumbnail.svg",
+    "family-ohlc-options-dark.csharp.txt",
+    "family-ohlc-options-dark.html",
+    "family-ohlc-options-dark.png",
+    "family-ohlc-options-dark.svg",
+    "family-ohlc-options-dark.thumbnail.png",
+    "family-ohlc-options-dark.thumbnail.svg",
+    "family-ohlc-options-light.csharp.txt",
+    "family-ohlc-options-light.html",
+    "family-ohlc-options-light.png",
+    "family-ohlc-options-light.svg",
+    "family-ohlc-options-light.thumbnail.png",
+    "family-ohlc-options-light.thumbnail.svg",
     "family-ohlc-wide-dark.csharp.txt",
     "family-ohlc-wide-dark.html",
     "family-ohlc-wide-dark.png",
@@ -4074,6 +4122,76 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-candlestick-options-light",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-candlestick-options-light.csharp.txt",
+      "svg": "family-candlestick-options-light.svg",
+      "png": "family-candlestick-options-light.png",
+      "html": "family-candlestick-options-light.html",
+      "thumbnail": "family-candlestick-options-light.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-candlestick-compact-options-light",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-candlestick-compact-options-light.csharp.txt",
+      "svg": "family-candlestick-compact-options-light.svg",
+      "png": "family-candlestick-compact-options-light.png",
+      "html": "family-candlestick-compact-options-light.html",
+      "thumbnail": "family-candlestick-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
+    },
+    {
       "id": "family-candlestick-wide-dark",
       "family": "candlestick",
       "familyLabel": "Candlestick",
@@ -4138,6 +4256,76 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-candlestick-options-dark",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-candlestick-options-dark.csharp.txt",
+      "svg": "family-candlestick-options-dark.svg",
+      "png": "family-candlestick-options-dark.png",
+      "html": "family-candlestick-options-dark.html",
+      "thumbnail": "family-candlestick-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-candlestick-compact-options-dark",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-candlestick-compact-options-dark.csharp.txt",
+      "svg": "family-candlestick-compact-options-dark.svg",
+      "png": "family-candlestick-compact-options-dark.png",
+      "html": "family-candlestick-compact-options-dark.html",
+      "thumbnail": "family-candlestick-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
     },
     {
       "id": "family-range-band-wide-light",
@@ -11166,6 +11354,76 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-ohlc-options-light",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-ohlc-options-light.csharp.txt",
+      "svg": "family-ohlc-options-light.svg",
+      "png": "family-ohlc-options-light.png",
+      "html": "family-ohlc-options-light.html",
+      "thumbnail": "family-ohlc-options-light.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-ohlc-compact-options-light",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-ohlc-compact-options-light.csharp.txt",
+      "svg": "family-ohlc-compact-options-light.svg",
+      "png": "family-ohlc-compact-options-light.png",
+      "html": "family-ohlc-compact-options-light.html",
+      "thumbnail": "family-ohlc-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
+    },
+    {
       "id": "family-ohlc-wide-dark",
       "family": "ohlc",
       "familyLabel": "OHLC",
@@ -11230,6 +11488,76 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-ohlc-options-dark",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-ohlc-options-dark.csharp.txt",
+      "svg": "family-ohlc-options-dark.svg",
+      "png": "family-ohlc-options-dark.png",
+      "html": "family-ohlc-options-dark.html",
+      "thumbnail": "family-ohlc-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-ohlc-compact-options-dark",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-ohlc-compact-options-dark.csharp.txt",
+      "svg": "family-ohlc-compact-options-dark.svg",
+      "png": "family-ohlc-compact-options-dark.png",
+      "html": "family-ohlc-compact-options-dark.html",
+      "thumbnail": "family-ohlc-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
     },
     {
       "id": "family-polar-area-wide-light",

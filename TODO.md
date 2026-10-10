@@ -27,6 +27,7 @@ All implemented chart kinds, ChartGrid, topology, flow and sequence use the shar
 ## Rendering Pipeline
 
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
+- Financial marks expose independent solid body/wick and OHLC colors, alpha, widths and hollow candles through `ChartSeries.Financial`. Keep financial dash controls and trading-session spacing as separate increments; session calendars must preserve source prices and date bounds across candle/OHLC views.
 - Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
 - Keep annotation captions clear of data marks in compact plots, including bar caps and nearby value labels.
 

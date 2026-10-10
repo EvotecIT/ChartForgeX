@@ -293,6 +293,7 @@ internal static partial class SmokeTests {
         ("Error-bar series render bounds and markers", ErrorBarSeriesRenderBoundsAndMarkers),
         ("Candlestick series render OHLC bodies and wicks", CandlestickSeriesRenderOhlcBodiesAndWicks),
         ("OHLC series render open and close ticks", OhlcSeriesRenderOpenAndCloseTicks),
+        ("Financial mark options render native styles", FinancialMarkOptionsRenderNativeStyles),
         ("Range-band series render filled envelopes", RangeBandSeriesRenderFilledEnvelopes),
         ("Range-area series render filled interval areas", RangeAreaSeriesRenderFilledIntervalAreas),
         ("Stacked-area series render cumulative filled bands", StackedAreaSeriesRenderCumulativeFilledBands),

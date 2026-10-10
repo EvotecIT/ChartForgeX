@@ -131,6 +131,38 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart FinancialOptions(ChartSeriesKind kind) {
+        var source = new[] {
+            new ChartCandlestick(1, 44, 58, 38, 53), new ChartCandlestick(2, 53, 60, 42, 45),
+            new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
+            new ChartCandlestick(5, 47, 63, 44, 58)
+        };
+        var chart = Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Price")
+            .WithPointLegend().WithDataLabels(false);
+        if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick("Daily prices", source);
+        else chart.AddOhlc("Daily prices", source);
+        chart.Series[0].ConfigureFinancial(financial => {
+            financial.Rising.Stroke = ChartColor.FromHex("#2A967B");
+            financial.Rising.StrokeWidth = 2.4;
+            financial.Falling.Stroke = ChartColor.FromHex("#DB825B");
+            financial.Falling.StrokeWidth = 2.8;
+            financial.Falling.StrokeOpacity = .85;
+            if (kind == ChartSeriesKind.Candlestick) {
+                financial.Rising.FillOpacity = 0;
+                financial.Rising.Wick.Stroke = ChartColor.FromHex("#729BB7");
+                financial.Rising.Wick.StrokeWidth = 1.2;
+                financial.Falling.Fill = ChartColor.FromHex("#EBA85B");
+                financial.Falling.FillOpacity = .65;
+                financial.Falling.Wick.Stroke = ChartColor.FromHex("#729BB7");
+                financial.Falling.Wick.StrokeWidth = 1.4;
+            }
+        }).WithPointColor(4, "#729BB7");
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     /// <summary>Creates count, density, sum and mean examples over the same unequal measurement intervals.</summary>
     public static Chart CreateHistogram(string variant) {
         var mode = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
@@ -325,6 +357,8 @@ public static partial class V2GalleryModels {
         }
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
             return MarkerOptions(kind);
+        if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)
+            return FinancialOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels("Received", "Reviewed", "Qualified", "Completed").WithDataLabels()
                 .AddFunnel("Requests", new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })

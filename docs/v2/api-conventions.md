@@ -227,6 +227,27 @@ Numeric radial `ChartPoint.X` identifies an ordinal category; `Y` is the signed 
 
 Numeric radial `Inside` and `Center` captions fit entirely within their painted sector. Captions that cannot fit are shortened or omitted with `numeric-radial.label-overflow`; their full source values remain in descriptive regions and point metadata. Outside captions avoid painted marks, and automatic inside ink resolves contrast against the composited fill. Explicit label colors remain caller-controlled.
 
+## Financial marks
+
+`ChartSeries.Financial` owns direction-specific `Rising` and `Falling` options for candlestick and OHLC series. A close greater than or equal to the open selects Rising, including doji. `ConfigureFinancial` configures body fill, outline and wick or the OHLC stem and ticks without changing the validated source prices.
+
+```csharp
+chart.Series[0].ConfigureFinancial(financial => {
+    financial.Rising.FillOpacity = 0;
+    financial.Rising.Stroke = ChartColor.FromHex("#2A967B");
+    financial.Rising.StrokeWidth = 2.4;
+    financial.Rising.Wick.Stroke = ChartColor.FromHex("#729BB7");
+    financial.Rising.Wick.StrokeWidth = 1.2;
+    financial.Falling.FillOpacity = .65;
+});
+```
+
+Null paints and numeric options inherit the existing family behavior. Body fills keep their rising/falling alpha defaults unless `FillOpacity` is supplied. `StrokeOpacity` and `FillOpacity` multiply the chosen color's alpha and accept finite values from zero to one. Stroke widths accept finite nonnegative logical pixels; zero hides the corresponding stroke. Wick values inherit the item's stroke color, alpha multiplier and width. Item widths inherit an explicit series `StrokeWidth` before the family default. An observation's `PointColors` entry takes precedence over every financial part color; part widths and alpha multipliers remain independent. OHLC supports the item's stroke settings and rejects fill or wick settings. Configured financial options on other series kinds also fail preparation.
+
+A zero fill multiplier or a transparent effective fill creates a hollow candlestick with no interior wick or hatch. SVG, native PNG and configured financial legend glyphs consume the same resolved styles. A point legend shows its observation's direction; a series legend shows rising and falling glyphs under one series action. Bounds cover the painted body and strokes, including minimum-height and all-equal bodies. Preparation freezes styles, geometry, regions and legend output independently of later option changes. Session-time spacing, financial dash controls and datum style callbacks remain separate work.
+
+HTML financial tooltips expose Open, High, Low and Close rows, including zero prices, through the ordinary and pinned readout. Shared-X mode uses the existing single-target fallback for financial tuples. Financial readouts retain raw metadata and accessible descriptions and omit a generic Y row, which would otherwise describe only the opening member.
+
 ## Enforcement boundary
 
 `V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Public typed configuration callbacks on the Core and Visuals `With*`/`Configure*` builder boundary must use `Configure*` and return their receiver. Data-adding callbacks and substantive exports keep their operation names. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.

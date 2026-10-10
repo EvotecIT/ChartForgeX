@@ -216,6 +216,15 @@
       : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
+  // A financial Y is the tuple's opening member; all readouts use the complete prices.
+  const financialTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if (!['candlestick', 'ohlc'].includes((data.cfxKind || '').toLowerCase())) return null;
+    return ['Open', 'High', 'Low', 'Close'].filter((part) => {
+      const value = data['cfx' + part];
+      return value !== undefined && value !== null && value !== '';
+    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: String(data['cfx' + part]) }));
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -224,7 +233,9 @@
     };
     push('Series', seriesLabel(node));
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
-    push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+    const financialRows = financialTooltipRows(node);
+    if (financialRows) rows.push(...financialRows);
+    else push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
     push('End', data.cfxEnd);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
@@ -731,7 +742,10 @@
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
       // Retained numeric facts have keyboard semantics without a pointer surface.
       if (['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return;
-      if (box.width > 0 && box.height > 0) return;
+      // A hollow candle's unpainted interior still belongs to its observation's browser target.
+      const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
+        && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
+      if (box.width > 0 && box.height > 0 && !hollowCandle) return;
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const width = Math.max(8, region.width); const height = Math.max(8, region.height);
       hit.setAttribute('x', region.x + (region.width - width) / 2);
@@ -771,10 +785,13 @@
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
     const reference = legendTarget(item);
+    const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
+    const svg = item.closest('svg');
+    const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
+    const financialRows = mark && financialTooltipRows(mark);
+    if (financialRows) return financialRows.concat(colorTooltipRows(mark));
     if (reference) {
       const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
-      const svg = item.closest('svg');
-      const mark = svg && referencedTargetNode(svg, { ...reference, seriesKey: seriesKey(item) });
       return rows.concat(mark ? colorTooltipRows(mark) : []);
     }
     const values = legendSeriesValues(item);
