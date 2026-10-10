@@ -177,11 +177,16 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         const string caption = "[data-cfx-source-id='series-0-point-1-label']";
         Assert.Equal(1, await page.Locator(caption).CountAsync());
         await MoveToAsync(page, caption);
+        await CaptureAsync(page, directory, name + ".caption-hover.png");
+        if (directory != null) await File.WriteAllTextAsync(Path.Combine(directory, name + ".caption-hover.runtime.json"), JsonSerializer.Serialize(new {
+            hidden = await page.Locator(".cfx-tooltip").IsHiddenAsync(),
+            caption = await page.Locator(caption).EvaluateAsync<JsonElement>("node => {const box=node.getBoundingClientRect(),hit=document.elementFromPoint(box.x+box.width/2,box.y+box.height/2);return {labelFor:node.dataset.cfxLabelFor||null,hitTag:hit?.localName,hitRole:hit?.dataset.cfxRole||hit?.parentElement?.dataset.cfxRole};}"),
+            point = await page.Locator(Point(0, 1)).EvaluateAsync<JsonElement>("node => ({data:{...node.dataset},hovered:node.classList.contains('cfx-hovered'),shapes:Array.from(node.querySelectorAll('rect,line,path')).map(shape=>{const paint=getComputedStyle(shape),box=shape.getBBox();return {role:shape.dataset.cfxRole,browserHit:shape.hasAttribute('data-cfx-browser-hit-area'),width:box.width,height:box.height,fill:paint.fill,stroke:paint.stroke,strokeWidth:paint.strokeWidth,opacity:paint.opacity};})})")
+        }, new JsonSerializerOptions { WriteIndented = true }));
         Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         Assert.Contains("cfx-hovered", await page.Locator(Point(0, 1)).GetAttributeAsync("class"));
         Assert.Equal(prices, await page.Locator(".cfx-tooltip dt").EvaluateAllAsync<string[]>(
             "nodes => nodes.filter(node => ['Opening price','High','Low','Close'].includes(node.textContent)).map(node => node.nextElementSibling.textContent)"));
-        await CaptureAsync(page, directory, name + ".caption-hover.png");
         await page.Locator(Point(0, 1)).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Point(0, 1)).GetAttributeAsync("aria-selected"));
         Assert.Contains("cfx-tooltip--pinned", await page.Locator(".cfx-tooltip").GetAttributeAsync("class"));
@@ -190,6 +195,12 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
             Assert.Equal(prices[index], await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = part }).Locator("+ dd").InnerTextAsync());
         }
         await CaptureAsync(page, directory, name + ".point-pinned.png");
+        await page.Keyboard.PressAsync("Space"); await page.Locator(Point(0, 1)).BlurAsync(); await MoveAwayAsync(page);
+        // A separately painted caption cannot promote an observation whose native ink is hidden.
+        await page.Locator(Point(0, 1)).EvaluateAsync("node=>node.style.opacity='0'");
+        await MoveToAsync(page, caption);
+        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.DoesNotContain("cfx-hovered", await page.Locator(Point(0, 1)).GetAttributeAsync("class") ?? "");
         AssertNoConsoleErrors(session);
     }
 
