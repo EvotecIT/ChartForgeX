@@ -439,7 +439,7 @@
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
     // Open line marks never paint their inherited default black fill.
     if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
-    return paintValue(node, paint.fill, paint.fillOpacity, styles) || stroke;
+    return (node.dataset.cfxFillArea !== 'false' && paintValue(node, paint.fill, paint.fillOpacity, styles)) || stroke;
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
