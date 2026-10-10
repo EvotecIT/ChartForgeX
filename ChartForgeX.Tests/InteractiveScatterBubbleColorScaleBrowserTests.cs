@@ -30,7 +30,7 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
             .WithValueFormat(ChartValueFormat.Number("0.0 'kWh'", CultureInfo.InvariantCulture))
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; });
-        var x = new[] { 1d, 2, 3 }; var y = new[] { 18d, 30, 24 }; var sizes = new[] { 9d, 0, 81 };
+        var x = new[] { 1d, 2, 3 }; var y = new[] { 18d, 30, 24 }; var sizes = new[] { 9d, 36, 81 };
         var colors = new double?[] { -12, 0, null };
         if (kind == ChartSeriesKind.Bubble) chart.AddBubble("Samples", Enumerable.Range(0, 3)
             .Select(index => new ChartBubble(x[index], y[index], sizes[index]).WithColorValue(colors[index])))
@@ -68,7 +68,7 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
         await CaptureAsync("negative-pointer");
         await MoveAwayAsync(page); await page.Locator(Point(0, 1)).FocusAsync();
         await AssertRowAsync("Temperature (°C)", "0"); await AssertRowAsync("Y", "30");
-        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "0");
+        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "36");
         await CaptureAsync("zero-focus");
         await page.Keyboard.PressAsync("ArrowRight");
         var missing = page.Locator(Point(0, 2));
