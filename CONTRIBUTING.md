@@ -10,7 +10,7 @@ Run the full repository quality loop before opening a pull request:
 ./Build.ps1 -Configuration Release
 ```
 
-That command restores packages, builds all projects, runs the smoke suite through `dotnet test`, regenerates example outputs, packs the library, verifies the package has no runtime NuGet dependencies, and verifies the symbol package is created.
+That command restores packages, builds all projects, runs the smoke suite through `dotnet test`, regenerates example outputs, packs the library packages, verifies their dependency boundaries, and checks the symbol packages.
 
 For a faster test-only loop:
 
@@ -52,8 +52,27 @@ If a private runner is under heavy load, rerun with a larger timeout rather than
 - `ChartForgeX.Interactivity.Html` must depend on the matching local `ChartForgeX` and `ChartForgeX.Interactivity` packages.
 - `README.md` must be included in the package root.
 - XML documentation should be present for every target framework.
-- A `.snupkg` symbol package must be generated alongside every `.nupkg`.
+- Each library package generates a `.snupkg` alongside its `.nupkg`. The markup CLI is packaged separately as a .NET tool.
 - A clean temporary `net8.0` console app must be able to install the freshly packed HTML interactivity package and render SVG, HTML, PNG, and interactive HTML output.
+
+## Coordinated Package Release
+
+`Build/Build-Project.ps1` delegates releases to PSPublishModule and PowerForge using
+`Build/project.build.json`. All nine ChartForgeX packages, including the markup CLI tool,
+share the `2.0.X` release lane. PowerForge resolves the next version from the highest published
+version in that group and updates `ChartForgeXProductVersion` in `Directory.Build.props`.
+The projects keep their shared version references, so package and assembly metadata stay aligned.
+
+Inspect the release plan before signing or publishing:
+
+```powershell
+./Build/Build-Project.ps1 -Plan:$true -PlanPath ./artifacts/project.build.plan.json -PublishNuget:$false -PublishGitHub:$false
+```
+
+The plan selects the nine release projects without changing their source versions or publishing.
+The release configuration packages each project and creates one GitHub release for the group.
+Signing uses the configured certificate when the operator runs the release; ordinary validation
+uses the quality loop above. Publishing is enabled only through explicit release arguments.
 
 ## Visual Baseline
 
