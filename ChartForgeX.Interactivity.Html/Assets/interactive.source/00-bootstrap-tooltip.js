@@ -289,26 +289,7 @@
   };
   const moveTip = (tip, event, node) => {
     updateTooltipPointer(tip, node, event);
-    if (!event || tip.hidden) return;
-    let clientX = event.clientX;
-    let clientY = event.clientY;
-    if ((!Number.isFinite(clientX) || !Number.isFinite(clientY)) && node && node.getBoundingClientRect) {
-      const rect = node.getBoundingClientRect();
-      clientX = rect.left + rect.width / 2;
-      clientY = rect.top + rect.height / 2;
-    }
-    if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
-      clientX = 24;
-      clientY = 24;
-    }
-    const tipWidth = tip.offsetWidth || 0;
-    const tipHeight = tip.offsetHeight || 0;
-    const maxX = Math.max(8, window.innerWidth - tipWidth - 8);
-    const maxY = Math.max(8, window.innerHeight - tipHeight - 8);
-    const x = Math.max(8, Math.min(maxX, clientX + 14));
-    const y = Math.max(8, Math.min(maxY, clientY + 14));
-    tip.style.left = x + 'px';
-    tip.style.top = y + 'px';
+    positionTooltip(tip, event, node);
   };
   const targetKey = (target) => target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
   const compareItems = (root) => {
@@ -390,6 +371,7 @@
   const hideTip = (root, tip, force) => {
     cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
+    forgetTooltipPosition(tip);
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');
     root.removeAttribute('data-cfx-tooltip-pinned');
