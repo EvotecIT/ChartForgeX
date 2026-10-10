@@ -124,6 +124,30 @@ public sealed class BubbleSizeScaleTests {
         Assert.NotEmpty(prepared.ToPng());
     }
 
+    [Theory]
+    [InlineData(340, 240)]
+    [InlineData(700, 440)]
+    public void DisabledGlyphUsesPointBoundsAndTheSameLabelAnchorAsAZeroRadius(int width, int height) {
+        var chart = Bare().WithSize(width, height).WithDataLabels(true)
+            .AddBubble("Retained observation", new[] { new ChartBubble(5, 50, 200) })
+            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 48; });
+        chart.Series[0].ConfigureMarkers(marker => marker.Enabled = false);
+        var disabled = Prepare(chart);
+        Capture(disabled, "disabled-label-" + width);
+        var point = Assert.Single(disabled.Regions, region => region.Id == "series-0-point-0");
+        Assert.Equal(0, point.Bounds.Width); Assert.Equal(0, point.Bounds.Height);
+        Assert.Equal("200", Assert.Single(disabled.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "point").Metadata["data-cfx-size"]);
+        Assert.Empty(Marks(disabled));
+        var label = Assert.Single(disabled.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
+        chart.Series[0].ConfigureMarkers(marker => marker.Enabled = true);
+        chart.ConfigureBubble(bubble => { bubble.MinimumRadius = 0; bubble.MaximumRadius = 0; });
+        var zero = Prepare(chart);
+        var expected = Assert.Single(zero.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
+        Assert.Equal(expected.X, label.X, 8); Assert.Equal(expected.Baseline, label.Baseline, 8);
+        Assert.Equal("200", Assert.Single(label.Text.Lines).Text);
+        Assert.Equal(disabled.ToPng(), zero.ToPng());
+    }
+
     [Fact]
     public void PreparedScaleAndExportsAreDetachedFromLaterConfigurationAndSourceMutations() {
         var chart = Bare().WithLegend().AddBubble("Samples", new[] { new ChartBubble(1, 20, 25), new ChartBubble(3, 30, 100) })
