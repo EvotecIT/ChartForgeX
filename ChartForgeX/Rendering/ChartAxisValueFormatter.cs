@@ -6,6 +6,20 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Formats renderer-neutral axis values using explicit labels, configured formatters, and scale-aware defaults.</summary>
 internal static class ChartAxisValueFormatter {
+    /// <summary>Retains one result per axis/value while a scene's labels, layout and semantic facts are prepared.</summary>
+    internal sealed class Cache {
+        private readonly Dictionary<ChartAxis, Dictionary<double, string>> _labels = new();
+        internal void Set(ChartAxis axis, double value, string text) {
+            if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
+            labels[value] = text;
+        }
+        internal string Format(ChartAxis axis, double value, Func<double, string>? fallback = null, IReadOnlyList<double>? ticks = null) {
+            if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
+            if (!labels.TryGetValue(value, out var text)) labels.Add(value, text = ChartAxisValueFormatter.Format(axis, value, fallback, ticks));
+            return text;
+        }
+    }
+
     // Exact mappings take precedence over tolerance matches, especially for closely spaced time values.
     internal static string? FindExplicitLabel(IReadOnlyList<ChartAxisLabel> labels, double value) {
         foreach (var label in labels) if (label.Value == value) return label.Text;

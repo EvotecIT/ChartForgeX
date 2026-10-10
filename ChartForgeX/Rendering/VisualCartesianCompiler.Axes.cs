@@ -12,14 +12,11 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     // One formatter result per axis/value serves gutter measurement, placement and detached semantics.
     private sealed class AxisLabelCache {
-        private readonly Dictionary<ChartAxis, Dictionary<double, string>> _labels = new();
+        private readonly ChartAxisValueFormatter.Cache _labels = new();
         private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _ticks = new();
         internal ChartAxis? HorizontalValueAxis { get; set; }
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
-        internal void Set(ChartAxis axis, double value, string text) {
-            if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
-            labels[value] = text;
-        }
+        internal void Set(ChartAxis axis, double value, string text) => _labels.Set(axis, value, text);
         internal void SetTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _ticks[axis] = ticks;
         internal void IncludeValueTicks(ChartAxis axis, double minimum, double maximum) {
             if (axis.Labels.Count == 0) return;
@@ -27,11 +24,7 @@ internal static partial class VisualCartesianCompiler {
         }
         internal IReadOnlyList<double> Ticks(ChartAxis axis, double minimum, double maximum) => _ticks.TryGetValue(axis, out var ticks)
             ? ticks.Where(value => value >= minimum && value <= maximum).ToArray() : ChartTicks.ForAxis(axis, minimum, maximum);
-        internal string Format(ChartAxis axis, double value, Func<double, string>? fallback, IReadOnlyList<double> ticks) {
-            if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
-            if (!labels.TryGetValue(value, out var text)) labels.Add(value, text = ChartAxisValueFormatter.Format(axis, value, fallback, ticks));
-            return text;
-        }
+        internal string Format(ChartAxis axis, double value, Func<double, string>? fallback, IReadOnlyList<double> ticks) => _labels.Format(axis, value, fallback, ticks);
     }
 
     private static ChartRect MeasurePlot(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,

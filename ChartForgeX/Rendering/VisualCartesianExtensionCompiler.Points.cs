@@ -80,7 +80,9 @@ internal static partial class VisualCartesianCompiler {
                         paint: new VisualScenePaintBinding(fill: sourcePaint, stroke: SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                     DrawPattern(builder, EllipsePath(x, y, radius, radius), ObservationPattern(series, item), color, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "lollipop-pattern");
                 }
-                ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y), bounds, point.Y, label, labels, obstacles);
+                var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+                ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y), bounds, point.Y, label, labels, obstacles,
+                    MappedBarDirection(axis, point.Y, baseline, y));
             }
         }
     }
