@@ -49,6 +49,7 @@ internal static partial class SmokeTests {
                     ReadUInt32BigEndian(png, offset + 20),
                     ReadUInt32BigEndian(png, offset + 24),
                     ReadUInt16BigEndian(png, offset + 28),
+                    ReadUInt16BigEndian(png, offset + 30),
                     png[offset + 33]));
             }
 
@@ -65,12 +66,13 @@ internal static partial class SmokeTests {
         (bytes[offset] << 8) | bytes[offset + 1];
 
     private readonly struct ApngFrameControl {
-        public ApngFrameControl(int width, int height, int left, int top, int delayNumerator, byte blendOp) {
+        public ApngFrameControl(int width, int height, int left, int top, int delayNumerator, int delayDenominator, byte blendOp) {
             Width = width;
             Height = height;
             Left = left;
             Top = top;
             DelayNumerator = delayNumerator;
+            DelayDenominator = delayDenominator;
             BlendOp = blendOp;
         }
 
@@ -79,6 +81,7 @@ internal static partial class SmokeTests {
         public readonly int Left;
         public readonly int Top;
         public readonly int DelayNumerator;
+        public readonly int DelayDenominator;
         public readonly byte BlendOp;
     }
 }

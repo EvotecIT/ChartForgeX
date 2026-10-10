@@ -19,7 +19,7 @@ public sealed class VisualStoryAnimationOptions {
     /// <summary>Gets the raster output density multiplier.</summary>
     public int OutputScale { get; private set; } = 1;
 
-    /// <summary>Gets the maximum retained frame count.</summary>
+    /// <summary>Gets the maximum sampled frame count; export produces frames one at a time.</summary>
     public int MaximumFrames { get; private set; } = 240;
 
     /// <summary>Gets the cross-fade duration between scenes.</summary>
@@ -55,7 +55,7 @@ public sealed class VisualStoryAnimationOptions {
         return this;
     }
 
-    /// <summary>Sets the maximum retained frame count.</summary>
+    /// <summary>Sets the maximum sampled frame count.</summary>
     public VisualStoryAnimationOptions WithMaximumFrames(int maximumFrames) {
         if (maximumFrames < 2 || maximumFrames > 600) throw new ArgumentOutOfRangeException(nameof(maximumFrames));
         MaximumFrames = maximumFrames;
@@ -72,4 +72,8 @@ public sealed class VisualStoryAnimationOptions {
     private static void FiniteRange(double value, double minimum, double maximum, string name) {
         if (double.IsNaN(value) || double.IsInfinity(value) || value < minimum || value > maximum) throw new ArgumentOutOfRangeException(name);
     }
+
+    internal VisualStoryPlaybackOptions Playback() => new(TimeSpan.FromTicks((long)Math.Round(EndHoldSeconds * TimeSpan.TicksPerSecond)),
+        TimeSpan.FromTicks((long)Math.Round(TransitionSeconds * TimeSpan.TicksPerSecond)), Loop ? 0 : 1);
+    internal VisualStoryFrameOptions Sampling() => new(FramesPerSecond, OutputScale, MaximumFrames);
 }

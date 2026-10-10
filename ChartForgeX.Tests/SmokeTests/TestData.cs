@@ -245,7 +245,7 @@ internal static partial class SmokeTests {
     }
 
     private static string FindRepositoryRoot() {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        var directory = new DirectoryInfo(TestRepository.Root);
         while (directory != null) {
             if (File.Exists(Path.Combine(directory.FullName, "ChartForgeX.sln"))) return directory.FullName;
             directory = directory.Parent;

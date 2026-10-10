@@ -42,10 +42,10 @@ internal static class GifFrameOptimizer {
         return indexed;
     }
 
-    private static GifIndexedFrame FullFrame(RgbaImage frame, byte[] pixels) =>
+    internal static GifIndexedFrame FullFrame(RgbaImage frame, byte[] pixels) =>
         new(0, 0, frame.Width, frame.Height, pixels);
 
-    private static GifIndexedFrame DeltaFrame(RgbaImage frame, byte[] current, byte[] previous) {
+    internal static GifIndexedFrame DeltaFrame(RgbaImage frame, byte[] current, byte[] previous) {
         var left = frame.Width;
         var top = frame.Height;
         var right = -1;

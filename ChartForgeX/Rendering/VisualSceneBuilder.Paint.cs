@@ -41,6 +41,13 @@ internal sealed partial class VisualSceneBuilder {
             imageResource: new VisualSceneImageResource(href, bounds, preserveAspectRatio, opacity, role, id)));
     }
 
+    /// <summary>Embeds already resolved static SVG with the native fallback retained inside the returned group.</summary>
+    internal IDisposable PushEmbeddedSvg(string resolvedSvg, ChartRect bounds, string? preserveAspectRatio = null, double opacity = 1, string? role = null, string? id = null) {
+        ValidateRect(bounds); ImageOpacity(opacity);
+        return OpenGroup(new VisualSceneGroup(null, null, bounds, null,
+            imageResource: VisualSceneImageResource.EmbeddedSvg(resolvedSvg, bounds, preserveAspectRatio, opacity, role, id)));
+    }
+
     private static void ImageOpacity(double opacity) {
         ChartGuards.Finite(opacity, nameof(opacity));
         if (opacity < 0 || opacity > 1) throw new ArgumentOutOfRangeException(nameof(opacity));

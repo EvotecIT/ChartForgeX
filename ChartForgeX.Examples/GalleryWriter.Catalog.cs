@@ -256,6 +256,12 @@ public static partial class GalleryWriter {
         new(
             "Static and Animated Stories",
             "Script-free terminal and visual stories with still images and animated exports.",
+            "write-fix-reveal-widescreen",
+            "write-fix-reveal-square",
+            "write-fix-reveal-portrait",
+            "session-replay-widescreen",
+            "session-replay-square",
+            "session-replay-portrait",
             "animated-engineering-portfolio-story",
             "api-request-response-story",
             "chart-in-five-lines-story",

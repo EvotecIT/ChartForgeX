@@ -58,7 +58,7 @@ internal static class ApngWriter {
             index => index == frameCount - 1 ? finalDelay : delay, 6, default);
     }
 
-    private static void WriteCore(
+    internal static void WriteCore(
         Stream stream,
         int width,
         int height,
@@ -67,7 +67,8 @@ internal static class ApngWriter {
         Func<int, RgbaImage> renderFrame,
         Func<int, RasterFrameDelay> frameDelay,
         int pngCompressionLevel,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken,
+        bool borrowedFrames = false) {
         cancellationToken.ThrowIfCancellationRequested();
         stream.Write(Signature, 0, Signature.Length);
         WriteIhdr(stream, width, height);
@@ -94,7 +95,12 @@ internal static class ApngWriter {
             var compressed = ZlibDeflate(RawFrame(frame), pngCompressionLevel);
             if (i == 0) WriteChunk(stream, "IDAT", compressed);
             else WriteFdat(stream, sequence++, compressed);
-            previous = current;
+            if (!borrowedFrames) previous = current;
+            else if (i + 1 < frameCount) {
+                // Capture the previous observation before asking a producer to reuse its buffer.
+                if (previous == null) previous = new RgbaImage(width, height, new byte[checked(width * height * 4)]);
+                Buffer.BlockCopy(current.Pixels, 0, previous.Value.Pixels, 0, previous.Value.Pixels.Length);
+            }
         }
 
         WriteChunk(stream, "IEND", Array.Empty<byte>());

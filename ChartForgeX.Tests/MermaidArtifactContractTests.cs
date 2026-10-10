@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 public sealed class MermaidArtifactContractTests {
     [Fact]
     public void EveryConformanceFixtureExportsSvgPngAndPortableSemantics() {
-        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        var root = new DirectoryInfo(TestRepository.Root);
         while (root != null && !Directory.Exists(Path.Combine(root.FullName, "tests", "mermaid-conformance"))) root = root.Parent;
         Assert.NotNull(root);
         foreach (var path in Directory.GetFiles(Path.Combine(root!.FullName, "tests", "mermaid-conformance", "fixtures"), "*.mmd")) {

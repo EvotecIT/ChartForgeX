@@ -22,10 +22,10 @@ internal static class GifPaletteQuantizer {
     private const int PaletteSize = 256;
     private const int HistogramSize = 65536;
 
-    public static GifPalette BuildPalette(IReadOnlyList<RgbaImage> frames, CancellationToken cancellationToken = default) {
-        var transparentIndex = HasTransparentPixels(frames, cancellationToken) ? PaletteSize - 1 : -1;
+    public static GifPalette BuildPalette(IEnumerable<RgbaImage> frames, CancellationToken cancellationToken = default) {
+        var histogram = BuildHistogram(frames, cancellationToken, out var transparent);
+        var transparentIndex = transparent ? PaletteSize - 1 : -1;
         var colorSlots = transparentIndex >= 0 ? PaletteSize - 1 : PaletteSize;
-        var histogram = BuildHistogram(frames, cancellationToken);
         var samples = new List<ColorSample>();
         for (var key = 0; key < histogram.Counts.Length; key++) {
             var count = histogram.Counts[key];
@@ -108,14 +108,15 @@ internal static class GifPaletteQuantizer {
         return indexed;
     }
 
-    private static GifHistogram BuildHistogram(IReadOnlyList<RgbaImage> frames, CancellationToken cancellationToken) {
+    private static GifHistogram BuildHistogram(IEnumerable<RgbaImage> frames, CancellationToken cancellationToken, out bool transparent) {
         var histogram = new GifHistogram();
+        transparent = false;
         foreach (var frame in frames) {
             var pixels = frame.Pixels;
             for (var i = 0; i < frame.Width * frame.Height; i++) {
                 if ((i & 4095) == 0) cancellationToken.ThrowIfCancellationRequested();
                 var source = i * 4;
-                if (IsTransparent(pixels[source + 3])) continue;
+                if (IsTransparent(pixels[source + 3])) { transparent = true; continue; }
                 var r = pixels[source];
                 var g = pixels[source + 1];
                 var b = pixels[source + 2];
@@ -128,18 +129,6 @@ internal static class GifPaletteQuantizer {
         }
 
         return histogram;
-    }
-
-    private static bool HasTransparentPixels(IReadOnlyList<RgbaImage> frames, CancellationToken cancellationToken) {
-        foreach (var frame in frames) {
-            var pixels = frame.Pixels;
-            for (var i = 0; i < frame.Width * frame.Height; i++) {
-                if ((i & 4095) == 0) cancellationToken.ThrowIfCancellationRequested();
-                if (IsTransparent(pixels[i * 4 + 3])) return true;
-            }
-        }
-
-        return false;
     }
 
     private static int LargestSplittableBox(IReadOnlyList<ColorBox> boxes) {

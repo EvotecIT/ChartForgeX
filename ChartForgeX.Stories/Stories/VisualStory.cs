@@ -1,8 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ChartForgeX.Terminal;
 
 namespace ChartForgeX.Stories;
+
+/// <summary>Common presentation aspect ratios with panel reflow enabled.</summary>
+public enum VisualStoryFormat {
+    /// <summary>Sixteen-by-nine landscape video.</summary>
+    Widescreen,
+    /// <summary>A square social post.</summary>
+    Square,
+    /// <summary>Nine-by-sixteen portrait video.</summary>
+    Portrait
+}
 
 /// <summary>Specifies how panels are arranged within one visual-story scene.</summary>
 public enum VisualStorySceneLayout {
@@ -44,7 +55,7 @@ public sealed class VisualStoryScene {
     internal VisualStoryScene(string id, string title, double durationSeconds, VisualStorySceneLayout layout) {
         Id = VisualStorySurface.RequireIdentifier(id, nameof(id));
         Title = VisualStorySurface.RequireHeading(title, nameof(title));
-        if (double.IsNaN(durationSeconds) || double.IsInfinity(durationSeconds) || durationSeconds < 0.25 || durationSeconds > 60) throw new ArgumentOutOfRangeException(nameof(durationSeconds));
+        if (double.IsNaN(durationSeconds) || double.IsInfinity(durationSeconds) || durationSeconds < 0.25 || durationSeconds > 1800) throw new ArgumentOutOfRangeException(nameof(durationSeconds));
         if (!Enum.IsDefined(typeof(VisualStorySceneLayout), layout)) throw new ArgumentOutOfRangeException(nameof(layout));
         DurationSeconds = durationSeconds;
         Layout = layout;
@@ -128,6 +139,22 @@ public sealed class VisualStory {
     /// <summary>Gets the logical output height.</summary>
     public int Height { get; private set; } = 675;
 
+    /// <summary>Gets whether split panels stack in a portrait viewport.</summary>
+    public bool ReflowPanels { get; private set; }
+
+    /// <summary>Sets a sharing format. Authoring stays in logical units; raster scale controls pixel density.</summary>
+    public VisualStory WithFormat(VisualStoryFormat format, int shortSide = 720) {
+        if (!Enum.IsDefined(typeof(VisualStoryFormat), format)) throw new ArgumentOutOfRangeException(nameof(format));
+        if (shortSide < 480 || shortSide > 1215) throw new ArgumentOutOfRangeException(nameof(shortSide));
+        var longSide = (int)Math.Round(shortSide * 16d / 9);
+        WithSize(format == VisualStoryFormat.Widescreen ? longSide : shortSide,
+            format == VisualStoryFormat.Portrait ? longSide : shortSide);
+        ReflowPanels = true; return this;
+    }
+
+    /// <summary>Enables portrait stacking for split scenes without changing explicit stacked layouts.</summary>
+    public VisualStory WithPanelReflow(bool enabled = true) { ReflowPanels = enabled; return this; }
+
     /// <summary>Gets the output theme.</summary>
     public VisualStoryTheme Theme { get; private set; } = VisualStoryTheme.PremiumDark();
 
@@ -139,6 +166,9 @@ public sealed class VisualStory {
 
     /// <summary>Creates a visual story.</summary>
     public static VisualStory Create(string title) => new(title);
+
+    /// <summary>Captures a detached presentation for deterministic seeking and repeated exports.</summary>
+    public PreparedVisualStory Prepare(VisualStoryPlaybackOptions? playback = null) => new(this, playback ?? new VisualStoryPlaybackOptions());
 
     /// <summary>Sets the accessible story description.</summary>
     public VisualStory WithDescription(string description) {
@@ -184,9 +214,11 @@ public sealed class VisualStory {
 
     internal void Validate() {
         if (_scenes.Count == 0) throw new InvalidOperationException("Visual stories require at least one scene.");
+        if (DurationSeconds > 1800) throw new InvalidOperationException("Visual stories support at most 30 minutes of authored content. Trim or compress longer recordings.");
         if (_outcomes.Count == 0) throw new InvalidOperationException("Visual stories must declare at least one completed outcome.");
         if (string.IsNullOrWhiteSpace(Theme.FontFamily) || string.IsNullOrWhiteSpace(Theme.MonospaceFontFamily)) throw new InvalidOperationException("Visual-story themes require font families.");
         if (Theme.Syntax == null) throw new InvalidOperationException("Visual-story themes require a syntax palette.");
+        TerminalWindowChrome.Validate(Theme.WindowStyle);
         foreach (var scene in _scenes) {
             scene.Validate();
             var bounds = VisualStoryLayout.Panels(this, scene);

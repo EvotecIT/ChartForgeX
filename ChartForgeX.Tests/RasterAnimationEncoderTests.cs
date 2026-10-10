@@ -1,10 +1,83 @@
 using System.Text;
 using ChartForgeX.Raster;
+using ChartForgeX.Stories;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class RasterAnimationEncoderTests {
+    [Fact]
+    public void GifReadabilityUsesContainerDurationsAcrossPreparedExportRoutes() {
+        var story = VisualStory.Create("Rounded display clock").WithSize(480, 320);
+        story.Scene("first", "First", .25).Panel("first", new VisualStoryTextSurface("First"));
+        story.Scene("last", "Last", .645).Panel("last", new VisualStoryTextSurface("Last"));
+        story.Outcome("last", "Last", "last");
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(.1), TimeSpan.Zero, 1));
+        var sampling = new VisualStoryFrameOptions(2);
+        Assert.Throws<InvalidOperationException>(() => prepared.FrameSource(sampling));
+        Assert.Throws<InvalidOperationException>(() => prepared.FrameSource(RasterAnimationFormat.Apng, sampling));
+        var bytes = prepared.ToGif(sampling);
+        Assert.Equal(new[] { 500d, 500d }, ReadControls(bytes, RasterAnimationFormat.Gif).Durations);
+        Assert.Equal(bytes, RasterAnimationEncoder.Encode(prepared.FrameSource(RasterAnimationFormat.Gif, sampling),
+            RasterAnimationFormat.Gif, new RasterAnimationOptions { PlayCount = 1 }));
+        Assert.Equal(TimeSpan.FromSeconds(1), prepared.Frames(RasterAnimationFormat.Gif, sampling)
+            .Aggregate(TimeSpan.Zero, (duration, frame) => duration + frame.Duration));
+        using var stream = new MemoryStream();
+        prepared.WriteAnimation(stream, RasterAnimationFormat.Gif, sampling);
+        Assert.Equal(bytes, stream.ToArray());
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(6)]
+    [InlineData(9.999)]
+    public void SubMinimumGifFramesDoNotShortenFollowingRepresentableDurations(double milliseconds) {
+        var image = new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 });
+        var frames = new[] {
+            new RasterAnimationFrame(image, TimeSpan.FromMilliseconds(milliseconds)),
+            new RasterAnimationFrame(image, TimeSpan.FromMilliseconds(106))
+        };
+        var bytes = RasterAnimationEncoder.Encode(frames, RasterAnimationFormat.Gif);
+        Assert.Equal(new[] { 10d, 110d }, ReadControls(bytes, RasterAnimationFormat.Gif).Durations);
+        Assert.Equal(bytes, RasterAnimationEncoder.Encode(new RasterAnimationSource(1, 1, frames.Length,
+            (index, _) => frames[index]), RasterAnimationFormat.Gif));
+    }
+
+    [Fact]
+    public void GifRationalCadenceKeepsOneClockForRetainedAndStreamedFramesIncludingZeroDelays() {
+        var image = new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 });
+        var frames = new List<RasterAnimationFrame>();
+        for (var i = 0; i < 60; i++) {
+            if (i == 20) frames.Add(new RasterAnimationFrame(image, TimeSpan.Zero));
+            var ticks = (i + 1L) * TimeSpan.TicksPerSecond / 6 - i * (long)TimeSpan.TicksPerSecond / 6;
+            frames.Add(new RasterAnimationFrame(image, TimeSpan.FromTicks(ticks)));
+        }
+        frames.Add(new RasterAnimationFrame(image, TimeSpan.Zero));
+        var bytes = RasterAnimationEncoder.Encode(frames, RasterAnimationFormat.Gif);
+        var controls = ReadControls(bytes, RasterAnimationFormat.Gif);
+        Assert.Equal(10_000, controls.Durations.Sum());
+        Assert.Equal(0, controls.Durations[20]);
+        Assert.Equal(0, controls.Durations[^1]);
+        var source = new RasterAnimationSource(1, 1, frames.Count, (index, _) => frames[index]);
+        Assert.Equal(bytes, RasterAnimationEncoder.Encode(source, RasterAnimationFormat.Gif));
+    }
+
+    [Fact]
+    public void PreparedGifClockMatchesRawAndContainerSpecificFrameEncoderRoutes() {
+        var story = VisualStory.Create("One GIF clock").WithSize(480, 320);
+        story.Scene("result", "Result", 9).Panel("result", new VisualStoryTextSurface("Ready"));
+        story.Outcome("ready", "Ready", "result");
+        var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 1));
+        var sampling = new VisualStoryFrameOptions(6);
+        var playback = new RasterAnimationOptions { PlayCount = 1 };
+        var expected = prepared.ToGif(sampling);
+        Assert.Equal(10_000, ReadControls(expected, RasterAnimationFormat.Gif).Durations.Sum());
+        Assert.Equal(expected, RasterAnimationEncoder.Encode(prepared.FrameSource(sampling), RasterAnimationFormat.Gif, playback));
+        Assert.Equal(expected, RasterAnimationEncoder.Encode(prepared.Frames(sampling).ToArray(), RasterAnimationFormat.Gif, playback));
+        Assert.Equal(expected, RasterAnimationEncoder.Encode(prepared.FrameSource(RasterAnimationFormat.Gif, sampling), RasterAnimationFormat.Gif, playback));
+        Assert.Equal(expected, RasterAnimationEncoder.Encode(prepared.Frames(RasterAnimationFormat.Gif, sampling).ToArray(), RasterAnimationFormat.Gif, playback));
+    }
+
     [Theory]
     [InlineData(RasterAnimationFormat.Gif)]
     [InlineData(RasterAnimationFormat.Apng)]

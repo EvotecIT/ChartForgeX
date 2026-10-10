@@ -1,5 +1,15 @@
 # ChartForgeX TODO
 
+## Story playback and sharing
+
+- [x] Audit scene, terminal, source, export and consumer boundaries against the current theme baseline.
+- [x] Qualify prepared story snapshots, one playback clock, timestamp frames and bounded GIF/APNG producers.
+- [x] Qualify source typing, selection, replacement, fixed text size and landscape/square/portrait examples.
+- [x] Qualify optional browser playback controls, chapters, keyboard use and accessible transcripts.
+- [x] Integrate the prepared frame contract through thin ImagePlayground authoring and replay surfaces.
+- MP4 integration is deferred. The prepared frame source provides the future encoder boundary.
+- [ ] Settle the Stories owner and dependent consumer PR checks and reviews. Local source and package qualification do not establish public package readiness.
+
 ## Consumer migration: Phase 5
 
 All implemented chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.

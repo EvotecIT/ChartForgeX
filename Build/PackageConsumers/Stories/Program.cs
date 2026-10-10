@@ -42,8 +42,32 @@ internal static class Program {
         var options = VisualStoryAnimationOptions.Create().WithFramesPerSecond(2).WithEndHold(0).WithTransition(0).WithLoop(false);
         PackageAssertions.Gif(story.ToGif(options));
         PackageAssertions.Apng(story.ToApng(options));
+        var editor = StorySourceTimeline.Create(StorySourceText.Create("", "powershell"))
+            .Type("Write-Output Ready", TimeSpan.FromSeconds(.5));
+        var editing = VisualStory.Create("Packed editor").WithSize(480, 320);
+        editing.Scene("edit", "Edit", 1).Panel("source", new VisualStorySourceSurface(editor));
+        editing.Outcome("source", "Ready", "source");
+        var prepared = editing.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
+        PackageAssertions.Owner(typeof(PreparedVisualStory), "ChartForgeX.Stories");
+        PackageAssertions.Require(PackageAssertions.Contains(prepared.ToSvg(), "Write-Output Ready"), "Prepared source is missing.");
+        PackageAssertions.Gif(RasterAnimationEncoder.Encode(prepared.FrameSource(RasterAnimationFormat.Gif,
+            new VisualStoryFrameOptions(2, maximumFrames: 2)), RasterAnimationFormat.Gif, new RasterAnimationOptions { PlayCount = 1 }));
+        using (var stream = new System.IO.MemoryStream()) {
+            prepared.WriteAnimation(stream, RasterAnimationFormat.Apng, new VisualStoryFrameOptions(2, maximumFrames: 2));
+            PackageAssertions.Apng(stream.ToArray());
+            PackageAssertions.Require(stream.CanWrite, "Story export closed its caller stream.");
+        }
 
         var topology = PackageAssertions.Topology();
+        var recording = StoryReplay.Create(TimeSpan.FromSeconds(20)).Command(TimeSpan.FromSeconds(1), "status")
+            .Output(TimeSpan.FromSeconds(10), "Captured result", TerminalTextTone.Success);
+        var replay = recording.CompressPauses(TimeSpan.FromSeconds(1));
+        var replayStory = VisualStory.Create("Packed replay").WithSize(480, 320);
+        replayStory.Scene("run", "Replay", replay.Duration.TotalSeconds).Panel("terminal", new VisualStoryReplaySurface(replay));
+        replayStory.Outcome("terminal", "Result", "terminal");
+        PackageAssertions.Owner(typeof(StoryReplay), "ChartForgeX.Stories");
+        PackageAssertions.Require(PackageAssertions.Contains(replayStory.Prepare().ToSvg(), "Captured result"), "Packed replay failed.");
+        PackageAssertions.Png(replayStory.ToPng());
         var motion = topology.WithMotion(TopologyMotionOptions.RoutePulseForEdges("api-db")
             .WithDuration(1).WithFrameRate(2).WithFrameLimit(4));
         PackageAssertions.Require(PackageAssertions.Contains(motion.ToSvg(), "<svg"), "Topology motion SVG failed.");

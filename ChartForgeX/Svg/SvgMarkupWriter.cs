@@ -7,23 +7,28 @@ namespace ChartForgeX.Svg;
 
 internal sealed class SvgMarkupWriter {
     private readonly StringBuilder _builder;
+    private readonly int _maximumCharacters;
     private readonly Stack<string> _elements = new();
     private string? _pendingElement;
 
     public SvgMarkupWriter() : this(1024) { }
 
-    public SvgMarkupWriter(int capacity) {
-        _builder = new StringBuilder(Math.Max(16, capacity));
+    public SvgMarkupWriter(int capacity, int maximumCharacters = int.MaxValue) {
+        if (maximumCharacters < 1) throw new ArgumentOutOfRangeException(nameof(maximumCharacters));
+        _maximumCharacters = maximumCharacters;
+        _builder = new StringBuilder(Math.Min(maximumCharacters, Math.Max(16, capacity)));
     }
 
     /// <summary>Writes straight into <paramref name="target"/>; finish with <see cref="Complete"/> instead of <see cref="Build"/>.</summary>
     public SvgMarkupWriter(StringBuilder target) {
         _builder = target ?? throw new ArgumentNullException(nameof(target));
+        _maximumCharacters = int.MaxValue;
     }
 
     public SvgMarkupWriter StartElement(string name) {
         EnsureNoPendingStartTag();
         ValidateName(name, nameof(name));
+        ReserveCharacters(_builder, _maximumCharacters, name.Length + 1L);
         _builder.Append('<').Append(name);
         _elements.Push(name);
         _pendingElement = name;
@@ -32,6 +37,7 @@ internal sealed class SvgMarkupWriter {
 
     public SvgMarkupWriter EndStartElement() {
         EnsurePendingStartTag();
+        ReserveCharacters(_builder, _maximumCharacters, 1);
         _builder.Append('>');
         _pendingElement = null;
         return this;
@@ -39,6 +45,7 @@ internal sealed class SvgMarkupWriter {
 
     public SvgMarkupWriter EndEmptyElement() {
         EnsurePendingStartTag();
+        ReserveCharacters(_builder, _maximumCharacters, 2);
         _builder.Append("/>");
         _elements.Pop();
         _pendingElement = null;
@@ -48,6 +55,7 @@ internal sealed class SvgMarkupWriter {
     public SvgMarkupWriter EndElement() {
         EnsureOpenElement();
         var name = _elements.Pop();
+        ReserveCharacters(_builder, _maximumCharacters, name.Length + 3L + (_pendingElement != null ? 1 : 0));
         if (_pendingElement != null) {
             _builder.Append('>');
             _pendingElement = null;
@@ -60,8 +68,10 @@ internal sealed class SvgMarkupWriter {
     public SvgMarkupWriter Attribute(string name, string? value) {
         if (value == null) return this;
         AppendAttributeName(name);
+        ReserveCharacters(_builder, _maximumCharacters, 3);
         _builder.Append("=\"");
         AppendEscapedAttribute(value);
+        ReserveCharacters(_builder, _maximumCharacters, 1);
         _builder.Append('"');
         return this;
     }
@@ -73,6 +83,7 @@ internal sealed class SvgMarkupWriter {
     public SvgMarkupWriter Paint(string name, Themes.SvgPaint paint) {
         if (!paint.IsRaw || paint.Value == null) return Attribute(name, paint.Value);
         AppendAttributeName(name);
+        ReserveCharacters(_builder, _maximumCharacters, paint.Value.Length + 3L);
         _builder.Append("=\"").Append(paint.Value).Append('"');
         return this;
     }
@@ -81,18 +92,23 @@ internal sealed class SvgMarkupWriter {
         EnsureFinite(value, nameof(value));
         AppendAttributeName(name);
         var isDataValue = name == "data-cfx-value" || name == "data-cfx-y" || name == "data-cfx-x" || name == "data-cfx-category" || name == "data-cfx-base";
-        _builder.Append("=\"").Append(isDataValue ? value.ToString("R", CultureInfo.InvariantCulture) : FormatNumber(value)).Append('"');
+        var formatted = isDataValue ? value.ToString("R", CultureInfo.InvariantCulture) : FormatNumber(value);
+        ReserveCharacters(_builder, _maximumCharacters, formatted.Length + 3L);
+        _builder.Append("=\"").Append(formatted).Append('"');
         return this;
     }
 
     public SvgMarkupWriter Attribute(string name, int value) {
         AppendAttributeName(name);
-        _builder.Append("=\"").Append(value.ToString(CultureInfo.InvariantCulture)).Append('"');
+        var formatted = value.ToString(CultureInfo.InvariantCulture);
+        ReserveCharacters(_builder, _maximumCharacters, formatted.Length + 3L);
+        _builder.Append("=\"").Append(formatted).Append('"');
         return this;
     }
 
     public SvgMarkupWriter Attribute(string name, bool value) {
         AppendAttributeName(name);
+        ReserveCharacters(_builder, _maximumCharacters, value ? 7 : 8);
         _builder.Append(value ? "=\"true\"" : "=\"false\"");
         return this;
     }
@@ -111,7 +127,10 @@ internal sealed class SvgMarkupWriter {
 
     public SvgMarkupWriter Raw(string? value) {
         EnsureTextCanBeWritten();
-        if (value != null) _builder.Append(value);
+        if (value != null) {
+            ReserveCharacters(_builder, _maximumCharacters, value.Length);
+            _builder.Append(value);
+        }
         return this;
     }
 
@@ -122,12 +141,14 @@ internal sealed class SvgMarkupWriter {
             throw new ArgumentException("SVG comments cannot contain '--' or end with '-'.", nameof(value));
         }
 
+        ReserveCharacters(_builder, _maximumCharacters, value.Length + 7L);
         _builder.Append("<!--").Append(value).Append("-->");
         return this;
     }
 
     public SvgMarkupWriter Line() {
         EnsureNoPendingStartTag();
+        ReserveCharacters(_builder, _maximumCharacters, Environment.NewLine.Length);
         _builder.AppendLine();
         return this;
     }
@@ -176,73 +197,88 @@ internal sealed class SvgMarkupWriter {
     private void AppendAttributeName(string name) {
         EnsurePendingStartTag();
         ValidateName(name, nameof(name));
+        ReserveCharacters(_builder, _maximumCharacters, name.Length + 1L);
         _builder.Append(' ').Append(name);
     }
 
     private void AppendEscapedText(string value) =>
-        AppendEscapedText(_builder, value, escapeQuotes: false);
+        AppendEscapedText(_builder, value, escapeQuotes: false, _maximumCharacters);
 
     private void AppendEscapedAttribute(string value) =>
-        AppendEscapedText(_builder, value, escapeQuotes: true);
+        AppendEscapedText(_builder, value, escapeQuotes: true, _maximumCharacters);
 
-    private static void AppendEscapedText(StringBuilder builder, string value, bool escapeQuotes) {
+    private static void AppendEscapedText(StringBuilder builder, string value, bool escapeQuotes, int maximumCharacters = int.MaxValue) {
         var run = 0;
         for (var i = 0; i < value.Length; i++) {
             var ch = value[i];
             // Characters written unchanged are copied in runs; every other character takes the cases below.
             if (ch >= 0x20 && ch < 0x7F ? ch != '&' && ch != '<' && ch != '>' && (ch != '"' || !escapeQuotes)
                 : !escapeQuotes && ch is ('\t' or '\n' or '\r') || ch >= 0xA0 && ch < 0xD800 || ch >= 0xE000 && ch < 0xFDD0 || ch > 0xFDEF && ch < 0xFFFE) continue;
+            ReserveCharacters(builder, maximumCharacters, i - run);
             builder.Append(value, run, i - run);
             run = i + 1;
             if (char.IsHighSurrogate(ch)) {
                 if (i + 1 < value.Length && char.IsLowSurrogate(value[i + 1])) {
                     var next = value[i + 1];
                     if (IsMarkupScalar(char.ConvertToUtf32(ch, next))) {
+                        ReserveCharacters(builder, maximumCharacters, 2);
                         builder.Append(ch).Append(next);
                     } else {
-                        builder.Append('\uFFFD');
+                        AppendBounded(builder, "\uFFFD", maximumCharacters);
                     }
                     i++;
                     run = i + 1;
                 } else {
-                    builder.Append('\uFFFD');
+                    AppendBounded(builder, "\uFFFD", maximumCharacters);
                 }
                 continue;
             }
             if (!IsMarkupScalar(ch)) {
-                builder.Append('\uFFFD');
+                AppendBounded(builder, "\uFFFD", maximumCharacters);
                 continue;
             }
             switch (ch) {
                 // XML normalizes literal attribute whitespace; references preserve source alternatives exactly.
                 case '\t' when escapeQuotes:
-                    builder.Append("&#9;");
+                    AppendBounded(builder, "&#9;", maximumCharacters);
                     break;
                 case '\n' when escapeQuotes:
-                    builder.Append("&#10;");
+                    AppendBounded(builder, "&#10;", maximumCharacters);
                     break;
                 case '\r' when escapeQuotes:
-                    builder.Append("&#13;");
+                    AppendBounded(builder, "&#13;", maximumCharacters);
                     break;
                 case '&':
-                    builder.Append("&amp;");
+                    AppendBounded(builder, "&amp;", maximumCharacters);
                     break;
                 case '<':
-                    builder.Append("&lt;");
+                    AppendBounded(builder, "&lt;", maximumCharacters);
                     break;
                 case '>':
-                    builder.Append("&gt;");
+                    AppendBounded(builder, "&gt;", maximumCharacters);
                     break;
                 case '"' when escapeQuotes:
-                    builder.Append("&quot;");
+                    AppendBounded(builder, "&quot;", maximumCharacters);
                     break;
                 default:
+                    ReserveCharacters(builder, maximumCharacters, 1);
                     builder.Append(ch);
                     break;
             }
         }
 
+        ReserveCharacters(builder, maximumCharacters, value.Length - run);
         builder.Append(value, run, value.Length - run);
+    }
+
+    private static void AppendBounded(StringBuilder builder, string value, int maximumCharacters) {
+        ReserveCharacters(builder, maximumCharacters, value.Length);
+        builder.Append(value);
+    }
+
+    private static void ReserveCharacters(StringBuilder builder, int maximumCharacters, long count) {
+        if (builder.Length + count > maximumCharacters)
+            throw new InvalidOperationException("SVG document exceeds its " + maximumCharacters + "-character safety limit. Reduce text or embedded media.");
     }
 
     internal static bool IsMarkupScalar(int scalar) =>
