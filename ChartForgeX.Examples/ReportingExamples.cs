@@ -34,7 +34,7 @@ internal static class ReportingExamples {
             .WithSize(760, 360)
             .WithPngOutputScale(pngOutputScale)
             .WithCalendarHeatmapCells(maximumSize: 30)
-            .WithLabels(labels => {
+            .ConfigureLabels(labels => {
                 labels.Less = "Weniger";
                 labels.More = "Mehr";
                 labels.NoData = "Keine Daten";
@@ -168,7 +168,7 @@ internal static class ReportingExamples {
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(states)
-            .WithGridStyle(style => { style.StrokeWidth = 1; style.VerticalOpacity = 0.35; style.Dash = 3; style.Gap = 4; });
+            .ConfigureGridStyle(style => { style.StrokeWidth = 1; style.VerticalOpacity = 0.35; style.Dash = 3; style.Gap = 4; });
         chart.Options.LaneSummaryHeader = "Available";
         var start = WindowStart.AddHours(12);
         var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };

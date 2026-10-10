@@ -19,6 +19,9 @@ param(
     [ValidateSet('Public', 'Direct')]
     [string] $BaselineRendering = 'Public',
 
+    [ValidateSet('Current', 'Legacy')]
+    [string] $BaselineApiProfile = 'Current',
+
     [switch] $Plan,
 
     [switch] $SkipBuild
@@ -28,6 +31,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if ($Suite -ne 'Scenes' -and $SceneGroup -ne 'Phase2') { throw '-SceneGroup is supported only by the Scenes suite.' }
 if ($Suite -ne 'Scenes' -and $BaselineRendering -ne 'Public') { throw '-BaselineRendering is supported only by the Scenes suite.' }
+if ($Suite -ne 'Scenes' -and $BaselineApiProfile -ne 'Current') { throw '-BaselineApiProfile is supported only by the Scenes suite.' }
+if ($BaselineRendering -eq 'Direct' -and $BaselineApiProfile -eq 'Legacy') { throw 'Direct baseline rendering requires the Current API profile and a compatible prepared-scene baseline.' }
 
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $projectPath = Join-Path $repositoryRoot 'ChartForgeX\ChartForgeX.csproj'
@@ -55,18 +60,18 @@ if ($Suite -in 'Topology', 'Charts', 'Scenes') {
     $fixtureOutput = Join-Path ([IO.Path]::GetFullPath($OutputRoot)) 'fixtures'
     $fixtureName = if ($Suite -eq 'Topology') { 'TopologyBenchmarkFixtures' } else { 'ChartBenchmarkFixtures' }
     $fixtureFolder = if ($Suite -eq 'Scenes') { 'Charts' } else { $Suite }
-    & dotnet build (Join-Path $PSScriptRoot "$fixtureFolder/$fixtureName.csproj") -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath"
+    $fixtureBuildOptions = if ($Suite -eq 'Scenes') { @("-p:BaseIntermediateOutputPath=$fixtureOutput/obj/", '-p:ChartApiProfile=Current') } else { @() }
+    & dotnet build (Join-Path $PSScriptRoot "$fixtureFolder/$fixtureName.csproj") -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath" @fixtureBuildOptions
     if ($LASTEXITCODE -ne 0) { throw "The $Suite benchmark fixture build failed." }
     $variables.FixtureAssemblyPath = Join-Path $fixtureOutput "$fixtureName.dll"
     if ($Suite -eq 'Scenes') {
         $variables.SceneGroup = $SceneGroup
         $variables.BaselineRendering = $BaselineRendering
-        if ($BaselineRendering -eq 'Direct') {
-            $baselineFixtureOutput = Join-Path ([IO.Path]::GetFullPath($OutputRoot)) 'fixtures-baseline'
-            & dotnet build (Join-Path $PSScriptRoot "$fixtureFolder/$fixtureName.csproj") -c Release --nologo -o $baselineFixtureOutput "-p:ProductDll=$($variables.BaselineAssemblyPath)"
-            if ($LASTEXITCODE -ne 0) { throw 'The direct baseline fixture build failed; this mode requires a prepared-scene baseline.' }
-            $variables.BaselineFixtureAssemblyPath = Join-Path $baselineFixtureOutput "$fixtureName.dll"
-        }
+        $variables.BaselineApiProfile = $BaselineApiProfile
+        $baselineFixtureOutput = Join-Path ([IO.Path]::GetFullPath($OutputRoot)) 'fixtures-baseline'
+        & dotnet build (Join-Path $PSScriptRoot "$fixtureFolder/$fixtureName.csproj") -c Release --nologo -o $baselineFixtureOutput "-p:ProductDll=$($variables.BaselineAssemblyPath)" "-p:ChartApiProfile=$BaselineApiProfile" "-p:BaseIntermediateOutputPath=$baselineFixtureOutput/obj/"
+        if ($LASTEXITCODE -ne 0) { throw "The $BaselineRendering baseline fixture build failed for the $BaselineApiProfile API profile." }
+        $variables.BaselineFixtureAssemblyPath = Join-Path $baselineFixtureOutput "$fixtureName.dll"
         $variables.TokenPath = Join-Path $repositoryRoot 'ChartForgeX/Themes/Tokens/evotec.chartforgex.tokens.json'
         $variables.FontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Regular.ttf'
         $variables.BoldFontPath = Join-Path $repositoryRoot 'ChartForgeX.Examples/Fixtures/Fonts/Carlito/Carlito-Bold.ttf'
