@@ -24,6 +24,10 @@ public static partial class V2Examples {
         foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var variants = new List<string> { "wide", "compact" };
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
+            if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
+                variants.Add("axis-labels"); variants.Add("compact-axis-labels");
+                variants.Add("all-labels"); variants.Add("compact-all-labels");
+            }
             if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
             if (RelationshipOptionFamilies.Contains(kind)) {
                 variants.Add("options");
@@ -47,6 +51,8 @@ public static partial class V2Examples {
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
                 var subtitle = precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
+                    : variant is "axis-labels" or "compact-axis-labels" ? "Upright axis-relative labels with independent density"
+                    : variant is "all-labels" or "compact-all-labels" ? "All captions fit individually; caption overlaps are intentional"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
                     : variant == "stage-bars-horizontal" ? "Horizontal stage bars; extents remain proportional"
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"

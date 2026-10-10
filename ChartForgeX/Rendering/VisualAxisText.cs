@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
@@ -10,6 +11,16 @@ namespace ChartForgeX.Rendering;
 internal static class VisualAxisText {
     /// <summary>Resolves equivalent finite angles before trigonometry and scene painting.</summary>
     internal static double Angle(double degrees) => degrees % 360;
+
+    /// <summary>Resolves a fixed screen angle or an upright baseline relative to a physical axis track.</summary>
+    internal static double Rotation(ChartAxis axis, double trackAngleDegrees) {
+        if (axis.LabelOrientation == ChartAxisLabelOrientation.Fixed) return Angle(axis.LabelAngle);
+        var angle = (Angle(trackAngleDegrees) + Angle(axis.LabelAngle)
+            + (axis.LabelOrientation == ChartAxisLabelOrientation.Perpendicular ? 90 : 0)) % 180;
+        if (angle >= 90) angle -= 180;
+        if (angle < -90) angle += 180;
+        return angle == 0 ? 0 : angle;
+    }
 
     /// <summary>Returns the axis-aligned footprint of the text rotated about its center.</summary>
     internal static TextMetrics RotatedMetrics(TextMetrics metrics, double degrees) {

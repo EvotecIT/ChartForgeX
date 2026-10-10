@@ -45,6 +45,11 @@ internal static class ChartGuards {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.ValidateHourWeekdayHeatmapOwnership();
         ValidateRenderableChart(chart, preparing);
+        if ((chart.Options.XAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
+            || chart.Options.YAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
+            || chart.Options.SecondaryYAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed)
+            && (chart.Series.Count == 0 || chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn)))
+            throw new NotSupportedException("Relative axis label orientation requires numeric radial bars or columns.");
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
