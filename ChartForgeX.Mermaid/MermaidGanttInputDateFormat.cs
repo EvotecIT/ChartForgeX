@@ -11,7 +11,18 @@ internal static class MermaidGanttInputDateFormat {
     private static readonly CultureInfo English = CreateEnglishCalendar();
     private static readonly string[] Tokens = { "YYYY", "MMMM", "DDDD", "MMM", "DDD", "SSS", "YY", "MM", "DD", "Do", "HH", "hh", "mm", "ss", "SS", "ZZ", "Q", "M", "D", "H", "h", "m", "s", "S", "A", "a", "Z" };
 
-    internal static bool TryParse(string input, string format, out DateTime value) {
+    internal static bool TryParseConfigured(string input, string format, out DateTime value) {
+        value = default;
+        if (format.Length > 256) return false;
+        try {
+            format = format.Trim();
+            if (format == "X" || format == "x" || UsesMermaidFields(Parts(format))) return TryParseFields(input, format, out value);
+            return DateTime.TryParseExact(input.Trim(), MermaidGanttParser.ToDotNetDateFormat(format), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value);
+        } catch (FormatException) { return false; }
+        catch (RegexMatchTimeoutException) { return false; }
+    }
+
+    private static bool TryParseFields(string input, string format, out DateTime value) {
         value = default;
         input = input.Trim(); format = format.Trim();
         if (format == "X" || format == "x") return TryUnix(input, format == "X", out value);

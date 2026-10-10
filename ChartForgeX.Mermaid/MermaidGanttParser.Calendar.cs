@@ -28,8 +28,8 @@ internal static partial class MermaidGanttParser {
                 // Mermaid keeps trailing excluded days for scheduling while the bar
                 // ends before that trailing run. Interior exclusions still extend it.
                 if (!previousExcluded) renderEnd = end;
-                var date = cursor.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-                var formatted = MermaidGanttInputDateFormat.FormatCalendarDate(cursor, document.DateFormat);
+                var date = "iso:" + cursor.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                var formatted = "format:" + MermaidGanttInputDateFormat.FormatCalendarDate(cursor, document.DateFormat);
                 var weekday = cursor.DayOfWeek.ToString().ToLowerInvariant();
                 var weekend = document.Weekend == "friday"
                     ? cursor.DayOfWeek == DayOfWeek.Friday || cursor.DayOfWeek == DayOfWeek.Saturday
@@ -52,25 +52,38 @@ internal static partial class MermaidGanttParser {
         var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var chunk in (value ?? string.Empty).Split(',')) {
             var trimmed = chunk.Trim();
-            // A complete formatted date may contain spaces. Only lists that are not
-            // dates use the retained whitespace-separated weekday/date shorthand.
+            if (trimmed.Length == 0) continue;
+            // Only complete lists of standalone dates/weekdays use whitespace shorthand.
+            // An unrecognized timestamp must not lose its time through partial splitting.
             if (TryNormalizeCalendarDate(trimmed, format, out var date)) tokens.Add(date);
-            else foreach (var token in trimmed.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries))
-                tokens.Add(TryNormalizeCalendarDate(token, format, out date) ? date : token);
+            else {
+                var list = new List<string>(); var standalone = true;
+                foreach (var token in trimmed.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)) {
+                    if (TryNormalizeCalendarDate(token, format, out date)) list.Add(date);
+                    else if (IsCalendarKeyword(token)) list.Add(token);
+                    else { standalone = false; break; }
+                }
+                if (standalone) tokens.UnionWith(list); else tokens.Add(trimmed);
+            }
         }
         return tokens;
     }
 
     private static bool TryNormalizeCalendarDate(string token, string format, out string date) {
         date = string.Empty;
-        if (DateTime.TryParseExact(token, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var value)) {
-            date = value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        if (token.Length == 0) return false;
+        if (MermaidGanttInputDateFormat.TryParseConfigured(token, format, out var value)) {
+            date = "format:" + MermaidGanttInputDateFormat.FormatCalendarDate(value, format);
             return true;
         }
-        if (token.Length == 0 || !TryParseDate(token, format, out value)) return false;
-        date = MermaidGanttInputDateFormat.FormatCalendarDate(value, format);
+        if (!DateTime.TryParseExact(token, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out value)) return false;
+        date = "iso:" + value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         return true;
     }
+
+    private static bool IsCalendarKeyword(string token) => string.Equals(token, "weekends", StringComparison.OrdinalIgnoreCase)
+        || Enum.TryParse<DayOfWeek>(token, true, out var day) && Enum.IsDefined(typeof(DayOfWeek), day)
+            && string.Equals(token, day.ToString(), StringComparison.OrdinalIgnoreCase);
 
     private static string MergeCalendarTokens(string? existing, string added) {
         var tokens = new List<string>();
