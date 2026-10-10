@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using ChartForgeX.Core;
 
 namespace ChartForgeX.Mermaid;
@@ -61,8 +60,7 @@ internal sealed class MermaidSankeySettings {
         double? Number(string key, bool zero) {
             var setting = Select(key);
             if (setting == null) return null;
-            if (!setting.IsString && double.TryParse(setting.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
-                && !double.IsNaN(value) && !double.IsInfinity(value) && (zero ? value >= 0 : value > 0)) return value;
+            if (setting.TryGetNumber(out var value) && (zero ? value >= 0 : value > 0)) return value;
             Invalid(setting, zero ? "must be a finite non-negative number" : "must be a finite positive number");
             return null;
         }

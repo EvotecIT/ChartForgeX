@@ -10,6 +10,21 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidSankeyConfigurationTests {
+    [Theory]
+    [InlineData("0x320", "0x12", "0x0")]
+    [InlineData("0o1440", "0o22", "0o0")]
+    [InlineData("0b1100100000", "0b10010", "0b0")]
+    public void TypedYamlRadixNumbersReachTheSameNativeSettings(string width, string nodeWidth, string padding) {
+        var parsed = new MermaidParser().ParseSankey("---\nconfig:\n  sankey:\n    width: " + width
+            + "\n    nodeWidth: " + nodeWidth + "\n    nodePadding: " + padding + "\n---\n" + Body);
+        Assert.Empty(parsed.Diagnostics);
+        var chart = parsed.Document!.ToChart();
+        Assert.Equal(800, chart.Options.Size.Width);
+        Assert.Equal(18, chart.Options.Sankey.NodeWidth);
+        Assert.Equal(0, chart.Options.Sankey.NodeGap);
+        Assert.Equal(width, parsed.Document!.Configuration.Settings.Single(setting => setting.Path == "sankey.width").Value);
+    }
+
     private const string Body = "sankey-beta\nA,B,6\nB,C,6\nC,D,6\nLate,D,4\nA,Early,2";
     private const string Configured = "---\nconfig:\n  sankey:\n    width: 800\n    height: 480\n    nodeWidth: 18\n    nodePadding: 24\n    nodeAlignment: center\n    showValues: false\n    prefix: '$'\n    suffix: ' units'\n---\n" + Body;
 
