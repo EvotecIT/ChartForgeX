@@ -62,7 +62,7 @@ internal static class FoundationExamples {
                 axis.WithScale(ChartScaleKind.Logarithmic).WithBounds(10, 1000);
                 axis.TickCount = 5;
             })
-            .WithAccessibility(accessibility => accessibility.WithTextAlternative(
+            .ConfigureAccessibility(accessibility => accessibility.WithTextAlternative(
                 "Typed throughput growth",
                 "Requests per second increase for Warsaw and London across four samples.",
                 "en"))

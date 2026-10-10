@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ChartForgeX.Terminal;
 
 namespace ChartForgeX.Stories;
 
@@ -217,6 +218,7 @@ public sealed class VisualStory {
         if (_outcomes.Count == 0) throw new InvalidOperationException("Visual stories must declare at least one completed outcome.");
         if (string.IsNullOrWhiteSpace(Theme.FontFamily) || string.IsNullOrWhiteSpace(Theme.MonospaceFontFamily)) throw new InvalidOperationException("Visual-story themes require font families.");
         if (Theme.Syntax == null) throw new InvalidOperationException("Visual-story themes require a syntax palette.");
+        TerminalWindowChrome.Validate(Theme.WindowStyle);
         foreach (var scene in _scenes) {
             scene.Validate();
             var bounds = VisualStoryLayout.Panels(this, scene);

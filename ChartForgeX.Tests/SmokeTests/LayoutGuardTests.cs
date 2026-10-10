@@ -37,13 +37,13 @@ internal static partial class SmokeTests {
         var radialLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(520, 320)
             .WithLegendPosition(ChartLegendPosition.Bottom)
-            .WithRadialBarCenterLabel(false)
-            .AddRadialBar("Readiness", Points(82, 61, 44));
+            .WithProgressRingCenterLabel(false)
+            .AddProgressRing("Readiness", Points(82, 61, 44));
         var radialPrepared = PreparedFamily(radialLegend);
         var radialEntries = radialPrepared.Regions.Where(region => region.Role == "legend").ToArray();
         Assert(radialEntries.Length > 0 && radialEntries.All(entry => entry.Bounds.Bottom <= 320 - radialLegend.Options.Padding.Bottom),
-            "Bottom radial-bar legends should stay inside the authored padding instead of sitting on the canvas edge.");
-        Assert(radialPrepared.ToPng().Length > 64, "Bottom radial-bar legend guard gaps should render PNG output.");
+            "Bottom progress-ring legends should stay inside the authored padding instead of sitting on the canvas edge.");
+        Assert(radialPrepared.ToPng().Length > 64, "Bottom progress-ring legend guard gaps should render PNG output.");
 
         var edgeLabels = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithSize(420, 280)

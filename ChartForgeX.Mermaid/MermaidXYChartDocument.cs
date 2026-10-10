@@ -1,17 +1,8 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Mermaid;
-
-/// <summary>
-/// Describes Mermaid XY chart orientation.
-/// </summary>
-public enum MermaidXYChartOrientation {
-    /// <summary>Render plots with the default vertical orientation.</summary>
-    Vertical,
-    /// <summary>Render capable plots with a horizontal orientation.</summary>
-    Horizontal
-}
 
 /// <summary>
 /// Identifies a Mermaid XY chart series family.
@@ -31,7 +22,7 @@ public sealed class MermaidXYChartDocument : MermaidDocument {
     public List<MermaidRawStatement> Statements { get; } = new();
 
     /// <summary>Gets or sets the requested chart orientation.</summary>
-    public MermaidXYChartOrientation Orientation { get; set; }
+    public ChartOrientation Orientation { get; set; }
 
     /// <summary>Gets or sets the optional chart title.</summary>
     public string? Title { get; set; }

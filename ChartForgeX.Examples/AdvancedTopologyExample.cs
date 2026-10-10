@@ -34,7 +34,7 @@ internal static class AdvancedTopologyExample {
             .WithEdgeMarkers("service-database", TopologyMarkerKind.Diamond, TopologyMarkerKind.Arrow)
             .WithEdgeEndpointLabels("service-database", "SQL", "5432")
             .WithEdgeLayoutHints("service-database", preferredLength: 220, minimumRankSpan: 2, routingPriority: 30)
-            .WithAccessibility(accessibility => accessibility.WithTextAlternative("Application delivery topology", "Gateway, service, and database request path with health and endpoint details.", "en"));
+            .ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("Application delivery topology", "Gateway, service, and database request path with health and endpoint details.", "en"));
 
         var artifact = chart.ToVisualArtifact();
         var render = new VisualArtifactRenderOptions {

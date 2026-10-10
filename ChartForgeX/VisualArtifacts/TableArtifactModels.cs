@@ -141,7 +141,7 @@ public sealed class TableArtifact {
     }
 
     /// <summary>Configures one existing row.</summary>
-    public TableArtifact WithRow(int rowIndex, Action<TableArtifactRow> configure) {
+    public TableArtifact ConfigureRow(int rowIndex, Action<TableArtifactRow> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (rowIndex < 0 || rowIndex >= _rows.Count) throw new ArgumentOutOfRangeException(nameof(rowIndex), rowIndex, "Row index must reference an existing table artifact row.");
         configure(_rows[rowIndex]);
