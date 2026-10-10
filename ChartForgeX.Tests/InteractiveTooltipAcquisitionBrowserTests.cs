@@ -101,6 +101,8 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         var page = session.Page;
         var target = page.Locator(Point(0, 0));
         var box = await BoxAsync(page, Point(0, 0));
+        var nativeId = await target.GetAttributeAsync("data-cfx-target-id");
+        await page.EvaluateAsync("() => { window.cfxHiddenTargetEvents=[]; const root=document.querySelector('.cfx-interactive-chart'); for(const type of ['cfxhover','cfxselect','cfxtooltip'])root.addEventListener(type,event=>window.cfxHiddenTargetEvents.push({type,detail:event.detail})); window.cfxHiddenTargetFocus=[]; for(const type of ['pointerdown','focusin','click'])document.addEventListener(type,event=>window.cfxHiddenTargetFocus.push({type,kind:event.target.dataset?.cfxTargetKind||null,id:event.target.dataset?.cfxTargetId||null,role:event.target.dataset?.cfxRole||null}),true); }");
         await target.EvaluateAsync("(node, style) => node.style.setProperty(style[0], style[1], 'important')", new[] { property, value });
         await page.Mouse.MoveAsync((float)(box.X + box.Width / 2), (float)(box.Y + box.Height / 2 + 60));
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
@@ -108,10 +110,13 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         // SVG can hit opacity-zero paint; test real pointer entry as well as inference from the stage.
         await page.Mouse.MoveAsync((float)(box.X + box.Width / 2), (float)(box.Y + box.Height / 2));
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-key"));
         await page.Mouse.ClickAsync((float)(box.X + box.Width / 2), (float)(box.Y + box.Height / 2));
         Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
-        Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-key"));
-        await CaptureAsync(page, "acquisition-hidden-" + property + "-" + range, new { Property = property, Value = value, Mode = mode.ToString(), Range = range });
+        var focus = await page.EvaluateAsync<JsonElement>("()=>{const root=document.querySelector('.cfx-interactive-chart'),node=root.getRootNode().activeElement,tip=root.querySelector('.cfx-tooltip');return {kind:node?.dataset?.cfxTargetKind||null,id:node?.dataset?.cfxTargetId||null,role:node?.dataset?.cfxRole||null,hoverKey:root.dataset.cfxHoverKey||null,tooltipHidden:tip.hidden,tooltip:tip.innerText,events:window.cfxHiddenTargetEvents,focusEvents:window.cfxHiddenTargetFocus};}");
+        await CaptureAsync(page, "acquisition-hidden-" + property + "-" + range, new { Property = property, Value = value, Mode = mode.ToString(), Range = range, NativeId = nativeId, Focus = focus });
+        // Chromium can focus opacity-zero SVG; recovery to an available legend must not count as hidden data acquisition.
+        Assert.Equal(0, await page.EvaluateAsync<int>("id=>window.cfxHiddenTargetEvents.filter(event=>event.detail.target?.targetKind==='point'&&event.detail.target?.targetId===id).length", nativeId));
         await target.EvaluateAsync("(node, property) => node.style.removeProperty(property)", property);
         await MoveAwayAsync(page);
         await MoveToAsync(page, Point(0, 0), offsetY: range == 0 ? 0 : 60);
