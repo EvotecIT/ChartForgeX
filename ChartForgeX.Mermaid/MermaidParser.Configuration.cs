@@ -10,10 +10,11 @@ public sealed partial class MermaidParser {
     private const int MaximumConfigurationLength = 65536;
     private static readonly GeoJsonReadLimits ConfigurationJsonLimits = new GeoJsonReadLimits(1024, 256, 256).LimitDepth(8).RejectDuplicates();
 
-    private static MermaidSourceConfiguration ReadConfiguration(string[] lines, int frontMatterEndLine, string? frontMatter,
+    private static MermaidSourceConfiguration ReadConfiguration(string source, string[] lines, int frontMatterEndLine, string? frontMatter,
         MermaidParseResult<MermaidDocument> result, out List<MermaidDirective> declarations) {
         var configuration = new MermaidSourceConfiguration();
         declarations = new List<MermaidDirective>();
+        var originalLineStarts = ConfigurationLineStarts(source);
         var length = frontMatter?.Length ?? 0;
         if (length > MaximumConfigurationLength) {
             ConfigurationError(result, new MermaidSourceSpan(1, 1, 3), "Mermaid frontmatter exceeds 65536 characters.");
@@ -25,9 +26,11 @@ public sealed partial class MermaidParser {
             var start = index;
             var column = LeadingWhitespace(lines[start]) + 1;
             var directive = new StringBuilder();
+            var lastLineLength = 0;
             Match ending;
             do {
                 var raw = lines[index];
+                lastLineLength = raw.Length;
                 ending = Regex.Match(raw, @"\}\s*%%\s*$", RegexOptions.CultureInvariant);
                 if (directive.Length > 0) directive.Append('\n');
                 directive.Append(raw);
@@ -38,7 +41,8 @@ public sealed partial class MermaidParser {
 
             var text = directive.ToString();
             ending = Regex.Match(text, @"\}\s*%%\s*$", RegexOptions.CultureInvariant);
-            var span = new MermaidSourceSpan(start + 1, column, text.Length - column + 1);
+            var span = new MermaidSourceSpan(start + 1, column,
+                originalLineStarts[index] + lastLineLength - originalLineStarts[start] - column + 1);
             declarations.Add(new MermaidDirective(text.Trim(), span));
             length += text.Length;
             if (length > MaximumConfigurationLength) {
@@ -63,9 +67,28 @@ public sealed partial class MermaidParser {
         foreach (var pair in values) {
             var key = Regex.IsMatch(pair.Key, @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant) ? pair.Key : "[" + pair.Key + "]";
             var path = prefix + key;
-            if (pair.Value.TryAsObject(out var nested) && nested.Count > 0) AddConfigurationJson(nested, path + ".", span, configuration);
+            if (pair.Value.TryAsObject(out var nested) && nested.Count > 0) {
+                if (IsConfigurationStringPath(path)) configuration.Add(new MermaidConfigurationSetting(path, null, false, span));
+                AddConfigurationJson(nested, path + ".", span, configuration);
+            }
             else configuration.Add(new MermaidConfigurationSetting(path, pair.Value.AsOptionalString(), pair.Value.IsString, span));
         }
+    }
+
+    private static bool IsConfigurationStringPath(string path) {
+        var key = path.Substring(path.LastIndexOf('.') + 1);
+        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look";
+    }
+
+    private static List<int> ConfigurationLineStarts(string source) {
+        var starts = new List<int> { 0 };
+        for (var index = 0; index < source.Length; index++) {
+            if (source[index] == '\r') {
+                if (index + 1 < source.Length && source[index + 1] == '\n') index++;
+                starts.Add(index + 1);
+            } else if (source[index] == '\n') starts.Add(index + 1);
+        }
+        return starts;
     }
 
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
