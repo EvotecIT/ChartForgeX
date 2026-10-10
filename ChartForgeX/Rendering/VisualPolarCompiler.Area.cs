@@ -30,6 +30,7 @@ internal static partial class VisualPolarCompiler {
                 var bounds = new ChartRect(cx - r, cy - r, r * 2, r * 2);
                 builder.AddRegion(new VisualSemanticRegion(Id(0, index), role, bounds, category + ": " + value));
                 using (builder.PushGroup(Id(0, index), "polar-area-point-source", new Dictionary<string, string> {
+                    ["data-cfx-series"] = "0",
                     ["data-cfx-point"] = N(index), ["data-cfx-label"] = category, ["data-cfx-full-label"] = value,
                     ["data-cfx-value"] = N(point.Y), ["data-cfx-percent"] = N(total > 0 ? point.Y / total : 0)
                 })) {

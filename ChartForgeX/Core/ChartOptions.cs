@@ -45,8 +45,8 @@ public sealed partial class ChartOptions {
     private string? _donutCenterLabel;
     private double _circleRadiusScale = 1.0;
     private double _circleStrokeScale = 1.0;
-    private double _radialBarRadiusScale = 1.0;
-    private double _radialBarStrokeScale = 1.0;
+    private double _radialProgressRadiusScale = 1.0;
+    private double _radialProgressStrokeScale = 1.0;
 
     /// <summary>
     /// Gets or sets the rendered chart size in pixels.
@@ -226,7 +226,7 @@ public sealed partial class ChartOptions {
     public bool TransparentBackground { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether point and bar values are rendered as labels.
+    /// Gets or sets chart-level data-label visibility. Series without an explicit override use this setting.
     /// </summary>
     public bool ShowDataLabels { get; set; }
 
@@ -417,9 +417,9 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether radial-bar charts render the center average and series label.
+    /// Gets or sets a value indicating whether progress-ring charts render the center average and series label.
     /// </summary>
-    public bool ShowRadialBarCenterLabel { get; set; } = true;
+    public bool ShowProgressRingCenterLabel { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the relative radius used by circle charts.
@@ -446,26 +446,26 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets the relative outer radius used by radial-bar charts.
+    /// Gets or sets the relative outer radius used by progress rings and layered radial progress charts.
     /// </summary>
-    public double RadialBarRadiusScale {
-        get => _radialBarRadiusScale;
+    public double RadialProgressRadiusScale {
+        get => _radialProgressRadiusScale;
         set {
             ChartGuards.Finite(value, nameof(value));
-            if (value < 0.65 || value > 1.35) throw new ArgumentOutOfRangeException(nameof(value), value, "Radial-bar radius scale must be between 0.65 and 1.35.");
-            _radialBarRadiusScale = value;
+            if (value < 0.65 || value > 1.35) throw new ArgumentOutOfRangeException(nameof(value), value, "Radial-progress radius scale must be between 0.65 and 1.35.");
+            _radialProgressRadiusScale = value;
         }
     }
 
     /// <summary>
-    /// Gets or sets the relative stroke thickness used by radial-bar charts.
+    /// Gets or sets the relative stroke thickness used by progress rings and layered radial progress charts.
     /// </summary>
-    public double RadialBarStrokeScale {
-        get => _radialBarStrokeScale;
+    public double RadialProgressStrokeScale {
+        get => _radialProgressStrokeScale;
         set {
             ChartGuards.Finite(value, nameof(value));
-            if (value < 0.55 || value > 1.8) throw new ArgumentOutOfRangeException(nameof(value), value, "Radial-bar stroke scale must be between 0.55 and 1.8.");
-            _radialBarStrokeScale = value;
+            if (value < 0.55 || value > 1.8) throw new ArgumentOutOfRangeException(nameof(value), value, "Radial-progress stroke scale must be between 0.55 and 1.8.");
+            _radialProgressStrokeScale = value;
         }
     }
 
@@ -596,10 +596,6 @@ public sealed partial class ChartOptions {
     // Original compact sample slots determine bar spacing independently of retained observations.
     // Set only by the standalone Sparkline owner; general chart bars keep their coordinate-based layout.
     internal int SparklineSampleCount { get; set; }
-
-    internal List<string> SankeyNodeLabels { get; } = new();
-
-    internal List<string> TreeNodeLabels { get; } = new();
 
     internal void SetWordCloudFontRange(double minimum, double maximum) {
         ChartGuards.Finite(minimum, nameof(minimum));

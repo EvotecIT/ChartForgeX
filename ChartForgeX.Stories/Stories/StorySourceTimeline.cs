@@ -37,6 +37,9 @@ public sealed class StorySourceTimeline {
 
     /// <summary>Types text at the current caret.</summary>
     public StorySourceTimeline Type(string text, TimeSpan duration) => Edit(_caret, 0, StorySourceText.Create(text, _current.Language), duration);
+    /// <summary>Types resolved source, revealing its syntax colors together with whole Unicode text elements.</summary>
+    /// <remarks>Tokenize the source before authoring. Playback uses captured spans and never calls a parser or executes code.</remarks>
+    public StorySourceTimeline Type(StorySourceText source, TimeSpan duration) => Edit(_caret, 0, source, duration);
     /// <summary>Pastes resolved source at the current caret.</summary>
     public StorySourceTimeline Paste(StorySourceText source) => Edit(_caret, 0, source, TimeSpan.Zero);
     /// <summary>Deletes a range, optionally over an authored duration.</summary>

@@ -93,7 +93,8 @@ public sealed class V2CartesianExtensionTests {
         Assert.Equal(new[] { "10", "20", "40" }, points.Select(point => point.Metadata["data-cfx-x"]));
         Assert.Equal("100", points[1].Metadata["data-cfx-start"]); Assert.Equal("60", points[1].Metadata["data-cfx-end"]);
         var total = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "waterfall-total");
-        Assert.Equal("-1", total.Metadata["data-cfx-source-point"]); Assert.Equal("140", total.Metadata["data-cfx-end"]);
+        Assert.False(total.Metadata.ContainsKey("data-cfx-source-point")); Assert.Equal("0,1,2", total.Metadata["data-cfx-source-points"]);
+        Assert.Equal("waterfall-total", total.Metadata["data-cfx-derived"]); Assert.Equal("140", total.Metadata["data-cfx-end"]);
         Assert.Contains(prepared.Regions, region => region.Role == "axis-x-label" && region.Label?.StartsWith("Total", StringComparison.Ordinal) == true);
         Assert.Equal(3, chart.Series[0].Points.Count); Assert.Equal(-40, chart.Series[0].Points[1].Y);
     }
@@ -119,18 +120,25 @@ public sealed class V2CartesianExtensionTests {
     }
 
     [Fact]
-    public void RegressionAndBoxSummary_PreserveCopiedOriginalInputsAndDetachedAlternatives() {
+    public void RegressionAndBoxSummary_PreserveTypedInputSnapshotsAndDetachedMarkFacts() {
         var points = new[] { new ChartPoint(1, 3), new ChartPoint(2, 8), new ChartPoint(3, 7) };
         var samples = new[] { 8d, 1d, 3d, 9d, 6d, 2d };
         var trend = Chart.Create().AddTrendLine("Trend", points); var box = Chart.Create().AddBoxPlot("Distribution", 1, samples);
         points[1] = new ChartPoint(2, 999); samples[0] = 999;
         Assert.Equal(3, trend.Series[0].SourcePointCount); Assert.Equal(6, box.Series[0].SourcePointCount);
         var preparedTrend = trend.Prepare(new VisualRenderContext()); var preparedBox = box.Prepare(new VisualRenderContext());
-        Assert.Contains(preparedTrend.Regions, region => region.Role == "source-observation" && region.Label == "x=2 y=8");
-        Assert.Contains(preparedBox.Regions, region => region.Role == "source-sample" && region.Label == "value=8");
-        Assert.DoesNotContain(preparedBox.Regions, region => region.Label?.Contains("999") == true);
-        var svg = preparedBox.ToSvg(); box.Series[0].Points.Clear();
-        Assert.Equal(svg, preparedBox.ToSvg());
+        var trendSource = trend.Series[0].TrendLineSourcePoints; var boxSource = box.Series[0].BoxPlotSourceSamples;
+        Assert.Equal(8, trendSource[1].Y); Assert.Equal(new[] { 8d, 1d, 3d, 9d, 6d, 2d }, boxSource);
+        Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<ChartPoint>)trendSource)[0] = new ChartPoint(1, 999));
+        Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<double>)boxSource)[0] = 999);
+        var trendSvg = preparedTrend.ToSvg(); var boxSvg = preparedBox.ToSvg();
+        var trendFacts = preparedTrend.Regions.Select(region => region.Label).ToArray();
+        var boxFacts = preparedBox.Regions.Select(region => region.Label).ToArray();
+        trend.Series[0].Points.Clear(); box.Series[0].Points.Clear();
+        Assert.Equal(8, trendSource[1].Y); Assert.Equal(8, boxSource[0]);
+        Assert.Equal(trendFacts, preparedTrend.Regions.Select(region => region.Label));
+        Assert.Equal(boxFacts, preparedBox.Regions.Select(region => region.Label));
+        Assert.Equal(trendSvg, preparedTrend.ToSvg()); Assert.Equal(boxSvg, preparedBox.ToSvg());
     }
 
     [Fact]

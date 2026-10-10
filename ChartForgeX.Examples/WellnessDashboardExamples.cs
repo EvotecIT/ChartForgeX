@@ -352,7 +352,7 @@ internal static class WellnessDashboardExamples {
             .WithMetric("Running", "30 mins")
             .WithMiniSparkline(new[] { 18d, 30d, 34d, 25d, 28d, 43d, 45d, 44d, 48d }, minimum: 0, maximum: 62, color: blue)
             .WithSecondaryMiniSparkline(new[] { 15d, 27d, 31d, 23d, 25d, 40d, 42d, 41d, 45d }, blue.WithAlpha(210))
-            .WithMiniSparklineStyle(MetricCardSparklineStyle.Line)
+            .WithMiniSparklineStyle(ChartLineAreaForm.Line)
             .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
             .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .WithCaption("7-day trend");
@@ -363,7 +363,7 @@ internal static class WellnessDashboardExamples {
             .WithMetric("Cycling", "40 mins")
             .WithMiniSparkline(new[] { 16d, 25d, 28d, 21d, 22d, 35d, 38d, 37d, 42d }, minimum: 0, maximum: 62, color: orange)
             .WithSecondaryMiniSparkline(new[] { 13d, 22d, 25d, 18d, 19d, 32d, 35d, 34d, 39d }, orange.WithAlpha(210))
-            .WithMiniSparklineStyle(MetricCardSparklineStyle.Line)
+            .WithMiniSparklineStyle(ChartLineAreaForm.Line)
             .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
             .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .WithCaption("7-day trend");
