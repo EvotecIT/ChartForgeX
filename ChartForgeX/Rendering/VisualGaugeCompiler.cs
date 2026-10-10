@@ -115,6 +115,8 @@ internal static class VisualGaugeCompiler {
         if (chart.Series[0].ShowDataLabels != false) {
             var needle = chart.Options.Gauge.Form == ChartGaugeForm.Needle;
             var captionBottom = Math.Min(plot.Bottom, cy + radius * .5 + stroke / 2);
+            // Below-pivot summaries can use the gap before the scale row, including taller resolved faces.
+            if (needle) captionBottom = min != null ? CircularScaleLabelTop(plot, cy, radius, stroke, gap, labelHeight) : plot.Bottom;
             var valueBudget = radius * (needle ? .34 : .6);
             var valueTop = needle ? cy + stroke / 3 + gap / 2 : 0;
             if (needle) {
@@ -198,7 +200,7 @@ internal static class VisualGaugeCompiler {
         GaugeData data, string? target, string? min, string? max, double cx, double cy, double radius, double stroke,
         double start, double sweep, double height) {
         var gap = context.Theme.Spacing;
-        var labelY = Math.Min(plot.Bottom - height, cy + Math.Sin(start) * radius + stroke / 2 + gap / 2);
+        var labelY = CircularScaleLabelTop(plot, cy, radius, stroke, gap, height);
         var endpointWidth = Math.Min(plot.Width / 3, Math.Max(gap * 2, radius * .55));
         ChartRect Endpoint(double angle) => new(
             Math.Max(plot.Left, Math.Min(plot.Right - endpointWidth, cx + Math.Cos(angle) * radius - endpointWidth / 2)),
@@ -223,6 +225,10 @@ internal static class VisualGaugeCompiler {
         Label(chart, context, builder, target, new ChartRect(left, labelTop, width, height),
             "gauge-target-label", context.Theme.Typography.AxisSize, ticks: true);
     }
+
+    /// <summary>Locates the lower scale row, also bounding the needle's central summary above it.</summary>
+    private static double CircularScaleLabelTop(ChartRect plot, double cy, double radius, double stroke, double gap, double height) =>
+        Math.Min(plot.Bottom - height, cy + radius * .5 + stroke / 2 + gap / 2);
 
     private static void Linear(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, GaugeData data,
         string value, string caption, string? target, IReadOnlyList<string> scaleCaptions) {

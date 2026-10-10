@@ -145,9 +145,11 @@ public sealed class V2GaugeScaleFormattingTests {
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void PublishedBandedNeedleKeepsReadableMeasurementAndCaption(bool dark) {
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void PublishedBandedNeedleKeepsReadableMeasurementAndCaption(bool dark, bool fixtureFont) {
         var chart = Chart.Create().WithSize(396, 294).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands").AddGauge("Readiness", 74)
             .WithGauge(options => {
@@ -156,6 +158,11 @@ public sealed class V2GaugeScaleFormattingTests {
                 options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning));
                 options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Quiet));
             });
+        if (fixtureFont) {
+            var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+            Assert.True(File.Exists(path), "The existing Carlito fixture must reproduce the compact summary's resolved row height.");
+            chart.WithPngFont(path);
+        }
         var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
         var value = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-label");
         var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-title");
@@ -163,7 +170,18 @@ public sealed class V2GaugeScaleFormattingTests {
         Assert.Equal("74", Assert.Single(value.Text.Lines).Text);
         Assert.Equal(context.Theme.Typography.DataLabelSize, caption.Text.Size);
         Assert.Equal("Readiness", Assert.Single(caption.Text.Lines).Text);
+        var needle = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gauge-needle");
+        var obstacle = new LabelMarkShape(new[] { new List<ChartForgeX.Primitives.ChartPoint> { needle.Start, needle.End } }, false, needle.StrokeWidth);
+        foreach (var text in new[] { value, caption }) {
+            var bounds = new ChartForgeX.Primitives.ChartRect(text.Text.Lines.Min(text.LineLeft), text.Baseline - text.Text.Ascent,
+                text.Text.Metrics.Width, text.Text.Metrics.Height);
+            Assert.False(obstacle.Intersects(bounds), text.Role + " must clear the needle stroke.");
+            foreach (var scale in prepared.Regions.Where(region => IsScaleRole(region.Role)))
+                Assert.False(bounds.Top < scale.Bounds.Bottom && bounds.Bottom > scale.Bounds.Top
+                    && bounds.Left < scale.Bounds.Right && bounds.Right > scale.Bounds.Left, text.Role + " must clear the scale captions.");
+        }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
+        Capture(prepared, "banded-needle-" + (fixtureFont ? "carlito-" : "default-") + (dark ? "dark" : "light"));
         Assert.NotEmpty(prepared.ToPng());
     }
 
