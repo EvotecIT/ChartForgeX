@@ -28,7 +28,7 @@ internal static partial class VisualScheduleCompiler {
                     })) {
                     var annotation = new ChartAnnotation(ChartAnnotationKind.VerticalLine, item.Start, null, series.Name, color, 1);
                     VisualAnnotationCompiler.Draw(new[] { annotation }, context, builder, plot, project, _ => 0, colors, false, obstacles,
-                        overflowCode: "schedule.annotation-label-overflow", idPrefix: id + "-annotation-");
+                        overflowCode: "schedule.annotation-label-overflow", idPrefix: id + "-annotation-", describeAnnotations: false);
                 }
             }
         }
