@@ -141,6 +141,9 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static void Paint(SvgMarkupWriter writer, VisualSceneMark mark, string prefix, int index, string? fillOverride = null, VisualSvgOptions? options = null) {
         Semantics(writer, mark, prefix, index);
+        // A collapsed filled slice can still have a visible separator stroke; describe fill independently.
+        if (mark is VisualSceneSlice slice && !ChartSlicePathGeometry.HasEncodedFillArea(slice.Cx, slice.Cy, slice.Outer, slice.Inner, slice.Start, slice.Sweep))
+            writer.Attribute("data-cfx-fill-area", "false");
         var fill = fillOverride ?? ResolvePaint(mark.Fill, mark.Paint?.Fill, options);
         writer.Attribute("fill", fill)
             .Attribute("stroke", ResolvePaint(mark.Stroke, mark.Paint?.Stroke, options)).Attribute("stroke-width", mark.StrokeWidth);

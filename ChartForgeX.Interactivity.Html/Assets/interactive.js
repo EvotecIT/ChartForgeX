@@ -507,7 +507,7 @@
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
     // Open line marks never paint their inherited default black fill.
     if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
-    return paintValue(node, paint.fill, paint.fillOpacity, styles) || stroke;
+    return (node.dataset.cfxFillArea !== 'false' && paintValue(node, paint.fill, paint.fillOpacity, styles)) || stroke;
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
@@ -833,6 +833,8 @@
       }
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
+      // Retained numeric facts have keyboard semantics without a pointer surface.
+      if (['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return;
       if (box.width > 0 && box.height > 0) return;
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const width = Math.max(8, region.width); const height = Math.max(8, region.height);
@@ -854,7 +856,7 @@
   };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
-  const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop']);
+  const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop', 'radialbar', 'radialcolumn']);
   const legendSeriesValues = (item) => {
     const data = item.dataset || {};
     const svg = item.closest('svg');
@@ -1114,8 +1116,7 @@
     if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
     const style = getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
-    const box = node.getBoundingClientRect();
-    if (box.width > 0 || box.height > 0) return true;
+    if (pointerTargetPaint(node)) return true;
     // Retained authored facts can have no filled geometry, while still belonging to the data component.
     const data = node.dataset;
     if (!data.cfxTargetKind || !data.cfxTargetId || !['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return false;
@@ -1179,7 +1180,7 @@
   const refreshKeyboardNavigation = (root, focused) => {
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
-    const activeElement = root.ownerDocument.activeElement;
+    const activeElement = root.getRootNode().activeElement;
     const activeOwned = root.contains(activeElement) && state.owned.has(activeElement);
     const targets = keyboardTargets(root);
     state.legends = targets.filter((node) => renderedTargetKind(node) === 'legend');
@@ -1208,17 +1209,19 @@
     }
     return state;
   };
-  const bindKeyboardNavigationResize = (root) => {
+  const bindKeyboardNavigationAvailability = (root) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
     let frame = 0;
-    let observer;
+    let resizeObserver;
+    let paintObserver;
     const queueRefresh = () => {
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         frame = 0;
         if (!root.isConnected) {
-          if (observer) observer.disconnect();
+          if (resizeObserver) resizeObserver.disconnect();
+          if (paintObserver) paintObserver.disconnect();
           window.removeEventListener('resize', queueRefresh);
           return;
         }
@@ -1228,9 +1231,16 @@
     window.addEventListener('resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
       // Tabs and other initially hidden hosts acquire layout without a window resize.
-      observer = new ResizeObserver(queueRefresh);
-      observer.observe(stage);
+      resizeObserver = new ResizeObserver(queueRefresh);
+      resizeObserver.observe(stage);
     }
+    // Native paint and host styles can change without a resize. Tab and arrow availability share this owner.
+    paintObserver = new MutationObserver(() => {
+      if (!root.isConnected) { queueRefresh(); return; }
+      refreshKeyboardNavigation(root);
+    });
+    paintObserver.observe(root, { subtree: true, attributes: true,
+      attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'clip-path'] });
   };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) return;
@@ -1238,7 +1248,7 @@
     // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
     refreshKeyboardNavigation(root);
-    bindKeyboardNavigationResize(root);
+    bindKeyboardNavigationAvailability(root);
   };
   const scrollKeyboardTargetIntoView = (root, node) => {
     const stage = root.querySelector('.cfx-stage');
