@@ -135,6 +135,64 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [Theory]
+    [InlineData(ChartSeriesKind.Candlestick, false)]
+    [InlineData(ChartSeriesKind.Ohlc, false)]
+    [InlineData(ChartSeriesKind.Candlestick, true)]
+    [InlineData(ChartSeriesKind.Ohlc, true)]
+    public async Task FinancialPointLegendUsesTheReferencedObservationPrices(ChartSeriesKind kind, bool zero) {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(360, 320).WithPointLegend().WithDataLabels().WithTitle("Financial legend facts")
+            .WithTheme(zero ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        var source = new[] { new ChartCandlestick(1, 44, 58, 38, 53),
+            zero ? new ChartCandlestick(2, 0, 0, 0, 0) : new ChartCandlestick(2, 100, 120, 80, 110) };
+        if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick("Prices", source);
+        else chart.AddOhlc("Prices", source);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 390, 500);
+        var page = session.Page;
+        const string selector = "[data-cfx-role='legend-item'][data-cfx-series='0'][data-cfx-point='1']";
+        var legend = page.Locator(selector);
+        await MoveToAsync(page, selector);
+        var directory = CaptureDirectory();
+        var name = "financial-point-legend-" + kind + "-" + zero;
+        await CaptureAsync(page, directory, name + ".png");
+        var rows = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync();
+        if (directory != null) await File.WriteAllTextAsync(Path.Combine(directory, name + ".runtime.json"), JsonSerializer.Serialize(new {
+            rows, tooltip = await TooltipTextAsync(page), legend = await legend.EvaluateAsync<JsonElement>("node => ({...node.dataset})"),
+            captions = await page.Locator("[data-cfx-role='data-label']").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.outerHTML)")
+        }, new JsonSerializerOptions { WriteIndented = true }));
+        Assert.DoesNotContain("Value", rows); Assert.DoesNotContain("Y", rows);
+        var prices = zero ? new[] { "0", "0", "0", "0" } : new[] { "100", "120", "80", "110" };
+        var parts = new[] { "Open", "High", "Low", "Close" };
+        for (var index = 0; index < parts.Length; index++) {
+            Assert.Contains(parts[index], rows);
+            Assert.Equal(prices[index], await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = parts[index] }).Locator("+ dd").InnerTextAsync());
+        }
+        await MoveAwayAsync(page); await legend.FocusAsync();
+        Assert.Equal(rows, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        await page.Locator(".cfx-interactive-chart").EvaluateAsync("node=>node.dataset.cfxLabelOpen='Opening price'");
+        await legend.BlurAsync(); await legend.FocusAsync();
+        Assert.Contains("Opening price", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+        await MoveAwayAsync(page); await legend.BlurAsync();
+        const string caption = "[data-cfx-source-id='series-0-point-1-label']";
+        Assert.Equal(1, await page.Locator(caption).CountAsync());
+        await MoveToAsync(page, caption);
+        Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.Contains("cfx-hovered", await page.Locator(Point(0, 1)).GetAttributeAsync("class"));
+        Assert.Equal(prices, await page.Locator(".cfx-tooltip dt").EvaluateAllAsync<string[]>(
+            "nodes => nodes.filter(node => ['Opening price','High','Low','Close'].includes(node.textContent)).map(node => node.nextElementSibling.textContent)"));
+        await CaptureAsync(page, directory, name + ".caption-hover.png");
+        await page.Locator(Point(0, 1)).FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal("true", await page.Locator(Point(0, 1)).GetAttributeAsync("aria-selected"));
+        Assert.Contains("cfx-tooltip--pinned", await page.Locator(".cfx-tooltip").GetAttributeAsync("class"));
+        for (var index = 0; index < parts.Length; index++) {
+            var part = index == 0 ? "Opening price" : parts[index];
+            Assert.Equal(prices[index], await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = part }).Locator("+ dd").InnerTextAsync());
+        }
+        await CaptureAsync(page, directory, name + ".point-pinned.png");
+        AssertNoConsoleErrors(session);
+    }
+
     private static string? CaptureDirectory() {
         var path = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(path)) return null;
