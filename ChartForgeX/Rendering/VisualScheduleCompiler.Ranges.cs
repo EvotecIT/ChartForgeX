@@ -44,6 +44,8 @@ internal static partial class VisualScheduleCompiler {
         var minimumExtent = Math.Max(milestoneExtent, now == min ? context.Theme.AxisStrokeWidth / 2 : 0);
         var instantExtent = items.Any(item => !item.Milestone && item.Start == item.End) ? 1 : 0;
         var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), now == max ? context.Theme.AxisStrokeWidth / 2 : 0);
+        if (links.Count > 0) maximumExtent = Math.Max(maximumExtent,
+            (links.Any(link => items[link.SuccessorIndex].Milestone) ? milestoneExtent : 0) + Math.Min(5, height / 3) + context.Theme.AxisStrokeWidth / 2);
         var projection = MarkProjection(axis, plot, minimumExtent, maximumExtent);
         double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
@@ -52,27 +54,7 @@ internal static partial class VisualScheduleCompiler {
                 var center = plot.Top + (item.Index + .5) * slot;
                 LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index);
             }
-            if (gantt) {
-                using (builder.PushClip(plot)) foreach (var link in links) {
-                    var previous = items[link.PredecessorIndex];
-                    var item = items[link.SuccessorIndex];
-                    var start = new ChartPoint(Project(previous.End), plot.Top + (previous.Index + .5) * slot);
-                    var end = new ChartPoint(Project(item.Start), plot.Top + (item.Index + .5) * slot);
-                    var elbow = Math.Max(start.X, end.X) + Math.Min(context.Theme.Spacing, plot.Right - Math.Max(start.X, end.X));
-                    var id = "gantt-dependency-" + previous.Index + "-" + item.Index;
-                    using (VisualStateSceneTools.Mark(builder, id, "gantt-dependency", new ChartRect(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y),
-                        Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y)), chart.Series[previous.Index].Name + " → " + chart.Series[item.Index].Name,
-                        new Dictionary<string, string> { ["data-cfx-source"] = "series-" + previous.Index, ["data-cfx-target"] = "series-" + item.Index })) {
-                        builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(elbow, start.Y),
-                            ChartPathCommand.LineTo(elbow, end.Y), ChartPathCommand.LineTo(end.X, end.Y) }), stroke: colors.Border,
-                            strokeWidth: context.Theme.AxisStrokeWidth, role: "gantt-dependency-line", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
-                        var direction = end.X < elbow ? -1d : 1d; var arrow = Math.Min(5, height / 3);
-                        builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(end.X - direction * arrow, end.Y - arrow), ChartPathCommand.LineTo(end.X, end.Y),
-                            ChartPathCommand.LineTo(end.X - direction * arrow, end.Y + arrow) }), stroke: colors.Border, strokeWidth: context.Theme.AxisStrokeWidth, role: "gantt-dependency-arrow", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
-                    }
-                }
-                if (now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
-            }
+            if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             foreach (var item in items) {
                 var series = chart.Series[item.Index]; var center = plot.Top + (item.Index + .5) * slot;
                 var visible = item.End >= min && item.Start <= max;
@@ -127,6 +109,8 @@ internal static partial class VisualScheduleCompiler {
                     DataLabel(chart, context, builder, series, 0, label, bounds, viewport, colors, fill);
                 }
             }
+            // Links are foreground annotations: successor fills must not cover their arrowheads.
+            if (gantt) Dependencies(chart, context, builder, plot, items, links, Project, slot, height);
         }
     }
 
