@@ -22,7 +22,11 @@ internal static class MermaidRadarParser {
             else if (StartsWithKeyword(trimmed, "min")) ParseDouble(trimmed.Substring(3).Trim(), span, value => document.Minimum = value, result, "min");
             else if (StartsWithKeyword(trimmed, "max")) ParseDouble(trimmed.Substring(3).Trim(), span, value => document.Maximum = value, result, "max");
             else if (StartsWithKeyword(trimmed, "ticks")) ParseInteger(trimmed.Substring(5).Trim(), span, value => document.Ticks = value, result, "ticks");
-            else if (StartsWithKeyword(trimmed, "graticule")) document.Graticule = trimmed.Substring(9).Trim();
+            else if (StartsWithKeyword(trimmed, "graticule")) {
+                document.Graticule = trimmed.Substring(9).Trim();
+                if (document.Graticule != "circle" && document.Graticule != "polygon") Add(result, span.Line, span.Column, span.Length,
+                    MermaidDiagnosticSeverity.Error, "Radar graticule must be circle or polygon.");
+            }
             else Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Radar statement must be title, axis, curve, showLegend, min, max, ticks, or graticule.");
         }
 
@@ -220,8 +224,8 @@ internal static class MermaidRadarParser {
     }
 
     private static void ParseInteger(string text, MermaidSourceSpan span, Action<int> assign, MermaidParseResult<MermaidDocument> result, string keyword) {
-        if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value >= 2) assign(value);
-        else Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Radar '" + keyword + "' must be an integer greater than one.");
+        if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value >= 1 && value <= 100) assign(value);
+        else Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Radar '" + keyword + "' must be an integer from one through one hundred.");
     }
 
     private static bool TryParseDouble(string text, out double value) =>

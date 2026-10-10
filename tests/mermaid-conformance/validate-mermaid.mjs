@@ -47,6 +47,11 @@ for (const file of files) {
         const day = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
         assert.deepEqual(diagram.db.getTasks().map((task, index) => [expected.tasks[index][0] === null ? null : task.id, day(task.startTime), day(task.endTime)]), expected.tasks);
       }
+      if (expected.radar) {
+        assert.deepEqual(diagram.db.getAxes().map(axis => [axis.name, axis.label]), expected.radar.axes);
+        assert.deepEqual(diagram.db.getCurves().map(curve => [curve.name, curve.label, curve.entries]), expected.radar.curves);
+        assert.deepEqual(diagram.db.getOptions(), expected.radar.options);
+      }
     }
   } catch (error) {
     failures.push(`${file}: ${error?.message ?? error}`);

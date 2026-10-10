@@ -21,9 +21,10 @@ public static class MermaidRadarRendering {
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height)
             .WithLegend(document.ShowLegend)
-            .WithXLabels(AxisLabels(document));
-        if (document.Ticks.HasValue) chart.WithTickCount(document.Ticks.Value);
-        if (document.Minimum.HasValue || document.Maximum.HasValue) chart.WithYAxisBounds(document.Minimum ?? 0, document.Maximum ?? ResolveMaximum(document));
+            .WithXLabels(AxisLabels(document))
+            .WithPolarGridShape(GraticuleShape(document));
+        chart.Options.PolarGridRingCount = document.Ticks ?? 5;
+        chart.WithYAxisBounds(document.Minimum ?? 0, document.Maximum ?? ResolveMaximum(document));
         foreach (var curve in document.Curves) chart.AddRadar(curve.Label, Points(document, curve));
         return MermaidPresentation.Apply(chart, document);
     }
@@ -91,13 +92,19 @@ public static class MermaidRadarRendering {
     }
 
     private static double ResolveMaximum(MermaidRadarDocument document) {
-        var max = 0.0;
+        var max = double.NegativeInfinity;
         foreach (var curve in document.Curves) {
             foreach (var value in curve.OrderedValues) max = Math.Max(max, value);
             foreach (var value in curve.ValuesByAxisId.Values) max = Math.Max(max, value);
         }
 
         return max <= (document.Minimum ?? 0) ? (document.Minimum ?? 0) + 1 : max;
+    }
+
+    private static ChartPolarGridShape GraticuleShape(MermaidRadarDocument document) {
+        if (string.IsNullOrWhiteSpace(document.Graticule) || document.Graticule == "circle") return ChartPolarGridShape.Circle;
+        if (document.Graticule == "polygon") return ChartPolarGridShape.Polygon;
+        throw new ArgumentException("Radar graticule must be circle or polygon.", nameof(document));
     }
 }
 

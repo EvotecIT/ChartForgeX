@@ -28,14 +28,19 @@ internal static partial class VisualPolarCompiler {
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, PolarLayout geometry,
         double[] categories, string[] axes, RadialValueScale scale, bool radar, List<PolarLabel> labels) {
         var colors = context.Theme.Resolve(context.ThemeMode); var style = TickStyle(chart, context);
-        var formatTick = ChartAxisValueFormatter.Create(chart.Options.YAxis, scale.Ticks, chart.Options.ValueFormatter);
-        for (var index = 0; index < scale.Ticks.Count; index++) {
-            var tick = scale.Ticks[index]; if (scale.Normalize(tick) <= 0) continue;
+        var ticks = chart.Options.PolarGridRingCount.HasValue ? scale.EqualIntervalTicks(chart.Options.PolarGridRingCount.Value) : scale.Ticks;
+        var formatTick = ChartAxisValueFormatter.Create(chart.Options.YAxis, ticks, chart.Options.ValueFormatter);
+        var polygonGrid = chart.Options.PolarGridShape == ChartPolarGridShape.Polygon ||
+            chart.Options.PolarGridShape == ChartPolarGridShape.Automatic && radar;
+        var ringRole = radar ? "radar-ring" : "polar-ring";
+        for (var index = 0; index < ticks.Count; index++) {
+            var tick = ticks[index]; if (scale.Normalize(tick) <= 0) continue;
             var r = geometry.Radius * scale.Normalize(tick);
             if (chart.Options.ShowGrid) {
-                if (radar) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, RadarAngle(i, categories.Length), r)).ToArray(), ChartInterpolation.Linear),
-                    stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: "radar-ring", close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
-                else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, "polar-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+                if (polygonGrid) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length)
+                    .Select(i => On(geometry, radar ? RadarAngle(i, categories.Length) : -categories[i], r)).ToArray(), ChartInterpolation.Linear),
+                    stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: ringRole, close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+                else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, ringRole, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             }
             if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && r < geometry.Radius) {
                 var text = formatTick(tick);
