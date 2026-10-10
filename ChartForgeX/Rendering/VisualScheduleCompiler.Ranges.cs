@@ -54,7 +54,6 @@ internal static partial class VisualScheduleCompiler {
                 var center = plot.Top + (item.Index + .5) * slot;
                 LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index);
             }
-            if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             foreach (var item in items) {
                 var series = chart.Series[item.Index]; var center = plot.Top + (item.Index + .5) * slot;
                 var visible = item.End >= min && item.Start <= max;
@@ -109,6 +108,7 @@ internal static partial class VisualScheduleCompiler {
                     DataLabel(chart, context, builder, series, 0, label, bounds, viewport, colors, fill);
                 }
             }
+            if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             // Links are foreground annotations: successor fills must not cover their arrowheads.
             if (gantt) Dependencies(chart, context, builder, plot, items, links, Project, slot, height);
         }
