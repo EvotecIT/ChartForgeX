@@ -12,24 +12,34 @@ namespace ChartForgeX.Tests;
 
 public sealed class RoundedRadialBrowserTests {
     [Theory]
-    [InlineData(ChartSeriesKind.RadialBar, false, false)]
-    [InlineData(ChartSeriesKind.RadialBar, false, true)]
-    [InlineData(ChartSeriesKind.RadialBar, true, false)]
-    [InlineData(ChartSeriesKind.RadialBar, true, true)]
-    [InlineData(ChartSeriesKind.RadialColumn, false, false)]
-    [InlineData(ChartSeriesKind.RadialColumn, false, true)]
-    [InlineData(ChartSeriesKind.RadialColumn, true, false)]
-    [InlineData(ChartSeriesKind.RadialColumn, true, true)]
-    [InlineData(ChartSeriesKind.Sunburst, false, false)]
-    [InlineData(ChartSeriesKind.Sunburst, false, true)]
-    [InlineData(ChartSeriesKind.Sunburst, true, false)]
-    [InlineData(ChartSeriesKind.Sunburst, true, true)]
-    public async Task GalleryRoundedCutawaysAndPaintedInteriorsRetainNativePointerAndKeyboardTargets(ChartSeriesKind kind, bool compact, bool dark) {
+    [InlineData(ChartSeriesKind.RadialBar, false, false, false)]
+    [InlineData(ChartSeriesKind.RadialBar, false, true, false)]
+    [InlineData(ChartSeriesKind.RadialBar, true, false, false)]
+    [InlineData(ChartSeriesKind.RadialBar, true, true, false)]
+    [InlineData(ChartSeriesKind.RadialColumn, false, false, false)]
+    [InlineData(ChartSeriesKind.RadialColumn, false, true, false)]
+    [InlineData(ChartSeriesKind.RadialColumn, true, false, false)]
+    [InlineData(ChartSeriesKind.RadialColumn, true, true, false)]
+    [InlineData(ChartSeriesKind.Sunburst, false, false, false)]
+    [InlineData(ChartSeriesKind.Sunburst, false, true, false)]
+    [InlineData(ChartSeriesKind.Sunburst, true, false, false)]
+    [InlineData(ChartSeriesKind.Sunburst, true, true, false)]
+    [InlineData(ChartSeriesKind.RadialBar, false, false, true)]
+    [InlineData(ChartSeriesKind.RadialBar, true, true, true)]
+    [InlineData(ChartSeriesKind.RadialColumn, false, false, true)]
+    [InlineData(ChartSeriesKind.RadialColumn, true, true, true)]
+    public async Task GalleryRoundedCutawaysAndPaintedInteriorsRetainNativePointerAndKeyboardTargets(ChartSeriesKind kind, bool compact, bool dark, bool relativeLabels) {
         if (!Enabled) return;
         var width = compact ? 360 : 800; var height = compact ? 360 : 440;
         var chart = V2GalleryModels.Create(kind, compact ? "compact-options" : "options", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(width, height).WithTitle(V2GalleryModels.Title(kind)).WithSubtitle("Rounded sectors retain source values")
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        if (relativeLabels) {
+            chart.Options.XAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
+            chart.Options.YAxis.LabelOrientation = chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular;
+            chart.Options.XAxis.LabelDensity = ChartLabelDensity.Relaxed;
+            chart.Options.YAxis.LabelDensity = chart.Options.SecondaryYAxis.LabelDensity = ChartLabelDensity.Dense;
+        }
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var sunburst = kind == ChartSeriesKind.Sunburst;
@@ -51,6 +61,17 @@ public sealed class RoundedRadialBrowserTests {
         await using var session = await OpenAsync(html, width + 24, height + 150);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await page.EvaluateAsync("() => document.fonts.ready");
+        if (relativeLabels) Assert.True(await page.EvaluateAsync<bool>("""
+            () => {
+                const svg = document.querySelector('.cfx-stage svg').getBoundingClientRect();
+                const captions = Array.from(document.querySelectorAll('[data-cfx-role="radial-value-label"] text,[data-cfx-role="radial-category-label"] text'));
+                return captions.length > 0 && captions.every(text => {
+                    const box = text.getBoundingClientRect(), matrix = text.getScreenCTM(), angle = Math.atan2(matrix.b, matrix.a) * 180 / Math.PI;
+                    return angle >= -90.01 && angle <= 90.01 && box.left >= svg.left - .75 && box.right <= svg.right + .75
+                        && box.top >= svg.top - .75 && box.bottom <= svg.bottom + .75;
+                });
+            }
+            """));
         var target = page.Locator(sunburst ? "[data-cfx-role='sunburst-segment'][data-cfx-node='platform']" : Point(0, 0));
         var shape = target.Locator("path[data-cfx-role='" + (sunburst ? "sunburst-segment-mark" : kind == ChartSeriesKind.RadialBar ? "radial-bar" : "radial-column") + "']");
         Assert.True(await shape.EvaluateAsync<bool>("(node, point) => node.isPointInFill(new DOMPoint(point.x,point.y))", interior));
@@ -68,7 +89,7 @@ public sealed class RoundedRadialBrowserTests {
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(capture)) {
             Directory.CreateDirectory(capture);
-            var stem = "rounded-" + kind.ToString().ToLowerInvariant() + "-" + (compact ? "compact" : "wide") + "-" + (dark ? "dark" : "light");
+            var stem = "rounded-" + kind.ToString().ToLowerInvariant() + "-" + (compact ? "compact" : "wide") + "-" + (dark ? "dark" : "light") + (relativeLabels ? "-relative" : "");
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, stem + "-browser.png") });
             await File.WriteAllTextAsync(Path.Combine(capture, stem + ".html"), html);
             await File.WriteAllTextAsync(Path.Combine(capture, stem + ".svg"), prepared.ToSvg());

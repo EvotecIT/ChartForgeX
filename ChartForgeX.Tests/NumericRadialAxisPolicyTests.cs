@@ -8,12 +8,17 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects physical axis orientation rather than source order or export-backend assumptions.</summary>
 public sealed class NumericRadialAxisPolicyTests {
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public void RelativeLabelsFollowProjectedAxesWithIndependentOffsetsAndReversal(bool bars, bool reversed) {
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, true)]
+    public void RelativeLabelsFollowProjectedAxesWithIndependentOffsetsAndReversal(bool bars, bool reversed, bool rounded) {
         var chart = RelativeChart(bars, reversed);
+        if (rounded) chart.WithRadialGeometry(new(0, 240, .2, .25, .1, cornerRadius: 6));
         var scene = Prepare(chart).Scene;
         var captions = NumericRadialAxisTextTests.Footprints(scene).Where(item => item.Text.Role is "radial-category-label" or "radial-value-label").ToArray();
         foreach (var prefix in new[] { "radial-category-label-", "radial-value-label-Primary-", "radial-value-label-Secondary-" }) {
@@ -35,7 +40,11 @@ public sealed class NumericRadialAxisPolicyTests {
         Assert.All(captions, caption => Assert.True(LabelPlacementService.Contains(new ChartRect(0, 0, 800, 440), caption.Bounds)));
         Assert.Equal("1200", Point(scene, 0, 0)["data-cfx-y"]);
         Assert.Equal("85", Point(scene, 1, 0)["data-cfx-y"]);
-        Assert.All(captions, caption => Assert.All(NumericRadialSeriesTests.Marks(scene), mark =>
+        var marks = scene.Nodes.Where(node => node.Role is "radial-bar" or "radial-column"
+            && node is VisualSceneSlice or VisualScenePath).ToArray();
+        Assert.NotEmpty(marks);
+        if (rounded) Assert.All(marks, mark => Assert.IsType<VisualScenePath>(mark));
+        Assert.All(captions, caption => Assert.All(marks, mark =>
             Assert.False(new LabelMarkShape(VisualSceneGeometry.Flatten(mark, 8), true, 0).Intersects(caption.Bounds))));
     }
 
