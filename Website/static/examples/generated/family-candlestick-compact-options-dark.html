@@ -287,7 +287,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Bubble) {
             var chart = Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
                 .AddBubble(&quot;Standard&quot;, new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
-                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200) })
+                .ConfigureBubble(bubble =&gt; { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
             chart.Series[0].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
             chart.Series[1].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
             return chart;
@@ -374,8 +375,12 @@ public static partial class V2GalleryModels {
         }
         Add(&quot;Requests&quot;, 1200, 950, 680, 1050); Add(&quot;Follow-ups&quot;, 320, 410, 260, 360);
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
+            chart.WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15, cornerRadius: 6));
             foreach (var series in chart.Series) series.WithStackGroup(&quot;work&quot;).WithNormalization(100);
             chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            chart.WithXAxis(&quot;Region&quot;).WithYAxis(&quot;Share of regional workload (%)&quot;)
+                .ConfigureXAxis(axis =&gt; axis.LabelAngle = -30)
+                .ConfigureYAxis(axis =&gt; axis.LabelAngle = 30);
             chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
         } else {
             chart.WithYAxisBounds(0, 1500).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
@@ -417,7 +422,13 @@ public static partial class V2GalleryModels {
             return chart;
         }
         if (kind == ChartSeriesKind.Waterfall) {
-            var chart = Basic(kind, variant)!;
+            var chart = Chart.Create().WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;)
+                .WithYAxis(&quot;Running balance&quot;).AddWaterfall(&quot;Movement&quot;, new[] {
+                    ChartWaterfallItem.Delta(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                    ChartWaterfallItem.Total(7)
+                });
+            chart.Series[0].WithPointColor(4, &quot;#A5358A&quot;);
             chart.Options.XAxis.WithReversal();
             chart.Options.YAxis.WithReversal();
             return chart.WithDataLabels();
@@ -583,6 +594,8 @@ public static partial class V2GalleryModels {
             options.Alignment = ChartSankeyAlignment.Center;
             options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
             options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
+            options.LabelPlacement = ChartSankeyLabelPlacement.Center;
+            options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Outside;
             options.NodeWidth = 16;
             options.NodeGap = 12;
             options.NodeCornerRadius = 1;
@@ -658,6 +671,9 @@ public static partial class V2GalleryModels {
             var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
             var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options =&gt; {
+                options.CornerRadius = 6;
+                options.SecondaryLabelFormatter = context =&gt; context.Item.Id == &quot;all&quot; ? &quot;Allocation&quot; : context.Item.Id == &quot;engineering&quot; ? &quot;Delivery teams&quot;
+                    : context.Item.Id == &quot;operations-support&quot; ? &quot;Shared service&quot; : null;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
                 options.ColorLegendTitle = &quot;Change (%)&quot;;
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
@@ -1004,7 +1020,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Bubble) {
             var chart = Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
                 .AddBubble(&quot;Standard&quot;, new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
-                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200) })
+                .ConfigureBubble(bubble =&gt; { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
             chart.Series[0].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
             chart.Series[1].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
             return chart;
@@ -1091,8 +1108,12 @@ public static partial class V2GalleryModels {
         }
         Add(&quot;Requests&quot;, 1200, 950, 680, 1050); Add(&quot;Follow-ups&quot;, 320, 410, 260, 360);
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
+            chart.WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15, cornerRadius: 6));
             foreach (var series in chart.Series) series.WithStackGroup(&quot;work&quot;).WithNormalization(100);
             chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            chart.WithXAxis(&quot;Region&quot;).WithYAxis(&quot;Share of regional workload (%)&quot;)
+                .ConfigureXAxis(axis =&gt; axis.LabelAngle = -30)
+                .ConfigureYAxis(axis =&gt; axis.LabelAngle = 30);
             chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
         } else {
             chart.WithYAxisBounds(0, 1500).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
@@ -1134,7 +1155,13 @@ public static partial class V2GalleryModels {
             return chart;
         }
         if (kind == ChartSeriesKind.Waterfall) {
-            var chart = Basic(kind, variant)!;
+            var chart = Chart.Create().WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;)
+                .WithYAxis(&quot;Running balance&quot;).AddWaterfall(&quot;Movement&quot;, new[] {
+                    ChartWaterfallItem.Delta(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                    ChartWaterfallItem.Total(7)
+                });
+            chart.Series[0].WithPointColor(4, &quot;#A5358A&quot;);
             chart.Options.XAxis.WithReversal();
             chart.Options.YAxis.WithReversal();
             return chart.WithDataLabels();
@@ -1300,6 +1327,8 @@ public static partial class V2GalleryModels {
             options.Alignment = ChartSankeyAlignment.Center;
             options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
             options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
+            options.LabelPlacement = ChartSankeyLabelPlacement.Center;
+            options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Outside;
             options.NodeWidth = 16;
             options.NodeGap = 12;
             options.NodeCornerRadius = 1;
@@ -1375,6 +1404,9 @@ public static partial class V2GalleryModels {
             var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
             var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options =&gt; {
+                options.CornerRadius = 6;
+                options.SecondaryLabelFormatter = context =&gt; context.Item.Id == &quot;all&quot; ? &quot;Allocation&quot; : context.Item.Id == &quot;engineering&quot; ? &quot;Delivery teams&quot;
+                    : context.Item.Id == &quot;operations-support&quot; ? &quot;Shared service&quot; : null;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
                 options.ColorLegendTitle = &quot;Change (%)&quot;;
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
