@@ -112,7 +112,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
             financial.Rising.StrokeWidth = 3;
             if (kind == ChartSeriesKind.Candlestick) financial.Rising.FillOpacity = 0;
         });
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.TooltipMode = mode), 460, 430);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode), 460, 430);
         var page = session.Page; var target = page.Locator(Point(0, 0));
         await target.FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Contains("cfx-tooltip--pinned", await page.Locator(".cfx-tooltip").GetAttributeAsync("class"));
