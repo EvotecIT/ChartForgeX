@@ -14,16 +14,16 @@ internal static partial class SmokeTests {
             .AddLine("wwwwwwww", Points(2, 3, 4))
             .AddLine("wwwwwwww", Points(3, 4, 5));
         var preservedSpan = LegendSpan(PreparedFamily(chart));
-        chart.WithLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase));
+        chart.ConfigureLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase));
         var expandedSpan = LegendSpan(PreparedFamily(chart));
         Assert(expandedSpan > preservedSpan + 2, "The fixture must expose measurable case expansion.");
         var padding = VisualExportRequest.ForChart(chart).Context.Layout.PaddingEdges;
         chart.WithSize((int)Math.Ceiling((preservedSpan + expandedSpan) / 2 + padding.Left + padding.Right), 280)
-            .WithLegendStyle(style => style.WithTextCase(TextCaseTransform.None));
+            .ConfigureLegendStyle(style => style.WithTextCase(TextCaseTransform.None));
         var preservedRows = PreparedFamily(chart).Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "legend-label")
             .Select(text => text.Baseline).Distinct().Count();
 
-        chart.WithLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase));
+        chart.ConfigureLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase));
         var expandedSvg = chart.ToSvg();
 
         Assert(expandedSvg.Contains(">WWWWWWWW</text>", StringComparison.Ordinal), "SVG legends should materialize casing before serialization.");

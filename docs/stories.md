@@ -10,6 +10,7 @@ using System.IO;
 using ChartForgeX.Stories;
 using ChartForgeX.Raster;
 using ChartForgeX.Terminal;
+using ChartForgeX.Primitives;
 
 var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
     .Type("Console.WriteLine(\"Ready\");", TimeSpan.FromSeconds(2))
@@ -53,6 +54,24 @@ File.WriteAllText("long-story.svg", prepared.ToAnimatedSvg(longFrames));
 ```
 
 Choose a faster cadence for short chapters. Explicit budgets support up to 3,600 frames; the SVG document and chapter-readability limits still apply. Static posters and timestamp frames do not need sampled-animation options.
+
+## Desktop appearance and colored typing
+
+Choose `VisualStoryTheme.MacOS()`, `Windows()` or `Linux()` for a desktop gradient, coordinated source and replay colors, and window controls. Pass `light: true` for light surfaces. The same native geometry supplies SVG, PNG and animated exports. Graphite themes retain minimal chrome.
+
+```csharp
+var theme = VisualStoryTheme.MacOS(light: false);
+theme.Syntax.Variable = ChartColor.FromHex("#74C7FF");
+story.WithTheme(theme);
+```
+
+`WindowStyle` selects the chrome independently of the palette; `Minimal` uses a restrained title and `None` hides the title bar. `WindowHeader`, `Background`, `BackgroundEnd` and `Syntax` are customizable. Replay surfaces without an explicit terminal palette inherit the story colors with every window style. A palette supplied to `VisualStoryReplaySurface` takes precedence; authored terminal tabs keep their own palettes.
+
+`VisualStoryReplaySurface.Theme` is nullable: `null` means inherit the story palette. To customize a replay separately, create a `TerminalTheme`, configure its colors, and pass it as the constructor's `theme` argument. Preparation captures both palettes. Code that previously changed the implicit `surface.Theme` should pass an explicit palette instead.
+
+Pass resolved source to `StorySourceTimeline.Type(source, duration)` to reveal syntax colors together with typed characters. A host tokenizer supplies `StorySourceText` spans before authoring; playback clips those spans to whole Unicode text elements and never calls a parser or executes source. String-based `Type(text, duration)` remains plain text. For edited demonstrations, supply newly resolved spans to `Edit` or `Paste`; Stories does not reparse an unfinished buffer.
+
+Run `dotnet run --project ChartForgeX.Examples -- --story-appearance-only --output ./desktop-stories` for six macOS, Windows and Linux examples in light and dark modes, with GIFs, HTML players and writing-frame PNGs.
 
 ## Source and terminal panels
 

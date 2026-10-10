@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Core;
 
 namespace ChartForgeX.Rendering;
@@ -7,6 +8,19 @@ namespace ChartForgeX.Rendering;
 internal static class ChartTicks {
     private const int MaximumGeneratedTicks = 10_000;
     private const double DirectMagnitudeLimit = 1e150;
+
+    /// <summary>Uses authored tick positions when present, otherwise the canonical bounded scale ticks.</summary>
+    internal static IReadOnlyList<double> ForAxis(ChartAxis axis, double minimum, double maximum) =>
+        axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray()
+            : GenerateInside(axis, minimum, maximum);
+
+    /// <summary>Keeps generated numeric value ticks alongside authored label positions within the visible domain.</summary>
+    internal static IReadOnlyList<double> ForValueAxis(ChartAxis axis, double minimum, double maximum) {
+        var generated = GenerateInside(axis, minimum, maximum);
+        if (axis.Labels.Count == 0) return generated;
+        return PreserveFormatting(generated, generated.Concat(axis.Labels.Select(label => label.Value))
+            .Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray());
+    }
 
     public static IReadOnlyList<double> Generate(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));

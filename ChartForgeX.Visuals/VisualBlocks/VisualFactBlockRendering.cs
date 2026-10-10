@@ -183,7 +183,7 @@ internal static partial class VisualFactBlockRendering {
     public static (double Minimum, double Maximum) MiniSparklineBounds(MetricCard card) {
         var primary = card.GetSparklineData();
         var values = new List<double?>(primary.Values); var includeZero = primary.IncludeZero;
-        if (card.SecondarySparklineCount > 0 && card.MiniSparklineStyle == MetricCardSparklineStyle.Line) {
+        if (card.SecondarySparklineCount > 0 && card.MiniSparklineStyle == ChartLineAreaForm.Line) {
             var secondary = card.GetSecondarySparklineData();
             values.AddRange(secondary.Values); includeZero |= secondary.IncludeZero;
         }
@@ -231,8 +231,8 @@ internal static partial class VisualFactBlockRendering {
         var fillColor = fill ?? color.WithAlpha((byte)Math.Round(255 * ChartVisualPrimitives.MiniSparklineFillOpacity));
         var data = new SparklineData(samples.Values, bounds.Minimum, bounds.Maximum, samples.MissingDataPolicy);
         var points = SparklineLayout.Project(data, new ChartRect(x, y, width, height));
-        var strokeWidth = card.MiniSparklineStyle == MetricCardSparklineStyle.Line ? 3.4 : ChartVisualPrimitives.MiniSparklineStrokeWidth;
-        var currentRadius = card.MiniSparklineStyle == MetricCardSparklineStyle.Line ? 5.2 : ChartVisualPrimitives.MiniSparklineCurrentRadius;
+        var strokeWidth = card.MiniSparklineStyle == ChartLineAreaForm.Line ? 3.4 : ChartVisualPrimitives.MiniSparklineStrokeWidth;
+        var currentRadius = card.MiniSparklineStyle == ChartLineAreaForm.Line ? 5.2 : ChartVisualPrimitives.MiniSparklineCurrentRadius;
         return new VisualMiniSparkline(points, color, fillColor, strokeWidth, currentRadius,
             samples.Values[0].HasValue, samples.Values[samples.Values.Count - 1].HasValue);
     }
