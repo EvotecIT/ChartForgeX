@@ -19,6 +19,7 @@
       });
     }
     prepareKeyboardNavigation(root);
+    bindStageLayout(root, stage, crosshair);
     const targets = interactiveTargets(root);
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
@@ -81,13 +82,8 @@
         if (event.key === 'Enter' && focusNode.matches('a[href]')) return;
         event.preventDefault();
         event.stopPropagation();
-        if (focusNode !== node) {
-          toggleSelection(root, node);
-          pinTip(root, tip, node, event);
-          return;
-        }
-        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.shiftKey) toggleSeriesFocus(root, node, true, true);
-        else node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        // Keep the keyboard event: a synthetic click's finite (0,0) would replace the focused mark's position.
+        activateTarget(event);
       });
     });
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
@@ -179,16 +175,19 @@
         if (event.button !== 0) return;
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           const state = getState(root);
-          drag = { mode: 'pan', id: event.pointerId, x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY };
+          const point = stagePointer(stage, event);
+          drag = { mode: 'pan', id: event.pointerId, x: point.x, y: point.y, panX: state.panX, panY: state.panY };
+          event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
-          const rect = stage.getBoundingClientRect();
-          drag = { mode: 'brush', id: event.pointerId, left: event.clientX - rect.left, top: event.clientY - rect.top };
+          const point = stagePointer(stage, event, true);
+          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y };
           brush.hidden = false;
           brush.style.left = drag.left + 'px';
           brush.style.top = drag.top + 'px';
           brush.style.width = '0px';
           brush.style.height = '0px';
+          event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         }
       });
@@ -198,11 +197,10 @@
           return;
         }
         if (drag.mode === 'pan') {
-          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + event.clientX - drag.x, panY: drag.panY + event.clientY - drag.y });
+          const point = stagePointer(stage, event);
+          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
         } else if (drag.mode === 'brush' && brush) {
-          const rect = stage.getBoundingClientRect();
-          const x = clamp(event.clientX - rect.left, 0, rect.width);
-          const y = clamp(event.clientY - rect.top, 0, rect.height);
+          const { x, y } = stagePointer(stage, event, true);
           const left = Math.min(drag.left, x);
           const top = Math.min(drag.top, y);
           brush.style.left = left + 'px';

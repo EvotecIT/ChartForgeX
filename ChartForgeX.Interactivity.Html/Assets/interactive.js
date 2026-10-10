@@ -817,6 +817,58 @@
     tip.appendChild(list);
     return true;
   };
+  // Absolute overlays and SVG pan translations use stage CSS pixels, including its scroll origin.
+  // Browser hit geometry stays in screen pixels; account for axis-aligned host scaling and the stage border.
+  const stagePoint = (stage, point, bounded = false) => {
+    const rect = stage.getBoundingClientRect();
+    const scaleX = rect.width / stage.offsetWidth || 1;
+    const scaleY = rect.height / stage.offsetHeight || 1;
+    const x = (point.x - rect.left) / scaleX - stage.clientLeft + stage.scrollLeft;
+    const y = (point.y - rect.top) / scaleY - stage.clientTop + stage.scrollTop;
+    return bounded ? {
+      x: clamp(x, stage.scrollLeft, stage.scrollLeft + stage.clientWidth),
+      y: clamp(y, stage.scrollTop, stage.scrollTop + stage.clientHeight)
+    } : { x, y };
+  };
+  const stagePointer = (stage, event, bounded = false) => stagePoint(stage, { x: event.clientX, y: event.clientY }, bounded);
+  // The guide spans only the visible viewport, so a Readable overlay cannot add scrollable content.
+  const positionStageViewport = (stage, overlay) => {
+    overlay.style.left = stage.scrollLeft + 'px';
+    overlay.style.top = stage.scrollTop + 'px';
+    overlay.style.width = stage.clientWidth + 'px';
+    overlay.style.height = stage.clientHeight + 'px';
+  };
+  // A guide belongs to the current viewport. Discard stale dimensions before they can enlarge a resized scroller.
+  // Share the existing resize lifecycle with keyboard availability, including initially hidden fragment hosts.
+  const bindStageLayout = (root, stage, crosshair) => {
+    if (!stage || !hasFeature(root, 'Crosshair') && !hasFeature(root, 'KeyboardNavigation')) return;
+    let width = stage.clientWidth, height = stage.clientHeight;
+    let frame = 0;
+    let observer;
+    const hideGuide = () => hideCrosshair(root, crosshair);
+    const queueRefresh = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (!root.isConnected) {
+          if (observer) observer.disconnect();
+          window.removeEventListener('resize', queueRefresh);
+          stage.removeEventListener('scroll', hideGuide);
+          return;
+        }
+        if (width !== stage.clientWidth || height !== stage.clientHeight) hideGuide();
+        width = stage.clientWidth;
+        height = stage.clientHeight;
+        refreshKeyboardNavigation(root);
+      });
+    };
+    stage.addEventListener('scroll', hideGuide, { passive: true });
+    window.addEventListener('resize', queueRefresh);
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(queueRefresh);
+      observer.observe(stage);
+    }
+  };
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const getState = (root) => ({
     zoom: Number(root.dataset.cfxZoom || '1'),
@@ -1150,8 +1202,9 @@
     const stage = root.querySelector('.cfx-stage');
     if (!stage || !stage.contains(node)) return;
     const style = getComputedStyle(stage);
-    const stageBox = stage.getBoundingClientRect();
     const box = node.getBoundingClientRect();
+    const start = stagePoint(stage, { x: box.left, y: box.top });
+    const end = stagePoint(stage, { x: box.right, y: box.bottom });
     const scrollAxis = (overflow, extent, available, offset, start, end, itemStart, itemEnd) => {
       if (!['auto', 'scroll'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
@@ -1164,10 +1217,10 @@
       if (itemEnd > end) return offset + itemEnd - end;
       return offset;
     };
-    const left = stageBox.left + stage.clientLeft + 8;
-    const top = stageBox.top + stage.clientTop + 8;
-    stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, box.left, box.right);
-    stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, box.top, box.bottom);
+    const left = stage.scrollLeft + 8;
+    const top = stage.scrollTop + 8;
+    stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, start.x, end.x);
+    stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, start.y, end.y);
   };
   const focusKeyboardTarget = (root, node) => {
     const focusNode = targetFocusNode(node);
@@ -1618,10 +1671,11 @@
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
-    const rect = stage.getBoundingClientRect();
+    const local = stagePoint(stage, point);
+    positionStageViewport(stage, crosshair);
     crosshair.hidden = false;
-    crosshair.style.setProperty('--cfx-crosshair-x', (point.x - rect.left) + 'px');
-    crosshair.style.setProperty('--cfx-crosshair-y', (point.y - rect.top) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-x', (local.x - stage.scrollLeft) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', (local.y - stage.scrollTop) + 'px');
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
     if (label) label.textContent = text(point.node);
     const target = targetIdentity(point.node);
@@ -2114,6 +2168,7 @@
       });
     }
     prepareKeyboardNavigation(root);
+    bindStageLayout(root, stage, crosshair);
     const targets = interactiveTargets(root);
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
@@ -2176,13 +2231,8 @@
         if (event.key === 'Enter' && focusNode.matches('a[href]')) return;
         event.preventDefault();
         event.stopPropagation();
-        if (focusNode !== node) {
-          toggleSelection(root, node);
-          pinTip(root, tip, node, event);
-          return;
-        }
-        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.shiftKey) toggleSeriesFocus(root, node, true, true);
-        else node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        // Keep the keyboard event: a synthetic click's finite (0,0) would replace the focused mark's position.
+        activateTarget(event);
       });
     });
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
@@ -2274,16 +2324,19 @@
         if (event.button !== 0) return;
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           const state = getState(root);
-          drag = { mode: 'pan', id: event.pointerId, x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY };
+          const point = stagePointer(stage, event);
+          drag = { mode: 'pan', id: event.pointerId, x: point.x, y: point.y, panX: state.panX, panY: state.panY };
+          event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
-          const rect = stage.getBoundingClientRect();
-          drag = { mode: 'brush', id: event.pointerId, left: event.clientX - rect.left, top: event.clientY - rect.top };
+          const point = stagePointer(stage, event, true);
+          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y };
           brush.hidden = false;
           brush.style.left = drag.left + 'px';
           brush.style.top = drag.top + 'px';
           brush.style.width = '0px';
           brush.style.height = '0px';
+          event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         }
       });
@@ -2293,11 +2346,10 @@
           return;
         }
         if (drag.mode === 'pan') {
-          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + event.clientX - drag.x, panY: drag.panY + event.clientY - drag.y });
+          const point = stagePointer(stage, event);
+          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
         } else if (drag.mode === 'brush' && brush) {
-          const rect = stage.getBoundingClientRect();
-          const x = clamp(event.clientX - rect.left, 0, rect.width);
-          const y = clamp(event.clientY - rect.top, 0, rect.height);
+          const { x, y } = stagePointer(stage, event, true);
           const left = Math.min(drag.left, x);
           const top = Math.min(drag.top, y);
           brush.style.left = left + 'px';

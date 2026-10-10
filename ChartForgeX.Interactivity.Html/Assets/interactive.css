@@ -391,7 +391,7 @@ body {
 
 .cfx-crosshair {
   position: absolute;
-  inset: 0;
+  overflow: hidden;
   z-index: 9;
   pointer-events: none;
 }
