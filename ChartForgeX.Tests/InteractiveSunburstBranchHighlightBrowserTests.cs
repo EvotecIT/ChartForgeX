@@ -11,18 +11,30 @@ namespace ChartForgeX.Tests;
 
 public sealed class InteractiveSunburstBranchHighlightBrowserTests {
     [Theory]
-    [InlineData(360, false, false)]
-    [InlineData(360, true, false)]
-    [InlineData(800, false, false)]
-    [InlineData(800, true, false)]
-    [InlineData(360, false, true)]
-    [InlineData(360, true, true)]
-    [InlineData(800, false, true)]
-    [InlineData(800, true, true)]
-    public async Task PointerFocusAndSelectionComposeSparsePaintWithoutChangingNativeInk(int width, bool dark, bool graphite) {
+    [InlineData(360, false, false, false)]
+    [InlineData(360, true, false, false)]
+    [InlineData(800, false, false, false)]
+    [InlineData(800, true, false, false)]
+    [InlineData(360, false, true, false)]
+    [InlineData(360, true, true, false)]
+    [InlineData(800, false, true, false)]
+    [InlineData(800, true, true, false)]
+    [InlineData(360, true, false, true)]
+    [InlineData(800, false, true, true)]
+    public async Task PointerFocusAndSelectionComposeSparsePaintWithoutChangingNativeInk(int width, bool dark, bool graphite, bool composed) {
         if (!Enabled) return;
         var chart = SunburstBranchHighlightExamples.CreateChart(width, dark, graphite);
-        var html = chart.ToInteractiveHtmlPage(Configure);
+        if (composed) chart.ConfigureSunburst(options => {
+            options.CornerRadius = 6;
+            options.SecondaryLabelFormatter = context => context.Item.Id == "engineering-support" ? "Delivery team" : context.Item.Id == "engineering" ? "Delivery" : null;
+        });
+        var html = chart.ToInteractiveHtmlPage(options => {
+            Configure(options);
+            if (composed) {
+                options.Tooltip.DelayMilliseconds = 60;
+                options.Tooltip.Position.Anchor = width < 500 ? HtmlChartTooltipAnchor.Node : HtmlChartTooltipAnchor.Pointer;
+            }
+        });
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 540 : 650);
         var page = session.Page;
         var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
@@ -36,7 +48,15 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         Assert.Equal(0, await page.Locator(Node("operations-support") + " [data-cfx-highlight-outline]").EvaluateAsync<double>("node => parseFloat(getComputedStyle(node).strokeWidth)"));
         Assert.Equal("rgba(0, 0, 0, 0)", await page.Locator(Node("platform") + " [data-cfx-highlight-outline]").EvaluateAsync<string>("node => getComputedStyle(node).stroke"));
         Assert.True(await page.Locator("[data-cfx-highlight-outline]").EvaluateAllAsync<bool>("nodes => nodes.every(n => !n.id && !n.hasAttribute('tabindex') && !n.hasAttribute('data-cfx-target-id') && getComputedStyle(n).pointerEvents === 'none')"));
-        await Capture(session, html, $"branch-{width}-{(dark ? "dark" : "light")}-{(graphite ? "graphite" : "report")}");
+        if (composed) {
+            await page.WaitForFunctionAsync("() => { const tip=document.querySelector('.cfx-tooltip'); return !tip.hidden && tip.innerText.includes('Delivery team'); }");
+            Assert.Equal("Delivery team", await page.Locator(".cfx-tooltip__secondary").TextContentAsync());
+            Assert.Equal(await page.Locator(Node("engineering-support") + " [data-cfx-role=sunburst-segment-mark]").GetAttributeAsync("d"),
+                await page.Locator(Node("engineering-support") + " [data-cfx-highlight-outline]").GetAttributeAsync("d"));
+            if (width == 800) Assert.True(await page.Locator("[data-cfx-role=sunburst-secondary-label]").CountAsync() > 0);
+        }
+        var composition = composed ? "-composed" : "";
+        await Capture(session, html, $"branch-{width}-{(dark ? "dark" : "light")}-{(graphite ? "graphite" : "report")}{composition}");
         // Adapter opacity zero must not turn another native branch into an unreachable target.
         await MoveToNative(page, Node("operations-support"));
         await WaitState(page, "operations-support", "item");
@@ -52,7 +72,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         Assert.Contains("drop-shadow", await page.Locator(Node("engineering-support") + " > [data-cfx-highlight-paint]").EvaluateAsync<string>("node => getComputedStyle(node).filter"), StringComparison.Ordinal);
         Assert.Contains("25", await TooltipTextAsync(page), StringComparison.Ordinal);
         if (width == 360 && dark && !graphite || width == 800 && !dark && graphite)
-            await Capture(session, html, $"branch-selected-pinned-{width}-{(dark ? "dark-report" : "light-graphite")}");
+            await Capture(session, html, $"branch-selected-pinned-{width}-{(dark ? "dark-report" : "light-graphite")}{composition}");
         await page.Keyboard.PressAsync("Escape");
         Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hovering"));
         Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("node => node.hidden"));
@@ -63,16 +83,18 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
     }
 
     [Theory]
-    [InlineData("source-opacity", true)]
-    [InlineData("primitive-opacity", true)]
-    [InlineData("primitive-opacity", false)]
-    [InlineData("display", true)]
-    [InlineData("clip", true)]
-    public async Task CurrentHostHiddenPaintStaysUnavailableAfterHighlightAndRecovers(string hidden, bool keyboard) {
+    [InlineData("source-opacity", true, HtmlChartTooltipAnchor.Node)]
+    [InlineData("primitive-opacity", true, HtmlChartTooltipAnchor.Node)]
+    [InlineData("primitive-opacity", false, HtmlChartTooltipAnchor.Node)]
+    [InlineData("display", true, HtmlChartTooltipAnchor.Node)]
+    [InlineData("clip", true, HtmlChartTooltipAnchor.Node)]
+    [InlineData("primitive-opacity", true, HtmlChartTooltipAnchor.Pointer)]
+    [InlineData("primitive-opacity", false, HtmlChartTooltipAnchor.Pointer)]
+    public async Task CurrentHostHiddenPaintStaysUnavailableAfterHighlightAndRecovers(string hidden, bool keyboard, HtmlChartTooltipAnchor anchor) {
         if (!Enabled) return;
         var html = SunburstBranchHighlightExamples.CreateChart().ToInteractiveHtmlPage(options => {
             Configure(options);
-            options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
+            options.Tooltip.Position.Anchor = anchor;
             if (!keyboard) options.Interaction.Disable(ChartInteractionFeatures.KeyboardNavigation);
         });
         await using var session = await OpenAsync(html, 850, 650);
@@ -99,7 +121,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         await page.WaitForFunctionAsync("() => document.querySelector('[data-cfx-node=platform]')?.hasAttribute('data-cfx-highlight-unavailable')");
         await page.WaitForFunctionAsync("() => document.querySelector('.cfx-tooltip').hidden");
         Assert.Equal(0, await page.Locator(Node("platform") + " [data-cfx-highlight-outline]:visible").CountAsync());
-        if (hidden == "primitive-opacity" && !keyboard) await Capture(session, html, "branch-host-hidden-native-no-keyboard");
+        if (hidden == "primitive-opacity" && !keyboard) await Capture(session, html, "branch-host-hidden-native-no-keyboard-" + anchor);
         await page.Locator(Node("platform")).EvaluateAsync("node => node.dispatchEvent(new PointerEvent('pointerenter', { bubbles:false, clientX:400, clientY:300 }))");
         Assert.NotEqual("item", await page.Locator(Node("platform")).GetAttributeAsync("data-cfx-highlight-state"));
         if (keyboard) {
