@@ -142,17 +142,18 @@ internal static partial class VisualNumericRadialCompiler {
         var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
             ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
         metadata["data-cfx-fill-pattern"] = pattern.ToString();
+        var cornerRadius = chart.Options.RadialGeometry.CornerRadius;
         if (mark.Painted && obstacles != null) {
-            var outline = new VisualSceneSlice(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep, color, null, 0, null, null);
-            obstacles.Add(new LabelObstacle(id, new LabelMarkShape(VisualSceneGeometry.Flatten(outline, 8), true, 0, plot)));
+            var contours = ChartSlicePathGeometry.Contours(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep, cornerRadius, 8);
+            obstacles.Add(new LabelObstacle(id, new LabelMarkShape(contours, true, 0, plot)));
         }
         using (builder.PushGroup(id, "point", metadata)) {
             if (mark.Painted) {
                 builder.Slice(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep, color,
                     role: series.Kind == ChartSeriesKind.RadialBar ? "radial-bar" : "radial-column", id: id + "-mark",
-                    paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, pointIndex)));
+                    paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, pointIndex)), cornerRadius: cornerRadius);
                 if (pattern != ChartFillPattern.None) builder.PatternSlice(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep,
-                    pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(110), role: "radial-fill-pattern");
+                    pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(110), role: "radial-fill-pattern", cornerRadius: cornerRadius);
             }
         }
         if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
