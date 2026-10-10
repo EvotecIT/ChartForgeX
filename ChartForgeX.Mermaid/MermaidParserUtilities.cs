@@ -101,8 +101,38 @@ internal static class MermaidParserUtilities {
 
     public static string StableId(string prefix, int index) => prefix + "-" + index.ToString(CultureInfo.InvariantCulture);
 
-    public static void Add(MermaidParseResult<MermaidDocument> result, MermaidSourceSpan span, MermaidDiagnosticSeverity severity, string message) {
+    public static bool StartsStatement(string text, string keyword) => text.StartsWith(keyword, StringComparison.Ordinal) &&
+        (text.Length == keyword.Length || char.IsWhiteSpace(text[keyword.Length]));
+
+    public static bool TryReadDirection(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result, out string? direction) {
+        direction = null;
+        if (!StartsStatement(text, "direction")) return false;
+        var value = text.Substring(9).Trim().TrimEnd(';').Trim();
+        if (value == "LR" || value == "RL" || value == "TB" || value == "BT") direction = value;
+        else Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid direction must be LR, RL, TB or BT.", MermaidDiagnosticCodes.InvalidStatement);
+        return true;
+    }
+
+    public static void RetainUnsupported(MermaidDocument document, string text, MermaidSourceSpan span,
+        MermaidParseResult<MermaidDocument> result, string feature) {
+        document.RawStatements.Add(new MermaidRawStatement(text, span));
+        Add(result, span, MermaidDiagnosticSeverity.Warning, "Mermaid " + feature + " is retained without exact native rendering.", MermaidDiagnosticCodes.UnsupportedStatement);
+    }
+
+    public static List<int> OriginalLineStarts(string source) {
+        var starts = new List<int> { 0 };
+        for (var index = 0; index < source.Length; index++) {
+            if (source[index] == '\r') {
+                if (index + 1 < source.Length && source[index + 1] == '\n') index++;
+                starts.Add(index + 1);
+            } else if (source[index] == '\n') starts.Add(index + 1);
+        }
+        return starts;
+    }
+
+    public static void Add(MermaidParseResult<MermaidDocument> result, MermaidSourceSpan span, MermaidDiagnosticSeverity severity, string message, string? code = null) {
         result.Diagnostics.Add(new MermaidDiagnostic {
+            Code = code ?? string.Empty,
             Severity = severity,
             Message = message,
             Span = span

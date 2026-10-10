@@ -5,10 +5,20 @@ namespace ChartForgeX.Mermaid;
 
 public sealed partial class MermaidParser {
     // Blanking shared declarations keeps family parsers focused and preserves original line/column locations.
-    private static MermaidDocument ReadPresentation(string[] lines, int firstBodyLine, MermaidParseResult<MermaidDocument> result) {
+    private static MermaidDocument ReadPresentation(string[] lines, int firstBodyLine, MermaidDiagramKind kind, MermaidParseResult<MermaidDocument> result) {
         var presentation = new MermaidDocument();
+        var insideStateNote = false;
         for (var i = firstBodyLine - 1; i < lines.Length; i++) {
             var text = lines[i].Trim();
+            var statement = MermaidParserUtilities.StripInlineComment(text);
+            if (insideStateNote) {
+                if (statement == "end note") insideStateNote = false;
+                continue;
+            }
+            if (kind == MermaidDiagramKind.State && MermaidParserUtilities.StartsStatement(statement, "note") && statement.IndexOf(':') < 0) {
+                insideStateNote = true;
+                continue;
+            }
             if (text.StartsWith("accTitle:", StringComparison.Ordinal)) {
                 presentation.Accessibility.Name = text.Substring(9).Trim();
                 lines[i] = string.Empty;

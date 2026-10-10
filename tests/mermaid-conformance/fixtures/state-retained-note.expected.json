@@ -1,0 +1,5 @@
+{
+  "states": ["A", "B", "C"],
+  "direction": "RL",
+  "nativeRetainedStatements": ["note right of A\n  This note: A --> Phantom\nend note"]
+}

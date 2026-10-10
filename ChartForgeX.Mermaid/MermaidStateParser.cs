@@ -8,6 +8,7 @@ internal static class MermaidStateParser {
         var states = new Dictionary<string, MermaidStateNode>(StringComparer.Ordinal);
         var composites = new Stack<string>();
         var specialIndex = 0;
+        var originalLineStarts = MermaidParserUtilities.OriginalLineStarts(document.SourceText);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
@@ -15,16 +16,37 @@ internal static class MermaidStateParser {
             var span = new MermaidSourceSpan(line, MermaidParserUtilities.LeadingWhitespace(raw) + 1, trimmed.Length);
             if (trimmed == "}") {
                 if (composites.Count > 0) composites.Pop();
+                else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "State closing brace has no open composite.", MermaidDiagnosticCodes.InvalidStatement);
                 continue;
             }
 
-            if (trimmed.StartsWith("direction ", StringComparison.Ordinal)) {
-                document.Direction = trimmed.Substring(10).Trim();
+            if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction)) {
+                if (composites.Count == 0) document.Direction = direction;
+                else {
+                    document.Statements.Add(new MermaidStateStatement(trimmed, span));
+                    MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "composite state direction");
+                }
                 continue;
             }
 
-            if (trimmed.StartsWith("note ", StringComparison.Ordinal) || trimmed.StartsWith("classDef ", StringComparison.Ordinal) || trimmed.StartsWith("class ", StringComparison.Ordinal) || trimmed == "--") {
+            if (MermaidParserUtilities.StartsStatement(trimmed, "note")) {
+                if (trimmed.IndexOf(':') < 0) line = ReadNote(document, lines, line, span, originalLineStarts, result);
+                else {
+                    document.Statements.Add(new MermaidStateStatement(trimmed, span));
+                    MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "state note");
+                }
+                continue;
+            }
+
+            if (trimmed == "end note") {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "State note terminator has no open note.", MermaidDiagnosticCodes.InvalidStatement);
+                continue;
+            }
+
+            if (MermaidParserUtilities.StartsStatement(trimmed, "classDef") || MermaidParserUtilities.StartsStatement(trimmed, "class") ||
+                MermaidParserUtilities.StartsStatement(trimmed, "style") || trimmed == "--") {
                 document.Statements.Add(new MermaidStateStatement(trimmed, span));
+                MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "state style or concurrency boundary");
                 continue;
             }
 
@@ -51,7 +73,31 @@ internal static class MermaidStateParser {
             EnsureState(document, states, trimmed, span, composites.Count == 0 ? null : composites.Peek());
         }
 
+        if (composites.Count > 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error,
+            "Composite state definitions must close with '}'.", MermaidDiagnosticCodes.InvalidStatement);
         if (document.States.Count == 0 && document.Transitions.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid state diagrams require at least one state or transition.");
+    }
+
+    private static int ReadNote(MermaidStateDocument document, string[] lines, int line, MermaidSourceSpan firstSpan,
+        IReadOnlyList<int> originalLineStarts, MermaidParseResult<MermaidDocument> result) {
+        var lastLine = line;
+        var closed = false;
+        while (lastLine < lines.Length) {
+            lastLine++;
+            var raw = lines[lastLine - 1];
+            if (MermaidParserUtilities.StripInlineComment(raw.Trim()) == "end note") { closed = true; break; }
+        }
+        var span = new MermaidSourceSpan(line, firstSpan.Column,
+            originalLineStarts[lastLine - 1] + lines[lastLine - 1].Length - originalLineStarts[line - 1] - firstSpan.Column + 1);
+        var retained = document.SourceText.Substring(originalLineStarts[line - 1] + firstSpan.Column - 1, span.Length)
+            .Replace("\r\n", "\n").Replace('\r', '\n');
+        document.Statements.Add(new MermaidStateStatement(retained, span));
+        if (closed) MermaidParserUtilities.RetainUnsupported(document, retained, span, result, "state note");
+        else {
+            document.RawStatements.Add(new MermaidRawStatement(retained, span));
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Multiline state notes must close with 'end note'.", MermaidDiagnosticCodes.InvalidStatement);
+        }
+        return lastLine;
     }
 
     private static void ParseStateDeclaration(MermaidStateDocument document, Dictionary<string, MermaidStateNode> states, string text, MermaidSourceSpan span, Stack<string> composites) {
