@@ -92,7 +92,10 @@
       }
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
-      if (box.width > 0 && box.height > 0) return;
+      // A hollow candle's unpainted interior still belongs to its observation's browser target.
+      const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
+        && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
+      if (box.width > 0 && box.height > 0 && !hollowCandle) return;
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const width = Math.max(8, region.width); const height = Math.max(8, region.height);
       hit.setAttribute('x', region.x + (region.width - width) / 2);

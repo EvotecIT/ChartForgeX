@@ -224,7 +224,11 @@
     };
     push('Series', seriesLabel(node));
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
-    push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+    // A financial Y is the tuple's opening member; expose the complete prices rather than a scalar Y row.
+    if (['candlestick', 'ohlc'].includes((data.cfxKind || '').toLowerCase())) {
+      ['Open', 'High', 'Low', 'Close'].forEach((part) =>
+        push(rowName(node, part.toLowerCase(), part), data['cfx' + part]));
+    } else push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
     push('End', data.cfxEnd);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
