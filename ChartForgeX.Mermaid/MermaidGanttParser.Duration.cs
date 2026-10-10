@@ -24,9 +24,10 @@ internal static partial class MermaidGanttParser {
             case "h": case "hour": case "hours":
             case "d": case "day": case "days":
             case "w": case "week": case "weeks":
-            case "M": case "month": case "months":
-            case "y": case "year": case "years":
+            case "M":
                 return true;
+            case "y":
+                return authoredUnit == "y";
             default:
                 return false;
         }
@@ -36,9 +37,9 @@ internal static partial class MermaidGanttParser {
     // and millisecond clock precision. DateTime keeps the schedule independent of the host timezone.
     private static DateTime AddDuration(DateTime start, double amount, string unit) {
         switch (unit) {
-            case "M": case "month": case "months":
+            case "M":
                 return start.AddMonths(checked((int)amount));
-            case "y": case "year": case "years":
+            case "y":
                 return start.AddYears(checked((int)amount));
             case "w": case "week": case "weeks":
                 return start.AddDays(Math.Floor(amount * 7 + 0.5));

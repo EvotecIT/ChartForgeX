@@ -65,6 +65,19 @@ public sealed class MermaidGanttDurationTests {
     }
 
     [Theory]
+    [InlineData("1month")]
+    [InlineData("1months")]
+    [InlineData("1year")]
+    [InlineData("1years")]
+    [InlineData("1Y")]
+    public void UnsupportedCalendarUnitNamesProduceSourceDiagnostics(string duration) {
+        var result = new MermaidParser().ParseGantt("gantt\nTask :task, 2026-01-31, " + duration);
+        Assert.True(result.HasErrors);
+        Assert.Empty(result.Document!.Tasks);
+        Assert.Contains(result.Diagnostics, item => item.Span.Line == 2 && item.Severity == MermaidDiagnosticSeverity.Error);
+    }
+
+    [Theory]
     [InlineData("9999-12-31", "1M")]
     [InlineData("9999-12-31", "1y")]
     [InlineData("2026-01-01", "99999999999999999999999999999999999999M")]
