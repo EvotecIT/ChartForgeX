@@ -61,6 +61,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
         };
         childOptions.Tooltip.Mode = options.Tooltip.Mode;
         childOptions.Tooltip.Range = options.Tooltip.Range;
+        childOptions.Tooltip.DelayMilliseconds = options.Tooltip.DelayMilliseconds;
         childOptions.Crosshair.ShowLabel = options.Crosshair.ShowLabel;
         childOptions.Interaction.ChartId = chartId;
         childOptions.Interaction.GroupName = groupName;

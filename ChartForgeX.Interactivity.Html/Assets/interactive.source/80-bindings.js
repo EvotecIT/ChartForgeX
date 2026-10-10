@@ -31,9 +31,9 @@
           showTip(root, tip, node, event);
         });
         surface.addEventListener('pointermove', (event) => moveTip(tip, event, node));
-        surface.addEventListener('pointerleave', () => {
+        surface.addEventListener('pointerleave', (event) => {
           clearHover(root, true, true);
-          hideTip(root, tip, false);
+          if (!retainPointerTip(root, event)) hideTip(root, tip, false);
         });
       });
       // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
