@@ -59,6 +59,10 @@
     return point && point.node;
   };
   const checkPendingTooltipMutations = (records) => {
+    // Native paint probes are synchronous reads, not host changes. Observing their own suspension
+    // would queue another availability probe indefinitely while a pointer request is pending.
+    records = records.filter(record => record.type !== 'attributes' || record.attributeName !== 'data-cfx-highlight-probe');
+    if (!records.length) return;
     for (const pending of Array.from(pendingTooltips)) {
       const removed = records.some(record => record.type === 'childList'
         && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)

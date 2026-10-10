@@ -142,11 +142,32 @@ Read copied `ChartSeries.HierarchyItems` and `Nodes`; `Points` and `TreeLinks` a
 
 `ConfigureSunburst` configures `CornerRadius`, `ColorScale`, `ShowColorScaleLegend`, `ColorLegendTitle` and the parent policy. `CornerRadius` uses the same finite, nonnegative maximum pixel radius and inward clamping as numeric radial sectors, with a zero default. Every group's and leaf's nullable `ColorValue` is an independent observation, with no inheritance or aggregation. The generic scale honors fixed ranges, discrete bands and missing colors. Ordinal explicit colors override the scale; semantic states preserve numeric fill and add an outline. Prepared SVG/PNG and option values remain detached from later model changes.
 
-HTML tooltips show size and numeric color separately, including color zero and localized missing values. A differing supplied group value uses `ChartLabels.AuthoredValue` (default `Provided value`), and a positive remainder uses `ChartLabels.Remainder`. Equal supplied values and leaf values retain raw metadata without duplicate tooltip rows. Branch highlighting remains future work.
+HTML tooltips show size and numeric color separately, including color zero and localized missing values. A differing supplied group value uses `ChartLabels.AuthoredValue` (default `Provided value`), and a positive remainder uses `ChartLabels.Remainder`. Equal supplied values and leaf values retain raw metadata without duplicate tooltip rows.
 
 Optional secondary text uses `ConfigureSunburst(options => options.SecondaryLabelFormatter = context => captions.TryGetValue(context.Item.Id, out var text) ? text : null)`. `ChartSunburstLabelContext` provides the copied `Item`, its resolved `Value` and the shared `FormattedValue`. This additive API does not change the hierarchy item constructor or Treemap behavior. Null, empty or whitespace results preserve existing primary-only output. `SecondaryLabelStyle` inherits node typography at 80% of the primary size before applying its overrides; `SecondaryLabelSpacing` defaults to two finite, nonnegative logical pixels. Captions keep fixed font sizes and fit the native sector with primary content taking priority. Full secondary text stays separate from numeric facts in node metadata, descriptive regions and plain-text HTML pointer/keyboard tooltips. See [secondary captions](api-conventions.md#sunburst-secondary-captions).
 
 A positive radius on an incompatible populated family fails preparation. Numeric `RadialGeometry.CornerRadius` supports only RadialBar and RadialColumn; `Sunburst.CornerRadius` supports only Sunburst. Pie, Donut, PolarArea, Chord and progress-ring geometry keep their own contracts.
+
+### HTML Sunburst branch emphasis
+
+Use the adapter-owned `Highlight` group on chart or dashboard options to emphasize the hovered or focused item and its root branch:
+
+```csharp
+chart.SaveInteractiveHtml("allocation.html", options => {
+    options.Highlight.Mode = HtmlChartHighlightMode.RootBranch;
+    options.Highlight.HighlightedItem.Stroke = ChartColor.FromHex("#38bdf8");
+    options.Highlight.HighlightedItem.StrokeWidth = 2;
+    options.Highlight.UnhighlightedBranch.Opacity = .22;
+});
+```
+
+`RootBranch` applies to Sunburst node targets. Other families and legend targets keep their existing emphasis, including mixed dashboards. `Default` preserves existing presentation and ignores the style overrides. Pointer, keyboard and synchronized hover share the same local target identity. A branch is the first ancestor below the authored central root; repeated labels and reordered items do not change membership. The central root belongs to no branch. Focusing it leaves surrounding branches at native strength. Zero and collapsed items retain membership and keyboard facts without gaining painted sectors.
+
+The active item composes `HighlightedBranch` then `HighlightedItem`; other items in that branch compose `HighlightedBranch` then `UnhighlightedItem`. Other branches use `UnhighlightedBranch`. Null properties retain the preceding style. Default opacity is one for the active item, .82 for its other branch members and .38 for other branches; Graphite uses one and .3 for those last two groups. The neutral central root stays at native strength. Explicit styles replace these transient values rather than multiplying group opacity.
+
+`Stroke` adds a separate outline behind the native primitive. Native fill, hatch and semantic stroke remain intact. `StrokeWidth` is its outward width in SVG units; a color without a width uses 2.5. Null retains the preceding color/width; a transparent color or zero width explicitly hides the added outline. `Opacity` accepts finite values from zero through one, and `StrokeWidth` accepts finite non-negative values. Transient opacity zero still permits another branch to be acquired; current authored or host-hidden paint and clipping remain unavailable. Selection keeps its existing full-strength emphasis and glow. Pinning retains its readout while hover follows another item. Escape dismisses the pin and branch emphasis; Reset view also clears selections.
+
+These options affect browser presentation only. Native PNG bytes and native SVG geometry/paint are unchanged; Sunburst targets additionally expose `data-cfx-branch-root` when they belong to a branch. Pages, fragments, externally registered assets and dashboard children share the same runtime and options.
 
 ## Numeric color scales
 

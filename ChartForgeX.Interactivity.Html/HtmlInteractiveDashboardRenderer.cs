@@ -60,6 +60,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
             ResponsiveLayout = options.ResponsiveLayout
         };
         HtmlChartTooltipOptionsCopy.Copy(options.Tooltip, childOptions.Tooltip);
+        options.Highlight.CopyTo(childOptions.Highlight);
         childOptions.Crosshair.ShowLabel = options.Crosshair.ShowLabel;
         childOptions.Interaction.ChartId = chartId;
         childOptions.Interaction.GroupName = groupName;

@@ -18,7 +18,7 @@
     const viewport = svg.getBoundingClientRect();
     return viewport.width > 0 && viewport.height > 0;
   };
-  const keyboardTargets = (root) => {
+  const keyboardTargets = (root) => withNativeHighlightPaint(root, () => {
     const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
     const candidateSet = new Set(candidates);
     const containers = new Set();
@@ -36,7 +36,7 @@
       seen.add(focusNode);
       return true;
     });
-  };
+  });
   const keyboardDataGroups = (nodes) => {
     const groups = new Map();
     nodes.forEach((node) => {
@@ -67,6 +67,7 @@
     branches.forEach((branch) => svg.appendChild(branch));
   };
   const refreshKeyboardNavigation = (root, focused) => {
+    refreshRootBranchHighlightAvailability(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
     const activeElement = root.getRootNode().activeElement;
@@ -132,7 +133,10 @@
       attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'clip-path'] });
   };
   const prepareKeyboardNavigation = (root) => {
-    if (!hasFeature(root, 'KeyboardNavigation')) return;
+    if (!hasFeature(root, 'KeyboardNavigation')) {
+      if (root._cfxBranchHighlights) bindKeyboardNavigationAvailability(root);
+      return;
+    }
     root._cfxKeyboardNavigation = { owned: new Set() };
     // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));

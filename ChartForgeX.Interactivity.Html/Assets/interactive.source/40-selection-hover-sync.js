@@ -134,6 +134,7 @@
     return false;
   };
   const clearHover = (root, emit, sync) => {
+    clearRootBranchHighlight(root);
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
@@ -178,6 +179,7 @@
     if (!localNode && target.targetKind && target.targetId) return false;
     // A peer's equivalent mark may have a different local point ordinal or series position.
     const localTarget = localNode ? targetIdentity(localNode) : target;
+    if (mode !== 'shared' && root._cfxBranchHighlights?.includes(localNode)) return applyRootBranchHighlight(root, localNode);
     const hoverMode = mode === 'shared' ? 'shared' : 'series';
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
     const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);

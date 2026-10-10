@@ -6,6 +6,18 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Core;
 
 internal sealed partial class ChartRelationshipIndex {
+    /// <summary>The authored central root is neutral; each descendant belongs to its first child below that root.</summary>
+    internal string? HierarchyBranchRoot(int nodeIndex) => _hierarchyBranchRoots[nodeIndex];
+
+    private string?[] HierarchyBranchRoots() {
+        var branches = new string?[HierarchyItems.Count];
+        foreach (var node in _hierarchyOrder) {
+            var parent = Parent(node);
+            if (parent >= 0) branches[node] = Parent(parent) < 0 ? Nodes[node].Id : branches[parent];
+        }
+        return branches;
+    }
+
     internal static ChartRelationshipIndex AreaHierarchy(IEnumerable<ChartHierarchyItem> items, bool allowForest, bool requireNullGroups) {
         if (items == null) throw new ArgumentNullException(nameof(items));
         var authored = items.ToArray();

@@ -575,8 +575,11 @@
     }
     return null;
   };
-  const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
-    ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  const observationPaint = (node, styles) => withNativeHighlightPaint(node, () => {
+    // A probe suspends adapter opacity only; use fresh live style values after the suspension.
+    if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
+    return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  });
   const retainedGeometryFact = (node) => ['zero', 'precision-collapse', 'layout-collapse'].includes((node.dataset || {}).cfxGeometryStatus);
   // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
   // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
@@ -710,6 +713,10 @@
     return point && point.node;
   };
   const checkPendingTooltipMutations = (records) => {
+    // Native paint probes are synchronous reads, not host changes. Observing their own suspension
+    // would queue another availability probe indefinitely while a pointer request is pending.
+    records = records.filter(record => record.type !== 'attributes' || record.attributeName !== 'data-cfx-highlight-probe');
+    if (!records.length) return;
     for (const pending of Array.from(pendingTooltips)) {
       const removed = records.some(record => record.type === 'childList'
         && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)
@@ -1063,6 +1070,116 @@
       (point._cfxPointLabels ||= []).push(label);
     });
   };
+  // Transient HTML paint is separate from native primitives and their current host CSS.
+  // The probe attribute is deliberately outside the scoped availability observer's attribute filter.
+  const withNativeHighlightPaint = (node, read) => {
+    const root = node && node.closest('.cfx-interactive-chart');
+    if (!root || !root._cfxBranchHighlights || root.hasAttribute('data-cfx-highlight-probe')) return read();
+    root.setAttribute('data-cfx-highlight-probe', '');
+    try { return read(); } finally { root.removeAttribute('data-cfx-highlight-probe'); }
+  };
+  const prepareRootBranchHighlights = (root) => {
+    if (root.dataset.cfxHighlightMode !== 'root-branch') return;
+    // Prepared targets normalize family names; native metadata also accepts the enum spelling.
+    const nodes = Array.from(root.querySelectorAll('[data-cfx-kind="sunburst" i][data-cfx-target-kind="node"]'));
+    if (!nodes.length) return;
+    root._cfxBranchHighlights = nodes;
+    nodes.forEach((node) => {
+      node.dataset.cfxHighlightManaged = 'true';
+      const paint = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      paint.setAttribute('data-cfx-highlight-paint', '');
+      // Keep accessible names on the identity owner. Captions and hatches stay with their native mark.
+      Array.from(node.children).filter(child => !child.matches('title,desc')).forEach(child => paint.appendChild(child));
+      node.appendChild(paint);
+    });
+  };
+  const highlightStyle = (root, group) => {
+    const prefix = 'data-cfx-highlight-' + group + '-';
+    const result = {};
+    ['stroke', 'stroke-width', 'opacity'].forEach(key => {
+      const value = root.getAttribute(prefix + key);
+      if (value !== null) result[key] = value;
+    });
+    return result;
+  };
+  const highlightOutline = (paint, style) => {
+    const primary = paint.querySelector('[data-cfx-role="sunburst-segment-mark"]');
+    let outline = paint.querySelector('[data-cfx-highlight-outline]');
+    if (!primary || style.stroke === undefined && style['stroke-width'] === undefined) {
+      if (outline) outline.remove();
+      return;
+    }
+    // Copy only the primary geometry: no hatch, IDs, targets, tab stops or native paint attributes.
+    if (!outline) {
+      outline = document.createElementNS('http://www.w3.org/2000/svg', primary.localName);
+      outline.setAttribute('data-cfx-role', 'interaction-highlight');
+      outline.setAttribute('data-cfx-highlight-outline', '');
+      outline.setAttribute('aria-hidden', 'true');
+      outline.setAttribute('focusable', 'false');
+      paint.insertBefore(outline, paint.firstChild);
+    }
+    ['d', 'transform', 'fill-rule'].forEach(key => {
+      const value = primary.getAttribute(key);
+      if (value === null) outline.removeAttribute(key); else outline.setAttribute(key, value);
+    });
+    const native = getComputedStyle(primary);
+    const width = Number(style['stroke-width'] ?? 2.5);
+    // Native stroke stays on top. The extra width exposes the requested outline outside it.
+    paint.style.setProperty('--cfx-highlight-stroke', style.stroke ?? native.stroke);
+    paint.style.setProperty('--cfx-highlight-stroke-width', width > 0 ? String(Math.min(Number.MAX_VALUE, (parseFloat(native.strokeWidth) || 0) + width * 2)) : '0');
+  };
+  const clearRootBranchHighlight = (root) => {
+    (root._cfxBranchHighlights || []).forEach(node => {
+      delete node.dataset.cfxHighlightState;
+      const paint = node.querySelector('[data-cfx-highlight-paint]');
+      paint.style.removeProperty('--cfx-highlight-opacity');
+      paint.style.removeProperty('--cfx-highlight-stroke');
+      paint.style.removeProperty('--cfx-highlight-stroke-width');
+      const outline = paint.querySelector('[data-cfx-highlight-outline]');
+      if (outline) outline.remove();
+    });
+  };
+  const refreshRootBranchHighlightAvailability = (root) => {
+    let hiddenActive = false;
+    withNativeHighlightPaint(root, () => (root._cfxBranchHighlights || []).forEach(node => {
+      const available = !!pointerTargetPaint(node);
+      node.toggleAttribute('data-cfx-highlight-unavailable', !available);
+      // Zero/collapsed facts deliberately have no pointer paint, but keep keyboard readouts.
+      if (!available && node.dataset.cfxHighlightState === 'item' && node.dataset.cfxGeometryStatus === 'visible') hiddenActive = true;
+    }));
+    // Host paint is local to this chart; losing it must not clear an available peer's hover.
+    if (hiddenActive) clearHover(root, true, false);
+  };
+  const applyRootBranchHighlight = (root, active) => {
+    const nodes = root._cfxBranchHighlights;
+    if (!nodes || !nodes.includes(active)) return false;
+    if (!tooltipReadoutAvailable(active, null)) return false;
+    const branch = active.dataset.cfxBranchRoot;
+    const graphite = root.dataset.cfxLook === 'graphite';
+    const branchStyle = highlightStyle(root, 'branch'), itemStyle = highlightStyle(root, 'item');
+    const otherItemStyle = highlightStyle(root, 'other-item'), otherBranchStyle = highlightStyle(root, 'other-branch');
+    withNativeHighlightPaint(root, () => nodes.forEach(node => {
+      const ownBranch = node.dataset.cfxBranchRoot;
+      const highlighted = node === active;
+      const related = branch && ownBranch === branch;
+      // The central root has no branch. Focusing it leaves the surrounding branches at native strength.
+      let style = {}, state = 'neutral';
+      if (highlighted) { style = { opacity: '1', ...(branch ? branchStyle : {}), ...itemStyle }; state = 'item'; }
+      else if (related) { style = { opacity: graphite ? '1' : '.82', ...branchStyle, ...otherItemStyle }; state = 'branch'; }
+      else if (branch && ownBranch) { style = { opacity: graphite ? '.3' : '.38', ...otherBranchStyle }; state = 'other-branch'; }
+      node.dataset.cfxHighlightState = state;
+      setNodeHovered(node, highlighted, !!related && !highlighted);
+      const paint = node.querySelector('[data-cfx-highlight-paint]');
+      paint.style.setProperty('--cfx-highlight-opacity', style.opacity ?? '1');
+      highlightOutline(paint, style);
+    }));
+    root.dataset.cfxHovering = 'true';
+    root.dataset.cfxHoverMode = 'root-branch';
+    root.dataset.cfxHoverUnit = 'branch';
+    root.dataset.cfxHoverLabel = text(active);
+    refreshRootBranchHighlightAvailability(root);
+    return true;
+  };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
   const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop', 'radialbar', 'radialcolumn']);
@@ -1395,7 +1512,7 @@
     const viewport = svg.getBoundingClientRect();
     return viewport.width > 0 && viewport.height > 0;
   };
-  const keyboardTargets = (root) => {
+  const keyboardTargets = (root) => withNativeHighlightPaint(root, () => {
     const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
     const candidateSet = new Set(candidates);
     const containers = new Set();
@@ -1413,7 +1530,7 @@
       seen.add(focusNode);
       return true;
     });
-  };
+  });
   const keyboardDataGroups = (nodes) => {
     const groups = new Map();
     nodes.forEach((node) => {
@@ -1444,6 +1561,7 @@
     branches.forEach((branch) => svg.appendChild(branch));
   };
   const refreshKeyboardNavigation = (root, focused) => {
+    refreshRootBranchHighlightAvailability(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
     const activeElement = root.getRootNode().activeElement;
@@ -1509,7 +1627,10 @@
       attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'clip-path'] });
   };
   const prepareKeyboardNavigation = (root) => {
-    if (!hasFeature(root, 'KeyboardNavigation')) return;
+    if (!hasFeature(root, 'KeyboardNavigation')) {
+      if (root._cfxBranchHighlights) bindKeyboardNavigationAvailability(root);
+      return;
+    }
     root._cfxKeyboardNavigation = { owned: new Set() };
     // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
@@ -1719,6 +1840,7 @@
     return false;
   };
   const clearHover = (root, emit, sync) => {
+    clearRootBranchHighlight(root);
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
@@ -1763,6 +1885,7 @@
     if (!localNode && target.targetKind && target.targetId) return false;
     // A peer's equivalent mark may have a different local point ordinal or series position.
     const localTarget = localNode ? targetIdentity(localNode) : target;
+    if (mode !== 'shared' && root._cfxBranchHighlights?.includes(localNode)) return applyRootBranchHighlight(root, localNode);
     const hoverMode = mode === 'shared' ? 'shared' : 'series';
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
     const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
@@ -2473,6 +2596,15 @@
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
     applyRenderedTargetContract(root);
+    prepareRootBranchHighlights(root);
+    if (root._cfxBranchHighlights) root.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      clearHover(root, true, true);
+      hideCrosshair(root, crosshair);
+      hideTip(root, tip, true);
+    });
     applyViewport(root, getState(root));
     renderCompare(root);
     if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());
@@ -2736,6 +2868,7 @@
       if (brush) brush.hidden = true;
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
+      if (root._cfxBranchHighlights) clearHover(root, true, true);
       publishCompare(root, true);
       syncResetControl(root);
     });

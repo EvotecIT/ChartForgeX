@@ -25,6 +25,7 @@ internal sealed partial class ChartRelationshipIndex {
     private readonly int[] _parents;
     private readonly IReadOnlyList<int>[] _children;
     private readonly int[] _hierarchyOrder;
+    private readonly string?[] _hierarchyBranchRoots;
 
     private ChartRelationshipIndex(ChartNode[] nodes, ChartFlowLink[] flowLinks, ChartTreeLink[] treeLinks,
         Dictionary<string, int> nodeIndexes, int[] sources, int[] targets, int root, double[] hierarchyValues,
@@ -52,6 +53,7 @@ internal sealed partial class ChartRelationshipIndex {
         _children = children.Select(items => (IReadOnlyList<int>)items.AsReadOnly()).ToArray();
         for (var i = 0; i < targets.Length; i++) _parents[targets[i]] = sources[i];
         Roots = Array.AsReadOnly(Enumerable.Range(0, nodes.Length).Where(index => _parents[index] < 0).ToArray());
+        _hierarchyBranchRoots = HierarchyBranchRoots();
     }
 
     internal int Source(int linkIndex) => _sources[linkIndex];

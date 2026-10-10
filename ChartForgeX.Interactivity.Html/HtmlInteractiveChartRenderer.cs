@@ -152,8 +152,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-tooltip-offset-x", options.Tooltip.Position.OffsetX.ToString("R", CultureInfo.InvariantCulture))
             .Attribute("data-cfx-tooltip-offset-y", options.Tooltip.Position.OffsetY.ToString("R", CultureInfo.InvariantCulture))
             .Attribute("data-cfx-crosshair-label", options.Crosshair.ShowLabel ? "true" : "false")
-            .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart))
-            .EndStartElement().Line();
+            .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart));
+        WriteHighlightOptions(writer, options.Highlight);
+        writer.EndStartElement().Line();
         var toolbar = BuildToolbar(options);
         if (toolbar.Length > 0) {
             writer.StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", "Chart controls").EndStartElement()
