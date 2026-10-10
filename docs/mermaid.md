@@ -699,8 +699,10 @@ Supported Gantt parsing includes:
 - Task metadata with optional tags: `active`, `done`, `crit`, and `milestone`.
 - Task ids used by `after taskId` dependency clauses.
 - Explicit start/end dates using the configured `dateFormat`.
-- Durations using millisecond, second, minute, hour, day, and week units.
+- Durations using `ms`, `s`, `m`, `h`, `d`, `w`, `M`, and `y` units. `M` means calendar months; `m` means minutes.
 - Milestones as zero-duration native ChartForgeX milestones.
+
+For example, `Task :2026-01-31, 1M` ends on February 28, while `Task :2026-01-31, 1m` ends one minute after midnight on January 31. Calendar months and years clamp to the last valid day when necessary. Fractional months/years use the whole-number part; fractional days/weeks round to the nearest day. Clock durations retain millisecond precision. Excluded dates extend duration-based ends after that calculation.
 
 ```csharp
 using ChartForgeX.Mermaid;

@@ -125,11 +125,11 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 
 ### 4. Chart and calendar fidelity
 
-- [ ] Fix Gantt duration-unit case semantics first: `TryParseDuration` currently lowercases `M` to `m`, treating Mermaid's month token as minutes. Add an upstream-resolved-date regression before implementing month/year arithmetic.
+- [x] Correct Gantt duration-unit case semantics: `M` means calendar months and `m` means minutes. Shared upstream timestamp fixtures cover month-end/leap-year clamping, fractional units, exclusion calendars and dependent tasks.
 - [ ] Finish hierarchical treemap qualification through the existing owner candidate in PR #271, also integrated in #273. Revalidate after merge; then close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
 - [ ] Reuse the stable Sankey identity work in PR #261 and the shared XY orientation work in #251, also integrated in #273. Qualify Mermaid label/configuration handling and all series orientations against the settled owner APIs.
 - [ ] Map radar graticule, curve appearance and scale options into shared polar geometry. PR #257 supplies native series forms but does not apply Mermaid graticule metadata; that mapping remains separate work.
-- [ ] Complete Gantt `until`, month/year arithmetic, repeated calendar declarations, date/axis/tick formats, vertical markers and explicit today-marker behavior. Preserve the existing excludes/includes/weekend duration calculation and compare resolved dates against upstream.
+- [ ] Complete Gantt `until`, repeated calendar declarations, date/axis/tick formats, vertical markers and explicit today-marker behavior. Preserve the existing month/year and excludes/includes/weekend duration calculation and compare resolved dates against upstream.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene, quadrant regions and their labels as chart geometry, and timeline sections/events in both directions. Keep the current score-bar/scatter/ordered-time mappings explicit until replaced.
 - [ ] Broaden pie/show-data, XY numeric/category axes and legends, Sankey CSV/configuration/colors, and packet row/label/configuration cases, including Mermaid 12 bit-numbering direction.
 
