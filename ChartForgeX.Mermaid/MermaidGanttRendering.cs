@@ -23,7 +23,7 @@ public static class MermaidGanttRendering {
         if (options.Today.HasValue) chart.WithGanttToday(options.Today.Value);
         foreach (var task in document.Tasks) {
             var name = string.IsNullOrWhiteSpace(task.Section) ? task.Title : task.Section + " / " + task.Title;
-            if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start, task.DependencyIndex);
+            if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2), task.DependencyIndex);
             else chart.AddGanttTask(name, task.Start, task.End, task.Progress, task.DependencyIndex);
         }
 
@@ -45,6 +45,7 @@ public static class MermaidGanttRendering {
         artifact.Metadata["mermaid.sections"] = document.Sections.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.milestones"] = MilestoneCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.dependencies"] = DependencyCount(document).ToString(CultureInfo.InvariantCulture);
+        artifact.Metadata["mermaid.untilReferences"] = UntilReferenceCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.dateFormat"] = document.DateFormat;
         if (!string.IsNullOrWhiteSpace(document.AxisFormat)) artifact.Metadata["mermaid.axisFormat"] = document.AxisFormat!;
         if (!string.IsNullOrWhiteSpace(document.TickInterval)) artifact.Metadata["mermaid.tickInterval"] = document.TickInterval!;
@@ -95,6 +96,12 @@ public static class MermaidGanttRendering {
     private static int DependencyCount(MermaidGanttDocument document) {
         var count = 0;
         foreach (var task in document.Tasks) if (task.DependencyIds.Count > 0) count += task.DependencyIds.Count;
+        return count;
+    }
+
+    private static int UntilReferenceCount(MermaidGanttDocument document) {
+        var count = 0;
+        foreach (var task in document.Tasks) count += task.UntilTaskIds.Count;
         return count;
     }
 }
