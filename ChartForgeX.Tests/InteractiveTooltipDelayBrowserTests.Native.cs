@@ -40,7 +40,9 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             """);
         for (var point = 0; point < 3; point++) {
             await page.Mouse.MoveAsync((float)positions[point * 2], (float)positions[point * 2 + 1]);
-            Assert.True(await TipHiddenAsync(page));
+            // These guide positions share one native series target and one delay deadline.
+            // Later movement may occur after that deadline without queuing another readout.
+            if (!tooltips) Assert.True(await TipHiddenAsync(page));
             var peerPoints = await roots.Nth(1).Locator("[data-cfx-role=point].cfx-hovered").EvaluateAllAsync<string[]>("nodes=>nodes.map(n=>n.dataset.cfxTargetId)");
             Assert.Equal(new[] { "readings:" + point }, peerPoints);
             Assert.Equal(point + 1, (await TraceStateAsync(page)).GetProperty("guide").GetArrayLength());
@@ -62,7 +64,11 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.Equal(3, trace.GetProperty("guide").GetArrayLength());
         Assert.Equal(3, trace.GetProperty("sync").EnumerateArray().Count(e => e.GetProperty("action").GetString() == "crosshair"));
         Assert.Empty((await page.EvaluateAsync<JsonElement>("() => window.delayPeerSync")).EnumerateArray());
-        if (tooltips) AssertDelay(trace);
+        if (tooltips) {
+            Assert.True(trace.GetProperty("entry")[0].GetProperty("hidden").GetBoolean());
+            AssertDelay(trace);
+            Assert.Equal(1, trace.GetProperty("shown").GetArrayLength());
+        }
         await CaptureDelayAsync(page, "delay-exact-native-guide-tooltips-" + tooltips, trace);
         AssertNoConsoleErrors(session);
     }
