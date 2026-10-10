@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineSha": "9cd02a52af97426eab4bf64b9775ce93057e5986",
-  "candidateSha": "22192b9b2def66286be69ab5b9ce28d4bc0c8519",
+  "candidateSha": "c99b9d83399153256f9fa521e59ebde0d30521f4",
   "assemblies": {
     "ChartForgeX": 868,
     "ChartForgeX.Visuals": 81,
@@ -12,7 +12,7 @@
     "ChartForgeX.Mermaid": 106,
     "ChartForgeX.Markup.Mermaid": 4
   },
-  "exportedRows": 8187,
+  "exportedRows": 8191,
   "changes": {
     "assembly-move": 1108,
     "retained": 6455,

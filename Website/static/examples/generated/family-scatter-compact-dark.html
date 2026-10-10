@@ -387,7 +387,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Waterfall) {
             var chart = Chart.Create().WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;)
                 .WithYAxis(&quot;Running balance&quot;).AddWaterfall(&quot;Movement&quot;, new[] {
-                    ChartWaterfallItem.Delta(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
                     ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
                     ChartWaterfallItem.Total(7)
                 });
@@ -1076,7 +1076,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Waterfall) {
             var chart = Chart.Create().WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;)
                 .WithYAxis(&quot;Running balance&quot;).AddWaterfall(&quot;Movement&quot;, new[] {
-                    ChartWaterfallItem.Delta(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
                     ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
                     ChartWaterfallItem.Total(7)
                 });
