@@ -19,7 +19,7 @@ public sealed class PngVisualStoryRenderer {
             var peak = 0L;
             var bounds = VisualStoryLayout.Panels(story, scene);
             for (var index = 0; index < scene.Panels.Count; index++) {
-                if (!(scene.Panels[index].Surface is VisualStoryTerminalSurface terminal)) continue;
+                if (!(scene.Panels[index].Surface is VisualStoryTerminalSurface terminal) || terminal.Options != null) continue;
                 var content = VisualStoryLayout.PanelContent(scene.Panels[index], bounds[index]);
                 var working = Terminal.PngTerminalStoryRenderer.EstimateFittedWorkingBytes(
                         terminal.Terminal,

@@ -236,6 +236,10 @@ public sealed partial class PreparedVisualStory {
                         case VisualStoryTerminalSurface terminal:
                             assetBytes = checked(assetBytes + terminal.AccessibleText.Length * 2L);
                             surface = terminal.Capture(); break;
+                        case VisualStoryReplaySurface replay:
+                            assetBytes = checked(assetBytes + (replay.Replay.RetainedCharacters + replay.AccessibleText.Length) * 2L);
+                            EnsureAssetBudget(assetBytes);
+                            surface = replay.Capture(); break;
                         case VisualStoryTextSurface text:
                             assetBytes = checked(assetBytes + text.Text.Length * 2L);
                             surface = new VisualStoryTextSurface(text.Text, text.Emphasized); break;
@@ -249,7 +253,7 @@ public sealed partial class PreparedVisualStory {
                             break;
                         default: throw new InvalidOperationException("Unknown story surface.");
                     }
-                    if (assetBytes > 128L * 1024 * 1024) throw new InvalidOperationException("Prepared story assets exceed 128 MiB. Split the story or reduce media.");
+                    EnsureAssetBudget(assetBytes);
                     surfaces.Add(panel.Surface, surface);
                 }
                 target.Panel(panel.Id, surface, panel.Title, panel.Weight);
@@ -257,5 +261,9 @@ public sealed partial class PreparedVisualStory {
         }
         foreach (var outcome in story.Outcomes) copy.Outcome(outcome.Id, outcome.Label, outcome.PanelId);
         return copy;
+    }
+
+    private static void EnsureAssetBudget(long bytes) {
+        if (bytes > 128L * 1024 * 1024) throw new InvalidOperationException("Prepared story assets exceed 128 MiB. Split the story or reduce media.");
     }
 }

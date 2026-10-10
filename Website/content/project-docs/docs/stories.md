@@ -1,3 +1,9 @@
+---
+title: "Stories and recorded replays"
+description: "Present source edits, terminal sessions, and visible results with a shared playback clock."
+layout: docs
+---
+
 # Authoring and playing visual stories
 
 `ChartForgeX.Stories` presents source, terminal output, text and resolved media on one deterministic timeline. Use it for a coding demonstration, a build replay, an API walkthrough or an image comparison. A story declares its outcomes, and its final scene must contain every referenced outcome panel.

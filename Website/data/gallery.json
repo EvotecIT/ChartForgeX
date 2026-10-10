@@ -1397,7 +1397,13 @@
     "/examples/generated/theme-font-showcase-grid.svg",
     "/examples/generated/powerbginfo-endpoint-snapshot.png",
     "/examples/generated/powerbginfo-endpoint-snapshot.html",
-    "/examples/generated/powerbginfo-endpoint-snapshot.svg"
+    "/examples/generated/powerbginfo-endpoint-snapshot.svg",
+    "/examples/generated/write-fix-reveal-widescreen.png",
+    "/examples/generated/write-fix-reveal-widescreen.html",
+    "/examples/generated/write-fix-reveal-widescreen.svg",
+    "/examples/generated/session-replay-portrait.png",
+    "/examples/generated/session-replay-portrait.html",
+    "/examples/generated/session-replay-portrait.svg"
   ],
   "items": [
     {

@@ -49,6 +49,9 @@ internal sealed class TerminalStoryLayout {
     public static TerminalStoryLayout Build(TerminalStory story) =>
         Build(story, null, null);
 
+    /// <summary>Retains logical commands, output and table cells for a host viewport to fit once.</summary>
+    internal static TerminalStoryLayout BuildLogical(TerminalStory story) => Build(story, null, null, null, wrapContent: false);
+
     internal static TerminalStoryLayout Build(TerminalStory story, Func<string, string>? transformText) =>
         Build(story, transformText, null);
 
@@ -68,7 +71,7 @@ internal sealed class TerminalStoryLayout {
         TerminalStory story,
         Func<TerminalTab, string, string>? transformText,
         Func<TerminalTab, TrueTypeFont?>? outlineFont,
-        Func<TerminalTab, string, string>? transformTableText) {
+        Func<TerminalTab, string, string>? transformTableText, bool wrapContent = true) {
         if (story == null) throw new ArgumentNullException(nameof(story));
         var transcriptLines = TerminalStoryTranscript.Build(story);
         string Transform(TerminalTab tab, string value) => transformText == null ? value : transformText(tab, value);
@@ -119,7 +122,7 @@ internal sealed class TerminalStoryLayout {
                         : Math.Max(0.35, Math.Min(4.5, VisibleTextElementCount(step.Text) / story.CharactersPerSecond));
                     var commandElements = Math.Max(1, VisibleTextElementCount(commandText));
                     var remainingPromptLength = prompt.Length;
-                    foreach (var wrappedCommandLine in Wrap(commandText, maxColumnsByTab[tab.Id])) {
+                    foreach (var wrappedCommandLine in wrapContent ? Wrap(commandText, maxColumnsByTab[tab.Id]) : new[] { commandText }) {
                         var promptLength = Math.Min(remainingPromptLength, wrappedCommandLine.Length);
                         var lineDuration = typingDuration * VisibleTextElementCount(wrappedCommandLine) / commandElements;
                         AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, wrappedCommandLine, TerminalTextTone.Default, true, promptLength, clock, lineDuration));
@@ -130,7 +133,7 @@ internal sealed class TerminalStoryLayout {
                     break;
                 case TerminalStoryStepKind.Output:
                     foreach (var outputLine in SplitLines(step.Text)) {
-                        foreach (var wrappedLine in Wrap(Transform(tab, outputLine), maxColumnsByTab[tab.Id])) {
+                        foreach (var wrappedLine in wrapContent ? Wrap(Transform(tab, outputLine), maxColumnsByTab[tab.Id]) : new[] { Transform(tab, outputLine) }) {
                             AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, wrappedLine, step.Tone, false, 0, clock, 0.22));
                             revealEndSecondsByTab[tab.Id] = Math.Max(revealEndSecondsByTab[tab.Id], clock + 0.22);
                             activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock + 0.22);
@@ -146,7 +149,7 @@ internal sealed class TerminalStoryLayout {
                     clock += step.DurationSeconds;
                     break;
                 case TerminalStoryStepKind.Table:
-                    foreach (var tableLine in FormatTable(step.Table!, maxColumnsByTab[tab.Id], value => TransformTable(tab, value))) {
+                    foreach (var tableLine in FormatTable(step.Table!, wrapContent ? maxColumnsByTab[tab.Id] : int.MaxValue, value => TransformTable(tab, value))) {
                         AddLine(lines, tabLines, new TerminalRenderedLine(tab.Id, tabLines.Count, tableLine.Text, tableLine.Tone, false, 0, clock, 0.22, true));
                         revealEndSecondsByTab[tab.Id] = Math.Max(revealEndSecondsByTab[tab.Id], clock + 0.22);
                         activeContentEndSeconds = Math.Max(activeContentEndSeconds ?? 0, clock + 0.22);
@@ -161,7 +164,8 @@ internal sealed class TerminalStoryLayout {
         if (story.ShowFinalPrompt) {
             var finalTab = story.GetTab(activeTabId);
             var finalTabLines = linesByTab[activeTabId];
-            var promptLines = Wrap(Transform(finalTab, finalTab.Prompt()), maxColumnsByTab[finalTab.Id]).ToArray();
+            var promptText = Transform(finalTab, finalTab.Prompt());
+            var promptLines = wrapContent ? Wrap(promptText, maxColumnsByTab[finalTab.Id]).ToArray() : new[] { promptText };
             for (var index = 0; index < promptLines.Length; index++) {
                 var promptLine = promptLines[index];
                 AddLine(lines, finalTabLines, new TerminalRenderedLine(finalTab.Id, finalTabLines.Count, promptLine, TerminalTextTone.Default, true, promptLine.Length, clock + 0.08, 0, isFinalPrompt: index == promptLines.Length - 1));

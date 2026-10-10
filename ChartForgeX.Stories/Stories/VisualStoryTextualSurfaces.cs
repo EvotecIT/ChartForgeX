@@ -63,12 +63,13 @@ public sealed class VisualStoryTerminalSurface : VisualStorySurface {
     private readonly string _accessibleHeading;
 
     /// <summary>Initializes a terminal surface.</summary>
-    public VisualStoryTerminalSurface(TerminalStory terminal, string? accessibleText = null)
+    public VisualStoryTerminalSurface(TerminalStory terminal, string? accessibleText = null, VisualStoryTerminalOptions? options = null)
         : base(
             VisualStorySurfaceKind.Terminal,
             AccessibleTerminalText(terminal, accessibleText),
             preserveAccessibleWhitespace: true) {
         Terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
+        Options = options;
         _accessibleHeading = string.IsNullOrWhiteSpace(accessibleText)
             ? string.Empty
             : RequireText(accessibleText!, nameof(accessibleText));
@@ -77,7 +78,10 @@ public sealed class VisualStoryTerminalSurface : VisualStorySurface {
     /// <summary>Gets the resolved terminal presentation.</summary>
     public TerminalStory Terminal { get; }
 
-    internal VisualStoryTerminalSurface Capture() => new(Terminal.Capture(), _accessibleHeading);
+    /// <summary>Gets optional fixed-font viewport settings. Omission preserves the terminal's whole-window presentation.</summary>
+    public VisualStoryTerminalOptions? Options { get; }
+
+    internal VisualStoryTerminalSurface Capture() => new(Terminal.Capture(), _accessibleHeading, Options);
 
     /// <summary>Gets an accessibility transcript derived from the current terminal state.</summary>
     public override string AccessibleText => AccessibleTerminalText(Terminal, _accessibleHeading);

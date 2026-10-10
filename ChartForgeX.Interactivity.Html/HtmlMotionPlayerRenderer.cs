@@ -25,7 +25,7 @@ public sealed class HtmlMotionPlayerRenderer {
         var ns = XNamespace.Get("http://www.w3.org/2000/svg");
         if (root.Name != ns + "svg" || (string?)root.Attribute("data-cfx-story") != "visual" ||
             !double.TryParse((string?)root.Attribute("data-cfx-motion-duration"), NumberStyles.Float, CultureInfo.InvariantCulture, out var duration) ||
-            double.IsNaN(duration) || double.IsInfinity(duration) || duration <= 0 || duration > 1800) throw new ArgumentException("A bounded sampled story SVG is required.", nameof(animatedSvg));
+            double.IsNaN(duration) || double.IsInfinity(duration) || duration <= 0 || duration > 1810) throw new ArgumentException("A bounded sampled story SVG is required.", nameof(animatedSvg));
         if (!int.TryParse((string?)root.Attribute("data-cfx-motion-plays"), NumberStyles.None, CultureInfo.InvariantCulture, out var plays) || plays < 0 || plays > 65536)
             throw new ArgumentException("Motion SVG requires a valid play count.", nameof(animatedSvg));
         foreach (var element in root.DescendantsAndSelf().ToArray()) {

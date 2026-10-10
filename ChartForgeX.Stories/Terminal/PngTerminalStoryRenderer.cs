@@ -86,10 +86,10 @@ public sealed class PngTerminalStoryRenderer {
             var tabOpacity = layout.TabOpacity(tab.Id, elapsedSeconds);
             if (tabOpacity <= 0) continue;
             foreach (var line in renderedTab.Lines) {
-                var state = VisibleState(line, elapsedSeconds);
+                var state = TerminalLinePlayback.At(line, elapsedSeconds);
                 if (!state.Visible) continue;
                 var y = layout.ContentTop + line.RowIndex * story.LineHeight + state.TranslateY;
-                var visibleText = line.IsCommand && elapsedSeconds.HasValue ? VisibleCommand(line, elapsedSeconds.Value) : line.Text;
+                var visibleText = line.IsCommand && elapsedSeconds.HasValue ? TerminalLinePlayback.CommandText(line, elapsedSeconds.Value) : line.Text;
                 if (line.IsCommand) {
                     var promptLength = Math.Min(line.PromptLength, visibleText.Length);
                     var prompt = visibleText.Substring(0, promptLength);
@@ -98,7 +98,7 @@ public sealed class PngTerminalStoryRenderer {
                     TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, WithOpacity(tab.Theme.Accent, tabOpacity), story.FontSize, outlineFont);
                     TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, WithOpacity(tab.Theme.Text, tabOpacity), story.FontSize, outlineFont);
                 } else {
-                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(ToneColor(tab.Theme, line.Tone), state.Opacity * tabOpacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
+                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(TerminalLinePlayback.ToneColor(tab.Theme, line.Tone), state.Opacity * tabOpacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
                 }
 
                 if (line.IsFinalPrompt && CursorVisible(layout, line, elapsedSeconds)) {
@@ -159,26 +159,6 @@ public sealed class PngTerminalStoryRenderer {
         if (outputScale < 1 || outputScale > 4) throw new ArgumentOutOfRangeException(nameof(outputScale));
     }
 
-    private static VisibleLineState VisibleState(TerminalRenderedLine line, double? elapsedSeconds) {
-        if (!elapsedSeconds.HasValue) return new VisibleLineState(true, 1, 1, 0);
-        var elapsed = elapsedSeconds.Value;
-        if (!StoryPlaybackClock.Started(elapsed, line.StartSeconds)) return new VisibleLineState(false, 0, 0, 0);
-        if (line.IsCommand) {
-            var progress = StoryPlaybackClock.Progress(elapsed, line.StartSeconds, line.DurationSeconds);
-            return new VisibleLineState(true, progress, 1, 0);
-        }
-
-        var reveal = StoryPlaybackClock.Progress(elapsed, line.StartSeconds, line.DurationSeconds);
-        var eased = 1 - Math.Pow(1 - reveal, 3);
-        return new VisibleLineState(true, reveal, eased, (1 - eased) * 3);
-    }
-
-    private static string VisibleCommand(TerminalRenderedLine line, double elapsed) {
-        var elements = TerminalTextWidth.VisibleElements(line.Text).ToArray();
-        var count = StoryPlaybackClock.Elements(elements.Length, elapsed, line.StartSeconds, line.DurationSeconds);
-        return string.Concat(elements.Take(count));
-    }
-
     internal static bool CursorVisible(TerminalStoryLayout layout, TerminalRenderedLine line, double? elapsedSeconds) {
         if (!elapsedSeconds.HasValue) return true;
         if (!StoryPlaybackClock.Started(elapsedSeconds.Value, line.StartSeconds)) return false;
@@ -192,29 +172,4 @@ public sealed class PngTerminalStoryRenderer {
 
     private static double Unit(double value) => Math.Max(0, Math.Min(1, value));
 
-    private static ChartColor ToneColor(TerminalTheme theme, TerminalTextTone tone) {
-        switch (tone) {
-            case TerminalTextTone.Default: return theme.Text;
-            case TerminalTextTone.Muted: return theme.Muted;
-            case TerminalTextTone.Accent: return theme.Accent;
-            case TerminalTextTone.Success: return theme.Success;
-            case TerminalTextTone.Warning: return theme.Warning;
-            case TerminalTextTone.Error: return theme.Error;
-            default: throw new ArgumentOutOfRangeException(nameof(tone));
-        }
-    }
-
-    private readonly struct VisibleLineState {
-        public readonly bool Visible;
-        public readonly double Progress;
-        public readonly double Opacity;
-        public readonly double TranslateY;
-
-        public VisibleLineState(bool visible, double progress, double opacity, double translateY) {
-            Visible = visible;
-            Progress = progress;
-            Opacity = opacity;
-            TranslateY = translateY;
-        }
-    }
 }
