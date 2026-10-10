@@ -19,10 +19,13 @@
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
     const reference = legendTarget(item);
+    const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
+    const svg = item.closest('svg');
+    const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
+    const financialRows = mark && financialTooltipRows(mark);
+    if (financialRows) return financialRows.concat(colorTooltipRows(mark));
     if (reference) {
       const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
-      const svg = item.closest('svg');
-      const mark = svg && referencedTargetNode(svg, { ...reference, seriesKey: seriesKey(item) });
       return rows.concat(mark ? colorTooltipRows(mark) : []);
     }
     const values = legendSeriesValues(item);

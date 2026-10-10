@@ -124,14 +124,14 @@ internal static partial class VisualCartesianCompiler {
     private static string Value(Chart chart, double value) => ChartNumericFormatter.FormatValue(chart.Options, value);
 
     private static bool HasSeriesPaint(ChartSeries series, int observation) => series.Color.HasValue || series.StateRole != ChartSeriesState.None
-        || observation < series.PointColors.Count && series.PointColors[observation].HasValue;
+        || observation >= 0 && observation < series.PointColors.Count && series.PointColors[observation].HasValue;
 
     private static SvgColorRole SemanticMarkPaintRole(ChartSeries series, int observation) =>
         HasSeriesPaint(series, observation) ? VisualChartPaint.SeriesRole(series, observation) : SvgColorRole.Status;
 
     private static ChartColor FinancialColor(ChartSeries series, int seriesIndex, int observation, bool rising, VisualThemeColors colors) {
         if (HasSeriesPaint(series, observation))
-            return PointColor(series, seriesIndex, observation, colors);
+            return observation >= 0 ? PointColor(series, seriesIndex, observation, colors) : Color(series, seriesIndex, colors);
         return rising ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
     }
 }

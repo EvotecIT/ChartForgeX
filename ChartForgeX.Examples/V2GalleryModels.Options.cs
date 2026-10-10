@@ -57,6 +57,8 @@ public static partial class V2GalleryModels {
         }
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
             return MarkerOptions(kind);
+        if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)
+            return FinancialOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels("Received", "Reviewed", "Qualified", "Completed").WithDataLabels()
                 .AddFunnel("Requests", new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
