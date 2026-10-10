@@ -32,8 +32,8 @@ internal static class VisualChartCompiler {
     }
 
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(VisualChartFamily family, Chart chart, VisualThemeColors colors,
-        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null) => family switch {
-        VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors, axisLabels, bubbleScale),
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartSeriesColorScaleSet? colorScales = null) => family switch {
+        VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors, axisLabels, bubbleScale, colorScales),
         VisualChartFamily.Radial => VisualRadialCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Gauge => VisualGaugeCompiler.LegendEntries(chart, colors),
         VisualChartFamily.RadialProgress => VisualRadialProgressCompiler.LegendEntries(chart, colors),
@@ -50,13 +50,13 @@ internal static class VisualChartCompiler {
     };
 
     internal static void Build(VisualChartFamily family, Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content,
-        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null) {
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartSeriesColorScaleSet? colorScales = null, double legendHeight = 0) {
         using var coordinateScope = family is VisualChartFamily.Radial or VisualChartFamily.RadialProgress or VisualChartFamily.Polar or VisualChartFamily.NumericRadial
             || family == VisualChartFamily.Gauge && chart.Options.Gauge.Form != ChartGaugeForm.Linear
             || family == VisualChartFamily.Hierarchy && chart.Series[0].Kind == ChartSeriesKind.Sunburst
             ? builder.PushGroup(null, "coordinate-system", new Dictionary<string, string> { ["data-cfx-coordinate-system"] = "polar" }) : null;
         switch (family) {
-            case VisualChartFamily.Cartesian: VisualCartesianCompiler.BuildInViewport(chart, context, builder, content, bubbleScale, axisLabels); break;
+            case VisualChartFamily.Cartesian: VisualCartesianCompiler.BuildInViewport(chart, context, builder, content, bubbleScale, axisLabels, colorScales, legendHeight); break;
             case VisualChartFamily.Radial: VisualRadialCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Gauge: VisualGaugeCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.RadialProgress: VisualRadialProgressCompiler.Build(chart, context, builder, content); break;

@@ -12,7 +12,8 @@ namespace ChartForgeX.Rendering;
 /// <summary>Compiles Cartesian geometry, styles and semantic alternatives into shared immutable scene commands.</summary>
 internal static partial class VisualCartesianCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors,
-        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null) {
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartSeriesColorScaleSet? colorScales = null) {
+        colorScales ??= new ChartSeriesColorScaleSet(chart);
         var entries = new List<VisualLegendEntry>();
         if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
             && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].RenderedPointCount > 1) {
@@ -31,6 +32,7 @@ internal static partial class VisualCartesianCompiler {
                 if (series.Kind == ChartSeriesKind.Candlestick || series.Kind == ChartSeriesKind.Ohlc)
                     color = FinancialColor(series, 0, point, series.Points[point * stride + 3].Y >= series.Points[point * stride].Y, colors);
                 var paint = VisualChartPaint.Series(series, color, point);
+                if (colorScales[0] is ChartSeriesColorSurface surface) (color, paint) = surface.Paint(series, 0, point, colors);
                 entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
                     marker: FinancialLegend(chart, series, 0, colors, point, pattern)
                         ?? VisualMarkerScene.Legend(chart, series, color, paint, point, pattern, bubbleScale), paint: paint));
@@ -50,18 +52,21 @@ internal static partial class VisualCartesianCompiler {
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect? viewport = null) {
-        BuildCore(chart, context, builder, plot, viewport ?? new ChartRect(0, 0, builder.Size.Width, builder.Size.Height), false, null, null);
+        BuildCore(chart, context, builder, plot, viewport ?? new ChartRect(0, 0, builder.Size.Width, builder.Size.Height), false, null, null, null, 0);
     }
 
     internal static void BuildInViewport(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
-        ChartBubbleSizeScale? bubbleScale = null, ChartAxisValueFormatter.Cache? categoryLabels = null)
-        => BuildCore(chart, context, builder, viewport, viewport, true, bubbleScale, categoryLabels);
+        ChartBubbleSizeScale? bubbleScale = null, ChartAxisValueFormatter.Cache? categoryLabels = null, ChartSeriesColorScaleSet? colorScales = null, double legendHeight = 0)
+        => BuildCore(chart, context, builder, viewport, viewport, true, bubbleScale, categoryLabels, colorScales, legendHeight);
 
     private static void BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport,
-        bool measureAxes, ChartBubbleSizeScale? bubbleScale, ChartAxisValueFormatter.Cache? categoryLabels) {
+        bool measureAxes, ChartBubbleSizeScale? bubbleScale, ChartAxisValueFormatter.Cache? categoryLabels, ChartSeriesColorScaleSet? colorScales, double legendHeight) {
         Validate(chart);
         if (bubbleScale == null && chart.Series.Any(series => series.Kind == ChartSeriesKind.Bubble)) bubbleScale = ChartBubbleSizeScale.Create(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
+        colorScales ??= new ChartSeriesColorScaleSet(chart);
+        viewport = ColorScaleViewport(chart, context, builder, viewport, colorScales, legendHeight);
+        if (!measureAxes) plot = new ChartRect(plot.Left, plot.Top, plot.Width, Math.Min(plot.Height, viewport.Height));
         var coordinates = ChartBarCoordinateMap.Create(chart);
         var stacks = ChartStackLayout.Create(chart, coordinates);
         if (!chart.Series.Any(series => series.HasSourceData) && chart.Annotations.Count == 0) {
@@ -148,8 +153,8 @@ internal static partial class VisualCartesianCompiler {
                 })) {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
-                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles);
-                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, waterfallCategories);
+                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index]);
+                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, waterfallCategories, colorScales[index]);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
@@ -193,12 +198,12 @@ internal static partial class VisualCartesianCompiler {
     private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
 
-    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null) {
+    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null) {
         var point = series.Points[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
         var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + ChartNumericFormatter.FormatCoordinate(point.X) + ", " + ChartNumericFormatter.FormatCoordinate(point.Y) + ")";
         if (series.HistogramBinLayout != null) label = HistogramPointDescription(series, pointIndex, resolvedLabel.DisplayedText);
-        builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));
+
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(pointIndex),
             ["data-cfx-source-point"] = Number(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
@@ -209,6 +214,9 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         };
+        if (colorSurface != null) label = colorSurface.AddFacts(metadata, pointIndex, label);
+        metadata["aria-label"] = label;
+        builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));
         if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
         if (series.HistogramBinLayout != null) AddHistogramMetadata(metadata, series, pointIndex);
         return builder.PushGroup(id, "point", metadata);
