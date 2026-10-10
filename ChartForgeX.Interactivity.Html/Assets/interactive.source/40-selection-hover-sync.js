@@ -307,23 +307,23 @@
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
+    const styles = new Map();
     // Authored relationship marks use node/link identity instead of numeric points.
     const nativeHit = event.target instanceof Element ? event.target.closest('[data-cfx-target-kind="node"],[data-cfx-target-kind="link"]') : null;
     if (nativeHit && root.contains(nativeHit) && usesPolarCoordinates(nativeHit)
-      && !nativeHit.closest('[data-cfx-role="legend-item"],.cfx-series-muted')
-      && !['zero', 'precision-collapse'].includes(nativeHit.dataset.cfxGeometryStatus)) {
+      && !nativeHit.closest('[data-cfx-role="legend-item"]') && pointerTargetPaint(nativeHit, styles)) {
       return { node: nativeHit, x: event.clientX, y: event.clientY, distance: 0 };
     }
     // Native SVG hit testing identifies curved marks more accurately than their rectangular envelopes.
     const hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null);
-    if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && !hit.classList.contains('cfx-series-muted')) {
+    if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && pointerTargetPaint(hit, styles)) {
       if (usesPolarCoordinates(hit)) return { node: hit, x: event.clientX, y: event.clientY, distance: 0 };
       const box = hit.getBoundingClientRect();
       return { node: hit, x: box.left + box.width / 2, y: box.top + box.height / 2, distance: 0 };
     }
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (node.closest('[data-cfx-role="legend-item"]') || node.classList.contains('cfx-series-muted')) return;
+      if (node.closest('[data-cfx-role="legend-item"]') || !pointerTargetPaint(node, styles)) return;
       if (usesPolarCoordinates(node)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;

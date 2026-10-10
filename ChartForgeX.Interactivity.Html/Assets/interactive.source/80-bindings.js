@@ -25,6 +25,7 @@
       const labels = pointLabelSurfaces(root, node);
       [node, ...labels].forEach(surface => {
         surface.addEventListener('pointerenter', (event) => {
+          if (!pointerTargetPaint(node)) return;
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
@@ -35,6 +36,7 @@
         });
       });
       focusNode.addEventListener('focus', (event) => {
+        if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
         setHover(root, node, true, true);
         showTip(root, tip, node, event);
       });
@@ -44,6 +46,7 @@
       });
       const activateTarget = (event) => {
         event.stopPropagation();
+        if (!tooltipReadoutAvailable(node, event)) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
           else toggleSeries(root, node);

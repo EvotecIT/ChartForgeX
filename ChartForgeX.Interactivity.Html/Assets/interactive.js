@@ -230,6 +230,7 @@
   const showTip = (root, tip, node, event) => {
     if (!hasFeature(root, 'Tooltips')) return;
     if (root.dataset.cfxTooltipPinned === 'true') return;
+    if (!tooltipReadoutAvailable(node, event)) { hideTip(root, tip, false); return; }
     if (!renderTip(tip, node)) return;
     tip.hidden = false;
     moveTip(tip, event, node);
@@ -336,7 +337,7 @@
     root.removeAttribute('data-cfx-pinned-target');
   };
   const pinTip = (root, tip, node, event) => {
-    if (!hasFeature(root, 'Tooltips') || !renderTip(tip, node)) return;
+    if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);
     const pinned = root.dataset.cfxTooltipPinned === 'true' && root.dataset.cfxPinnedTarget === key;
@@ -351,6 +352,155 @@
     root.dataset.cfxPinnedTarget = key;
     moveTip(tip, event, node);
     emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
+  };
+  // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
+  const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
+  // Cache only for this render: host CSS can change between successive focus and pointer events.
+  const paintStyle = (node, styles) => {
+    if (styles.has(node)) return styles.get(node);
+    const style = getComputedStyle(node); styles.set(node, style); return style;
+  };
+  const paintAncestorsVisible = (node, styles) => {
+    if (!node || node.closest('defs,[hidden]')) return false;
+    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement) {
+      const style = paintStyle(ancestor, styles);
+      if (style.display === 'none' || Number(style.opacity) === 0) return false;
+    }
+    // aria-hidden changes accessibility exposure, not whether SVG marks are painted.
+    return true;
+  };
+  const paintNodeVisible = (node, styles) => {
+    if (!paintAncestorsVisible(node, styles)) return false;
+    // Visibility is inherited, and a painted descendant can explicitly restore it.
+    const style = paintStyle(node, styles);
+    return style.visibility !== 'hidden' && style.visibility !== 'collapse';
+  };
+  const solidPaintColour = (value, opacity) => value && value !== 'none' && value !== 'transparent'
+    && !/^url\(/i.test(value) && !/^rgba\(.*[,]\s*0(?:\.0+)?\s*\)$|\/\s*0(?:\.0+)?%?\s*\)$/i.test(value)
+    && Number(opacity) > 0 ? value : '';
+  const paintValue = (node, value, opacity, styles) => {
+    const colour = solidPaintColour(value, opacity);
+    if (colour) return { colour };
+    if (Number(opacity) <= 0) return null;
+    const reference = /^url\(\s*["']?([^"')]+)["']?\s*\)$/i.exec(value || '');
+    if (!reference || !node.ownerSVGElement) return null;
+    // Read only paint servers in this SVG. One visible stop represents a gradient; never follow linked servers.
+    let server;
+    try {
+      const url = new URL(reference[1], node.ownerDocument.baseURI);
+      if (url.href.split('#')[0] !== node.ownerDocument.URL.split('#')[0]) return null;
+      server = node.ownerSVGElement.getElementById(decodeURIComponent(url.hash.slice(1)));
+    } catch (_) { return null; }
+    // A pattern is a painted surface even though it has no single representative swatch colour.
+    if (server && server.matches('pattern')) return { colour: '' };
+    if (!server || !server.matches('linearGradient,radialGradient')) return null;
+    const stops = server.querySelectorAll('stop');
+    for (let index = 0; index < Math.min(stops.length, 32); index++) {
+      const stop = paintStyle(stops[index], styles);
+      const paint = solidPaintColour(stop.stopColor, stop.stopOpacity);
+      if (paint) return { colour: paint };
+    }
+    return null;
+  };
+  // Native producers use rectangular user-space clips. A retained fact or path box can lie outside them.
+  const paintWithinNativeClips = (node, subject = node) => {
+    let box;
+    for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
+      const reference = /^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path') || '');
+      if (!reference) continue;
+      const clip = parent.ownerSVGElement.getElementById(reference[1]);
+      if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
+        || !clip.firstElementChild.matches('rect')) continue;
+      const matrix = parent.getScreenCTM();
+      if (!matrix) return false;
+      const rect = clip.firstElementChild.getBBox();
+      if (!(rect.width > 0 && rect.height > 0)) return false;
+      const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
+        .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+      const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
+      const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
+      // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
+      const precision = .001 * Math.max(Math.abs(matrix.a) + Math.abs(matrix.c), Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001;
+      box ||= subject.getBoundingClientRect();
+      if (subject !== node) {
+        // A marker-free observation uses its source location, not another visible part of the series path.
+        const x = box.left + box.width / 2, y = box.top + box.height / 2;
+        if (x < left - precision || x > right + precision || y < top - precision || y > bottom + precision) return false;
+      } else if (box.right < left - precision || box.left > right + precision || box.bottom < top - precision || box.top > bottom + precision) return false;
+    }
+    return true;
+  };
+  const shapePaint = (node, styles, subject = node) => {
+    if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
+    if (/-(highlight|pattern|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
+      || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)
+      || subject !== node && !paintWithinNativeClips(node, subject)) return null;
+    const paint = paintStyle(node, styles);
+    const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
+    // Open line marks never paint their inherited default black fill.
+    if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
+    return paintValue(node, paint.fill, paint.fillOpacity, styles) || stroke;
+  };
+  const primaryTextPaint = (node, decoration, styles) => {
+    const role = (node.dataset || {}).cfxRole;
+    // Text is the mark for a word-cloud term or annotation caption; ordinary point labels are decoration.
+    if (role !== 'word-cloud-term' && role !== 'annotation' && !(decoration && role === 'legend-item')) return null;
+    for (const text of node.querySelectorAll('text')) {
+      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text)
+        || !decoration && text.closest('[data-cfx-label-decoration]')) continue;
+      const style = paintStyle(text, styles);
+      if (!(parseFloat(style.fontSize) > 0)) continue;
+      const stroke = parseFloat(style.strokeWidth) > 0 ? paintValue(text, style.stroke, style.strokeOpacity, styles) : null;
+      const paint = paintValue(text, style.fill, style.fillOpacity, styles) || stroke;
+      if (paint) return paint;
+    }
+    return null;
+  };
+  const childPaint = (node, decoration, styles, subject) => {
+    if (!node) return null;
+    const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
+    const primary = shapes.filter((shape) => shape.matches('[data-cfx-role^="circle-value"],[data-cfx-role^="gauge-value"],[data-cfx-role="gauge-needle"],[data-cfx-role="bullet-value"]'));
+    for (const shape of primary.concat(shapes)) {
+      if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
+      const paint = shapePaint(shape, styles, subject || shape);
+      if (paint) return paint;
+    }
+    return primaryTextPaint(node, decoration, styles);
+  };
+  const seriesPaint = (node, styles) => {
+    const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
+    if (!owner) return null;
+    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
+      const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
+      if (paint) return paint;
+    }
+    return null;
+  };
+  const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
+    ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
+  // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
+  const pointerTargetPaint = (node, styles = new Map()) => {
+    if (!node || !isInteractiveTarget(node)) return null;
+    const legend = (node.dataset || {}).cfxRole === 'legend-item';
+    if (legend) return childPaint(node, true, styles);
+    if (node.closest('.cfx-series-muted') || ['zero', 'precision-collapse'].includes(node.dataset.cfxGeometryStatus)) return null;
+    return observationPaint(node, styles);
+  };
+  const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
+    if (pointerTargetPaint(node, styles)) return true;
+    // Authored zero/precision-collapse facts remain a keyboard readout, without becoming pointer targets.
+    const pointer = event instanceof PointerEvent || event instanceof MouseEvent && event.detail > 0;
+    return !pointer && ['zero', 'precision-collapse'].includes((node.dataset || {}).cfxGeometryStatus)
+      && paintAncestorsVisible(node, styles) && keyboardTargetAvailable(node);
+  };
+  const paintColour = (node, styles = new Map()) => {
+    if (!node) return '';
+    const legend = (node.dataset || {}).cfxRole === 'legend-item';
+    const paint = legend ? childPaint(node, true, styles) : observationPaint(node, styles);
+    if (paint && paint.colour) return paint.colour;
+    const fallback = !legend && childPaint(seriesLegend(node), true, styles);
+    return fallback && fallback.colour || '';
   };
   // Separately painted captions are pointer surfaces of their declared native point, never new observations.
   const pointLabelTarget = (root, target) => {
@@ -440,15 +590,6 @@
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
   const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop']);
-  const paintColour = (node) => {
-    if (!node) return '';
-    const paint = getComputedStyle(node);
-    const stroke = paint.stroke && paint.stroke !== 'none' ? paint.stroke : '';
-    // Line keys are stroked; their default black fill never paints.
-    if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
-    return paint.fill && paint.fill !== 'none' ? paint.fill : stroke;
-  };
-  const legendSwatchColour = (item) => paintColour(item.querySelector('[data-cfx-label-decoration]') || item.querySelector('rect,circle,line,path'));
   const legendSeriesValues = (item) => {
     const data = item.dataset || {};
     const svg = item.closest('svg');
@@ -488,7 +629,7 @@
     const swatch = document.createElement('span');
     swatch.className = 'cfx-tooltip__swatch';
     swatch.setAttribute('aria-hidden', 'true');
-    const colour = legendSwatchColour(item);
+    const colour = paintColour(item);
     if (colour) swatch.style.backgroundColor = colour;
     title.append(swatch, document.createTextNode(name));
     tip.appendChild(title);
@@ -696,6 +837,27 @@
     };
     image.onerror = () => URL.revokeObjectURL(sourceUrl);
     image.src = sourceUrl;
+  };
+  // Retained native facts need a keyboard readout without becoming pointer targets.
+  const keyboardTargetAvailable = (node) => {
+    if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, new Map())) return false;
+    // Muted data leaves navigation; its legend remains an entry point for restoring the series.
+    if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
+    const style = getComputedStyle(node);
+    if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+    const box = node.getBoundingClientRect();
+    if (box.width > 0 || box.height > 0) return true;
+    // Retained authored facts can have no filled geometry, while still belonging to the data component.
+    const data = node.dataset;
+    if (!data.cfxTargetKind || !data.cfxTargetId || !['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return false;
+    const svg = node.ownerSVGElement;
+    if (!svg) return false;
+    // The viewport detects hidden hosts; CSS-hidden inner groups need their own ancestor check.
+    for (let parent = node.parentElement; parent && parent !== svg; parent = parent.parentElement) {
+      if (getComputedStyle(parent).display === 'none') return false;
+    }
+    const viewport = svg.getBoundingClientRect();
+    return viewport.width > 0 && viewport.height > 0;
   };
   const seriesTarget = (node) => {
     const data = node.dataset || {};
@@ -1006,23 +1168,23 @@
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
+    const styles = new Map();
     // Authored relationship marks use node/link identity instead of numeric points.
     const nativeHit = event.target instanceof Element ? event.target.closest('[data-cfx-target-kind="node"],[data-cfx-target-kind="link"]') : null;
     if (nativeHit && root.contains(nativeHit) && usesPolarCoordinates(nativeHit)
-      && !nativeHit.closest('[data-cfx-role="legend-item"],.cfx-series-muted')
-      && !['zero', 'precision-collapse'].includes(nativeHit.dataset.cfxGeometryStatus)) {
+      && !nativeHit.closest('[data-cfx-role="legend-item"]') && pointerTargetPaint(nativeHit, styles)) {
       return { node: nativeHit, x: event.clientX, y: event.clientY, distance: 0 };
     }
     // Native SVG hit testing identifies curved marks more accurately than their rectangular envelopes.
     const hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null);
-    if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && !hit.classList.contains('cfx-series-muted')) {
+    if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && pointerTargetPaint(hit, styles)) {
       if (usesPolarCoordinates(hit)) return { node: hit, x: event.clientX, y: event.clientY, distance: 0 };
       const box = hit.getBoundingClientRect();
       return { node: hit, x: box.left + box.width / 2, y: box.top + box.height / 2, distance: 0 };
     }
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (node.closest('[data-cfx-role="legend-item"]') || node.classList.contains('cfx-series-muted')) return;
+      if (node.closest('[data-cfx-role="legend-item"]') || !pointerTargetPaint(node, styles)) return;
       if (usesPolarCoordinates(node)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
@@ -1558,6 +1720,7 @@
       const labels = pointLabelSurfaces(root, node);
       [node, ...labels].forEach(surface => {
         surface.addEventListener('pointerenter', (event) => {
+          if (!pointerTargetPaint(node)) return;
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
@@ -1568,6 +1731,7 @@
         });
       });
       focusNode.addEventListener('focus', (event) => {
+        if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
         setHover(root, node, true, true);
         showTip(root, tip, node, event);
       });
@@ -1577,6 +1741,7 @@
       });
       const activateTarget = (event) => {
         event.stopPropagation();
+        if (!tooltipReadoutAvailable(node, event)) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
           else toggleSeries(root, node);
