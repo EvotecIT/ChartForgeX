@@ -100,22 +100,40 @@ public sealed class StoryDesktopAppearanceTests {
         theme.WindowStyle = TerminalWindowStyle.MacOS;
         Assert.Equal(theme.Panel, theme.WindowHeader);
         Assert.True(ChartColorMath.ContrastRatio(theme.Text, theme.WindowHeader) >= 4.5);
-        var document = XDocument.Parse(ReplayStory(theme, TerminalTheme.GraphiteLight()).Prepare().ToSvg());
+        var document = XDocument.Parse(ReplayStory(theme).Prepare().ToSvg());
         Assert.Equal("MacOS", (string?)Roles(document, "story-window-chrome").Single().Attribute("data-cfx-window-style"));
     }
 
     [Fact]
-    public void MinimalReplayCapturesChangesToItsDefaultPalette() {
-        var surface = new VisualStoryReplaySurface(StoryReplay.Create(TimeSpan.FromSeconds(1)).Output(TimeSpan.Zero, "Ready"));
+    public void ReplayCapturesChangesToAnExplicitPalette() {
+        var palette = TerminalTheme.GraphiteDark();
+        var surface = new VisualStoryReplaySurface(StoryReplay.Create(TimeSpan.FromSeconds(1)).Output(TimeSpan.Zero, "Ready"), theme: palette);
         var background = ChartColor.FromHex("#193A27");
-        surface.Theme.Background = background;
+        palette.Background = background;
         var story = VisualStory.Create("Replay").WithSize(600, 400);
         story.Scene("replay", "Output", 1).Panel("terminal", surface);
         story.Outcome("ready", "Ready", "terminal");
         var prepared = story.Prepare();
-        surface.Theme.Background = ChartColor.Black;
+        palette.Background = ChartColor.Black;
         var document = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(background.ToCss(), (string?)Roles(document, "terminal-viewport").Single().Attribute("fill"));
+    }
+
+    [Theory]
+    [InlineData(TerminalWindowStyle.Minimal)]
+    [InlineData(TerminalWindowStyle.None)]
+    [InlineData(TerminalWindowStyle.MacOS)]
+    [InlineData(TerminalWindowStyle.WindowsTerminal)]
+    [InlineData(TerminalWindowStyle.Linux)]
+    public void OmittedReplayPaletteFollowsLightStoryRegardlessOfChrome(TerminalWindowStyle style) {
+        var theme = VisualStoryTheme.GraphiteLight(); theme.WindowStyle = style;
+        var prepared = ReplayStory(theme).Prepare();
+        var document = XDocument.Parse(prepared.ToSvg());
+        Assert.Equal(theme.Panel.ToCss(), (string?)Roles(document, "terminal-viewport").Single().Attribute("fill"));
+        Assert.True(CountColor(PngReader.Decode(prepared.ToPng()), theme.Panel) > 1000);
+        var captured = prepared.ToSvg();
+        theme.Panel = ChartColor.Black;
+        Assert.Equal(captured, prepared.ToSvg());
     }
 
     [Fact]
@@ -129,7 +147,7 @@ public sealed class StoryDesktopAppearanceTests {
         Assert.Equal(480, PngReader.Decode(terminal.ToPng()).Width);
     }
 
-    private static VisualStory ReplayStory(VisualStoryTheme theme, TerminalTheme palette) {
+    private static VisualStory ReplayStory(VisualStoryTheme theme, TerminalTheme? palette = null) {
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(1)).Output(TimeSpan.Zero, "Ready");
         var story = VisualStory.Create("Replay").WithSize(600, 400).WithTheme(theme);
         story.Scene("replay", "Output", 1).Panel("terminal", new VisualStoryReplaySurface(replay, theme: palette));

@@ -13,7 +13,7 @@ namespace ChartForgeX.Stories;
 internal static partial class NativeVisualStoryRenderer {
     private static void DrawReplay(VisualSceneBuilder parent, VisualStory story, VisualStoryReplaySurface surface, ChartRect bounds, double? elapsed) {
         var state = surface.Replay.At(elapsed, surface.Options.HistoryLines);
-        var theme = surface.UsesStoryTheme && story.Theme.WindowStyle != TerminalWindowStyle.Minimal ? story.Theme.TerminalPalette() : surface.Theme;
+        var theme = surface.Theme ?? story.Theme.TerminalPalette();
         DrawTerminalBackground(parent, story, theme, bounds);
         DrawTerminalContents(parent, story, state.Active.Tab, state.Tabs.Select(tab => tab.Tab).ToArray(), state.Active.Lines,
             theme, surface.Options, bounds, state.Marker, state.Active.Discarded);

@@ -65,7 +65,9 @@ theme.Syntax.Variable = ChartColor.FromHex("#74C7FF");
 story.WithTheme(theme);
 ```
 
-`WindowStyle` selects the chrome independently of the palette; `Minimal` uses a restrained title and `None` hides the title bar. `WindowHeader`, `Background`, `BackgroundEnd` and `Syntax` are customizable. Replay surfaces without an explicit terminal palette follow desktop story colors. A palette supplied to `VisualStoryReplaySurface` takes precedence; authored terminal tabs keep their own palettes.
+`WindowStyle` selects the chrome independently of the palette; `Minimal` uses a restrained title and `None` hides the title bar. `WindowHeader`, `Background`, `BackgroundEnd` and `Syntax` are customizable. Replay surfaces without an explicit terminal palette inherit the story colors with every window style. A palette supplied to `VisualStoryReplaySurface` takes precedence; authored terminal tabs keep their own palettes.
+
+`VisualStoryReplaySurface.Theme` is nullable: `null` means inherit the story palette. To customize a replay separately, create a `TerminalTheme`, configure its colors, and pass it as the constructor's `theme` argument. Preparation captures both palettes. Code that previously changed the implicit `surface.Theme` should pass an explicit palette instead.
 
 Pass resolved source to `StorySourceTimeline.Type(source, duration)` to reveal syntax colors together with typed characters. A host tokenizer supplies `StorySourceText` spans before authoring; playback clips those spans to whole Unicode text elements and never calls a parser or executes source. String-based `Type(text, duration)` remains plain text. For edited demonstrations, supply newly resolved spans to `Edit` or `Paste`; Stories does not reparse an unfinished buffer.
 
