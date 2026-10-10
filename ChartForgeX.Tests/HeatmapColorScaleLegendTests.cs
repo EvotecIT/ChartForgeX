@@ -100,6 +100,84 @@ public sealed class HeatmapColorScaleLegendTests {
         }
     }
 
+    [Theory]
+    [InlineData(ChartSeriesKind.Heatmap, 360, false, 1, 0, -10, 30, 1, false)]
+    [InlineData(ChartSeriesKind.HexbinHeatmap, 800, true, 3, 20, 0, 30, 3, false)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false, 1, 10, 0, 40, 1, false)]
+    [InlineData(ChartSeriesKind.Heatmap, 360, false, 1, -20, 0, 40, 0, false)]
+    [InlineData(ChartSeriesKind.HexbinHeatmap, 800, true, 3, 60, 0, 40, 4, false)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap, 360, true, 1, -20, 0, 40, 0, false)]
+    [InlineData(ChartSeriesKind.Heatmap, 360, false, 1, 0, -10, 30, 1, true)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false, 1, -20, 0, 40, 0, true)]
+    public void DivergingMidpointCaptionsFollowTheirNeutralSwatchAndKeepCompleteReadableText(ChartSeriesKind kind,
+        int width, bool inferred, int lowCount, double midpoint, double min, double max, int midpointStep, bool threeColors) {
+        const string family = "CFX Heatmap Midpoint Carlito";
+        var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
+        FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Regular.ttf"), 400);
+        var scale = threeColors ? ChartColorScale.Diverging(Low, Middle, High, midpoint)
+            : lowCount == 1 ? ChartColorScale.Diverging(new[] { Low }, Middle, new[] { ChartColor.FromHex("#4680BC"), ChartColor.FromHex("#286DB4"), High }, midpoint)
+            : ChartColorScale.Diverging(new[] { Low, ChartColor.FromHex("#B2CDE8"), ChartColor.FromHex("#8DB3DA") }, Middle, new[] { High }, midpoint);
+        if (!inferred) scale = scale.WithValueRange(min, max);
+        scale = scale.WithLabels(null, "Target", null);
+        var effectiveMidpoint = scale.EffectiveMidpoint(min, max);
+        var chart = HeatmapColorScaleTests.Create(kind, min, effectiveMidpoint, max).WithSize(width, 400).WithHeatmapColorScale(scale);
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 400)),
+            VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame(), FontSpec.FromFamily(family)));
+        var prefix = kind == ChartSeriesKind.CalendarHeatmap ? "calendar-scale" : "heatmap-scale";
+        var document = XDocument.Parse(prepared.ToSvg()); var steps = Role(document, prefix + "-step");
+        var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == prefix + "-swatch").ToArray();
+        Assert.Equal(5, swatches.Length);
+        Assert.Equal(effectiveMidpoint.ToString("R", CultureInfo.InvariantCulture), (string?)steps[midpointStep].Attribute("data-cfx-value"));
+        Assert.Equal(Middle, swatches[midpointStep].Fill!.Value);
+        var center = swatches[midpointStep].Bounds.Left + swatches[midpointStep].Bounds.Width / 2;
+        var caption = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Id == prefix + "-label-midpoint");
+        var captionRegion = prepared.Regions.Single(region => region.Id == caption.Id);
+        var svgCaption = Role(document, prefix + "-label").Single(group => (string?)group.Attribute("data-cfx-source-id") == caption.Id)
+            .Descendants().Single(element => element.Name.LocalName == "text");
+        Assert.Equal("Target · " + effectiveMidpoint.ToString("R", CultureInfo.InvariantCulture), svgCaption.Value);
+        Assert.Equal(center, caption.X, 6);
+        var svgCenter = double.Parse(svgCaption.Attribute("x")!.Value, CultureInfo.InvariantCulture) + caption.Text.Metrics.Width / 2;
+        Assert.InRange(Math.Abs(svgCenter - center), 0, .001);
+        Assert.True(caption.Text.Size >= 8);
+        Assert.True(caption.Text.Metrics.Width <= captionRegion.Bounds.Width);
+        var key = prepared.Regions.Single(region => region.Role == prefix);
+        Assert.True(captionRegion.Bounds.Left >= key.Bounds.Left && captionRegion.Bounds.Right <= key.Bounds.Right + .000001);
+        Assert.True(captionRegion.Bounds.Bottom <= key.Bounds.Bottom + .000001);
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "matrix.scale-overflow" or "text.overflow");
+        var image = RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        for (var index = 0; index < swatches.Length; index++) {
+            var value = double.Parse(steps[index].Attribute("data-cfx-value")!.Value, CultureInfo.InvariantCulture);
+            Assert.Equal(scale.ColorFor(value, min, max), Pixel(image, swatches[index].Bounds));
+            Assert.Equal(12, swatches[index].Bounds.Height, 6);
+        }
+    }
+
+    [Fact]
+    public void SampledMidpointCaptionFollowsItsFractionalValuePosition() {
+        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, 0, 3.2, 10).WithSize(360, 400)
+            .WithHeatmapColorScale(ChartColorScale.Diverging(Low, Middle, High, 3.2).WithLabels(null, "Target", null));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-scale-swatch").ToArray();
+        var text = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Id == "heatmap-scale-label-midpoint");
+        Assert.Equal(swatches[0].Bounds.Left + 1.78 * swatches[0].Bounds.Width, text.X, 6);
+        Assert.Equal("Target · 3.2", Assert.Single(text.Text.Lines).Text);
+        Assert.Equal("3.2", (string?)Role(XDocument.Parse(prepared.ToSvg()), "heatmap-scale").Single().Attribute("data-cfx-midpoint-value"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SequentialAndConstantMidpointCaptionsKeepTheWholeKeyCenter(bool constant) {
+        var scale = constant ? ChartColorScale.Diverging(new[] { Low }, Middle, new[] { Low, Middle, High })
+            : ChartColorScale.Sequential(new[] { Low, Middle, High, ChartColor.Black });
+        var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.Heatmap, constant ? 7 : 0, constant ? 7 : 10)
+            .WithHeatmapColorScale(scale.WithLabels(null, "Target", null));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var key = prepared.Regions.Single(region => region.Role == "heatmap-scale");
+        var caption = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Id == "heatmap-scale-label-midpoint");
+        Assert.Equal(key.Bounds.Left + key.Bounds.Width / 2, caption.X, 6);
+    }
+
     [Fact]
     public void CalendarMissingPaintRemainsSeparateFromZeroAndHonorsOnlyAnAuthoredNoDataColor() {
         var chart = HeatmapColorScaleTests.Create(ChartSeriesKind.CalendarHeatmap, 0, 10).WithSize(500, 320);

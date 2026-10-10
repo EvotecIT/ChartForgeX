@@ -63,6 +63,43 @@ public sealed class MapColorScaleStopsTests {
         Assert.Equal("#F1F5F9", (string?)step.Attribute("fill"));
     }
 
+    [Theory]
+    [InlineData(0, -10, 30, 1, false)]
+    [InlineData(5, -10, 30, 1.5, false)]
+    [InlineData(-20, 0, 40, 0, false)]
+    [InlineData(60, 0, 40, 4, false)]
+    [InlineData(0, -10, 30, 2.5, true)]
+    public void SampledLegend_MidpointCaptionTracksItsValueBetweenSwatchCenters(double midpoint, double min, double max,
+        double midpointStep, bool longRamp) {
+        var scale = longRamp ? ChartColorScale.Diverging(Low, Neutral, Enumerable.Repeat(High[2], 9), midpoint)
+            : ChartColorScale.Diverging(Low[0], Neutral, High[2], midpoint);
+        var chart = Map("tile-map", scale.WithValueRange(min, max).WithLabels(null, "Target", null));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var svg = XDocument.Parse(prepared.ToSvg());
+        var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "map-scale-step").ToArray();
+        Assert.Equal(longRamp ? 11 : 5, swatches.Length);
+        var center = swatches[0].Bounds.Left + (midpointStep + .5) * swatches[0].Bounds.Width;
+        var caption = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Id == "map-scale-midpoint");
+        Assert.Equal(center, caption.X, 6);
+        var captionRegion = prepared.Regions.Single(region => region.Role == "map-scale-midpoint-label");
+        Assert.Contains("Target", captionRegion.Label, StringComparison.Ordinal);
+        var values = ByRole(svg, "map-scale-step-source").Select(step => Number(step, "data-cfx-value")).ToArray();
+        var image = ChartForgeX.Raster.RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        for (var index = 0; index < swatches.Length; index++) {
+            var box = swatches[index].Bounds;
+            var pixel = ((int)(box.Top + box.Height / 2) * image.Width + (int)(box.Left + box.Width / 2)) * 4;
+            Assert.Equal(scale.ColorFor(values[index], min, max), ChartColor.FromRgba(image.Pixels[pixel], image.Pixels[pixel + 1], image.Pixels[pixel + 2], image.Pixels[pixel + 3]));
+        }
+    }
+
+    [Fact]
+    public void MidpointAnchorsKeepConstantSequentialAndHugeFiniteDomainContracts() {
+        var three = ChartColorScale.Diverging(Low[0], Neutral, High[2], double.MaxValue / 2);
+        Assert.Equal(3, ChartColorScaleLegend.MidpointStep(three, -double.MaxValue, double.MaxValue, 5), 6);
+        Assert.Equal(2, ChartColorScaleLegend.MidpointStep(three, 7, 7, 5));
+        Assert.Equal(0, ChartColorScaleLegend.MidpointStep(ChartColorScale.Diverging(Low, Neutral, High), 7, 7, 7));
+        Assert.Equal(2, ChartColorScaleLegend.MidpointStep(ChartColorScale.Sequential(new[] { Low[0], Low[1], High[0], High[1] }), 0, 10, 4));
+    }
+
     [Fact]
     public void Sequential_WithStops_SpreadsThemEvenly() {
         var scale = ChartColorScale.Sequential(new[] { ChartColor.FromHex("#000000"), ChartColor.FromHex("#FF0000"), ChartColor.FromHex("#FFFFFF") });

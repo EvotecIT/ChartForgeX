@@ -154,10 +154,10 @@ internal static class ChartHeatmapSurface {
     }
 
     /// <summary>
-    /// Returns the swatch under the midpoint label of a horizontal map scale: the midpoint stop when each stop has its
-    /// own swatch, the end swatch when a many-step scale's midpoint sits at that end, otherwise the middle swatch.
+    /// Returns the midpoint label's swatch-center index: an exact stop for a per-stop ramp or a fractional position
+    /// between uniformly sampled values. Sequential, constant and default scales retain their established fallback.
     /// </summary>
-    public static int MapScaleMidpointStep(Chart chart, double min, double max, int stepCount) {
+    public static double MapScaleMidpointStep(Chart chart, double min, double max, int stepCount) {
         return chart.Options.MapColorScale is ChartColorScale scale ? ChartColorScaleLegend.MidpointStep(scale, min, max, stepCount) : stepCount / 2;
     }
 

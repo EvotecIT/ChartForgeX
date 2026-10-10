@@ -7,7 +7,7 @@ using ChartForgeX.Themes;
 public static partial class V2GalleryModels {
     private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
         var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
-        if (variant is "color-scale" or "compact-color-scale") return MatrixColorScale(kind, mode);
+        if (variant is "color-scale" or "compact-color-scale") return MatrixColorScale(kind, variant, mode);
         switch (kind) {
             case ChartSeriesKind.Heatmap:
                 if (variant == "options") return States(mode).WithXLabels("Identity", "Network", "Storage", "Backup")
@@ -39,7 +39,7 @@ public static partial class V2GalleryModels {
             chart.WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
         return chart;
     }
-    private static Chart MatrixColorScale(ChartSeriesKind kind, VisualThemeMode mode) {
+    private static Chart MatrixColorScale(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         if (kind == ChartSeriesKind.CalendarHeatmap)
             return Chart.Create().AddCalendarHeatmap("Daily observations", Enumerable.Range(0, 120)
@@ -51,7 +51,10 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Heatmap)
             return chart.AddHeatmapRow("Primary", new double?[] { -20, -10, 0, null, 10, 20 })
                 .AddHeatmapRow("Secondary", new double?[] { -15, 0, 5, 15, null, 25 })
-                .WithHeatmapColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Palette[0], 0)
+                .WithHeatmapColorScale((variant == "color-scale"
+                    ? ChartColorScale.Diverging(new[] { colors.Status.Critical.Fill }, colors.Surface,
+                        new[] { colors.SequentialRamp[2], colors.SequentialRamp[3], colors.SequentialRamp[4] }, 0)
+                    : ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Palette[0], 0))
                     .WithValueRange(-20, 20).WithLabels("Below target", "Target", "Above target"));
         return chart.AddHexbinHeatmapRow("Primary", new double?[] { 0, 30, 40, null, 80, 100 })
             .AddHexbinHeatmapRow("Secondary", new double?[] { 15, 40, 60, 80, null, 120 })

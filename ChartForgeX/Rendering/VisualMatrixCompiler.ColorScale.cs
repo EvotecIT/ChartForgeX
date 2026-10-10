@@ -55,7 +55,7 @@ internal static partial class VisualMatrixCompiler {
                 builder.AddDiagnostic(new VisualDiagnostic("matrix.scale-overflow", "The numeric color key does not fit the viewport; complete scale values and captions remain in descriptive regions."));
         }
         var pitchY = available / rows; var swatchHeight = Math.Min(12, Math.Max(0, pitchY - row - gap));
-        var y = bounds.Top + gap;
+        var y = bounds.Top + gap; var midpointX = bounds.Left + bounds.Width / 2;
         var metadata = new Dictionary<string, string> { ["data-cfx-scale-mode"] = scale.Mode.ToString().ToLowerInvariant() };
         if (captions == null) {
             metadata["data-cfx-min-value"] = VisualStateSceneTools.Number(scale.EffectiveMinimum(min));
@@ -83,6 +83,8 @@ internal static partial class VisualMatrixCompiler {
                 }
             } else {
                 var steps = ChartColorScaleLegend.Steps(scale, min, max); var width = bounds.Width / steps.Length;
+                if (scale.Mode == ChartColorScaleMode.Diverging && scale.EffectiveMaximum(max) > scale.EffectiveMinimum(min))
+                    midpointX = bounds.Left + (ChartColorScaleLegend.MidpointStep(scale, min, max, steps.Length) + .5) * width;
                 var labels = ChartNumericFormatter.FormatScaleValues(chart.Options, steps);
                 for (var index = 0; index < steps.Length; index++)
                     Tile(index, new ChartRect(bounds.Left + index * width, y, width, swatchHeight), scale.BlendFor(steps[index], min, max), labels[index],
@@ -95,8 +97,10 @@ internal static partial class VisualMatrixCompiler {
             }
             y += rows * pitchY;
             if (scale.MidpointLabel != null) {
+                // Keep the caption centered on its stop, with a symmetric clip inside the key even at an endpoint.
+                var width = 2 * Math.Min(midpointX - bounds.Left, bounds.Right - midpointX);
                 Caption(scale.MidpointLabel + " · " + ChartNumericFormatter.FormatScaleValues(chart.Options, new[] { scale.EffectiveMidpoint(min, max) })[0],
-                    new ChartRect(bounds.Left, y, bounds.Width, row), "midpoint", TextAlignment.Center);
+                    new ChartRect(midpointX - width / 2, y, width, row), "midpoint", TextAlignment.Center);
                 y += row + gap;
             }
             if (missing) {
@@ -115,8 +119,8 @@ internal static partial class VisualMatrixCompiler {
         }
         void Caption(string text, ChartRect box, string id, TextAlignment alignment) {
             var captionStyle = style;
-            if (captions != null && builder.MeasureText(text, style).Width > box.Width) {
-                // A bounded key can need more columns than its preferred caption size allows.
+            if ((captions != null || id == "midpoint") && builder.MeasureText(text, style).Width > box.Width) {
+                // A bounded key or endpoint caption can need less width than its preferred size allows.
                 // Keep ordinary numeric intervals complete without shrinking below readable text.
                 captionStyle = style.Clone();
                 var minimum = Math.Min(8, style.EffectiveFontSize);
