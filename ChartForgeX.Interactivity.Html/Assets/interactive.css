@@ -735,7 +735,7 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line { background: none; box-shadow: none; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--x { border-top: 1px dashed var(--cfx-crosshair-axis); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--y { border-left: 1px dashed var(--cfx-crosshair-axis); }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__label { display: none; }
+.cfx-interactive-chart[data-cfx-crosshair-label="false"] .cfx-crosshair__label { display: none; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered { filter: none; }
 /* Series hover keeps the pointed series at full strength and dims the others to 30 %; the shared crosshair dims nothing. */
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-point-interaction-target) { opacity: .3; }

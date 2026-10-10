@@ -68,9 +68,9 @@
     return null;
   };
   const seriesPaint = (node, styles) => {
-    const owner = node.closest('[data-cfx-role="series"]');
+    const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
     if (!owner) return null;
-    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"]')) {
+    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
       const paint = childPaint(layer, false, styles);
       if (paint) return paint;
     }
@@ -78,6 +78,29 @@
   };
   const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
     ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
+  // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
+  const pointerTargetPaint = (node, styles = new Map()) => {
+    if (!node || !isInteractiveTarget(node)) return null;
+    const legend = (node.dataset || {}).cfxRole === 'legend-item';
+    if (legend) return childPaint(node, true, styles);
+    if (node.closest('.cfx-series-muted') || ['zero', 'precision-collapse'].includes(node.dataset.cfxGeometryStatus)) return null;
+    const paint = observationPaint(node, styles);
+    if (paint) return paint;
+    // Text annotations are painted text rather than data geometry, and retain their native readout.
+    if ((node.dataset.cfxRole || '').startsWith('annotation') && paintNodeVisible(node, styles)) {
+      const box = node.getBoundingClientRect();
+      if (box.width || box.height) return { colour: '' };
+    }
+    return null;
+  };
+  const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
+    if (pointerTargetPaint(node, styles)) return true;
+    // Authored zero/precision-collapse facts remain a keyboard readout, without becoming pointer targets.
+    const pointer = event instanceof PointerEvent || event instanceof MouseEvent && event.detail > 0;
+    return !pointer && ['zero', 'precision-collapse'].includes((node.dataset || {}).cfxGeometryStatus)
+      && paintAncestorsVisible(node, styles) && keyboardTargetAvailable(node);
+  };
   const paintColour = (node, styles = new Map()) => {
     if (!node) return '';
     const legend = (node.dataset || {}).cfxRole === 'legend-item';

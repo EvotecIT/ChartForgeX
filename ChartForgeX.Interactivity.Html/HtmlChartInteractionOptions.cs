@@ -18,7 +18,6 @@ public sealed class HtmlChartInteractionOptions {
         Interaction = ChartInteractionOptions.ReportReview();
         IncludeResetButton = true;
         ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
-        TooltipMode = HtmlChartTooltipMode.SharedX;
     }
 
     /// <summary>
@@ -69,11 +68,12 @@ public sealed class HtmlChartInteractionOptions {
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
     /// <summary>
-    /// Gets or sets whether tooltips describe one target or visible observations at the same numeric x coordinate.
-    /// Shared-x tooltips fall back to one target when comparable x/y observations are unavailable.
-    /// The <see cref="ChartInteractionFeatures.Tooltips"/> feature controls whether either mode is enabled.
+    /// Gets the tooltip content and pointer acquisition options.
     /// </summary>
-    public HtmlChartTooltipMode TooltipMode { get; set; }
+    public HtmlChartTooltipOptions Tooltip { get; } = new HtmlChartTooltipOptions();
+
+    /// <summary>Gets the crosshair presentation options.</summary>
+    public HtmlChartCrosshairOptions Crosshair { get; } = new HtmlChartCrosshairOptions();
 
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;

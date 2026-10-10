@@ -277,6 +277,7 @@
   const showTip = (root, tip, node, event) => {
     if (!hasFeature(root, 'Tooltips')) return;
     if (root.dataset.cfxTooltipPinned === 'true') return;
+    if (!tooltipReadoutAvailable(node, event)) { hideTip(root, tip, false); return; }
     if (!renderTip(tip, node)) return;
     tip.hidden = false;
     moveTip(tip, event, node);
@@ -388,7 +389,7 @@
     root.removeAttribute('data-cfx-pinned-target');
   };
   const pinTip = (root, tip, node, event) => {
-    if (!hasFeature(root, 'Tooltips') || !renderTip(tip, node)) return;
+    if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);
     const pinned = root.dataset.cfxTooltipPinned === 'true' && root.dataset.cfxPinnedTarget === key;

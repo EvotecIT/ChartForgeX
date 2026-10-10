@@ -1,6 +1,6 @@
   // Data and legend are separate roving components. Source identities stay on the actual rendered marks.
   const keyboardTargetAvailable = (node) => {
-    if (node.closest('defs,[hidden],[aria-hidden="true"]')) return false;
+    if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, new Map())) return false;
     // Muted data leaves navigation; its legend remains an entry point for restoring the series.
     if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
     const style = getComputedStyle(node);

@@ -40,7 +40,7 @@ There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `I
 
 ## Tooltip modes
 
-`HtmlChartInteractionOptions.TooltipMode` selects the readout independently of the theme or palette. The default, `HtmlChartTooltipMode.SharedX`, shows one visible observation per series at the target's numeric x coordinate. When several observations share that x, the tooltip uses the pointed or focused observation for its series and the first eligible observation for each other series. Rows retain full source values and sort by declared state, then descending value. Muted series, hidden marks, and missing or non-finite values are omitted. Swatches follow the painted marks, including point colour overrides, gradient fills, and host SVG properties; marker-free lines use their line paint.
+`HtmlChartInteractionOptions.Tooltip.Mode` selects the readout independently of the theme or palette. The default, `HtmlChartTooltipMode.SharedX`, shows one visible observation per series at the target's numeric x coordinate. When several observations share that x, the tooltip uses the pointed or focused observation for its series and the first eligible observation for each other series. Rows retain full source values and sort by declared state, then descending value. Muted series, hidden marks, and missing or non-finite values are omitted. Swatches follow the painted marks, including point colour overrides, gradient fills, and host SVG properties; marker-free lines use their line paint.
 
 Visibility follows the primary data mark. An ancestor's `display:none` or zero opacity hides its descendants; a mark can restore inherited `visibility:hidden` with `visibility:visible`. Hidden line markers retain a shared row while the series path remains visible. Charts marked `AsDecorative()` retain pointer tooltips because `aria-hidden` affects accessibility exposure, not painted visibility.
 
@@ -48,11 +48,32 @@ Use `Single` to inspect the pointed or focused target and its metadata:
 
 ```csharp
 chart.SaveInteractiveHtml("observations.html", options => {
-    options.TooltipMode = HtmlChartTooltipMode.Single;
+    options.Tooltip.Mode = HtmlChartTooltipMode.Single;
 });
 ```
 
-Shared-x readouts use Cartesian source observations, including scatter and bubble values. Targets with coordinates that describe layout or categories, such as heatmaps, maps, pie slices, and radial charts, keep a single-target tooltip with their value and metadata. Range and financial summaries also retain their individual bounds and measures rather than reducing them to one shared value. Derived regression endpoints use the same single-target fallback. Single-target readouts show the series, values, bounds, and caller-supplied metadata. Renderer roles, source ordinals, and chart-kind names are omitted from the tooltip; normalized identities and host events retain those fields. Legend tooltips keep their series summaries in either mode, including muted series. `HtmlInteractiveDashboardOptions.TooltipMode` applies the same choice to every child chart. Both modes require `ChartInteractionFeatures.Tooltips`; choosing a mode does not enable the feature.
+Shared-x readouts use Cartesian source observations, including scatter and bubble values. Targets with coordinates that describe layout or categories, such as heatmaps, maps, pie slices, and radial charts, keep a single-target tooltip with their value and metadata. Range and financial summaries also retain their individual bounds and measures rather than reducing them to one shared value. Derived regression endpoints use the same single-target fallback. Single-target readouts show the series, values, bounds, and caller-supplied metadata. Renderer roles, source ordinals, and chart-kind names are omitted from the tooltip; normalized identities and host events retain those fields. Legend tooltips keep their series summaries in either mode, including muted series. `HtmlInteractiveDashboardOptions.Tooltip.Mode` applies the same choice to every child chart. Both modes require `ChartInteractionFeatures.Tooltips`; choosing a mode does not enable the feature.
+
+## Pointer acquisition and crosshair labels
+
+`Tooltip.Range` controls how pointer movement acquires a readout:
+
+- `HtmlChartTooltipRange.Exact` requires a native hit on a painted target.
+- `HtmlChartTooltipRange.Nearest` acquires the nearest painted Cartesian observation anywhere inside the chart stage.
+- `HtmlChartTooltipRange.WithinDistance(cssPixels)` limits that lookup to a finite, non-negative distance from the observation's screen centre. The default is 120 CSS pixels. A zero distance still permits native hits.
+
+Distances use CSS pixels after responsive layout and SVG transforms, so the same setting works with `Fit` and `Readable`. Scalar, polar, annotation, and legend targets retain native hit semantics. Inferred lookup does not extend outside the stage. Hidden paint and muted data cannot become pointer readouts through a retained bounding box or a legend colour. A visible child can restore inherited visibility, and marker-free observations remain eligible while their series path is painted. Keyboard focus and pinned readouts retain their explicit targets, including keyboard-only authored zero or precision-collapse facts.
+
+Tooltip acquisition works with `ChartInteractionFeatures.Tooltips` even when `Crosshair` is disabled. The crosshair keeps its own 120 CSS pixel guide range. `Crosshair.ShowLabel` controls the guide's label and defaults to true for every palette; set it to false when a compact layout already provides the same information in the tooltip. These options do not enable either feature.
+
+```csharp
+chart.SaveInteractiveHtml("observations.html", options => {
+    options.Tooltip.Range = HtmlChartTooltipRange.WithinDistance(64);
+    options.Crosshair.ShowLabel = false;
+});
+```
+
+`HtmlInteractiveDashboardOptions.Tooltip` and `.Crosshair` apply the same settings to every child chart. Replace the former flat `TooltipMode` property with `Tooltip.Mode` when migrating existing adapter configuration.
 
 ## Semantic Series Identity
 

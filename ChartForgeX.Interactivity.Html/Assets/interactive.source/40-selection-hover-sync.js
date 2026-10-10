@@ -353,39 +353,37 @@
   };
   // A producer's coordinate contract controls inferred geometry; native painted targets always retain their identity.
   const usesPolarCoordinates = (node) => !!node.closest('[data-cfx-coordinate-system="polar"]');
-  const nearestPoint = (root, event) => {
+  // Resolve one candidate in screen coordinates. Tooltip range and crosshair range consume it independently.
+  const nearestPoint = (root, event, searchNearest) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
-    // Authored relationship marks use node/link identity instead of numeric points.
-    const nativeHit = event.target instanceof Element ? event.target.closest('[data-cfx-target-kind="node"],[data-cfx-target-kind="link"]') : null;
-    if (nativeHit && root.contains(nativeHit) && usesPolarCoordinates(nativeHit)
-      && !nativeHit.closest('[data-cfx-role="legend-item"],.cfx-series-muted')
-      && !['zero', 'precision-collapse'].includes(nativeHit.dataset.cfxGeometryStatus)) {
-      return { node: nativeHit, x: event.clientX, y: event.clientY, distance: 0 };
-    }
-    // Native SVG hit testing identifies curved marks more accurately than their rectangular envelopes.
-    const hit = event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null;
-    if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && !hit.classList.contains('cfx-series-muted')) {
-      if (usesPolarCoordinates(hit)) return { node: hit, x: event.clientX, y: event.clientY, distance: 0 };
+    const styles = new Map();
+    const hit = event.target instanceof Element ? event.target.closest(targetSelector) : null;
+    if (hit && root.contains(hit) && (hit.hasAttribute('data-cfx-point') || renderedTargetKind(hit) !== 'series' || hit.hasAttribute('data-cfx-value'))
+      && pointerTargetPaint(hit, styles)) {
       const box = hit.getBoundingClientRect();
-      return { node: hit, x: box.left + box.width / 2, y: box.top + box.height / 2, distance: 0 };
+      return { node: hit, x: usesPolarCoordinates(hit) ? event.clientX : box.left + box.width / 2,
+        y: usesPolarCoordinates(hit) ? event.clientY : box.top + box.height / 2, distance: 0, exact: true };
     }
+    if (!searchNearest) return null;
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (node.closest('[data-cfx-role="legend-item"]') || node.classList.contains('cfx-series-muted')) return;
-      if (usesPolarCoordinates(node)) return;
+      if (usesPolarCoordinates(node) || !pointerTargetPaint(node, styles)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
-      const x = box.left + box.width / 2;
-      const y = box.top + box.height / 2;
-      const dx = x - event.clientX;
-      const dy = y - event.clientY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (!best || distance < best.distance) best = { node, x, y, distance };
+      const x = box.left + box.width / 2, y = box.top + box.height / 2;
+      const distance = Math.hypot(x - event.clientX, y - event.clientY);
+      if (!best || distance < best.distance) best = { node, x, y, distance, exact: false };
     });
-    return best && best.distance <= 120 ? best : null;
+    return best;
+  };
+  const tooltipAcquiresPoint = (root, point) => {
+    if (!point || !hasFeature(root, 'Tooltips')) return false;
+    if (point.exact) return true;
+    const range = root.dataset.cfxTooltipRange || 'distance';
+    return range === 'nearest' || range === 'distance' && point.distance <= Number(root.dataset.cfxTooltipDistance ?? 120);
   };
   const showCrosshair = (root, crosshair, point, event, emit) => {
     if (!crosshair || !point) return;
@@ -411,54 +409,34 @@
     return hit && (hit.dataset || {}).cfxSeries === (node.dataset || {}).cfxSeries ? 'series' : 'shared';
   };
   const updateNearestPoint = (root, crosshair, tip, event) => {
-    if (!hasFeature(root, 'Crosshair')) return;
+    const guideEnabled = hasFeature(root, 'Crosshair');
+    if (!guideEnabled && !hasFeature(root, 'Tooltips')) return;
     if (event.target instanceof Element && event.target.closest('[data-cfx-role="legend-item"]')) {
-      // Legend items own their hover summary; the crosshair must not replace it.
+      // Legend items own their hover summary; inferred observations must not replace it.
       hideCrosshair(root, crosshair);
       return;
     }
-    // An explicitly valued series can be a native scalar datum without Cartesian point geometry.
-    const scalar = event.target instanceof Element ? event.target.closest('[data-cfx-target-kind="series"][data-cfx-value]') : null;
-    const scalarStyle = scalar && getComputedStyle(scalar);
-    if (scalar && root.contains(scalar)) {
+    const searchNearest = guideEnabled || root.dataset.cfxTooltipRange !== 'exact';
+    const point = nearestPoint(root, event, searchNearest);
+    const tooltipPoint = tooltipAcquiresPoint(root, point);
+    const guidePoint = guideEnabled && point && (point.exact || point.distance <= 120)
+      && !usesPolarCoordinates(point.node) && point.node.hasAttribute('data-cfx-point');
+    if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
-      if (scalar.closest('defs,[hidden],[aria-hidden="true"],[data-cfx-role="legend-item"],.cfx-series-muted')
-        || scalarStyle.display === 'none' || ['hidden', 'collapse'].includes(scalarStyle.visibility)
-        || ['zero', 'precision-collapse'].includes(scalar.dataset.cfxGeometryStatus)) {
-        clearHover(root, true, true);
-        hideTip(root, tip, false);
-        return;
-      }
-      if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(scalar)) || root.dataset.cfxHoverMode !== 'series')
-        setHover(root, scalar, true, true, 'series');
-      showTip(root, tip, scalar, event);
-      return;
-    }
-    const point = nearestPoint(root, event);
-    if (!point) {
-      hideCrosshair(root, crosshair);
-      const hit = event.target instanceof Element ? event.target.closest(targetSelector) : null;
-      if (!hit || usesPolarCoordinates(hit)) hideTip(root, tip, false);
+      hideTip(root, tip, false);
       clearHover(root, true, true);
       return;
     }
-    const target = targetIdentity(point.node);
-    const key = targetKey(target);
-    if (usesPolarCoordinates(point.node)) {
-      hideCrosshair(root, crosshair);
-      if (root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== 'series') setHover(root, point.node, true, true, 'series');
-      showTip(root, tip, point.node, event);
-      return;
-    }
-    const mode = crosshairHoverMode(event, point.node);
-    if (root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode) {
-      setHover(root, point.node, true, true, mode);
-      showCrosshair(root, crosshair, point, event, true);
-      showTip(root, tip, point.node, event);
-    } else {
-      showCrosshair(root, crosshair, point, event, false);
-      moveTip(tip, event, point.node);
-    }
+    const key = targetKey(targetIdentity(point.node));
+    const mode = point.node.hasAttribute('data-cfx-point') && !usesPolarCoordinates(point.node)
+      ? crosshairHoverMode(event, point.node) : 'series';
+    const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
+    if (changed) setHover(root, point.node, true, true, mode);
+    if (guidePoint) showCrosshair(root, crosshair, point, event, changed);
+    else hideCrosshair(root, crosshair);
+    // Recheck paint on each event: host CSS may change while the semantic target remains the same.
+    if (tooltipPoint) showTip(root, tip, point.node, event);
+    else hideTip(root, tip, false);
   };
   const applySelectionByLabel = (root, label, selected) => {
     if (!label) return;

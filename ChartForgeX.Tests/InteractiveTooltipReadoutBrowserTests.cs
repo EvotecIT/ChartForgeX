@@ -34,7 +34,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
             case "gauge": chart.AddGauge("Capacity", 0); break;
             case "bullet": chart.AddBullet("Requests", 7, 10); break;
         }
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.TooltipMode = HtmlChartTooltipMode.Single), width, 560);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), width, 560);
         var page = session.Page;
         var target = page.Locator("[data-cfx-keyboard-component='data']").First;
         var raw = await target.EvaluateAsync<JsonElement>("node => ({ role: node.dataset.cfxRole, kind: node.dataset.cfxKind, point: node.dataset.cfxPoint, id: node.dataset.cfxTargetId, value: node.dataset.cfxValue ?? node.dataset.cfxY, percent: node.dataset.cfxPercent })");
@@ -110,7 +110,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
             case "sunburst": chart.AddSunburst("Teams", new[] { new ChartHierarchyItem("Teams", "Teams"), new ChartHierarchyItem("Support", "Support", "Teams", 8), new ChartHierarchyItem("Other", "Other", "Teams", 5) }); break;
             case "polar-area": chart.AddPolarArea("Requests", ChartPoints.FromValues(8, 5)); break;
         }
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.TooltipMode = HtmlChartTooltipMode.Single), dark ? 340 : 700, 560);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), dark ? 340 : 700, 560);
         var page = session.Page;
         var gauge = family.StartsWith("gauge", StringComparison.Ordinal);
         var rawValue = gauge ? "13" : "8";
@@ -158,7 +158,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .AddCircle("Capacity", 8, max: 13);
         chart.Series[0].WithInteractionKey("capacity-source");
-        var html = chart.ToInteractiveHtmlPage(options => options.TooltipMode = HtmlChartTooltipMode.Single)
+        var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single)
             .Replace("<main ", "<button id='before-chart'>Before chart</button><main ", StringComparison.Ordinal);
         if (dark) {
             var position = html.IndexOf("data-cfx-role=\"circle-chart\"", StringComparison.Ordinal);
@@ -232,7 +232,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         await page.Keyboard.PressAsync("Space");
         await page.Locator(Legend(0)).BlurAsync();
         await MoveAwayAsync(page);
-        await target.EvaluateAsync("node => node.setAttribute('aria-hidden', 'true')");
+        await target.EvaluateAsync("node => node.style.setProperty('visibility', 'hidden', 'important')");
         center = await CircleLocationAsync(target, false);
         await page.Mouse.MoveAsync((float)center[0], (float)center[1]);
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
