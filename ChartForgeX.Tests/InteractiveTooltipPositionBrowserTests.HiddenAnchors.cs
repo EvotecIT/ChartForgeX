@@ -9,6 +9,10 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     [Theory]
+    [InlineData(HtmlChartTooltipAnchor.Pointer, "target", false)]
+    [InlineData(HtmlChartTooltipAnchor.Pointer, "target", true)]
+    [InlineData(HtmlChartTooltipAnchor.Pointer, "ancestor", false)]
+    [InlineData(HtmlChartTooltipAnchor.Pointer, "ancestor", true)]
     [InlineData(HtmlChartTooltipAnchor.Node, "target", false)]
     [InlineData(HtmlChartTooltipAnchor.Node, "target", true)]
     [InlineData(HtmlChartTooltipAnchor.Node, "ancestor", false)]
@@ -37,7 +41,6 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         var shown = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight });
         Assert.Contains(literal, shown.GetProperty("text").GetString()!, StringComparison.Ordinal);
         var active = await ListenerStateAsync(page);
-        Assert.Equal(baseline.GetProperty("observed").GetInt32() + 1, active.GetProperty("observed").GetInt32());
         await page.EvaluateAsync("""
             ({selector,subject})=>{
                 const node=document.querySelector(selector);
@@ -51,6 +54,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await CaptureAsync(page, $"position-hidden-{anchor}-{subject}-{(pinned ? "pinned" : "shown")}", new { baseline, shown, active, hidden, released }, session);
         Assert.True(hidden.GetProperty("hidden").GetBoolean());
         Assert.False(hidden.GetProperty("pinned").GetBoolean());
+        Assert.Equal(baseline.GetProperty("observed").GetInt32() + 1, active.GetProperty("observed").GetInt32());
         foreach (var name in new[] { "resize", "scroll", "transitionend", "observed" })
             Assert.Equal(baseline.GetProperty(name).GetInt32(), released.GetProperty(name).GetInt32());
         await page.EvaluateAsync("()=>window.hiddenPositionSubject.removeAttribute('hidden')");
@@ -63,6 +67,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     }
 
     [Theory]
+    [InlineData(HtmlChartTooltipAnchor.Pointer, "inner", false)]
     [InlineData(HtmlChartTooltipAnchor.Node, "outer", true)]
     [InlineData(HtmlChartTooltipAnchor.Chart, "inner", false)]
     public async Task HiddenClosedShadowHostReleasesReadoutPositionWatchers(HtmlChartTooltipAnchor anchor, string subject, bool pinned) {

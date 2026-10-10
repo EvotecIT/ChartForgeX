@@ -12,6 +12,7 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     [Theory]
+    [InlineData(HtmlChartTooltipAnchor.Pointer)]
     [InlineData(HtmlChartTooltipAnchor.Node)]
     [InlineData(HtmlChartTooltipAnchor.Chart)]
     public async Task SwitchingFromShownToDelayedTargetKeepsTimingOwnership(HtmlChartTooltipAnchor anchor) {

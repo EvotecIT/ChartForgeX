@@ -7,6 +7,8 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     [Theory]
+    [InlineData(HtmlChartTooltipAnchor.Pointer, false)]
+    [InlineData(HtmlChartTooltipAnchor.Pointer, true)]
     [InlineData(HtmlChartTooltipAnchor.Node, false)]
     [InlineData(HtmlChartTooltipAnchor.Node, true)]
     [InlineData(HtmlChartTooltipAnchor.Chart, false)]
@@ -82,6 +84,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     }
 
     [Theory]
+    [InlineData(HtmlChartTooltipAnchor.Pointer, false, "style-opacity", "target")]
+    [InlineData(HtmlChartTooltipAnchor.Pointer, true, "class-visibility", "ancestor")]
     [InlineData(HtmlChartTooltipAnchor.Node, false, "style-opacity", "ancestor")]
     [InlineData(HtmlChartTooltipAnchor.Node, false, "style-visibility", "ancestor")]
     [InlineData(HtmlChartTooltipAnchor.Node, false, "class-opacity", "ancestor")]
