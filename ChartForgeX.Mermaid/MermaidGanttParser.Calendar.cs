@@ -9,7 +9,14 @@ internal static partial class MermaidGanttParser {
     private static bool TryResolveDurationEnd(DateTime start, double amount, string unit, MermaidGanttDocument document, out DateTime end) {
         end = start;
         try {
-            end = AddDuration(start, amount, unit);
+            return TryResolveCalendarEnd(start, AddDuration(start, amount, unit), document, out end);
+        } catch (ArgumentOutOfRangeException) { return false; }
+        catch (OverflowException) { return false; }
+    }
+
+    private static bool TryResolveCalendarEnd(DateTime start, DateTime authoredEnd, MermaidGanttDocument document, out DateTime end) {
+        end = authoredEnd;
+        try {
             var excluded = CalendarTokens(document.Excludes);
             if (excluded.Count == 0 || end - start < TimeSpan.FromDays(1)) return true;
             var included = CalendarTokens(document.Includes);
@@ -37,4 +44,13 @@ internal static partial class MermaidGanttParser {
 
     private static HashSet<string> CalendarTokens(string? value) => new(
         (value ?? string.Empty).Split(new[] { ',', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries), StringComparer.OrdinalIgnoreCase);
+
+    private static string MergeCalendarTokens(string? existing, string added) {
+        var tokens = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var token in ((existing ?? string.Empty) + "," + added).Split(new[] { ',', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)) {
+            if (seen.Add(token)) tokens.Add(token.ToLowerInvariant());
+        }
+        return string.Join(", ", tokens);
+    }
 }
