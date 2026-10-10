@@ -120,6 +120,11 @@ for (const { folder, file, hasExpected } of files) {
       if (expected.classes) assert.deepEqual(keys(diagram.db.getClasses()), expected.classes);
       if (expected.entities) assert.deepEqual(keys(diagram.db.getEntities()), expected.entities);
       if (expected.states) assert.deepEqual(keys(diagram.db.getStates()), expected.states);
+      if (expected.participants) {
+        assert.deepEqual(keys(diagram.db.getActors()), expected.participants);
+        assert.deepEqual(diagram.db.getMessages().filter(message => message.from && message.to && message.placement === undefined)
+          .map(message => [message.from, message.to, message.message]), expected.messages);
+      }
       if (Object.hasOwn(expected, 'direction')) {
         assert.equal(typeof diagram.db.getDirection === 'function' ? diagram.db.getDirection() : null, expected.direction);
       }
