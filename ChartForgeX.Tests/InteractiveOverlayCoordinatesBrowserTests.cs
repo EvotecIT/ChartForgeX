@@ -115,8 +115,8 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static string Host(bool graphite, HtmlChartResponsiveLayout layout, int width, double scale, bool pageScroll, ChartInteractionFeatures features) {
-        var fragment = CoordinateChart(graphite).ToInteractiveHtmlFragment(options => {
+    private static string Host(bool graphite, HtmlChartResponsiveLayout layout, int width, double scale, bool pageScroll, ChartInteractionFeatures features, Chart? chart = null) {
+        var fragment = (chart ?? CoordinateChart(graphite)).ToInteractiveHtmlFragment(options => {
             options.ResponsiveLayout = layout;
             options.Interaction.Features = features;
             options.IncludeResetButton = false;

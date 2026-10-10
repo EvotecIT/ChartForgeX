@@ -1140,8 +1140,9 @@
     const stage = root.querySelector('.cfx-stage');
     if (!stage || !stage.contains(node)) return;
     const style = getComputedStyle(stage);
-    const stageBox = stage.getBoundingClientRect();
     const box = node.getBoundingClientRect();
+    const start = stagePoint(stage, { x: box.left, y: box.top });
+    const end = stagePoint(stage, { x: box.right, y: box.bottom });
     const scrollAxis = (overflow, extent, available, offset, start, end, itemStart, itemEnd) => {
       if (!['auto', 'scroll'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
@@ -1154,10 +1155,10 @@
       if (itemEnd > end) return offset + itemEnd - end;
       return offset;
     };
-    const left = stageBox.left + stage.clientLeft + 8;
-    const top = stageBox.top + stage.clientTop + 8;
-    stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, box.left, box.right);
-    stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, box.top, box.bottom);
+    const left = stage.scrollLeft + 8;
+    const top = stage.scrollTop + 8;
+    stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, start.x, end.x);
+    stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, start.y, end.y);
   };
   const focusKeyboardTarget = (root, node) => {
     const focusNode = targetFocusNode(node);
