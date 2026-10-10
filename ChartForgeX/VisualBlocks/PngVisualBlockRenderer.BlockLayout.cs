@@ -21,7 +21,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (block.ShowEdges) {
             foreach (var edge in block.Edges) {
                 if (!rects.TryGetValue(edge.SourceId, out var source) || !rects.TryGetValue(edge.TargetId, out var target)) continue;
-                DrawBlockLayoutEdge(canvas, edge, source, target, theme.Axis, theme.MutedText);
+                DrawBlockLayoutEdge(canvas, edge, source, target, theme);
             }
         }
 
@@ -49,16 +49,16 @@ public sealed partial class PngVisualBlockRenderer {
             }
         }
 
-        var fontSize = Math.Max(10, Math.Min(14, rect.Height * 0.26));
+        var fontSize = VisualBlockRendering.BodyFontSize(theme, Math.Max(10, Math.Min(14, rect.Height * 0.26)));
         DrawCenteredTextMiddle(canvas, item.Label, rect.X + rect.Width / 2, rect.Y + rect.Height / 2, fontSize, theme.Text, true, Math.Max(1, rect.Width - 16));
     }
 
-    private static void DrawBlockLayoutEdge(RgbaCanvas canvas, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartColor lineColor, ChartColor textColor) {
+    private static void DrawBlockLayoutEdge(RgbaCanvas canvas, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ChartTheme theme) {
         var route = BlockEdgeRoute(source, target);
-        canvas.DrawLine(route.X1, route.Y1, route.X2, route.Y2, lineColor, 1.6);
-        if (edge.Directed) DrawBlockArrowHead(canvas, route, lineColor);
+        canvas.DrawLine(route.X1, route.Y1, route.X2, route.Y2, theme.Axis, 1.6);
+        if (edge.Directed) DrawBlockArrowHead(canvas, route, theme.Axis);
         if (edge.Label.Length == 0) return;
-        DrawCenteredTextMiddle(canvas, edge.Label, (route.X1 + route.X2) / 2, (route.Y1 + route.Y2) / 2 - 7, 10.5, textColor, true, 90);
+        DrawCenteredTextMiddle(canvas, edge.Label, (route.X1 + route.X2) / 2, (route.Y1 + route.Y2) / 2 - 7, VisualBlockRendering.BodyFontSize(theme, 10.5), theme.MutedText, true, 90);
     }
 
     private static void DrawBlockArrowHead(RgbaCanvas canvas, BlockLayoutEdgeRoute route, ChartColor color) {

@@ -135,7 +135,7 @@ public sealed partial class MermaidParser {
             double.TryParse(value.EndsWith("px", StringComparison.Ordinal) ? value.Substring(0, value.Length - 2) : value,
                 NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var size) && size >= 1 && size <= 256) return size;
         if (setting.IsString && value != null && value.Length <= 4096 &&
-            Regex.IsMatch(value, @"^(?:[0-9]+(?:\.[0-9]+)?(?:em|rem|pt|pc|in|cm|mm|vh|vw|vmin|vmax|ch|ex|%)|(?:calc|var)\(.+\))$", RegexOptions.CultureInvariant)) return null;
+            Regex.IsMatch(value, @"^(?:[0-9]+(?:\.[0-9]+)?(?:em|rem|pt|pc|in|cm|mm|vh|vw|vmin|vmax|ch|ex|%)|(?:calc|var|min|max|clamp|env)\(.+\)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger|inherit|initial|unset|revert|revert-layer)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)) return null;
         ConfigurationError(result, setting.Span, "Mermaid configuration 'themeVariables.fontSize' must be a pixel size from 1 through 256, such as 18 or '18px'.");
         return null;
     }

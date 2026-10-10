@@ -7,6 +7,7 @@ namespace ChartForgeX.Themes;
 /// Defines colors, typography, and surface styling used by chart renderers.
 /// </summary>
 public sealed partial class ChartTheme {
+    internal const double DefaultDataLabelFontSize = 10.5;
     private ChartColor[]? _sequentialRamp;
     private ChartColor[] _palette = ChartPalettes.Report;
     private double _cornerRadius = 12;
@@ -18,7 +19,7 @@ public sealed partial class ChartTheme {
     private double _axisTitleFontSize = 11.5;
     private double _tickLabelFontSize = 10.5;
     private double _legendFontSize = 11.5;
-    private double _dataLabelFontSize = 10.5;
+    private double _dataLabelFontSize = DefaultDataLabelFontSize;
     private double _markerRadius = 3.25;
     private string _fontFamily = ChartFontStacks.SystemSans;
 

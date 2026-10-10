@@ -23,12 +23,12 @@ public sealed partial class PngVisualBlockRenderer {
         }
 
         foreach (var placement in placements) {
-            DrawCenteredTextMiddle(canvas, placement.Set.Label, placement.X, placement.Y - placement.Radius * 0.52, Math.Max(11, theme.SubtitleFontSize + 1), placement.Set.TextColor ?? theme.Text, true, placement.Radius * 1.16);
+            DrawCenteredTextMiddle(canvas, placement.Set.Label, placement.X, placement.Y - placement.Radius * 0.52, VisualBlockRendering.BodyFontSize(theme, 13.5), placement.Set.TextColor ?? theme.Text, true, placement.Radius * 1.16);
         }
 
         foreach (var intersection in block.Intersections) DrawVennIntersectionStyle(canvas, placements, intersection);
-        foreach (var intersection in block.Intersections) DrawVennRegionText(canvas, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, Math.Max(10, theme.SubtitleFontSize), true);
-        foreach (var textNode in block.TextNodes) DrawVennRegionText(canvas, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 1), true);
+        foreach (var intersection in block.Intersections) DrawVennRegionText(canvas, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, VisualBlockRendering.BodyFontSize(theme, 12.5), true);
+        foreach (var textNode in block.TextNodes) DrawVennRegionText(canvas, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, VisualBlockRendering.BodyFontSize(theme, 11.5), true);
     }
 
     private static void DrawVennIntersectionStyle(RgbaCanvas canvas, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {

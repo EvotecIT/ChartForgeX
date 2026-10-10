@@ -15,6 +15,21 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidFontSizeTests {
     [Theory]
+    [InlineData(1)]
+    [InlineData(256)]
+    public void AcceptedPixelLimitsKeepTopologyLabelTextAvailable(int size) {
+        var result = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontSize':" + size.ToString(CultureInfo.InvariantCulture) + "}}}%%\nflowchart LR\nA[API] --> B[Store]");
+        Assert.Empty(result.Diagnostics);
+        var artifact = result.Artifact!;
+        var svg = XDocument.Parse(artifact.ToSvg());
+        var labels = svg.Descendants().Where(element => (string?)element.Parent?.Attribute("data-cfx-role") == "topology-node-label").ToArray();
+        Assert.Equal(2, labels.Length);
+        Assert.Contains(labels, label => label.Value == "API");
+        Assert.Contains(labels, label => label.Value == "Store");
+        Assert.NotEmpty(artifact.ToPng());
+    }
+
+    [Theory]
     [InlineData("flowchart LR\nA[API] --> B[Store]")]
     [InlineData("sequenceDiagram\nAPI->>Store: Save")]
     [InlineData("pie\n\"Saved\": 8\n\"Failed\": 2")]

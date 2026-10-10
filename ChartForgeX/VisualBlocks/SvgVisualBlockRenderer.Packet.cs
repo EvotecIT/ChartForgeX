@@ -16,7 +16,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var slices = VisualBlockRendering.PacketSlices(packet);
         var rowCount = slices.Count == 0 ? 0 : slices[slices.Count - 1].Row + 1;
         if (rowCount == 0) return;
-        var labelTop = packet.ShowBitNumbers ? 16.0 : 0.0;
+        var labelTop = packet.ShowBitNumbers ? VisualBlockRendering.BodyFontSize(theme, 16) : 0.0;
         var rowGap = Math.Min(12, Math.Max(5, content.Height * 0.025));
         var rowHeight = Math.Max(22, Math.Min(52, (options.Size.Height - options.Padding.Bottom - y - rowGap * Math.Max(0, rowCount - 1)) / rowCount - labelTop));
         var bitWidth = content.Width / packet.BitsPerRow;
@@ -41,17 +41,18 @@ public sealed partial class SvgVisualBlockRenderer {
                 .Line();
 
             if (packet.ShowBitNumbers) WritePacketBitLabels(writer, packet, slice, x, rowY - 4, width, theme);
-            var fontSize = Math.Max(9, Math.Min(13.5, rowHeight * 0.31));
+            var fontSize = VisualBlockRendering.BodyFontSize(theme, Math.Max(9, Math.Min(13.5, rowHeight * 0.31)));
             WriteText(writer, slice.Field.Label, x + 5, rowY + rowHeight * 0.58, Math.Max(1, width - 10), TextAlignment.Center, theme.Text, theme.FontFamily, fontSize, "700");
         }
     }
 
     private static void WritePacketBitLabels(SvgMarkupWriter writer, PacketLayoutBlock packet, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartForgeX.Themes.ChartTheme theme) {
         var start = slice.StartBit.ToString(CultureInfo.InvariantCulture);
-        writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-start").Attribute("x", F(x)).Attribute("y", F(y)).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 9.5).Attribute("font-weight", "650").Text(start).EndElement().Line();
+        var fontSize = VisualBlockRendering.BodyFontSize(theme, 9.5);
+        writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-start").Attribute("x", F(x)).Attribute("y", F(y)).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "650").Text(start).EndElement().Line();
         if (slice.EndBit != slice.StartBit) {
             var end = slice.EndBit.ToString(CultureInfo.InvariantCulture);
-            writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-end").Attribute("x", F(x + width)).Attribute("y", F(y)).Attribute("text-anchor", "end").Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 9.5).Attribute("font-weight", "650").Text(end).EndElement().Line();
+            writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-end").Attribute("x", F(x + width)).Attribute("y", F(y)).Attribute("text-anchor", "end").Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "650").Text(end).EndElement().Line();
         }
     }
 }

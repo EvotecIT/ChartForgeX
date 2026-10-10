@@ -24,6 +24,8 @@ The first API is intentionally generic and bounded:
 - shared `ChartTheme`, `ChartColor`, `ChartPalettes`, transparent background, and PNG density concepts
 - Wardley component outlines, evolution arrows, accelerator markers and icon curves share their geometry between SVG and PNG. Theme colours and authored transparency apply to both outputs; font coverage and curved-edge antialiasing can still differ.
 
+Packet, block-layout, Git graph, Wardley, Venn and fishbone body text follows `ChartTheme.DataLabelFontSize`. Each native text role retains its proportion to the default body size; title and subtitle sizes control headings independently. Set the body size to change node labels, relationship labels and small annotations together in SVG and PNG. Existing fixed layout bounds can shorten long text at larger sizes.
+
 Example:
 
 ```csharp

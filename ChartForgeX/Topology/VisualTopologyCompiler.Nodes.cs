@@ -86,7 +86,8 @@ internal sealed partial class VisualTopologyCompiler {
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
         var titleLines = TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
         var height = Math.Min(bounds.Height, _builder.MeasureText("Ag", size * _scale, 600).LineHeight * titleLines);
-        Text(label, new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(_colors.Foreground, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label", opacity: HighlightFactor(active));
+        var fitSingleLine = _builder.MeasureText("Ag", size * _scale, 600).LineHeight > height;
+        Text(label, new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(_colors.Foreground, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label", opacity: HighlightFactor(active), fitSingleLine: fitSingleLine);
         var y = bounds.Y + height;
         if (!string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles)) {
             var subtitleHeight = _builder.MeasureText("Ag", size * .85 * _scale, 400).LineHeight * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
@@ -148,7 +149,7 @@ internal sealed partial class VisualTopologyCompiler {
         size *= _scale;
         if (fitSingleLine) {
             var preferred = _builder.MeasureText(value, size, weight);
-            if (preferred.Width > bounds.Width || preferred.Height > bounds.Height) {
+            if (preferred.Width > bounds.Width || preferred.LineHeight > bounds.Height) {
                 var lower = Math.Min(size, DotNodeSymbolFontSize * _scale); var upper = size;
                 // Font metrics can be discrete for the built-in bitmap face. Search measured
                 // sizes without shrinking ordinary symbols below their readable 8px size.
@@ -157,7 +158,7 @@ internal sealed partial class VisualTopologyCompiler {
                 for (var attempt = 0; attempt < 28 && upper > lower; attempt++) {
                     var candidate = (lower + upper) / 2;
                     var measured = _builder.MeasureText(value, candidate, weight);
-                    if (measured.Width <= bounds.Width && measured.Height <= bounds.Height) lower = candidate;
+                    if (measured.Width <= bounds.Width && measured.LineHeight <= bounds.Height) lower = candidate;
                     else upper = candidate;
                 }
                 if (lower > 0) size = lower;

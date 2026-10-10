@@ -10,6 +10,9 @@ namespace ChartForgeX.VisualBlocks;
 
 internal static partial class VisualBlockRendering {
 
+    // Native block roles retain their relative sizes while sharing the chart body's typography setting.
+    public static double BodyFontSize(ChartTheme theme, double defaultSize) => defaultSize * theme.DataLabelFontSize / ChartTheme.DefaultDataLabelFontSize;
+
     public static void Validate(IVisualBlock block) {
         if (block == null) throw new ArgumentNullException(nameof(block));
         if (block is PacketLayoutBlock packet) {

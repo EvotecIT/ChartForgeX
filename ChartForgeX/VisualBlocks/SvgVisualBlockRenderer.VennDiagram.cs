@@ -33,12 +33,12 @@ public sealed partial class SvgVisualBlockRenderer {
 
         foreach (var placement in placements) {
             var labelY = placement.Y - placement.Radius * 0.52;
-            WriteText(writer, placement.Set.Label, placement.X - placement.Radius * 0.58, labelY, placement.Radius * 1.16, TextAlignment.Center, placement.Set.TextColor ?? theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize + 1), "800");
+            WriteText(writer, placement.Set.Label, placement.X - placement.Radius * 0.58, labelY, placement.Radius * 1.16, TextAlignment.Center, placement.Set.TextColor ?? theme.Text, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 13.5), "800");
         }
 
         foreach (var intersection in block.Intersections) WriteVennIntersectionStyle(writer, placements, intersection);
-        foreach (var intersection in block.Intersections) WriteVennRegionText(writer, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "700");
-        foreach (var textNode in block.TextNodes) WriteVennRegionText(writer, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 1), "600");
+        foreach (var intersection in block.Intersections) WriteVennRegionText(writer, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 12.5), "700");
+        foreach (var textNode in block.TextNodes) WriteVennRegionText(writer, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 11.5), "600");
     }
 
     private static void WriteVennIntersectionStyle(SvgMarkupWriter writer, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {
