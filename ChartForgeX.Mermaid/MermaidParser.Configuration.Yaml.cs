@@ -1,12 +1,29 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text.RegularExpressions;
 using ChartForgeX.Core;
 
 namespace ChartForgeX.Mermaid;
 
 public sealed partial class MermaidParser {
+    private static int ConfigurationYamlLength(string text) {
+        var lines = text.Split('\n');
+        var rootIndent = int.MaxValue;
+        foreach (var line in lines) {
+            if (line.Trim().Length > 0 && !line.TrimStart().StartsWith("#", StringComparison.Ordinal)) rootIndent = Math.Min(rootIndent, LeadingWhitespace(line));
+        }
+        var length = 0;
+        var inConfiguration = false;
+        for (var index = 0; index < lines.Length; index++) {
+            var line = lines[index];
+            var trimmed = line.Trim();
+            if (trimmed.Length > 0 && !trimmed.StartsWith("#", StringComparison.Ordinal) && LeadingWhitespace(line) <= rootIndent)
+                inConfiguration = LeadingWhitespace(line) == rootIndent && Regex.IsMatch(trimmed, @"^config\s*:", RegexOptions.CultureInvariant);
+            if (inConfiguration) length += line.Length + (index + 1 < lines.Length ? 1 : 0);
+        }
+        return length;
+    }
+
     private static void ReadConfigurationYaml(string text, MermaidSourceConfiguration configuration, MermaidParseResult<MermaidDocument> result) {
         var parents = new List<(int Indent, string Path, int ChildIndent)>();
         var declared = new HashSet<string>(StringComparer.Ordinal);
@@ -70,7 +87,8 @@ public sealed partial class MermaidParser {
                         value = null; isString = false;
                         opaqueIndent = indent;
                     } else if (valueText == "true" || valueText == "false" || valueText == "null" || valueText == "~" ||
-                        double.TryParse(valueText, NumberStyles.Float, CultureInfo.InvariantCulture, out _)) isString = false;
+                        Regex.IsMatch(valueText, @"^[+-]?(?:(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?|\.?inf(?:inity)?|\.?nan)$",
+                            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)) isString = false;
                     configuration.Add(new MermaidConfigurationSetting(path, value, isString, span));
                 }
             } catch (ArgumentException exception) { ConfigurationError(result, span, exception.Message); }

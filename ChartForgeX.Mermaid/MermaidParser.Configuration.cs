@@ -15,13 +15,13 @@ public sealed partial class MermaidParser {
         var configuration = new MermaidSourceConfiguration();
         declarations = new List<MermaidDirective>();
         var originalLineStarts = ConfigurationLineStarts(source);
-        var length = frontMatter?.Length ?? 0;
+        var length = frontMatter == null ? 0 : ConfigurationYamlLength(frontMatter);
         if (length > MaximumConfigurationLength) {
-            ConfigurationError(result, new MermaidSourceSpan(1, 1, 3), "Mermaid frontmatter exceeds 65536 characters.");
+            ConfigurationError(result, new MermaidSourceSpan(1, 1, 3), "Mermaid source configuration exceeds 65536 characters.");
         } else if (frontMatter != null) ReadConfigurationYaml(frontMatter, configuration, result);
 
         for (var index = frontMatterEndLine; index < lines.Length; index++) {
-            var prefix = Regex.Match(lines[index], @"^\s*%%\s*\{\s*(?:init|initialize)\s*:", RegexOptions.CultureInvariant);
+            var prefix = ConfigurationPrefix(lines[index]);
             if (!prefix.Success) continue;
             var start = index;
             var column = LeadingWhitespace(lines[start]) + 1;
@@ -43,12 +43,12 @@ public sealed partial class MermaidParser {
             ending = Regex.Match(text, @"\}\s*%%\s*$", RegexOptions.CultureInvariant);
             var span = new MermaidSourceSpan(start + 1, column,
                 originalLineStarts[index] + lastLineLength - originalLineStarts[start] - column + 1);
-            declarations.Add(new MermaidDirective(text.Trim(), span));
             length += text.Length;
             if (length > MaximumConfigurationLength) {
                 ConfigurationError(result, span, "Mermaid source configuration exceeds 65536 characters.");
-                continue;
+                break;
             }
+            declarations.Add(new MermaidDirective(text.Trim(), span));
             if (!ending.Success) {
                 ConfigurationError(result, span, "Mermaid init configuration must close with '}%%'.");
                 continue;
@@ -61,6 +61,8 @@ public sealed partial class MermaidParser {
         }
         return configuration;
     }
+
+    private static Match ConfigurationPrefix(string text) => Regex.Match(text, @"^\s*%%\s*\{\s*(?:init|initialize)\s*:", RegexOptions.CultureInvariant);
 
     private static void AddConfigurationJson(Dictionary<string, GeoJsonValue> values, string prefix,
         MermaidSourceSpan span, MermaidSourceConfiguration configuration) {
@@ -111,14 +113,14 @@ public sealed partial class MermaidParser {
         foreach (var setting in configuration.Settings) {
             var theme = Selected("theme");
             var font = Selected("fontFamily");
-            if (ReferenceEquals(setting, theme) && setting.IsString && (setting.Value == "dark" || setting.Value == "default")) {
+            if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
                 if (kind != MermaidDiagramKind.Sequence && kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             } else if (ReferenceEquals(setting, font) && setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) && kind != MermaidDiagramKind.Sequence &&
                 kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             else if ((setting.Path == "theme" || setting.Path == scope + ".theme" || setting.Path == "fontFamily" || setting.Path == scope + ".fontFamily") &&
                 !ReferenceEquals(setting, theme) && !ReferenceEquals(setting, font)) continue;
 
-            var message = ReferenceEquals(setting, theme) && setting.IsString && setting.Value != "dark" && setting.Value != "default"
+            var message = ReferenceEquals(setting, theme) && setting.IsString && !IsNativeTheme(setting.Value)
                 ? "Mermaid theme '" + setting.Value + "' uses the native static light palette."
                 : "Mermaid source configuration '" + setting.Path + "' is retained but not applied to static rendering.";
             Add(result, setting.Span.Line, setting.Span.Column, setting.Span.Length, MermaidDiagnosticSeverity.Warning, message,
@@ -131,9 +133,12 @@ public sealed partial class MermaidParser {
         MermaidDiagramKind.Flowchart => "flowchart", MermaidDiagramKind.Swimlane => "swimlane", MermaidDiagramKind.UseCase => "usecase",
         MermaidDiagramKind.Class => "class", MermaidDiagramKind.State => "state", MermaidDiagramKind.EntityRelationship => "er",
         MermaidDiagramKind.Sequence => "sequence", MermaidDiagramKind.Requirement => "requirement", MermaidDiagramKind.GitGraph => "gitGraph",
-        MermaidDiagramKind.XYChart => "xyChart", MermaidDiagramKind.Gantt => "gantt", MermaidDiagramKind.Agentflow => "agentflow",
+        MermaidDiagramKind.XYChart => "xyChart", MermaidDiagramKind.Quadrant => "quadrantChart", MermaidDiagramKind.Gantt => "gantt", MermaidDiagramKind.Agentflow => "agentflow",
         MermaidDiagramKind.Railroad => "railroad", MermaidDiagramKind.TreeView => "treeView", _ => kind.ToString().ToLowerInvariant()
     };
+
+    private static bool IsNativeTheme(string? value) => string.Equals(value, "dark", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(value, "default", StringComparison.OrdinalIgnoreCase);
 
     private static void ConfigurationError(MermaidParseResult<MermaidDocument> result, MermaidSourceSpan span, string message) =>
         Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, message, MermaidDiagnosticCodes.InvalidConfiguration);

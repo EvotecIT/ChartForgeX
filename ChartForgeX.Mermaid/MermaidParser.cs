@@ -392,7 +392,7 @@ public sealed partial class MermaidParser {
         for (var line = startLine; line <= endLine && line <= lines.Length; line++) {
             var raw = lines[line - 1];
             var trimmed = raw.Trim();
-            if (!IsDirective(trimmed)) continue;
+            if (!IsDirective(trimmed) || ConfigurationPrefix(trimmed).Success) continue;
             document.Directives.Add(new MermaidDirective(trimmed, new MermaidSourceSpan(line, LeadingWhitespace(raw) + 1, trimmed.Length)));
         }
     }
