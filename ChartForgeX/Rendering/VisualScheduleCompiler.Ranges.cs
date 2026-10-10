@@ -21,7 +21,7 @@ internal static partial class VisualScheduleCompiler {
             var dependency = gantt ? series.Points[1].Y : -1;
             if (!ChartMath.IsFinite(progress) || progress < 0 || progress > 1 || !ChartMath.IsFinite(dependency) || dependency < -1 || dependency >= index || dependency != Math.Truncate(dependency))
                 throw new InvalidOperationException("Gantt progress must be between zero and one, and dependencies must reference an earlier task.");
-            var marker = gantt && series.Points[2].Y >= .5;
+            var marker = IsMarker(series);
             items.Add(new RangeItem(index, marker ? -1 : row++, start, end, progress, gantt && series.Points[2].X >= .5, marker));
         }
         var links = gantt ? chart.ResolveGanttDependencies() : new List<ChartGanttDependency>();
@@ -123,7 +123,7 @@ internal static partial class VisualScheduleCompiler {
                     DataLabel(chart, context, builder, series, 0, label, bounds, viewport, colors, fill);
                 }
             }
-            Markers(chart, context, builder, plot, items, Project, min, max, colors, obstacles, predecessors);
+            Markers(chart, context, builder, plot, items, Project, Format, min, max, colors, obstacles, predecessors);
             if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             // Links are foreground annotations: successor fills must not cover their arrowheads.
             if (gantt) Dependencies(chart, context, builder, plot, items, renderedLinks, Project, slot, height);
