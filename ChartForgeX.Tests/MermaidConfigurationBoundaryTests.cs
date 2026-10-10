@@ -7,6 +7,31 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidConfigurationBoundaryTests {
     [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    public void WholeYamlCommentLinesDoNotConsumeBudgetOrEndTheActiveMapping(string indentation) {
+        var comment = indentation + "# " + new string('x', 70000);
+        var rendered = MermaidRenderer.Render("---\nconfig:\n  theme: dark\n" + comment + "\n  fontFamily: Arial, sans-serif\n---\nflowchart LR\nA --> B");
+        Assert.Empty(rendered.Diagnostics);
+        Assert.NotNull(rendered.Artifact);
+        Assert.Equal("dark", rendered.Document!.Configuration.Theme);
+        Assert.Equal("Arial, sans-serif", rendered.Document.Configuration.FontFamily);
+        Assert.Contains(comment, rendered.Document.FrontMatter);
+    }
+
+    [Theory]
+    [InlineData(65536, false)]
+    [InlineData(65537, true)]
+    public void CommentsAndBlankLinesPreserveTheExactYamlDeclarationBudget(int length, bool hasErrors) {
+        const string prefix = "config:\n  other: ";
+        var source = "---\nconfig:\n# root comment\n\n  other: " + new string('x', length - prefix.Length) + "\n# trailing comment\n\n---\nflowchart LR\nA --> B";
+        var rendered = MermaidRenderer.Render(source);
+        Assert.Equal(hasErrors, rendered.HasErrors);
+        Assert.Equal(hasErrors, rendered.Artifact == null);
+        Assert.Equal(hasErrors ? 0 : 1, rendered.Document!.Configuration.Settings.Count);
+    }
+
+    [Theory]
     [InlineData(65536, false)]
     [InlineData(65537, true)]
     public void YamlConfigurationBudgetHasTheDocumentedBoundary(int length, bool hasErrors) {
