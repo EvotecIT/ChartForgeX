@@ -11,7 +11,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>chartforgex-markup</ToolCommandName>
     <PackageId>ChartForgeX.Markup.Cli</PackageId>
-    <Version>0.1.0</Version>
+    <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Command-line renderer and code generator for ChartForgeX markup.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
