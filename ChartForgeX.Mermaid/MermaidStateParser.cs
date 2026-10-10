@@ -38,7 +38,7 @@ internal static class MermaidStateParser {
                 continue;
             }
 
-            if (trimmed == "end note") {
+            if (MermaidParserUtilities.IsStateNoteTerminator(trimmed)) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "State note terminator has no open note.", MermaidDiagnosticCodes.InvalidStatement);
                 continue;
             }
@@ -85,7 +85,7 @@ internal static class MermaidStateParser {
         while (lastLine < lines.Length) {
             lastLine++;
             var raw = lines[lastLine - 1];
-            if (MermaidParserUtilities.StripInlineComment(raw.Trim()) == "end note") { closed = true; break; }
+            if (MermaidParserUtilities.IsStateNoteTerminator(MermaidParserUtilities.StripInlineComment(raw.Trim()))) { closed = true; break; }
         }
         var span = new MermaidSourceSpan(line, firstSpan.Column,
             originalLineStarts[lastLine - 1] + lines[lastLine - 1].Length - originalLineStarts[line - 1] - firstSpan.Column + 1);

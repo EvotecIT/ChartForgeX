@@ -6,6 +6,30 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidNotationCompatibilityTests {
     [Theory]
+    [InlineData("NOTE right of A", "END NOTE")]
+    [InlineData("note right of A", "End Note")]
+    [InlineData("Note RIGHT OF A", "eNd NoTe")]
+    public void MixedCaseStateNoteBoundariesPreserveFollowingGraphAndAccessibility(string opener, string closer) {
+        var rendered = MermaidRenderer.Render("stateDiagram-v2\nA --> B\n" + opener + "\nBody: A --> Phantom\n" + closer + "\naccTitle: Real title\nB --> C");
+        Assert.False(rendered.HasErrors);
+        var document = Assert.IsType<MermaidStateDocument>(rendered.Document);
+        Assert.Equal(new[] { "A", "B", "C" }, document.States.Select(state => state.Id));
+        Assert.Equal(2, document.Transitions.Count);
+        Assert.Equal("Real title", document.Accessibility.Name);
+        Assert.Equal(opener + "\nBody: A --> Phantom\n" + closer, Assert.Single(document.RawStatements).Text);
+    }
+
+    [Theory]
+    [InlineData("END NOTE")]
+    [InlineData("End Note")]
+    public void OrphanStateNoteTerminatorsHaveOneCaseInsensitiveDiagnostic(string closer) {
+        var rendered = MermaidRenderer.Render("stateDiagram-v2\nA --> B\n" + closer);
+        Assert.True(rendered.HasErrors);
+        Assert.Null(rendered.Artifact);
+        Assert.Equal(MermaidDiagnosticCodes.InvalidStatement, Assert.Single(rendered.Diagnostics).Code);
+    }
+
+    [Theory]
     [InlineData("Remember this")]
     [InlineData("Remember: A --> Phantom")]
     public void FloatingStateNotesRetainOneLineAndDoNotHideFollowingStatements(string text) {

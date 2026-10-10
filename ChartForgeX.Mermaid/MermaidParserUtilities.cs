@@ -108,6 +108,8 @@ internal static class MermaidParserUtilities {
     public static bool IsMultilineStateNote(string text) => Regex.IsMatch(text,
         @"^note\s+(?:left|right)\s+of\s+[^:\s]+\s*$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
+    public static bool IsStateNoteTerminator(string text) => string.Equals(text, "end note", StringComparison.OrdinalIgnoreCase);
+
     public static bool TryReadDirection(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result, out string? direction, bool ignoreCase = false) {
         direction = null;
         if (!StartsStatement(text, "direction", ignoreCase)) return false;

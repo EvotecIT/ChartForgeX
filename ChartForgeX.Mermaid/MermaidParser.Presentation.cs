@@ -12,7 +12,7 @@ public sealed partial class MermaidParser {
             var text = lines[i].Trim();
             var statement = MermaidParserUtilities.StripInlineComment(text);
             if (insideStateNote) {
-                if (statement == "end note") insideStateNote = false;
+                if (MermaidParserUtilities.IsStateNoteTerminator(statement)) insideStateNote = false;
                 continue;
             }
             if (kind == MermaidDiagramKind.State && MermaidParserUtilities.IsMultilineStateNote(statement)) {
