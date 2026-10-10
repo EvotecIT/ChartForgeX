@@ -69,11 +69,25 @@ public sealed class AxisReversalTests {
         if (kind == ChartSeriesKind.BoxPlot) chart.AddBoxPlot("Values", new[] { new ChartBoxPlot(1, 10, 30, 45, 60, 90) });
         else if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick("Values", new[] { new ChartCandlestick(1, 30, 90, 10, 60) });
         else chart.AddOhlc("Values", new[] { new ChartCandlestick(1, 30, 90, 10, 60) });
+        var forward = kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc
+            ? Assert.Single(Prepare(chart).Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == role) : null;
         chart.Options.YAxis.WithReversal();
         var prepared = Prepare(chart); var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == role);
         var region = Assert.Single(prepared.Regions, item => item.Id == "series-0-point-0");
-        Assert.Equal(Math.Min(line.Start.Y, line.End.Y), region.Bounds.Top, 9);
-        Assert.Equal(Math.Max(line.Start.Y, line.End.Y), region.Bounds.Bottom, 9);
+        var strokePadding = kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc ? line.StrokeWidth / 2 : 0;
+        Assert.Equal(Math.Min(line.Start.Y, line.End.Y) - strokePadding, region.Bounds.Top, 9);
+        Assert.Equal(Math.Max(line.Start.Y, line.End.Y) + strokePadding, region.Bounds.Bottom, 9);
+        if (forward != null) {
+            Assert.True(forward.Start.Y < forward.End.Y);
+            Assert.True(line.Start.Y > line.End.Y);
+            Assert.Equal(forward.End.Y, line.Start.Y, 9);
+            Assert.Equal(forward.Start.Y, line.End.Y, 9);
+            var observation = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Id == region.Id);
+            Assert.Equal("90", observation.Metadata["data-cfx-high"]);
+            Assert.Equal("10", observation.Metadata["data-cfx-low"]);
+            Assert.Equal("90", observation.Metadata["data-cfx-source-1-y"]);
+            Assert.Equal("10", observation.Metadata["data-cfx-source-2-y"]);
+        }
     }
 
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
