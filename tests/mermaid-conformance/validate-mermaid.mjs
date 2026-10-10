@@ -180,6 +180,14 @@ for (const { folder, file, hasExpected } of files) {
         const day = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
         assert.deepEqual(diagram.db.getTasks().map(task => day(task.renderEndTime || task.endTime)), expected.taskRenderEnds);
       }
+      if (expected.ganttInputDates) {
+        for (const [format, start, end, expectedStart, expectedEnd] of expected.ganttInputDates) {
+          const input = await mermaid.mermaidAPI.getDiagramFromText(`gantt\ndateFormat ${format}\nTask :task,${start},${end}`);
+          const task = input.db.getTasks()[0];
+          assert.deepEqual([task.startTime.toISOString().replace('Z', ''), task.endTime.toISOString().replace('Z', '')],
+            [expectedStart, expectedEnd], `Input date ${format}/${start}/${end}`);
+        }
+      }
     }
   } catch (error) {
     failures.push(`${folder}/${file}: ${error?.message ?? error}`);

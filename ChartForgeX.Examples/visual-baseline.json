@@ -4850,6 +4850,30 @@
       }
     },
     {
+      "name": "mermaid-gantt-input-dates",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 501,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-gantt-markers",
       "layout": {
         "heightMode": "fixed",

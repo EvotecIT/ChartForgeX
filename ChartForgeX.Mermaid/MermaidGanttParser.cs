@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace ChartForgeX.Mermaid;
 
@@ -115,11 +116,17 @@ internal static partial class MermaidGanttParser {
     }
 
     private static bool TryParseDate(string text, string dateFormat, out DateTime value) {
-        var format = ToDotNetDateFormat(dateFormat);
-        if (DateTime.TryParseExact(text.Trim(), format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value)) return true;
-        var fallbackFormats = new[] { "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss" };
-        if (DateTime.TryParseExact(text.Trim(), fallbackFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value)) return true;
-        return DateTime.TryParse(text.Trim(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value);
+        value = default;
+        if (dateFormat.Length > 256) return false;
+        try {
+            if (MermaidGanttInputDateFormat.TryParse(text, dateFormat, out value)) return true;
+            var format = ToDotNetDateFormat(dateFormat);
+            if (DateTime.TryParseExact(text.Trim(), format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value)) return true;
+            var fallbackFormats = new[] { "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss" };
+            if (DateTime.TryParseExact(text.Trim(), fallbackFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value)) return true;
+            return DateTime.TryParse(text.Trim(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value);
+        } catch (FormatException) { return false; }
+        catch (RegexMatchTimeoutException) { return false; }
     }
 
     internal static string ToDotNetDateFormat(string value) {

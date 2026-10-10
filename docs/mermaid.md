@@ -744,14 +744,18 @@ The conversion target for timelines is `Chart`. Mermaid sections, period labels,
 
 Gantt diagrams are parsed into `MermaidGanttDocument` and converted to native ChartForgeX Gantt charts.
 
+Input `dateFormat` fields include `YYYY`/`YY`, numeric and English named months, `D`/`DD`/`Do`, quarter `Q`, day-of-year `DDD`/`DDDD`, 12/24-hour clocks, `a`/`A`, and one to three fractional-second digits. Brackets quote literal text: `YYYY-[Q]Q` accepts `2026-Q2`, and `Do-MMMM-YYYY` accepts `2nd-January-2026`. Fully specified formats use an invariant English calendar; two-digit years `00` through `68` mean 2000 through 2068, and `69` through `99` mean 1969 through 1999. The same fields format dates for exclusion/inclusion matching. Input format text is limited to 256 characters.
+
+`X` means Unix seconds and `x` means Unix milliseconds for both start and end dates, including decimal fractions. Explicit `Z`/`ZZ` offsets normalize to UTC before scheduling. These documented meanings are retained where the reference engines disagree: Mermaid 11/12 interpret integer `X` starts as milliseconds while Mermaid 10 uses seconds; some fractional, offset-end and day-of-year inputs also resolve differently upstream. The corpus records reference outcomes separately from native expectations. Legacy fallback parsing remains available; formats that omit the year still need an explicit anchor policy before they can provide the same deterministic contract.
+
 Supported Gantt parsing includes:
 
 - `gantt` headers.
 - Optional `title`, `dateFormat`, `axisFormat`, `tickInterval`, `weekday`, `excludes`, `includes`, `weekend`, and `todayMarker` statements.
 - `section` groups.
-- Task metadata with optional tags: `active`, `done`, `crit`, and `milestone`.
+- Task metadata with optional tags: `active`, `done`, `crit`, `milestone`, and `vert`.
 - Task ids used by `after taskId` start dependencies and `until taskId` end references. Multiple `after` ids select the latest end; multiple `until` ids select the earliest start. Both can reference later rows without changing the authored row order. Every distinct `after` predecessor has a native dependency connector.
-- Explicit start/end dates using the configured `dateFormat`.
+- Explicit start/end dates using the configured `dateFormat`, including English month names, ordinals, quarters, day-of-year fields, two-digit years, clocks, fractions, UTC offsets and Unix timestamps.
 - Axis labels use English D3 time directives: weekday/month names, day/year and week numbers, 12/24-hour clocks, fractions, padding modifiers, and `%%`. Text outside directives remains literal. The default is `%Y-%m-%d`; input `dateFormat` and output `axisFormat` use separate notation.
 - Durations using `ms`, `s`, `m`, `h`, `d`, `w`, `M`, and `y` units. `M` means calendar months; `m` means minutes.
 - Milestones retain their authored start/end range and render as native ChartForgeX milestone points at the range midpoint.
