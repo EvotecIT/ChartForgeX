@@ -32,6 +32,7 @@
       }
       node.classList.toggle('cfx-series-muted', muted);
     });
+    refreshKeyboardNavigation(root);
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
@@ -393,7 +394,8 @@
     }
   };
   const focusAdjacentTarget = (root, node, key) => {
-    const targets = interactiveTargets(root);
+    refreshKeyboardNavigation(root);
+    const targets = keyboardTargets(root);
     if (!targets.length) return false;
     const current = Math.max(0, targets.indexOf(node));
     let next = current;

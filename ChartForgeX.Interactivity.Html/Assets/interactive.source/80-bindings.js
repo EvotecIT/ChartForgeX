@@ -71,6 +71,7 @@
           return;
         }
         if (event.key !== 'Enter' && event.key !== ' ') return;
+        if (!tooltipReadoutAvailable(node, event)) return;
         // Enter on a link must retain native navigation. Space selects the cell without following the link.
         if (focusNode !== node && event.key === 'Enter') return;
         event.preventDefault();
@@ -83,6 +84,7 @@
         else node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       });
     });
+    prepareKeyboardNavigation(root);
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
       button.addEventListener('click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
     });

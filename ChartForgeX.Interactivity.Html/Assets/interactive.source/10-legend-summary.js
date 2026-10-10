@@ -1,6 +1,6 @@
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
-  const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop']);
+  const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop', 'radialbar', 'radialcolumn']);
   const legendSeriesValues = (item) => {
     const data = item.dataset || {};
     const svg = item.closest('svg');
