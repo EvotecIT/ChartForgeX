@@ -752,6 +752,7 @@ Supported Gantt parsing includes:
 - Task metadata with optional tags: `active`, `done`, `crit`, and `milestone`.
 - Task ids used by `after taskId` start dependencies and `until taskId` end references. Multiple `after` ids select the latest end; multiple `until` ids select the earliest start. Both can reference later rows without changing the authored row order. Every distinct `after` predecessor has a native dependency connector.
 - Explicit start/end dates using the configured `dateFormat`.
+- Axis labels use English D3 time directives: weekday/month names, day/year and week numbers, 12/24-hour clocks, fractions, padding modifiers, and `%%`. Text outside directives remains literal. The default is `%Y-%m-%d`; input `dateFormat` and output `axisFormat` use separate notation.
 - Durations using `ms`, `s`, `m`, `h`, `d`, `w`, `M`, and `y` units. `M` means calendar months; `m` means minutes.
 - Milestones retain their authored start/end range and render as native ChartForgeX milestone points at the range midpoint.
 
@@ -791,7 +792,11 @@ The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, d
 
 Native callers can add all tasks first, then use `chart.AddGanttDependency(predecessorIndex, successorIndex)` for forward or multiple links. Both indices must address existing, distinct rows in a chart containing only Gantt tasks. `chart.GanttDependencies` returns a detached snapshot including inline `dependsOn` links; duplicates render once. Links anchor the predecessor's displayed finish and successor's displayed start without changing task dates. The inline `dependsOn` argument still addresses an earlier row. Native preparation revalidates links when mutable rows change.
 
-For a milestone with a nonzero duration, `Start` and `End` retain the range used by Mermaid dependency calculations. Callers that previously treated `Start` as its rendered point should compute the midpoint of that range. Zero-duration milestones and their rendering retain the same date. Broader date/axis/tick formats and marker configuration remain open in the [support matrix](mermaid-support-matrix.md).
+For a milestone with a nonzero duration, `Start` and `End` retain the range used by Mermaid dependency calculations. Callers that previously treated `Start` as its rendered point should compute the midpoint of that range. Zero-duration milestones and their rendering retain the same date. Broader input date formats, tick intervals and marker configuration remain open in the [support matrix](mermaid-support-matrix.md).
+
+`axisFormat %a %d %b` displays labels such as `Sun 04 Jan`; `%I:%M:%S.%L %p` displays `01:05:06.007 PM`. `%U` and `%W` number weeks from Sunday and Monday, and `%V` with `%G` uses ISO week/year numbering. `%_d`, `%-d` and `%0d` choose space, no or zero padding. Composite `%c`, `%x` and `%X` use the reference formatter's English US defaults. Native Gantt dates are wall-clock values: timezone and epoch directives (`%Z`, `%Q`, `%s`) use UTC interpretation for deterministic output.
+
+`axisFormat` follows Mermaid/D3 formatting, including literal text such as `YYYY-MM-DD`. Callers that relied on the previous adapter interpreting that literal as an input-date pattern should use `%Y-%m-%d` instead. Host-specific date formatting can still be supplied through the native chart axis formatter.
 
 ## XY Charts
 

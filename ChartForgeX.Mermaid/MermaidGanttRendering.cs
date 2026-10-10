@@ -96,8 +96,8 @@ public static class MermaidGanttRendering {
 
     private static string FormatAxisValue(double value, MermaidGanttDocument document) {
         try {
-            var format = string.IsNullOrWhiteSpace(document.AxisFormat) ? "yyyy-MM-dd" : MermaidGanttParser.ToDotNetDateFormat(document.AxisFormat!);
-            return DateTime.FromOADate(value).ToString(format, CultureInfo.InvariantCulture);
+            var format = string.IsNullOrWhiteSpace(document.AxisFormat) ? "%Y-%m-%d" : document.AxisFormat!;
+            return MermaidGanttAxisFormat.Format(DateTime.FromOADate(value), format);
         } catch (ArgumentException) {
             return value.ToString("0.##", CultureInfo.InvariantCulture);
         }
