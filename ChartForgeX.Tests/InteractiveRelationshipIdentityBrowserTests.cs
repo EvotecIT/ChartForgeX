@@ -87,6 +87,7 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
             Assert.Equal("link", await page.EvaluateAsync<string>("() => window.selections.at(-1).target.targetKind"));
             Assert.Equal("input", await link.GetAttributeAsync("data-cfx-source"));
             Assert.Equal("output", await link.GetAttributeAsync("data-cfx-target"));
+            Assert.Equal("Warning", await link.GetAttributeAsync("data-cfx-state"));
         }
         var input = page.Locator("[data-cfx-target-kind=node][data-cfx-target-id=input]");
         Assert.Equal("Warning", await input.GetAttributeAsync("data-cfx-state"));

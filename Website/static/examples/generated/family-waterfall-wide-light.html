@@ -137,6 +137,10 @@ public static partial class V2GalleryModels {
                 options.LabelContent = ChartChordLabelContent.LabelAndTotals;
             });
             chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
+            chart.Series[0].WithFlowStyle(&quot;north-priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#AF6B24&quot;), fillOpacity: .7,
+                fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex(&quot;#764415&quot;), strokeWidth: 1))
+                .WithFlowState(&quot;north-priority&quot;, ChartSeriesState.Warning)
+                .WithFlowStyle(&quot;support-internal&quot;, new ChartFlowStyle(strokeWidth: 1));
         }
         return chart;
     }
@@ -559,6 +563,9 @@ public static partial class V2GalleryModels {
         });
         chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
         chart.Series[0].WithPointColor(0, ChartColor.FromHex(&quot;#7356BD&quot;));
+        chart.Series[0].WithFlowStyle(&quot;north-priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#AF6B24&quot;), fillOpacity: .7,
+            fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex(&quot;#764415&quot;), strokeWidth: 1))
+            .WithFlowState(&quot;north-priority&quot;, ChartSeriesState.Warning);
         return chart;
     }
 }
@@ -822,6 +829,10 @@ public static partial class V2GalleryModels {
                 options.LabelContent = ChartChordLabelContent.LabelAndTotals;
             });
             chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
+            chart.Series[0].WithFlowStyle(&quot;north-priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#AF6B24&quot;), fillOpacity: .7,
+                fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex(&quot;#764415&quot;), strokeWidth: 1))
+                .WithFlowState(&quot;north-priority&quot;, ChartSeriesState.Warning)
+                .WithFlowStyle(&quot;support-internal&quot;, new ChartFlowStyle(strokeWidth: 1));
         }
         return chart;
     }
@@ -1244,6 +1255,9 @@ public static partial class V2GalleryModels {
         });
         chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
         chart.Series[0].WithPointColor(0, ChartColor.FromHex(&quot;#7356BD&quot;));
+        chart.Series[0].WithFlowStyle(&quot;north-priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#AF6B24&quot;), fillOpacity: .7,
+            fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex(&quot;#764415&quot;), strokeWidth: 1))
+            .WithFlowState(&quot;north-priority&quot;, ChartSeriesState.Warning);
         return chart;
     }
 }

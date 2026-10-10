@@ -44,12 +44,13 @@ internal static partial class VisualChordCompiler {
 
     private static void Link(Chart chart, VisualSceneBuilder builder, ChartChordModel model, ChartChordLink link, VisualThemeColors colors) {
         var series = chart.Series[0]; var source = model.Nodes[link.Source]; var target = model.Nodes[link.Target];
+        var flow = ChartRelationshipPaint.Flow(series, link.Fact.Id, source.Index, colors, chart.Options.Chord.RibbonOpacity);
         var metadata = ChartRelationshipMetadata.Link(series, link.Fact.Id, source.Fact.Id, target.Fact.Id, source.Fact.Label, target.Fact.Label, link.Index, link.Fact.Value);
         metadata["data-cfx-coordinate-system"] = "polar";
         metadata["data-cfx-source-start-angle"] = N(link.SourceStart); metadata["data-cfx-source-sweep"] = N(link.Sweep);
         metadata["data-cfx-target-start-angle"] = N(link.TargetStart); metadata["data-cfx-target-sweep"] = N(link.Sweep);
         metadata["data-cfx-direction"] = "source-to-target"; metadata["data-cfx-direction-cue"] = chart.Options.Chord.DirectionCue.ToString();
-        metadata["data-cfx-state"] = ChartRelationshipPaint.State(series, source.Index).ToString();
+        metadata["data-cfx-state"] = flow.State.ToString();
         metadata["data-cfx-full-label"] = source.Fact.Label + " to " + target.Fact.Label + ": " + ChartNumericFormatter.FormatValue(chart.Options, link.Fact.Value);
         var visible = link.IsVisible && model.InnerRadius > 0;
         metadata["data-cfx-geometry-status"] = visible ? "visible" : link.Fact.Value == 0 ? "zero" : "precision-collapse";
@@ -60,15 +61,11 @@ internal static partial class VisualChordCompiler {
             if (visible) {
                 var path = ChartChordLayout.Ribbon(model, link);
                 bounds = ChartChordLayout.Bounds(path.Flatten(1));
-                var color = ChartRelationshipPaint.Color(series, source.Index, colors);
-                var fill = ChartColorMath.WithOpacity(color, chart.Options.Chord.RibbonOpacity);
-                var paint = ChartRelationshipPaint.Paint(series, color, source.Index).WithOpacity(fill, chart.Options.Chord.RibbonOpacity);
-                builder.Path(path, fill, role: "chord-ribbon", close: true, paint: VisualChartPaint.Fill(paint));
-                var pattern = ChartRelationshipPaint.Pattern(series, source.Index);
-                if (pattern != ChartFillPattern.None) builder.Pattern(path, pattern, fill, role: "chord-ribbon-pattern", paint: paint);
+                builder.Path(path, flow.Fill, flow.Stroke, flow.StrokeWidth, role: "chord-ribbon", close: true, paint: flow.Binding);
+                if (flow.Pattern != ChartFillPattern.None) builder.Pattern(path, flow.Pattern, flow.PatternColor, role: "chord-ribbon-pattern", paint: flow.PatternPaint);
                 if (chart.Options.Chord.DirectionCue == ChartChordDirectionCue.TargetChevron)
-                    builder.Path(ChartChordLayout.DirectionCue(model, link), color, role: "chord-target-cue", close: true,
-                        paint: VisualChartPaint.Fill(ChartRelationshipPaint.Paint(series, color, source.Index)));
+                    builder.Path(ChartChordLayout.DirectionCue(model, link), flow.Color, role: "chord-target-cue", close: true,
+                        paint: VisualChartPaint.Fill(flow.Paint));
             }
         }
         if (link.Fact.Value > 0 && !visible) builder.AddDiagnostic(new VisualDiagnostic("chord.precision-collapse", "A positive chord flow cannot form distinct endpoint angles at this scale; its raw value and source/target identity remain in semantics."));

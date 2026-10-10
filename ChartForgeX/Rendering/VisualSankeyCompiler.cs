@@ -35,18 +35,18 @@ internal static partial class VisualSankeyCompiler {
             ["data-cfx-node-order"] = options.NodeOrder.ToString(), ["data-cfx-node-width"] = N(model.NodeWidth), ["data-cfx-node-gap"] = N(nodeGap)
         })) {
             foreach (var link in model.Links) {
-                var source = model.Nodes[link.Source]; var target = model.Nodes[link.Target]; var color = ChartRelationshipPaint.Color(series, source.Index, colors, fillOverride: options.RibbonFill);
+                var source = model.Nodes[link.Source]; var target = model.Nodes[link.Target];
+                var flow = ChartRelationshipPaint.Flow(series, link.Id, source.Index, colors, options.RibbonOpacity, options.RibbonFill, patternOpacity: .6);
                 string full = source.Label + " to " + target.Label + ": " + ChartNumericFormatter.FormatValue(chart.Options, link.Value);
                 var path = ChartSankeyLayout.Ribbon(model, link);
                 double y = Math.Min(link.SourceY, link.TargetY) - link.Width / 2;
                 var bounds = new ChartRect(source.X + model.NodeWidth, y, target.X - source.X - model.NodeWidth, Math.Abs(link.TargetY - link.SourceY) + link.Width);
                 var metadata = ChartRelationshipMetadata.Link(series, link.Id, source.Id, target.Id, source.Label, target.Label, link.Index, link.Value);
                 metadata["data-cfx-full-label"] = full; metadata["data-cfx-width"] = N(link.Width);
+                metadata["data-cfx-state"] = flow.State.ToString();
                 using (builder.PushGroup(ChartRelationshipMetadata.SourceId("link", link.Id), "sankey-link", metadata)) {
-                    builder.Path(path, ChartColorMath.WithOpacity(color, options.RibbonOpacity), role: "sankey-ribbon", close: true,
-                        paint: VisualChartPaint.Fill(ChartRelationshipPaint.Paint(series, color, source.Index, fillOverride: options.RibbonFill).WithOpacity(ChartColorMath.WithOpacity(color, options.RibbonOpacity), options.RibbonOpacity)));
-                    var pattern = ChartRelationshipPaint.Pattern(series, source.Index);
-                    if (pattern != ChartFillPattern.None) builder.Pattern(path, pattern, ChartColorMath.WithOpacity(color, .6), role: "sankey-ribbon-pattern", paint: ChartRelationshipPaint.Paint(series, color, source.Index, fillOverride: options.RibbonFill).WithOpacity(ChartColorMath.WithOpacity(color, .6), .6));
+                    builder.Path(path, flow.Fill, flow.Stroke, flow.StrokeWidth, role: "sankey-ribbon", close: true, paint: flow.Binding);
+                    if (flow.Pattern != ChartFillPattern.None) builder.Pattern(path, flow.Pattern, flow.PatternColor, role: "sankey-ribbon-pattern", paint: flow.PatternPaint);
                 }
                 builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("link", link.Id), "sankey-link", bounds, full));
             }

@@ -41,6 +41,8 @@ Immutable render requests use constructors and read-only properties. They do not
 | `VisualSemanticRegion` | Stable ID, role, descriptive rectangular extent and optional text. It is not an exact hit-test shape. |
 | `ChartNode` / `ChartFlowLink` | Immutable authored relationship identities and raw finite non-negative flow facts. Chart families validate their graph and weight constraints before adding a series. |
 | `ChartSeries.WithNodeState(id, state)` | Mutable semantic styling keyed by an existing authored node ID, scoped to that series. `NodeStates` exposes a read-only view; preparation snapshots the resulting paint. |
+| `ChartFlowStyle` / `ChartSeries.WithFlowStyle(id, style)` | Immutable fill, opacity, pattern and outline overrides for an existing Sankey or Chord flow ID. `FlowStyles` is read-only; null removes an override. |
+| `ChartSeries.WithFlowState(id, state)` | Semantic state for an existing Sankey or Chord flow ID. `FlowStates` is read-only; null restores source-node/series inheritance and `None` suppresses it. |
 | `ChartOptions.Chord` | Typed circular span/start, node geometry, opacity, direction and label settings over the canonical weighted-flow facts. See [weighted chord charts](../chord.md). |
 | `ChartOptions.Sankey` | Getter-owned mutable alignment, ordering, node geometry and flow paint options. `ConfigureSankey` edits the existing object and returns the chart. |
 
@@ -173,7 +175,31 @@ The earliest feasible layer is the longest path depth from any source. The lates
 
 Explicit point colors take precedence over the corresponding family fill, then series colors and state/theme fallbacks. Layout order never reorders `Nodes` or `FlowLinks`, changes source ordinals, or reassigns point styles and ID-keyed states. All node and ribbon thicknesses use the same scale; gaps and widths do not inflate small weights. Preparation rejects node widths or gaps that cannot fit the supplied viewport.
 
-Label placement uses the same node and ribbon geometry under every policy. Opposing labels share the available gap in separate slots; the shared measured label placer avoids caption collisions. Captions wrap, shorten or omit when space is insufficient, while full node text and raw flow facts remain available in native semantics and interactive readouts. Point-specific typography and colors apply under every placement. Per-flow styling and any truthful minimum-width treatment remain separate work.
+Label placement uses the same node and ribbon geometry under every policy. Opposing labels share the available gap in separate slots; the shared measured label placer avoids caption collisions. Captions wrap, shorten or omit when space is insufficient, while full node text and raw flow facts remain available in native semantics and interactive readouts. Point-specific typography and colors apply under every placement. Any truthful minimum-width treatment remains separate work.
+
+## Flow paint and semantic state
+
+Sankey and Chord share `ChartFlowStyle` and ID-keyed series overrides. Style values are immutable; `FlowStyles` and `FlowStates` expose read-only live views of the mutable series builder. IDs are case-sensitive, scoped to the series, and must match an existing authored `ChartFlowLink.Id`. Parallel flows can have separate paint and state even when their endpoints and labels match.
+
+```csharp
+var series = chart.Series[0];
+series.WithFlowStyle("priority", new ChartFlowStyle(
+    fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
+    fillPattern: ChartFillPattern.DiagonalForward,
+    stroke: ChartColor.FromHex("#764415"), strokeWidth: 1));
+series.WithFlowState("priority", ChartSeriesState.Warning);
+series.WithFlowState("standard", ChartSeriesState.None); // Suppress inherited semantic state.
+series.WithFlowStyle("priority", null); // Restore inherited paint.
+series.WithFlowState("priority", null); // Restore source-node/series state.
+```
+
+Fill precedence is explicit flow fill, source-node point color, family ribbon fill where available, series color, explicit flow semantic state, source-node/series semantic state, then the source-node palette color. Explicit colors retain precedence when a semantic state is present; the resolved state still appears in flow metadata. `None` uses categorical paint instead of inheriting the source-node or series state. Styling never changes source/target identity, raw weight, layout order or ribbon geometry.
+
+`FillOpacity` replaces the family's ribbon opacity and multiplies the resolved color alpha. Null retains the family default. A null `FillPattern` inherits the source-node point pattern or series pattern; `ChartFillPattern.None` disables it. Sankey patterns keep their separate .6 opacity, while Chord patterns follow the resolved fill opacity. Chord target cues use the resolved base flow color and retain its alpha independently of fill opacity.
+
+An explicit `Stroke` enables a one-unit outline. A positive `StrokeWidth` enables an outline using `Stroke` or the resolved base flow color; zero disables it. `StrokeOpacity` multiplies the outline color alpha and defaults to one. Fill, pattern or opacity settings alone do not enable an outline. Dimensions must be finite and non-negative, opacities must be finite values from zero to one, and enum values must be defined.
+
+Existing charts need no migration and retain their paint defaults without overrides. Prepared SVG and PNG remain detached from later style/state edits. These C# overrides do not add a relationship authoring grammar to chart markup.
 
 ## Histogram ingestion
 
