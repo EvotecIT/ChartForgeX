@@ -7,6 +7,30 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidNotationBoundaryTests {
     [Theory]
+    [InlineData("erDiagram", "A ||--o{ B : contains", "A {", "int id PK")]
+    [InlineData("erDiagram", "A ||--o{ B : contains", "subgraph Area", "A ||--o{ B : contains")]
+    [InlineData("stateDiagram-v2", "A --> B", "state A {", "B --> C")]
+    public void UnclosedBoundariesPointToTheirOpeningEvenAfterAnEarlierReference(string header, string prior, string opening, string body) {
+        var source = "---\r\nconfig:\r\n  theme: dark\r\n---\r\n" + header + "\r\n" + prior + "\r\n  " + opening + "\r\n" + body;
+        var rendered = MermaidRenderer.Render(source);
+        Assert.Null(rendered.Artifact);
+        var error = Assert.Single(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidStatement);
+        Assert.Equal(7, error.Span.Line);
+        Assert.Equal(3, error.Span.Column);
+        Assert.Equal(opening.Length, error.Span.Length);
+    }
+
+    [Theory]
+    [InlineData("erDiagram\n  subgraph Outer\n    subgraph Inner\n      A {\nint id PK", "2,3,4")]
+    [InlineData("stateDiagram-v2\n  state Outer {\n    state Inner {\nA --> B", "2,3")]
+    public void EachUnclosedNestedBoundaryRetainsItsOwnOpeningLocation(string source, string lines) {
+        var rendered = MermaidRenderer.Render(source);
+        Assert.Null(rendered.Artifact);
+        Assert.Equal(lines, string.Join(",", rendered.Diagnostics.Where(item => item.Code == MermaidDiagnosticCodes.InvalidStatement)
+            .Select(item => item.Span.Line).OrderBy(line => line)));
+    }
+
+    [Theory]
     [InlineData("LR", TopologyLayoutDirection.LeftToRight)]
     [InlineData("RL", TopologyLayoutDirection.RightToLeft)]
     [InlineData("TB", TopologyLayoutDirection.TopToBottom)]

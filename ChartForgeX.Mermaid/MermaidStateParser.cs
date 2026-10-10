@@ -6,7 +6,7 @@ namespace ChartForgeX.Mermaid;
 internal static class MermaidStateParser {
     public static void ParseStatements(MermaidStateDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var states = new Dictionary<string, MermaidStateNode>(StringComparer.Ordinal);
-        var composites = new Stack<string>();
+        var composites = new Stack<(string Id, MermaidSourceSpan Span)>();
         var specialIndex = 0;
         var originalLineStarts = MermaidParserUtilities.OriginalLineStarts(document.SourceText);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
@@ -52,8 +52,8 @@ internal static class MermaidStateParser {
 
             if (TryParseTransition(trimmed, span, ref specialIndex, out var transition)) {
                 document.Transitions.Add(transition);
-                EnsureState(document, states, transition.SourceId, span, composites.Count == 0 ? null : composites.Peek());
-                EnsureState(document, states, transition.TargetId, span, composites.Count == 0 ? null : composites.Peek());
+                EnsureState(document, states, transition.SourceId, span, composites.Count == 0 ? null : composites.Peek().Id);
+                EnsureState(document, states, transition.TargetId, span, composites.Count == 0 ? null : composites.Peek().Id);
                 continue;
             }
 
@@ -66,14 +66,14 @@ internal static class MermaidStateParser {
             if (colon > 0) {
                 var id = trimmed.Substring(0, colon).Trim();
                 var label = MermaidParserUtilities.Unquote(trimmed.Substring(colon + 1).Trim());
-                EnsureState(document, states, id, span, composites.Count == 0 ? null : composites.Peek()).Label = label;
+                EnsureState(document, states, id, span, composites.Count == 0 ? null : composites.Peek().Id).Label = label;
                 continue;
             }
 
-            EnsureState(document, states, trimmed, span, composites.Count == 0 ? null : composites.Peek());
+            EnsureState(document, states, trimmed, span, composites.Count == 0 ? null : composites.Peek().Id);
         }
 
-        if (composites.Count > 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error,
+        foreach (var composite in composites) MermaidParserUtilities.Add(result, composite.Span, MermaidDiagnosticSeverity.Error,
             "Composite state definitions must close with '}'.", MermaidDiagnosticCodes.InvalidStatement);
         if (document.States.Count == 0 && document.Transitions.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid state diagrams require at least one state or transition.");
     }
@@ -100,7 +100,7 @@ internal static class MermaidStateParser {
         return lastLine;
     }
 
-    private static void ParseStateDeclaration(MermaidStateDocument document, Dictionary<string, MermaidStateNode> states, string text, MermaidSourceSpan span, Stack<string> composites) {
+    private static void ParseStateDeclaration(MermaidStateDocument document, Dictionary<string, MermaidStateNode> states, string text, MermaidSourceSpan span, Stack<(string Id, MermaidSourceSpan Span)> composites) {
         var body = text.Substring(6).Trim();
         var opensComposite = body.EndsWith("{", StringComparison.Ordinal);
         if (opensComposite) body = body.Substring(0, body.Length - 1).Trim();
@@ -128,10 +128,10 @@ internal static class MermaidStateParser {
             id = body;
         }
 
-        var state = EnsureState(document, states, id, span, composites.Count == 0 ? null : composites.Peek());
+        var state = EnsureState(document, states, id, span, composites.Count == 0 ? null : composites.Peek().Id);
         if (!string.IsNullOrWhiteSpace(label)) state.Label = label;
         if (!string.IsNullOrWhiteSpace(kind)) state.Kind = kind;
-        if (opensComposite) composites.Push(state.Id);
+        if (opensComposite) composites.Push((state.Id, span));
     }
 
     private static bool TryParseTransition(string text, MermaidSourceSpan span, ref int specialIndex, out MermaidStateTransition transition) {
