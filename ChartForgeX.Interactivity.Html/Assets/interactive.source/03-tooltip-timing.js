@@ -20,6 +20,9 @@
     } else if (tooltipObserver && Array.from(tooltipObservedTrees).some(tree =>
       !Array.from(pendingTooltips).some(pending => pending.trees.includes(tree)))) {
       // A shared observer cannot unobserve one tree. Rebuild through the same watcher to release canceled hosts.
+      // Preserve queued removals for surviving requests before disconnect discards the native record queue.
+      checkPendingTooltipMutations(tooltipObserver.takeRecords());
+      if (!tooltipObserver) return;
       tooltipObserver.disconnect(); tooltipObservedTrees.clear();
       for (const pending of pendingTooltips) watchPendingTooltips(pending);
     }
@@ -51,16 +54,17 @@
     const point = acquiredTooltipPoint(root, candidates);
     return point && point.node;
   };
+  const checkPendingTooltipMutations = (records) => {
+    for (const pending of Array.from(pendingTooltips)) {
+      const removed = records.some(record => record.type === 'childList'
+        && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)
+          || pending.trees.some(tree => tree.host && node.contains(tree.host))));
+      if (removed || !tooltipRequestAvailable(pending)) cancelTooltipRequest(pending.root);
+    }
+  };
   const watchPendingTooltips = (request) => {
     // Observe only while a request is queued, so a detached or briefly replaced host cannot retain a long timer.
-    if (!tooltipObserver) tooltipObserver = new MutationObserver((records) => {
-      for (const pending of Array.from(pendingTooltips)) {
-        const removed = records.some(record => record.type === 'childList'
-          && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)
-            || pending.trees.some(tree => tree.host && node.contains(tree.host))));
-        if (removed || !tooltipRequestAvailable(pending)) cancelTooltipRequest(pending.root);
-      }
-    });
+    if (!tooltipObserver) tooltipObserver = new MutationObserver(checkPendingTooltipMutations);
     for (const tree of request.trees) {
       if (tooltipObservedTrees.has(tree)) continue;
       tooltipObserver.observe(tree, { childList: true, attributes: true, subtree: true });
