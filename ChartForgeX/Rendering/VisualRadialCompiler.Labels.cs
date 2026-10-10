@@ -41,9 +41,10 @@ internal static partial class VisualRadialCompiler {
         if (builder.MeasureText(fitted, style).Width > angularWidth) return;
         if (fitted.Length == 0) return;
         style.Alignment = TextAlignment.Center;
-        builder.Text(fitted, x, y - builder.MeasureText(fitted, style).Height / 2 + builder.TextAscent(style), style, "data-label",
-            paint: VisualChartPaint.ExplicitDataLabelColor(chart, slice.PointIndex) ? VisualChartPaint.Text(style)
-                : slice.Color.A == 255 ? SvgPaint.Contrast(slice.Color, VisualChartPaint.SeriesRole(chart.Series[0], slice.PointIndex)) : SvgPaint.Literal(style.Color));
+        using (builder.PushGroup(SliceId(slice) + "-label-source", "radial-data-label-source", VisualMarkLabel.Metadata(text, SliceId(slice))))
+            builder.Text(fitted, x, y - builder.MeasureText(fitted, style).Height / 2 + builder.TextAscent(style), style, "data-label",
+                paint: VisualChartPaint.ExplicitDataLabelColor(chart, slice.PointIndex) ? VisualChartPaint.Text(style)
+                    : slice.Color.A == 255 ? SvgPaint.Contrast(slice.Color, VisualChartPaint.SeriesRole(chart.Series[0], slice.PointIndex)) : SvgPaint.Literal(style.Color));
     }
 
     private static void DrawVerticalLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
@@ -90,8 +91,9 @@ internal static partial class VisualRadialCompiler {
             displayed.Baseline = TextBaseline.Normal;
             displayed.TextCase = TextCaseTransform.None;
             displayed.Alignment = TextAlignment.Left;
-            builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(displayed), displayed,
-                "data-label", SliceId(label.Slice) + "-label", paint: VisualChartPaint.Text(displayed));
+            using (builder.PushGroup(SliceId(label.Slice) + "-label-source", "radial-data-label-source", VisualMarkLabel.Metadata(label.Text, SliceId(label.Slice))))
+                builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(displayed), displayed,
+                    "data-label", SliceId(label.Slice) + "-label", paint: VisualChartPaint.Text(displayed));
         }
         if (overflow)
             builder.AddDiagnostic(new VisualDiagnostic("radial.label-overflow", "Some radial labels were shortened or omitted to fit their measured text and external leaders within the fixed canvas."));
@@ -173,8 +175,9 @@ internal static partial class VisualRadialCompiler {
                 if (text.Length == 0) continue;
                 Connector(chart, builder, label.Slice, label.Angle, label.SliceX, label.SliceY, radius, label.X, label.Y, true);
                 label.Style.Alignment = left ? TextAlignment.Right : TextAlignment.Left;
-                builder.Text(text, label.X, label.Y - builder.MeasureText(text, label.Style).Height / 2 + builder.TextAscent(label.Style),
-                    label.Style, "data-label", paint: VisualChartPaint.Text(label.Style));
+                using (builder.PushGroup(SliceId(label.Slice) + "-label-source", "radial-data-label-source", VisualMarkLabel.Metadata(label.Text, SliceId(label.Slice))))
+                    builder.Text(text, label.X, label.Y - builder.MeasureText(text, label.Style).Height / 2 + builder.TextAscent(label.Style),
+                        label.Style, "data-label", paint: VisualChartPaint.Text(label.Style));
             }
         }
     }

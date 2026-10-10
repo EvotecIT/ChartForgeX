@@ -14,6 +14,11 @@ public sealed class ChartLabels {
     private string _less = "Less";
     private string _more = "More";
     private string _noData = "No data";
+    private string _color = "Color";
+    private string _authoredValue = "Provided value";
+    private string _remainder = "Remainder";
+    private string _allValues = "All values";
+    private string _value = "value";
     private string _untitledChart = "ChartForgeX chart";
     private const string DefaultLevel = "Level";
     private string _level = DefaultLevel;
@@ -47,8 +52,23 @@ public sealed class ChartLabels {
     /// <summary>Gets or sets the word at the strong end of calendar and map colour scales. Default <c>More</c>.</summary>
     public string More { get => _more; set => _more = Required(value, nameof(value)); }
 
-    /// <summary>Gets or sets the word for calendar days and map regions without a value, in the scale and in tooltips. Default <c>No data</c>.</summary>
+    /// <summary>Gets or sets the word for calendar days, map regions, and independent color measurements without a value, in scales and tooltips. Default <c>No data</c>.</summary>
     public string NoData { get => _noData; set => _noData = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the default title and tooltip row name of an independent numeric color measurement. Default <c>Color</c>.</summary>
+    public string Color { get => _color; set => _color = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the tooltip row name for a supplied group size that differs from its resolved size. Default <c>Provided value</c>.</summary>
+    public string AuthoredValue { get => _authoredValue; set => _authoredValue = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the tooltip row name for the unallocated part of an inclusive Sunburst group total. Default <c>Remainder</c>.</summary>
+    public string Remainder { get => _remainder; set => _remainder = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the caption for a discrete color scale with one unbounded band. Default <c>All values</c>.</summary>
+    public string AllValues { get => _allValues; set => _allValues = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the word between the bounds of an interior discrete color band, for example <c>10 ≤ value &lt; 20</c>. Default <c>value</c>.</summary>
+    public string Value { get => _value; set => _value = Required(value, nameof(value)); }
 
     /// <summary>
     /// Gets or sets the accessible name of a chart without a title (the SVG <c>title</c> element and the HTML page title).
@@ -61,7 +81,7 @@ public sealed class ChartLabels {
     /// the chart description (the SVG <c>desc</c> element) and the accessible names of calendar, dotted map, region map,
     /// and tile map groups; <see cref="ChartDescriptionFacts.Kind"/> says which. Null (the default), or a function
     /// returning null or white space for a sentence, writes <see cref="ChartDescriptionFacts.EnglishText"/>. A description
-    /// set through <see cref="Chart.WithAccessibility"/> still wins and the function is not called for it. Exceptions
+    /// set through <see cref="Chart.ConfigureAccessibility"/> still wins and the function is not called for it. Exceptions
     /// thrown by the function are not caught; they surface from the render call.
     /// </summary>
     public Func<ChartDescriptionFacts, string?>? AccessibleTextFormatter { get; set; }

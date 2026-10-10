@@ -82,6 +82,12 @@ internal static partial class VisualMapCompiler {
         else {
             var ratio = ChartHeatmapSurface.MapRatio(chart, value.Value, min, max);
             metadata["data-cfx-level"] = N(ChartHeatmapSurface.Level(ratio));
+            if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) {
+                var scale = chart.Options.MapColorScale;
+                var band = scale.BandIndex(value.Value);
+                metadata["data-cfx-band"] = N(band);
+                if (scale.Bands[band].Label != null) metadata["data-cfx-band-label"] = scale.Bands[band].Label!;
+            }
             var status = chart.Options.MapColorScale == null ? ChartHeatmapSurface.CellStatus(chart, ratio) : null;
             if (status != null) metadata["data-cfx-status"] = status;
         }

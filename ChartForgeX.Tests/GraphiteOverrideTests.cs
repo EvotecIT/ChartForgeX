@@ -33,7 +33,7 @@ public sealed class GraphiteOverrideTests {
             case "gauge": chart.AddGauge("alpha",70); break;
             case "bullet": chart.AddBullet("alpha",70,90); break;
             case "funnel": chart.AddFunnel("alpha",points).WithDataLabels(); break;
-            default: chart.AddSankey("Flow",new[]{new ChartSankeyLink("alpha","beta",70)}); break;
+            default: chart.AddSankey("Flow", new[] { new ChartNode("alpha", "alpha"), new ChartNode("beta", "beta") }, new[]{new ChartFlowLink("flow-1", "alpha","beta",70)}); break;
         }
         chart.Series[0].DataLabelStyle.FontSize=16;
         chart.Series[0].DataLabelStyle.Color=ChartColor.FromHex("#7B61E8");

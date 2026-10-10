@@ -18,6 +18,7 @@ internal static class MapExamples {
         Save(CreateIndustrialBirthsRegionMap(), output, "industrial-births-region-map-us-states-light", pngOutputScale);
         Save(CreateTileMap(), output, "revenue-tile-map-us-states-light", pngOutputScale);
         Save(CreateTargetTileMap(), output, "target-tile-map-diverging-steps-light", pngOutputScale);
+        Save(CreateBandedTileMap(), output, "revenue-tile-map-discrete-bands-light", pngOutputScale);
         if (includeExternalCatalogMaps) SaveOptionalCatalogRegionMapExamples(output, pngOutputScale);
     }
 
@@ -224,7 +225,7 @@ internal static class MapExamples {
             .WithLegend(false)
             .WithMapViewport(ChartMapViewport.Europe())
             .WithDataLabels()
-            .WithDataLabelStyle(style => style.WithFontSize(11.5))
+            .ConfigureDataLabelStyle(style => style.WithFontSize(11.5))
             .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
             .AddDottedMap("Revenue", new[] {
                 new ChartMapPoint("United Kingdom", -1.1743, 52.3555, 188, ChartColor.FromRgb(37, 99, 235)),
@@ -250,7 +251,7 @@ internal static class MapExamples {
 
     private static Chart CreateTargetTileMap() {
         // A seven-step diverging ramp: three steps below target, a neutral target, three steps above.
-        var scale = ChartMapColorScale
+        var scale = ChartColorScale
             .Diverging(
                 new[] { ChartColor.FromHex("#B8292A"), ChartColor.FromHex("#E0645B"), ChartColor.FromHex("#F0A39D") },
                 ChartColor.FromHex("#ECEEF0"),
@@ -271,6 +272,24 @@ internal static class MapExamples {
             .AddTileMap("Attainment", ChartTileMapCatalog.Get("us-states"), states);
     }
 
+    private static Chart CreateBandedTileMap() {
+        var scale = ChartColorScale.Discrete(new[] {
+            new ChartColorBand(50, ChartColor.FromHex("#DAE8F8"), "Under 50k"),
+            new ChartColorBand(100, ChartColor.FromHex("#6F9ECE"), "50–100k"),
+            new ChartColorBand(null, ChartColor.FromHex("#1C5CAB"), "100k and above")
+        }).WithNoDataColor(ChartColor.FromHex("#E2E4E7"));
+        return Chart.Create()
+            .WithTitle("Revenue Bands by State")
+            .WithSubtitle("Fixed exclusive thresholds keep the same bands across reporting periods")
+            .WithTheme(ChartTheme.ReportLight())
+            .WithSize(980, 500)
+            .WithLegend(false)
+            .WithMapColorScale(scale)
+            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
+            .WithValueFormatter(value => "$" + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "k")
+            .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), StateRevenue());
+    }
+
     private static Chart CreateRegionMap() {
         return Chart.Create()
             .WithTitle("Revenue Region Map")
@@ -284,7 +303,7 @@ internal static class MapExamples {
     }
 
     private static Chart CreateIndustrialBirthsRegionMap() {
-        var colorScale = ChartMapColorScale
+        var colorScale = ChartColorScale
             .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 3.2)
             .WithValueRange(0, 10)
             .WithLabels("0", "3.2 median", ">10")
@@ -400,8 +419,8 @@ internal static class MapExamples {
             .AddRegionHeatmap("Births per 10,000 residents", definition, CatalogCountryValues(definition, example.CountryCode), scale);
     }
 
-    private static ChartMapColorScale IndustrialBirthsScale() {
-        return ChartMapColorScale
+    private static ChartColorScale IndustrialBirthsScale() {
+        return ChartColorScale
             .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 3.2)
             .WithValueRange(0, 10)
             .WithLabels("0", "3.2 median", ">10")

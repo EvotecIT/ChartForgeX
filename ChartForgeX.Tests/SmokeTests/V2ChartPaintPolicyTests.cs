@@ -25,7 +25,9 @@ public sealed class V2ChartPaintPolicyTests {
     [InlineData(ChartSeriesKind.Pie, "pie-slice", "fill")]
     [InlineData(ChartSeriesKind.Donut, "donut-slice", "fill")]
     [InlineData(ChartSeriesKind.Gauge, "gauge-value", "fill")]
-    [InlineData(ChartSeriesKind.RadialBar, "radial-bar-ring", "fill")]
+    [InlineData(ChartSeriesKind.ProgressRing, "progress-ring-ring", "fill")]
+    [InlineData(ChartSeriesKind.RadialBar, "radial-bar", "fill")]
+    [InlineData(ChartSeriesKind.RadialColumn, "radial-column", "fill")]
     [InlineData(ChartSeriesKind.LayeredRadial, "layered-radial-layer", "fill")]
     public void ChartMarksAndLegendsRetainStatusOrExplicitSeriesProvenance(ChartSeriesKind kind, string role, string attribute) {
         var chart = Fixture(kind); chart.Series[0].StateRole = ChartSeriesState.Danger;
@@ -131,7 +133,9 @@ public sealed class V2ChartPaintPolicyTests {
             ChartSeriesKind.Pie => Chart.Create().AddPie("Observed", Points),
             ChartSeriesKind.Donut => Chart.Create().AddDonut("Observed", Points),
             ChartSeriesKind.Gauge => Chart.Create().AddGauge("Observed", 35),
+            ChartSeriesKind.ProgressRing => Chart.Create().AddProgressRing("Observed", Points),
             ChartSeriesKind.RadialBar => Chart.Create().AddRadialBar("Observed", Points),
+            ChartSeriesKind.RadialColumn => Chart.Create().AddRadialColumn("Observed", Points),
             ChartSeriesKind.LayeredRadial => Chart.Create().AddLayeredRadial("Observed", new[] { new ChartRadialLayer("A", 35), new ChartRadialLayer("B", 75) }),
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };

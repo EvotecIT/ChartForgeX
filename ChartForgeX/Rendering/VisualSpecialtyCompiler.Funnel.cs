@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -12,26 +13,16 @@ internal static partial class VisualSpecialtyCompiler {
     private static void Funnel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
         var show = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
-        var maximum = series.Points.Max(point => point.Y);
-        var metricsWidth = show && series.Points.Count > 1 ? plot.Width * .27 : 0;
-        var gap = Math.Min(context.Theme.Spacing, plot.Height / series.Points.Count * .08);
-        var height = Math.Max(0, (plot.Height - gap * (series.Points.Count - 1)) / series.Points.Count);
-        var left = plot.Left; var width = Math.Max(0, plot.Width - metricsWidth - (metricsWidth > 0 ? gap : 0));
-        var cx = left + width / 2;
-        using var group = builder.PushGroup("funnel-chart", "funnel-chart");
-        double Width(double value) => maximum <= 0 || value <= 0 ? 0 : width * (.22 + .78 * Math.Min(1, value / maximum));
-        for (var index = 0; index < series.Points.Count; index++) {
-            var raw = series.Points[index].Y;
-            var next = index + 1 < series.Points.Count ? series.Points[index + 1].Y : raw * .82;
-            var topWidth = Width(raw); var bottomWidth = Width(next);
-            var top = plot.Top + index * (height + gap);
-            var path = new ChartPath(new[] {
-                ChartPathCommand.MoveTo(cx - topWidth / 2, top), ChartPathCommand.LineTo(cx + topWidth / 2, top),
-                ChartPathCommand.LineTo(cx + bottomWidth / 2, top + height), ChartPathCommand.LineTo(cx - bottomWidth / 2, top + height)
-            });
+        var form = chart.Options.Funnel.Form;
+        var layout = ChartFunnelLayout.Compute(series.Points, plot, chart.Options.Funnel, context.Theme.Spacing, show);
+        using var group = builder.PushGroup("funnel-chart", "funnel-chart", new Dictionary<string, string> {
+            ["data-cfx-form"] = form == ChartFunnelForm.StageBars ? "stage-bars" : "cone",
+            ["data-cfx-orientation"] = chart.Options.Funnel.Orientation == ChartOrientation.Vertical ? "vertical" : "horizontal"
+        });
+        foreach (var connection in layout.Connections) FunnelConnection(chart, builder, connection, colors, form);
+        foreach (var stage in layout.Stages) {
+            var index = stage.SourceIndex; var raw = series.Points[index].Y;
             var color = Color(series, index, colors);
-            var markWidth = raw > 0 ? Math.Max(topWidth, bottomWidth) : Math.Min(12, width / 10);
-            var bounds = new ChartRect(cx - markWidth / 2, top, markWidth, height);
             var previous = index == 0 ? raw : series.Points[index - 1].Y;
             var retention = series.Points[0].Y <= 0 ? (double?)null : raw / series.Points[0].Y;
             var drop = previous <= 0 || index == 0 ? (double?)null : (previous - raw) / previous;
@@ -41,33 +32,76 @@ internal static partial class VisualSpecialtyCompiler {
             if (retention.HasValue) metadata["data-cfx-retention"] = N(retention.Value);
             if (drop.HasValue) metadata["data-cfx-dropoff"] = N(drop.Value);
             var summary = Category(chart, index) + ": " + VisualStateSceneTools.Value(chart, series, index, raw);
-            if (retention.HasValue) summary += ", retained " + retention.Value.ToString("0.#%", System.Globalization.CultureInfo.InvariantCulture);
-            if (drop.HasValue) summary += ", drop-off " + drop.Value.ToString("0.#%", System.Globalization.CultureInfo.InvariantCulture);
-            using (Point(chart, builder, index, "funnel-stage", bounds, summary, metadata)) {
-                if (raw > 0) {
-                    builder.Path(path, color, colors.Surface, Math.Min(2, height / 8), "funnel-segment", close: true,
-                        paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, color, index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
-                    Pattern(chart, builder, index, path, color);
-                } else builder.Line(cx - Math.Min(6, width / 20), top + height / 2, cx + Math.Min(6, width / 20), top + height / 2,
-                    colors.Border, role: "funnel-zero", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Surface));
-                if (show) {
-                    var value = VisualStateSceneTools.Value(chart, series, index, raw);
-                    var textColor = raw > 0 ? ChartColorMath.AccessibleTextOnBackground(color) : colors.Foreground;
-                    var labelWidth = raw > 0 ? Math.Max(0, (topWidth + bottomWidth) * .4 - gap) : width;
-                    VisualStateSceneTools.Text(builder, Category(chart, index) + ": " + value,
-                        new ChartRect(cx - labelWidth / 2, top, labelWidth, height), Style(chart, context, index, textColor),
-                        "funnel-label", Id(index) + "-label", TextAlignment.Center, shrink: true,
-                        paint: VisualChartPaint.ExplicitDataLabelColor(chart, index) || raw == 0 ? SvgPaint.Of(Style(chart, context, index, textColor).Color, SvgColorRole.Text)
-                            : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(series, index)));
-                    if (index > 0 && metricsWidth > 0) {
-                        var text = (retention.HasValue ? retention.Value.ToString("0.#%", System.Globalization.CultureInfo.InvariantCulture) + " retained" : "No initial baseline")
-                            + "\n" + (drop.HasValue ? drop.Value.ToString("0.#%", System.Globalization.CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline");
-                        VisualStateSceneTools.Text(builder, text, new ChartRect(left + width + gap, top, metricsWidth, height),
-                            Style(chart, context, index, colors.MutedForeground), "funnel-ratio", Id(index) + "-ratio", shrink: true,
-                            paint: VisualChartPaint.Text(Style(chart, context, index, colors.MutedForeground)));
-                    }
+            if (retention.HasValue) summary += ", retained " + retention.Value.ToString("0.#%", CultureInfo.InvariantCulture);
+            if (drop.HasValue) summary += ", drop-off " + drop.Value.ToString("0.#%", CultureInfo.InvariantCulture);
+            using (Point(chart, builder, index, "funnel-stage", stage.Bounds, summary, metadata)) {
+                if (form == ChartFunnelForm.Cone) {
+                    var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
+                    var line = new ChartPath(new[] { ChartPathCommand.MoveTo(stage.LineStart.X, stage.LineStart.Y),
+                        ChartPathCommand.LineTo(stage.LineEnd.X, stage.LineEnd.Y) });
+                    builder.Path(line, stroke: color, strokeWidth: stroke, role: "funnel-stage-line", cap: VisualStrokeCap.Butt,
+                        paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, index)));
+                } else if (raw > 0) {
+                    builder.Path(stage.Bar, color, role: "funnel-segment", close: true,
+                        paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
+                    Pattern(chart, builder, index, stage.Bar, color);
                 }
+                if (raw == 0) builder.Line(stage.ZeroStart.X, stage.ZeroStart.Y, stage.ZeroEnd.X, stage.ZeroEnd.Y,
+                    colors.Border, role: "funnel-zero", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Surface));
+                if (show) FunnelLabels(chart, context, builder, stage, color, colors, raw, retention, drop, form);
             }
         }
+        if (series.Points.All(point => point.Y == 0))
+            builder.AddDiagnostic(new VisualDiagnostic("funnel.all-zero", "All funnel stage values are zero; their category slots remain visible."));
     }
+
+    private static void FunnelConnection(Chart chart, VisualSceneBuilder builder, ChartFunnelConnectionLayout connection,
+        VisualThemeColors colors, ChartFunnelForm form) {
+        var series = chart.Series[0]; var color = Color(series, connection.FromIndex, colors);
+        var opacity = form == ChartFunnelForm.Cone ? .3 : .18;
+        var fill = ChartColorMath.WithOpacity(color, opacity);
+        var id = Id(connection.FromIndex) + "-connection";
+        var summary = Category(chart, connection.FromIndex) + " to " + Category(chart, connection.ToIndex) + ": "
+            + VisualStateSceneTools.Value(chart, series, connection.FromIndex, series.Points[connection.FromIndex].Y)
+            + " to " + VisualStateSceneTools.Value(chart, series, connection.ToIndex, series.Points[connection.ToIndex].Y);
+        using (VisualStateSceneTools.Mark(builder, id, "funnel-connection", connection.Bounds, summary,
+            new Dictionary<string, string> {
+                ["data-cfx-from-point"] = N(connection.FromIndex), ["data-cfx-to-point"] = N(connection.ToIndex),
+                ["data-cfx-from-value"] = N(series.Points[connection.FromIndex].Y),
+                ["data-cfx-to-value"] = N(series.Points[connection.ToIndex].Y)
+            })) {
+            builder.Path(connection.Path, fill, role: form == ChartFunnelForm.Cone ? "funnel-connection-area" : "funnel-dropoff", close: true,
+                paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, connection.FromIndex).WithOpacity(fill, opacity)));
+            if (form == ChartFunnelForm.Cone) Pattern(chart, builder, connection.FromIndex, connection.Path, color);
+        }
+    }
+
+    private static void FunnelLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartFunnelStageLayout stage,
+        ChartColor color, VisualThemeColors colors, double raw, double? retention, double? drop, ChartFunnelForm form) {
+        var index = stage.SourceIndex;
+        var text = Category(chart, index) + ": " + VisualStateSceneTools.Value(chart, chart.Series[0], index, raw);
+        var inside = raw > 0 && form == ChartFunnelForm.StageBars;
+        var textColor = inside ? ChartColorMath.AccessibleTextOnBackground(color) : colors.Foreground;
+        var style = Style(chart, context, index, textColor);
+        var bounds = stage.LabelBounds;
+        var measured = builder.MeasureText(text, style);
+        double Fit(ChartRect box) => Math.Min(box.Width / Math.Max(1, measured.Width), box.Height / Math.Max(1, measured.Height));
+        // Keep very small positive marks truthful; a fitted label can use the adjacent empty space instead.
+        if (Fit(bounds) < .65 && Fit(stage.OutsideLabelBounds) > Fit(bounds)) {
+            bounds = stage.OutsideLabelBounds;
+            inside = false;
+            style = Style(chart, context, index, colors.Foreground);
+        }
+        StageText(builder, text, bounds, style, "funnel-label", Id(index) + "-label", TextAlignment.Center,
+            VisualChartPaint.ExplicitDataLabelColor(chart, index) || !inside ? VisualChartPaint.Text(style)
+                : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "funnel");
+        if (index > 0 && stage.MetricsBounds.Width > 0 && stage.MetricsBounds.Height > 0) {
+            var metrics = (retention.HasValue ? retention.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " retained" : "No initial baseline")
+                + "\n" + (drop.HasValue ? drop.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline");
+            StageText(builder, metrics, stage.MetricsBounds, Style(chart, context, index, colors.MutedForeground),
+                "funnel-ratio", Id(index) + "-ratio", TextAlignment.Left,
+                VisualChartPaint.Text(Style(chart, context, index, colors.MutedForeground)), "funnel");
+        }
+    }
+
 }

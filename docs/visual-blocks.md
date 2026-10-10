@@ -59,11 +59,11 @@ var vacancies = ChartTable.Create()
     .WithColumns("Company", "Job Title", "Applications", "New", "Trend")
     .AddRow("Google", "Software Engineer", "92", "", "")
     .AddRow("Microsoft", "Software Engineer", "92", "", "")
-    .WithRow(0, row => {
+    .ConfigureRow(0, row => {
         row.Cells[3].WithBadge("22 new", VisualStatus.Info, ChartColor.FromHex("#7C3AED"));
         row.Cells[4].WithSparkline(new[] { 12d, 16d, 13d, 19d, 22d }, color: ChartColor.FromHex("#7C3AED"));
     })
-    .WithRow(1, row => {
+    .ConfigureRow(1, row => {
         row.Cells[3].WithBadge("12 new", VisualStatus.Info, ChartColor.FromHex("#7C3AED"));
         row.Cells[4].WithMiniBars(new[] { 10d, 14d, 12d, 11d, 12d }, color: ChartColor.FromHex("#7C3AED"));
     });

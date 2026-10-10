@@ -13,10 +13,10 @@ public sealed class PreparedHierarchySankeyTests {
         new(new VisualLayoutOptions(new VisualSize(width, height)), themeMode: mode, frame: new VisualFrame("Shared frame", showLegend: false));
     private static Chart Hierarchy(ChartSeriesKind kind) {
         var chart = Chart.Create();
-        if (kind == ChartSeriesKind.Treemap) return chart.AddTreemap("Budget", new[] { new ChartTreemapItem("Large", 9), new ChartTreemapItem("Small", 1), new ChartTreemapItem("Equal A", 2), new ChartTreemapItem("Equal B", 2) });
+        if (kind == ChartSeriesKind.Treemap) return chart.AddTreemap("Budget", new[] { new ChartHierarchyItem("Large", "Large", value: 9), new ChartHierarchyItem("Small", "Small", value: 1), new ChartHierarchyItem("Equal A", "Equal A", value: 2), new ChartHierarchyItem("Equal B", "Equal B", value: 2) });
         var links = new[] { new ChartTreeLink("Root with a long measured label", "First branch", 9), new ChartTreeLink("Root with a long measured label", "Second branch", 1),
             new ChartTreeLink("First branch", "First leaf", 6), new ChartTreeLink("First branch", "Second leaf", 3) };
-        return kind == ChartSeriesKind.Tree ? chart.AddTree("Structure", links) : chart.AddSunburst("Structure", links);
+        return kind == ChartSeriesKind.Tree ? chart.AddTree("Structure", new[] { new ChartNode("Root with a long measured label", "Root with a long measured label"), new ChartNode("First branch", "First branch"), new ChartNode("Second branch", "Second branch"), new ChartNode("First leaf", "First leaf"), new ChartNode("Second leaf", "Second leaf") }, links) : chart.AddSunburst("Structure", new[] { new ChartHierarchyItem("Root with a long measured label", "Root with a long measured label"), new ChartHierarchyItem("First branch", "First branch", "Root with a long measured label", 9), new ChartHierarchyItem("Second branch", "Second branch", "Root with a long measured label", 1), new ChartHierarchyItem("First leaf", "First leaf", "First branch", 6), new ChartHierarchyItem("Second leaf", "Second leaf", "First branch", 3) });
     }
     private static IEnumerable<XElement> Role(XDocument xml, string role) => xml.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == role);
     private static double Number(XElement element, string name) => double.Parse(element.Attribute(name)!.Value, CultureInfo.InvariantCulture);
@@ -44,7 +44,7 @@ public sealed class PreparedHierarchySankeyTests {
 
     [Fact]
     public void SunburstUsesLeafWeightsAndPreservesTheFullCircleRoot() {
-        var chart = Chart.Create().AddSunburst("Weights", new[] { new ChartTreeLink("Root", "Small", 1), new ChartTreeLink("Root", "Large", 9) });
+        var chart = Chart.Create().AddSunburst("Weights", new[] { new ChartHierarchyItem("Root", "Root"), new ChartHierarchyItem("Small", "Small", "Root", 1), new ChartHierarchyItem("Large", "Large", "Root", 9) });
         var xml = XDocument.Parse(chart.Prepare(Context()).ToSvg());
         var root = Role(xml, "sunburst-segment").Single(e => (string?)e.Attribute("data-cfx-label") == "Root");
         var small = Role(xml, "sunburst-segment").Single(e => (string?)e.Attribute("data-cfx-label") == "Small");
@@ -55,13 +55,39 @@ public sealed class PreparedHierarchySankeyTests {
     }
 
     [Fact]
+    public void SunburstRetainsPositiveCollapsedValuesWithoutInventingSliceGeometry() {
+        var chart = Chart.Create().WithDataLabels(false).AddSunburst("Allocation", new[] { new ChartHierarchyItem("root", "All work"), new ChartHierarchyItem("tiny", "Small allocation", "root", 1e-20), new ChartHierarchyItem("visible", "Main allocation", "root", 1) });
+        chart.Series[0].WithInteractionKey("allocation-source");
+        chart.Series[0].WithDataLabels(false);
+        var prepared = chart.Prepare(Context());
+        var nodes = Role(XDocument.Parse(prepared.ToSvg()), "sunburst-segment").ToArray();
+        var collapsed = Assert.Single(nodes, node => (string?)node.Attribute("data-cfx-target-id") == "tiny");
+        Assert.Equal("node", (string?)collapsed.Attribute("data-cfx-target-kind"));
+        Assert.Equal("allocation-source", (string?)collapsed.Attribute("data-cfx-series-key"));
+        Assert.Equal("Small allocation", (string?)collapsed.Attribute("data-cfx-full-label"));
+        Assert.Equal("root", (string?)collapsed.Attribute("data-cfx-parent"));
+        Assert.Equal(1e-20, Number(collapsed, "data-cfx-value"));
+        Assert.Equal(1e-20, Number(collapsed, "data-cfx-authored-value"));
+        Assert.Equal(0, Number(collapsed, "data-cfx-sweep"));
+        Assert.Equal("precision-collapse", (string?)collapsed.Attribute("data-cfx-geometry-status"));
+        Assert.Empty(collapsed.Elements());
+        Assert.Null(collapsed.Attribute("data-cfx-point"));
+        Assert.Equal(3, prepared.Regions.Count(region => region.Role == "sunburst-segment"));
+        Assert.All(nodes.Where(node => node != collapsed), node => {
+            Assert.Equal("visible", (string?)node.Attribute("data-cfx-geometry-status"));
+            Assert.Single(node.Elements());
+            Assert.Equal(Math.PI * 2, Number(node, "data-cfx-sweep"), 10);
+        });
+    }
+
+    [Fact]
     public void TreemapKeepsSourceIdsAfterWeightOrderingAndZeroValuesRemainSemantic() {
-        var chart = Chart.Create().AddTreemap("Tiles", new[] { new ChartTreemapItem("Small", 1), new ChartTreemapItem("Large", 3), new ChartTreemapItem("Zero", 0), new ChartTreemapItem("Equal", 1) });
+        var chart = Chart.Create().AddTreemap("Tiles", new[] { new ChartHierarchyItem("Small", "Small", value: 1), new ChartHierarchyItem("Large", "Large", value: 3), new ChartHierarchyItem("Zero", "Zero", value: 0), new ChartHierarchyItem("Equal", "Equal", value: 1) });
         var prepared = chart.Prepare(Context()); var xml = XDocument.Parse(prepared.ToSvg());
         var tiles = Role(xml, "treemap-tile").ToArray();
-        Assert.Equal("1", (string?)tiles[0].Attribute("data-cfx-point"));
-        Assert.Equal(new[] { "1", "0", "3" }, tiles.Select(e => (string?)e.Attribute("data-cfx-point")).ToArray());
-        var small = prepared.Regions.Single(r => r.Id == "series-0-point-0"); var large = prepared.Regions.Single(r => r.Id == "series-0-point-1");
+        Assert.Equal("Large", (string?)tiles[0].Attribute("data-cfx-target-id"));
+        Assert.Equal(new[] { "Large", "Small", "Equal" }, tiles.Select(e => (string?)e.Attribute("data-cfx-target-id")).ToArray());
+        var small = prepared.Regions.Single(r => r.Id == "series-0-node-Small"); var large = prepared.Regions.Single(r => r.Id == "series-0-node-Large");
         Assert.InRange(large.Bounds.Width * large.Bounds.Height / (small.Bounds.Width * small.Bounds.Height), 2.8, 3.2);
         var zero = Assert.Single(prepared.Regions, r => r.Role == "treemap-zero-value"); Assert.Equal(0, zero.Bounds.Width); Assert.Equal("Zero: 0", zero.Label);
     }
@@ -70,14 +96,14 @@ public sealed class PreparedHierarchySankeyTests {
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]
     public void SankeyFractionalRibbonsAndNodesShareOneExactWeightScale(VisualThemeMode mode) {
-        var chart = Chart.Create().AddSankey("Flows", new[] { new ChartSankeyLink("Source", "Tiny", .001), new ChartSankeyLink("Source", "Large", 1) });
-        chart.Options.SankeyNodeStates[0] = ChartSeriesState.Danger;
+        var chart = Chart.Create().AddSankey("Flows", new[] { new ChartNode("Source", "Source"), new ChartNode("Tiny", "Tiny"), new ChartNode("Large", "Large") }, new[] { new ChartFlowLink("flow-1", "Source", "Tiny", .001), new ChartFlowLink("flow-2", "Source", "Large", 1) });
+        chart.Series[0].WithNodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
         var prepared = chart.Prepare(Context(mode: mode)); var xml = XDocument.Parse(prepared.ToSvg());
         var links = Role(xml, "sankey-link").OrderBy(e => Number(e, "data-cfx-value")).ToArray();
         Assert.Equal(1000, Number(links[1], "data-cfx-width") / Number(links[0], "data-cfx-width"), 9);
         var source = Role(xml, "sankey-node").Single(e => (string?)e.Attribute("data-cfx-label") == "Source");
         var bar = source.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "sankey-node-mark");
-        Assert.Equal(Number(links[0], "data-cfx-width") + Number(links[1], "data-cfx-width"), prepared.Regions.Single(r => r.Id == "series-0-node-0").Bounds.Height, 8);
+        Assert.Equal(Number(links[0], "data-cfx-width") + Number(links[1], "data-cfx-width"), prepared.Regions.Single(r => r.Id == "series-0-node-Source").Bounds.Height, 8);
         Assert.Equal(Context(mode: mode).Theme.Resolve(mode).Status.Critical.Fill.ToCss(), (string?)bar.Attribute("fill"));
         Assert.Equal(2, prepared.Regions.Count(r => r.Role == "sankey-link")); Assert.Equal(3, prepared.Regions.Count(r => r.Role == "sankey-node"));
         Assert.All(prepared.Regions, r => Assert.True(r.Bounds.X >= 24 && r.Bounds.Right <= 696 + .001 && r.Bounds.Y >= 24 && r.Bounds.Bottom <= 436 + .001));
@@ -87,24 +113,24 @@ public sealed class PreparedHierarchySankeyTests {
     [Fact]
     public void WeightedFamiliesDetachGeometryFormattingAndStateFromMutableInputs() {
         foreach (var chart in new[] { Hierarchy(ChartSeriesKind.Tree), Hierarchy(ChartSeriesKind.Sunburst), Hierarchy(ChartSeriesKind.Treemap),
-            Chart.Create().AddSankey("Flows", new[] { new ChartSankeyLink("Input", "Output", 4) }) }) {
+            Chart.Create().AddSankey("Flows", new[] { new ChartNode("Input", "Input"), new ChartNode("Output", "Output") }, new[] { new ChartFlowLink("flow-3", "Input", "Output", 4) }) }) {
             chart.Options.ValueFormatter = value => "value " + value.ToString("0.0", CultureInfo.InvariantCulture);
             chart.Series[0].FillPattern = ChartFillPattern.DiagonalForward;
             var prepared = chart.Prepare(Context()); string svg = prepared.ToSvg(); byte[] png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
-            chart.Series[0].Points.Clear(); chart.Series[0].Color = ChartColor.Black; chart.Options.SankeyNodeStates.Clear();
+            chart.Series[0].Points.Clear(); chart.Series[0].Color = ChartColor.Black; if (chart.Series[0].Nodes.Count > 0) chart.Series[0].WithNodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
             chart.Options.ValueFormatter = _ => "changed"; chart.Series[0].DataLabelStyle.FontSize = 30;
             Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         }
     }
 
     [Fact]
-    public void MutableInvalidGraphsAreRejectedBeforeRecursiveOrWeightedLayout() {
-        var tree = Hierarchy(ChartSeriesKind.Tree); tree.Series[0].Points[2] = new ChartPoint(1, 0);
+    public void IncompatibleRawPointsAreRejectedBeforeRelationshipLayout() {
+        var tree = Hierarchy(ChartSeriesKind.Tree); tree.Series[0].Points.Add(new ChartPoint(1, 0));
         Assert.Throws<InvalidOperationException>(() => tree.Prepare(Context()));
-        var sankey = Chart.Create().AddSankey("Flows", new[] { new ChartSankeyLink("A", "B", 1), new ChartSankeyLink("B", "C", 1) });
-        sankey.Series[0].Points[2] = new ChartPoint(1, 0);
+        var sankey = Chart.Create().AddSankey("Flows", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C") }, new[] { new ChartFlowLink("flow-4", "A", "B", 1), new ChartFlowLink("flow-5", "B", "C", 1) });
+        sankey.Series[0].Points.Add(new ChartPoint(1, 0));
         Assert.Throws<InvalidOperationException>(() => sankey.Prepare(Context()));
-        var treemap = Hierarchy(ChartSeriesKind.Treemap); treemap.Series[0].Points[0] = new ChartPoint(1, -1);
+        var treemap = Hierarchy(ChartSeriesKind.Treemap); treemap.Series[0].Points.Add(new ChartPoint(1, -1));
         Assert.Throws<InvalidOperationException>(() => treemap.Prepare(Context()));
     }
 }

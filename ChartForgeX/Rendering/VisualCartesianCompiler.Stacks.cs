@@ -10,44 +10,35 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private sealed class VerticalStackCaption {
-        internal VerticalStackCaption(string text, TextStyle style, TextMetrics metrics) { Text = text; Style = style; Metrics = metrics; }
+        internal VerticalStackCaption(ChartStackTotal total, string text, TextStyle style, TextMetrics metrics) { Total = total; Text = text; Style = style; Metrics = metrics; }
+        internal ChartStackTotal Total { get; }
         internal string Text { get; }
         internal TextStyle Style { get; }
         internal TextMetrics Metrics { get; }
     }
 
-    private static Dictionary<(ChartAxisSide Axis, ChartBarCoordinateKey Coordinate, bool Positive), VerticalStackCaption> ResolveVerticalTotals(
-        Chart chart, VisualRenderContext context, VisualSceneBuilder builder, VisualThemeColors colors, ChartBarCoordinateMap coordinates) {
-        var values = new Dictionary<(ChartAxisSide Axis, ChartBarCoordinateKey Coordinate, bool Positive), double>();
-        for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
-            var series = chart.Series[seriesIndex];
-            if (series.Kind != ChartSeriesKind.Bar) continue;
-            for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
-                var point = series.Points[pointIndex];
-                var key = (series.YAxis, coordinates.Resolve(seriesIndex, pointIndex), point.Y >= 0);
-                values.TryGetValue(key, out var previous);
-                values[key] = previous + point.Y;
-            }
-        }
-        var captions = new Dictionary<(ChartAxisSide Axis, ChartBarCoordinateKey Coordinate, bool Positive), VerticalStackCaption>();
-        foreach (var value in values.OrderBy(item => item.Key.Axis).ThenBy(item => item.Key.Coordinate.Value).ThenByDescending(item => item.Key.Positive)) {
-            if (Math.Abs(value.Value) < .000001) continue;
-            var text = ChartNumericFormatter.FormatValue(chart.Options, value.Value);
+    private static IReadOnlyList<VerticalStackCaption> ResolveVerticalTotals(
+        Chart chart, VisualRenderContext context, VisualSceneBuilder builder, VisualThemeColors colors, ChartStackLayout stacks) {
+        var captions = new List<VerticalStackCaption>();
+        foreach (var total in stacks.Totals.Where(total => total.Kind == ChartSeriesKind.Bar)) {
+            if (total.Value == 0) continue;
+            var text = ChartNumericFormatter.FormatValue(chart.Options, total.Value);
             var style = chart.Options.DataLabelStyle.Resolve(new TextStyle {
                 Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
             });
-            captions.Add(value.Key, new VerticalStackCaption(text, style, builder.MeasureText(text, style)));
+            captions.Add(new VerticalStackCaption(total, text, style, builder.MeasureText(text, style)));
         }
         return captions;
     }
 
-    private static ChartRect ReserveVerticalTotalGutters(ChartRect bounds,
-        Dictionary<(ChartAxisSide Axis, ChartBarCoordinateKey Coordinate, bool Positive), VerticalStackCaption> totals, double spacing) {
+    private static ChartRect ReserveVerticalTotalGutters(Chart chart, ChartRect bounds,
+        IReadOnlyList<VerticalStackCaption> totals, double spacing) {
         spacing = Math.Max(2, spacing);
         var top = 0d; var bottom = 0d;
         foreach (var total in totals) {
-            if (total.Key.Positive) top = Math.Max(top, total.Value.Metrics.Height + spacing);
-            else bottom = Math.Max(bottom, total.Value.Metrics.Height + spacing);
+            var axis = total.Total.Axis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            if (BarValueDirection(axis, total.Total.Value) > 0) top = Math.Max(top, total.Metrics.Height + spacing);
+            else bottom = Math.Max(bottom, total.Metrics.Height + spacing);
         }
         // Retain measured space outside the value mapper rather than relying on its
         // numeric range padding. Tall or multiline fonts must leave a useful subset
@@ -59,46 +50,36 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void AddStackTotals(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartBarCoordinateMap coordinates, ChartMapper primary, ChartMapper? secondary, List<LabelPlacementRequest> labels,
-        Dictionary<(ChartAxisSide Axis, ChartBarCoordinateKey Coordinate, bool Positive), VerticalStackCaption> captions) {
-        var totals = new Dictionary<(ChartAxisSide Axis, ChartBarCoordinateKey Coordinate, bool Positive), (double Value, double Center, double Left, double Right)>();
-        for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
-            var series = chart.Series[seriesIndex];
-            if (series.Kind != ChartSeriesKind.Bar) continue;
-            var mapper = series.YAxis == ChartAxisSide.Secondary ? secondary! : primary;
-            var layout = ResolveBarLayout(chart, context, plot, mapper, seriesIndex);
-            for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
-                var point = series.Points[pointIndex];
-                var key = (series.YAxis, coordinates.Resolve(seriesIndex, pointIndex), point.Y >= 0);
-                var center = mapper.X(point.X) + layout.Offset;
-                var left = center - layout.Width / 2; var right = center + layout.Width / 2;
-                if (ChartHistogramBarSlot.TryResolve(chart, coordinates, seriesIndex, pointIndex, mapper, out var histogramLeft, out var width)) {
-                    left = histogramLeft; right = left + width; center = left + width / 2;
-                }
-                var exists = totals.TryGetValue(key, out var previous);
-                totals[key] = (previous.Value + point.Y, center, exists ? Math.Min(previous.Left, left) : left, exists ? Math.Max(previous.Right, right) : right);
-            }
-        }
+        ChartBarCoordinateMap coordinates, ChartStackLayout stacks, ChartMapper primary, ChartMapper? secondary, List<LabelPlacementRequest> labels,
+        IReadOnlyList<VerticalStackCaption> captions) {
         var ordinal = 0;
-        foreach (var total in totals.OrderBy(item => item.Key.Axis).ThenBy(item => item.Key.Coordinate.Value).ThenByDescending(item => item.Key.Positive)) {
-            var value = total.Value.Value;
-            if (Math.Abs(value) < .000001) continue;
-            var mapper = total.Key.Axis == ChartAxisSide.Secondary ? secondary! : primary;
-            var anchor = new ChartPoint(total.Value.Center, mapper.Y(value));
-            var caption = captions[total.Key];
+        foreach (var caption in captions) {
+            var total = caption.Total;
+            var value = total.Value;
+            var axis = total.Axis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+            var positive = BarValueDirection(axis, value) > 0;
+            var mapper = total.Axis == ChartAxisSide.Secondary ? secondary! : primary;
+            var layout = ResolveBarLayout(chart, context, plot, mapper, stacks, total.SeriesIndex);
+            var center = mapper.X(total.Coordinate) + layout.Offset;
+            var left = center - layout.Width / 2; var right = center + layout.Width / 2;
+            if (ChartHistogramBarSlot.TryResolve(chart, coordinates, stacks, total.SeriesIndex, total.PointIndex, mapper, out var histogramLeft, out var width)) {
+                left = histogramLeft; right = left + width; center = left + width / 2;
+            }
+            var anchor = new ChartPoint(center, mapper.Y(value));
             var text = caption.Text;
             var style = caption.Style;
             var displayed = TextCaseTransformer.Apply(text, style.TextCase, System.Globalization.CultureInfo.InvariantCulture);
-            var id = "stack-total-" + total.Key.Axis.ToString().ToLowerInvariant() + "-" + Number(ordinal++);
+            var id = "stack-total-" + total.Axis.ToString().ToLowerInvariant() + "-" + Number(ordinal++);
             builder.AddRegion(new VisualSemanticRegion(id, "stack-total", new ChartRect(anchor.X, anchor.Y, 0, 0), displayed));
             using (builder.PushGroup(id, "stack-total", new Dictionary<string, string> {
-                ["data-cfx-x"] = Number(total.Key.Coordinate.Value), ["data-cfx-y"] = Number(value), ["data-cfx-label"] = displayed,
-                ["data-cfx-axis"] = total.Key.Axis.ToString().ToLowerInvariant()
+                ["data-cfx-x"] = Number(total.Coordinate), ["data-cfx-y"] = Number(value), ["data-cfx-label"] = displayed,
+                ["data-cfx-source-total"] = Number(total.SourceValue), ["data-cfx-stack-group"] = total.Group ?? string.Empty,
+                ["data-cfx-axis"] = total.Axis.ToString().ToLowerInvariant()
             })) { }
             labels.Add(new LabelPlacementRequest(text, anchor, style, new[] {
-                new LabelCandidate(0, value >= 0 ? -context.Theme.Spacing : context.Theme.Spacing, .5, value >= 0 ? 1 : 0),
-                new LabelCandidate(total.Value.Right - anchor.X + context.Theme.Spacing, 0, 0, value >= 0 ? 0 : 1),
-                new LabelCandidate(total.Value.Left - anchor.X - context.Theme.Spacing, 0, 1, value >= 0 ? 0 : 1)
+                new LabelCandidate(0, positive ? -context.Theme.Spacing : context.Theme.Spacing, .5, positive ? 1 : 0),
+                new LabelCandidate(right - anchor.X + context.Theme.Spacing, 0, 0, positive ? 0 : 1),
+                new LabelCandidate(left - anchor.X - context.Theme.Spacing, 0, 1, positive ? 0 : 1)
             }, priority: 1) { AssociatedMarkId = id, MeasuredSize = caption.Metrics });
         }
     }

@@ -4,9 +4,29 @@ ChartForgeX keeps static SVG, PNG, and HTML output deterministic by default. Bro
 
 The HTML adapter works from renderer metadata such as `data-cfx-series`, `data-cfx-series-key`, `data-cfx-point`, `data-cfx-label`, `data-cfx-id`, and `data-cfx-role`. Chart families can expose their own shapes and still reuse the same hover, selection, keyboard traversal, compare tray, crosshair, lasso, focus trail, reveal label, scenario, and playback contracts.
 
+The selected-target compare tray appears below the chart viewport, preserving axes, outer labels, and pointer access to marks. Its controls wrap inside compact hosts. Clearing the selection returns focus to the chart when the clear button held focus. Graphite charts use the chart's surface, text, and accent colors for these controls.
+
+Native painted marks retain their observation identity when pointed at. Cartesian producers declare `data-cfx-coordinate-system="cartesian"` on their series groups; inferred observations and crosshair guides require that scope. A producer declares polar geometry with `data-cfx-coordinate-system="polar"` on the SVG or a containing semantic group. Polar and other native-only families use SVG hit testing, leave empty stage space without an inferred target, and suppress the Cartesian crosshair. Nested observations inherit their containing series identity.
+
 Every rendered interaction surface is normalized to `data-cfx-target-kind` and `data-cfx-target-id` before bindings run. The current target kinds are `series`, `point`, `annotation`, `region`, `node`, `link`, and `legend`. Hosts can therefore route one scenario across Cartesian marks, topology nodes and links, annotations, map regions, and legend entries without depending on renderer-specific markup. Use `AddRegionStep`, `AddNodeStep`, `AddLinkStep`, or `AddLegendStep` when building those routes.
 
 Explicitly decimated series keep their original point identity. `data-cfx-point` remains the rendered ordinal, while the series source-index map and each host event's `sourcePoint` identify the caller's original point.
+
+Aggregate marks such as histogram bins, merged timeline runs, and pie slices expose contributing source observations through `target.sourcePoints`, a numeric array in hover and selection events. An empty histogram bin reports `[]`. For these marks, `target.sourcePoint` is `undefined` because one source observation cannot identify an aggregate. Target IDs include the interaction key and derivation kind. Histogram identities also retain interval bounds, terminal-boundary inclusion, aggregation, and encoding; matching intervals can synchronize across different bin ordinals, while different summary policies remain independent. Grouped pie slices use their contributing source indices, and merged timeline runs use their start/end interval. Derived summaries cannot select an unrelated observation or a different summary kind merely because their rendered ordinals match. Point legends share their mark's contributors and target ID. Hosts should route aggregate selection by the opaque `targetId` and read `sourcePoints` when they need the underlying observations.
+
+Point-legend muting and isolation use the same identity rules across charts. Zero-valued pie and donut legends retain their derived identity and contributors even when no slice is painted. Isolating a point keeps its mark at full strength, including a previously muted point; clearing isolation restores its prior mute state.
+
+Raw trend-line and box-plot summaries omit both singular `sourcePoint` and contributor arrays. Their source data remains available through the series' immutable `TrendLineSourcePoints` and `BoxPlotSourceSamples` collections. Migration: derived target IDs now include their derivation kind; use event-provided IDs instead of constructing IDs from point ordinals.
+
+Radar fills missing categories with zero geometry. Those categories are `region` targets identified by the series interaction key and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category.
+
+## Keyboard navigation
+
+When `ChartInteractionFeatures.KeyboardNavigation` is enabled, data marks and legend entries are separate roving components. Tab enters each component once and returns to its last active target; Left/Right and Home/End move within a series or legend. Up/Down switches data series at a matching coordinate or source observation, with an ordinal fallback for uneven series. Families without a series/point grid use their deterministic rendered-target order. Hidden targets and aggregate series wrappers do not become extra data stops.
+
+Muted data leaves the data component, while its legend stays reachable for unmuting. Reset restores the data component after all series are muted. Charts initialized inside a host hidden with `hidden` or `display: none` acquire their Tab stops when the host regains layout; hiding and revealing the host preserves each component's active target.
+
+Moving to an offscreen target scrolls the chart's readable viewport locally. A target wider than the usable viewport keeps its current visible portion when focused; a fully offscreen target still scrolls into view. Native data links retain Enter navigation, while Space selects a data target when selection is enabled. Legend Space toggles muting and Shift+Space toggles series isolation. `cfxnavigate.index/count` refer to the active data or legend component. Disabling keyboard navigation leaves host key handling and authored links available without adding adapter navigation stops.
 
 ## Graphite appearance
 
@@ -16,7 +36,46 @@ Legend tooltips summarize the series for readers: the name with its colour swatc
 
 Muting a series retains it at 30% opacity and strikes through its legend label. Keyboard targets use a 2 px focus outline in the host accent.
 
-There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `IncludeResetButton` (on by default) adds a 28 px "Reset view" ghost button in the top-right corner of the chart frame. It appears only while the view differs from its initial state (zoomed, panned, brushed, or a series muted or isolated) and hides again after reset, returning keyboard focus to the chart. Resetting also clears selections, focus trails, and pinned tooltips. Hosts can set `--cfx-host-accent` on the interactive container to align that outline with their own controls. Static exports retain the same flat marks and colour roles without browser behavior.
+There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `IncludeResetButton` (on by default) adds a 28 px "Reset view" ghost button below the chart, keeping titles and marks clear. It appears only while the view differs from its initial state (zoomed, panned, brushed, a point selected, or a series muted or isolated) and hides again after reset, returning keyboard focus to the chart. Resetting also clears selections, focus trails, and pinned tooltips. Hosts can set `--cfx-host-accent` on the interactive container to align that outline with their own controls. Static exports retain the same flat marks and colour roles without browser behavior.
+
+## Tooltip modes
+
+`HtmlChartInteractionOptions.Tooltip.Mode` selects the readout independently of the theme or palette. The default, `HtmlChartTooltipMode.SharedX`, shows one visible observation per series at the target's numeric x coordinate. When several observations share that x, the tooltip uses the pointed or focused observation for its series and the first eligible observation for each other series. Rows retain full source values and sort by declared state, then descending value. Muted series, hidden marks, and missing or non-finite values are omitted. Swatches follow the painted marks, including point colour overrides, gradient fills, and host SVG properties; marker-free lines use their line paint.
+
+Visibility follows the primary data mark. An ancestor's `display:none` or zero opacity hides its descendants; a mark can restore inherited `visibility:hidden` with `visibility:visible`. Hidden line markers retain a shared row while the series path remains visible at the observation's location. Marks outside a native rectangular plot clip cannot supply pointer readouts. Word-cloud terms and annotation captions use their actual text fill or stroke; ordinary point labels and focus decorations do not replace hidden data paint. Charts marked `AsDecorative()` retain pointer tooltips because `aria-hidden` affects accessibility exposure, not painted visibility.
+
+Use `Single` to inspect the pointed or focused target and its metadata:
+
+```csharp
+chart.SaveInteractiveHtml("observations.html", options => {
+    options.Tooltip.Mode = HtmlChartTooltipMode.Single;
+});
+```
+
+Shared-x readouts use Cartesian source observations, including scatter and bubble values. Targets with coordinates that describe layout or categories, such as heatmaps, maps, pie slices, and radial charts, keep a single-target tooltip with their value and metadata. Range and financial summaries also retain their individual bounds and measures rather than reducing them to one shared value. Derived regression endpoints use the same single-target fallback. Single-target readouts show the series, values, bounds, and caller-supplied metadata. Renderer roles, source ordinals, and chart-kind names are omitted from the tooltip; normalized identities and host events retain those fields. Legend tooltips keep their series summaries in either mode, including muted series. `HtmlInteractiveDashboardOptions.Tooltip.Mode` applies the same choice to every child chart. Both modes require `ChartInteractionFeatures.Tooltips`; choosing a mode does not enable the feature.
+
+## Pointer acquisition and crosshair labels
+
+`Tooltip.Range` controls how pointer movement acquires a readout:
+
+- `HtmlChartTooltipRange.Exact` requires a native hit on a painted target.
+- `HtmlChartTooltipRange.Nearest` acquires the nearest painted Cartesian observation anywhere inside the chart stage.
+- `HtmlChartTooltipRange.WithinDistance(cssPixels)` limits that lookup to a finite, non-negative distance from the observation's screen centre. The default is 120 CSS pixels. A zero distance still permits native hits.
+
+Distances use CSS pixels after responsive layout and SVG transforms, so the same setting works with `Fit` and `Readable`. Heatmap, map, schedule, hierarchy, scalar, polar, annotation, and legend targets retain native hit semantics. Inferred lookup does not extend outside the stage. Hidden paint and muted data cannot become pointer readouts through a retained bounding box or a legend colour. A visible child can restore inherited visibility, and marker-free observations remain eligible while their series path is painted at that location. An `Exact` native hit on a connected line, area, or range envelope retains its series summary during pointer movement; the crosshair can independently guide to a real nearby observation. `Nearest` and `WithinDistance` can refine that native summary to an eligible observation. Keyboard focus and pinned readouts retain their explicit targets, including keyboard-only authored zero or precision-collapse facts.
+
+Tooltip acquisition works with `ChartInteractionFeatures.Tooltips` even when `Crosshair` is disabled. The crosshair keeps its own 120 CSS pixel guide range. `Crosshair.ShowLabel` controls the guide's label and defaults to true for every palette; set it to false when a compact layout already provides the same information in the tooltip. These options do not enable either feature.
+
+`cfxcrosshair` and crosshair synchronization follow the guide's observation independently of a retained `Exact` tooltip summary. They update when the guide's observation or series/shared emphasis changes and restore the guide after a native hover change. Pointer movement within the same state does not repeat these notifications.
+
+```csharp
+chart.SaveInteractiveHtml("observations.html", options => {
+    options.Tooltip.Range = HtmlChartTooltipRange.WithinDistance(64);
+    options.Crosshair.ShowLabel = false;
+});
+```
+
+`HtmlInteractiveDashboardOptions.Tooltip` and `.Crosshair` apply the same settings to every child chart. Replace the former flat `TooltipMode` property with `Tooltip.Mode` when migrating existing adapter configuration.
 
 ## Semantic Series Identity
 
@@ -93,7 +152,7 @@ interaction.AddScenario("recovery", "Recovery route", scenario => scenario
 
 `Highlight` is the default: it emphasizes route members while preserving titles, axes, and surrounding data context. Use `Spotlight` only when dimming non-route data is intentional. Playback and autoplay are opt in, autoplay is suppressed when the browser requests reduced motion, and the HTML adapter exposes previous/next controls plus an accessible range scrubber for direct step selection. Individual step durations override the scenario default; both accept 200-60000 milliseconds.
 
-The HTML adapter uses `HtmlChartResponsiveLayout.Readable` by default. On narrow screens it keeps the fixed-design SVG legible inside a contained horizontal viewport instead of shrinking labels into a thumbnail. Set `ResponsiveLayout = HtmlChartResponsiveLayout.Fit` when seeing the entire chart at once is more important than minimum label size.
+The HTML adapter uses `HtmlChartResponsiveLayout.Readable` by default. In narrow hosts, including dashboard columns in a wide window, it keeps the fixed-design SVG legible inside a contained horizontal viewport. Set `ResponsiveLayout = HtmlChartResponsiveLayout.Fit` when seeing the entire chart at once is more important than minimum label size.
 
 ## Scenario Events
 

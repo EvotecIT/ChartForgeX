@@ -93,7 +93,7 @@ public sealed class V2GridPanelContractTests {
     public void NaturalHeightMeasuresWrappedHeadingsAndKeepsTheRequestedPanelHeight() {
         var grid = ChartGrid.Create().WithColumns(1).WithPadding(12).WithPanelSize(360, 260)
             .WithTitle("A report heading that deliberately wraps across the available width")
-            .WithTitleStyle(style => style.WithFontSize(34)).Add(Sample("Panel"));
+            .ConfigureTitleStyle(style => style.WithFontSize(34)).Add(Sample("Panel"));
         var prepared = grid.Prepare(VisualExportRequest.ForGrid(grid).Context);
         var panel = Assert.Single(prepared.Regions, region => region.Role == "panel");
         Assert.Equal(260, panel.Bounds.Height, 7);

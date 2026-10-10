@@ -104,12 +104,11 @@ internal static partial class SmokeTests {
         Assert(html.Contains("class=\"cfx-tooltip\"", StringComparison.Ordinal), "Interactive HTML should include an HTML tooltip surface.");
         Assert(html.Contains("featureAliases", StringComparison.Ordinal) && html.Contains("ReportReview: ['Tooltips', 'Selection', 'LegendToggles', 'KeyboardNavigation', 'Crosshair', 'CompareMarkers']", StringComparison.Ordinal), "Interactive HTML should expand composite feature flags such as ReportReview in the browser adapter.");
         Assert(html.Contains("const tooltipRows = (node)", StringComparison.Ordinal) && html.Contains("cfx-tooltip__meta", StringComparison.Ordinal), "Interactive HTML should render rich metadata tooltips from generic SVG data attributes.");
-        Assert(html.Contains("push('Series', seriesLabel(node))", StringComparison.Ordinal) && html.Contains("push('Point', data.cfxPoint)", StringComparison.Ordinal) && html.Contains("push('Status', data.cfxStatus)", StringComparison.Ordinal), "Interactive tooltips should expose named series and common cross-chart metadata without chart-specific JavaScript.");
         Assert(html.Contains("sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint", StringComparison.Ordinal), "Interactive point tooltips should resolve point-level legend labels by both series and point identity.");
         Assert(html.Contains("const metadataRows = (node)", StringComparison.Ordinal) && html.Contains("data-cfx-meta-", StringComparison.Ordinal), "Interactive tooltips should include generic data-cfx-meta-* rows from chart and topology renderers.");
         Assert(html.Contains("cfx-tooltip--pinned", StringComparison.Ordinal) && html.Contains("'cfxtooltip'", StringComparison.Ordinal), "Interactive HTML should let users pin reusable metadata tooltips without host dependencies.");
         Assert(html.Contains("class=\"cfx-crosshair\"", StringComparison.Ordinal) && html.Contains("data-cfx-crosshair-label=\"true\"", StringComparison.Ordinal), "Interactive HTML should include a reusable crosshair overlay.");
-        Assert(html.Contains("const nearestPoint = (root, event)", StringComparison.Ordinal) && html.Contains("'cfxcrosshair'", StringComparison.Ordinal), "Interactive HTML should support nearest-point crosshair exploration from generic point metadata.");
+        Assert(html.Contains("data-cfx-coordinate-system=\"cartesian\"", StringComparison.Ordinal) && html.Contains("'cfxcrosshair'", StringComparison.Ordinal), "Interactive HTML should retain Cartesian producer metadata and the crosshair event contract.");
         Assert(html.Contains("class=\"cfx-compare-tray\"", StringComparison.Ordinal) && html.Contains("data-cfx-compare-tray=\"true\"", StringComparison.Ordinal), "Interactive HTML should include a reusable selected-target compare tray.");
         Assert(html.Contains("const publishCompare = (root, sync)", StringComparison.Ordinal) && html.Contains("'cfxcompare'", StringComparison.Ordinal), "Interactive HTML should publish reusable selected-target compare events.");
         Assert(html.Contains("cfx-selected", StringComparison.Ordinal), "Interactive HTML should include selectable-region styling and behavior.");
@@ -165,7 +164,17 @@ internal static partial class SmokeTests {
         Assert(html.Contains("applyHoverByTarget(root, detail.target)", StringComparison.Ordinal), "Interactive HTML should apply synchronized hover state by stable target metadata.");
         Assert(html.Contains("const focusAdjacentTarget = (root, node, key)", StringComparison.Ordinal) && html.Contains("'cfxnavigate'", StringComparison.Ordinal), "Interactive HTML should let keyboard users traverse reusable chart targets.");
         Assert(html.Contains("focusNode.focus({ preventScroll: true })", StringComparison.Ordinal) && html.Contains("event.key !== 'Enter' && event.key !== ' '", StringComparison.Ordinal), "Interactive keyboard traversal should preserve activation keys while adding arrow, Home, and End navigation.");
-        Assert(html.Contains("focusNode !== node && event.key === 'Enter'", StringComparison.Ordinal), "Linked marks should focus their anchor and preserve native Enter navigation.");
+        var linkedHtml = Chart.Create().WithXLabels("API")
+            .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
+            .AddHeatmapCategoryRow("Service", new ChartHeatmapCell("pass", "1", href: "#evidence"))
+            .ToInteractiveHtmlFragmentWithoutAssets();
+        var link = ReadEmbeddedSvgs(linkedHtml).Single().Descendants().Single(element => element.Name.LocalName == "a"
+            && (string?)element.Attribute("data-cfx-role") == "heatmap-cell-link");
+        Assert((string?)link.Attribute("href") == "#evidence" && (string?)link.Attribute("tabindex") == "0",
+            "Interactive HTML should retain the authored native link and its keyboard focus target.");
+        var linkedCell = link.Ancestors().Single(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell");
+        Assert(linkedCell.Attribute("tabindex") == null && (string?)linkedCell.Attribute("data-cfx-point") == "0",
+            "Linked cells should retain source identity without creating a second authored focus target.");
         Assert(html.Contains("action: 'navigate'", StringComparison.Ordinal), "Interactive keyboard traversal should synchronize hover context across grouped charts.");
         Assert(html.Contains("Number.isFinite(clientX)", StringComparison.Ordinal) && html.Contains("node.getBoundingClientRect()", StringComparison.Ordinal) && html.Contains("tip.offsetWidth", StringComparison.Ordinal), "Interactive tooltips should position correctly for focus-driven keyboard navigation and narrow viewports.");
         Assert(html.Contains("min-width: 0;", StringComparison.Ordinal) && html.Contains("flex-wrap: wrap;", StringComparison.Ordinal), "Interactive chrome should stay within narrow viewports instead of forcing horizontal overflow.");
@@ -350,7 +359,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(html, "data-cfx-asset-source=\"document\"") == 2, "Interactive dashboards should declare document-owned assets on every chart section.");
         Assert(html.Contains("data-cfx-chart-id=\"exec-dashboard-1\"", StringComparison.Ordinal) && html.Contains("data-cfx-chart-id=\"exec-dashboard-2\"", StringComparison.Ordinal), "Interactive dashboards should assign deterministic child chart IDs.");
         Assert(CountOccurrences(html, "data-cfx-interaction-group=\"exec-review\"") == 2, "Interactive dashboards should place every child chart in the shared interaction group.");
-        Assert(CountOccurrences(html, "data-cfx-responsive-layout=\"fit\" style=") == 2, "Interactive dashboards should propagate the selected responsive layout to every child chart.");
+        Assert(System.Text.RegularExpressions.Regex.Matches(html, "<section\\b[^>]*data-cfx-responsive-layout=\"fit\"[^>]*>").Count == 2, "Interactive dashboards should propagate the selected responsive layout to every child chart.");
         Assert(html.Contains("role=\"group\" aria-label=\"Service availability\"", StringComparison.Ordinal) && html.Contains("role=\"group\" aria-label=\"Response latency\"", StringComparison.Ordinal), "Interactive dashboard chart regions should use each chart title as their accessible name.");
         Assert(!html.Contains("role=\"group\" aria-label=\"Executive interactive dashboard\"", StringComparison.Ordinal), "Interactive dashboard chart regions should not inherit the shared page title when a chart title is available.");
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive dashboards should include grouped synchronization runtime.");

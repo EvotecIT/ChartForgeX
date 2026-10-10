@@ -9,14 +9,14 @@ internal static partial class SmokeTests {
     private static void SharedAccessibilityMetadataReachesSvgRenderers() {
         var chartSvg = Chart.Create()
             .WithTitle("Internal title")
-            .WithAccessibility(a => a.WithTextAlternative("Revenue trend", "Revenue rose each quarter.", "en-GB"))
+            .ConfigureAccessibility(a => a.WithTextAlternative("Revenue trend", "Revenue rose each quarter.", "en-GB"))
             .AddLine("Revenue", Points(4, 7, 11))
             .ToSvg();
         var canvasSvg = VisualCanvas.CreateSocialPreview()
-            .WithAccessibility(a => a.WithTextAlternative("Release card", "Version 1.0 release artwork.", "en"))
+            .ConfigureAccessibility(a => a.WithTextAlternative("Release card", "Version 1.0 release artwork.", "en"))
             .ToSvg();
         var topologySvg = TopologyChart.Create()
-            .WithAccessibility(a => a.WithTextAlternative("Service topology", "API connected to storage.", "en-US"))
+            .ConfigureAccessibility(a => a.WithTextAlternative("Service topology", "API connected to storage.", "en-US"))
             .AddNode("api", "API", 100, 100)
             .ToSvg();
 

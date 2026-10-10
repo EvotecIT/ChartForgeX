@@ -5,16 +5,15 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 /// <summary>
-/// Represents one named series of points in a chart.
+/// Represents one named series of chart data.
 /// </summary>
-public sealed class ChartSeries {
+public sealed partial class ChartSeries {
     private double _strokeWidth = 3;
     internal bool HasExplicitStrokeWidth { get; private set; }
     private ChartAxisSide _yAxis = ChartAxisSide.Primary;
     private ChartDataLabelPlacement? _dataLabelPlacement;
     private ChartFillPattern _fillPattern = ChartFillPattern.None;
     private string? _interactionKey;
-    private double? _markerRadius;
 
     internal bool PreserveInteractionTargetsWhenMarkersHidden { get; private set; }
 
@@ -61,7 +60,7 @@ public sealed class ChartSeries {
     /// </summary>
     public List<ChartPoint> Points { get; } = new();
 
-    /// <summary>Gets the number of source points supplied before explicit decimation.</summary>
+    /// <summary>Gets the number of source observations supplied before aggregation or explicit decimation.</summary>
     public int SourcePointCount { get; private set; }
 
     /// <summary>Gets the explicit decimation algorithm, or null when the series was not created through a decimating API.</summary>
@@ -69,24 +68,6 @@ public sealed class ChartSeries {
 
     /// <summary>Gets the source index represented by each retained point after explicit decimation.</summary>
     public IReadOnlyList<int> SourcePointIndices { get; private set; } = Array.Empty<int>();
-
-    // A regression's fitted endpoints do not replace its source observations in detached alternatives.
-    internal IReadOnlyList<ChartPoint> TrendSourcePoints { get; private set; } = Array.Empty<ChartPoint>();
-    internal IReadOnlyList<double> BoxPlotSourceSamples { get; private set; } = Array.Empty<double>();
-
-    internal void SetBoxPlotSourceSamples(IReadOnlyList<double> samples) {
-        var snapshot = new double[samples.Count];
-        for (var index = 0; index < snapshot.Length; index++) snapshot[index] = samples[index];
-        BoxPlotSourceSamples = Array.AsReadOnly(snapshot);
-        SourcePointCount = snapshot.Length;
-    }
-
-    internal void SetTrendSourcePoints(IReadOnlyList<ChartPoint> points) {
-        var snapshot = new ChartPoint[points.Count];
-        for (var index = 0; index < snapshot.Length; index++) snapshot[index] = points[index];
-        TrendSourcePoints = Array.AsReadOnly(snapshot);
-        SourcePointCount = snapshot.Length;
-    }
 
     /// <summary>Gets whether this series renders fewer points than its source sequence.</summary>
     public bool IsDecimated => DecimationMode.HasValue && Points.Count < SourcePointCount;
@@ -102,6 +83,7 @@ public sealed class ChartSeries {
 
     /// <summary>
     /// Gets optional point-level colors. Null entries fall back to the series color or theme palette.
+    /// For relationship series, these ordinals refer to Nodes.
     /// </summary>
     public List<ChartColor?> PointColors { get; } = new();
 
@@ -118,6 +100,7 @@ public sealed class ChartSeries {
 
     /// <summary>
     /// Gets optional point-level fill patterns. Null entries fall back to the series fill pattern.
+    /// For relationship series, these ordinals refer to Nodes.
     /// </summary>
     public List<ChartFillPattern?> PointFillPatterns { get; } = new();
 
@@ -130,11 +113,6 @@ public sealed class ChartSeries {
     /// Gets or sets the full heatmap column span for masked matrix rows.
     /// </summary>
     internal int? HeatmapColumnCount { get; set; }
-
-    /// <summary>
-    /// Gets or sets the shared histogram layout whose numeric bounds determine this bar series geometry.
-    /// </summary>
-    internal ChartHistogramBinLayout? HistogramBinLayout { get; set; }
 
     /// <summary>Gets categorical heatmap cells aligned with <see cref="Points"/>; empty for numeric heatmap rows.</summary>
     internal List<ChartHeatmapCell> HeatmapCells { get; } = new();
@@ -170,6 +148,7 @@ public sealed class ChartSeries {
 
     /// <summary>
     /// Gets optional point-level data-label styles. Null entries fall back to the series or chart data-label style.
+    /// For relationship series, these ordinals refer to Nodes.
     /// </summary>
     public List<TextStyleOverride?> PointDataLabelStyles { get; } = new();
 
@@ -184,9 +163,14 @@ public sealed class ChartSeries {
     public List<ChartRadialLayer> RadialLayers { get; } = new();
 
     /// <summary>
-    /// Gets or sets a value indicating whether capable renderers should smooth connected line segments.
+    /// Gets or sets smooth interpolation. Setting false restores linear interpolation,
+    /// or end-step interpolation for a step-line or step-area series.
     /// </summary>
-    public bool Smooth { get; set; }
+    public bool Smooth {
+        get => Interpolation == ChartInterpolation.Smooth;
+        set => Interpolation = value ? ChartInterpolation.Smooth
+            : Kind == ChartSeriesKind.StepLine || Kind == ChartSeriesKind.StepArea ? ChartInterpolation.Step : ChartInterpolation.Linear;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the series should appear in the chart legend.
@@ -244,18 +228,12 @@ public sealed class ChartSeries {
     }
 
     /// <summary>
-    /// Gets or sets the optional marker-radius override for this series. Null uses the chart theme;
-    /// zero suppresses optional line and area markers without affecting specialized mark types.
+    /// Gets or sets the canonical marker-radius override through <see cref="Markers"/>.
+    /// Null preserves the family and theme default; zero hides point glyphs.
     /// </summary>
     public double? MarkerRadius {
-        get => _markerRadius;
-        set {
-            if (value.HasValue) {
-                ChartGuards.Finite(value.Value, nameof(value));
-                if (value.Value < 0d) throw new ArgumentOutOfRangeException(nameof(value), value, "Marker radius cannot be negative.");
-            }
-            _markerRadius = value;
-        }
+        get => Markers.Radius;
+        set => Markers.Radius = value;
     }
 
     /// <summary>
@@ -412,7 +390,7 @@ public sealed class ChartSeries {
         return this;
     }
 
-    /// <summary>Overrides the marker radius for this series. Use zero to suppress optional line and area markers.</summary>
+    /// <summary>Overrides the canonical marker radius for this series. Use zero to hide point glyphs.</summary>
     public ChartSeries WithMarkerRadius(double radius) {
         MarkerRadius = radius;
         return this;
@@ -520,7 +498,7 @@ public sealed class ChartSeries {
     /// </summary>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithDataLabelStyle(Action<TextStyleOverride> configure) {
+    public ChartSeries ConfigureDataLabelStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(DataLabelStyle);
         return this;
@@ -532,7 +510,7 @@ public sealed class ChartSeries {
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointDataLabelStyle(int pointIndex, Action<TextStyleOverride> configure) {
+    public ChartSeries ConfigurePointDataLabelStyle(int pointIndex, Action<TextStyleOverride> configure) {
         ValidatePointIndex(pointIndex);
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         while (PointDataLabelStyles.Count <= pointIndex) PointDataLabelStyles.Add(null);
@@ -607,7 +585,9 @@ public sealed class ChartSeries {
         Name = name ?? throw new ArgumentNullException(nameof(name));
         if (!Enum.IsDefined(typeof(ChartSeriesKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown series kind.");
         Kind = kind;
+        _interpolation = kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea ? ChartInterpolation.Step : ChartInterpolation.Linear;
         Points.AddRange(ChartGuards.Points(points, nameof(points)));
+        if (IsRelationshipKind(kind) && Points.Count > 0) throw new ArgumentException("Relationship series use typed nodes, links or items. Use AddSankey, AddChord, AddTree, AddSunburst or AddTreemap.", nameof(points));
         SourcePointCount = Points.Count;
     }
 
@@ -624,6 +604,7 @@ public sealed class ChartSeries {
 
     private int LogicalPointCount {
         get {
+            if (IsRelationshipKind(Kind)) return Nodes.Count;
             var tupleSize = Kind == ChartSeriesKind.Bubble ||
                 Kind == ChartSeriesKind.RangeBand ||
                 Kind == ChartSeriesKind.RangeArea ||

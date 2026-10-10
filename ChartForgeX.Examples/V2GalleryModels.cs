@@ -9,11 +9,16 @@ using ChartForgeX.Themes;
 public static partial class V2GalleryModels {
     /// <summary>Creates an actual source model for every chart kind, without selecting a renderer or export backend.</summary>
     public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        if (variant is not ("wide" or "compact" or "sparse" or "options")) throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+        var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
+        var precisionVariant = (variant is "precision" or "compact-precision") && kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
+        var authoredHierarchyVariant = (variant is "authored-total" or "compact-authored-total") && kind == ChartSeriesKind.Sunburst;
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant)
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant ? GeometryOptions(kind, variant) : null)
+            ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
-        chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
-        if (variant == "options" && kind is ChartSeriesKind.Bar or ChartSeriesKind.Area or ChartSeriesKind.HorizontalBar) {
+        if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        if (variant == "options" && kind == ChartSeriesKind.Area) {
             chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
             chart.Series[0].StateRole = ChartSeriesState.Warning;
             chart.WithDataLabels();
@@ -37,7 +42,8 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.CalendarHeatmap => "Daily activity across four months", ChartSeriesKind.DottedMap => "Service routes across Europe",
         ChartSeriesKind.RegionMap => "Regional service coverage", ChartSeriesKind.TileMap => "Service coverage by state",
         ChartSeriesKind.Gauge => "Available capacity against a target", ChartSeriesKind.Circle => "Assessments completed",
-        ChartSeriesKind.RadialBar => "Completion by delivery stage", ChartSeriesKind.LayeredRadial => "Reviewed, verified and completed",
+        ChartSeriesKind.ProgressRing => "Completion by delivery stage", ChartSeriesKind.LayeredRadial => "Reviewed, verified and completed",
+        ChartSeriesKind.RadialBar => "Requests by region and service", ChartSeriesKind.RadialColumn => "Regional service workload",
         ChartSeriesKind.Bullet => "Reviewed work against its targets", ChartSeriesKind.ProgressBar => "Progress through delivery stages",
         ChartSeriesKind.Pie => "Revenue by service", ChartSeriesKind.Donut => "Services contributing to revenue",
         ChartSeriesKind.PolarArea => "Service revenue in radial segments", ChartSeriesKind.Radar => "Observed and expected service levels",
@@ -45,9 +51,11 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.Gantt => "Project delivery in March 2026", ChartSeriesKind.StateTimeline => "Availability throughout the day",
         ChartSeriesKind.GanttLane => "Incidents and recovery in parallel",
         ChartSeriesKind.Sankey => "Requests across processing stages", ChartSeriesKind.Tree => "Teams and their responsibilities",
+        ChartSeriesKind.Chord => "Transfers between teams",
         ChartSeriesKind.Sunburst => "Allocation through the team hierarchy", ChartSeriesKind.Treemap => "How work is allocated across teams",
         ChartSeriesKind.Pictorial => "Completed assessments by team", ChartSeriesKind.WordCloud => "Topics in service observations",
-        ChartSeriesKind.Funnel => "Requests from receipt to completion", ChartSeriesKind.Waterfall => "Changes in available capacity",
+        ChartSeriesKind.Funnel => "Requests from receipt to completion", ChartSeriesKind.Pyramid => "How work is allocated across services",
+        ChartSeriesKind.Waterfall => "Changes in available capacity",
         _ => throw new ArgumentOutOfRangeException(nameof(kind))
     };
 
@@ -58,7 +66,7 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell => new[] { "Standard", "Express", "Premium", "Bulk", "Return" },
         ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap => new[] { "Identity", "Network", "Storage", "Backup", "Access", "Recovery" },
         ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea => new[] { "Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other" },
-        ChartSeriesKind.RadialBar => new[] { "Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete" },
+        ChartSeriesKind.ProgressRing => new[] { "Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete" },
         ChartSeriesKind.Radar => new[] { "Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support" },
         ChartSeriesKind.Scatter or ChartSeriesKind.Bubble => new[] { "1", "2", "3", "4", "5", "6" },
         ChartSeriesKind.Lollipop => new[] { "Received", "Packed", "Shipped", "In transit", "Delivered", "Reviewed" },
@@ -77,7 +85,8 @@ public static partial class V2GalleryModels {
             ChartSeriesKind.Lollipop => chart.AddLollipop("Orders", values),
             ChartSeriesKind.HorizontalBar => chart.AddHorizontalBar("Orders", values),
             ChartSeriesKind.StackedArea => chart.AddStackedArea("Requests", values).AddStackedArea("Follow-ups", Observations(variant, -10)),
-            ChartSeriesKind.Waterfall => chart.AddWaterfall("Changes", new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
+            ChartSeriesKind.Waterfall => chart.WithXLabels("North", "South", "East", "West", "Central", "Total")
+                .AddWaterfall("Changes", new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
             ChartSeriesKind.Slope => Chart.Create().AddSlope("Team A", 28, 64, "Before", "After").AddSlope("Team B", 52, 43, "Before", "After").AddSlope("Team C", 38, 57, "Before", "After"),
             ChartSeriesKind.TrendLine => chart.AddScatter("Observations", values).AddTrendLine("Least-squares trend", values),
             _ => null

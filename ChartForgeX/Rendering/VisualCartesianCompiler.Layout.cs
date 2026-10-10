@@ -9,53 +9,49 @@ internal static partial class VisualCartesianCompiler {
     private static bool IsPointSeries(ChartSeriesKind kind) => kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine
         or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.Scatter;
 
-    private static double ResolveMarkerRadius(ChartSeries series, VisualRenderContext context) {
-        if (series.MarkerRadius.HasValue) return series.MarkerRadius.Value;
-        var radius = context.Theme.MarkerRadius;
-        return series.Kind switch {
-            ChartSeriesKind.ErrorBar => Math.Max(ChartVisualPrimitives.ErrorBarMarkerMinRadius, radius + ChartVisualPrimitives.ErrorBarMarkerRadiusExtra),
-            ChartSeriesKind.Dumbbell => Math.Max(ChartVisualPrimitives.DumbbellMarkerMinRadius, radius + ChartVisualPrimitives.DumbbellMarkerRadiusExtra),
-            ChartSeriesKind.Lollipop => Math.Max(4, radius + 2.25),
-            ChartSeriesKind.Slope => Math.Max(ChartVisualPrimitives.SlopeMarkerMinRadius, radius + ChartVisualPrimitives.SlopeMarkerRadiusExtra),
-            _ => radius
-        };
-    }
+    private static double ResolveMarkerRadius(ChartSeries series, VisualRenderContext context) => VisualMarkerScene.Radius(series, context);
 
     private static double ResolveBubbleRadius(ChartSeries series, VisualRenderContext context, ChartRect plot,
         double minimumSize, double maximumSize, double size) {
         var maximumRadius = Math.Max(14, Math.Min(32, Math.Min(plot.Width, plot.Height) * .075));
         var radius = maximumSize == minimumSize ? (6 + maximumRadius) / 2
             : 6 + Math.Sqrt((size - minimumSize) / (maximumSize - minimumSize)) * (maximumRadius - 6);
-        // An explicit radius scales the relative area encoding in both layout and drawing.
+        // An explicit radius scales the source-size radius mapping in both layout and drawing.
         return series.MarkerRadius.HasValue ? radius * series.MarkerRadius.Value / Math.Max(.1, context.Theme.MarkerRadius) : radius;
     }
 
     /// <summary>Contains finite-size marks by extending only automatic ends of the final pixel-space axes.</summary>
     private static bool ExpandMarkerRanges(Chart chart, VisualRenderContext context, ChartRect plot,
-        ChartRange range, ChartRange? secondaryRange) {
+        ChartRange range, ChartRange? secondaryRange, ChartStackLayout stacks) {
         var x = new MarkerExtents(); var primaryY = new MarkerExtents(); var secondaryY = new MarkerExtents();
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             var pointSeries = IsPointSeries(series.Kind);
             if (!pointSeries && series.Kind is not (ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar
-                or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop or ChartSeriesKind.Slope)) continue;
+                or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop or ChartSeriesKind.Slope
+                or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea)) continue;
+            if (series.Markers.Enabled == false) continue;
             var radius = ResolveMarkerRadius(series, context);
             var count = series.Points.Count / ObservationStride(series.Kind);
             var minSize = series.Kind == ChartSeriesKind.Bubble && count > 0 ? Enumerable.Range(0, count).Min(item => series.Points[item * 2 + 1].Y) : 0;
             var maxSize = series.Kind == ChartSeriesKind.Bubble && count > 0 ? Enumerable.Range(0, count).Max(item => series.Points[item * 2 + 1].Y) : 0;
             for (var item = 0; item < count; item++) {
-                if (pointSeries && series.Kind != ChartSeriesKind.Scatter && !ShowMarker(chart, series, item)) continue;
+                if (pointSeries && !ShowMarker(chart, series, item)) continue;
+                if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea) {
+                    var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue
+                        || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
+                    if (!VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue)) continue;
+                }
                 var raw = item * ObservationStride(series.Kind);
                 var point = series.Points[raw];
                 var markerRadius = series.Kind == ChartSeriesKind.Bubble
                     ? ResolveBubbleRadius(series, context, plot, minSize, maxSize, series.Points[raw + 1].Y) : radius;
-                if (series.Kind == ChartSeriesKind.Bubble)
-                    markerRadius += (series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BubbleStrokeWidth) / 2;
-                else if (series.Kind == ChartSeriesKind.Lollipop) markerRadius += ChartVisualPrimitives.LollipopMarkerStrokeWidth / 2;
+                markerRadius = VisualMarkerScene.Extent(series, markerRadius);
                 if (markerRadius <= 0) continue;
-                var value = series.Kind == ChartSeriesKind.StackedArea ? point.Y + AreaBase(chart, index, point) : point.Y;
+                var value = series.Kind == ChartSeriesKind.StackedArea ? stacks.Point(index, raw).End : point.Y;
                 Include(point.X, value, markerRadius, series.YAxis);
-                if (series.Kind == ChartSeriesKind.Dumbbell) Include(point.X, series.Points[raw + 1].Y, markerRadius, series.YAxis);
+                if (series.Kind is ChartSeriesKind.Dumbbell or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea)
+                    Include(point.X, series.Points[raw + 1].Y, markerRadius, series.YAxis);
             }
         }
         var changed = ExpandMarkerAxis(chart.Options.XAxis, x, plot.Width, range.MinX, range.MaxX, out var minX, out var maxX);

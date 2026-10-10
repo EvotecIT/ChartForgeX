@@ -1,0 +1,683 @@
+using System;
+using System.Linq;
+using System.Globalization;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// The licensed font fixtures are included beside the gallery outputs.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var model = V2GalleryModels.Create(ChartSeriesKind.RadialColumn, "compact", VisualThemeMode.Dark);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Dark,
+    new VisualFrame("Regional service workload", "The same data in a compact view", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+System.IO.File.WriteAllText("visual.svg", prepared.ToSvg());
+System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
+System.IO.File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+
+public static partial class V2GalleryModels {
+    private static Chart AxisPrecision() => Chart.Create().WithXAxis("Measurement").WithYAxis("Fitted drift")
+        .AddTrendLine("Least-squares drift", Enumerable.Range(0, 4096)
+            .Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)));
+
+    private static Chart GaugePrecision() => Chart.Create().AddLinearGauge("Tolerance", 1.003, 1.001, 1.005)
+        .ConfigureGauge(options => options.Target = 1.0025);
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart ChordRelationships(string variant) {
+        var configured = variant == "options";
+        var chart = Chart.Create().AddChord("Transfers", new[] {
+            new ChartNode("north", "North"), new ChartNode("south", "South"),
+            new ChartNode("north-support", configured ? "Support" : "Services"), new ChartNode("south-support", "Support")
+        }, new[] {
+            new ChartFlowLink("north-south", "north", "south", 18), new ChartFlowLink("south-north", "south", "north", 7),
+            new ChartFlowLink("north-standard", "north", "north-support", 12), new ChartFlowLink("north-priority", "north", "north-support", 5),
+            new ChartFlowLink("support-south", "north-support", "south", 9), new ChartFlowLink("south-support", "south", "south-support", 14),
+            new ChartFlowLink("support-return", "south-support", "north", 4), new ChartFlowLink("support-internal", "south-support", "south-support", 3),
+            new ChartFlowLink("zero-transfer", "north-support", "south-support", 0)
+        });
+        if (configured) {
+            chart.ConfigureChord(options => {
+                options.StartAngleDegrees = -120;
+                options.SweepAngleDegrees = 300;
+                options.NodeGapDegrees = 5;
+                options.NodeThicknessRatio = .09;
+                options.RibbonOpacity = .45;
+                options.LabelContent = ChartChordLabelContent.LabelAndTotals;
+            });
+            chart.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    /// <summary>Creates a fixed comparison grid with shared Cartesian axes.</summary>
+    public static ChartGrid CreateGrid() => ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
+        .Add(Create(ChartSeriesKind.Line).WithTitle("Observed requests"))
+        .Add(Create(ChartSeriesKind.Bar).WithTitle("Reviewed requests"))
+        .Add(Create(ChartSeriesKind.Area).WithTitle("Capacity used"), 2).WithSharedAxes();
+
+    /// <summary>Creates groups, status, icon shapes, details and routed links in a native topology.</summary>
+    public static TopologyChart CreateTopology(bool atlas = false) {
+        var chart = TopologyChart.Create(); chart.Id = atlas ? "shape-atlas" : "service-topology";
+        chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true, WrapNodeLabels = true, IncludeLegend = true, IncludeGroupStatusDots = true };
+        if (atlas) {
+            var shapes = Enum.GetValues<TopologyNodeShape>();
+            for (var index = 0; index < shapes.Length; index++) chart.Nodes.Add(new TopologyNode {
+                Id = "shape-" + index, Label = shapes[index].ToString(), X = 24 + index % 5 * 160, Y = 24 + index / 5 * 120,
+                Width = 132, Height = 86, Shape = shapes[index], PreserveDisplayModeSize = true, ShowStatusBadge = false
+            });
+            return chart;
+        }
+        chart.Groups.Add(new TopologyGroup { Id = "primary", Label = "Primary region", X = 0, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Healthy });
+        chart.Groups.Add(new TopologyGroup { Id = "secondary", Label = "Secondary region", X = 390, Y = 0, Width = 340, Height = 300, Status = TopologyHealthStatus.Warning });
+        var source = new TopologyNode { Id = "client", Label = "Client service", Subtitle = "Requests", X = 30, Y = 65, Width = 240, Height = 85,
+            Kind = TopologyNodeKind.Server, GroupId = "primary", Status = TopologyHealthStatus.Healthy };
+        source.Details.Add(new TopologyNodeDetail { Label = "State", Value = "Available", Status = TopologyHealthStatus.Healthy }); chart.Nodes.Add(source);
+        chart.Nodes.Add(new TopologyNode { Id = "cache", Label = "Cache", X = 70, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = "primary" });
+        chart.Nodes.Add(new TopologyNode { Id = "worker", Label = "Processing service", X = 430, Y = 65, Width = 240, Height = 85, Kind = TopologyNodeKind.Server,
+            GroupId = "secondary", Status = TopologyHealthStatus.Warning });
+        chart.Nodes.Add(new TopologyNode { Id = "store", Label = "Result store", X = 470, Y = 210, Width = 150, Height = 65, Shape = TopologyNodeShape.Cylinder, GroupId = "secondary" });
+        chart.Edges.Add(new TopologyEdge { Id = "request", SourceNodeId = "client", TargetNodeId = "worker", Label = "Requests", SecondaryLabel = "Active",
+            Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal, Direction = VisualLinkDirection.Forward });
+        chart.Edges.Add(new TopologyEdge { Id = "cache-read", SourceNodeId = "client", TargetNodeId = "cache", Label = "Lookup", Routing = TopologyEdgeRouting.Curved,
+            LineStyle = TopologyEdgeLineStyle.Dashed, Direction = VisualLinkDirection.Bidirectional });
+        chart.Edges.Add(new TopologyEdge { Id = "persist", SourceNodeId = "worker", TargetNodeId = "store", Label = "Persist", Routing = TopologyEdgeRouting.Orthogonal });
+        chart.Legend = TopologyLegend.Create().AddStatus("Available", TopologyHealthStatus.Healthy).AddStatus("Review", TopologyHealthStatus.Warning)
+            .AddNodeKind("Service", TopologyNodeKind.Server).AddEdgeKind("Dependency", TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed);
+        return chart;
+    }
+
+    /// <summary>Creates a branched process with typed lanes, decisions and semantic statuses.</summary>
+    public static FlowArtifact CreateFlow() => FlowArtifact.Create("assessment-flow").WithSize(900, 600)
+        .AddLane("service", "Service").AddLane("review", "Review")
+        .AddStep("received", "Request received", FlowArtifactStepKind.Start, "service")
+        .AddStep("decision", "Automatic checks pass?", FlowArtifactStepKind.Decision, "service")
+        .AddStep("manual", "Review observations", FlowArtifactStepKind.Process, "review", VisualStatus.Warning)
+        .AddStep("complete", "Assessment complete", FlowArtifactStepKind.End, "service", VisualStatus.Positive)
+        .AddConnector("received", "decision", "Evaluate").AddConnector("decision", "manual", "Review required")
+        .AddConnector("decision", "complete", "Passed").AddConnector("manual", "complete", "Accepted");
+
+    /// <summary>Creates actor, control, database and queue notation with nested fragments, notes and activation.</summary>
+    public static SequenceArtifact CreateSequence() {
+        var model = SequenceArtifact.Create("request-sequence").WithSize(960, 760)
+            .AddParticipant("client", "Client", SequenceArtifactParticipantKind.Actor)
+            .AddParticipant("service", "Service", SequenceArtifactParticipantKind.Control)
+            .AddParticipant("store", "Store", SequenceArtifactParticipantKind.Database)
+            .AddParticipant("queue", "Queue", SequenceArtifactParticipantKind.Queue)
+            .AddMessage("client", "service", "Submit request")
+            .AddMessage("service", "service", "Validate payload")
+            .AddMessage("service", "store", "Persist result")
+            .AddMessage("service", "queue", "Publish event", kind: SequenceArtifactMessageKind.Async)
+            .AddMessage("service", "client", "Return result", SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return)
+            .AddBlock(SequenceArtifactBlockKind.Alt, "Validation outcome", 1, 4)
+            .AddBlock(SequenceArtifactBlockKind.Loop, "Retry storage", 2, 2, depth: 1)
+            .AddActivation("service", true, 0).AddActivation("service", false, 5)
+            .AddNote(SequenceArtifactNotePlacement.Over, new[] { "service", "store" }, "Durable result");
+        model.Notes[0].StepIndex = 2; return model;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    /// <summary>Creates count, density, sum and mean examples over the same unequal measurement intervals.</summary>
+    public static Chart CreateHistogram(string variant) {
+        var mode = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
+        if (mode == "compact") mode = "wide";
+        var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 });
+        var chart = Chart.Create().WithXAxis("Measurement").WithDataLabels();
+        chart.Options.XAxis.WithBounds(0, 10);
+        if (mode is "wide" or "density") {
+            chart.AddHistogram("Observations", new[] { .2, .4, .8, 1.2, 1.8, 2.5, 6.1, 7.5, 9 }, layout,
+                mode == "density" ? ChartHistogramEncoding.Density : ChartHistogramEncoding.Value);
+            chart.WithYAxis(mode == "density" ? "Observations per unit" : "Observation count");
+            foreach (var bin in chart.Series[0].HistogramBins)
+                chart.Series[0].WithPointLabel(bin.Index, bin.Count + " obs");
+        } else if (mode is "sum" or "mean") {
+            chart.AddHistogram("Quantity", new[] { new ChartPoint(.2, 10), new ChartPoint(.4, -4),
+                new ChartPoint(1.2, 8), new ChartPoint(2.5, 12), new ChartPoint(6.1, -4), new ChartPoint(9, -8) }, layout,
+                mode == "sum" ? ChartHistogramAggregation.Sum : ChartHistogramAggregation.Mean);
+            chart.WithYAxis(mode == "sum" ? "Total quantity" : "Mean quantity");
+        } else throw new ArgumentOutOfRangeException(nameof(variant));
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart MarkerOptions(ChartSeriesKind kind) {
+        if (kind == ChartSeriesKind.Scatter) {
+            var chart = Chart.Create().WithXAxis("Sample position").WithYAxis("Example level");
+            var shapes = Enum.GetValues<ChartMarkerShape>();
+            for (var index = 0; index < shapes.Length; index++) {
+                var shape = shapes[index];
+                chart.AddScatter(shape.ToString(), new[] { new ChartPoint(index % 3 + 1, index / 3 + 1) });
+                chart.Series[index].WithPointLabel(0, shape.ToString()).WithDataLabels()
+                    .ConfigureMarkers(markers => { markers.Shape = shape; markers.Radius = 8; markers.StrokeWidth = 1; });
+            }
+            chart.Options.XAxis.WithBounds(0, 4);
+            chart.Options.YAxis.WithBounds(0, 4);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Bubble) {
+            var chart = Chart.Create().WithXAxis("Workload batches").WithYAxis("Time (minutes)")
+                .AddBubble("Standard", new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
+                .AddBubble("Priority", new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+            chart.Series[0].ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Circle);
+            chart.Series[1].ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
+            return chart;
+        }
+        var radar = Categories(ChartSeriesKind.Radar)
+            .AddRadarArea("Observed", new[] { 58d, 76, 69, 84, 62, 73 }.Select((value, index) => new ChartPoint(index + 1, value)))
+            .AddRadarLine("Target", new[] { 75d, 85, 80, 90, 75, 85 }.Select((value, index) => new ChartPoint(index + 1, value)));
+        radar.Series[0].ConfigureRadar(options => options.FillOpacity = .2)
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+        radar.Series[1].ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
+        radar.Options.YAxis.WithBounds(0, 100);
+        return radar;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
+        switch (kind) {
+            case ChartSeriesKind.Heatmap:
+                if (variant == "options") return States(mode).WithXLabels("Identity", "Network", "Storage", "Backup")
+                    .AddHeatmapCategoryRow("Primary", new ChartHeatmapCell?[] { new("pass", "Ready", "Assessment passed"), new("warning", "Review"), null, new("pass", "Ready") }, "Production")
+                    .AddHeatmapCategoryRow("Secondary", new ChartHeatmapCell?[] { new("pass"), new("pass"), new("warning"), new("pass") }, "Production");
+                chart.AddHeatmapRow("Primary", variant == "sparse" ? new double?[] { 92, null, null, 70, null, 41 } : new double?[] { 92, 70, 56, null, 84, 41 })
+                    .AddHeatmapRow("Secondary", variant == "sparse" ? new double?[] { null, 84, null, null, 90, null } : new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.HexbinHeatmap:
+                chart.AddHexbinHeatmapRow("Primary", new double?[] { 92, 70, 56, null, 84, 41 }).AddHexbinHeatmapRow("Secondary", new double?[] { 76, 84, 46, 70, 90, 62 }); break;
+            case ChartSeriesKind.CalendarHeatmap:
+                return Chart.Create().AddCalendarHeatmap("Observations", Enumerable.Range(0, variant == "sparse" ? 35 : 120)
+                    .Where(index => index % 7 != 0 && index % 9 != 0).Select(index => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)), firstDayOfWeek: DayOfWeek.Monday);
+            case ChartSeriesKind.DottedMap:
+                return Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe()).AddDottedMap("Locations", new[] {
+                    new ChartMapPoint("Madrid", -3.7, 40.4, 18), new ChartMapPoint("Warsaw", 21, 52.2, 74), new ChartMapPoint("Oslo", 10.8, 59.9, 42)
+                }).AddMapRouteBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw")
+                    .AddMapRoute("Warsaw to Oslo", new[] { new ChartMapPoint("Warsaw", 21, 52.2), new ChartMapPoint("Baltic", 17, 56), new ChartMapPoint("Oslo", 10.8, 59.9) });
+            case ChartSeriesKind.TileMap:
+                chart = Chart.Create().AddTileMap("Observations", ChartTileMapCatalog.Get("us-states"), RegionValues()).WithMapLabels(); break;
+            case ChartSeriesKind.RegionMap:
+                chart = Chart.Create().AddRegionMap("Observations", ChartMapCatalog.Get("us-states"), RegionValues()).WithMapLabels(false); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap && variant == "options")
+            chart.WithMapColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
+                .WithValueRange(0, 100).WithLabels("Below target", "Target", "Above target").WithNoDataColor(colors.Border))
+                .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap)
+            chart.WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
+        return chart;
+    }
+    private static ChartRegionMapItem[] RegionValues() => new[] {
+        new ChartRegionMapItem("CA", 82), new ChartRegionMapItem("TX", 64), new ChartRegionMapItem("NY", 91), new ChartRegionMapItem("FL", 47),
+        new ChartRegionMapItem("WA", 74), new ChartRegionMapItem("IL", 58), new ChartRegionMapItem("CO", 39), new ChartRegionMapItem("NC", 66) };
+    private static Chart States(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        return Chart.Create().WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
+            new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
+            new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched));
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    /// <summary>Compares request counts and resolution rates on independent radial value scales from a rightward start ray.</summary>
+    public static Chart CreateRadialBarScales() {
+        var chart = Chart.Create().WithXLabels("Overall").WithDataLabels(false)
+            .WithRadialGeometry(new ChartRadialGeometryOptions(0, 270, .2, .25, .1))
+            .AddRadialBar("Requests", new[] { new ChartPoint(1, 800) })
+            .AddRadialBar("Resolved (%)", new[] { new ChartPoint(1, 85) })
+            .WithYAxisBounds(0, 1000).WithSecondaryYAxisBounds(0, 100)
+            .WithSecondaryYAxis("Resolved (%)", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%");
+        chart.Series[1].UseSecondaryYAxis();
+        chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
+        return chart;
+    }
+
+    private static Chart NumericRadial(ChartSeriesKind kind, string variant) {
+        var bars = kind == ChartSeriesKind.RadialBar;
+        var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
+            .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15));
+        ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+        void Add(string name, params double[] values) {
+            if (bars) chart.AddRadialBar(name, Points(values)); else chart.AddRadialColumn(name, Points(values));
+        }
+        Add("Requests", 1200, 950, 680, 1050); Add("Follow-ups", 320, 410, 260, 360);
+        if (variant is "options" or "compact-options") {
+            foreach (var series in chart.Series) series.WithStackGroup("work").WithNormalization(100);
+            chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+        } else {
+            chart.WithYAxisBounds(0, 1500).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? GeometryOptions(ChartSeriesKind kind, string variant) {
+        if (kind == ChartSeriesKind.Line) {
+            var chart = Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Recorded level");
+            var positions = new[] { ChartStepPosition.Start, ChartStepPosition.Middle, ChartStepPosition.End };
+            for (var index = 0; index < positions.Length; index++) {
+                var points = new[] { 8d, 17, 11, 23, 16 }.Select((value, point) => new ChartPoint(point + 1, value + index * 30));
+                chart.AddLine(positions[index].ToString(), points);
+                chart.Series[index].WithInterpolation(ChartInterpolation.Step, positions[index]);
+                var shape = new[] { ChartMarkerShape.Square, ChartMarkerShape.Diamond, ChartMarkerShape.Triangle }[index];
+                chart.Series[index].ConfigureMarkers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
+            }
+            return chart;
+        }
+        if (kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar) {
+            var chart = Chart.Create().WithXLabels("North", "South", "East", "West");
+            var names = new[] { "First half · Completed", "First half · Remaining", "Second half · Completed", "Second half · Remaining" };
+            var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
+            for (var index = 0; index < names.Length; index++) {
+                var points = values[index].Select((value, point) => new ChartPoint(point + 1, value));
+                if (kind == ChartSeriesKind.Bar) chart.AddBar(names[index], points);
+                else chart.AddHorizontalBar(names[index], points);
+                chart.Series[index].WithStackGroup(index < 2 ? "first-half" : "second-half").WithNormalization(100);
+            }
+            if (kind == ChartSeriesKind.Bar) chart.WithYAxis("Share (%)");
+            else chart.WithXAxis("Share (%)");
+            (kind == ChartSeriesKind.Bar ? chart.Options.YAxis : chart.Options.XAxis)
+                .WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == "compact-options");
+            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.Waterfall) {
+            var chart = Basic(kind, variant)!;
+            chart.Options.XAxis.WithReversal();
+            chart.Options.YAxis.WithReversal();
+            return chart.WithDataLabels();
+        }
+        if (kind == ChartSeriesKind.StackedArea) {
+            var chart = Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Share (%)")
+                .AddStackedArea("Completed", new[] { 45d, 70, 80, 55, 90 }.Select((value, point) => new ChartPoint(point + 1, value)))
+                .AddStackedArea("Remaining", new[] { 55d, 45, 20, 45, 30 }.Select((value, point) => new ChartPoint(point + 1, value)));
+            foreach (var series in chart.Series) series.WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent);
+            return chart;
+        }
+        if (kind == ChartSeriesKind.RangeArea) {
+            var chart = Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Expected level")
+                .AddRangeArea("Expected range", new[] { new ChartRangeBand(1, 15, 30), new ChartRangeBand(2, 25, 50),
+                    new ChartRangeBand(3, 20, 40), new ChartRangeBand(4, 40, 65), new ChartRangeBand(5, 30, 55) });
+            chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            return chart;
+        }
+        if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
+            return MarkerOptions(kind);
+        if (kind == ChartSeriesKind.Funnel)
+            return Chart.Create().WithXLabels("Received", "Reviewed", "Qualified", "Completed").WithDataLabels()
+                .AddFunnel("Requests", new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
+                .ConfigureFunnel(options => {
+                    options.Form = variant == "stage-bars-horizontal" ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
+                    options.Orientation = variant == "cone-vertical" ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
+                });
+        if (kind == ChartSeriesKind.Pyramid) {
+            var chart = Chart.Create().WithXLabels("Services", "Platform", "Support", "Unassigned").WithDataLabels()
+                .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
+                .ConfigurePyramid(options => {
+                    options.ValueEncoding = ChartPyramidValueEncoding.Area;
+                    options.Orientation = ChartOrientation.Horizontal;
+                    options.Reversed = true;
+                    options.AspectRatio = .75;
+                });
+            chart.Series[0].WithPointColor(0, "#2F78C4").WithPointColor(1, "#E2A644").WithPointColor(2, "#34957A")
+                .WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+            return chart;
+        }
+        return null;
+    }
+
+    private static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Radial(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        switch (kind) {
+            case ChartSeriesKind.RadialBar:
+            case ChartSeriesKind.RadialColumn: return NumericRadial(kind, variant);
+            case ChartSeriesKind.Pie: chart.AddPie("Revenue", values); break;
+            case ChartSeriesKind.Donut: chart.AddDonut("Revenue", values); break;
+            case ChartSeriesKind.Gauge:
+                chart.AddGauge("Capacity", 76).ConfigureGauge(options => {
+                    options.Form = variant == "options" ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
+                    options.Target = 85; options.Caption = "Available capacity";
+                    options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
+                    options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
+                    options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
+                }); break;
+            case ChartSeriesKind.Circle: chart.AddCircle("Completed", 76); break;
+            case ChartSeriesKind.ProgressRing: chart.AddProgressRing("Completion", values).WithProgressRingCenterLabel(); break;
+            case ChartSeriesKind.LayeredRadial:
+                chart.AddLayeredRadial("Completion", new[] {
+                    new ChartRadialLayer("Reviewed", 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
+                    new ChartRadialLayer("Verified", 58) { RadiusRatio = .7, StrokeRatio = .13, SweepAngleDegrees = 240, StartAngleDegrees = -30, SeparatorCount = 8 },
+                    new ChartRadialLayer("Complete", 42) { RadiusRatio = .4, StrokeRatio = .13, SweepAngleDegrees = 360 }
+                }); break;
+            case ChartSeriesKind.Bullet:
+                chart.AddBullet("Reviewed", 76, 85, rangeEnds: new[] { 50d, 80d }).AddBullet("Verified", 58, 75, rangeEnds: new[] { 40d, 70d }); break;
+            case ChartSeriesKind.Radar: chart.AddRadar("Observed", values).AddRadar("Expected", Observations(variant, 12)); break;
+            case ChartSeriesKind.Polar: chart = Chart.Create().AddPolar("Observed", Enumerable.Range(0, 6).Select(index => new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
+                chart.ConfigureXAxis(axis => axis.LabelFormatter = angle => (angle * 180 / Math.PI).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "°"); break;
+            case ChartSeriesKind.PolarArea: chart.AddPolarArea("Revenue", values); break;
+            default: return null;
+        }
+        if (kind is ChartSeriesKind.Pie or ChartSeriesKind.Donut && variant == "options") {
+            chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label);
+            chart.Series[0].WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+            if (kind == ChartSeriesKind.Donut) chart.WithDonutCenterText("184", "Reviewed");
+        }
+        if (variant == "options" && kind == ChartSeriesKind.ProgressRing) chart.WithRadialProgressRadiusScale(.85).WithRadialProgressStrokeScale(1.2);
+        if (variant == "options" && kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar) {
+            chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
+            chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, "20 · Target"));
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Ranges(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var count = variant == "sparse" ? 2 : 5;
+        var candles = Enumerable.Range(1, count).Select(index => new ChartCandlestick(index, 30 + index * 3, 44 + index * 3, 20 + index * 3, index % 2 == 0 ? 26 + index * 3 : 38 + index * 3)).ToArray();
+        var ranges = Enumerable.Range(1, count).Select(index => new ChartRangeBand(index, 20 + index * 2, 40 + index * 4)).ToArray();
+        return kind switch {
+            ChartSeriesKind.Bubble => chart.WithXAxis("Workload batches").WithYAxis("Time (minutes)").AddBubble("Requests", Enumerable.Range(1, count).Select(index => new ChartBubble(index, 20 + index * 5, index * index + 1))),
+            ChartSeriesKind.ErrorBar => chart.AddErrorBar("Delivery time", Enumerable.Range(1, count).Select(index => new ChartErrorBar(index, 30 + index * 2, 20 + index, 42 + index * 3))),
+            ChartSeriesKind.Candlestick => chart.AddCandlestick("Market price", candles),
+            ChartSeriesKind.Ohlc => chart.AddOhlc("Market price", candles),
+            ChartSeriesKind.RangeBand => chart.AddRangeBand("Expected range", ranges),
+            ChartSeriesKind.RangeArea => chart.AddRangeArea("Expected range", ranges),
+            ChartSeriesKind.Dumbbell => chart.AddDumbbell("Change", Enumerable.Range(1, count).Select(index => new ChartDumbbell(index, 20 + index * 2, 40 + index * 3))),
+            ChartSeriesKind.RangeBar => chart.AddRangeBar("Range", Enumerable.Range(1, count).Select(index => new ChartInterval(index, 20 + index * 2, 40 + index * 4))),
+            ChartSeriesKind.BoxPlot => chart.AddBoxPlot("Delivery time", Enumerable.Range(1, count).Select(index => new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index))),
+            _ => null
+        };
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart TeamRelationships(string variant) {
+        var configured = variant == "options";
+        var nodes = new[] {
+            new ChartNode("all", "All teams"), new ChartNode("engineering", "Engineering"), new ChartNode("operations", "Operations"),
+            new ChartNode("platform", "Platform"), new ChartNode("engineering-support", configured ? "Support" : "Services"),
+            new ChartNode("operations-support", "Support")
+        };
+        var links = new[] {
+            new ChartTreeLink("all", "engineering", 60), new ChartTreeLink("all", "operations", 40),
+            new ChartTreeLink("engineering", "platform", 35), new ChartTreeLink("engineering", "engineering-support", 25),
+            new ChartTreeLink("operations", "operations-support", 40)
+        };
+        var chart = Chart.Create().WithDataLabels();
+        return chart.AddTree("Teams", nodes, links);
+    }
+
+    private static Chart FlowRelationships(string variant) {
+        if (variant is "options" or "compact-options") return ConfiguredSankey();
+        return Chart.Create().AddSankey("Requests", new[] {
+            new ChartNode("received", "Received"), new ChartNode("automatic", "Automatic"), new ChartNode("manual", "Manual"),
+            new ChartNode("completed", "Completed"), new ChartNode("review", "Review")
+        }, new[] {
+            new ChartFlowLink("received-automatic", "received", "automatic", 72), new ChartFlowLink("received-manual", "received", "manual", 28),
+            new ChartFlowLink("automatic-completed", "automatic", "completed", 65), new ChartFlowLink("automatic-review", "automatic", "review", 7),
+            new ChartFlowLink("manual-completed", "manual", "completed", 20), new ChartFlowLink("manual-review", "manual", "review", 8)
+        });
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart ConfiguredSankey() {
+        var chart = Chart.Create().AddSankey("Requests", new[] {
+            new ChartNode("received", "Received"), new ChartNode("north", "North"), new ChartNode("south", "South"),
+            new ChartNode("north-support", "Support"), new ChartNode("south-support", "Support"), new ChartNode("completed", "Completed"),
+            new ChartNode("review", "Review"), new ChartNode("imported", "Imported")
+        }, new[] {
+            new ChartFlowLink("received-north", "received", "north", 72), new ChartFlowLink("received-south", "received", "south", 28),
+            new ChartFlowLink("north-standard", "north", "north-support", 52), new ChartFlowLink("north-priority", "north", "north-support", 20),
+            new ChartFlowLink("south-standard", "south", "south-support", 28),
+            new ChartFlowLink("north-completed", "north-support", "completed", 72), new ChartFlowLink("south-completed", "south-support", "completed", 28),
+            new ChartFlowLink("received-review", "received", "review", 5), new ChartFlowLink("imported-completed", "imported", "completed", 10)
+        }).ConfigureSankey(options => {
+            options.Alignment = ChartSankeyAlignment.Center;
+            options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
+            options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
+            options.NodeWidth = 16;
+            options.NodeGap = 12;
+            options.NodeCornerRadius = 1;
+            options.RibbonFill = ChartColor.FromHex("#607DAA");
+            options.RibbonOpacity = .45;
+        });
+        chart.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
+        chart.Series[0].WithPointColor(0, ChartColor.FromHex("#7356BD"));
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? Specialty(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var chart = Categories(kind); var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+        switch (kind) {
+            case ChartSeriesKind.Funnel: return chart.AddFunnel("Requests", new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
+                .WithXLabels("Received", "Qualified", "Reviewed", "Completed").WithDataLabels();
+            case ChartSeriesKind.Pyramid: return chart.AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
+                .WithXLabels("Services", "Platform", "Support").WithDataLabels();
+            case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem("Discovery", start, start.AddDays(3)).AddTimelineItem("Implementation", start.AddDays(2), start.AddDays(7))
+                .AddTimelineItem("Validation", start.AddDays(6), start.AddDays(9))
+                .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Gantt: return Chart.Create().AddGanttTask("Discovery", start, start.AddDays(3), .9).AddGanttTask("Implementation", start.AddDays(3), start.AddDays(7), .55, 0)
+                .AddGanttTask("Validation", start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone("Delivery", start.AddDays(9), 2)
+                .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Sankey: return FlowRelationships(variant);
+            case ChartSeriesKind.Chord: return ChordRelationships(variant);
+            case ChartSeriesKind.Tree: return TeamRelationships(variant);
+            case ChartSeriesKind.Sunburst: return Sunburst(variant, mode);
+            case ChartSeriesKind.Treemap: return Treemap(variant, mode);
+            case ChartSeriesKind.Pictorial:
+                chart = Chart.Create().AddPictorial("Assessments", new[] { new ChartPictorialItem("Team A", 74), new ChartPictorialItem("Team B", 46), new ChartPictorialItem("Team C", 61) }, ChartPictorialShape.Person)
+                    .WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);
+                if (variant == "options") chart.WithPictorialSvgPath("M2 2H22V22H2Z M8 8V16H16V8Z", new ChartRect(0, 0, 24, 24));
+                return chart;
+            case ChartSeriesKind.ProgressBar:
+                chart = Chart.Create().AddProgressBars("Delivery", new[] { new ChartProgressItem("Reviewed", 76), new ChartProgressItem("Verified", 58), new ChartProgressItem("Complete", 42) }).WithProgressHandles();
+                if (variant == "options") chart.WithProgressMaximum(120).WithProgressBarThickness(.42).WithProgressTrackOpacity(.3);
+                return chart;
+            case ChartSeriesKind.WordCloud: return Chart.Create().AddWordCloud("Topics", new[] { new ChartWordCloudItem("Availability", 20), new ChartWordCloudItem("Identity", 16), new ChartWordCloudItem("Network", 14),
+                new ChartWordCloudItem("Storage", 12), new ChartWordCloudItem("Recovery", 10), new ChartWordCloudItem("Capacity", 8), new ChartWordCloudItem("Services", 6), new ChartWordCloudItem("Validation", 4) });
+            case ChartSeriesKind.StateTimeline: return States(mode).AddStateTimelineLane("Primary", new[] { new ChartStateTimelineSegment(start, start.AddHours(3), "pass"),
+                new ChartStateTimelineSegment(start.AddHours(3), start.AddHours(5), "warning", "Increased response time"), new ChartStateTimelineSegment(start.AddHours(6), start.AddHours(10), "pass") }, group: "Production")
+                .AddStateTimelineLane("Secondary", new[] { new ChartStateTimelineSegment(start, start.AddHours(6), "pass"), new ChartStateTimelineSegment(start.AddHours(7), start.AddHours(10), "critical", "No response") }, group: "Production");
+            case ChartSeriesKind.GanttLane: return States(mode).WithGanttLaneNow(start.AddHours(12)).AddGanttLane("Primary", new[] {
+                new ChartGanttLaneItem(start, start.AddHours(5), "warning", "Investigation", "Degraded response time"), new ChartGanttLaneItem(start.AddHours(3), start.AddHours(7), "critical", "Recovery"),
+                new ChartGanttLaneItem(start.AddHours(9), null, "warning", "Monitoring") }, "Production")
+                .AddGanttLane("Secondary", new[] { new ChartGanttLaneItem(start.AddHours(2), start.AddHours(6), "warning", "Maintenance") }, "Production");
+            default: return null;
+        }
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart Sunburst(string variant, VisualThemeMode mode) {
+        var inclusive = variant is "authored-total" or "compact-authored-total";
+        var configured = inclusive || variant is "options" or "compact-options";
+        var items = new[] {
+            new ChartHierarchyItem("all", "All teams", value: configured ? 140 : null, colorValue: configured ? -10 : null),
+            new ChartHierarchyItem("engineering", "Engineering", "all", configured ? 80 : null, configured ? 12 : null),
+            new ChartHierarchyItem("operations", "Operations", "all", colorValue: configured ? 0 : null),
+            new ChartHierarchyItem("platform", "Platform", "engineering", 35, configured ? -4 : null),
+            new ChartHierarchyItem("engineering-support", "Support", "engineering", 25, configured ? 5 : null),
+            new ChartHierarchyItem("operations-support", "Support", "operations", 40),
+            new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
+        };
+        var chart = Chart.Create().WithDataLabels().AddSunburst("Allocated work", items);
+        if (configured) {
+            var colors = VisualTheme.Graphite().Resolve(mode);
+            var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+            var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+            chart.ConfigureSunburst(options => {
+                options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
+                options.ColorLegendTitle = "Change (%)";
+                options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
+                    .WithLabels("Decrease", "No change", "Increase").WithNoDataColor(colors.Surface);
+            });
+            chart.Series[0].WithNodeState("engineering-support", ChartSeriesState.Warning);
+            chart.Series[0].WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart Treemap(string variant, VisualThemeMode mode) {
+        var items = variant == "sparse" ? new[] {
+            new ChartHierarchyItem("independent", "Independent team", value: 100, colorValue: 7),
+            new ChartHierarchyItem("reserve", "Reserve", value: 0)
+        } : new[] {
+            new ChartHierarchyItem("north", "North"),
+            new ChartHierarchyItem("north-services", "Services", parentId: "north"),
+            new ChartHierarchyItem("north-support", "Support", parentId: "north-services", value: 18, colorValue: -4),
+            new ChartHierarchyItem("north-research", "Research", parentId: "north-services", value: 12, colorValue: 11),
+            new ChartHierarchyItem("north-platform", "Platform", parentId: "north", value: 18, colorValue: 3),
+            new ChartHierarchyItem("south", "South"),
+            new ChartHierarchyItem("south-services", "Services", parentId: "south"),
+            new ChartHierarchyItem("south-support", "Support", parentId: "south-services", value: 22, colorValue: 8),
+            new ChartHierarchyItem("south-field", "Field", parentId: "south-services", value: 15, colorValue: 1),
+            new ChartHierarchyItem("south-operations", "Operations", parentId: "south", value: 15),
+            new ChartHierarchyItem("research", "Independent research", value: 8, colorValue: 14),
+            new ChartHierarchyItem("reserve", "Reserve", value: 0)
+        };
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+        var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+        var scale = variant == "options" ? ChartColorScale.Discrete(new[] {
+            new ChartColorBand(0, low, "Decline"), new ChartColorBand(10, colors.Border, "Steady"), new ChartColorBand(null, high, "Growth")
+        }) : ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15).WithLabels("Decrease", "No change", "Increase");
+        var chart = Chart.Create().WithDataLabels(true).AddTreemap("Allocated work", items).ConfigureTreemap(options => {
+            options.GroupPadding = variant == "options" ? 8 : 6;
+            options.Gap = 3;
+            options.ShowGroupLabels = true;
+            options.ColorLegendTitle = "Change (%)";
+            options.ColorScale = scale.WithNoDataColor(colors.Surface);
+        });
+        if (variant == "options") chart.Series[0].WithNodeState("south-support", ChartSeriesState.Warning);
+        return chart;
+    }
+}
+
+
+/// <summary>Executable, deterministic gallery models shared by the catalog and its downloadable C# examples.</summary>
+public static partial class V2GalleryModels {
+    /// <summary>Creates an actual source model for every chart kind, without selecting a renderer or export backend.</summary>
+    public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
+        var precisionVariant = (variant is "precision" or "compact-precision") && kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
+        var authoredHierarchyVariant = (variant is "authored-total" or "compact-authored-total") && kind == ChartSeriesKind.Sunburst;
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant)
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant ? GeometryOptions(kind, variant) : null)
+            ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? throw new ArgumentOutOfRangeException(nameof(kind));
+        if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        if (variant == "options" && kind == ChartSeriesKind.Area) {
+            chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+            chart.Series[0].StateRole = ChartSeriesState.Warning;
+            chart.WithDataLabels();
+        }
+        return chart;
+    }
+
+    /// <summary>Gets a short title describing the actual example data.</summary>
+    public static string Title(ChartSeriesKind kind) => kind switch {
+        ChartSeriesKind.Line => "Weekly request volume", ChartSeriesKind.StepLine => "Requests waiting in the queue",
+        ChartSeriesKind.Area => "Capacity used during the week", ChartSeriesKind.StepArea => "Reserved processing capacity",
+        ChartSeriesKind.Bar => "Completed orders by region", ChartSeriesKind.HorizontalBar => "Regional order fulfilment",
+        ChartSeriesKind.StackedArea => "Requests and follow-ups over time", ChartSeriesKind.TrendLine => "Request volume and its trend",
+        ChartSeriesKind.Scatter => "Processing time by workload", ChartSeriesKind.Bubble => "Workload, time and request volume",
+        ChartSeriesKind.Lollipop => "Orders at each delivery stage", ChartSeriesKind.Candlestick => "Daily opening and closing prices",
+        ChartSeriesKind.Ohlc => "Daily market price ranges", ChartSeriesKind.ErrorBar => "Delivery time and uncertainty",
+        ChartSeriesKind.BoxPlot => "Delivery time by service level", ChartSeriesKind.RangeBand => "Expected temperature band",
+        ChartSeriesKind.RangeArea => "Expected operating range", ChartSeriesKind.RangeBar => "Minimum and maximum delivery times",
+        ChartSeriesKind.Dumbbell => "Service capacity before and after", ChartSeriesKind.Slope => "Capacity change across teams",
+        ChartSeriesKind.Heatmap => "Coverage across service areas", ChartSeriesKind.HexbinHeatmap => "Service coverage in hexagonal cells",
+        ChartSeriesKind.CalendarHeatmap => "Daily activity across four months", ChartSeriesKind.DottedMap => "Service routes across Europe",
+        ChartSeriesKind.RegionMap => "Regional service coverage", ChartSeriesKind.TileMap => "Service coverage by state",
+        ChartSeriesKind.Gauge => "Available capacity against a target", ChartSeriesKind.Circle => "Assessments completed",
+        ChartSeriesKind.ProgressRing => "Completion by delivery stage", ChartSeriesKind.LayeredRadial => "Reviewed, verified and completed",
+        ChartSeriesKind.RadialBar => "Requests by region and service", ChartSeriesKind.RadialColumn => "Regional service workload",
+        ChartSeriesKind.Bullet => "Reviewed work against its targets", ChartSeriesKind.ProgressBar => "Progress through delivery stages",
+        ChartSeriesKind.Pie => "Revenue by service", ChartSeriesKind.Donut => "Services contributing to revenue",
+        ChartSeriesKind.PolarArea => "Service revenue in radial segments", ChartSeriesKind.Radar => "Observed and expected service levels",
+        ChartSeriesKind.Polar => "Directional sensor readings", ChartSeriesKind.Timeline => "Project activities in March 2026",
+        ChartSeriesKind.Gantt => "Project delivery in March 2026", ChartSeriesKind.StateTimeline => "Availability throughout the day",
+        ChartSeriesKind.GanttLane => "Incidents and recovery in parallel",
+        ChartSeriesKind.Sankey => "Requests across processing stages", ChartSeriesKind.Tree => "Teams and their responsibilities",
+        ChartSeriesKind.Chord => "Transfers between teams",
+        ChartSeriesKind.Sunburst => "Allocation through the team hierarchy", ChartSeriesKind.Treemap => "How work is allocated across teams",
+        ChartSeriesKind.Pictorial => "Completed assessments by team", ChartSeriesKind.WordCloud => "Topics in service observations",
+        ChartSeriesKind.Funnel => "Requests from receipt to completion", ChartSeriesKind.Pyramid => "How work is allocated across services",
+        ChartSeriesKind.Waterfall => "Changes in available capacity",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    private static ChartPoint[] Observations(string variant, double offset = 0) => (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
+        .Select(index => new ChartPoint(index, 20 + offset + index * 7 % 29, variant == "sparse" && index == 6)).ToArray();
+    private static Chart Categories(ChartSeriesKind kind) => Chart.Create().WithXLabels(kind switch {
+        ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.TrendLine or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc => new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
+        ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell => new[] { "Standard", "Express", "Premium", "Bulk", "Return" },
+        ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap => new[] { "Identity", "Network", "Storage", "Backup", "Access", "Recovery" },
+        ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea => new[] { "Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other" },
+        ChartSeriesKind.ProgressRing => new[] { "Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete" },
+        ChartSeriesKind.Radar => new[] { "Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support" },
+        ChartSeriesKind.Scatter or ChartSeriesKind.Bubble => new[] { "1", "2", "3", "4", "5", "6" },
+        ChartSeriesKind.Lollipop => new[] { "Received", "Packed", "Shipped", "In transit", "Delivered", "Reviewed" },
+        ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea => new[] { "08:00", "10:00", "12:00", "14:00", "16:00" },
+        _ => new[] { "North", "South", "East", "West", "Central", "Online" }
+    });
+    private static Chart? Basic(ChartSeriesKind kind, string variant) {
+        var chart = Categories(kind); var values = Observations(variant);
+        return kind switch {
+            ChartSeriesKind.Line => chart.AddLine("Requests", values),
+            ChartSeriesKind.StepLine => chart.AddStepLine("Queued", values),
+            ChartSeriesKind.Area => chart.AddArea("Used capacity", values),
+            ChartSeriesKind.StepArea => chart.AddStepArea("Reserved capacity", values),
+            ChartSeriesKind.Scatter => chart.WithXAxis("Workload batches").WithYAxis("Time (minutes)").AddScatter("Processing time", values),
+            ChartSeriesKind.Bar => chart.AddBar("Orders", values),
+            ChartSeriesKind.Lollipop => chart.AddLollipop("Orders", values),
+            ChartSeriesKind.HorizontalBar => chart.AddHorizontalBar("Orders", values),
+            ChartSeriesKind.StackedArea => chart.AddStackedArea("Requests", values).AddStackedArea("Follow-ups", Observations(variant, -10)),
+            ChartSeriesKind.Waterfall => chart.WithXLabels("North", "South", "East", "West", "Central", "Total")
+                .AddWaterfall("Changes", new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
+            ChartSeriesKind.Slope => Chart.Create().AddSlope("Team A", 28, 64, "Before", "After").AddSlope("Team B", 52, 43, "Before", "After").AddSlope("Team C", 38, 57, "Before", "After"),
+            ChartSeriesKind.TrendLine => chart.AddScatter("Observations", values).AddTrendLine("Least-squares trend", values),
+            _ => null
+        };
+    }
+}

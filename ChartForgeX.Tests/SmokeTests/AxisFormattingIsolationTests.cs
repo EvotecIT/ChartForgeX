@@ -25,7 +25,7 @@ internal static partial class SmokeTests {
             .WithSize(700, 280)
             .WithValueFormatter(_ => "generic-secondary")
             .ConfigureYAxis(axis => axis.LabelFormatter = _ => "primary-fixed")
-            .WithTickLabelStyle(style => style.WithWeight("650").WithItalic())
+            .ConfigureTickLabelStyle(style => style.WithWeight("650").WithItalic())
             .WithSecondaryYAxis("Rate")
             .AddLine("Rate", Points(20, 40, 60));
         secondary.Series[0].UseSecondaryYAxis();
@@ -62,7 +62,7 @@ internal static partial class SmokeTests {
 
         const string sample = "MMMMMMMMiiiiiiii";
         foreach (var family in new[] { "serif", "monospace" }) {
-            var chart = FormattedAxisChart(_ => sample).WithSize(900, 280).WithTickLabelStyle(style => style.WithFontFamily(family).WithItalic());
+            var chart = FormattedAxisChart(_ => sample).WithSize(900, 280).ConfigureTickLabelStyle(style => style.WithFontFamily(family).WithItalic());
             var context = VisualExportRequest.ForChart(chart).Context;
             var scene = chart.Prepare(context).Scene;
             var rule = scene.Nodes.OfType<VisualSceneLine>().Single(node => node.Role == "axis-y");

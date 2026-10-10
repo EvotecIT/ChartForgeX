@@ -40,9 +40,9 @@ public static partial class V2Examples {
         }
         page.Append("</nav><div class=\"output-control\" role=\"group\" aria-label=\"Preview format\"><span>Preview</span><button type=\"button\" data-set-output=\"svg\" aria-pressed=\"true\">SVG</button><button type=\"button\" data-set-output=\"png\" aria-pressed=\"false\">PNG</button></div><section class=\"example-surface\" aria-label=\"Rendered example\">");
         foreach (var artifact in paired) {
-            page.Append("<div class=\"full\" data-visual-theme=\"").Append(artifact.Theme).Append("\" data-output-format=\"svg\">")
+            page.Append("<div class=\"full\" style=\"--example-width:").Append(artifact.Width).Append("px\" data-visual-theme=\"").Append(artifact.Theme).Append("\" data-output-format=\"svg\">")
                 .Append(File.ReadAllText(Path.Combine(output, artifact.Id + ".svg"))).Append("</div>");
-            page.Append("<div class=\"full\" data-visual-theme=\"").Append(artifact.Theme).Append("\" data-output-format=\"png\"><img src=\"")
+            page.Append("<div class=\"full\" style=\"--example-width:").Append(artifact.Width).Append("px\" data-visual-theme=\"").Append(artifact.Theme).Append("\" data-output-format=\"png\"><img src=\"")
                 .Append(artifact.Id).Append(".png\" width=\"").Append(artifact.Width).Append("\" height=\"").Append(artifact.Height)
                 .Append("\" alt=\"").Append(Escape(artifact.Title)).Append("\" loading=\"lazy\" decoding=\"async\"></div>");
         }

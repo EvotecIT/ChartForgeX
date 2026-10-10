@@ -346,15 +346,15 @@ public sealed class ThemedSvgShareTests {
         var day = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
         switch (family) {
             case "gauge":
-                return Host(tokens).AddGauge("Readiness", 74).WithGauge(o => { o.Target = 90; o.Bands.Add(new(60, 80, ChartSeriesState.Warning)); });
+                return Host(tokens).AddGauge("Readiness", 74).ConfigureGauge(o => { o.Target = 90; o.Bands.Add(new(60, 80, ChartSeriesState.Warning)); });
             case "bullet":
                 return Host(tokens).AddBullet("Coverage", 74, 90).AddBullet("TLS", 92, 80);
             case "funnel":
                 return Host(tokens).WithXLabels("Detected", "Fixed", "Verified").AddFunnel("Findings", Points(100, 75, 60));
             case "sankey":
-                return Host(tokens).AddSankey("Flow", new[] { new ChartSankeyLink("Assessment", "Fixed", 50), new ChartSankeyLink("Monitoring", "Fixed", 20) });
+                return Host(tokens).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Fixed", "Fixed"), new ChartNode("Monitoring", "Monitoring") }, new[] { new ChartFlowLink("flow-1", "Assessment", "Fixed", 50), new ChartFlowLink("flow-2", "Monitoring", "Fixed", 20) });
             case "treemap":
-                return Host(tokens).AddTreemap("Files", new[] { new ChartTreemapItem("One", 50), new ChartTreemapItem("Two", 30), new ChartTreemapItem("Three", 20) });
+                return Host(tokens).AddTreemap("Files", new[] { new ChartHierarchyItem("One", "One", value: 50), new ChartHierarchyItem("Two", "Two", value: 30), new ChartHierarchyItem("Three", "Three", value: 20) });
             case "line":
                 return Host(tokens).AddLine("Inbound", Points(1, 3, 2, 5)).AddLine("Outbound", Points(2, 1, 3, 2));
             case "bars":

@@ -8,6 +8,19 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects the committed gallery handoff used by the project hub and static previews.</summary>
 public sealed class V2GalleryArtifactTests {
+    [Theory]
+    [InlineData("light")]
+    [InlineData("dark")]
+    public void PublishedPrecisionVariantsDeclareTheirCompactViewport(string theme) {
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(FindRepository(), "Website", "static", "examples", "generated", "manifest.json")));
+        var artifacts = manifest.RootElement.GetProperty("artifacts").EnumerateArray().ToArray();
+        var compact = Assert.Single(artifacts, artifact => artifact.GetProperty("id").GetString() == "family-trend-line-compact-precision-" + theme);
+        Assert.Equal(360, compact.GetProperty("width").GetInt32()); Assert.Equal(360, compact.GetProperty("height").GetInt32());
+        Assert.True(compact.GetProperty("compact").GetBoolean());
+        var standard = Assert.Single(artifacts, artifact => artifact.GetProperty("id").GetString() == "family-trend-line-precision-" + theme);
+        Assert.False(standard.GetProperty("compact").GetBoolean());
+    }
+
     [Fact]
     public void PublishedCatalogKeepsOnePrimaryPerFamilyAndNamedNativePreviews() {
         var repository = FindRepository();

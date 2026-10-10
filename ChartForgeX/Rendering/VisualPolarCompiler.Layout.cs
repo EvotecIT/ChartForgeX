@@ -18,7 +18,7 @@ internal static partial class VisualPolarCompiler {
             height = Math.Max(height, Math.Min(plot.Height * .2, measured.Height));
         }
         var gap = context.Theme.Spacing;
-        var markExtent = chart.Series.Max(series => Math.Max(series.MarkerRadius ?? context.Theme.MarkerRadius,
+        var markExtent = chart.Series.Max(series => Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
             ChartLineVisualLayers.Build(context.Theme.Resolve(context.ThemeMode).Accent,
                 series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth, chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth) / 2));
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - width - gap, plot.Height / 2 - height - gap) - markExtent);
@@ -28,16 +28,17 @@ internal static partial class VisualPolarCompiler {
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, PolarLayout geometry,
         double[] categories, string[] axes, RadialValueScale scale, bool radar, List<PolarLabel> labels) {
         var colors = context.Theme.Resolve(context.ThemeMode); var style = TickStyle(chart, context);
+        var formatTick = ChartAxisValueFormatter.Create(chart.Options.YAxis, scale.Ticks, chart.Options.ValueFormatter);
         for (var index = 0; index < scale.Ticks.Count; index++) {
-            var tick = scale.Ticks[index]; if (tick <= scale.Minimum) continue;
+            var tick = scale.Ticks[index]; if (scale.Normalize(tick) <= 0) continue;
             var r = geometry.Radius * scale.Normalize(tick);
             if (chart.Options.ShowGrid) {
-                if (radar) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, RadarAngle(i, categories.Length), r)).ToArray(), ChartSeriesKind.Line, false),
+                if (radar) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, RadarAngle(i, categories.Length), r)).ToArray(), ChartInterpolation.Linear),
                     stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: "radar-ring", close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                 else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, "polar-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             }
-            if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && !scale.IsMaximum(tick)) {
-                var text = ChartAxisValueFormatter.Format(chart.Options.YAxis, tick, chart.Options.ValueFormatter, scale.Ticks);
+            if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && r < geometry.Radius) {
+                var text = formatTick(tick);
                 var anchor = new ChartPoint(geometry.Cx + context.Theme.Spacing / 2, geometry.Cy - r);
                 AddLabel(builder, labels, text, anchor, style, (radar ? "radar" : "polar") + "-radius-label-" + index,
                     radar ? "radar-ring-label" : "polar-radius-label", plot, new[] { new LabelCandidate(0, 0, 0, 0), new LabelCandidate(0, 0, 0, 1) }, 20);
@@ -72,21 +73,22 @@ internal static partial class VisualPolarCompiler {
             first = new LabelCandidate(Math.Cos(angle) * inward - Math.Sin(angle) * spread, Math.Sin(angle) * inward + Math.Cos(angle) * spread, .5, .5);
         }
         AddLabel(builder, labels, text, point, style, id + "-label", radar ? "radar-data-label" : "polar-data-label", plot,
-            new[] { first, new LabelCandidate(0, -gap, .5, 1), new LabelCandidate(0, gap, .5, 0), new LabelCandidate(-gap, 0, 1, .5), new LabelCandidate(gap, 0, 0, .5) }, 40);
+            new[] { first, new LabelCandidate(0, -gap, .5, 1), new LabelCandidate(0, gap, .5, 0), new LabelCandidate(-gap, 0, 1, .5), new LabelCandidate(gap, 0, 0, .5) }, 40,
+            source >= 0 ? id : null);
     }
 
     private static void AddLabel(VisualSceneBuilder builder, List<PolarLabel> labels, string text, ChartPoint anchor, TextStyle style,
-        string id, string role, ChartRect bounds, IReadOnlyList<LabelCandidate> candidates, int priority) {
+        string id, string role, ChartRect bounds, IReadOnlyList<LabelCandidate> candidates, int priority, string? markId = null) {
         // The viewport describes the retained label; the placed rectangle describes only its displayed text.
         builder.AddRegion(new VisualSemanticRegion(id, role, bounds, text));
-        labels.Add(new PolarLabel(new LabelPlacementRequest(text, anchor, style, candidates, priority) { MeasuredSize = builder.MeasureText(text, style) }, id, role));
+        labels.Add(new PolarLabel(new LabelPlacementRequest(text, anchor, style, candidates, priority) { MeasuredSize = builder.MeasureText(text, style) }, id, role, markId));
     }
 
     private static void DrawLabels(VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<PolarLabel> labels, double gap) {
         var placed = new LabelPlacementService().Place(labels.Select(label => label.Request).ToArray(), plot, null, Math.Max(1, gap / 3), builder.MeasureText);
         for (var index = 0; index < placed.Count; index++) {
             var result = placed[index]; var label = labels[index];
-            using (builder.PushGroup(label.Id + "-source", label.Role + "-source", new Dictionary<string, string> { ["data-cfx-full-label"] = label.Request.Text })) {
+            using (builder.PushGroup(label.Id + "-source", label.Role + "-source", VisualMarkLabel.Metadata(label.Request.Text, label.MarkId))) {
                 if (result.IsDropped || result.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("polar.label-overflow", "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."));
                 if (result.IsDropped) continue;
                 var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
@@ -112,7 +114,8 @@ internal static partial class VisualPolarCompiler {
         internal double Cx { get; } internal double Cy { get; } internal double Radius { get; }
     }
     private sealed class PolarLabel {
-        internal PolarLabel(LabelPlacementRequest request, string id, string role) { Request = request; Id = id; Role = role; }
+        internal PolarLabel(LabelPlacementRequest request, string id, string role, string? markId) { Request = request; Id = id; Role = role; MarkId = markId; }
         internal LabelPlacementRequest Request { get; } internal string Id { get; } internal string Role { get; }
+        internal string? MarkId { get; }
     }
 }

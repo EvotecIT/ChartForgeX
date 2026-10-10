@@ -2,16 +2,15 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
+/// <summary>A retained node rectangle and its bounded child and header areas.</summary>
 internal readonly struct ChartTreemapTile {
-    public ChartTreemapTile(int pointIndex, ChartPoint point, ChartRect rect) {
-        PointIndex = pointIndex;
-        Point = point;
-        Rect = rect;
+    internal ChartTreemapTile(int itemIndex, ChartRect rect, ChartRect content, ChartRect header) {
+        ItemIndex = itemIndex;
+        Rect = rect; ContentRect = content; HeaderRect = header;
     }
 
-    public int PointIndex { get; }
-
-    public ChartPoint Point { get; }
-
-    public ChartRect Rect { get; }
+    internal int ItemIndex { get; }
+    internal ChartRect Rect { get; }
+    internal ChartRect ContentRect { get; }
+    internal ChartRect HeaderRect { get; }
 }

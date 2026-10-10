@@ -27,12 +27,11 @@ internal static partial class VisualScheduleCompiler {
         if (now.HasValue) { min = Math.Min(min, now.Value); max = Math.Max(max, now.Value); }
         min = axis.Minimum ?? min; max = axis.Maximum ?? max;
         (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
-        var ticks = axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= min && value <= max).Distinct().OrderBy(value => value).ToArray()
-            : ChartTicks.GenerateInside(axis, min, max);
-        var tickLabels = ticks.ToDictionary(value => value, value => ChartAxisValueFormatter.Format(axis, value,
-            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks));
-        string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : ChartAxisValueFormatter.Format(axis, value,
-            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks);
+        var ticks = ChartTicks.ForAxis(axis, min, max);
+        var formatTick = ChartAxisValueFormatter.Create(axis, ticks,
+            axis.Scale == ChartScaleKind.Time ? tick => ChartTimeScale.Format(axis, tick) : chart.Options.ValueFormatter, chart.Options);
+        var tickLabels = ticks.ToDictionary(value => value, formatTick);
+        string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : formatTick(value);
         var layout = LaneLayout(chart, context, builder, viewport, chart.Series.Select(series => series.Name), Array.Empty<string>(), false,
             now.HasValue && now.Value >= min && now.Value <= max, ticks, Format);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);

@@ -697,7 +697,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="chart">The topology chart.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithTheme(this TopologyChart chart, Action<TopologyTheme> configure) {
+    public static TopologyChart ConfigureTheme(this TopologyChart chart, Action<TopologyTheme> configure) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         chart.Theme ??= TopologyTheme.Light();

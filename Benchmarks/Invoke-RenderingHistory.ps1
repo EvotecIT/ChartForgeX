@@ -2,7 +2,7 @@
 param(
     [Parameter(Mandatory)][string] $ModulePath,
     [Parameter(Mandatory)][string] $RunnerIdentity,
-    [ValidateSet('Verify', 'AcceptReference', 'CalibrationProof')][string] $Mode = 'Verify',
+    [ValidateSet('Verify', 'AcceptReference', 'CalibrationProof', 'FunctionalProof')][string] $Mode = 'Verify',
     [string] $OutputRoot = (Join-Path $PSScriptRoot '../Ignore/Benchmarks/History'),
     [string] $HistoryPath,
     [switch] $SkipBuild
@@ -10,15 +10,17 @@ param(
 $ErrorActionPreference = 'Stop'
 Import-Module $ModulePath -Force
 $root = Split-Path $PSScriptRoot
+if ($Mode -eq 'FunctionalProof' -and $HistoryPath) { throw 'Functional proof uses its own synthetic history, not an accepted reference path.' }
 $product = Join-Path $root 'ChartForgeX/bin/Release/net8.0/ChartForgeX.dll'
+$visuals = Join-Path $root 'ChartForgeX.Visuals/bin/Release/net8.0/ChartForgeX.Visuals.dll'
 $fixture = Join-Path $PSScriptRoot 'Rendering/bin/Release/net8.0/RenderingHistoryFixtures.dll'
 $font = Join-Path $root 'ChartForgeX.Tests/Fixtures/OpenType/stem-true-type.ttf'
 if (!$SkipBuild) {
     Push-Location $root
     try {
-        & dotnet build (Join-Path $root 'ChartForgeX/ChartForgeX.csproj') -c Release -f net8.0 --nologo
+        & dotnet build (Join-Path $root 'ChartForgeX.Visuals/ChartForgeX.Visuals.csproj') -c Release -f net8.0 --nologo
         if ($LASTEXITCODE) { throw 'Product build failed.' }
-        & dotnet build (Join-Path $PSScriptRoot 'Rendering/RenderingHistoryFixtures.csproj') -c Release --nologo "-p:ProductDll=$product"
+        & dotnet build (Join-Path $PSScriptRoot 'Rendering/RenderingHistoryFixtures.csproj') -c Release --nologo "-p:ProductDll=$product" "-p:VisualsDll=$visuals"
         if ($LASTEXITCODE) { throw 'Benchmark fixture build failed.' }
     } finally { Pop-Location }
 }
@@ -26,7 +28,25 @@ if (!$HistoryPath) { $HistoryPath = Join-Path $OutputRoot 'history.json' }
 if ($Mode -eq 'CalibrationProof' -and (Test-Path $HistoryPath)) { throw 'Calibration proof requires a separate new history file.' }
 $commit = (& git -C $root rev-parse HEAD).Trim()
 if ($LASTEXITCODE) { throw 'Source revision could not be read.' }
-$inputs = @{ ProductAssembly=$product; FixtureAssembly=$fixture; FontPath=$font; SourceCommit=$commit; ProofDelayMilliseconds=0 }
+if ($Mode -eq 'FunctionalProof') {
+    Add-Type -Path $product
+    Add-Type -Path $visuals
+    Add-Type -Path $fixture
+    [RenderingHistoryFixture]::Initialize($font)
+    $renders = foreach ($case in 'Auto', 'Full', 'Svg') {
+        $image = [RenderingHistoryFixture]::Render($case, 0)
+        [RenderingHistoryFixture]::Validate($image)
+        @{ Case=$case; Width=$image.Width; Height=$image.Height; PixelBytes=$image.Pixels.Length; Validated=$true }
+    }
+    $proof = & (Join-Path $PSScriptRoot 'Rendering/Test-RenderingHistoryContract.ps1') -OutputRoot (Join-Path $OutputRoot 'synthetic-contract') -RunnerIdentity $RunnerIdentity
+    @{
+        Mode=$Mode; RenderingEvidence='ActualRenderingWithoutTiming'; Renders=@($renders); HistoryEvidence=$proof
+        SourceCommit=$commit; AssemblySha256=(Get-FileHash $product).Hash; VisualsSha256=(Get-FileHash $visuals).Hash
+        FixtureSha256=(Get-FileHash $fixture).Hash; FontSha256=(Get-FileHash $font).Hash
+    } | ConvertTo-Json -Depth 15 | Set-Content (Join-Path $OutputRoot 'history-proof.json')
+    return $proof
+}
+$inputs = @{ ProductAssembly=$product; VisualsAssembly=$visuals; FixtureAssembly=$fixture; FontPath=$font; SourceCommit=$commit; ProofDelayMilliseconds=0 }
 $benchmark = @{ Path=(Join-Path $PSScriptRoot 'rendering-history.benchmark.ps1'); OutputRoot=$OutputRoot; Variable=$inputs }
 if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Windows)) {
     $benchmark.ProcessPriority = 'Normal'

@@ -19,7 +19,8 @@ internal static class GraphiteExamples {
                 item.Value.SaveSvg(Path.Combine(output, name + ".svg"));
                 item.Value.SavePng(Path.Combine(output, name + ".png"));
                 item.Value.SaveHtml(Path.Combine(output, name + ".html"));
-                if (item.Key == "line") item.Value.SaveInteractiveHtml(Path.Combine(output,name+"-interactive.html"));
+                if (item.Key == "line") item.Value.SaveInteractiveHtml(Path.Combine(output,name+"-interactive.html"),
+                    options => { options.Tooltip.Mode = HtmlChartTooltipMode.SharedX; options.Crosshair.ShowLabel = false; });
                 var nativeWidth = item.Value.Options.Size.Width;
                 gallery.Append("<h2>").Append(item.Key).Append("</h2><div class='pair'><img alt='SVG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".svg'><img alt='PNG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".png'></div>");
             }
@@ -51,18 +52,18 @@ internal static class GraphiteExamples {
         line.Options.YAxis.Maximum=1400; line.Options.YAxis.TickCount=8;
         var donut=Frame("Findings by control","Largest slices first",596,314).WithXLabels("Mail authentication","TLS","DNSSEC","Policy","Monitoring","Other")
             .AddDonut("Findings",Points(356,268,214,188,142,116));
-        var gauge=Frame("Control readiness","Target 90",396,294).AddGauge("Readiness",87).WithGauge(o=> {
+        var gauge=Frame("Control readiness","Target 90",396,294).AddGauge("Readiness",87).ConfigureGauge(o=> {
             o.Target=90; o.Caption="3 below target";
             o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet));
         });
-        var needle=Frame("Readiness needle","Explicit target and bands",396,294).AddGauge("Readiness",74).WithGauge(o=> { o.Form=ChartGaugeForm.Needle; o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
-        var linear=Frame("Linear readiness","Explicit target and bands",596,230).AddLinearGauge("Readiness",87).WithGauge(o=> { o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
+        var needle=Frame("Readiness needle","Explicit target and bands",396,294).AddGauge("Readiness",74).ConfigureGauge(o=> { o.Form=ChartGaugeForm.Needle; o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
+        var linear=Frame("Linear readiness","Explicit target and bands",596,230).AddLinearGauge("Readiness",87).ConfigureGauge(o=> { o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
         var bullet=Frame("Control coverage","Actual values and targets",556,294).WithValueFormatter(value=>value.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+" %").AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
         var funnel=Frame("Remediation stages","Percentage of the first stage",556,324).WithXLabels("Detected","Triaged","Assigned","Fixed","Verified").AddFunnel("Findings",Points(1284,1012,744,521,466));
-        var sankey=Frame("Remediation flow","Source-coloured links",556,324).AddSankey("Flow",new[] {
-            new ChartSankeyLink("Assessment","Remediated",360),new("Assessment","In progress",110),new("Assessment","Overdue",50),new("Monitoring","Remediated",170),new("Monitoring","In progress",90),new("Monitoring","Overdue",50),new("GPO","Remediated",80),new("GPO","In progress",50),new("GPO","Overdue",40)
+        var sankey=Frame("Remediation flow","Source-coloured links",556,324).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Remediated", "Remediated"), new ChartNode("In progress", "In progress"), new ChartNode("Overdue", "Overdue"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("GPO", "GPO") }, new[] {
+            new ChartFlowLink("flow-1", "Assessment","Remediated",360),new("flow-2", "Assessment","In progress",110),new("flow-3", "Assessment","Overdue",50),new("flow-4", "Monitoring","Remediated",170),new("flow-5", "Monitoring","In progress",90),new("flow-6", "Monitoring","Overdue",50),new("flow-7", "GPO","Remediated",80),new("flow-8", "GPO","In progress",50),new("flow-9", "GPO","Overdue",40)
         });
-        sankey.WithSankeyNodeState("Remediated",ChartSeriesState.Neutral).WithSankeyNodeState("In progress",ChartSeriesState.Warning).WithSankeyNodeState("Overdue",ChartSeriesState.Danger);
+        sankey.Series[0].WithNodeState("Remediated",ChartSeriesState.Neutral).WithNodeState("In progress",ChartSeriesState.Warning).WithNodeState("Overdue",ChartSeriesState.Danger);
         var heat=Frame("Activity by hour","Sequential ramp; zero is neutral",616,304).WithXLabels(Enumerable.Range(0,24).Select(i=>new[]{0,6,12,18,23}.Contains(i)?i.ToString("00"):"").ToArray());
         var days=new[]{"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
         for(var d=0;d<7;d++)heat.AddHeatmapRow(days[d],Enumerable.Range(0,24).Select(h=>new ChartPoint(h+1,HeatLevel(d,h))));
@@ -73,8 +74,8 @@ internal static class GraphiteExamples {
         results["area"]=Frame("Single area","Flat 12 percent fill").AddArea("Volume",Points(20,40,28,60,37));
         results["narrow-donut"]=Frame("Findings","List beneath the donut",360,510).WithXLabels("Mail","TLS","DNSSEC","Policy","Monitoring","Other").AddDonut("Findings",Points(356,268,214,188,142,116));
         results["horizontal"]=Frame("Horizontal counts","Square baselines and value-end corners").WithXLabels("One","Two","Three").WithDataLabels().AddHorizontalBar("Counts",Points(50,30,20));
-        results["treemap"]=Frame("Storage distribution","Flat tiles with readable ink").AddTreemap("Files",new[]{new ChartTreemapItem("One",50),new("Two",30),new("Three",20)});
-        results["tree"]=Frame("Hierarchy","Shared flat surfaces and labels").AddTree("Structure",new[]{new ChartTreeLink("Root","One"),new("Root","Two"),new("One","Three")});
+        results["treemap"]=Frame("Storage distribution","Flat tiles with readable ink").WithDataLabels().AddTreemap("Files",new[]{new ChartHierarchyItem("One", "One", value: 50),new("Two", "Two", value: 30),new("Three", "Three", value: 20)});
+        results["tree"]=Frame("Hierarchy","Shared flat surfaces and labels").WithDataLabels().AddTree("Structure", new[] { new ChartNode("Root", "Root"), new ChartNode("One", "One"), new ChartNode("Two", "Two"), new ChartNode("Three", "Three") }, new[]{new ChartTreeLink("Root","One"),new("Root","Two"),new("One","Three")});
         results["timeline"]=Frame("Delivery timeline","Flat intervals").AddTimelineRange("Plan",1,3).AddTimelineRange("Build",3,7).AddTimelineRange("Review",6,9);
         results["gantt"]=Frame("Delivery schedule","Flat tasks and progress").AddGanttTask("Plan",1,3,1).AddGanttTask("Build",3,7,.65,0).AddGanttTask("Review",6,9,.2,1);
         results["bubble"]=Frame("Bubble observations","70 percent fill with surface outline").AddBubble("Samples",new[]{new ChartBubble(1,20,12),new(2,50,30),new(3,38,20)});

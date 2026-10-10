@@ -19,6 +19,8 @@ internal static partial class VisualScheduleCompiler {
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport) {
         if (viewport.Width <= 0 || viewport.Height <= 0 || chart.Series.Count == 0) return;
+        if (chart.Options.XAxis.Reversed || chart.Options.YAxis.Reversed || chart.Options.SecondaryYAxis.Reversed)
+            throw new NotSupportedException("Schedule layouts do not support reversed axes.");
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("Schedule families cannot mix different layout kinds.");
         if (kind == ChartSeriesKind.StateTimeline) StateLanes(chart, context, builder, viewport);
@@ -58,6 +60,7 @@ internal static partial class VisualScheduleCompiler {
                     var sources = Enumerable.Range(0, series.Points.Count).Where(index => series.Points[index].X >= segment.Start && series.Points[index].Y <= segment.End &&
                         series.PointLabels[index] == segment.State.Key).ToArray();
                     metadata["data-cfx-source-points"] = string.Join(",", sources);
+                    metadata["data-cfx-derived"] = "timeline-run";
                     var id = VisualStateSceneTools.SourceId(lane.SeriesIndex, segment.PointIndex);
                     using (VisualStateSceneTools.Mark(builder, id, "state-timeline-segment", bounds, model.SegmentSummary(lane, segment), metadata)) {
                         if (!visible) continue;

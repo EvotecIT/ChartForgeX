@@ -67,16 +67,6 @@ public enum MetricCardMicroVisualPlacement {
 }
 
 /// <summary>
-/// Presentation style for metric-card mini sparklines.
-/// </summary>
-public enum MetricCardSparklineStyle {
-    /// <summary>Render the sparkline as a compact area chart.</summary>
-    Area,
-    /// <summary>Render the sparkline as a stroked line without area fill.</summary>
-    Line
-}
-
-/// <summary>
 /// Optional surface treatment for metric-card mini visuals.
 /// </summary>
 public enum MetricCardMicroVisualSurface {
@@ -153,7 +143,7 @@ public sealed class ChartTable : FactualVisualBlock<ChartTable> {
     }
 
     /// <summary>Configures one existing row.</summary>
-    public ChartTable WithRow(int rowIndex, Action<ChartTableRow> configure) {
+    public ChartTable ConfigureRow(int rowIndex, Action<ChartTableRow> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (rowIndex < 0 || rowIndex >= _rows.Count) throw new ArgumentOutOfRangeException(nameof(rowIndex), rowIndex, "Row index must reference an existing table row.");
         configure(_rows[rowIndex]);

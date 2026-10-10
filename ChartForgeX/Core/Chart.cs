@@ -354,7 +354,7 @@ public sealed partial class Chart {
     public Chart WithGanttToday(double? value) { Options.GanttToday = value; return this; }
 
     /// <summary>
-    /// Sets whether point and bar values should be rendered as data labels.
+    /// Sets chart-level data-label visibility. Explicit series overrides take precedence.
     /// </summary>
     /// <param name="visible">True to render data labels; otherwise false.</param>
     /// <returns>The current chart.</returns>

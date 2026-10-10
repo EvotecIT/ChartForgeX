@@ -12,12 +12,16 @@
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
   const isInteractiveTarget = (node) => {
-    if ((node.dataset || {}).cfxRole === 'legend-item') return true;
+    const role = (node.dataset || {}).cfxRole;
+    if (role === 'legend-entry-omitted') return false;
+    if (role === 'legend-item') return true;
     if (node.closest('[data-cfx-role="legend-item"]')) return false;
-    // Prepared marks carry their source identity on a containing semantic group.
-    // Bind that group once instead of also binding its labels, decorations and individual shapes.
-    const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node]');
-    return !owner;
+    // Bind a semantic group once; a nested group with its own explicit identity remains a target.
+    const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-series][data-cfx-value]:not([data-cfx-point])');
+    if (!owner) return true;
+    const data = node.dataset || {}, ownerData = owner.dataset || {};
+    return !!(data.cfxTargetKind && data.cfxTargetId
+      && (data.cfxTargetKind !== ownerData.cfxTargetKind || data.cfxTargetId !== ownerData.cfxTargetId));
   };
   const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
@@ -27,6 +31,16 @@
     // Prepared marks put identity on the outer group and their cell link inside it.
     return Array.from(node.children).find((child) => child.matches('a[data-cfx-role="heatmap-cell-link"][href]')) || node;
   };
+  // A legend may refer to an authored native item while retaining its own legend identity.
+  const legendTarget = (node) => {
+    const data = node.dataset || {};
+    return data.cfxLegendTargetKind && data.cfxLegendTargetId
+      ? { targetKind: data.cfxLegendTargetKind, targetId: data.cfxLegendTargetId } : null;
+  };
+  const referencedTargetNode = (root, target) => Array.from(root.querySelectorAll('[data-cfx-target-kind][data-cfx-target-id]'))
+    .find((node) => (node.dataset || {}).cfxRole !== 'legend-item'
+      && node.dataset.cfxTargetKind === target.targetKind && node.dataset.cfxTargetId === target.targetId
+      && (!target.seriesKey || seriesKey(node) === target.seriesKey));
   const seriesLegend = (node) => {
     const data = node.dataset || {};
     if (data.cfxSeries === undefined) return null;
@@ -34,6 +48,10 @@
     if (root) {
       const legendItems = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]'));
       const sameSeries = (item) => (item.dataset || {}).cfxSeries === data.cfxSeries;
+      const itemId = data.cfxTargetKind === 'node' ? data.cfxTargetId : undefined;
+      if (itemId !== undefined) return legendItems.find((item) => sameSeries(item)
+        && (item.dataset || {}).cfxLegendTargetKind === 'node' && item.dataset.cfxLegendTargetId === itemId)
+        || legendItems.find((item) => sameSeries(item) && !legendTarget(item));
       return data.cfxPoint === undefined
         ? legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined) || legendItems.find(sameSeries)
         : legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
@@ -60,8 +78,20 @@
     const svg = node.closest('svg');
     return svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-key-' + data.cfxSeries) || '' : '';
   };
+  // Series groups use source-points as a count; marks use it as an authored collection.
+  const hasSourcePointCollection = (node) => {
+    const data = node.dataset || {};
+    return data.cfxSourcePoints !== undefined && data.cfxRole !== 'series';
+  };
+  const sourcePointCollection = (node) => {
+    if (!hasSourcePointCollection(node)) return undefined;
+    return node.dataset.cfxSourcePoints.split(',').filter((value) => value.trim() !== '')
+      .map(Number).filter((value) => Number.isSafeInteger(value) && value >= 0);
+  };
+  const hasDerivedPointIdentity = (node) => hasSourcePointCollection(node) || (node.dataset || {}).cfxDerived !== undefined;
   const sourcePointIndex = (node) => {
     const data = node.dataset || {};
+    if (hasDerivedPointIdentity(node)) return undefined;
     if (data.cfxSourcePoint !== undefined) return data.cfxSourcePoint;
     if (data.cfxPoint === undefined || data.cfxSeries === undefined) return data.cfxPoint;
     const svg = node.closest('svg');
@@ -70,6 +100,26 @@
     const index = Number(data.cfxPoint);
     const mapped = sourceIndices.split(',')[index];
     return mapped === undefined || mapped === '' ? data.cfxPoint : mapped;
+  };
+  const derivedPointIdentity = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxDerivedIdentity !== undefined) return data.cfxDerivedIdentity;
+    const derived = data.cfxDerived || 'aggregate';
+    // Layout ordinals do not identify equivalent summaries in charts with different partitions.
+    if (derived === 'histogram-bin' && data.cfxBinLower !== undefined && data.cfxBinUpper !== undefined)
+      return [derived, String(Number(data.cfxBinLower)), String(Number(data.cfxBinUpper)), data.cfxBinUpperInclusive || 'false',
+        data.cfxHistogramAggregation || 'count', data.cfxHistogramEncoding || 'value'].join(':');
+    if (derived === 'timeline-run' && data.cfxStart !== undefined && data.cfxEnd !== undefined)
+      return [derived, String(Number(data.cfxStart)), String(Number(data.cfxEnd))].join(':');
+    if (derived === 'radial-slice' && data.cfxPoint === '-1' && hasSourcePointCollection(node))
+      return derived + ':sources:' + sourcePointCollection(node).slice().sort((a, b) => a - b).join(',');
+    return derived + ':' + (data.cfxPoint ?? '0');
+  };
+  const pointTargetId = (node) => {
+    const data = node.dataset || {};
+    const derived = hasDerivedPointIdentity(node);
+    const point = derived ? 'derived:' + derivedPointIdentity(node) : sourcePointIndex(node) ?? '0';
+    return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
   };
   const renderedTargetKind = (node) => {
     const data = node.dataset || {};
@@ -88,11 +138,15 @@
     const data = node.dataset || {};
     if (data.cfxTargetId) return data.cfxTargetId;
     if (kind === 'series') return seriesKey(node) || data.cfxSeries || '';
-    if (kind === 'point') return `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node) || '0'}`;
+    if (kind === 'point') return pointTargetId(node);
     if (kind === 'region') return data.cfxRegion || data.cfxId || data.cfxLabel || '';
     if (kind === 'node') return data.cfxNode || data.cfxId || data.cfxLabel || '';
     if (kind === 'link') return data.cfxId || [data.cfxSource, data.cfxTarget].filter(Boolean).join('->') || data.cfxLabel || '';
-    if (kind === 'legend') return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : `${seriesKey(node) || data.cfxSeries || 'series'}:${sourcePointIndex(node)}`;
+    if (kind === 'legend') {
+      const reference = legendTarget(node);
+      if (reference) return JSON.stringify([seriesKey(node) || data.cfxSeries || 'series', reference.targetKind, reference.targetId]);
+      return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : pointTargetId(node);
+    }
     if (kind === 'annotation') return data.cfxId || data.cfxLabel || [data.cfxKind, data.cfxValue].filter(Boolean).join(':');
     return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
   };
@@ -107,7 +161,7 @@
       node.setAttribute('data-cfx-target-id', id);
     });
   };
-  const text = (node) => {
+  const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
@@ -116,7 +170,7 @@
     if (label) parts.push(label);
     else if (data.cfxRole) parts.push(data.cfxRole.replace(/-/g, ' '));
     if (data.cfxSeries !== undefined && !label) parts.push(seriesLabel(node));
-    if (data.cfxPoint !== undefined) parts.push('Point ' + data.cfxPoint);
+    if (data.cfxPoint !== undefined && (!tooltipTitle || !label)) parts.push('Point ' + data.cfxPoint);
     const value = data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '';
     if (value) parts.push('Value ' + value);
     return parts.join(' / ');
@@ -134,6 +188,9 @@
       seriesKey: seriesKey(node),
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
+      sourcePoints: sourcePointCollection(node),
+      legendTargetKind: data.cfxLegendTargetKind,
+      legendTargetId: data.cfxLegendTargetId,
       value: data.cfxValue || data.cfxY || data.cfxEnd || '',
       kind: data.cfxKind || ''
     };
@@ -151,23 +208,33 @@
     const owner = node.closest ? node.closest('[data-cfx-label-' + key + ']') : null;
     return (owner && owner.getAttribute('data-cfx-label-' + key)) || fallback;
   };
+  const percentFormat = new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 2 });
+  const percentText = (value) => value === undefined || value === '' ? value : percentFormat.format(Number(value));
+  const colorTooltipRows = (node) => {
+    const data = node.dataset || {};
+    const value = data.cfxColorValue !== undefined ? data.cfxColorValue
+      : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
+    return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
     const push = (name, value) => {
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
-    push('Role', data.cfxRole ? data.cfxRole.replace(/-/g, ' ') : '');
     push('Series', seriesLabel(node));
-    push('Point', data.cfxPoint);
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
-    push('Y', data.cfxY || data.cfxValue);
+    push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
     push('End', data.cfxEnd);
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
-    push('Kind', data.cfxKind);
-    push('Percent', data.cfxPercent);
+    colorTooltipRows(node).forEach((row) => push(row.name, row.value));
+    if (data.cfxLeaf === 'false' && data.cfxAuthoredValue !== undefined && Number(data.cfxAuthoredValue) !== Number(data.cfxValue))
+      push(rowName(node, 'authored-value', 'Provided value'), data.cfxAuthoredValue);
+    if (Number(data.cfxRemainderValue) > 0)
+      push(rowName(node, 'remainder', 'Remainder'), data.cfxRemainderValue);
+    push('Percent', percentText(data.cfxPercent));
     push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
     metadataRows(node).forEach((row) => push(row.name, row.value));
@@ -175,41 +242,21 @@
   };
   const renderTip = (tip, node) => {
     if ((node.dataset || {}).cfxRole === 'legend-item') return renderLegendTip(tip, node);
-    const root = node.closest && node.closest('[data-cfx-look="graphite"]');
-    const svg = node.closest && node.closest('svg');
-    if (root && svg && node.dataset.cfxX !== undefined && node.dataset.cfxY !== undefined) {
-      const points = new Map();
-      svg.querySelectorAll('[data-cfx-point][data-cfx-x][data-cfx-y]').forEach((point) => {
-        if (point.dataset.cfxX !== node.dataset.cfxX || points.has(point.dataset.cfxSeries)) return;
-        const index = point.dataset.cfxSeries;
-        const paint = getComputedStyle(point);
-        const colour = paint.fill && paint.fill !== 'none' ? paint.fill : paint.stroke;
-        points.set(index, { index, name: svg.getAttribute('data-cfx-series-name-' + index) || seriesLabel(point), state: svg.getAttribute('data-cfx-series-state-' + index) || 'none', value: Number(point.dataset.cfxY), colour });
-      });
-      const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };
-      const rows = Array.from(points.values()).sort((a, b) => (priority[b.state] || 0) - (priority[a.state] || 0) || b.value - a.value);
-      if (rows.length) {
-        tip.replaceChildren();
-        const header = document.createElement('div');
-        header.className = 'cfx-tooltip__title'; header.textContent = node.dataset.cfxXLabel || node.dataset.cfxX; tip.appendChild(header);
-        const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
-        rows.forEach((row) => {
-          const name = document.createElement('dt'); const value = document.createElement('dd');
-          name.textContent = row.name; value.textContent = row.value.toLocaleString(undefined, { maximumFractionDigits: 12 });
-          const swatch = document.createElement('span'); swatch.className = 'cfx-tooltip__swatch';
-          swatch.style.backgroundColor = row.colour; swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);
-          if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
-          list.appendChild(name); list.appendChild(value);
-        });
-        tip.appendChild(list); return true;
-      }
-    }
-    const label = text(node);
+    const root = node.closest && node.closest('.cfx-interactive-chart');
+    if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
+    const label = text(node, true);
     if (!label) return false;
     tip.replaceChildren();
     const title = document.createElement('div');
     title.className = 'cfx-tooltip__title';
     title.textContent = label;
+    const colour = paintColour(node);
+    if (colour) {
+      const swatch = document.createElement('span');
+      swatch.className = 'cfx-tooltip__swatch'; swatch.style.backgroundColor = colour;
+      swatch.setAttribute('aria-hidden', 'true'); title.prepend(swatch);
+      title.classList.add('cfx-tooltip__title--series');
+    }
     tip.appendChild(title);
     const rows = tooltipRows(node);
     if (rows.length) {
@@ -230,14 +277,15 @@
   const showTip = (root, tip, node, event) => {
     if (!hasFeature(root, 'Tooltips')) return;
     if (root.dataset.cfxTooltipPinned === 'true') return;
+    if (!tooltipReadoutAvailable(node, event)) { hideTip(root, tip, false); return; }
     if (!renderTip(tip, node)) return;
     tip.hidden = false;
     moveTip(tip, event, node);
   };
   const moveTip = (tip, event, node) => {
-    if (!event || tip.hidden) return;
-    let clientX = event.clientX;
-    let clientY = event.clientY;
+    if (tip.hidden) return;
+    let clientX = event && event.clientX;
+    let clientY = event && event.clientY;
     if ((!Number.isFinite(clientX) || !Number.isFinite(clientY)) && node && node.getBoundingClientRect) {
       const rect = node.getBoundingClientRect();
       clientX = rect.left + rect.width / 2;
@@ -314,8 +362,13 @@
     clear.textContent = 'Clear';
     clear.setAttribute('data-cfx-compare-clear', 'true');
     clear.addEventListener('click', () => {
+      const returnFocus = tray.contains(document.activeElement);
       clearSelections(root);
       publishCompare(root, true);
+      if (returnFocus) {
+        if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+        try { root.focus({ preventScroll: true }); } catch { root.focus(); }
+      }
     });
     tray.appendChild(clear);
     return items;
@@ -330,13 +383,21 @@
   };
   const hideTip = (root, tip, force) => {
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
+    // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
+    const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
+    const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
+    if (focused && tooltipReadoutAvailable(focused)) {
+      if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(focused))) setHover(root, focused, true, true);
+      showTip(root, tip, focused);
+      return;
+    }
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');
     root.removeAttribute('data-cfx-tooltip-pinned');
     root.removeAttribute('data-cfx-pinned-target');
   };
   const pinTip = (root, tip, node, event) => {
-    if (!hasFeature(root, 'Tooltips') || !renderTip(tip, node)) return;
+    if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);
     const pinned = root.dataset.cfxTooltipPinned === 'true' && root.dataset.cfxPinnedTarget === key;

@@ -94,7 +94,7 @@ public sealed class V2MatrixTests {
         var chart = Chart.Create().WithXLabels("Long first column", "Long second column").WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
             .AddHeatmapRow("Row", new[] { 12d, 34d });
         chart.Options.XAxisLabelAngle = -45;
-        chart.Series[0].WithPointDataLabelStyle(0, style => style.FontSize = 17);
+        chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.FontSize = 17);
         var prepared = chart.Prepare(Context());
         Assert.Contains("rotate(-45", prepared.ToSvg());
         Assert.Equal(2, ByRole(XDocument.Parse(prepared.ToSvg()), "data-label").Length);
@@ -146,7 +146,7 @@ public sealed class V2MatrixTests {
     [Fact]
     public void PreparedMapBlendSharesScaleInterpolationAndRetainsStopOperands() {
         var low = ChartColor.FromHex("#102030"); var high = ChartColor.FromHex("#90a0b0");
-        var chart = Chart.Create(); chart.Options.MapColorScale = ChartMapColorScale.Sequential(low, high);
+        var chart = Chart.Create(); chart.Options.MapColorScale = ChartColorScale.Sequential(low, high);
         var colors = Context().Theme.Resolve(VisualThemeMode.Light);
         var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, null, 25, 0, 100);
         Assert.Equal(chart.Options.MapColorScale.ColorFor(25, 0, 100), blend.Color);

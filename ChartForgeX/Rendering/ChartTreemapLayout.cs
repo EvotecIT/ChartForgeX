@@ -1,87 +1,75 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
+/// <summary>Partitions every sibling set with the same binary rectangle layout, inside its parent's measured header and padding.</summary>
 internal static class ChartTreemapLayout {
-    public static List<ChartTreemapTile> Compute(ChartSeries series, ChartRect plot) {
-        var items = new List<TreemapItem>();
-        for (var i = 0; i < series.Points.Count; i++) {
-            var point = series.Points[i];
-            if (point.Y > 0) items.Add(new TreemapItem(i, point, point.Y));
-        }
-
-        items.Sort((left, right) => { int order = right.Value.CompareTo(left.Value); return order != 0 ? order : left.PointIndex.CompareTo(right.PointIndex); });
-        var tiles = new List<ChartTreemapTile>(items.Count);
-        Split(items, 0, items.Count, plot, tiles);
+    internal static IReadOnlyList<ChartTreemapTile> Compute(ChartSeries series, ChartRect plot, ChartTreemapOptions options, Func<int, double> headerHeight) {
+        var index = series.Relationships ?? throw new InvalidOperationException("Treemaps require explicit items.");
+        var tiles = new List<ChartTreemapTile>(series.HierarchyItems.Count);
+        Siblings(index.Roots, plot);
         return tiles;
+
+        void Siblings(IReadOnlyList<int> siblings, ChartRect area) {
+            var ordered = siblings.Where(item => index.HierarchyValues[item] > 0)
+                .OrderByDescending(item => index.HierarchyValues[item]).ThenBy(item => item).ToArray();
+            Split(ordered, 0, ordered.Length, area, index.HierarchyValues, (item, allocated) => {
+                var rect = Inset(allocated, options.Gap);
+                var children = index.Children(item);
+                var isGroup = children.Count > 0;
+                var content = rect; var header = new ChartRect(rect.X, rect.Y, 0, 0);
+                if (isGroup) {
+                    var padding = Math.Min(options.GroupPadding, Math.Min(rect.Width, rect.Height) * .15);
+                    content = new ChartRect(rect.X + padding, rect.Y + padding, Math.Max(0, rect.Width - padding * 2), Math.Max(0, rect.Height - padding * 2));
+                    var height = options.ShowGroupLabels ? Math.Min(headerHeight(item), content.Height * .3) : 0;
+                    header = new ChartRect(content.X, content.Y, content.Width, height);
+                    content = new ChartRect(content.X, content.Y + height, content.Width, Math.Max(0, content.Height - height));
+                }
+                tiles.Add(new ChartTreemapTile(item, rect, content, header));
+                if (isGroup) Siblings(children, content);
+            });
+        }
     }
 
-    private static void Split(IReadOnlyList<TreemapItem> items, int start, int count, ChartRect rect, List<ChartTreemapTile> tiles) {
+    private static void Split(int[] items, int start, int count, ChartRect rect, IReadOnlyList<double> values, Action<int, ChartRect> emit) {
         if (count <= 0 || rect.Width <= 0 || rect.Height <= 0) return;
-        if (count == 1) {
-            var item = items[start];
-            tiles.Add(new ChartTreemapTile(item.PointIndex, item.Point, Inset(rect)));
-            return;
-        }
-
-        var total = Sum(items, start, count);
-        if (total <= 0) return;
-        var firstCount = SplitCount(items, start, count, total);
-        var firstTotal = Sum(items, start, firstCount);
-        var ratio = firstTotal / total;
+        if (count == 1) { emit(items[start], rect); return; }
+        var total = Sum(items, start, count, values);
+        var firstCount = SplitCount(items, start, count, total, values);
+        var ratio = Sum(items, start, firstCount, values) / total;
         if (rect.Width >= rect.Height) {
-            var firstWidth = rect.Width * ratio;
-            Split(items, start, firstCount, new ChartRect(rect.X, rect.Y, firstWidth, rect.Height), tiles);
-            Split(items, start + firstCount, count - firstCount, new ChartRect(rect.X + firstWidth, rect.Y, rect.Width - firstWidth, rect.Height), tiles);
+            var width = rect.Width * ratio;
+            Split(items, start, firstCount, new ChartRect(rect.X, rect.Y, width, rect.Height), values, emit);
+            Split(items, start + firstCount, count - firstCount, new ChartRect(rect.X + width, rect.Y, rect.Width - width, rect.Height), values, emit);
         } else {
-            var firstHeight = rect.Height * ratio;
-            Split(items, start, firstCount, new ChartRect(rect.X, rect.Y, rect.Width, firstHeight), tiles);
-            Split(items, start + firstCount, count - firstCount, new ChartRect(rect.X, rect.Y + firstHeight, rect.Width, rect.Height - firstHeight), tiles);
+            var height = rect.Height * ratio;
+            Split(items, start, firstCount, new ChartRect(rect.X, rect.Y, rect.Width, height), values, emit);
+            Split(items, start + firstCount, count - firstCount, new ChartRect(rect.X, rect.Y + height, rect.Width, rect.Height - height), values, emit);
         }
     }
 
-    private static int SplitCount(IReadOnlyList<TreemapItem> items, int start, int count, double total) {
-        var bestCount = 1;
-        var bestDiff = double.PositiveInfinity;
-        var sum = 0.0;
+    private static int SplitCount(int[] items, int start, int count, double total, IReadOnlyList<double> values) {
+        var best = 1; var difference = double.PositiveInfinity; var sum = 0d;
         for (var i = 0; i < count - 1; i++) {
-            sum += items[start + i].Value;
-            var diff = Math.Abs(total / 2.0 - sum);
-            if (diff < bestDiff) {
-                bestDiff = diff;
-                bestCount = i + 1;
-            }
+            sum += values[items[start + i]];
+            var candidate = Math.Abs(total / 2 - sum);
+            if (candidate < difference) { difference = candidate; best = i + 1; }
         }
-
-        return Math.Max(1, Math.Min(count - 1, bestCount));
+        return best;
     }
 
-    private static double Sum(IReadOnlyList<TreemapItem> items, int start, int count) {
-        var sum = 0.0;
-        for (var i = 0; i < count; i++) sum += items[start + i].Value;
+    private static double Sum(int[] items, int start, int count, IReadOnlyList<double> values) {
+        var sum = 0d;
+        for (var i = 0; i < count; i++) sum += values[items[start + i]];
         return sum;
     }
 
-    private static ChartRect Inset(ChartRect rect) {
-        var gap = Math.Min(3, Math.Min(rect.Width, rect.Height) * 0.05);
-        if (gap <= 0.1) return rect;
-        return new ChartRect(rect.X + gap / 2, rect.Y + gap / 2, Math.Max(0, rect.Width - gap), Math.Max(0, rect.Height - gap));
-    }
-
-    private readonly struct TreemapItem {
-        public TreemapItem(int pointIndex, ChartPoint point, double value) {
-            PointIndex = pointIndex;
-            Point = point;
-            Value = value;
-        }
-
-        public int PointIndex { get; }
-
-        public ChartPoint Point { get; }
-
-        public double Value { get; }
+    private static ChartRect Inset(ChartRect rect, double requestedGap) {
+        var gap = Math.Min(requestedGap, Math.Min(rect.Width, rect.Height) * .05);
+        return gap <= .1 ? rect : new ChartRect(rect.X + gap / 2, rect.Y + gap / 2, Math.Max(0, rect.Width - gap), Math.Max(0, rect.Height - gap));
     }
 }

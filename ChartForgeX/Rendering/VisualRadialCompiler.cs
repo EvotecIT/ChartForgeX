@@ -18,7 +18,8 @@ internal static partial class VisualRadialCompiler {
                 chart.Series[0].Kind, slice.Pattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey,
                 paint: VisualChartPaint.Series(chart.Series[0], slice.Color, slice.PointIndex),
                 value: ChartNumericFormatter.FormatValue(chart.Options, slice.Value),
-                percentage: (total > 0 ? slice.Value / total : 0).ToString("0.#%", CultureInfo.InvariantCulture))).ToArray();
+                percentage: (total > 0 ? slice.Value / total : 0).ToString("0.#%", CultureInfo.InvariantCulture),
+                metadata: Metadata(chart, slice, total > 0 ? slice.Value / total : 0, null))).ToArray();
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
@@ -130,6 +131,7 @@ internal static partial class VisualRadialCompiler {
             ["data-cfx-series"] = "0",
             ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && chart.Series[0].StateRole != ChartSeriesState.None ? "true" : "false",
             ["data-cfx-point"] = slice.PointIndex.ToString(CultureInfo.InvariantCulture),
+            ["data-cfx-derived"] = "radial-slice",
             ["data-cfx-source-points"] = string.Join(",", slice.SourcePointIndices),
             ["data-cfx-label"] = slice.Label,
             ["data-cfx-pattern"] = slice.Pattern.ToString(),

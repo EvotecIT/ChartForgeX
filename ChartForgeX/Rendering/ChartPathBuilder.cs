@@ -6,7 +6,22 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartPathBuilder {
-    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartSeriesKind kind, bool smooth) {
+    /// <summary>Appends clockwise circular cubic segments, bounded to a quarter turn for native path parity.</summary>
+    internal static void AddCircularArc(List<ChartPathCommand> commands, double cx, double cy, double radius, double start, double sweep) {
+        if (sweep <= 0) return;
+        var segments = Math.Max(1, (int)Math.Ceiling(sweep / (Math.PI / 2)));
+        var step = sweep / segments;
+        var tangent = 4d / 3 * Math.Tan(step / 4);
+        for (var index = 0; index < segments; index++) {
+            var from = start + index * step; var to = from + step;
+            var x1 = cx + Math.Cos(from) * radius; var y1 = cy + Math.Sin(from) * radius;
+            var x2 = cx + Math.Cos(to) * radius; var y2 = cy + Math.Sin(to) * radius;
+            commands.Add(ChartPathCommand.CubicTo(x1 - Math.Sin(from) * radius * tangent, y1 + Math.Cos(from) * radius * tangent,
+                x2 + Math.Sin(to) * radius * tangent, y2 - Math.Cos(to) * radius * tangent, x2, y2));
+        }
+    }
+
+    public static ChartPath FromPoints(IReadOnlyList<ChartPoint> points, ChartInterpolation interpolation = ChartInterpolation.Linear, ChartStepPosition stepPosition = ChartStepPosition.End) {
         if (points == null) throw new ArgumentNullException(nameof(points));
         var commands = new List<ChartPathCommand>();
         if (points.Count == 0) return new ChartPath(commands);
@@ -16,8 +31,8 @@ internal static class ChartPathBuilder {
             if (segment.Count == 1) {
                 // A round-capped zero-length segment keeps an isolated observation visible.
                 commands.Add(ChartPathCommand.LineTo(segment[0].X, segment[0].Y));
-            } else if (kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea) AddStepSegments(commands, segment);
-            else if (smooth && segment.Count >= 3) AddSmoothSegments(commands, segment);
+            } else if (interpolation == ChartInterpolation.Step) AddStepSegments(commands, segment, stepPosition);
+            else if (interpolation == ChartInterpolation.Smooth && segment.Count >= 3) AddSmoothSegments(commands, segment);
             else AddStraightSegments(commands, segment);
         }
 
@@ -28,9 +43,12 @@ internal static class ChartPathBuilder {
         for (var i = 1; i < points.Count; i++) commands.Add(ChartPathCommand.LineTo(points[i].X, points[i].Y));
     }
 
-    private static void AddStepSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points) {
+    private static void AddStepSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points, ChartStepPosition position) {
         for (var i = 1; i < points.Count; i++) {
-            commands.Add(ChartPathCommand.LineTo(points[i].X, points[i - 1].Y));
+            var transition = position == ChartStepPosition.Start ? points[i - 1].X
+                : position == ChartStepPosition.Middle ? points[i - 1].X / 2 + points[i].X / 2 : points[i].X;
+            if (position != ChartStepPosition.Start) commands.Add(ChartPathCommand.LineTo(transition, points[i - 1].Y));
+            if (position != ChartStepPosition.End) commands.Add(ChartPathCommand.LineTo(transition, points[i].Y));
             commands.Add(ChartPathCommand.LineTo(points[i].X, points[i].Y));
         }
     }
@@ -62,6 +80,16 @@ internal static class ChartPathBuilder {
             ChartPathCommand.CubicTo(right, bottom - r + c, right - r + c, bottom, right - r, bottom), ChartPathCommand.LineTo(x + r, bottom),
             ChartPathCommand.CubicTo(x + r - c, bottom, x, bottom - r + c, x, bottom - r), ChartPathCommand.LineTo(x, y + r),
             ChartPathCommand.CubicTo(x, y + r - c, x + r - c, y, x + r, y)
+        });
+    }
+
+    internal static ChartPath Ellipse(double x, double y, double rx, double ry) {
+        const double k = .5522847498307936;
+        return new ChartPath(new[] {
+            ChartPathCommand.MoveTo(x + rx, y), ChartPathCommand.CubicTo(x + rx, y + ry * k, x + rx * k, y + ry, x, y + ry),
+            ChartPathCommand.CubicTo(x - rx * k, y + ry, x - rx, y + ry * k, x - rx, y),
+            ChartPathCommand.CubicTo(x - rx, y - ry * k, x - rx * k, y - ry, x, y - ry),
+            ChartPathCommand.CubicTo(x + rx * k, y - ry, x + rx, y - ry * k, x + rx, y)
         });
     }
 

@@ -12,7 +12,7 @@
 
 ## Consumer migration: Phase 5
 
-All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
+All implemented chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
 
 - [x] Inspect current owner and consumer branches, package boundaries and the public package state.
 - [x] Qualify the PowerBGInfo candidate with installed PowerShell 5.1/7 module types and observed wallpapers.
@@ -62,6 +62,15 @@ SVG and PNG charts share measured label placement, including data labels, target
 
 - Keep marketing/poster chart matrices honest by checking each advertised family against public API, SVG renderer, PNG renderer, smoke tests, generated examples, and website gallery tags.
 - When adding a future chart family, update the README catalog, public model/API, SVG and PNG renderers, smoke tests, generated examples, gallery metadata, and promotional imagery together.
+
+The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation, pyramid partitions, shared Sunburst/Treemap hierarchy items, explicit Sunburst parent totals, Sankey alignment/order/node geometry/paint and numeric color scales share native owners. Further work should retain that API and source-value boundary:
+
+- Extend Sunburst with rounded sectors, secondary labels and branch highlighting. Shared hierarchy facts, independent numeric colors, leaf aggregation and inclusive authored parent totals are implemented.
+- Extend Sankey with per-flow styles and additional label placement policies. Any optional tiny-flow minimum-width treatment must preserve truthful weights and conservation; current alignment, ordering, node geometry and fill controls keep one proportional scale.
+- [ ] Extend numeric radial axes with axis titles and label orientation, rounded sectors, mixed radial families, and angular reversal for radar/polar. Schedule reversal requires matching packed span and label projections.
+- Extend weighted Chord with deliberate ordering strategies, per-flow styles, and an independent quantitative color dimension. Its native scene retains directed reciprocal, parallel, self, and raw zero flows in source order; circular span, node gaps/thickness, opacity, target cues, and measured labels are configurable.
+- [ ] Extend typed adapter tooltip, crosshair, legend visibility and data-domain zoom policies; palette choice must not decide interaction behavior.
+- [ ] Qualify each increment with compact/wide light/dark SVG and native PNG, then maintain the ledger's remaining gaps and evidence limits.
 
 ## Topology
 

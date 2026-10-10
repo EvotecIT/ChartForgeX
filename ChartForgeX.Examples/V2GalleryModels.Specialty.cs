@@ -7,22 +7,22 @@ using ChartForgeX.Themes;
 public static partial class V2GalleryModels {
     private static Chart? Specialty(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
         var chart = Categories(kind); var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
-        var links = new[] { new ChartTreeLink("All teams", "Engineering", 60), new ChartTreeLink("All teams", "Operations", 40),
-            new ChartTreeLink("Engineering", "Platform", 35), new ChartTreeLink("Engineering", "Services", 25), new ChartTreeLink("Operations", "Support", 40) };
         switch (kind) {
             case ChartSeriesKind.Funnel: return chart.AddFunnel("Requests", new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41) })
                 .WithXLabels("Received", "Qualified", "Reviewed", "Completed").WithDataLabels();
+            case ChartSeriesKind.Pyramid: return chart.AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
+                .WithXLabels("Services", "Platform", "Support").WithDataLabels();
             case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem("Discovery", start, start.AddDays(3)).AddTimelineItem("Implementation", start.AddDays(2), start.AddDays(7))
                 .AddTimelineItem("Validation", start.AddDays(6), start.AddDays(9))
                 .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
             case ChartSeriesKind.Gantt: return Chart.Create().AddGanttTask("Discovery", start, start.AddDays(3), .9).AddGanttTask("Implementation", start.AddDays(3), start.AddDays(7), .55, 0)
                 .AddGanttTask("Validation", start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone("Delivery", start.AddDays(9), 2)
                 .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
-            case ChartSeriesKind.Sankey: return Chart.Create().AddSankey("Requests", new[] { new ChartSankeyLink("Received", "Automatic", 72), new ChartSankeyLink("Received", "Manual", 28),
-                new ChartSankeyLink("Automatic", "Completed", 65), new ChartSankeyLink("Automatic", "Review", 7), new ChartSankeyLink("Manual", "Completed", 20), new ChartSankeyLink("Manual", "Review", 8) });
-            case ChartSeriesKind.Tree: return Chart.Create().AddTree("Teams", links);
-            case ChartSeriesKind.Sunburst: return Chart.Create().AddSunburst("Teams", links);
-            case ChartSeriesKind.Treemap: return Chart.Create().AddTreemap("Allocation", new[] { new ChartTreemapItem("Platform", 35), new ChartTreemapItem("Services", 25), new ChartTreemapItem("Support", 25), new ChartTreemapItem("Research", 15) });
+            case ChartSeriesKind.Sankey: return FlowRelationships(variant);
+            case ChartSeriesKind.Chord: return ChordRelationships(variant);
+            case ChartSeriesKind.Tree: return TeamRelationships(variant);
+            case ChartSeriesKind.Sunburst: return Sunburst(variant, mode);
+            case ChartSeriesKind.Treemap: return Treemap(variant, mode);
             case ChartSeriesKind.Pictorial:
                 chart = Chart.Create().AddPictorial("Assessments", new[] { new ChartPictorialItem("Team A", 74), new ChartPictorialItem("Team B", 46), new ChartPictorialItem("Team C", 61) }, ChartPictorialShape.Person)
                     .WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);

@@ -1,15 +1,6 @@
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
-  const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop']);
-  const paintColour = (node) => {
-    if (!node) return '';
-    const paint = getComputedStyle(node);
-    const stroke = paint.stroke && paint.stroke !== 'none' ? paint.stroke : '';
-    // Line keys are stroked; their default black fill never paints.
-    if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
-    return paint.fill && paint.fill !== 'none' ? paint.fill : stroke;
-  };
-  const legendSwatchColour = (item) => paintColour(item.querySelector('[data-cfx-label-decoration]') || item.querySelector('rect,circle,line,path'));
+  const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop', 'radialbar', 'radialcolumn']);
   const legendSeriesValues = (item) => {
     const data = item.dataset || {};
     const svg = item.closest('svg');
@@ -27,6 +18,13 @@
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
+    const reference = legendTarget(item);
+    if (reference) {
+      const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
+      const svg = item.closest('svg');
+      const mark = svg && referencedTargetNode(svg, { ...reference, seriesKey: seriesKey(item) });
+      return rows.concat(mark ? colorTooltipRows(mark) : []);
+    }
     const values = legendSeriesValues(item);
     if (!values.length) return [];
     if (data.cfxPoint !== undefined) {
@@ -41,7 +39,7 @@
   };
   const renderLegendTip = (tip, item) => {
     const data = item.dataset || {};
-    const name = data.cfxPoint !== undefined ? data.cfxLabel || seriesLabel(item) : seriesLabel(item) || data.cfxLabel || '';
+    const name = data.cfxPoint !== undefined || legendTarget(item) ? data.cfxLabel || seriesLabel(item) : seriesLabel(item) || data.cfxLabel || '';
     if (!name) return false;
     tip.replaceChildren();
     const title = document.createElement('div');
@@ -49,7 +47,7 @@
     const swatch = document.createElement('span');
     swatch.className = 'cfx-tooltip__swatch';
     swatch.setAttribute('aria-hidden', 'true');
-    const colour = legendSwatchColour(item);
+    const colour = paintColour(item);
     if (colour) swatch.style.backgroundColor = colour;
     title.append(swatch, document.createTextNode(name));
     tip.appendChild(title);

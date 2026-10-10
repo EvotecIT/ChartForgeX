@@ -62,9 +62,9 @@ public sealed class NeutralHeatmapScaleTests {
     public void LocalizedLevelLabel_IsEmittedOnlyWhenChangedAndReadByTooltips() {
         Chart Create() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 320).AddHeatmapRow("Logons", new[] { 2d, 40d, 90d, 400d });
         Assert.Equal("Level", (string?)ByRole(XDocument.Parse(Create().ToSvg()), "heatmap").Single().Attribute("data-cfx-label-level"));
-        var localized = Create().WithLabels(labels => labels.Level = "Poziom");
+        var localized = Create().ConfigureLabels(labels => labels.Level = "Poziom");
         Assert.Equal("Poziom", (string?)ByRole(XDocument.Parse(localized.ToSvg()), "heatmap").Single().Attribute("data-cfx-label-level"));
-        var calendar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithLabels(labels => labels.Level = "Poziom").AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 9, 1), 3) });
+        var calendar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).ConfigureLabels(labels => labels.Level = "Poziom").AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 9, 1), 3) });
         Assert.Equal("Poziom", (string?)ByRole(XDocument.Parse(calendar.ToSvg()), "calendar-heatmap").Single().Attribute("data-cfx-label-level"));
         var script = ChartForgeX.Interactivity.Html.HtmlInteractiveChartRenderer.BuildInteractionScript();
         Assert.Contains("push(rowName(node, 'level', 'Level'), data.cfxLevel);", script, StringComparison.Ordinal);

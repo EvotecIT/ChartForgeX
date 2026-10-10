@@ -3,11 +3,17 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
 public static partial class LegacySceneBenchmarkCases {
-    /// <summary>Representative additional native families; all factories use APIs present in the frozen legacy binary.</summary>
+#if LEGACY_CHART_API
+    // The frozen API's node-label storage is internal. Retain original public authoring labels
+    // outside the measured chart so even provisional SVG IDs keep their historical input.
+    private static readonly ConditionalWeakTable<Chart, string[]> LegacySankeyLabels = new();
+#endif
+    /// <summary>Representative native families compiled against the selected product API profile.</summary>
     public static readonly string[] Phase3Fixtures = { "matrix", "calendar", "progress", "polar", "map", "treemap", "sankey", "topology" };
 
     private static VisualDesignTokens Phase3Tokens() {
@@ -43,10 +49,20 @@ public static partial class LegacySceneBenchmarkCases {
                 chart.AddDottedMap("Locations", MapItems());
                 break;
             case "treemap":
-                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartTreemapItem("Pool " + (index + 1), 10 + (index * 17) % 73)));
+#if LEGACY_CHART_API
+                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartHierarchyItem("Pool " + (index + 1), 10 + (index * 17) % 73)));
+#else
+                chart.AddTreemap("Capacity", Enumerable.Range(0, 12).Select(index => new ChartHierarchyItem("pool-" + (index + 1), "Pool " + (index + 1), value: 10 + (index * 17) % 73)));
+#endif
                 break;
             case "sankey":
-                chart.AddSankey("Requests", SankeyLinks());
+#if LEGACY_CHART_API
+                var legacyLinks = SankeyLinks();
+                chart.AddSankey("Requests", legacyLinks);
+                LegacySankeyLabels.Add(chart, legacyLinks.SelectMany(link => new[] { link.Source, link.Target }).Distinct(StringComparer.Ordinal).ToArray());
+#else
+                chart.AddSankey("Requests", new[] { new ChartNode("Input A", "Input A"), new ChartNode("Queue A", "Queue A"), new ChartNode("Queue B", "Queue B"), new ChartNode("Input B", "Input B"), new ChartNode("Complete", "Complete"), new ChartNode("Retry", "Retry") }, SankeyLinks());
+#endif
                 break;
             default: throw new ArgumentOutOfRangeException(nameof(fixture));
         }
@@ -59,12 +75,21 @@ public static partial class LegacySceneBenchmarkCases {
         new ChartMapPoint("Sydney", 151.2, -33.9, 48), new ChartMapPoint("Cape Town", 18.4, -33.9, 56)
     };
 
+#if LEGACY_CHART_API
     private static ChartSankeyLink[] SankeyLinks() => new[] {
         new ChartSankeyLink("Input A", "Queue A", 24), new ChartSankeyLink("Input A", "Queue B", 16),
         new ChartSankeyLink("Input B", "Queue A", 12), new ChartSankeyLink("Input B", "Queue B", 18),
         new ChartSankeyLink("Queue A", "Complete", 30), new ChartSankeyLink("Queue A", "Retry", 6),
         new ChartSankeyLink("Queue B", "Complete", 27), new ChartSankeyLink("Queue B", "Retry", 7)
     };
+#else
+    private static ChartFlowLink[] SankeyLinks() => new[] {
+        new ChartFlowLink("flow-1", "Input A", "Queue A", 24), new ChartFlowLink("flow-2", "Input A", "Queue B", 16),
+        new ChartFlowLink("flow-3", "Input B", "Queue A", 12), new ChartFlowLink("flow-4", "Input B", "Queue B", 18),
+        new ChartFlowLink("flow-5", "Queue A", "Complete", 30), new ChartFlowLink("flow-6", "Queue A", "Retry", 6),
+        new ChartFlowLink("flow-7", "Queue B", "Complete", 27), new ChartFlowLink("flow-8", "Queue B", "Retry", 7)
+    };
+#endif
 
     private static TopologyChart CreateTopology() {
         var chart = TopologyChart.Create().WithId("scene-topology").WithTitle(Title)
@@ -96,17 +121,66 @@ public static partial class LegacySceneBenchmarkCases {
         } else {
             var chart = (Chart)model;
             source.Append('|').Append(chart.Title).Append('|').Append(chart.Subtitle);
-            foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
+            // The legacy flat Treemap stores item labels in XAxisLabels; the current typed
+            // input stores them with each item. TreemapFacts reads their common source meaning.
+            if (fixture != "treemap") foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
             foreach (var series in chart.Series) {
                 source.Append('|').Append(series.Kind).Append(':').Append(series.Name);
-                foreach (var point in series.Points) source.Append('|').Append(Numeric(point.X)).Append(',').Append(Numeric(point.Y)).Append(',').Append(point.BreakBefore);
+                if (series.Kind == ChartSeriesKind.Sankey) {
+                    foreach (var label in SankeyNodeLabels(chart)) source.Append("|node:").Append(label);
+                    foreach (var flow in SankeyFacts(chart)) source.Append("|flow:").Append(flow.Source).Append(':').Append(flow.Target).Append(':').Append(Numeric(flow.Value));
+                } else if (series.Kind == ChartSeriesKind.Treemap) {
+                    foreach (var item in TreemapFacts(chart)) source.Append("|treemap:").Append(item.Label).Append(':').Append(Numeric(item.Value));
+                } else foreach (var point in series.Points) source.Append('|').Append(Numeric(point.X)).Append(',').Append(Numeric(point.Y)).Append(',').Append(point.BreakBefore);
             }
             if (fixture == "map") foreach (var point in MapItems()) source.Append('|').Append(point.Label).Append(':').Append(Numeric(point.Value!.Value));
-            if (fixture == "sankey") foreach (var link in SankeyLinks()) source.Append('|').Append(link.Source).Append(':').Append(link.Target).Append(':').Append(Numeric(link.Value));
             source.Append('|').Append(Numeric(chart.Options.ProgressMaximum)).Append("|calendar-first-day=Monday");
         }
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source.ToString())));
     }
+
+    private static IReadOnlyList<(string Label, double Value)> TreemapFacts(Chart chart) {
+        var series = chart.Series[0];
+#if LEGACY_CHART_API
+        var labels = chart.Options.XAxisLabels.ToDictionary(label => label.Value, label => label.Text);
+        return series.Points.Select(point => (labels[point.X], point.Y)).ToArray();
+#else
+        return series.HierarchyItems.Select(item => (item.Label, item.Value!.Value)).ToArray();
+#endif
+    }
+
+    // Compare actual common model facts: the historical API has no authored relationship identities.
+    private static IReadOnlyList<string> SankeyNodeLabels(Chart chart) {
+#if LEGACY_CHART_API
+        if (!LegacySankeyLabels.TryGetValue(chart, out var labels)) throw new InvalidOperationException("Legacy Sankey source labels are missing.");
+        return labels;
+#else
+        return chart.Series[0].Nodes.Select(node => node.Label).ToArray();
+#endif
+    }
+
+    private static IEnumerable<(string Source, string Target, double Value)> SankeyFacts(Chart chart) {
+        var series = chart.Series[0];
+#if LEGACY_CHART_API
+        var labels = SankeyNodeLabels(chart).ToArray();
+        Require(series.Points.Count % 2 == 0, "Legacy Sankey source tuples changed.");
+        for (var index = 0; index < series.Points.Count; index += 2) {
+            var endpoints = series.Points[index]; var weight = series.Points[index + 1];
+            Require(weight.X == weight.Y, "Legacy Sankey source weight changed.");
+            yield return (labels[SankeyNodeIndex(chart, endpoints.X)], labels[SankeyNodeIndex(chart, endpoints.Y)], weight.X);
+        }
+#else
+        var nodes = series.Nodes.ToDictionary(node => node.Id);
+        foreach (var link in series.FlowLinks) yield return (nodes[link.SourceId].Label, nodes[link.TargetId].Label, link.Value);
+#endif
+    }
+
+#if LEGACY_CHART_API
+    private static int SankeyNodeIndex(Chart chart, double index) {
+        Require(index >= 0 && index < SankeyNodeLabels(chart).Count && index == Math.Truncate(index), "Legacy Sankey source endpoint changed.");
+        return (int)index;
+    }
+#endif
 
     private static string Numeric(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
 }

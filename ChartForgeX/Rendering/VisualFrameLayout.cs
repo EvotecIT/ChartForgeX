@@ -11,9 +11,16 @@ namespace ChartForgeX.Rendering;
 internal sealed class VisualLegendEntry {
     internal VisualLegendEntry(string label, ChartColor color, string id, ChartSeriesKind? kind = null,
         ChartFillPattern pattern = ChartFillPattern.None, ChartSeriesState stateRole = ChartSeriesState.None, string? seriesKey = null,
-        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect>? marker = null, SvgPaint? paint = null, string? value = null, string? percentage = null) {
+        ChartStateCategory? state = null, bool pinStateColors = false, Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? marker = null, SvgPaint? paint = null, string? value = null, string? percentage = null,
+        string? targetKind = null, string? targetId = null, IReadOnlyDictionary<string, string>? metadata = null) {
         Label = label; Color = color; Id = id; Kind = kind; Pattern = pattern; StateRole = stateRole; SeriesKey = seriesKey;
         State = state; PinStateColors = pinStateColors; Marker = marker; Paint = paint; Value = value; Percentage = percentage;
+        TargetKind = targetKind; TargetId = targetId;
+        if (metadata != null) {
+            var snapshot = new Dictionary<string, string>();
+            foreach (var item in metadata) snapshot.Add(item.Key, item.Value);
+            Metadata = snapshot;
+        }
     }
     internal string Label { get; }
     internal string? Value { get; }
@@ -27,8 +34,25 @@ internal sealed class VisualLegendEntry {
     internal string? SeriesKey { get; }
     internal ChartStateCategory? State { get; }
     internal bool PinStateColors { get; }
-    internal Action<VisualSceneBuilder, ChartRect>? Marker { get; }
+    internal Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? Marker { get; }
     internal SvgPaint? Paint { get; }
+    // A legend describes a native target independently of its own rendered legend identity.
+    internal string? TargetKind { get; }
+    internal string? TargetId { get; }
+    internal IReadOnlyDictionary<string, string>? Metadata { get; }
+
+    internal IReadOnlyDictionary<string, string> SceneMetadata() {
+        var result = new Dictionary<string, string> {
+            ["data-cfx-series-key"] = SeriesKey ?? "", ["data-cfx-state"] = StateRole.ToString(), ["aria-label"] = Description
+        };
+        if (Metadata != null) foreach (var item in Metadata) result[item.Key] = item.Value;
+        if (TargetKind != null && TargetId != null) {
+            result["data-cfx-legend-target-kind"] = TargetKind;
+            result["data-cfx-legend-target-id"] = TargetId;
+            result["data-cfx-label"] = Label;
+        }
+        return result;
+    }
 }
 
 /// <summary>Measures and paints one common frame before any family lays out its marks.</summary>
@@ -117,12 +141,9 @@ internal static class VisualFrameLayout {
                         var width = LegendWidth(entry, isSummary ? 0 : 28);
                         var baseline = y + titleHeight + r * lineHeight + builder.TextAscent(legendStyle);
                         var swatch = new ChartRect(cursor, baseline - legendStyle.EffectiveFontSize * 0.65, 10, 10);
-                        using (builder.PushGroup("legend-" + entry.Id, "legend-entry", new Dictionary<string, string> {
-                            ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["data-cfx-state"] = entry.StateRole.ToString(),
-                            ["aria-label"] = entry.Description
-                        })) {
+                        using (builder.PushGroup("legend-" + entry.Id, "legend-entry", entry.SceneMetadata())) {
                             if (!ReferenceEquals(entry, overflow)) using (builder.PushClip(swatch)) {
-                            if (entry.Marker != null) entry.Marker(builder, swatch);
+                            if (entry.Marker != null) entry.Marker(builder, swatch, context);
                             else if (entry.State != null) {
                                 using (builder.PushGroup("legend-" + entry.Id + "-swatch", "state-legend-swatch",
                                     VisualStateSceneTools.StateMetadata(entry.PinStateColors, entry.State)))
@@ -131,11 +152,7 @@ internal static class VisualFrameLayout {
                                 builder.Line(swatch.Left, swatch.Top + 5, swatch.Right, swatch.Top + 5, entry.Color, context.Theme.SeriesStrokeWidth, role: "legend-swatch", paint: VisualChartPaint.Stroke(entry.Paint ?? SvgPaint.Literal(entry.Color)));
                             else {
                                 builder.Rect(swatch, entry.Color, role: "legend-swatch", paint: VisualChartPaint.Fill(entry.Paint ?? SvgPaint.Literal(entry.Color)));
-                                if (entry.Pattern != ChartFillPattern.None) builder.Pattern(new ChartPath(new[] {
-                                    ChartPathCommand.MoveTo(swatch.Left, swatch.Top), ChartPathCommand.LineTo(swatch.Right, swatch.Top),
-                                    ChartPathCommand.LineTo(swatch.Right, swatch.Bottom), ChartPathCommand.LineTo(swatch.Left, swatch.Bottom)
-                                }), entry.Pattern, colors.Surface, spacing: 4, strokeWidth: 1, role: "legend-pattern",
-                                    paint: SvgPaint.Of(colors.Surface, SvgColorRole.Surface));
+                                DrawLegendPattern(builder, swatch, entry.Pattern, context);
                             }
                             }
                             var fullLabel = OneLine(entry.Label);
@@ -170,9 +187,7 @@ internal static class VisualFrameLayout {
                 foreach (var visibleRow in rows) foreach (var entry in visibleRow) shown.Add(entry);
                 foreach (var entry in entries) if (!shown.Contains(entry)) {
                     builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(x, y, 0, 0), entry.Description));
-                    using (builder.PushGroup("legend-" + entry.Id, "legend-entry-omitted", new Dictionary<string, string> {
-                        ["data-cfx-series-key"] = entry.SeriesKey ?? "", ["aria-label"] = entry.Description
-                    })) { }
+                    using (builder.PushGroup("legend-" + entry.Id, "legend-entry-omitted", entry.SceneMetadata())) { }
                 }
             }
             if (height > 0) {
@@ -243,5 +258,16 @@ internal static class VisualFrameLayout {
             return text.Substring(0, space > 0 ? space : length);
         }
     }
+    internal static void DrawLegendPattern(VisualSceneBuilder builder, ChartRect swatch, ChartFillPattern pattern,
+        VisualRenderContext context, double opacity = 1, string role = "legend-pattern") {
+        if (pattern == ChartFillPattern.None || opacity <= 0) return;
+        var surface = context.Theme.Resolve(context.ThemeMode).Surface;
+        var color = ChartColorMath.WithOpacity(surface, opacity);
+        var paint = SvgPaint.Of(surface, SvgColorRole.Surface);
+        if (opacity < 1) paint = paint.WithOpacity(color, opacity);
+        builder.Pattern(ChartPathBuilder.RoundedRectangle(swatch, 0), pattern, color,
+            spacing: 4, strokeWidth: 1, role: role, paint: paint);
+    }
+
     private static string OneLine(string text) => text.Replace('\r', ' ').Replace('\n', ' ');
 }

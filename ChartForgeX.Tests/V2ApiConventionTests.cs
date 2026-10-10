@@ -7,6 +7,7 @@ using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
+using ChartForgeX.VisualBlocks;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -64,6 +65,75 @@ public sealed class V2ApiConventionTests {
     }
 
     [Fact]
+    public void FamilyConfigurationCallbacks_EditExistingOptionsAndReturnTheirBuilder() {
+        var chart = Chart.Create().AddRadar("Signal", new[] { new ChartPoint(1, 50), new ChartPoint(2, 70) });
+        var funnel = chart.Options.Funnel;
+        var pyramid = chart.Options.Pyramid;
+        var chord = chart.Options.Chord;
+        var sankey = chart.Options.Sankey;
+        Assert.Same(chart, chart.ConfigureFunnel(options => {
+            Assert.Same(funnel, options);
+            options.Orientation = ChartOrientation.Horizontal;
+        }));
+        Assert.Same(chart, chart.ConfigurePyramid(options => {
+            Assert.Same(pyramid, options);
+            options.ValueEncoding = ChartPyramidValueEncoding.Area;
+        }));
+        Assert.Same(chart, chart.ConfigureChord(options => {
+            Assert.Same(chord, options);
+            options.RibbonOpacity = .2;
+        }));
+        Assert.Same(chart, chart.ConfigureSankey(options => {
+            Assert.Same(sankey, options);
+            options.NodeWidth = 18;
+        }));
+        Assert.Same(funnel, chart.Options.Funnel);
+        Assert.Same(pyramid, chart.Options.Pyramid);
+        Assert.Same(chord, chart.Options.Chord);
+        Assert.Same(sankey, chart.Options.Sankey);
+        Assert.Equal(ChartOrientation.Horizontal, chart.Options.Funnel.Orientation);
+        Assert.Equal(ChartPyramidValueEncoding.Area, chart.Options.Pyramid.ValueEncoding);
+        Assert.Equal(.2, chart.Options.Chord.RibbonOpacity);
+        Assert.Equal(18, chart.Options.Sankey.NodeWidth);
+
+        var series = chart.Series[0];
+        var markers = series.Markers;
+        var radar = series.Radar;
+        Assert.Same(series, series.ConfigureMarkers(options => {
+            Assert.Same(markers, options);
+            options.Radius = 7;
+        }));
+        Assert.Same(series, series.ConfigureRadar(options => {
+            Assert.Same(radar, options);
+            options.FillOpacity = .4;
+        }));
+        Assert.Same(markers, series.Markers);
+        Assert.Same(radar, series.Radar);
+        Assert.Equal(7d, series.Markers.Radius);
+        Assert.Equal(.4, series.Radar.FillOpacity);
+        Assert.Single(chart.Series);
+        Assert.Equal(2, series.Points.Count);
+    }
+
+    [Fact]
+    public void TypedBuilderConfigurationCallbacks_UseConfigureAndReturnTheirReceiver() {
+        var callbacks = new[] { typeof(Chart).Assembly, typeof(VisualGrid).Assembly }
+            .SelectMany(assembly => assembly.GetExportedTypes())
+            .SelectMany(Methods)
+            .Where(method => method.Name.StartsWith("With", StringComparison.Ordinal) || method.Name.StartsWith("Configure", StringComparison.Ordinal))
+            .Where(method => method.GetParameters().Any(parameter => parameter.ParameterType.IsGenericType
+                && parameter.ParameterType.GetGenericTypeDefinition() == typeof(Action<>)))
+            .ToArray();
+        Assert.NotEmpty(callbacks);
+        foreach (var method in callbacks) {
+            Assert.StartsWith("Configure", method.Name, StringComparison.Ordinal);
+            if (method.IsStatic) Assert.True(method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), inherit: false));
+            var receiver = method.IsStatic ? method.GetParameters()[0].ParameterType : method.DeclaringType;
+            Assert.Equal(receiver, method.ReturnType);
+        }
+    }
+
+    [Fact]
     public void ContractSignatures_ReuseCanonicalColorSeverityAndCoreOnlyOwnership() {
         var colors = typeof(VisualThemeColors).GetProperties().Where(property => property.PropertyType.IsValueType && !property.PropertyType.IsEnum);
         Assert.NotEmpty(colors);
@@ -80,6 +150,19 @@ public sealed class V2ApiConventionTests {
         }
         Assert.DoesNotContain(core.GetReferencedAssemblies(), reference =>
             reference.Name != "ChartForgeX" && (reference.Name?.StartsWith("ChartForgeX.", StringComparison.Ordinal) ?? false));
+    }
+
+    [Fact]
+    public void LineAreaFormKeepsSharedNumericValuesAndRadarAndMetricDefaults() {
+        Assert.Equal(0, (int)ChartLineAreaForm.Area);
+        Assert.Equal(1, (int)ChartLineAreaForm.Line);
+        var series = Chart.Create().AddRadar("Signal", new[] { new ChartPoint(1, 50), new ChartPoint(2, 70) }).Series[0];
+        var card = MetricCard.Create();
+        Assert.Equal(ChartLineAreaForm.Area, series.Radar.Form);
+        Assert.Equal(ChartLineAreaForm.Area, card.MiniSparklineStyle);
+        series.Radar.Form = ChartLineAreaForm.Line;
+        Assert.Same(card, card.WithMiniSparklineStyle(series.Radar.Form));
+        Assert.Equal(ChartLineAreaForm.Line, card.MiniSparklineStyle);
     }
 
     [Fact]

@@ -32,7 +32,7 @@ public static class MermaidXYChartRendering {
         foreach (var series in document.Series) {
             var points = BuildPoints(document, series);
             if (series.Kind == MermaidXYChartSeriesKind.Line) chart.AddLine(series.Name, points);
-            else if (document.Orientation == MermaidXYChartOrientation.Horizontal) chart.AddHorizontalBar(series.Name, points);
+            else if (document.Orientation == ChartOrientation.Horizontal) chart.AddHorizontalBar(series.Name, points);
             else chart.AddBar(series.Name, points);
         }
 

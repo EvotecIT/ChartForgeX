@@ -205,22 +205,22 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawMetricMiniSparkline(RgbaCanvas canvas, MetricCard card, double x, double y, double width, double height) {
         var sparkline = VisualFactBlockRendering.CreateMiniSparkline(card, x, y, width, height);
-        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Area) {
+        if (card.MiniSparklineStyle == ChartLineAreaForm.Area) {
             foreach (var segment in ChartPointSegments.Split(sparkline.Points)) canvas.FillPolygon(SparklineLayout.Area(segment, y + height), sparkline.FillColor);
         } else if (card.SecondarySparklineCount > 0) {
             var secondary = VisualFactBlockRendering.CreateSecondaryMiniSparkline(card, x, y, width, height);
             DrawSparklineSegments(canvas, secondary, smooth: true, Math.Max(1.8, secondary.StrokeWidth * 0.72));
         }
         if (sparkline.Points.Length == 0) return;
-        DrawSparklineSegments(canvas, sparkline, card.MiniSparklineStyle == MetricCardSparklineStyle.Line, sparkline.StrokeWidth);
-        if (card.MiniSparklineStyle == MetricCardSparklineStyle.Line && sparkline.ShowStart) canvas.DrawCircle(sparkline.Points[0].X, sparkline.Points[0].Y, sparkline.CurrentRadius * 0.82, sparkline.LineColor);
+        DrawSparklineSegments(canvas, sparkline, card.MiniSparklineStyle == ChartLineAreaForm.Line, sparkline.StrokeWidth);
+        if (card.MiniSparklineStyle == ChartLineAreaForm.Line && sparkline.ShowStart) canvas.DrawCircle(sparkline.Points[0].X, sparkline.Points[0].Y, sparkline.CurrentRadius * 0.82, sparkline.LineColor);
         if (sparkline.ShowCurrent) canvas.DrawCircle(sparkline.Current.X, sparkline.Current.Y, sparkline.CurrentRadius, sparkline.LineColor);
     }
 
     private static void DrawSparklineSegments(RgbaCanvas canvas, VisualMiniSparkline sparkline, bool smooth, double width) {
         foreach (var segment in ChartPointSegments.Split(sparkline.Points)) {
             if (segment.Count == 1) canvas.DrawCircle(segment[0].X, segment[0].Y, width / 2, sparkline.LineColor);
-            else canvas.DrawPolyline(smooth ? ChartPathBuilder.FromPoints(segment, ChartSeriesKind.Line, true).Flatten(5) : segment, sparkline.LineColor, width);
+            else canvas.DrawPolyline(smooth ? ChartPathBuilder.FromPoints(segment, ChartInterpolation.Smooth).Flatten(5) : segment, sparkline.LineColor, width);
         }
     }
 

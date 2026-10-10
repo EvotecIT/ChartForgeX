@@ -38,18 +38,18 @@ internal static partial class SmokeTests {
         Verify.Equal(.3, FamilyNumber(stage, "data-cfx-dropoff"), 10);
         Verify.Equal(3, funnel.Scene.Nodes.OfType<VisualScenePath>().Count(mark => mark.Role == "funnel-segment" && mark.Close));
 
-        var radial = PreparedFamily(Chart.Create().WithXLabels("Identity", "Device", "Network").AddRadialBar("Coverage", Points(92, 74, 66)));
-        var radialSource = Source(radial, "radial-bar-point", "series-0-point-0");
+        var radial = PreparedFamily(Chart.Create().WithXLabels("Identity", "Device", "Network").AddProgressRing("Coverage", Points(92, 74, 66)));
+        var radialSource = Source(radial, "progress-ring-point", "series-0-point-0");
         Verify.Equal("Identity", radialSource.Metadata["data-cfx-label"]);
         Verify.Equal(92, FamilyNumber(radialSource, "data-cfx-value"));
         Verify.Equal(0, FamilyNumber(radialSource, "data-cfx-min"));
         Verify.Equal(100, FamilyNumber(radialSource, "data-cfx-max"));
-        var ring = radial.Scene.Nodes.OfType<VisualSceneSlice>().First(mark => mark.Role == "radial-bar-ring");
+        var ring = radial.Scene.Nodes.OfType<VisualSceneSlice>().First(mark => mark.Role == "progress-ring-ring");
         Verify.Equal(.92, ring.Sweep / (Math.PI * 2), 10);
         var positionedRadial = PreparedFamily(Chart.Create().WithLegendPosition(ChartLegendPosition.TopRight)
-            .WithXLabels("Identity", "Device", "Network").AddRadialBar("Coverage", Points(92, 74, 66)));
+            .WithXLabels("Identity", "Device", "Network").AddProgressRing("Coverage", Points(92, 74, 66)));
         Verify.Equal(new[] { "Identity", "Device", "Network" }, FamilyLabels(positionedRadial, "legend-label").Select(FamilyContent));
-        var firstRing = positionedRadial.Scene.Nodes.OfType<VisualSceneSlice>().First(mark => mark.Role == "radial-bar-ring");
+        var firstRing = positionedRadial.Scene.Nodes.OfType<VisualSceneSlice>().First(mark => mark.Role == "progress-ring-ring");
         Verify.True(positionedRadial.Regions.Where(region => region.Role == "legend").Max(region => region.Bounds.Bottom) < firstRing.Cy);
         Verify.NotEmpty(positionedRadial.ToPng());
 

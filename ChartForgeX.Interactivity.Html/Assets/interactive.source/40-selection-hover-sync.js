@@ -1,12 +1,24 @@
   const seriesTarget = (node) => {
     const data = node.dataset || {};
-    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node) };
+    const reference = legendTarget(node) || (['node', 'link', 'region'].includes(data.cfxTargetKind)
+      ? { targetKind: data.cfxTargetKind, targetId: data.cfxTargetId } : null);
+    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node),
+      targetKind: data.cfxPoint === undefined ? 'series' : 'point',
+      targetId: data.cfxPoint === undefined ? seriesKey(node) : pointTargetId(node), ...reference };
   };
-  const seriesTargetToken = (target) => target ? [target.series ?? '', target.point ?? ''].join(':') : '';
+  const seriesTargetToken = (target) => !target ? '' : target.targetKind
+    ? [target.series ?? '', target.targetKind, target.targetId].join(':') : [target.series ?? '', target.point ?? ''].join(':');
   const matchesLocalSeriesTarget = (node, target) => {
     if (!target) return false;
     const data = node.dataset || {};
-    return data.cfxSeries === String(target.series) && (target.point === undefined || data.cfxPoint === String(target.point));
+    if (data.cfxSeries !== String(target.series)) return false;
+    if (target.targetKind && target.targetKind !== 'series' && target.targetId) {
+      if (target.targetKind === 'point') return data.cfxPoint !== undefined && pointTargetId(node) === target.targetId;
+      const reference = legendTarget(node);
+      return reference ? reference.targetKind === target.targetKind && reference.targetId === target.targetId
+        : data.cfxTargetKind === target.targetKind && data.cfxTargetId === target.targetId;
+    }
+    return target.point === undefined || data.cfxPoint === String(target.point);
   };
   const resolveSeriesTarget = (root, target) => {
     if (!target || !target.seriesKey) return null;
@@ -14,9 +26,22 @@
     let matchingSeries = legends.filter((item) => seriesKey(item) === target.seriesKey);
     if (!matchingSeries.length) matchingSeries = Array.from(root.querySelectorAll('[data-cfx-series]')).filter((item) => seriesKey(item) === target.seriesKey);
     if (!matchingSeries.length) return null;
+    if (['node', 'link', 'region'].includes(target.targetKind) && target.targetId) {
+      const exact = matchingSeries.find((node) => {
+        const reference = legendTarget(node);
+        return reference && reference.targetKind === target.targetKind && reference.targetId === target.targetId;
+      }) || referencedTargetNode(root, target);
+      return exact ? seriesTarget(exact) : null;
+    }
     if (target.point === undefined) {
       const localSeries = (matchingSeries[0].dataset || {}).cfxSeries;
       return localSeries === undefined ? null : { series: localSeries, seriesKey: target.seriesKey, label: target.label };
+    }
+    if (target.targetId) {
+      const exact = matchingSeries.find((item) => (item.dataset || {}).cfxPoint !== undefined && pointTargetId(item) === target.targetId)
+        || Array.from(root.querySelectorAll('[data-cfx-series][data-cfx-point]'))
+          .find((item) => seriesKey(item) === target.seriesKey && pointTargetId(item) === target.targetId);
+      return exact ? seriesTarget(exact) : null;
     }
     const exactLabel = matchingSeries.find((item) => (item.dataset || {}).cfxLabel === target.label);
     const exactPoint = matchingSeries.find((item) => (item.dataset || {}).cfxPoint === String(target.point));
@@ -32,9 +57,11 @@
       }
       node.classList.toggle('cfx-series-muted', muted);
     });
+    refreshKeyboardNavigation(root);
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
+    const item = target && target.targetKind ? referencedTargetNode(root, target) : null;
     root.querySelectorAll('[data-cfx-series]').forEach((node) => {
       const data = node.dataset || {};
       const role = data.cfxRole || '';
@@ -50,7 +77,11 @@
         return;
       }
       node.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
-      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries);
+      // Preserve ancestor containers for a referenced item or an isolated point.
+      const context = item && (node.contains(item) || item.contains(node));
+      const pointContainer = target && target.point !== undefined && data.cfxSeries === String(target.series)
+        && role === 'series' && data.cfxPoint === undefined;
+      node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
@@ -107,41 +138,63 @@
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
     root.removeAttribute('data-cfx-hover-mode');
+    root.removeAttribute('data-cfx-hover-unit');
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
     root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column,.cfx-hover-series').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series'));
+    // A published hover change supersedes the peer's guide emphasis; the next guide must restore it.
+    if (emit !== false || sync !== false) delete root._cfxCrosshairMode;
     if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
     if (sync !== false) emitSync(root, { action: 'hover-clear' });
   };
   // Pie-like legends name points, so their emphasis unit is one point rather than the containing series.
   const pointLegendUnits = (root, target) => target.point !== undefined && Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-point]'))
     .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));
-  const inHoverUnit = (node, target, pointUnits) => {
+  const legendItemUnit = (root, target) => {
+    const reference = target.legendTargetKind ? { targetKind: target.legendTargetKind, targetId: target.legendTargetId }
+      : target.targetKind === 'node' ? { targetKind: target.targetKind, targetId: target.targetId } : null;
+    if (!reference) return null;
+    const hasLegend = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"]')).some((node) => {
+      const item = legendTarget(node);
+      return item && item.targetKind === reference.targetKind && item.targetId === reference.targetId
+        && (target.seriesKey ? seriesKey(node) === target.seriesKey : node.dataset.cfxSeries === String(target.series));
+    });
+    return hasLegend ? referencedTargetNode(root, { ...reference, seriesKey: target.seriesKey }) : null;
+  };
+  const inHoverUnit = (node, target, pointUnits, itemUnit) => {
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
-    return sameSeries && (!pointUnits || data.cfxPoint === String(target.point));
+    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
+    return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
     if (!target) return false;
+    const nodes = Array.from(root.querySelectorAll(targetSelector));
+    const localNode = nodes.find((node) => matchesTargetIdentity(node, target));
+    if (!localNode && target.targetKind && target.targetId) return false;
+    // A peer's equivalent mark may have a different local point ordinal or series position.
+    const localTarget = localNode ? targetIdentity(localNode) : target;
     const hoverMode = mode === 'shared' ? 'shared' : 'series';
-    const pointUnits = hoverMode === 'series' && pointLegendUnits(root, target);
+    const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
+    const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
     let matched = false;
-    root.querySelectorAll(targetSelector).forEach((node) => {
-      const hovered = matchesTargetIdentity(node, target);
-      const related = !hovered && targetRelated(node, target);
+    nodes.forEach((node) => {
+      const hovered = matchesTargetIdentity(node, localTarget);
+      const related = !hovered && targetRelated(node, localTarget);
       if (hovered || related) matched = true;
       setNodeHovered(node, hovered, related);
-      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, target, pointUnits));
-      if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', target.point !== undefined && node.dataset.cfxPoint === String(target.point));
+      node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, localTarget, pointUnits, itemUnit));
+      if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', localTarget.point !== undefined && node.dataset.cfxPoint === String(localTarget.point));
     });
     if (matched) {
       root.dataset.cfxHovering = 'true';
       root.dataset.cfxHoverMode = hoverMode;
-      root.dataset.cfxHoverLabel = target.label || target.role || target.id || '';
+      root.dataset.cfxHoverUnit = pointUnits ? 'point' : 'series';
+      root.dataset.cfxHoverLabel = localTarget.label || localTarget.role || localTarget.id || '';
     }
     return matched;
   };
@@ -293,33 +346,61 @@
     root.dataset.cfxHoverKey = targetKey(target);
     recordFocusTrail(root, target, emit, sync);
     revealNodes(root, [node], emit, sync, 'hover');
+    if (emit !== false || sync !== false) delete root._cfxCrosshairMode;
     if (emit !== false) emitHostEvent(root, 'cfxhover', { label: text(node), target });
     if (sync !== false) emitSync(root, { action: 'hover', label: text(node), target });
   };
   const hideCrosshair = (root, crosshair) => {
     if (crosshair) crosshair.hidden = true;
     root.removeAttribute('data-cfx-crosshair');
+    delete root._cfxCrosshairMode;
   };
-  const nearestPoint = (root, event) => {
+  // A producer's coordinate contract controls inferred geometry; native painted targets always retain their identity.
+  const usesPolarCoordinates = (node) => !!node.closest('[data-cfx-coordinate-system="polar"]');
+  const usesCartesianCoordinates = (node) => node.closest('[data-cfx-coordinate-system]')?.dataset.cfxCoordinateSystem === 'cartesian';
+  const inferredPlotSurfaceRoles = new Set(['background', 'frame-card', 'frame-card-shadow', 'content-surface',
+    'grid-x', 'grid-y', 'axis-x', 'axis-y', 'axis-secondary-y']);
+  // Retain native summaries separately: an Exact line hit is not an inferred observation or crosshair.
+  const pointerCandidates = (root, event, searchNearest) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
+    const styles = new Map();
+    const hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest(targetSelector) : null);
+    let native = null;
+    if (hit && root.contains(hit) && pointerTargetPaint(hit, styles)) {
+      const box = hit.getBoundingClientRect();
+      const summary = renderedTargetKind(hit) === 'series' && !hit.hasAttribute('data-cfx-point') && !hit.hasAttribute('data-cfx-value');
+      native = { node: hit, x: usesPolarCoordinates(hit) || summary ? event.clientX : box.left + box.width / 2,
+        y: usesPolarCoordinates(hit) || summary ? event.clientY : box.top + box.height / 2, distance: 0, exact: true, summary };
+      if (!summary) return { native, observation: hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit) ? native : null };
+    }
+    // Sparse-plot inference starts on the native stage surface, never on an unrelated host veil.
+    // Explicit native targets and mapped captions retain their own acquisition contract.
+    const svg = stage.querySelector('svg');
+    const plotSurface = event.target === stage || event.target === svg || event.target instanceof SVGElement
+      && svg?.contains(event.target) && !event.target.closest('foreignObject')
+      && inferredPlotSurfaceRoles.has(event.target.dataset.cfxRole);
+    if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (node.closest('[data-cfx-role="legend-item"]') || node.classList.contains('cfx-series-muted')) return;
+      if (!usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
-      const x = box.left + box.width / 2;
-      const y = box.top + box.height / 2;
-      const dx = x - event.clientX;
-      const dy = y - event.clientY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (!best || distance < best.distance) best = { node, x, y, distance };
+      const x = box.left + box.width / 2, y = box.top + box.height / 2;
+      const distance = Math.hypot(x - event.clientX, y - event.clientY);
+      if (!best || distance < best.distance) best = { node, x, y, distance, exact: false };
     });
-    return best && best.distance <= 120 ? best : null;
+    return { native, observation: best };
   };
-  const showCrosshair = (root, crosshair, point, event, emit) => {
+  const tooltipAcquiresPoint = (root, point) => {
+    if (!point || !hasFeature(root, 'Tooltips')) return false;
+    if (point.exact) return true;
+    const range = root.dataset.cfxTooltipRange || 'distance';
+    return range === 'nearest' || range === 'distance' && point.distance <= Number(root.dataset.cfxTooltipDistance ?? 120);
+  };
+  const showCrosshair = (root, crosshair, point, event) => {
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
@@ -330,10 +411,14 @@
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
     if (label) label.textContent = text(point.node);
     const target = targetIdentity(point.node);
-    root.dataset.cfxCrosshair = targetKey(target);
-    if (emit !== false) {
+    const key = targetKey(target), mode = crosshairHoverMode(event, point.node);
+    // A native summary can stay unchanged while its independently inferred guide advances.
+    const changed = root.dataset.cfxCrosshair !== key || root._cfxCrosshairMode !== mode;
+    root.dataset.cfxCrosshair = key;
+    root._cfxCrosshairMode = mode;
+    if (changed) {
       emitHostEvent(root, 'cfxcrosshair', { label: text(point.node), target, x: event.clientX, y: event.clientY });
-      emitSync(root, { action: 'crosshair', label: text(point.node), target, mode: root.dataset.cfxHoverMode || 'shared' });
+      emitSync(root, { action: 'crosshair', label: text(point.node), target, mode });
     }
   };
   // A pointer resting on a mark of the nearest point's series emphasizes that series; anywhere else on the
@@ -343,50 +428,37 @@
     return hit && (hit.dataset || {}).cfxSeries === (node.dataset || {}).cfxSeries ? 'series' : 'shared';
   };
   const updateNearestPoint = (root, crosshair, tip, event) => {
-    if (!hasFeature(root, 'Crosshair')) return;
+    const guideEnabled = hasFeature(root, 'Crosshair');
+    if (!guideEnabled && !hasFeature(root, 'Tooltips')) return;
     if (event.target instanceof Element && event.target.closest('[data-cfx-role="legend-item"]')) {
-      // Legend items own their hover summary; the crosshair must not replace it.
+      // Legend items own their hover summary; inferred observations must not replace it.
       hideCrosshair(root, crosshair);
       return;
     }
-    const point = nearestPoint(root, event);
-    if (!point) {
+    const searchNearest = guideEnabled || root.dataset.cfxTooltipRange !== 'exact';
+    const candidates = pointerCandidates(root, event, searchNearest);
+    const observation = candidates && candidates.observation;
+    const native = candidates && candidates.native;
+    // Nearest/bounded acquisition can refine a line summary to a real observation; Exact retains the summary.
+    const tooltipPoint = tooltipAcquiresPoint(root, observation) ? observation : tooltipAcquiresPoint(root, native) ? native : null;
+    const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
+    if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
       clearHover(root, true, true);
+      hideTip(root, tip, false);
       return;
     }
-    const target = targetIdentity(point.node);
-    const key = targetKey(target);
-    const mode = crosshairHoverMode(event, point.node);
-    if (root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode) {
-      setHover(root, point.node, true, true, mode);
-      showCrosshair(root, crosshair, point, event, true);
-      showTip(root, tip, point.node, event);
-    } else {
-      showCrosshair(root, crosshair, point, event, false);
-      moveTip(tip, event, point.node);
-    }
-  };
-  const focusAdjacentTarget = (root, node, key) => {
-    const targets = interactiveTargets(root);
-    if (!targets.length) return false;
-    const current = Math.max(0, targets.indexOf(node));
-    let next = current;
-    if (key === 'Home') next = 0;
-    else if (key === 'End') next = targets.length - 1;
-    else if (key === 'ArrowLeft' || key === 'ArrowUp') next = current <= 0 ? targets.length - 1 : current - 1;
-    else if (key === 'ArrowRight' || key === 'ArrowDown') next = current >= targets.length - 1 ? 0 : current + 1;
-    else return false;
-    const targetNode = targets[next];
-    if (!targetNode) return false;
-    const focusNode = targetFocusNode(targetNode);
-    if (focusNode.focus) {
-      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
-    }
-    const target = targetIdentity(targetNode);
-    emitHostEvent(root, 'cfxnavigate', { label: text(targetNode), target, index: next, count: targets.length, key });
-    emitSync(root, { action: 'navigate', label: text(targetNode), target, index: next, count: targets.length, key });
-    return true;
+    const point = tooltipPoint || guidePoint;
+    const key = targetKey(targetIdentity(point.node));
+    const mode = point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
+      ? crosshairHoverMode(event, point.node) : 'series';
+    const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
+    if (changed) setHover(root, point.node, true, true, mode);
+    if (guidePoint) showCrosshair(root, crosshair, guidePoint, event);
+    else hideCrosshair(root, crosshair);
+    // Recheck paint on each event: host CSS may change while the semantic target remains the same.
+    if (tooltipPoint) showTip(root, tip, tooltipPoint.node, event);
+    else hideTip(root, tip, false);
   };
   const applySelectionByLabel = (root, label, selected) => {
     if (!label) return;

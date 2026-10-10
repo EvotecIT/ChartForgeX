@@ -43,7 +43,7 @@ internal static partial class VisualSankeyCompiler {
                 builder.Rect(result.Bounds, ChartColorMath.WithOpacity(colors.Surface, .92), radius: 2, role: "sankey-label-backdrop",
                     paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Surface, .92), .92)));
                 builder.Text(result.Text, left ? result.Bounds.Right : result.Bounds.Left, result.Bounds.Y + builder.TextAscent(style), style,
-                    "sankey-node-label", Id("node-label", nodes[i].Index), paint: VisualChartPaint.Text(style));
+                    "sankey-node-label", ChartRelationshipMetadata.SourceId("node-label", nodes[i].Id), paint: VisualChartPaint.Text(style));
             }
         }
     }

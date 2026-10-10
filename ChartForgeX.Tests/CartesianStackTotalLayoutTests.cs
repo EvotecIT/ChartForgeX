@@ -10,15 +10,19 @@ namespace ChartForgeX.Tests;
 
 public sealed class CartesianStackTotalLayoutTests {
     [Theory]
-    [InlineData(1)]
-    [InlineData(-1)]
-    [InlineData(0)]
-    public void DenseVerticalTotalsReserveMeasuredSpaceAboveAndBelowExactValueBounds(int sign) {
+    [InlineData(1, false)]
+    [InlineData(-1, false)]
+    [InlineData(0, false)]
+    [InlineData(1, true)]
+    [InlineData(-1, true)]
+    [InlineData(0, true)]
+    public void DenseVerticalTotalsReserveMeasuredSpaceAboveAndBelowExactValueBounds(int sign, bool reversed) {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
         var chart = Chart.Create().WithSize(300, 220).WithAxes(false).WithLegend(false).WithHeader(false)
-            .WithPngFont(font).WithStackedBars().WithStackTotals().WithDataLabelStyle(style => style.WithFontSize(18))
+            .WithPngFont(font).WithStackedBars().WithStackTotals().ConfigureDataLabelStyle(style => style.WithFontSize(18))
             .WithYAxisBounds(sign < 0 ? -16 : sign > 0 ? 0 : -16, sign < 0 ? 0 : 16);
+        chart.Options.YAxis.WithReversal(reversed);
         var signs = sign == 0 ? new[] { 1, -1 } : new[] { sign };
         foreach (var direction in signs) {
             chart.AddBar("Passed " + direction, Enumerable.Range(1, 16).Select(x => new ChartPoint(x, 13 * direction)).ToArray());
@@ -54,10 +58,13 @@ public sealed class CartesianStackTotalLayoutTests {
     }
 
     [Theory]
-    [InlineData(1)]
-    [InlineData(-1)]
-    public void DashboardRowsKeepEveryFullTotalBesideItsStack(int sign) {
+    [InlineData(1, false)]
+    [InlineData(-1, false)]
+    [InlineData(1, true)]
+    [InlineData(-1, true)]
+    public void DashboardRowsKeepEveryFullTotalBesideItsStack(int sign, bool reversed) {
         var chart = DashboardRows(sign);
+        chart.Options.XAxis.WithReversal(reversed);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var totals = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "stack-total-label").ToArray();
         Assert.Equal(new[] { 107 * sign, 102 * sign, 113 * sign }.Select(value => value.ToString(CultureInfo.InvariantCulture)),
@@ -68,7 +75,7 @@ public sealed class CartesianStackTotalLayoutTests {
                 && Math.Abs(region.Bounds.Top + region.Bounds.Height / 2 - (total.Baseline - total.Text.Ascent + total.Text.Metrics.Height / 2)) < .001).ToArray();
             Assert.Equal(3, row.Length);
             Assert.True(total.Text.Metrics.Height > total.Text.Size, "The total lane must preserve the full styled line height.");
-            if (sign > 0) Assert.True(total.X >= row.Max(region => region.Bounds.Right) + 2);
+            if (sign > 0 != reversed) Assert.True(total.X >= row.Max(region => region.Bounds.Right) + 2);
             else Assert.True(total.X + total.Text.Metrics.Width <= row.Min(region => region.Bounds.Left) - 2);
             Assert.InRange(total.X, 0, 640 - total.Text.Metrics.Width);
         }
@@ -78,9 +85,12 @@ public sealed class CartesianStackTotalLayoutTests {
         Assert.True(prepared.ToPng().Length > 64);
     }
 
-    [Fact]
-    public void OppositeTotalGuttersReuseTheResolvedFormatterSnapshot() {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OppositeTotalGuttersReuseTheResolvedFormatterSnapshot(bool reversed) {
         var chart = DashboardRows(1).WithAxes(false);
+        chart.Options.XAxis.WithReversal(reversed);
         chart.AddHorizontalBar("Negative", new[] { new ChartPoint(1, -18), new ChartPoint(2, -22), new ChartPoint(3, -16) });
         foreach (var series in chart.Series)
             for (var point = 0; point < series.Points.Count; point++) series.WithPointLabel(point, "Observation");
@@ -95,6 +105,83 @@ public sealed class CartesianStackTotalLayoutTests {
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
         prepared.ToSvg(); prepared.ToPng();
         Assert.Equal(6, calls);
+    }
+
+    [Theory]
+    [InlineData(false, false, 1)]
+    [InlineData(false, true, 1)]
+    [InlineData(false, false, -1)]
+    [InlineData(false, true, -1)]
+    [InlineData(true, false, 1)]
+    [InlineData(true, true, 1)]
+    [InlineData(true, false, -1)]
+    [InlineData(true, true, -1)]
+    public void CompactExactBoundsKeepEveryTotalOutsideItsMappedStack(bool horizontal, bool reversed, int sign) {
+        var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        Assert.True(File.Exists(font), "The existing Carlito fixture must make full-caption lane measurements repeatable.");
+        // Every caption fits with this face; wider system fonts may correctly keep a readable subset.
+        var chart = Chart.Create().WithSize(300, 220).WithAxes(false).WithLegend(false).WithHeader(false)
+            .WithPngFont(font).WithBarStyle(ChartBarStyle.Flat).WithStackedBars().WithStackTotals().WithDataLabels(false);
+        var categories = horizontal ? new[] { 1 } : Enumerable.Range(1, 12).ToArray();
+        var first = categories.Select(category => new ChartPoint(category, 10 * sign));
+        var second = categories.Select(category => new ChartPoint(category, 20 * sign));
+        if (horizontal) chart.AddHorizontalBar("First", first).AddHorizontalBar("Second", second);
+        else chart.AddBar("First", first).AddBar("Second", second);
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis)
+            .WithBounds(sign > 0 ? 0 : -30, sign > 0 ? 30 : 0).WithReversal(reversed);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var totals = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "stack-total-label").ToArray();
+        var regions = prepared.Regions.Where(region => region.Role == "stack-total").ToArray();
+        Assert.Equal(categories.Length, regions.Length); Assert.Equal(regions.Length, totals.Length);
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
+        var expected = (30 * sign).ToString(CultureInfo.InvariantCulture);
+        foreach (var region in regions) {
+            var source = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(node => node.Id == region.Id);
+            Assert.Equal(expected, source.Metadata["data-cfx-label"]);
+            Assert.Equal(expected, source.Metadata["data-cfx-source-total"]);
+        }
+        var boxes = totals.Select(total => new ChartRect(total.X, total.Baseline - total.Text.Ascent,
+            total.Text.Metrics.Width, total.Text.Metrics.Height)).ToArray();
+        foreach (var total in totals) {
+            Assert.Equal(expected, total.Text.Lines.Single().Text);
+            var anchor = regions.Single(region => total.Id == region.Id + "-label").Bounds;
+            if (horizontal) {
+                if (sign > 0 != reversed) Assert.True(total.X >= anchor.X + 2);
+                else Assert.True(total.X + total.Text.Metrics.Width <= anchor.X - 2);
+            } else {
+                var top = total.Baseline - total.Text.Ascent;
+                if (sign > 0 != reversed) Assert.True(top + total.Text.Metrics.Height <= anchor.Y - 2);
+                else Assert.True(top >= anchor.Y + 2);
+            }
+        }
+        for (var index = 0; index < boxes.Length; index++) {
+            Assert.True(LabelPlacementService.Contains(new ChartRect(0, 0, 300, 220), boxes[index]));
+            for (var other = index + 1; other < boxes.Length; other++)
+                Assert.False(boxes[index].Left < boxes[other].Right && boxes[index].Right > boxes[other].Left
+                    && boxes[index].Top < boxes[other].Bottom && boxes[index].Bottom > boxes[other].Top);
+        }
+        Assert.True(prepared.ToPng().Length > 64);
+    }
+
+    [Fact]
+    public void OppositeAxisReversalsKeepPrimaryAndSecondaryTotalGutters() {
+        var chart = Chart.Create().WithSize(620, 260).WithAxes(false).WithLegend(false).WithHeader(false)
+            .WithStackedBars().WithStackTotals().WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat);
+        chart.AddBar("Primary first", new[] { new ChartPoint(1, 10) }).AddBar("Primary second", new[] { new ChartPoint(1, 20) });
+        chart.AddBar("Secondary first", new[] { new ChartPoint(1, 10) }).AddBar("Secondary second", new[] { new ChartPoint(1, 20) });
+        chart.Series[2].YAxis = ChartAxisSide.Secondary; chart.Series[3].YAxis = ChartAxisSide.Secondary;
+        chart.Options.YAxis.WithBounds(0, 30);
+        chart.Options.SecondaryYAxis.WithBounds(0, 30).WithReversal();
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var totals = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "stack-total-label").ToArray();
+        Assert.Equal(2, totals.Length);
+        foreach (var total in totals) {
+            var anchor = prepared.Regions.Single(region => total.Id == region.Id + "-label").Bounds;
+            var top = total.Baseline - total.Text.Ascent;
+            if (total.Id!.Contains("secondary", StringComparison.Ordinal)) Assert.True(top >= anchor.Y + 2);
+            else Assert.True(top + total.Text.Metrics.Height <= anchor.Y - 2);
+        }
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
     }
 
     private static Chart DashboardRows(int sign) => Chart.Create().WithSize(640, 300).WithTheme(ChartTheme.DashboardLight())

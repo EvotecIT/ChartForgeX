@@ -13,7 +13,7 @@ public sealed class SunburstLabelLayoutTests {
     [InlineData(VisualThemeMode.Dark)]
     public void BroadThreeLevelHierarchyKeepsEveryFullCaptionInsideItsOwnSegment(VisualThemeMode mode) {
         var chart = Teams();
-        chart.Series[0].WithDataLabelStyle(style => style.WithFontSize(13));
+        chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(13));
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(fontPath), "The existing Carlito validation fixture must be available.");
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), themeMode: mode,
@@ -49,7 +49,7 @@ public sealed class SunburstLabelLayoutTests {
                 text.Text.Metrics.Width, text.Text.Metrics.Height);
             Assert.True(new LabelMarkShape(contours, true, 0).Contains(caption), original + " must fit its actual rendered segment.");
         }
-        Assert.Equal(chart.Options.TreeNodeLabels.Count, labels.Count);
+        Assert.Equal(chart.Series[0].Nodes.Count, labels.Count);
         Assert.Equal(labels.Count, prepared.Regions.Count(region => region.Role == "sunburst-segment"));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
     }
@@ -60,14 +60,10 @@ public sealed class SunburstLabelLayoutTests {
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)),
             frame: new VisualFrame(showLegend: false)));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "sunburst-label");
-        Assert.Equal(chart.Options.TreeNodeLabels.Count, prepared.Regions.Count(region => region.Role == "sunburst-segment"));
-        Assert.All(chart.Options.TreeNodeLabels, label => Assert.Contains(prepared.Regions, region => region.Label!.StartsWith(label + ":", StringComparison.Ordinal)));
+        Assert.Equal(chart.Series[0].Nodes.Count, prepared.Regions.Count(region => region.Role == "sunburst-segment"));
+        Assert.All(chart.Series[0].Nodes.Select(node => node.Label), label => Assert.Contains(prepared.Regions, region => region.Label!.StartsWith(label + ":", StringComparison.Ordinal)));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
     }
 
-    private static Chart Teams() => Chart.Create().AddSunburst("Teams", new[] {
-        new ChartTreeLink("All teams", "Engineering", 60), new ChartTreeLink("All teams", "Operations", 40),
-        new ChartTreeLink("Engineering", "Platform", 35), new ChartTreeLink("Engineering", "Services", 25),
-        new ChartTreeLink("Operations", "Support", 40)
-    });
+    private static Chart Teams() => Chart.Create().WithDataLabels().AddSunburst("Teams", new[] { new ChartHierarchyItem("All teams", "All teams"), new ChartHierarchyItem("Engineering", "Engineering", "All teams", 60), new ChartHierarchyItem("Operations", "Operations", "All teams", 40), new ChartHierarchyItem("Platform", "Platform", "Engineering", 35), new ChartHierarchyItem("Services", "Services", "Engineering", 25), new ChartHierarchyItem("Support", "Support", "Operations", 40) });
 }

@@ -15,7 +15,7 @@ public sealed class MapColorScaleStopsTests {
 
     [Fact]
     public void Diverging_WithArms_DrawsEveryStopAtItsValueAroundAnOffCentreMidpoint() {
-        var scale = ChartMapColorScale.Diverging(Low, Neutral, High, midpointValue: 2).WithValueRange(-4, 8);
+        var scale = ChartColorScale.Diverging(Low, Neutral, High, midpointValue: 2).WithValueRange(-4, 8);
         Assert.Equal(7, scale.Colors.Count);
         Assert.Equal(Low[0], scale.LowColor);
         Assert.Equal(Neutral, scale.MidpointColor);
@@ -34,15 +34,15 @@ public sealed class MapColorScaleStopsTests {
 
     [Fact]
     public void ThreeColourDiverging_MatchesTheArmOverloadWithOneColourPerSide() {
-        var classic = ChartMapColorScale.Diverging(Low[0], Neutral, High[2], 3);
-        var arms = ChartMapColorScale.Diverging(new[] { Low[0] }, Neutral, new[] { High[2] }, 3);
+        var classic = ChartColorScale.Diverging(Low[0], Neutral, High[2], 3);
+        var arms = ChartColorScale.Diverging(new[] { Low[0] }, Neutral, new[] { High[2] }, 3);
         for (var value = 0.0; value <= 10; value += 0.5) Assert.Equal(classic.ColorFor(value, 0, 10), arms.ColorFor(value, 0, 10));
     }
 
     [Fact]
     public void ThreeColourDiverging_HighArm_RoundsLikeADirectBlend() {
         // 5 * 0.1 is 0.5 and rounds to 0; measuring the high arm from the first stop (1.1 - 1) would give 0.5000000000000004 and round to 1.
-        var scale = ChartMapColorScale.Diverging(ChartColor.FromHex("#000000"), ChartColor.FromHex("#000000"), ChartColor.FromHex("#050000"), 0);
+        var scale = ChartColorScale.Diverging(ChartColor.FromHex("#000000"), ChartColor.FromHex("#000000"), ChartColor.FromHex("#050000"), 0);
         Assert.Equal("#000000", scale.ColorFor(1, 0, 10).ToHex());
     }
 
@@ -50,7 +50,8 @@ public sealed class MapColorScaleStopsTests {
     [InlineData(110, 6)]
     [InlineData(60, 0)]
     public void Legend_WhenTheMidpointSitsAtAnEnd_SpacesSwatchesEvenlyAndLabelsThatEnd(double midpoint, int labelledStep) {
-        var chart = Map("tile-map", ChartMapColorScale.Diverging(Low, Neutral, High, midpoint).WithValueRange(60, 110).WithLabels("60", "Target", "110"));
+        var chart = Map("tile-map", ChartColorScale.Diverging(Low, Neutral, High, midpoint).WithValueRange(60, 110).WithLabels("60", "Target", "110"));
+        Assert.Equal(midpoint == 60 ? Neutral : Low[0], chart.Options.MapColorScale!.ColorFor(0, 0, 10));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
         var steps = ByRole(svg, "map-scale-step");
@@ -64,21 +65,21 @@ public sealed class MapColorScaleStopsTests {
 
     [Fact]
     public void Sequential_WithStops_SpreadsThemEvenly() {
-        var scale = ChartMapColorScale.Sequential(new[] { ChartColor.FromHex("#000000"), ChartColor.FromHex("#FF0000"), ChartColor.FromHex("#FFFFFF") });
+        var scale = ChartColorScale.Sequential(new[] { ChartColor.FromHex("#000000"), ChartColor.FromHex("#FF0000"), ChartColor.FromHex("#FFFFFF") });
         Assert.Null(scale.MidpointColor);
         Assert.Equal("#FF0000", scale.ColorFor(5, 0, 10).ToHex());
         Assert.Equal("#800000", scale.ColorFor(2.5, 0, 10).ToHex());
-        Assert.Equal(ChartMapColorScale.Sequential(ChartColor.White, ChartColor.Black).ColorFor(4, 0, 10), ChartMapColorScale.Sequential(new[] { ChartColor.White, ChartColor.Black }).ColorFor(4, 0, 10));
+        Assert.Equal(ChartColorScale.Sequential(ChartColor.White, ChartColor.Black).ColorFor(4, 0, 10), ChartColorScale.Sequential(new[] { ChartColor.White, ChartColor.Black }).ColorFor(4, 0, 10));
     }
 
     [Fact]
     public void Stops_AreValidated() {
-        Assert.Throws<ArgumentException>(() => ChartMapColorScale.Sequential(new[] { ChartColor.White }));
-        Assert.Throws<ArgumentNullException>(() => ChartMapColorScale.Sequential((IEnumerable<ChartColor>)null!));
-        Assert.Throws<ArgumentException>(() => ChartMapColorScale.Diverging(Array.Empty<ChartColor>(), Neutral, High));
-        Assert.Throws<ArgumentException>(() => ChartMapColorScale.Diverging(Low, Neutral, Array.Empty<ChartColor>()));
+        Assert.Throws<ArgumentException>(() => ChartColorScale.Sequential(new[] { ChartColor.White }));
+        Assert.Throws<ArgumentNullException>(() => ChartColorScale.Sequential((IEnumerable<ChartColor>)null!));
+        Assert.Throws<ArgumentException>(() => ChartColorScale.Diverging(Array.Empty<ChartColor>(), Neutral, High));
+        Assert.Throws<ArgumentException>(() => ChartColorScale.Diverging(Low, Neutral, Array.Empty<ChartColor>()));
         var source = new List<ChartColor>(Low);
-        var scale = ChartMapColorScale.Sequential(source);
+        var scale = ChartColorScale.Sequential(source);
         source.Clear();
         Assert.Equal(3, scale.Colors.Count);
     }
@@ -87,7 +88,7 @@ public sealed class MapColorScaleStopsTests {
     [InlineData("tile-map")]
     [InlineData("region-map")]
     public void Legend_ShowsOneSwatchPerStopAndPutsTheMidpointLabelUnderTheMidpointStop(string role) {
-        var chart = Map(role, ChartMapColorScale.Diverging(Low, Neutral, High, 2).WithValueRange(-4, 8).WithLabels("-4", "2", "8"));
+        var chart = Map(role, ChartColorScale.Diverging(Low, Neutral, High, 2).WithValueRange(-4, 8).WithLabels("-4", "2", "8"));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
         var steps = ByRole(svg, "map-scale-step");
@@ -98,20 +99,20 @@ public sealed class MapColorScaleStopsTests {
         var centre = Number(midpointStep, "x") + Number(midpointStep, "width") / 2;
         var caption = Assert.Single(prepared.Regions, region => region.Role == "map-scale-midpoint-label").Bounds;
         Assert.InRange(centre, caption.Left, caption.Right);
-        Assert.NotEqual(Map(role, ChartMapColorScale.Diverging(Low[0], Neutral, High[2], 2).WithValueRange(-4, 8)).ToPng(), chart.ToPng());
+        Assert.NotEqual(Map(role, ChartColorScale.Diverging(Low[0], Neutral, High[2], 2).WithValueRange(-4, 8)).ToPng(), chart.ToPng());
     }
 
     [Fact]
     public void Legend_KeepsFiveSwatchesForThreeColoursAndSamplesVeryLongRamps() {
-        Assert.Equal(5, ByRole(Literal(Map("tile-map", ChartMapColorScale.Diverging(Low[0], Neutral, High[2]))), "map-scale-step").Length);
+        Assert.Equal(5, ByRole(Literal(Map("tile-map", ChartColorScale.Diverging(Low[0], Neutral, High[2]))), "map-scale-step").Length);
         var ramp = Enumerable.Range(0, 15).Select(i => ChartColor.FromRgb((byte)(i * 17), 40, 120)).ToArray();
-        var steps = ByRole(Literal(Map("tile-map", ChartMapColorScale.Sequential(ramp))), "map-scale-step");
+        var steps = ByRole(Literal(Map("tile-map", ChartColorScale.Sequential(ramp))), "map-scale-step");
         Assert.Equal(11, steps.Length);
         Assert.Equal(ramp[0].ToHex(), (string?)steps[0].Attribute("fill"));
         Assert.Equal(ramp[14].ToHex(), (string?)steps[10].Attribute("fill"));
     }
 
-    private static Chart Map(string role, ChartMapColorScale scale) {
+    private static Chart Map(string role, ChartColorScale scale) {
         var regions = new[] { new ChartRegionMapItem("CA", 0), new ChartRegionMapItem("NY", 2), new ChartRegionMapItem("TX", 8) };
         var chart = Chart.Create().WithSize(760, 420).WithMapLabels(false).WithMapColorScale(scale);
         return role == "tile-map"

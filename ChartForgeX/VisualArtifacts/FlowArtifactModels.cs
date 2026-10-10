@@ -177,7 +177,7 @@ public sealed partial class FlowArtifact {
     }
 
     /// <summary>Configures one existing step.</summary>
-    public FlowArtifact WithStep(string id, Action<FlowArtifactStep> configure) {
+    public FlowArtifact ConfigureStep(string id, Action<FlowArtifactStep> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(FindStep(id));
         return this;
@@ -193,7 +193,7 @@ public sealed partial class FlowArtifact {
     }
 
     /// <summary>Configures one existing connector.</summary>
-    public FlowArtifact WithConnector(int connectorIndex, Action<FlowArtifactConnector> configure) {
+    public FlowArtifact ConfigureConnector(int connectorIndex, Action<FlowArtifactConnector> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (connectorIndex < 0 || connectorIndex >= _connectors.Count) throw new ArgumentOutOfRangeException(nameof(connectorIndex), connectorIndex, "Connector index must reference an existing flow connector.");
         configure(_connectors[connectorIndex]);

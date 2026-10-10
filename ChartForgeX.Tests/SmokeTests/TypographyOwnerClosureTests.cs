@@ -20,8 +20,8 @@ internal static partial class SmokeTests {
 
         var regular = AxisChart().ToSvg();
         var styledChart = AxisChart()
-            .WithTickLabelStyle(style => style.WithFontFamily("monospace").WithFontSize(26).WithItalic().WithTextCase(TextCaseTransform.Uppercase))
-            .WithAxisTitleStyle(style => style.WithFontFamily("serif").WithFontSize(32).WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithTextCase(TextCaseTransform.Uppercase));
+            .ConfigureTickLabelStyle(style => style.WithFontFamily("monospace").WithFontSize(26).WithItalic().WithTextCase(TextCaseTransform.Uppercase))
+            .ConfigureAxisTitleStyle(style => style.WithFontFamily("serif").WithFontSize(32).WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithTextCase(TextCaseTransform.Uppercase));
         var styled = styledChart.ToSvg();
 
         Assert(CountOccurrences(styled, "data-cfx-role=\"axis-x-label\"") < CountOccurrences(regular, "data-cfx-role=\"axis-x-label\""), "SVG tick density should measure resolved family, size, italic, and transformed casing before selecting labels.");
@@ -30,7 +30,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SpecializedLegendsHonorRoleTypography() {
-        static void ApplyLegendStyle(Chart chart) => chart.WithLegendStyle(style => style
+        static void ApplyLegendStyle(Chart chart) => chart.ConfigureLegendStyle(style => style
             .WithColor("#d946ef")
             .WithFontFamily("monospace")
             .WithFontSize(18)
@@ -49,7 +49,7 @@ internal static partial class SmokeTests {
         AssertNativeStyledText(pie, "legend-label", "NORTH REGION", 18 * .65, "#D946EF", "monospace", true);
         Assert(!plainPiePng.SequenceEqual(pie.ToPng()), "Custom slice legends should preserve the complete legend style in raster output.");
 
-        var radial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 360).WithXLabels("mail controls", "dns controls").AddRadialBar("Coverage", Points(82, 71));
+        var radial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 360).WithXLabels("mail controls", "dns controls").AddProgressRing("Coverage", Points(82, 71));
         var plainRadialPng = radial.ToPng();
         ApplyLegendStyle(radial);
         var radialSvg = radial.ToSvg();
@@ -69,7 +69,7 @@ internal static partial class SmokeTests {
             .AddHeatmapRow("primary domains", Points(92, 81))
             .AddHeatmapRow("regional domains", Points(78, 69));
         var plainPng = heatmap.ToPng();
-        heatmap.WithTickLabelStyle(style => style
+        heatmap.ConfigureTickLabelStyle(style => style
             .WithColor("#d946ef")
             .WithFontFamily("monospace")
             .WithFontSize(17)
@@ -116,7 +116,7 @@ internal static partial class SmokeTests {
 
         static void AssertSpecializedTickStyle(Chart chart, string role, string expectedText) {
             var plain = chart.ToPng();
-            chart.WithTickLabelStyle(style => style
+            chart.ConfigureTickLabelStyle(style => style
                 .WithColor("#d946ef")
                 .WithFontFamily("monospace")
                 .WithFontSize(17)

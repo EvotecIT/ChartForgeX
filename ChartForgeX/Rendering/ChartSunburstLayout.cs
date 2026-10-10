@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -8,17 +7,19 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal sealed class ChartSunburstNode {
-    public ChartSunburstNode(int index, string label) {
+    public ChartSunburstNode(int index, string id, string label) {
         Index = index;
+        Id = id;
         Label = label;
     }
 
     public int Index { get; }
+    public string Id { get; }
     public string Label { get; }
     public int Parent { get; set; } = -1;
     public List<int> Children { get; } = new();
-    public double IncomingValue { get; set; }
     public double Value { get; set; }
+    public double RemainderValue { get; set; }
     public int Depth { get; set; }
     public double StartAngle { get; set; }
     public double EndAngle { get; set; }
@@ -46,61 +47,31 @@ internal sealed class ChartSunburstModel {
 internal static class ChartSunburstLayout {
     public static ChartSunburstModel Compute(Chart chart, ChartRect plot) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Sunburst);
-        if (series == null || series.Points.Count < 2) return ChartSunburstModel.Empty;
-        var nodeCount = chart.Options.TreeNodeLabels.Count;
-        for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-            var endpoints = series.Points[i];
-            var parent = Math.Max(0, (int)Math.Round(endpoints.X));
-            var child = Math.Max(0, (int)Math.Round(endpoints.Y));
-            nodeCount = Math.Max(nodeCount, Math.Max(parent, child) + 1);
-        }
-
-        if (nodeCount == 0) return ChartSunburstModel.Empty;
+        if (series?.Relationships == null) return ChartSunburstModel.Empty;
+        var facts = series.Relationships;
+        var values = facts.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
         var nodes = new List<ChartSunburstNode>();
-        for (var i = 0; i < nodeCount; i++) nodes.Add(new ChartSunburstNode(i, NodeLabel(chart, i)));
-        for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-            var endpoints = series.Points[i];
-            var valuePoint = series.Points[i + 1];
-            var parent = Math.Max(0, (int)Math.Round(endpoints.X));
-            var child = Math.Max(0, (int)Math.Round(endpoints.Y));
-            nodes[parent].Children.Add(child);
-            nodes[child].Parent = parent;
-            nodes[child].IncomingValue = Math.Max(0.000001, valuePoint.Y);
+        for (var i = 0; i < facts.Nodes.Count; i++)
+            nodes.Add(new ChartSunburstNode(i, facts.Nodes[i].Id, facts.Nodes[i].Label) { Value = values[i], Parent = facts.Parent(i), Depth = facts.Depths[i] });
+        for (var i = 0; i < nodes.Count; i++) {
+            nodes[i].Children.AddRange(facts.Children(i));
+            var childTotal = 0d;
+            foreach (var child in nodes[i].Children) childTotal += values[child];
+            if (nodes[i].Children.Count > 0) nodes[i].RemainderValue = Math.Max(0, values[i] - childTotal);
         }
-
-        var root = nodes.FindIndex(node => node.Parent < 0);
-        if (root < 0) return ChartSunburstModel.Empty;
-        AssignDepths(nodes, root, 0);
-        ComputeValues(nodes, root);
+        var root = facts.Root;
         var maxDepth = Math.Max(0, nodes.Max(node => node.Depth));
         var radius = Math.Max(1, Math.Min(plot.Width, plot.Height) * 0.46);
         var ringWidth = radius / Math.Max(1, maxDepth + 1);
         var centerX = plot.Left + plot.Width / 2;
         var centerY = plot.Top + plot.Height / 2;
-        AssignAngles(nodes, root, -Math.PI / 2, Math.PI * 3 / 2);
+        AssignAngles(nodes, root, -Math.PI / 2, nodes[root].Value > 0 ? Math.PI * 3 / 2 : -Math.PI / 2);
         foreach (var node in nodes) {
             node.InnerRadius = node.Depth * ringWidth;
-            node.OuterRadius = Math.Max(node.InnerRadius + 1, (node.Depth + 1) * ringWidth);
+            node.OuterRadius = (node.Depth + 1) * ringWidth;
         }
 
         return new ChartSunburstModel(nodes, root, maxDepth, centerX, centerY);
-    }
-
-    private static void AssignDepths(List<ChartSunburstNode> nodes, int node, int depth) {
-        nodes[node].Depth = depth;
-        foreach (var child in nodes[node].Children) AssignDepths(nodes, child, depth + 1);
-    }
-
-    private static double ComputeValues(List<ChartSunburstNode> nodes, int node) {
-        if (nodes[node].Children.Count == 0) {
-            nodes[node].Value = Math.Max(0.000001, nodes[node].IncomingValue);
-            return nodes[node].Value;
-        }
-
-        var total = 0.0;
-        foreach (var child in nodes[node].Children) total += ComputeValues(nodes, child);
-        nodes[node].Value = Math.Max(0.000001, total);
-        return nodes[node].Value;
     }
 
     private static void AssignAngles(List<ChartSunburstNode> nodes, int node, double start, double end) {
@@ -108,14 +79,18 @@ internal static class ChartSunburstLayout {
         nodes[node].EndAngle = end;
         if (nodes[node].Children.Count == 0) return;
         var childStart = start;
-        var total = nodes[node].Children.Sum(child => nodes[child].Value);
-        foreach (var child in nodes[node].Children) {
-            var sweep = total <= 0 ? 0 : (end - start) * nodes[child].Value / total;
-            AssignAngles(nodes, child, childStart, childStart + sweep);
-            childStart += sweep;
+        var total = nodes[node].Value;
+        var children = nodes[node].Children;
+        var childTotal = children.Sum(child => nodes[child].Value);
+        var finalPositive = children.LastOrDefault(child => nodes[child].Value > 0);
+        foreach (var child in children) {
+            var sweep = total <= 0 ? 0 : (nodes[child].Value / total) * (end - start);
+            var childEnd = Math.Min(end, childStart + sweep);
+            // Only equal totals or an accepted representational overrun close the final endpoint.
+            // A positive authored remainder, however small, is never normalized away.
+            if (child == finalPositive && nodes[child].Value > 0 && childTotal >= total) childEnd = end;
+            AssignAngles(nodes, child, childStart, childEnd);
+            childStart = childEnd;
         }
     }
-
-    private static string NodeLabel(Chart chart, int index) =>
-        index >= 0 && index < chart.Options.TreeNodeLabels.Count ? chart.Options.TreeNodeLabels[index] : "Node " + (index + 1).ToString(CultureInfo.InvariantCulture);
 }

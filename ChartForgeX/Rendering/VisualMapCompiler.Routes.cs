@@ -40,7 +40,7 @@ internal static partial class VisualMapCompiler {
                 route[0] = Trim(first, waypoints.Length > 0 ? route[1] : control, EndpointTrim(series, source[0], weights, dot, min, max));
                 route[route.Length - 1] = Trim(last, waypoints.Length > 0 ? route[route.Length - 2] : control, EndpointTrim(series, source[source.Length - 1], weights, dot, min, max));
                 ChartPath geometry;
-                if (waypoints.Length > 0) geometry = ChartPathBuilder.FromPoints(route, ChartSeriesKind.Line, true);
+                if (waypoints.Length > 0) geometry = ChartPathBuilder.FromPoints(route, ChartInterpolation.Smooth);
                 else geometry = new ChartPath(new[] { ChartPathCommand.MoveTo(route[0].X, route[0].Y), ChartPathCommand.CubicTo(
                     route[0].X + (control.X - route[0].X) * 2 / 3, route[0].Y + (control.Y - route[0].Y) * 2 / 3,
                     route[1].X + (control.X - route[1].X) * 2 / 3, route[1].Y + (control.Y - route[1].Y) * 2 / 3, route[1].X, route[1].Y) });

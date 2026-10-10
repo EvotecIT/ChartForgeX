@@ -10,9 +10,10 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualHierarchyCompiler {
     /// <summary>Fits measured horizontal or upright tangential captions within the actual annular segment.</summary>
     private static void SunburstLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
-        ChartSunburstModel model, ChartSunburstNode node, ChartColor fill) {
+        ChartSunburstModel model, ChartSunburstNode node, ChartColor fill, SvgPaint fillPaint) {
         var style = LabelStyle(chart, context, fill, node.Index);
-        var original = node.Label;
+        var series = chart.Series[0];
+        var original = node.Index < series.PointLabels.Count && series.PointLabels[node.Index] != null ? series.PointLabels[node.Index]! : node.Label;
         var metrics = builder.MeasureText(original, style);
         var sweep = node.EndAngle - node.StartAngle;
         var mid = node.StartAngle + sweep / 2;
@@ -42,7 +43,7 @@ internal static partial class VisualHierarchyCompiler {
             foreach (var degrees in node.Depth == 0 || Math.Abs(tangent) < .001 ? new[] { 0d } : new[] { 0d, tangent }) {
                 if (!SunburstCaptionFits(node, x - model.CenterX, y - model.CenterY, measured, degrees)) continue;
                 var paint = VisualChartPaint.ExplicitDataLabelColor(chart, node.Index) ? VisualChartPaint.Text(style)
-                    : SvgPaint.Contrast(fill, VisualChartPaint.SeriesRole(chart.Series[0], node.Index));
+                    : SvgPaint.Contrast(fill, fillPaint);
                 style.Alignment = TextAlignment.Center;
                 using (Math.Abs(degrees) < .001 ? null : builder.PushRotation(degrees, x, y))
                     builder.Text(text, x, y - measured.Height / 2 + builder.TextAscent(style), style, "sunburst-label",

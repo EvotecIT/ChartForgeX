@@ -51,7 +51,7 @@ public sealed partial class ChartOptions {
 
 public sealed partial class Chart {
     /// <summary>Configures arc, needle or linear gauge anatomy.</summary>
-    public Chart WithGauge(Action<ChartGaugeOptions> configure) { if (configure == null) throw new ArgumentNullException(nameof(configure)); configure(Options.Gauge); return this; }
+    public Chart ConfigureGauge(Action<ChartGaugeOptions> configure) { if (configure == null) throw new ArgumentNullException(nameof(configure)); configure(Options.Gauge); return this; }
     /// <summary>Adds a linear gauge with a value, range and optional explicit colour.</summary>
     public Chart AddLinearGauge(string name, double value, double min = 0, double max = 100, ChartForgeX.Primitives.ChartColor? color = null) { AddGauge(name, value, min, max, color); Options.Gauge.Form = ChartGaugeForm.Linear; return this; }
 }

@@ -59,6 +59,9 @@ public sealed class HtmlInteractiveDashboardRenderer {
             IncludeResetButton = options.IncludeResetButton,
             ResponsiveLayout = options.ResponsiveLayout
         };
+        childOptions.Tooltip.Mode = options.Tooltip.Mode;
+        childOptions.Tooltip.Range = options.Tooltip.Range;
+        childOptions.Crosshair.ShowLabel = options.Crosshair.ShowLabel;
         childOptions.Interaction.ChartId = chartId;
         childOptions.Interaction.GroupName = groupName;
         childOptions.Interaction.Features = options.Interaction.Features;

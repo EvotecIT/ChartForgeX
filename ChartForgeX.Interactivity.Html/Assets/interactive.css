@@ -62,6 +62,25 @@ body {
   height: auto;
 }
 
+/* Readable sizing follows the chart's host, including narrow columns in a wide window. */
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: stable;
+  touch-action: auto;
+}
+
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="pan"] .cfx-stage,
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="brush"] .cfx-stage {
+  touch-action: none;
+}
+
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage svg {
+  width: 100%;
+  min-width: min(var(--cfx-native-width, 640px), 38rem);
+  max-width: none;
+}
+
 .cfx-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -83,13 +102,11 @@ body {
   outline: none;
 }
 
-/* Contextual reset: a small ghost button in the frame corner, shown only after the view changes. */
+/* Contextual reset clears chart content and appears below the stage only after the view changes. */
 .cfx-reset {
-  position: absolute;
-  z-index: 13;
-  top: 8px;
-  right: 8px;
-  display: inline-flex;
+  display: flex;
+  width: max-content;
+  margin: 8px 8px 0 auto;
   align-items: center;
   height: 28px;
   padding: 0 10px;
@@ -464,16 +481,16 @@ body {
 }
 
 .cfx-compare-tray {
-  position: absolute;
+  position: relative;
   z-index: 11;
-  left: 18px;
-  right: 18px;
-  bottom: 18px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  max-width: calc(100% - 36px);
-  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 8px;
+  contain: inline-size;
   border: 1px solid rgba(56, 189, 248, .36);
   border-radius: 8px;
   background: rgba(2, 6, 23, .82);
@@ -513,6 +530,7 @@ body {
 }
 
 .cfx-compare-chip {
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -646,24 +664,6 @@ body {
     padding: 8px;
   }
 
-  .cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage {
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scrollbar-gutter: stable;
-    touch-action: auto;
-  }
-
-  .cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="pan"] .cfx-stage,
-  .cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="brush"] .cfx-stage {
-    touch-action: none;
-  }
-
-  .cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage svg {
-    width: 100%;
-    min-width: min(var(--cfx-native-width, 640px), 38rem);
-    max-width: none;
-  }
-
   .cfx-toolbar,
   .cfx-scenario-panel__controls {
     justify-content: stretch;
@@ -697,13 +697,27 @@ body {
 
 /* Graphite keeps host controls separate from the chart's single frame. */
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-stage { background: transparent; border: 0; padding: 0; }
-/* The frame hugs the chart card so the reset control sits in the card corner, not the page corner. */
+/* The frame hugs the chart card and aligns its contextual control with the card edge. */
 .cfx-interactive-chart[data-cfx-look="graphite"]:not([data-cfx-responsive-layout="fit"]) .cfx-frame { width: fit-content; max-width: 100%; margin-inline: auto; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-muted);
   font: 400 13px/1 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset:hover { border-color: var(--cfx-crosshair-axis); color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+  box-shadow: none; font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__summary,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__more { color: var(--cfx-tooltip-muted); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:hover,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:focus-visible,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:hover,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:focus-visible { border-color: var(--cfx-host-accent); }
 .cfx-dashboard { gap: 16px; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip {
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
@@ -721,7 +735,7 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line { background: none; box-shadow: none; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--x { border-top: 1px dashed var(--cfx-crosshair-axis); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--y { border-left: 1px dashed var(--cfx-crosshair-axis); }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__label { display: none; }
+.cfx-interactive-chart[data-cfx-crosshair-label="false"] .cfx-crosshair__label { display: none; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered { filter: none; }
 /* Series hover keeps the pointed series at full strength and dims the others to 30 %; the shared crosshair dims nothing. */
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-point-interaction-target) { opacity: .3; }
@@ -730,12 +744,14 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered) { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column) { opacity: 0 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-in { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"] { text-decoration: line-through; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }
 /* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
-.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"] [data-cfx-role="series"] [data-cfx-series] { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series],
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series] { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted,
 .cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out { opacity: 1 !important; }
 .cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; }

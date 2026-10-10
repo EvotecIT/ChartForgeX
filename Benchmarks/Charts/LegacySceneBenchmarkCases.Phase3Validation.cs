@@ -66,24 +66,65 @@ public static partial class LegacySceneBenchmarkCases {
                 }
                 break;
             case "treemap":
+#if LEGACY_CHART_API
                 var tiles = Role(root, "treemap-tile").ToDictionary(element => Index(element, "data-cfx-point"));
-                Require(tiles.Count == chart.Series[0].Points.Count, "Treemap source-tile count changed.");
-                for (var index = 0; index < chart.Series[0].Points.Count; index++) {
+                var treemapFacts = TreemapFacts(chart);
+                Require(tiles.Count == treemapFacts.Count, "Treemap source-tile count changed.");
+                for (var index = 0; index < treemapFacts.Count; index++) {
                     Require(tiles.TryGetValue(index, out var tile), "A treemap source tile was lost.");
-                    Require(Near(Parse(tile!, "data-cfx-value"), chart.Series[0].Points[index].Y)
-                        && (string?)tile!.Attribute("data-cfx-label") == "Pool " + (index + 1), "Treemap source data changed."); RequireDrawing(tile!);
+                    Require(Near(Parse(tile!, "data-cfx-value"), treemapFacts[index].Value)
+                        && (string?)tile!.Attribute("data-cfx-label") == treemapFacts[index].Label, "Treemap source data changed."); RequireDrawing(tile!);
                 }
+#else
+                var tiles = Role(root, "treemap-tile").ToDictionary(element => (string)element.Attribute("data-cfx-target-id")!);
+                Require(tiles.Count == chart.Series[0].HierarchyItems.Count, "Treemap source-tile count changed.");
+                for (var index = 0; index < chart.Series[0].HierarchyItems.Count; index++) {
+                    Require(tiles.TryGetValue(chart.Series[0].HierarchyItems[index].Id, out var tile), "A treemap source tile was lost.");
+                    Require(Near(Parse(tile!, "data-cfx-value"), chart.Series[0].HierarchyItems[index].Value!.Value)
+                        && (string?)tile!.Attribute("data-cfx-label") == chart.Series[0].HierarchyItems[index].Label, "Treemap source data changed."); RequireDrawing(tile!);
+                }
+#endif
                 break;
             case "sankey":
-                var links = Role(root, "sankey-link").ToDictionary(element => ((string)element.Attribute("data-cfx-source-label")!, (string)element.Attribute("data-cfx-target-label")!));
-                var expectedLinks = SankeyLinks(); Require(links.Count == expectedLinks.Length, "Sankey source-link count changed.");
-                foreach (var link in expectedLinks) {
-                    Require(links.TryGetValue((link.Source, link.Target), out var mark), "A Sankey source link was lost.");
-                    Require(Near(Parse(mark!, "data-cfx-value"), link.Value), "Sankey source value changed."); RequireDrawing(mark!);
-                }
+                ValidateSankey(root, chart);
                 break;
             default: throw new ArgumentOutOfRangeException(nameof(fixture));
         }
+    }
+
+    private static void ValidateSankey(XElement root, Chart chart) {
+        var marks = Role(root, "sankey-link").ToArray();
+        var series = chart.Series[0];
+#if LEGACY_CHART_API
+        // Frozen public exports identify endpoints by numeric node index and carry their actual labels.
+        foreach (var mark in marks) Require(mark.Attribute("data-cfx-target-id") == null && mark.Attribute("data-cfx-id") == null
+            && mark.Attribute("data-cfx-target-kind") == null && mark.Attribute("data-cfx-source-link-index") == null
+            && mark.Attribute("data-cfx-source-point") == null && mark.Attribute("data-cfx-target-point") == null,
+            "Legacy Sankey output contains mixed relationship metadata.");
+        var links = marks.ToDictionary(mark => (SankeyNodeIndex(chart, Parse(mark, "data-cfx-source")), SankeyNodeIndex(chart, Parse(mark, "data-cfx-target"))));
+        var facts = SankeyFacts(chart).ToArray(); Require(links.Count == facts.Length, "Sankey source-link count changed.");
+        for (var index = 0; index < facts.Length; index++) {
+            var endpoints = series.Points[index * 2]; var fact = facts[index];
+            Require(links.TryGetValue((SankeyNodeIndex(chart, endpoints.X), SankeyNodeIndex(chart, endpoints.Y)), out var mark), "A Sankey source link was lost.");
+            Require((string?)mark!.Attribute("data-cfx-source-label") == fact.Source && (string?)mark.Attribute("data-cfx-target-label") == fact.Target,
+                "Sankey source endpoints changed.");
+            Require(Near(Parse(mark, "data-cfx-value"), fact.Value), "Sankey source value changed."); RequireDrawing(mark);
+        }
+#else
+        foreach (var mark in marks) Require((string?)mark.Attribute("data-cfx-target-kind") == "link"
+            && mark.Attribute("data-cfx-source-point") == null && mark.Attribute("data-cfx-target-point") == null,
+            "Current Sankey output contains mixed relationship metadata.");
+        var links = marks.ToDictionary(mark => (string)mark.Attribute("data-cfx-target-id")!);
+        var nodes = series.Nodes.ToDictionary(node => node.Id);
+        Require(links.Count == series.FlowLinks.Count, "Sankey source-link count changed.");
+        foreach (var link in series.FlowLinks) {
+            Require(links.TryGetValue(link.Id, out var mark), "A Sankey source link was lost.");
+            Require((string?)mark!.Attribute("data-cfx-id") == link.Id && (string?)mark.Attribute("data-cfx-source") == link.SourceId
+                && (string?)mark.Attribute("data-cfx-target") == link.TargetId && (string?)mark.Attribute("data-cfx-source-label") == nodes[link.SourceId].Label
+                && (string?)mark.Attribute("data-cfx-target-label") == nodes[link.TargetId].Label, "Sankey source endpoints changed.");
+            Require(Near(Parse(mark, "data-cfx-value"), link.Value), "Sankey source value changed."); RequireDrawing(mark);
+        }
+#endif
     }
 
     private static void ValidateTopology(XElement root, TopologyChart chart) {

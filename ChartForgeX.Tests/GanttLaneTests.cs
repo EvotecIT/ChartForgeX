@@ -216,7 +216,7 @@ public sealed class GanttLaneTests {
 
     [Fact]
     public void Render_LocalizedLabels_ReplaceNowOngoingAndSoFar() {
-        var chart = CreateChart().WithLabels(labels => {
+        var chart = CreateChart().ConfigureLabels(labels => {
             labels.Now = "Teraz";
             labels.Ongoing = "trwa";
             labels.SoFar = "dotąd";
@@ -229,7 +229,7 @@ public sealed class GanttLaneTests {
         Assert.NotEqual(CreateChart().ToPng(), chart.ToPng());
         Assert.Throws<ArgumentException>(() => chart.Options.Labels.Now = " ");
 
-        var edge = CreateChart().WithGanttToday(Start.AddHours(47.5)).WithLabels(labels => labels.Now = "Aktualny czas systemowy");
+        var edge = CreateChart().WithGanttToday(Start.AddHours(47.5)).ConfigureLabels(labels => labels.Now = "Aktualny czas systemowy");
         var edgeSvg = XDocument.Parse(edge.ToSvg());
         var label = ByRole(edgeSvg, "gantt-now-label").Single();
         var axis = ByRole(edgeSvg, "schedule-axis").Single();
@@ -338,7 +338,7 @@ public sealed class GanttLaneTests {
         Assert.Empty(ByRole(hiddenY, "schedule-axis"));
         Assert.NotEmpty(ByRole(hiddenY, "schedule-tick-label"));
 
-        chart.WithGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
+        chart.ConfigureGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
         var grid = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-grid");
         Assert.NotEmpty(grid);
         Assert.All(grid, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal("4 6", (string?)line.RenderedAttribute("stroke-dasharray")); });
@@ -426,7 +426,7 @@ public sealed class GanttLaneTests {
     [Fact]
     public void Render_CompactPlot_TrimsLongLocalizedNowLabel() {
         var label = new string('N', 160);
-        var chart = CreateChart().WithSize(390, 300).WithLabels(labels => labels.Now = label);
+        var chart = CreateChart().WithSize(390, 300).ConfigureLabels(labels => labels.Now = label);
         var svg = XDocument.Parse(chart.ToSvg());
         var shown = Assert.Single(Texts(svg, "gantt-now-label"));
         Assert.NotEmpty(shown);
