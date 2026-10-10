@@ -300,7 +300,10 @@ internal sealed class GeoJsonReader {
     private GeoJsonValue ReadNumber(bool preserveText) {
         var start = _position;
         if (_json[_position] == '-') _position++;
-        ReadDigits();
+        if (_position < _json.Length && _json[_position] == '0') {
+            _position++;
+            if (_position < _json.Length && _json[_position] >= '0' && _json[_position] <= '9') throw Error("JSON numbers cannot contain leading zeroes.");
+        } else ReadDigits();
         if (_position < _json.Length && _json[_position] == '.') {
             _position++;
             ReadDigits();
@@ -313,7 +316,8 @@ internal sealed class GeoJsonReader {
         }
 
         var text = _json.Substring(start, _position - start);
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)) throw Error("Invalid JSON number.");
+        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) || double.IsInfinity(value) || double.IsNaN(value))
+            throw Error("Invalid JSON number or value outside the supported finite range.");
         return GeoJsonValue.Number(value, preserveText && ShouldPreserveNumberText(text, value) ? text : null);
     }
 
@@ -324,7 +328,7 @@ internal sealed class GeoJsonReader {
 
     private void ReadDigits() {
         var start = _position;
-        while (_position < _json.Length && char.IsDigit(_json[_position])) _position++;
+        while (_position < _json.Length && _json[_position] >= '0' && _json[_position] <= '9') _position++;
         if (_position == start) throw Error("Expected JSON number digit.");
     }
 
