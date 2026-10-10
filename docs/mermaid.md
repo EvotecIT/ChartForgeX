@@ -69,6 +69,8 @@ Topology diagram dimensions set the minimum canvas. The renderer expands the can
 
 Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. A setting scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. This follows the tested upstream merge contract. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
 
+`themeVariables.fontFamily` selects the native default font stack for chart, topology, sequence and visual-block output. It overrides global `fontFamily`; an explicit current-family `fontFamily` takes precedence over both. The original declarations remain in `Settings`, and `Configuration.FontFamily` reports the effective native stack. This sets the shared native typography default; it does not reproduce every Mermaid family-specific font role or fetch remote fonts.
+
 ```mermaid
 ---
 config:
@@ -91,7 +93,7 @@ JSON configuration numbers must use JSON number syntax and fit the native reader
 
 Configuration is limited to 65,536 characters across the YAML `config` declarations and legacy declarations, 256 retained settings, eight JSON/mapping levels and 4,096 characters for an effective theme/layout/look/font string. Unrelated frontmatter metadata, whole YAML comment lines and blank lines do not consume the configuration budget. Comments do not end the active mapping; following indented settings remain subject to its limits. Over-budget declarations are omitted from the bounded directive collection; the original source remains available. YAML has an additional 256-key limit. Duplicate keys within one supported mapping, inconsistent sibling indentation, invalid supported values and over-limit input report `CFXM006` and prevent the shared renderer from producing an artifact. Repeated legacy declarations remain valid and merge in order.
 
-`layout`, `look`, `defaultRenderer`, theme variables and other family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
+`layout`, `look`, `defaultRenderer`, other theme variables and other family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
 
 ## Process diagrams
 

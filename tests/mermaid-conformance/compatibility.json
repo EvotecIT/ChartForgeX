@@ -15,6 +15,10 @@
     }
   },
   "fixtures": {
+    "fixtures/theme-variable-font.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored font configuration regression from https://mermaid.js.org/config/theming.html; the pinned references retain global and theme-variable font values independently."
+    },
     "fixtures/sequence-presentation.mmd": {
       "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
       "provenance": "Authored sequence participants/messages and legacy source presentation case from the official sequence and configuration contracts."
