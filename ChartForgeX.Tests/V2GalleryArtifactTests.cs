@@ -1,7 +1,10 @@
+using System.Globalization;
+using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Themes;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -19,6 +22,41 @@ public sealed class V2GalleryArtifactTests {
         Assert.True(compact.GetProperty("compact").GetBoolean());
         var standard = Assert.Single(artifacts, artifact => artifact.GetProperty("id").GetString() == "family-trend-line-precision-" + theme);
         Assert.False(standard.GetProperty("compact").GetBoolean());
+    }
+
+    [Theory]
+    [InlineData("light")]
+    [InlineData("dark")]
+    public void PublishedBubbleOptionsRetainCurrentModelFactsAndReproducibleSource(string theme) {
+        var output = Path.Combine(FindRepository(), "Website", "static", "examples", "generated");
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "manifest.json")));
+        var mode = Enum.Parse<VisualThemeMode>(theme, ignoreCase: true);
+        foreach (var variant in new[] { "options", "compact-options" }) {
+            var id = "family-bubble-" + variant + "-" + theme;
+            var artifact = Assert.Single(manifest.RootElement.GetProperty("artifacts").EnumerateArray(),
+                candidate => candidate.GetProperty("id").GetString() == id);
+            var model = V2GalleryModels.Create(ChartSeriesKind.Bubble, variant, mode);
+            var expected = model.Series.SelectMany((series, seriesIndex) => Enumerable.Range(0, series.Points.Count / 2)
+                .Select(point => (seriesIndex, point, series.Points[point * 2].X, series.Points[point * 2].Y, series.Points[point * 2 + 1].Y))).ToArray();
+            var svg = XDocument.Load(Path.Combine(output, artifact.GetProperty("svg").GetString()!));
+            var actual = svg.Descendants().Where(element => element.Attribute("data-cfx-size") != null)
+                .Select(element => ((int)element.Attribute("data-cfx-series")!, (int)element.Attribute("data-cfx-point")!,
+                    Number(element, "data-cfx-x"), Number(element, "data-cfx-y"), Number(element, "data-cfx-size"))).ToArray();
+            Assert.Equal(expected, actual);
+
+            var sourceFile = artifact.GetProperty("source").GetString()!;
+            var source = File.ReadAllText(Path.Combine(output, sourceFile));
+            Assert.Contains($"V2GalleryModels.Create(ChartSeriesKind.Bubble, \"{variant}\", VisualThemeMode.{mode})", source, StringComparison.Ordinal);
+            Assert.Matches(@"\.ConfigureBubble\s*\(", source);
+            var options = model.Options.Bubble;
+            Assert.Matches($@"\.WithSizeDomain\s*\(\s*{NumberPattern(options.MinimumValue!.Value)}\s*,\s*{NumberPattern(options.MaximumValue!.Value)}\s*\)", source);
+            Assert.Matches($@"\.MinimumRadius\s*=\s*{NumberPattern(options.MinimumRadius)}\s*;", source);
+            Assert.Matches($@"\.MaximumRadius\s*=\s*{NumberPattern(options.MaximumRadius!.Value)}\s*;", source);
+            var html = File.ReadAllText(Path.Combine(output, artifact.GetProperty("html").GetString()!));
+            var inline = Assert.Single(Regex.Matches(html, "<pre data-visual-theme=\"" + theme + "\"><code data-example-source>(.*?)</code></pre>", RegexOptions.Singleline));
+            Assert.Equal(source, WebUtility.HtmlDecode(inline.Groups[1].Value));
+            Assert.Matches("<a\\b[^>]*\\shref=\"" + Regex.Escape(sourceFile) + "\"[^>]*\\sdownload[ >]", html);
+        }
     }
 
     [Fact]
@@ -100,6 +138,10 @@ public sealed class V2GalleryArtifactTests {
         foreach (var image in images)
             Assert.Contains("https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/" + image.Groups[1].Value, packageReadme, StringComparison.Ordinal);
     }
+
+    private static double Number(XElement element, string attribute) => double.Parse(element.Attribute(attribute)!.Value, CultureInfo.InvariantCulture);
+
+    private static string NumberPattern(double value) => Regex.Escape(value.ToString(CultureInfo.InvariantCulture));
 
     private static string FindRepository() {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent)

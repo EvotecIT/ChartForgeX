@@ -255,7 +255,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Bubble) {
             var chart = Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
                 .AddBubble(&quot;Standard&quot;, new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
-                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200) })
+                .ConfigureBubble(bubble =&gt; { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
             chart.Series[0].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
             chart.Series[1].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
             return chart;
@@ -938,7 +939,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Bubble) {
             var chart = Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
                 .AddBubble(&quot;Standard&quot;, new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
-                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200) })
+                .ConfigureBubble(bubble =&gt; { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
             chart.Series[0].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
             chart.Series[1].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
             return chart;
