@@ -51,19 +51,21 @@ public sealed class GanttTodayStyleTests {
     [InlineData("stroke-width:1e300px")]
     [InlineData("opacity:2")]
     [InlineData("stroke-dasharray:0 3")]
+    [InlineData("stroke-dasharray:0.001 0.001")]
+    [InlineData("stroke-dasharray:1e-300 2")]
     [InlineData("filter:blur(2px)")]
     public void UnsupportedDeclarationsAreRetainedAndLocatedWhileSafeDeclarationsStillApply(string unsupported) {
         var declaration = "todayMarker stroke-width:4px," + unsupported;
         var parsed = new MermaidParser().ParseGantt("gantt\n" + declaration + "\nTask :2026-01-01,6d");
+        var chart = parsed.Document!.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2) });
+        Assert.NotEmpty(chart.ToPng());
         var warning = Assert.Single(parsed.Diagnostics);
         Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, warning.Code);
         Assert.Equal(MermaidDiagnosticSeverity.Warning, warning.Severity);
         Assert.Equal(2, warning.Span.Line);
         Assert.Equal(declaration, Assert.Single(parsed.Document!.RawStatements).Text);
-        var chart = parsed.Document.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2) });
         Assert.Equal(4, Today(chart).StrokeWidth);
         Assert.DoesNotContain("https://example.invalid/paint", chart.ToSvg(), StringComparison.Ordinal);
-        Assert.NotEmpty(chart.ToPng());
     }
 
     [Fact]
@@ -77,6 +79,17 @@ public sealed class GanttTodayStyleTests {
         var invisible = new MermaidParser().ParseGantt("gantt\ntodayMarker stroke:none\nTask :2026-01-01,6d");
         Assert.Empty(invisible.Diagnostics);
         Assert.Equal(0, Today(invisible.Document!.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2) })).Stroke!.Value.A);
+    }
+
+    [Fact]
+    public void QuarterPixelDashBoundaryRendersAndInvalidReplacementRetainsTheLastSafePattern() {
+        var parsed = new MermaidParser().ParseGantt("gantt\ntodayMarker stroke-dasharray:0.25 0.25,stroke-dasharray:0.249 2\nTask :2026-01-01,6d");
+        Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, Assert.Single(parsed.Diagnostics).Code);
+        var chart = parsed.Document!.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2) });
+        Assert.Equal(new[] { .25, .25 }, Today(chart).Dash);
+        Assert.Equal(new[] { .25, .25 }, new ChartStrokeStyle(dash: new[] { .25, .25 }).Dash);
+        Assert.NotEmpty(chart.ToPng());
+        Assert.Contains("stroke-dasharray=\"0.25 0.25\"", chart.ToSvg(), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -99,6 +112,7 @@ public sealed class GanttTodayStyleTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(width: double.NaN));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(opacity: 1.1));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(dash: new[] { 0d }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(dash: new[] { .001, .001 }));
     }
 
     [Theory]

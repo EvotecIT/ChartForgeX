@@ -53,6 +53,8 @@ internal static class MermaidGanttTodayStyle {
         var result = new double[tokens.Length];
         for (var index = 0; index < tokens.Length; index++)
             if (!Pixels(tokens[index], out result[index]) || result[index] <= 0) return false;
+        try { _ = new ChartStrokeStyle(dash: result); }
+        catch (ArgumentOutOfRangeException) { return false; }
         values = result; return true;
     }
 
