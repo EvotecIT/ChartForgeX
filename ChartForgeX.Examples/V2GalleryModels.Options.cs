@@ -35,7 +35,13 @@ public static partial class V2GalleryModels {
             return chart;
         }
         if (kind == ChartSeriesKind.Waterfall) {
-            var chart = Basic(kind, variant)!;
+            var chart = Chart.Create().WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance")
+                .WithYAxis("Running balance").AddWaterfall("Movement", new[] {
+                    ChartWaterfallItem.Delta(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                    ChartWaterfallItem.Total(7)
+                });
+            chart.Series[0].WithPointColor(4, "#A5358A");
             chart.Options.XAxis.WithReversal();
             chart.Options.YAxis.WithReversal();
             return chart.WithDataLabels();

@@ -18,6 +18,7 @@
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
+    if (data.cfxWaterfallKind) return waterfallTooltipRows(item);
     const reference = legendTarget(item);
     const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
     const svg = item.closest('svg');

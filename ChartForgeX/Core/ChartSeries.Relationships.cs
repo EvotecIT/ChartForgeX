@@ -33,7 +33,6 @@ public sealed partial class ChartSeries {
     }
 
     internal ChartRelationshipIndex? Relationships { get; private set; }
-    internal bool HasSourceData => Points.Count > 0 || Nodes.Count > 0;
     internal static bool IsRelationshipKind(ChartSeriesKind kind) => kind == ChartSeriesKind.Sankey || kind == ChartSeriesKind.Chord || kind == ChartSeriesKind.Tree || kind == ChartSeriesKind.Sunburst || kind == ChartSeriesKind.Treemap;
     internal void SetRelationships(ChartRelationshipIndex relationships) => Relationships = relationships;
 

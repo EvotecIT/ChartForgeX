@@ -613,15 +613,6 @@ public sealed partial class Chart {
     }
 
     /// <summary>
-    /// Adds a waterfall series where each point y-value represents a positive or negative change.
-    /// </summary>
-    /// <param name="name">The series name.</param>
-    /// <param name="points">The waterfall steps. The x values identify categories and the y values set cumulative changes.</param>
-    /// <param name="color">An optional positive change color.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddWaterfall(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) => Add(name, ChartSeriesKind.Waterfall, points, color);
-
-    /// <summary>
     /// Adds a radar series for comparing values across radial categories.
     /// </summary>
     /// <param name="name">The series name.</param>

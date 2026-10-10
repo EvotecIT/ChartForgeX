@@ -78,7 +78,7 @@ public static partial class V2Examples {
         ChartSeriesKind.StackedArea => "A normalized stack with middle-step boundaries",
         ChartSeriesKind.RangeArea => "Lower, middle and upper bounds share middle-step transitions",
         ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
-        ChartSeriesKind.Waterfall => "Reversed axes retain signed changes and the derived total",
+        ChartSeriesKind.Waterfall => "Explicit subtotals and a total retain the running balance on reversed axes",
         ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
         ChartSeriesKind.Bubble => "Equal request volumes share a radius; values above 100 retain their facts",
         ChartSeriesKind.Candlestick => "Hollow rising bodies, filled falling bodies and independent wick strokes",

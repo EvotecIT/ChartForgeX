@@ -63,7 +63,7 @@ internal static class ChartGuards {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts require at least one positive value.");
         }
 
-        if (!preparing && exclusiveKinds[0] == ChartSeriesKind.Waterfall && chart.Series[0].Points.Count == 0) {
+        if (!preparing && exclusiveKinds[0] == ChartSeriesKind.Waterfall && !chart.Series[0].HasSourceData) {
             throw new InvalidOperationException("Waterfall charts require at least one value.");
         }
 
@@ -120,6 +120,7 @@ internal static class ChartGuards {
     }
 
     private static void ValidateSeriesShape(ChartSeries series, bool preparing) {
+        series.ValidateWaterfall();
         series.ValidateInterpolation();
         series.ValidateMarkerAndRadarOptions();
         series.ValidateFinancialOptions();

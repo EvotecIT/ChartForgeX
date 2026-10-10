@@ -18,26 +18,22 @@ internal static partial class VisualCartesianCompiler {
         for (var item = 0; item < steps.Count; item++) {
             var step = steps[item]; var x = map.X(step.X); var startY = map.YOrBaseline(step.Start); var endY = map.YOrBaseline(step.End);
             var bounds = new ChartRect(x - width / 2, Math.Min(startY, endY), width, Math.Abs(startY - endY));
-            var color = step.IsTotal ? colors.Status.Medium.Fill : step.Delta >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
-            if (HasSeriesPaint(series, item))
-                color = PointColor(series, index, item, colors);
+            var color = WaterfallColor(series, index, step, colors);
             var label = ResolveObservationLabel(chart, context, series, item, colors,
-                () => (step.IsTotal || step.Delta < 0 ? string.Empty : "+") + Value(chart, step.Delta));
-            var id = step.IsTotal ? SeriesId(index) + "-total" : PointId(index, item);
+                () => (step.IsCheckpoint || step.Value < 0 ? string.Empty : "+") + Value(chart, step.Value));
+            var id = WaterfallId(index, step);
             var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-            var direction = MappedBarDirection(axis, step.Delta, startY, endY);
+            var direction = MappedBarDirection(axis, step.Value, startY, endY);
             var fillRole = SemanticMarkPaintRole(series, item);
-            var description = series.Name + ": " + label.DisplayedText + " start=" + Number(step.Start) + " end=" + Number(step.End) + " delta=" + Number(step.Delta);
-            builder.AddRegion(new VisualSemanticRegion(id, step.IsTotal ? "waterfall-total" : "point", bounds, description));
-            using (builder.PushGroup(id, step.IsTotal ? "waterfall-total" : "point", new Dictionary<string, string> {
-                ["data-cfx-series"] = Number(index), ["data-cfx-point"] = Number(step.SourceIndex), ["data-cfx-source-point"] = Number(step.SourceIndex),
-                ["data-cfx-x"] = Number(step.X), ["data-cfx-start"] = Number(step.Start), ["data-cfx-end"] = Number(step.End),
-                ["data-cfx-delta"] = Number(step.Delta), ["data-cfx-label"] = label.DisplayedText, ["data-cfx-derived-total"] = step.IsTotal ? "true" : "false",
-                ["data-cfx-source-count"] = Number(step.IsTotal ? series.Points.Count : 1), ["aria-label"] = description
-            })) {
-                if (previous.HasValue && !step.IsTotal && !series.Points[item].BreakBefore) {
+            var description = series.Name + ": " + label.DisplayedText + " start=" + Number(step.Start) + " end=" + Number(step.End)
+                + " " + WaterfallValueName(chart, step) + "=" + Number(step.Value);
+            builder.AddRegion(new VisualSemanticRegion(id, WaterfallRole(step), bounds, description));
+            var metadata = WaterfallMetadata(chart, index, step); metadata["data-cfx-label"] = label.DisplayedText; metadata["aria-label"] = description;
+            using (builder.PushGroup(id, WaterfallRole(step), metadata)) {
+                if (previous.HasValue && step.Kind != ChartWaterfallItemKind.Total) {
                     var nextOnRight = bounds.Left + bounds.Width / 2 >= previous.Value.Left + previous.Value.Width / 2;
-                    builder.Line(nextOnRight ? previous.Value.Right : previous.Value.Left, startY, nextOnRight ? bounds.Left : bounds.Right, startY,
+                    var connectorY = step.IsCheckpoint ? endY : startY;
+                    builder.Line(nextOnRight ? previous.Value.Right : previous.Value.Left, connectorY, nextOnRight ? bounds.Left : bounds.Right, connectorY,
                         ChartColorMath.WithOpacity(colors.MutedForeground, ChartVisualPrimitives.WaterfallConnectorOpacity),
                         ChartVisualPrimitives.WaterfallConnectorStrokeWidth, role: "waterfall-connector", dash: new[] { ChartVisualPrimitives.WaterfallConnectorDash, ChartVisualPrimitives.WaterfallConnectorGap },
                         paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text).WithOpacity(
@@ -47,7 +43,7 @@ internal static partial class VisualCartesianCompiler {
                     direction: direction, sourceRole: fillRole);
             }
             obstacles.Add(new LabelObstacle(id, bounds));
-            AddLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, label, labels, step.IsTotal ? step.End : step.Delta, id,
+            AddLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, label, labels, step.Value, id,
                 barDirection: direction, markFill: color, markFillRole: fillRole);
             previous = bounds;
         }

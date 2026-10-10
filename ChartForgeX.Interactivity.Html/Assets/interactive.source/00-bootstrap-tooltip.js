@@ -225,6 +225,14 @@
       return value !== undefined && value !== null && value !== '';
     }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: String(data['cfx' + part]) }));
   };
+  const waterfallTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if (!data.cfxWaterfallKind) return [];
+    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : 'Change';
+    return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
+      { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
+      .filter((row) => row.value !== undefined && row.value !== '');
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -235,8 +243,11 @@
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
-    else push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
-    push('End', data.cfxEnd);
+    else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
+    else {
+      push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+      push('End', data.cfxEnd);
+    }
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
@@ -246,7 +257,7 @@
     if (Number(data.cfxRemainderValue) > 0)
       push(rowName(node, 'remainder', 'Remainder'), data.cfxRemainderValue);
     push('Percent', percentText(data.cfxPercent));
-    push('Delta', data.cfxDelta);
+    if (!data.cfxWaterfallKind) push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
     metadataRows(node).forEach((row) => push(row.name, row.value));
     return rows;
