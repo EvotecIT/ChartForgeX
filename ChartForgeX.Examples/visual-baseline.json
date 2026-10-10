@@ -4708,9 +4708,9 @@
     {
       "name": "mermaid-er-direction",
       "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
+        "heightMode": "natural",
+        "frameFontRequest": "Inter, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nInter, Segoe UI, system-ui, sans-serif|700|normal|17|",
+        "frameFontFingerprint": "4C7E4A16049E62C0AE212313F7A996355DD17E35DCB7E9FB0B1E5CCCF7C684D7"
       },
       "width": 960,
       "height": 645,
@@ -4876,9 +4876,9 @@
     {
       "name": "mermaid-state-direction",
       "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
+        "heightMode": "natural",
+        "frameFontRequest": "Inter, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nInter, Segoe UI, system-ui, sans-serif|700|normal|17|",
+        "frameFontFingerprint": "4C7E4A16049E62C0AE212313F7A996355DD17E35DCB7E9FB0B1E5CCCF7C684D7"
       },
       "width": 960,
       "height": 645,
