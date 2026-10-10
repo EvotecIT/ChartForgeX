@@ -18,6 +18,7 @@ public sealed partial class MermaidParser {
         var result = new MermaidParseResult<MermaidDocument>();
         var lines = source.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var frontMatter = ReadFrontMatter(lines, result);
+        var configuration = ReadConfiguration(lines, frontMatter.EndLine, frontMatter.Text, result, out var declarations);
         var header = FindHeader(lines, frontMatter.EndLine + 1, result);
         if (!header.HasValue) {
             Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source must declare a diagram type.");
@@ -30,7 +31,8 @@ public sealed partial class MermaidParser {
             return result;
         }
 
-        var presentation = ReadPresentation(lines, header.Value.Line + 1, frontMatter.Text, result);
+        ResolveConfiguration(configuration, descriptor.Kind, result);
+        var presentation = ReadPresentation(lines, header.Value.Line + 1, result);
         MermaidDocument document;
         if (descriptor.Kind == MermaidDiagramKind.Flowchart || descriptor.Kind == MermaidDiagramKind.Swimlane) {
             document = ParseFlowchart(source, lines, frontMatter, header.Value, descriptor, result);
@@ -107,10 +109,11 @@ public sealed partial class MermaidParser {
         }
 
         AddDirectives(document, lines, frontMatter.EndLine + 1, header.Value.Line - 1);
+        document.Directives.AddRange(declarations);
+        document.Directives.Sort((left, right) => left.Span.Line.CompareTo(right.Span.Line));
         document.Accessibility.Name = presentation.Accessibility.Name;
         document.Accessibility.Description = presentation.Accessibility.Description;
-        document.Theme = presentation.Theme;
-        if (document is MermaidSequenceDocument && document.Theme != null) Add(result, header.Value.Line, header.Value.Column, header.Value.Text.Length, MermaidDiagnosticSeverity.Warning, "Sequence previews use the static sequence palette; the source theme is retained but not applied.");
+        document.Configuration = configuration;
         result.Document = document;
         return result;
     }
