@@ -442,10 +442,10 @@ internal static class DashboardPortfolioExamples {
         .AddRow("Paying Guests", "", "376")
         .AddRow("Free Guests", "", "104")
         .AddRow("No-show Risk", "", "37")
-        .WithRow(0, row => row.Cells[1].WithBadge("VIP", VisualStatus.Warning, TicketAmber, VisualBadgeStyle.Outline))
-        .WithRow(1, row => row.Cells[1].WithBadge("Paid", VisualStatus.Positive, TicketTeal, VisualBadgeStyle.Outline))
-        .WithRow(2, row => row.Cells[1].WithBadge("Free", VisualStatus.Info, TicketLavender, VisualBadgeStyle.Outline))
-        .WithRow(3, row => row.Cells[1].WithBadge("Risk", VisualStatus.Negative, TicketRose, VisualBadgeStyle.Outline));
+        .ConfigureRow(0, row => row.Cells[1].WithBadge("VIP", VisualStatus.Warning, TicketAmber, VisualBadgeStyle.Outline))
+        .ConfigureRow(1, row => row.Cells[1].WithBadge("Paid", VisualStatus.Positive, TicketTeal, VisualBadgeStyle.Outline))
+        .ConfigureRow(2, row => row.Cells[1].WithBadge("Free", VisualStatus.Info, TicketLavender, VisualBadgeStyle.Outline))
+        .ConfigureRow(3, row => row.Cells[1].WithBadge("Risk", VisualStatus.Negative, TicketRose, VisualBadgeStyle.Outline));
 
     private static WorkloadListBlock TicketingChannelList() => WorkloadListBlock.Create()
         .WithTitle("Tracker Links")
@@ -573,9 +573,9 @@ internal static class DashboardPortfolioExamples {
         .AddRow("54253", "Dianne Russell", "Marketing", "Attend", "03:44", "02:45")
         .AddRow("54288", "Marcus Stone", "Projects", "Attend", "03:57", "02:52")
         .AddRow("54312", "Anika Hall", "Recruiting", "Attend", "04:05", "03:10")
-        .WithRow(0, row => row.Cells[3].Status = VisualStatus.Positive)
-        .WithRow(1, row => row.Cells[3].Status = VisualStatus.Positive)
-        .WithRow(2, row => row.Cells[3].Status = VisualStatus.Positive);
+        .ConfigureRow(0, row => row.Cells[3].Status = VisualStatus.Positive)
+        .ConfigureRow(1, row => row.Cells[3].Status = VisualStatus.Positive)
+        .ConfigureRow(2, row => row.Cells[3].Status = VisualStatus.Positive);
 
     private static void Save(Chart chart, string output, string name) {
         chart.SaveSvg(Path.Combine(output, name + ".svg"));
