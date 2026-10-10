@@ -60,6 +60,56 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     }
 
     [Theory]
+    [InlineData(ChartSeriesKind.Bar)]
+    [InlineData(ChartSeriesKind.HorizontalBar)]
+    [InlineData(ChartSeriesKind.Line)]
+    [InlineData(ChartSeriesKind.Scatter)]
+    [InlineData(ChartSeriesKind.Bubble)]
+    [InlineData(ChartSeriesKind.Lollipop)]
+    public async Task PaintedCartesianCaptionUsesItsDeclaredObservationAndNativeEligibility(ChartSeriesKind kind) {
+        if (!Enabled) return;
+        var horizontal = kind == ChartSeriesKind.HorizontalBar;
+        var chart = Chart.Create().WithSize(700, 430).WithHeader(false).WithLegend(false).WithDataLabels()
+            .WithTheme(ChartTheme.GraphiteLight()).WithXAxisBounds(0, horizontal ? 50 : 5).WithYAxisBounds(0, horizontal ? 5 : 50);
+        var points = new[] { new ChartPoint(1, 10), new ChartPoint(3, 30) };
+        chart = kind switch {
+            ChartSeriesKind.Bar => chart.AddBar("Reading", points),
+            ChartSeriesKind.HorizontalBar => chart.AddHorizontalBar("Reading", points),
+            ChartSeriesKind.Line => chart.AddLine("Reading", points),
+            ChartSeriesKind.Scatter => chart.AddScatter("Reading", points),
+            ChartSeriesKind.Bubble => chart.AddBubble("Reading", new[] { new ChartBubble(1, 10, 9), new ChartBubble(3, 30, 36) }),
+            ChartSeriesKind.Lollipop => chart.AddLollipop("Reading", points),
+            _ => throw new InvalidOperationException("Unsupported caption fixture.")
+        };
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            options.Tooltip.Range = HtmlChartTooltipRange.Exact;
+            options.Tooltip.Mode = HtmlChartTooltipMode.Single;
+        }), 740, 620);
+        var page = session.Page;
+        var caption = "[data-cfx-label-for='series-0-point-1'] text";
+        var native = page.Locator(Point(0, 1));
+        await page.EvaluateAsync("()=>document.querySelector('.cfx-interactive-chart').addEventListener('cfxhover',event=>window.captionHover=event.detail.target)");
+        await MoveToAsync(page, caption);
+        Assert.True(await page.Locator(".cfx-tooltip").IsVisibleAsync());
+        Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
+        var hover = await page.EvaluateAsync<JsonElement>("()=>window.captionHover");
+        Assert.Equal("0", hover.GetProperty("series").GetString());
+        Assert.Equal("1", hover.GetProperty("point").GetString());
+        await page.Locator(caption).ClickAsync();
+        Assert.Equal("true", await native.GetAttributeAsync("aria-selected"));
+        await CaptureAsync(page, "acquisition-caption-" + kind, new { Kind = kind.ToString(), NativeId = "series-0-point-1", Selected = true });
+        await native.FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal("false", await native.GetAttributeAsync("aria-selected"));
+        await native.BlurAsync();
+        await native.EvaluateAsync("node=>node.style.setProperty('opacity','0','important')");
+        await MoveAwayAsync(page); await MoveToAsync(page, caption);
+        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        await page.Locator(caption).ClickAsync();
+        Assert.Equal("false", await native.GetAttributeAsync("aria-selected"));
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
     [InlineData(HtmlChartResponsiveLayout.Fit, 340, true, true, true)]
     [InlineData(HtmlChartResponsiveLayout.Fit, 950, false, false, true)]
     [InlineData(HtmlChartResponsiveLayout.Readable, 340, false, false, false)]

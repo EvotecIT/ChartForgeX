@@ -293,11 +293,15 @@ internal static partial class VisualCartesianCompiler {
             var displayedStyle = DisplayedStyle(contained ? insideInk.Style : label.Request.Style);
             var outlined = ((CartesianLabels)labels).Outlined.Contains(label.Request);
             var surface = context.Theme.Resolve(context.ThemeMode).Surface;
-            builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
-                role: label.Request.AssociatedMarkId?.StartsWith("stack-total-", StringComparison.Ordinal) == true ? "stack-total-label" : "data-label",
-                id: label.Request.AssociatedMarkId + "-label", paint: (contained ? insideInk.Paint : label.Request.Paint) ?? VisualChartPaint.Text(displayedStyle),
-                stroke: outlined ? surface : null, strokeWidth: outlined ? ChartTextHalo.SvgStrokeWidth(displayedStyle.EffectiveFontSize, displayedStyle.Font.Weight >= 700) : 0,
-                strokePaint: outlined ? SvgPaint.Of(surface, SvgColorRole.Surface) : null);
+            var total = label.Request.AssociatedMarkId?.StartsWith("stack-total-", StringComparison.Ordinal) == true;
+            using (builder.PushGroup(label.Request.AssociatedMarkId + "-label-source", total ? "stack-total-label-source" : "data-label-source",
+                VisualMarkLabel.Metadata(label.Request.Text, total ? null : label.Request.AssociatedMarkId))) {
+                builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
+                    role: total ? "stack-total-label" : "data-label",
+                    id: label.Request.AssociatedMarkId + "-label", paint: (contained ? insideInk.Paint : label.Request.Paint) ?? VisualChartPaint.Text(displayedStyle),
+                    stroke: outlined ? surface : null, strokeWidth: outlined ? ChartTextHalo.SvgStrokeWidth(displayedStyle.EffectiveFontSize, displayedStyle.Font.Weight >= 700) : 0,
+                    strokePaint: outlined ? SvgPaint.Of(surface, SvgColorRole.Surface) : null);
+            }
         }
     }
 
