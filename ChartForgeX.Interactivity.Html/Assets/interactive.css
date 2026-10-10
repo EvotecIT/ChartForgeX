@@ -338,6 +338,7 @@ body {
 
 .cfx-tooltip__title {
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .cfx-tooltip__title--series {
@@ -371,6 +372,10 @@ body {
 .cfx-tooltip__meta dt {
   color: #94a3b8;
   font-weight: 700;
+}
+
+.cfx-tooltip__meta dd {
+  overflow-wrap: anywhere;
 }
 
 .cfx-tooltip[hidden] {

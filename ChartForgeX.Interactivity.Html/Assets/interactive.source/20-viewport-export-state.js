@@ -17,6 +17,7 @@
     stage.style.setProperty('--cfx-zoom', state.zoom);
     stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
+    refreshTooltipPosition(root);
   };
   // The reset control is contextual: it exists only while the reader has changed the view.
   const viewChanged = (root) => {
