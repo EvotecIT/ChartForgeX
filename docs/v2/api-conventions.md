@@ -138,22 +138,24 @@ Pyramid values and their aggregate must be finite and non-negative. Zero values 
 
 `ChartOrientation` is the shared core orientation type, including `MermaidXYChartDocument.Orientation`. Replace `MermaidXYChartOrientation` references with `ChartForgeX.Core.ChartOrientation` when migrating parsed XY chart code.
 
-## Waterfall checkpoints
+## Waterfall opening balances and checkpoints
 
-`AddWaterfall(name, IEnumerable<ChartWaterfallItem>)` accepts immutable `Delta(x, value)`, `Subtotal(x)` and `Total(x)` items. Items accumulate in input order and each has a distinct display coordinate. A subtotal spans the preceding checkpoint balance to the current balance and reports the changes since that checkpoint; a total spans zero to the current balance. Both retain the running balance for the next change. Typed input renders exactly the supplied items. The `ChartPoint` overload retains its automatically appended final total.
+`AddWaterfall(name, IEnumerable<ChartWaterfallItem>)` accepts immutable `OpeningBalance(x, value)`, `Delta(x, value)`, `Subtotal(x)` and `Total(x)` items, with `double` or `DateTime` coordinates. Items accumulate in input order and each has a distinct display coordinate. An optional opening balance must be first and may occur only once. Its finite positive, negative or zero value is drawn from zero and seeds the running balance. Opening-only input is valid. Without an opening item, accumulation starts at zero.
+
+A subtotal spans the opening balance or preceding checkpoint balance to the current balance and reports only the changes since that anchor. A total spans zero to the current balance, including the opening balance. Both retain the running balance for the next change. Typed input renders exactly the supplied items; it appends no total. The `ChartPoint` overload retains its signed-delta behavior and automatically appended final total.
 
 ```csharp
-var waterfall = Chart.Create().WithXLabels("Income", "Costs", "Stage", "Adjustment", "Balance")
+var waterfall = Chart.Create().WithXLabels("Opening", "Costs", "Stage", "Adjustment", "Balance")
     .AddWaterfall("Movement", new[] {
-        ChartWaterfallItem.Delta(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+        ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
         ChartWaterfallItem.Delta(4, 10), ChartWaterfallItem.Total(5)
     }).WithDataLabels();
 waterfall.Series[0].WithPointColor(2, "#A5358A");
 ```
 
-Typed input lives in the immutable `ChartSeries.WaterfallItems` snapshot; `Points` is empty and cannot be mixed into that series. `DeltaValue` is null on checkpoints. `SourcePointCount` counts supplied deltas, while point colors, labels, fill patterns, data-label styles and point legends index all authored items. Existing axis labels and formatters own category captions; `ChartOptions.Labels.Change`, `.Subtotal` and `.Total` localize the default readout and checkpoint captions. Bar paint and stroke use the shared series controls.
+Typed input lives in the immutable `ChartSeries.WaterfallItems` snapshot; `Points` is empty and cannot be mixed into that series. `Value` holds an authored opening balance or delta and is null on calculated checkpoints. `SourcePointCount` counts the opening balance and deltas, while point colors, labels, fill patterns, data-label styles and point legends index all authored items. Invalid item order is rejected before the series is added. Existing axis labels and formatters own category captions; `ChartOptions.Labels.OpeningBalance`, `.Change`, `.Subtotal` and `.Total` localize the default readout and captions. Opening balances and checkpoints use neutral paint unless series or point paint overrides it. Bar paint and stroke use the shared series controls.
 
-Native marks and point legends preserve the distinction between item positions and numeric source ordinals. A delta retains its raw value and `data-cfx-source-point`; a checkpoint exposes its kind, calculated value and contributor ordinals through `data-cfx-derived` and `data-cfx-source-points`, with no invented source point or delta. Captions refer to the owning mark. Prepared SVG/PNG and static artifact output retain those facts after model changes. Portable editable chart-series interchange, opening balances and horizontal waterfalls remain separate capabilities.
+Native marks and point legends preserve the distinction between item positions and numeric source ordinals. An opening balance or delta retains its raw value and `data-cfx-source-point`; only deltas expose `data-cfx-delta`. A checkpoint exposes its kind, calculated value and contributor ordinals through `data-cfx-derived` and `data-cfx-source-points`, with no invented source point or delta. Total contributors include the opening observation; subtotal contributors contain only changes since the anchor. Captions refer to the owning mark. Prepared SVG/PNG and static artifact output retain those facts after model changes. Portable editable chart-series interchange and horizontal waterfalls remain separate capabilities.
 
 ## Sankey layout
 

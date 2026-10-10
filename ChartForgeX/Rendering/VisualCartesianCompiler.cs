@@ -80,7 +80,7 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall) {
             var steps = ChartWaterfallSteps.Create(chart.Series[0]);
             axisLabels.SetTicks(chart.Options.XAxis, steps.Select(step => step.X).Distinct().OrderBy(value => value).ToArray());
-            foreach (var step in steps.Where(step => step.IsCheckpoint))
+            foreach (var step in steps.Where(step => step.Kind != ChartWaterfallItemKind.Delta))
                 if (chart.Options.XAxis.LabelFormatter == null && ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, step.X) == null)
                     axisLabels.Set(chart.Options.XAxis, step.X, WaterfallValueName(chart, step));
         }

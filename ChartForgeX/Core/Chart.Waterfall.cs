@@ -13,9 +13,9 @@ public sealed partial class Chart {
     public Chart AddWaterfall(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) =>
         Add(name, ChartSeriesKind.Waterfall, points, color);
 
-    /// <summary>Adds immutable changes and explicit calculated checkpoints. No extra final total is appended.</summary>
+    /// <summary>Adds an optional opening balance, immutable changes and explicit calculated checkpoints. No extra final total is appended.</summary>
     /// <param name="name">The series name.</param>
-    /// <param name="items">Items in accumulation order, each with a distinct display coordinate.</param>
+    /// <param name="items">Items in accumulation order, each with a distinct display coordinate. An opening balance must be first and may occur only once.</param>
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     /// <remarks>Use existing axis labels and point overrides; point overrides index every authored item, including checkpoints.</remarks>

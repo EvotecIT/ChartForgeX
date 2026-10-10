@@ -57,7 +57,7 @@ The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roa
 
 - Extend Sunburst with rounded sectors, secondary labels and branch highlighting. Shared hierarchy facts, independent numeric colors, leaf aggregation and inclusive authored parent totals are implemented.
 - Extend Sankey with per-flow styles and additional label placement policies. Any optional tiny-flow minimum-width treatment must preserve truthful weights and conservation; current alignment, ordering, node geometry and fill controls keep one proportional scale.
-- Extend Waterfall with an explicit opening balance and horizontal orientation. Typed delta/subtotal/total items share one accumulation owner and retain checkpoints separately from numeric source observations.
+- Extend Waterfall with horizontal orientation. Typed opening/delta/subtotal/total items share one accumulation owner and retain checkpoints separately from numeric source observations.
 - [ ] Extend numeric radial axes with axis titles and label orientation, rounded sectors, mixed radial families, and angular reversal for radar/polar. Schedule reversal requires matching packed span and label projections.
 - Extend weighted Chord with deliberate ordering strategies, per-flow styles, and an independent quantitative color dimension. Its native scene retains directed reciprocal, parallel, self, and raw zero flows in source order; circular span, node gaps/thickness, opacity, target cues, and measured labels are configurable.
 - [ ] Extend typed adapter tooltip, crosshair, legend visibility and data-domain zoom policies; palette choice must not decide interaction behavior.
