@@ -44,7 +44,7 @@ internal sealed class VisualAxisPaintBounds {
             var upper = fixedMaximum ? maximum - span : minimum;
             foreach (var extent in _extents) {
                 // An uncontainable mark clips independently; it must not cancel other marks' gutters.
-                if (extent.Y * 2 >= pixels) continue;
+                if (extent.Y * 2 > pixels) continue;
                 var fraction = extent.Y / pixels;
                 // An authored bound is a clipping boundary, so only the other side expands.
                 if (!fixedMaximum) lower = Math.Max(lower, extent.X - (1 - fraction) * span);

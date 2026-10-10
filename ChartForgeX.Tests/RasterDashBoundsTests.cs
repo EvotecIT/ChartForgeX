@@ -2,11 +2,28 @@ using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.SvgRaster;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class RasterDashBoundsTests {
+    [Fact]
+    public void OneStrokeSharesTheDashBudgetAcrossTilesAndContours() {
+        var canvas = new RgbaCanvas(12000, 4, 1);
+        Assert.Throws<System.InvalidOperationException>(() => canvas.StrokePolylines(
+            new[] { new[] { new ChartPoint(0, 2), new ChartPoint(12000, 2) } }, ChartColors.Black, 1,
+            RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .05, .05 }));
+        canvas = new RgbaCanvas(3000, 8, 1);
+        var lines = Enumerable.Range(1, 5).Select(y => (System.Collections.Generic.IReadOnlyList<ChartPoint>)new[] { new ChartPoint(0, y), new ChartPoint(3000, y) }).ToArray();
+        Assert.Throws<System.InvalidOperationException>(() => canvas.StrokePolylines(lines, ChartColors.Black, 1,
+            RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .05, .05 }));
+    }
+
+    [Fact]
+    public void SvgStrokesCannotResetTheDashBudgetAcrossTiles() => Assert.Throws<System.NotSupportedException>(() =>
+        SvgRasterizer.Rasterize("<svg xmlns='http://www.w3.org/2000/svg' width='12000' height='4'><path d='M0 2 H12000' fill='none' stroke='#000' stroke-width='1' stroke-dasharray='.05 .05'/></svg>"));
+
     [Fact]
     public void AcceptedQuarterPixelDashesRenderOnALargeValidCanvas() {
         var canvas = new RgbaCanvas(30000, 4, 1);

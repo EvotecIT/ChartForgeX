@@ -7,9 +7,16 @@ namespace ChartForgeX.Raster;
 internal static partial class RasterStroker {
     private const int MaximumDashPieces = 100000;
 
+    internal sealed class DashBudget {
+        private int _pieces;
+        internal void Consume() {
+            if (++_pieces > MaximumDashPieces) throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");
+        }
+    }
+
     /// <summary>Clips invisible lengths before splitting dashes, retaining their phase and joins.</summary>
     internal static List<List<ChartPoint>> Dash(IReadOnlyList<ChartPoint> points, IReadOnlyList<double> pattern,
-        double left, double top, double right, double bottom, double dashOffset = 0) {
+        double left, double top, double right, double bottom, double dashOffset, DashBudget budget) {
         var lengths = new List<double>(pattern.Count * 2);
         double total = 0;
         foreach (double value in pattern) {
@@ -23,7 +30,6 @@ internal static partial class RasterStroker {
         List<ChartPoint>? run = null;
         double phase = double.IsNaN(dashOffset) || double.IsInfinity(dashOffset) ? 0 : dashOffset % total;
         if (phase < 0) phase += total;
-        int pieces = 0;
         for (int i = 1; i < points.Count; i++) {
             ChartPoint a = points[i - 1], b = points[i];
             double length = Distance(a, b);
@@ -39,7 +45,9 @@ internal static partial class RasterStroker {
             while (index < lengths.Count - 1 && offset > 0 && offset >= lengths[index]) offset -= lengths[index++];
             double position = length * first, end = length * last;
             while (position < end) {
-                if (++pieces > MaximumDashPieces) throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");
+                // Count painted pieces, including zero-length dots. Gap steps alternate with
+                // these bounded entries and do not consume outline memory.
+                if ((index & 1) == 0) budget.Consume();
                 double remaining = lengths[index] - offset;
                 if (remaining <= 0) {
                     if (lengths[index] == 0 && (index & 1) == 0) runs.Add(new List<ChartPoint> { DashPoint(a, b, position / length) });

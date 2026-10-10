@@ -33,7 +33,7 @@ internal static partial class VisualScheduleCompiler {
         bounds.Include(0, left); bounds.Include(1, right);
         foreach (var guide in guides) {
             // Preserve task and containable-guide geometry when a wider stroke must clip.
-            if (guide.Y * 2 >= plot.Width) continue;
+            if (guide.Y * 2 > plot.Width) continue;
             largest = Math.Max(largest, guide.Y);
             var coordinate = left + guide.X * initial.Width;
             if (!axis.Minimum.HasValue && coordinate < guide.Y || !axis.Maximum.HasValue && plot.Width - coordinate < guide.Y) fits = false;
