@@ -435,6 +435,11 @@
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
       || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)
       || subject !== node && !paintWithinNativeClips(node, subject)) return null;
+    // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
+    if (node.matches('circle,ellipse')) {
+      const box = node.getBBox();
+      if (!(box.width > 0 && box.height > 0)) return null;
+    }
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
     // Open line marks never paint their inherited default black fill.
