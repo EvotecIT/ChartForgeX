@@ -28,7 +28,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
                 const NativeObserver=window.MutationObserver;
                 window.tooltipObserverTargets=new Set();
                 window.MutationObserver=class extends NativeObserver {
-                    observe(tree,options) { window.tooltipObserverTargets.add(tree); super.observe(tree,options); }
+                    observe(tree,options) { if(tree instanceof Document || tree instanceof ShadowRoot) window.tooltipObserverTargets.add(tree); super.observe(tree,options); }
                     disconnect() { window.tooltipObserverTargets.clear(); super.disconnect(); }
                 };
                 // Two touch contacts can queue separate charts. Native MutationObserver and timers remain in use.

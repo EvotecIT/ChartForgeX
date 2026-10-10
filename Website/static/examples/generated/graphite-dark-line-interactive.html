@@ -1,4 +1,789 @@
-(() => {
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Check results over time</title>
+<style>:root {
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e5e7eb;
+  font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Arial, sans-serif;
+}
+
+.cfx-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.cfx-dashboard {
+  width: min(100%, 1440px);
+  display: grid;
+  grid-template-columns: repeat(var(--cfx-dashboard-columns, 2), minmax(0, 1fr));
+  gap: 18px;
+}
+
+.cfx-interactive-chart {
+  position: relative;
+  width: min(100%, 1200px);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cfx-dashboard .cfx-interactive-chart {
+  width: 100%;
+}
+
+.cfx-stage {
+  position: relative;
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.cfx-stage svg {
+  margin: auto;
+  transform: translate(var(--cfx-pan-x, 0), var(--cfx-pan-y, 0)) scale(var(--cfx-zoom, 1));
+  transform-origin: center center;
+  transition: transform .12s ease;
+  will-change: transform;
+}
+
+.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-stage svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Readable sizing follows the chart's host, including narrow columns in a wide window. */
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: stable;
+  touch-action: auto;
+}
+
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="pan"] .cfx-stage,
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="brush"] .cfx-stage {
+  touch-action: none;
+}
+
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage svg {
+  width: 100%;
+  min-width: min(var(--cfx-native-width, 640px), 38rem);
+  max-width: none;
+}
+
+.cfx-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 6px;
+  border: 1px solid rgba(51, 65, 85, .72);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, .58);
+}
+
+.cfx-frame {
+  position: relative;
+  min-width: 0;
+}
+
+.cfx-interactive-chart[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* Contextual reset clears chart content and appears below the stage only after the view changes. */
+.cfx-reset {
+  display: flex;
+  width: max-content;
+  margin: 8px 8px 0 auto;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(148, 163, 184, .45);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, .78);
+  color: #e5e7eb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.cfx-reset[hidden] {
+  display: none;
+}
+
+.cfx-reset:hover,
+.cfx-reset:focus-visible {
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
+.cfx-scenarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.cfx-tool,
+.cfx-scenario {
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #111827;
+  color: #e5e7eb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 9px;
+}
+
+.cfx-scenario {
+  border-color: color-mix(in srgb, var(--cfx-scenario-color, #64748b) 45%, #334155);
+}
+
+.cfx-scenario::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: var(--cfx-scenario-color, #64748b);
+}
+
+.cfx-tool:hover,
+.cfx-tool:focus-visible,
+.cfx-tool[aria-pressed="true"],
+.cfx-scenario:hover,
+.cfx-scenario:focus-visible,
+.cfx-scenario[aria-pressed="true"] {
+  border-color: #38bdf8;
+  color: #7dd3fc;
+}
+
+.cfx-scenario-panel {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(51, 65, 85, .95);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, .78);
+  color: #e5e7eb;
+}
+
+.cfx-scenario-panel__summary {
+  display: grid;
+  gap: 2px;
+}
+
+.cfx-scenario-panel__title {
+  color: var(--cfx-scenario-color, #f8fafc);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cfx-scenario-panel__meta {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.cfx-scenario-panel__controls,
+.cfx-scenario-panel__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.cfx-scenario-panel__steps {
+  list-style: none;
+}
+
+.cfx-scenario-panel__steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid rgba(51, 65, 85, .95);
+  border-radius: 6px;
+  background: rgba(2, 6, 23, .52);
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cfx-scenario-panel__steps li::before {
+  content: attr(data-cfx-scenario-step-index);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--cfx-scenario-color, #2563eb);
+  color: #fff;
+  font-size: 10px;
+}
+
+.cfx-scenario-panel__steps li[aria-current="step"] {
+  border-color: var(--cfx-scenario-color, #38bdf8);
+  color: #f8fafc;
+}
+
+.cfx-interactive-chart[data-cfx-scenario-playback="playing"] [data-cfx-scenario-step-control="play"] {
+  border-color: var(--cfx-scenario-color, #38bdf8);
+  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 30%, rgba(15, 23, 42, .92));
+  color: #fff;
+}
+
+.cfx-scenario-progress {
+  position: relative;
+  min-height: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(51, 65, 85, .95);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, .54);
+  color: #dbeafe;
+}
+
+.cfx-scenario-progress[hidden] {
+  display: none;
+}
+
+.cfx-scenario-progress__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--cfx-scenario-progress, 0%);
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 46%, rgba(56, 189, 248, .2));
+  transition: width .18s ease;
+}
+
+.cfx-scenario-progress__text {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-scenario-scrubber {
+  width: 100%;
+  min-height: 24px;
+  margin: 0;
+  accent-color: var(--cfx-scenario-color, #38bdf8);
+  cursor: pointer;
+}
+
+.cfx-scenario-scrubber:disabled {
+  cursor: default;
+  opacity: .45;
+}
+
+.cfx-tooltip {
+  position: fixed;
+  z-index: 20;
+  min-width: 180px;
+  max-width: 320px;
+  border: 1px solid rgba(56, 189, 248, .45);
+  border-radius: 7px;
+  background: rgba(15, 23, 42, .96);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .26);
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 8px 10px;
+  pointer-events: none;
+}
+
+.cfx-tooltip--pinned {
+  border-color: rgba(250, 204, 21, .7);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .30), 0 0 0 1px rgba(250, 204, 21, .16) inset;
+}
+
+.cfx-tooltip--pinned::before {
+  content: "Pinned";
+  display: block;
+  margin-bottom: 4px;
+  color: #fde68a;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.cfx-tooltip__title {
+  font-weight: 800;
+}
+
+.cfx-tooltip__title--series {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cfx-tooltip__swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 2px;
+}
+
+.cfx-tooltip__meta {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 2px 10px;
+  margin: 6px 0 0;
+  color: #cbd5e1;
+}
+
+.cfx-tooltip__meta dt,
+.cfx-tooltip__meta dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.cfx-tooltip__meta dt {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.cfx-tooltip[hidden] {
+  display: none;
+}
+
+.cfx-brush-box {
+  position: absolute;
+  z-index: 10;
+  border: 1px solid rgba(56, 189, 248, .95);
+  background: rgba(56, 189, 248, .18);
+  pointer-events: none;
+}
+
+.cfx-brush-box[hidden] {
+  display: none;
+}
+
+.cfx-crosshair {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+}
+
+.cfx-crosshair[hidden] {
+  display: none;
+}
+
+.cfx-crosshair__line {
+  position: absolute;
+  background: rgba(14, 165, 233, .58);
+  box-shadow: 0 0 10px rgba(14, 165, 233, .18);
+}
+
+.cfx-crosshair__line--x {
+  left: 0;
+  right: 0;
+  top: var(--cfx-crosshair-y, 0);
+  height: 1px;
+}
+
+.cfx-crosshair__line--y {
+  top: 0;
+  bottom: 0;
+  left: var(--cfx-crosshair-x, 0);
+  width: 1px;
+}
+
+.cfx-crosshair__label {
+  position: absolute;
+  left: min(calc(var(--cfx-crosshair-x, 0px) + 10px), calc(100% - 220px));
+  top: max(8px, calc(var(--cfx-crosshair-y, 0px) - 28px));
+  max-width: 210px;
+  overflow: hidden;
+  border: 1px solid rgba(14, 165, 233, .42);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .86);
+  color: #e0f2fe;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-reveal-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cfx-reveal-layer[hidden] {
+  display: none;
+}
+
+.cfx-reveal-label {
+  position: absolute;
+  max-width: min(220px, calc(100% - 16px));
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 42%, rgba(15, 23, 42, .7));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 18%, rgba(2, 6, 23, .9));
+  box-shadow: 0 10px 24px rgba(2, 6, 23, .28);
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.15;
+  padding: 5px 8px;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.cfx-reveal-label::before {
+  content: attr(data-cfx-reveal-index);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, .16);
+  color: #bae6fd;
+  font-size: 10px;
+}
+
+.cfx-compare-tray {
+  position: relative;
+  z-index: 11;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 8px;
+  contain: inline-size;
+  border: 1px solid rgba(56, 189, 248, .36);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, .82);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .24);
+  color: #e0f2fe;
+  padding: 6px;
+  pointer-events: auto;
+}
+
+.cfx-compare-tray[hidden] {
+  display: none;
+}
+
+.cfx-compare-tray__summary,
+.cfx-compare-tray__more {
+  flex: 0 0 auto;
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 0 5px;
+  white-space: nowrap;
+}
+
+.cfx-compare-chip,
+.cfx-compare-clear {
+  min-width: 0;
+  border: 1px solid rgba(56, 189, 248, .34);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .72);
+  color: #f8fafc;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+.cfx-compare-chip {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-compare-chip:hover,
+.cfx-compare-chip:focus-visible {
+  border-color: #7dd3fc;
+  color: #bae6fd;
+}
+
+.cfx-compare-clear {
+  flex: 0 0 auto;
+  margin-left: auto;
+  border-color: rgba(250, 204, 21, .44);
+  color: #fde68a;
+}
+
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage {
+  cursor: grab;
+}
+
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage:active {
+  cursor: grabbing;
+}
+
+.cfx-interactive-chart[data-cfx-mode="brush"] .cfx-stage {
+  cursor: crosshair;
+}
+
+.cfx-interactive-chart [data-cfx-label],
+.cfx-interactive-chart [data-cfx-point],
+.cfx-interactive-chart [data-cfx-series],
+.cfx-interactive-chart [data-cfx-role="legend-item"],
+.cfx-interactive-chart .cfx-interactive-region {
+  cursor: pointer;
+}
+
+.cfx-interactive-chart .cfx-selected {
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, .75));
+  opacity: 1 !important;
+  stroke-width: var(--cfx-interactive-focus-stroke-width, 2.4) !important;
+}
+
+.cfx-interactive-chart .cfx-hovered {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px rgba(125, 211, 252, .72));
+  stroke-width: var(--cfx-interactive-hover-stroke-width, 2.5) !important;
+}
+
+.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related {
+  opacity: .82 !important;
+  filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
+}
+
+.cfx-interactive-chart:not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected) {
+  opacity: .38;
+}
+
+.cfx-interactive-chart .cfx-trail {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 9px rgba(34, 211, 238, .44));
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="1"] {
+  filter: drop-shadow(0 0 12px rgba(250, 204, 21, .72));
+  stroke-width: var(--cfx-interactive-trail-stroke-width, 2.6) !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="2"] {
+  opacity: .86 !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="3"] {
+  opacity: .72 !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="4"],
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="5"] {
+  opacity: .58 !important;
+}
+
+.cfx-interactive-chart .cfx-series-muted {
+  opacity: .18 !important;
+}
+
+.cfx-interactive-chart .cfx-series-isolated-in {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px rgba(250, 204, 21, .34));
+}
+
+.cfx-interactive-chart .cfx-series-isolated-out {
+  opacity: .10 !important;
+  filter: saturate(.35);
+}
+
+.cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-isolated="true"] {
+  filter: drop-shadow(0 0 8px rgba(250, 204, 21, .55));
+}
+
+.cfx-interactive-chart .cfx-scenario-muted {
+  opacity: .46 !important;
+  filter: saturate(.72);
+}
+
+.cfx-interactive-chart .cfx-scenario-active {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 70%, transparent));
+}
+
+.cfx-interactive-chart .cfx-scenario-step-active {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 80%, transparent));
+}
+
+.cfx-interactive-chart .cfx-scenario-step-muted {
+  opacity: .56 !important;
+  filter: saturate(.8);
+}
+
+@media (max-width: 900px) {
+  .cfx-shell {
+    padding: 14px;
+  }
+
+  .cfx-dashboard {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cfx-stage {
+    padding: 8px;
+  }
+
+  .cfx-toolbar,
+  .cfx-scenario-panel__controls {
+    justify-content: stretch;
+  }
+
+  .cfx-toolbar .cfx-tool,
+  .cfx-scenario-panel__controls .cfx-tool {
+    flex: 1 1 auto;
+    min-height: 36px;
+  }
+
+  .cfx-scenario-panel__steps {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .cfx-scenario-panel__steps li {
+    min-height: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfx-stage svg,
+  .cfx-scenario-progress__bar,
+  .cfx-interactive-chart [data-cfx-label],
+  .cfx-interactive-chart [data-cfx-point],
+  .cfx-interactive-chart [data-cfx-series] {
+    transition: none !important;
+  }
+}
+
+/* Graphite keeps host controls separate from the chart's single frame. */
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-stage { background: transparent; border: 0; padding: 0; }
+/* The frame hugs the chart card and aligns its contextual control with the card edge. */
+.cfx-interactive-chart[data-cfx-look="graphite"]:not([data-cfx-responsive-layout="fit"]) .cfx-frame { width: fit-content; max-width: 100%; margin-inline: auto; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-muted);
+  font: 400 13px/1 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset:hover { border-color: var(--cfx-crosshair-axis); color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+  box-shadow: none; font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__summary,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__more { color: var(--cfx-tooltip-muted); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:hover,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:focus-visible,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:hover,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:focus-visible { border-color: var(--cfx-host-accent); }
+.cfx-dashboard { gap: 16px; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip {
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+  border: 1px solid var(--cfx-tooltip-line); border-radius: 6px;
+  box-shadow: var(--cfx-tooltip-shadow); padding: 8px 12px;
+  font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title { font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid var(--cfx-tooltip-line); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title--series:last-child { padding-bottom: 0; border-bottom: 0; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta { grid-template-columns: 1fr auto; gap: 6px 24px; color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dt { display: flex; align-items: center; gap: 6px; color: inherit; font-weight: 400; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__meta dd { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__swatch { width: 10px; height: 10px; flex: 0 0 10px; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__quiet { color: var(--cfx-tooltip-muted) !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line { background: none; box-shadow: none; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--x { border-top: 1px dashed var(--cfx-crosshair-axis); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--y { border-left: 1px dashed var(--cfx-crosshair-axis); }
+.cfx-interactive-chart[data-cfx-crosshair-label="false"] .cfx-crosshair__label { display: none; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered { filter: none; }
+/* Series hover keeps the pointed series at full strength and dims the others to 30 %; the shared crosshair dims nothing. */
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-point-interaction-target) { opacity: .3; }
+.cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hovered,
+.cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hover-column { r: 4px; opacity: 1 !important; stroke: var(--cfx-tooltip-surface); stroke-width: 2px !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered) { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column) { opacity: 0 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-in { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"] { text-decoration: line-through; }
+.cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }
+/* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series],
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series] { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted,
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out { opacity: 1 !important; }
+.cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; }
+.cfx-interactive-chart [data-cfx-point].cfx-hovered > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker {
+  opacity: 1; stroke: var(--cfx-tooltip-surface); stroke-width: 2px;
+}
+</style>
+</head>
+<body>
+<main class="cfx-shell" style="background:#0C0D10;color:#F2F3F5;font-family:Calibri, Carlito, Segoe UI, system-ui, sans-serif">
+<section class="cfx-interactive-chart" data-cfx-look="graphite" role="group" aria-label="Check results over time" data-cfx-asset-source="document" data-cfx-chart-id="check-results-over-time" data-cfx-prepared-chart="{&quot;series&quot;:[{&quot;name&quot;:&quot;Passed&quot;,&quot;key&quot;:&quot;Passed&quot;,&quot;kind&quot;:&quot;line&quot;,&quot;state&quot;:&quot;quiet&quot;,&quot;indices&quot;:[]},{&quot;name&quot;:&quot;Warnings&quot;,&quot;key&quot;:&quot;Warnings&quot;,&quot;kind&quot;:&quot;line&quot;,&quot;state&quot;:&quot;warning&quot;,&quot;indices&quot;:[]},{&quot;name&quot;:&quot;Failed&quot;,&quot;key&quot;:&quot;Failed&quot;,&quot;kind&quot;:&quot;line&quot;,&quot;state&quot;:&quot;danger&quot;,&quot;indices&quot;:[]}],&quot;xLabels&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;Mon&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;Tue&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;Wed&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;Thu&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;Fri&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;Sat&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;Sun&quot;}],&quot;regions&quot;:[{&quot;id&quot;:&quot;legend-series-0&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Passed&quot;,&quot;x&quot;:24,&quot;y&quot;:75.65,&quot;width&quot;:71.36083984375,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-1&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Warnings&quot;,&quot;x&quot;:107.36083984375,&quot;y&quot;:75.65,&quot;width&quot;:82.4248046875,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-2&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Failed&quot;,&quot;x&quot;:201.78564453125,&quot;y&quot;:75.65,&quot;width&quot;:63.4072265625,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;axis-x-label-0&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Mon (1)&quot;,&quot;x&quot;:58.681640625,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-1&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Tue (2)&quot;,&quot;x&quot;:143.73470052083331,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-2&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Wed (3)&quot;,&quot;x&quot;:228.78776041666666,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-3&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Thu (4)&quot;,&quot;x&quot;:313.8408203125,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-4&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Fri (5)&quot;,&quot;x&quot;:398.8938802083333,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-5&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Sat (6)&quot;,&quot;x&quot;:483.9469401041667,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-6&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Sun (7)&quot;,&quot;x&quot;:569,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-y-label-0&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;0 (0)&quot;,&quot;x&quot;:24,&quot;y&quot;:284.30442764578834,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-1&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;200 (200)&quot;,&quot;x&quot;:24,&quot;y&quot;:258.9966522678186,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-2&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;400 (400)&quot;,&quot;x&quot;:24,&quot;y&quot;:233.68887688984884,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-3&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;600 (600)&quot;,&quot;x&quot;:24,&quot;y&quot;:208.38110151187908,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-4&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;800 (800)&quot;,&quot;x&quot;:24,&quot;y&quot;:183.07332613390932,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-5&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;1k (1000)&quot;,&quot;x&quot;:24,&quot;y&quot;:157.76555075593956,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-6&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;1.2k (1200)&quot;,&quot;x&quot;:24,&quot;y&quot;:132.4577753779698,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-7&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;1.4k (1400)&quot;,&quot;x&quot;:24,&quot;y&quot;:107.15000000000003,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;series-0-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 820 (1, 820)&quot;,&quot;x&quot;:55.681640625,&quot;y&quot;:177.54254859611234,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 940 (2, 940)&quot;,&quot;x&quot;:140.73470052083331,&quot;y&quot;:162.3578833693305,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 980 (3, 980)&quot;,&quot;x&quot;:225.78776041666666,&quot;y&quot;:157.29632829373654,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,041 (4, 1041)&quot;,&quot;x&quot;:310.8408203125,&quot;y&quot;:149.57745680345576,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,120 (5, 1120)&quot;,&quot;x&quot;:395.8938802083333,&quot;y&quot;:139.5808855291577,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,180 (6, 1180)&quot;,&quot;x&quot;:480.9469401041667,&quot;y&quot;:131.98855291576677,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,230 (7, 1230)&quot;,&quot;x&quot;:566,&quot;y&quot;:125.66160907127434,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 120 (1, 120)&quot;,&quot;x&quot;:55.681640625,&quot;y&quot;:266.1197624190065,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 138 (2, 138)&quot;,&quot;x&quot;:140.73470052083331,&quot;y&quot;:263.84206263498925,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 131 (3, 131)&quot;,&quot;x&quot;:225.78776041666666,&quot;y&quot;:264.72783477321815,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 112 (4, 112)&quot;,&quot;x&quot;:310.8408203125,&quot;y&quot;:267.1320734341253,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 98 (5, 98)&quot;,&quot;x&quot;:395.8938802083333,&quot;y&quot;:268.9036177105832,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 86 (6, 86)&quot;,&quot;x&quot;:480.9469401041667,&quot;y&quot;:270.4220842332614,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 72 (7, 72)&quot;,&quot;x&quot;:566,&quot;y&quot;:272.19362850971925,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 22 (1, 22)&quot;,&quot;x&quot;:55.681640625,&quot;y&quot;:278.5205723542117,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 30 (2, 30)&quot;,&quot;x&quot;:140.73470052083331,&quot;y&quot;:277.5082613390929,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 27 (3, 27)&quot;,&quot;x&quot;:225.78776041666666,&quot;y&quot;:277.8878779697624,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 31 (4, 31)&quot;,&quot;x&quot;:310.8408203125,&quot;y&quot;:277.3817224622031,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 18 (5, 18)&quot;,&quot;x&quot;:395.8938802083333,&quot;y&quot;:279.02672786177106,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 14 (6, 14)&quot;,&quot;x&quot;:480.9469401041667,&quot;y&quot;:279.5328833693305,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 11 (7, 11)&quot;,&quot;x&quot;:566,&quot;y&quot;:279.9125,&quot;width&quot;:6,&quot;height&quot;:6}]}" data-cfx-interaction-features="ReportReview" data-cfx-scenario-count="0" data-cfx-deep-link-state="false" data-cfx-responsive-layout="readable" data-cfx-tooltip-mode="shared-x" data-cfx-tooltip-range="distance" data-cfx-tooltip-distance="120" data-cfx-tooltip-delay="360" data-cfx-crosshair-label="false" style="--cfx-native-width:596px;--cfx-native-height:338px;--cfx-tooltip-surface:var(--cfx-surface-card,#16181C);--cfx-tooltip-text:var(--cfx-text-primary,#F2F3F5);--cfx-tooltip-muted:var(--cfx-text-muted,#B0B4BC);--cfx-tooltip-line:var(--cfx-surface-line,#272A30);--cfx-tooltip-shadow:var(--cfx-shadow-tooltip,0 10px 30px rgba(0,0,0,.55),0 0 0 1px #272A30);--cfx-crosshair-axis:var(--cfx-guide-axis,rgba(176,180,188,0.749));--cfx-host-accent:var(--cfx-accent-base,#3987E5)">
+<div class="cfx-frame">
+<div class="cfx-stage">
+<svg xmlns="http://www.w3.org/2000/svg" width="596" height="338" viewBox="0 0 596 338" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Check results over time" aria-labelledby="check-results-over-time-title" aria-describedby="check-results-over-time-description"><title id="check-results-over-time-title">Check results over time</title><desc id="check-results-over-time-description">Check results over time with 3 data series: Passed, Warnings, Failed.</desc><defs><clipPath id="check-results-over-time-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="548" height="290"/></clipPath><clipPath id="check-results-over-time-clip-5" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="548" height="19.5"/></clipPath><clipPath id="check-results-over-time-clip-7" clipPathUnits="userSpaceOnUse"><rect x="24" y="78.969" width="10" height="10"/></clipPath><clipPath id="check-results-over-time-clip-13" clipPathUnits="userSpaceOnUse"><rect x="107.361" y="78.969" width="10" height="10"/></clipPath><clipPath id="check-results-over-time-clip-19" clipPathUnits="userSpaceOnUse"><rect x="201.786" y="78.969" width="10" height="10"/></clipPath><clipPath id="check-results-over-time-clip-25" clipPathUnits="userSpaceOnUse"><rect x="24" y="107.15" width="548" height="206.85"/></clipPath><clipPath id="check-results-over-time-clip-51" clipPathUnits="userSpaceOnUse"><rect x="58.682" y="107.15" width="513.318" height="178.763"/></clipPath></defs><rect x="0.5" y="0.5" width="595" height="337" rx="3" data-cfx-role="frame-card" fill="#16181C" stroke="#272A30" stroke-width="1"/><g clip-path="url(#check-results-over-time-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="39.39" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Check results over time</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.321" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Healthy checks recede; failures remain visible</text></g></g><g clip-path="url(#check-results-over-time-clip-5)"><g id="check-results-over-time-node-6" data-cfx-source-id="legend-series-0" data-cfx-role="legend-entry" aria-label="Passed" data-cfx-series-key="Passed" data-cfx-state="Quiet"><g clip-path="url(#check-results-over-time-clip-7)"><line x1="24" y1="83.969" x2="34" y2="83.969" data-cfx-role="legend-swatch" fill="none" stroke="#4CC78A" stroke-width="2"/></g><g data-cfx-role="legend-label"><text x="42" y="87.419" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Passed</text></g></g><g id="check-results-over-time-node-12" data-cfx-source-id="legend-series-1" data-cfx-role="legend-entry" aria-label="Warnings" data-cfx-series-key="Warnings" data-cfx-state="Warning"><g clip-path="url(#check-results-over-time-clip-13)"><line x1="107.361" y1="83.969" x2="117.361" y2="83.969" data-cfx-role="legend-swatch" fill="none" stroke="#EEB640" stroke-width="2"/></g><g data-cfx-role="legend-label"><text x="125.361" y="87.419" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Warnings</text></g></g><g id="check-results-over-time-node-18" data-cfx-source-id="legend-series-2" data-cfx-role="legend-entry" aria-label="Failed" data-cfx-series-key="Failed" data-cfx-state="Danger"><g clip-path="url(#check-results-over-time-clip-19)"><line x1="201.786" y1="83.969" x2="211.786" y2="83.969" data-cfx-role="legend-swatch" fill="none" stroke="#F47171" stroke-width="2"/></g><g data-cfx-role="legend-label"><text x="219.786" y="87.419" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Failed</text></g></g></g><g clip-path="url(#check-results-over-time-clip-25)"><line x1="58.682" y1="284.304" x2="572" y2="284.304" data-cfx-role="grid-y" fill="none" stroke="rgba(39,42,48,0.549)" stroke-width="1"/><line x1="58.682" y1="258.997" x2="572" y2="258.997" data-cfx-role="grid-y" fill="none" stroke="rgba(39,42,48,0.549)" stroke-width="1"/><line x1="58.682" y1="233.689" x2="572" y2="233.689" data-cfx-role="grid-y" fill="none" stroke="rgba(39,42,48,0.549)" stroke-width="1"/><line x1="58.682" y1="208.381" x2="572" y2="208.381" data-cfx-role="grid-y" fill="none" stroke="rgba(39,42,48,0.549)" stroke-width="1"/><line x1="58.682" y1="183.073" x2="572" y2="183.073" data-cfx-role="grid-y" fill="none" stroke="rgba(39,42,48,0.549)" stroke-width="1"/><line x1="58.682" y1="157.766" x2="572" y2="157.766" data-cfx-role="grid-y" fill="none" stroke="rgba(39,42,48,0.549)" stroke-width="1"/><line x1="58.682" y1="132.458" x2="572" y2="132.458" data-cfx-role="grid-y" fill="none" stroke="rgba(39,42,48,0.549)" stroke-width="1"/><line x1="58.682" y1="107.15" x2="572" y2="107.15" data-cfx-role="grid-y" fill="none" stroke="rgba(39,42,48,0.549)" stroke-width="1"/><line x1="58.682" y1="285.913" x2="572" y2="285.913" data-cfx-role="axis-x" fill="none" stroke="rgba(176,180,188,0.749)" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="58.682" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Mon</text></g><g data-cfx-role="axis-x-label"><text x="133.618" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Tue</text></g><g data-cfx-role="axis-x-label"><text x="216.559" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Wed</text></g><g data-cfx-role="axis-x-label"><text x="303.502" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Thu</text></g><g data-cfx-role="axis-x-label"><text x="391.898" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Fri</text></g><g data-cfx-role="axis-x-label"><text x="474.941" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Sat</text></g><g data-cfx-role="axis-x-label"><text x="547.648" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Sun</text></g><line x1="58.682" y1="107.15" x2="58.682" y2="285.913" data-cfx-role="axis-y" fill="none" stroke="rgba(176,180,188,0.749)" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="40.008" y="279.08" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="26.66" y="253.772" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">200</text></g><g data-cfx-role="axis-y-label"><text x="26.66" y="228.465" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">400</text></g><g data-cfx-role="axis-y-label"><text x="26.66" y="203.157" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">600</text></g><g data-cfx-role="axis-y-label"><text x="26.66" y="177.849" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">800</text></g><g data-cfx-role="axis-y-label"><text x="34.008" y="152.541" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1k</text></g><g data-cfx-role="axis-y-label"><text x="24" y="118.013" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1.4k</text></g></g><g clip-path="url(#check-results-over-time-clip-51)"></g><g id="check-results-over-time-node-53" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Passed" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Line" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Passed" data-cfx-series-name="Passed" data-cfx-source-points="7" data-cfx-state="quiet"><g clip-path="url(#check-results-over-time-clip-51)"><path d="M 58.682 180.543 L 143.735 165.358 L 228.788 160.296 L 313.841 152.577 L 398.894 142.581 L 483.947 134.989 L 569 128.662" data-cfx-role="line" fill="none" stroke="#4CC78A" stroke-width="2"/></g><g id="check-results-over-time-node-57" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Passed: 820 (1, 820)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="820" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="0" data-cfx-state="quiet" data-cfx-x="1" data-cfx-y="820"></g><g id="check-results-over-time-node-59" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Passed: 940 (2, 940)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="940" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="1" data-cfx-state="quiet" data-cfx-x="2" data-cfx-y="940"></g><g id="check-results-over-time-node-61" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Passed: 980 (3, 980)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="980" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="2" data-cfx-state="quiet" data-cfx-x="3" data-cfx-y="980"></g><g id="check-results-over-time-node-63" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Passed: 1,041 (4, 1041)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="1,041" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="3" data-cfx-state="quiet" data-cfx-x="4" data-cfx-y="1041"></g><g id="check-results-over-time-node-65" data-cfx-source-id="series-0-point-4" data-cfx-role="point" aria-label="Passed: 1,120 (5, 1120)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="1,120" data-cfx-point="4" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="4" data-cfx-state="quiet" data-cfx-x="5" data-cfx-y="1120"></g><g id="check-results-over-time-node-67" data-cfx-source-id="series-0-point-5" data-cfx-role="point" aria-label="Passed: 1,180 (6, 1180)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="1,180" data-cfx-point="5" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="5" data-cfx-state="quiet" data-cfx-x="6" data-cfx-y="1180"></g><g id="check-results-over-time-node-69" data-cfx-source-id="series-0-point-6" data-cfx-role="point" aria-label="Passed: 1,230 (7, 1230)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="1,230" data-cfx-point="6" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="6" data-cfx-state="quiet" data-cfx-x="7" data-cfx-y="1230"><ellipse cx="569" cy="128.662" rx="3" ry="3" data-cfx-role="marker" fill="#4CC78A" stroke="none" stroke-width="0"/></g></g><g id="check-results-over-time-node-73" data-cfx-source-id="series-1" data-cfx-role="series" aria-label="Warnings" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Line" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="Warnings" data-cfx-series-name="Warnings" data-cfx-source-points="7" data-cfx-state="warning"><g clip-path="url(#check-results-over-time-clip-51)"><path d="M 58.682 269.12 L 143.735 266.842 L 228.788 267.728 L 313.841 270.132 L 398.894 271.904 L 483.947 273.422 L 569 275.194" data-cfx-role="line" fill="none" stroke="#EEB640" stroke-width="2"/></g><g id="check-results-over-time-node-77" data-cfx-source-id="series-1-point-0" data-cfx-role="point" aria-label="Warnings: 120 (1, 120)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="120" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-source-point="0" data-cfx-state="warning" data-cfx-x="1" data-cfx-y="120"></g><g id="check-results-over-time-node-79" data-cfx-source-id="series-1-point-1" data-cfx-role="point" aria-label="Warnings: 138 (2, 138)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="138" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-source-point="1" data-cfx-state="warning" data-cfx-x="2" data-cfx-y="138"></g><g id="check-results-over-time-node-81" data-cfx-source-id="series-1-point-2" data-cfx-role="point" aria-label="Warnings: 131 (3, 131)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="131" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-source-point="2" data-cfx-state="warning" data-cfx-x="3" data-cfx-y="131"></g><g id="check-results-over-time-node-83" data-cfx-source-id="series-1-point-3" data-cfx-role="point" aria-label="Warnings: 112 (4, 112)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="112" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-source-point="3" data-cfx-state="warning" data-cfx-x="4" data-cfx-y="112"></g><g id="check-results-over-time-node-85" data-cfx-source-id="series-1-point-4" data-cfx-role="point" aria-label="Warnings: 98 (5, 98)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="98" data-cfx-point="4" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-source-point="4" data-cfx-state="warning" data-cfx-x="5" data-cfx-y="98"></g><g id="check-results-over-time-node-87" data-cfx-source-id="series-1-point-5" data-cfx-role="point" aria-label="Warnings: 86 (6, 86)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="86" data-cfx-point="5" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-source-point="5" data-cfx-state="warning" data-cfx-x="6" data-cfx-y="86"></g><g id="check-results-over-time-node-89" data-cfx-source-id="series-1-point-6" data-cfx-role="point" aria-label="Warnings: 72 (7, 72)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="72" data-cfx-point="6" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-source-point="6" data-cfx-state="warning" data-cfx-x="7" data-cfx-y="72"><ellipse cx="569" cy="275.194" rx="3" ry="3" data-cfx-role="marker" fill="#EEB640" stroke="none" stroke-width="0"/></g></g><g id="check-results-over-time-node-93" data-cfx-source-id="series-2" data-cfx-role="series" aria-label="Failed" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Line" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="Failed" data-cfx-series-name="Failed" data-cfx-source-points="7" data-cfx-state="danger"><g clip-path="url(#check-results-over-time-clip-51)"><path d="M 58.682 281.521 L 143.735 280.508 L 228.788 280.888 L 313.841 280.382 L 398.894 282.027 L 483.947 282.533 L 569 282.913" data-cfx-role="line" fill="none" stroke="#F47171" stroke-width="2"/></g><g id="check-results-over-time-node-97" data-cfx-source-id="series-2-point-0" data-cfx-role="point" aria-label="Failed: 22 (1, 22)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="22" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-source-point="0" data-cfx-state="danger" data-cfx-x="1" data-cfx-y="22"></g><g id="check-results-over-time-node-99" data-cfx-source-id="series-2-point-1" data-cfx-role="point" aria-label="Failed: 30 (2, 30)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="30" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-source-point="1" data-cfx-state="danger" data-cfx-x="2" data-cfx-y="30"></g><g id="check-results-over-time-node-101" data-cfx-source-id="series-2-point-2" data-cfx-role="point" aria-label="Failed: 27 (3, 27)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="27" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-source-point="2" data-cfx-state="danger" data-cfx-x="3" data-cfx-y="27"></g><g id="check-results-over-time-node-103" data-cfx-source-id="series-2-point-3" data-cfx-role="point" aria-label="Failed: 31 (4, 31)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="31" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-source-point="3" data-cfx-state="danger" data-cfx-x="4" data-cfx-y="31"></g><g id="check-results-over-time-node-105" data-cfx-source-id="series-2-point-4" data-cfx-role="point" aria-label="Failed: 18 (5, 18)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="18" data-cfx-point="4" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-source-point="4" data-cfx-state="danger" data-cfx-x="5" data-cfx-y="18"></g><g id="check-results-over-time-node-107" data-cfx-source-id="series-2-point-5" data-cfx-role="point" aria-label="Failed: 14 (6, 14)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="14" data-cfx-point="5" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-source-point="5" data-cfx-state="danger" data-cfx-x="6" data-cfx-y="14"></g><g id="check-results-over-time-node-109" data-cfx-source-id="series-2-point-6" data-cfx-role="point" aria-label="Failed: 11 (7, 11)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="11" data-cfx-point="6" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-source-point="6" data-cfx-state="danger" data-cfx-x="7" data-cfx-y="11"><ellipse cx="569" cy="282.913" rx="3" ry="3" data-cfx-role="marker" fill="#F47171" stroke="none" stroke-width="0"/></g></g><g clip-path="url(#check-results-over-time-clip-51)"></g></svg>
+<div class="cfx-brush-box" hidden></div>
+<div class="cfx-crosshair" hidden>
+<span class="cfx-crosshair__line cfx-crosshair__line--x"></span><span class="cfx-crosshair__line cfx-crosshair__line--y"></span><span class="cfx-crosshair__label" data-cfx-crosshair-label="true"></span></div>
+</div>
+<button class="cfx-reset" type="button" data-cfx-reset="true" hidden>Reset view</button>
+<div class="cfx-compare-tray" data-cfx-compare-tray="true" aria-live="polite" hidden></div>
+</div>
+<div class="cfx-tooltip" role="status" aria-live="polite" hidden></div>
+</section>
+</main>
+<script>(() => {
   const featureAliases = {
     ReportReview: ['Tooltips', 'Selection', 'LegendToggles', 'KeyboardNavigation', 'Crosshair', 'CompareMarkers']
   };
@@ -289,7 +1074,26 @@
   };
   const moveTip = (tip, event, node) => {
     updateTooltipPointer(tip, node, event);
-    positionTooltip(tip, event, node);
+    if (tip.hidden) return;
+    let clientX = event && event.clientX;
+    let clientY = event && event.clientY;
+    if ((!Number.isFinite(clientX) || !Number.isFinite(clientY)) && node && node.getBoundingClientRect) {
+      const rect = node.getBoundingClientRect();
+      clientX = rect.left + rect.width / 2;
+      clientY = rect.top + rect.height / 2;
+    }
+    if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
+      clientX = 24;
+      clientY = 24;
+    }
+    const tipWidth = tip.offsetWidth || 0;
+    const tipHeight = tip.offsetHeight || 0;
+    const maxX = Math.max(8, window.innerWidth - tipWidth - 8);
+    const maxY = Math.max(8, window.innerHeight - tipHeight - 8);
+    const x = Math.max(8, Math.min(maxX, clientX + 14));
+    const y = Math.max(8, Math.min(maxY, clientY + 14));
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
   };
   const targetKey = (target) => target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
   const compareItems = (root) => {
@@ -379,7 +1183,6 @@
       showTip(root, tip, focused);
       return;
     }
-    forgetTooltipPosition(tip);
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');
     root.removeAttribute('data-cfx-tooltip-pinned');
@@ -746,141 +1549,6 @@
     request.node = node; request.event = event;
     return true;
   };
-  // Screen placement belongs to the Html adapter; target acquisition supplies the canonical native node.
-  const tooltipPositions = new WeakMap();
-  const activeTooltipPositions = new Set();
-  const tooltipPositionTrees = new Set();
-  let tooltipPositionFrame = 0, tooltipPositionObserver = null, tooltipPositionResize = null;
-  const tooltipDirections = {
-    top: [0, -1], 'top-right': [1, -1], right: [1, 0], 'bottom-right': [1, 1],
-    bottom: [0, 1], 'bottom-left': [-1, 1], left: [-1, 0], 'top-left': [-1, -1]
-  };
-  const forgetTooltipPosition = (tip) => {
-    const state = tooltipPositions.get(tip);
-    tooltipPositions.delete(tip);
-    if (state) activeTooltipPositions.delete(state);
-    if (tooltipPositionResize && state) tooltipPositionResize.unobserve(state.stage);
-    if (activeTooltipPositions.size) {
-      if (tooltipPositionObserver && Array.from(tooltipPositionTrees).some(tree =>
-        !Array.from(activeTooltipPositions).some(current => current.trees.includes(tree)))) {
-        // Drain surviving hosts' removals before rebuilding registrations to release unused shadow trees.
-        checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
-        if (!tooltipPositionObserver) return;
-        tooltipPositionObserver.disconnect(); tooltipPositionTrees.clear();
-        for (const current of activeTooltipPositions) watchTooltipPositionTrees(current);
-      }
-      return;
-    }
-    if (tooltipPositionObserver) { tooltipPositionObserver.disconnect(); tooltipPositionObserver = null; tooltipPositionTrees.clear(); }
-    if (tooltipPositionResize) { tooltipPositionResize.disconnect(); tooltipPositionResize = null; }
-    window.removeEventListener('resize', queueTooltipPositionRefresh);
-    document.removeEventListener('scroll', queueTooltipPositionRefresh, true);
-    document.removeEventListener('transitionend', queueTooltipPositionRefresh, true);
-    if (tooltipPositionFrame) { cancelAnimationFrame(tooltipPositionFrame); tooltipPositionFrame = 0; }
-  };
-  const tooltipPositionAvailable = (state) => state.root.isConnected && state.tip.isConnected && state.node.isConnected
-    && state.root.contains(state.tip) && state.root.contains(state.node) && !state.tip.hidden && !state.root.hidden
-    && hasFeature(state.root, 'Tooltips') && state.stage.getClientRects().length > 0
-    && tooltipReadoutAvailable(state.node, state.readoutEvent);
-  const queueTooltipPositionRefresh = () => {
-    if (tooltipPositionFrame || !activeTooltipPositions.size) return;
-    tooltipPositionFrame = requestAnimationFrame(() => {
-      tooltipPositionFrame = 0;
-      for (const state of Array.from(activeTooltipPositions)) {
-        if (state.tip.hidden) { forgetTooltipPosition(state.tip); continue; }
-        if (!tooltipPositionAvailable(state)) { hideTip(state.root, state.tip, true); continue; }
-        placeTooltip(state);
-      }
-    });
-  };
-  const checkTooltipPositionMutations = (records) => {
-    for (const current of Array.from(activeTooltipPositions)) {
-      // A new delayed target can hide a shown readout. Release geometry without cancelling its new request.
-      if (current.tip.hidden) { forgetTooltipPosition(current.tip); continue; }
-      const removed = records.some(record => record.type === 'childList'
-        && Array.from(record.removedNodes).some(node => node.contains(current.root) || node.contains(current.node) || node.contains(current.tip)
-          || current.trees.some(tree => tree.host && node.contains(tree.host))));
-      if (removed || !tooltipPositionAvailable(current)) hideTip(current.root, current.tip, true);
-    }
-    queueTooltipPositionRefresh();
-  };
-  const watchTooltipPositionTrees = (state) => {
-    for (const tree of state.trees) {
-      if (tooltipPositionTrees.has(tree)) continue;
-      tooltipPositionObserver.observe(tree, { childList: true, attributes: true, attributeFilter: ['hidden', 'data-cfx-interaction-features'], subtree: true });
-      tooltipPositionTrees.add(tree);
-    }
-  };
-  const watchTooltipPosition = (state) => {
-    if (activeTooltipPositions.has(state)) return;
-    activeTooltipPositions.add(state);
-    if (!tooltipPositionObserver) {
-      // Shared listeners exist only while a node/chart readout is visible, including pinned readouts.
-      window.addEventListener('resize', queueTooltipPositionRefresh);
-      document.addEventListener('scroll', queueTooltipPositionRefresh, true);
-      document.addEventListener('transitionend', queueTooltipPositionRefresh, true);
-      tooltipPositionObserver = new MutationObserver(checkTooltipPositionMutations);
-      if (typeof ResizeObserver !== 'undefined') tooltipPositionResize = new ResizeObserver(queueTooltipPositionRefresh);
-    }
-    watchTooltipPositionTrees(state);
-    if (tooltipPositionResize) tooltipPositionResize.observe(state.stage);
-  };
-  const refreshTooltipPosition = (root) => {
-    const state = tooltipPositions.get(root.querySelector('.cfx-tooltip'));
-    if (state && activeTooltipPositions.has(state)) queueTooltipPositionRefresh();
-  };
-  const tooltipAnchorRect = (state) => {
-    if (state.anchor === 'chart') return state.stage.getBoundingClientRect();
-    const rect = state.node.getBoundingClientRect();
-    if (state.anchor === 'node') return rect;
-    let x = state.event?.clientX, y = state.event?.clientY;
-    if (!Number.isFinite(x) || !Number.isFinite(y)) { x = rect.left + rect.width / 2; y = rect.top + rect.height / 2; }
-    if (!Number.isFinite(x) || !Number.isFinite(y)) { x = 24; y = 24; }
-    return { left: x, right: x, top: y, bottom: y, width: 0, height: 0 };
-  };
-  const placeTooltip = (state) => {
-    const { root, tip } = state, anchor = tooltipAnchorRect(state);
-    // Measure at a stable origin, then keep the measured width while positioning. This prevents
-    // fixed-position shrink-to-fit from changing the readout as it approaches a containing block's edge.
-    tip.style.left = '0px'; tip.style.top = '0px';
-    tip.style.width = '';
-    tip.style.width = getComputedStyle(tip).width;
-    const origin = tip.getBoundingClientRect();
-    tip.style.left = '1px'; tip.style.top = '1px';
-    const unit = tip.getBoundingClientRect();
-    // The one-pixel probe converts screen coordinates through ordinary translated/scaled host blocks.
-    const scaleX = unit.left - origin.left || 1, scaleY = unit.top - origin.top || 1;
-    const gap = Number(root.dataset.cfxTooltipGap ?? 14);
-    const offsetX = Number(root.dataset.cfxTooltipOffsetX || 0), offsetY = Number(root.dataset.cfxTooltipOffsetY || 0);
-    const placements = (root.dataset.cfxTooltipPlacements || 'bottom-right').split(',');
-    const candidates = placements.map(placement => {
-      const [dx, dy] = tooltipDirections[placement] || tooltipDirections['bottom-right'];
-      return {
-        x: (dx > 0 ? anchor.right + gap : dx < 0 ? anchor.left - gap - unit.width : anchor.left + (anchor.width - unit.width) / 2) + offsetX,
-        y: (dy > 0 ? anchor.bottom + gap : dy < 0 ? anchor.top - gap - unit.height : anchor.top + (anchor.height - unit.height) / 2) + offsetY
-      };
-    });
-    const position = candidates.find(candidate => candidate.x >= 8 && candidate.y >= 8
-      && candidate.x + unit.width <= window.innerWidth - 8 && candidate.y + unit.height <= window.innerHeight - 8) || candidates[0];
-    const x = clamp(position.x, 8, Math.max(8, window.innerWidth - unit.width - 8));
-    const y = clamp(position.y, 8, Math.max(8, window.innerHeight - unit.height - 8));
-    tip.style.left = (x - origin.left) / scaleX + 'px';
-    tip.style.top = (y - origin.top) / scaleY + 'px';
-  };
-  const positionTooltip = (tip, event, node) => {
-    if (tip.hidden) return;
-    const root = tip.closest('.cfx-interactive-chart'), stage = root && root.querySelector('.cfx-stage');
-    if (!root || !stage || !node) return;
-    let state = tooltipPositions.get(tip);
-    const pinned = state && root.dataset.cfxTooltipPinned === 'true' && state.key === root.dataset.cfxPinnedTarget;
-    if (!state) { state = { root, tip, stage, trees: tooltipRootTrees(root) }; tooltipPositions.set(tip, state); }
-    // A pin retains its acquisition mode: later pointer movement must not invalidate a keyboard-only fact.
-    if (!pinned) { state.node = node; state.key = targetKey(targetIdentity(node)); state.readoutEvent = event; }
-    state.event = event; state.anchor = root.dataset.cfxTooltipAnchor || 'pointer';
-    if (!tooltipPositionAvailable(state)) { hideTip(root, tip, true); return; }
-    placeTooltip(state);
-    if (state.anchor !== 'pointer') watchTooltipPosition(state);
-  };
   // Separately painted captions are pointer surfaces of their declared native point, never new observations.
   const pointLabelTarget = (root, target) => {
     const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
@@ -1089,7 +1757,6 @@
     stage.style.setProperty('--cfx-zoom', state.zoom);
     stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
-    refreshTooltipPosition(root);
   };
   // The reset control is contextual: it exists only while the reader has changed the view.
   const viewChanged = (root) => {
@@ -2625,3 +3292,6 @@
     });
   });
 })();
+</script>
+</body>
+</html>
