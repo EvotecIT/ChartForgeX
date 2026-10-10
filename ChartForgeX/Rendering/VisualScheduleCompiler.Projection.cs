@@ -7,14 +7,15 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualScheduleCompiler {
     private const double GanttLaneOpenEndStrokeWidth = 1.5;
 
-    private static double TodayWidth(Chart chart, VisualRenderContext context) => chart.Options.GanttTodayStyle?.Width ?? context.Theme.AxisStrokeWidth;
+    private static double TodayWidth(Chart chart, VisualRenderContext context) => VisualReferenceStroke.PaintedWidth(
+        chart.Options.GanttTodayStyle, context.Theme.Resolve(context.ThemeMode).Status.Critical.Fill, context.Theme.AxisStrokeWidth);
 
     private static double GuideExtent(Chart chart, VisualRenderContext context, double position, bool marker, double? now) {
         var width = marker ? context.Theme.AxisStrokeWidth : 0;
         if (now == position) width = Math.Max(width, TodayWidth(chart, context));
         foreach (var annotation in chart.Annotations) {
             if (annotation.Kind == ChartAnnotationKind.VerticalLine && annotation.Value == position)
-                width = Math.Max(width, annotation.StrokeStyle?.Width ?? context.Theme.AxisStrokeWidth);
+                width = Math.Max(width, VisualReferenceStroke.PaintedWidth(annotation.StrokeStyle, annotation.Color, context.Theme.AxisStrokeWidth));
         }
         return width / 2;
     }

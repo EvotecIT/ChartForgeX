@@ -10,6 +10,53 @@ namespace ChartForgeX.Tests;
 
 public sealed class GanttStyledGuideBoundaryTests {
     [Theory]
+    [InlineData(false, 0)]
+    [InlineData(false, 1)]
+    [InlineData(false, 2)]
+    [InlineData(true, 0)]
+    [InlineData(true, 1)]
+    [InlineData(true, 2)]
+    public void InvisibleCurrentTimeGuidesDoNotCompressTaskGeometry(bool lanes, int hiddenBy) {
+        var start = new DateTime(2026, 1, 2);
+        var chart = Chart.Create().WithSize(320, 360).WithLegend(false).WithGanttToday(start.AddDays(-1));
+        if (lanes) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
+            .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, start.AddDays(3), "work") });
+        else chart.AddGanttTask("Task", start, start.AddDays(3));
+        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 0);
+        var control = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        chart.Options.GanttTodayStyle = new ChartStrokeStyle(hiddenBy == 0 ? ChartColor.Transparent : null,
+            hiddenBy == 2 ? 0 : 1024, hiddenBy == 1 ? 0 : 1);
+        var actual = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Equal(control.Regions.Select(region => region.Bounds), actual.Regions.Select(region => region.Bounds));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void InvisibleReferenceAnnotationsDoNotCompressTaskGeometry(int hiddenBy) {
+        var chart = Chart.Create().WithSize(320, 360).WithLegend(false).AddGanttTask("Task", 1, 4).AddVerticalLine(0, "Reference");
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 0);
+        var control = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(hiddenBy == 0 ? ChartColor.Transparent : null,
+            hiddenBy == 2 ? 0 : 1024, hiddenBy == 1 ? 0 : 1);
+        var actual = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Equal(control.Regions.Select(region => region.Bounds), actual.Regions.Select(region => region.Bounds));
+    }
+
+    [Theory]
+    [InlineData(1024.1)]
+    [InlineData(double.MaxValue)]
+    public void NativeReferenceWidthsRejectValuesOutsideTheBoundedRasterContract(double width) =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(width: width));
+
+    [Theory]
+    [InlineData(1024.1)]
+    [InlineData(double.MaxValue)]
+    public void NativeReferenceDashesRejectValuesThatCouldOverflowRasterScaling(double length) =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(dash: new[] { length, 1d }));
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
