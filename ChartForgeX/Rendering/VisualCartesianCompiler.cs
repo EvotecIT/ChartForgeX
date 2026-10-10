@@ -128,6 +128,7 @@ internal static partial class VisualCartesianCompiler {
                 var pointSeries = IsPointSeries(series.Kind);
                 using (chart.Options.ClipMarksToPlot && !pointSeries ? seriesBuilder.PushClip(plot) : null)
                 using (seriesBuilder.PushGroup(SeriesId(index), "series", new Dictionary<string, string> {
+                    ["data-cfx-coordinate-system"] = "cartesian",
                     ["data-cfx-series"] = Number(index), ["data-cfx-series-key"] = series.InteractionIdentityKey,
                     ["data-cfx-series-name"] = series.Name, ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(),
                     ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false",
@@ -184,7 +185,7 @@ internal static partial class VisualCartesianCompiler {
     private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null) {
         var point = series.Points[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
-        var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + Number(point.X) + ", " + Number(point.Y) + ")";
+        var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + ChartNumericFormatter.FormatCoordinate(point.X) + ", " + ChartNumericFormatter.FormatCoordinate(point.Y) + ")";
         if (series.HistogramBinLayout != null) label = HistogramPointDescription(series, pointIndex, resolvedLabel.DisplayedText);
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));
         var metadata = new Dictionary<string, string> {

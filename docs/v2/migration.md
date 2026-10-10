@@ -28,6 +28,12 @@ For example, use `chart.ConfigureLabels(labels => labels.NoData = "Brak danych")
 
 Object ownership is unchanged. Getter-owned options, accessibility, labels and text styles are edited in place. Bar, line and grid-style callbacks configure a working clone and install a separate copy after success. Chart and topology theme callbacks edit the stored theme; chart-grid and visual-grid callbacks reuse an existing theme or install a newly created light theme after success. Mutations to existing objects can remain after a callback throws. See the [API conventions](api-conventions.md#operation-names) for point-label ownership and the complete naming boundary.
 
+## HTML tooltip options
+
+Configure tooltip content through `HtmlChartInteractionOptions.Tooltip.Mode` and `HtmlInteractiveDashboardOptions.Tooltip.Mode`; these replace the flat `TooltipMode` property. The existing `HtmlChartTooltipMode.Single` and `.SharedX` values are unchanged. Getter-owned `Tooltip` options also expose `Range`: `Exact`, `Nearest`, or `HtmlChartTooltipRange.WithinDistance(cssPixels)`.
+
+The default range remains 120 CSS pixels. Enabling only `ChartInteractionFeatures.Tooltips` now also acquires nearby observations without requiring `Crosshair`. Choose `Exact` for direct pointer hits only. Crosshair labels default to visible for every palette; set `Crosshair.ShowLabel = false` to retain a compact label-free presentation. Keyboard and pinned readouts keep explicit target semantics.
+
 ## Hierarchy and flow identities
 
 Replace the label-based relationship overloads with explicit nodes and links:
