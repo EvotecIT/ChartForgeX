@@ -67,6 +67,7 @@ public sealed class MermaidGanttTask : MermaidAstNode {
         Section = section;
         Start = start;
         End = end;
+        RenderEnd = end;
         Progress = progress;
         IsMilestone = milestone;
         Tags = new List<string>(tags ?? throw new ArgumentNullException(nameof(tags)));
@@ -86,8 +87,11 @@ public sealed class MermaidGanttTask : MermaidAstNode {
     /// <summary>Gets the authored/resolved task start date/time, including a milestone's range start.</summary>
     public DateTime Start { get; }
 
-    /// <summary>Gets the authored/resolved task end date/time, including a milestone's range end.</summary>
+    /// <summary>Gets the scheduling end used by dependencies, including a milestone's range end and excluded dates.</summary>
     public DateTime End { get; }
+
+    /// <summary>Gets the visible bar endpoint before trailing excluded days; milestones use the scheduling range midpoint.</summary>
+    public DateTime RenderEnd { get; internal set; }
 
     /// <summary>Gets the rendered progress value from zero to one.</summary>
     public double Progress { get; }

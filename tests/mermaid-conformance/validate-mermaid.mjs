@@ -59,6 +59,10 @@ for (const { folder, file, hasExpected } of files) {
         const timestamp = value => `${pad(value.getFullYear(), 4)}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}.${pad(value.getMilliseconds(), 3)}`;
         assert.deepEqual(diagram.db.getTasks().map(task => [task.id, timestamp(task.startTime), timestamp(task.endTime)]), expected.taskTimestamps);
       }
+      if (expected.taskRenderEnds) {
+        const day = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
+        assert.deepEqual(diagram.db.getTasks().map(task => day(task.renderEndTime || task.endTime)), expected.taskRenderEnds);
+      }
     }
   } catch (error) {
     failures.push(`${folder}/${file}: ${error?.message ?? error}`);
