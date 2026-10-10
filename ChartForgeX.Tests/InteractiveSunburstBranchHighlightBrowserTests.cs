@@ -229,6 +229,57 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
     }
 
     [Fact]
+    public async Task MovingWithinOneNativeSectorRetainsOutlinesAndDoesNotRepublishHover() {
+        if (!Enabled) return;
+        var html = SunburstBranchHighlightExamples.CreateChart().ToInteractiveHtmlPage(options => {
+            Configure(options);
+            options.Interaction.GroupName = "branch-hover";
+            options.Interaction.Enable(ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.FocusTrail);
+        });
+        await using var session = await OpenAsync(html, 850, 650);
+        var page = session.Page;
+        var point = await page.Locator(Node("platform")).EvaluateAsync<double[]>("""
+            node => {
+                const mark=node.querySelector('[data-cfx-role="sunburst-segment-mark"]'), box=mark.getBoundingClientRect();
+                const hit=(x,y)=>document.elementFromPoint(x,y)?.closest('[data-cfx-target-kind=node]')===node;
+                for(let y=1;y<40;y++) for(let x=1;x<40;x++) {
+                    const px=box.left+box.width*x/40,py=box.top+box.height*y/40;
+                    if([-4,0,4].every(dx=>[-4,0,4].every(dy=>hit(px+dx,py+dy)))) return [px,py];
+                }
+                throw new Error('No interior native sector hit');
+            }
+            """);
+        await page.EvaluateAsync("""
+            () => {
+                const root=document.querySelector('.cfx-interactive-chart');
+                window.branchHoverNotifications={hover:0,sync:0};
+                root.addEventListener('cfxhover',()=>window.branchHoverNotifications.hover++);
+                root.addEventListener('cfxsync',event=>{if(event.detail.action==='hover') window.branchHoverNotifications.sync++;});
+            }
+            """);
+        await page.Mouse.MoveAsync((float)point[0], (float)point[1]);
+        await WaitState(page, "platform", "item");
+        await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
+        var before = await page.EvaluateAsync<int[]>("""
+            () => {
+                window.branchOutlines=Array.from(document.querySelectorAll('[data-cfx-highlight-outline]'));
+                return [window.branchHoverNotifications.hover,window.branchHoverNotifications.sync,window.branchOutlines.length];
+            }
+            """);
+        Assert.True(before[0] > 0); Assert.True(before[1] > 0); Assert.True(before[2] > 0);
+        await page.Mouse.MoveAsync((float)point[0] + 2, (float)point[1] + 1, new MouseMoveOptions { Steps = 4 });
+        await page.Mouse.MoveAsync((float)point[0] - 2, (float)point[1] - 1, new MouseMoveOptions { Steps = 4 });
+        await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
+        var after = await page.EvaluateAsync<int[]>("() => [window.branchHoverNotifications.hover,window.branchHoverNotifications.sync,document.querySelectorAll('[data-cfx-highlight-outline]').length]");
+        var retained = await page.EvaluateAsync<bool>("() => window.branchOutlines.every(outline=>outline.isConnected && document.querySelectorAll('[data-cfx-highlight-outline]')[window.branchOutlines.indexOf(outline)]===outline)");
+        await Capture(session, html, "branch-hover-same-native-sector");
+        Assert.Equal(before, after);
+        Assert.True(retained);
+        Assert.Equal("root-branch", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-mode"));
+        AssertNoConsoleErrors(session);
+    }
+
+    [Fact]
     public async Task DelayedPointerReadoutsDoNotObserveTheirOwnNativePaintProbe() {
         if (!Enabled) return;
         var html = SunburstBranchHighlightExamples.CreateChart().ToInteractiveHtmlPage(options => { Configure(options); options.Tooltip.DelayMilliseconds = 60; });
