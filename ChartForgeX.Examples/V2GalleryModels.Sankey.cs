@@ -16,6 +16,8 @@ public static partial class V2GalleryModels {
             options.Alignment = ChartSankeyAlignment.Center;
             options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
             options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
+            options.LabelPlacement = ChartSankeyLabelPlacement.Center;
+            options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Outside;
             options.NodeWidth = 16;
             options.NodeGap = 12;
             options.NodeCornerRadius = 1;

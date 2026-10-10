@@ -7,6 +7,8 @@ public sealed class ChartSankeyOptions {
     private ChartSankeyAlignment _alignment = ChartSankeyAlignment.Justify;
     private ChartSankeyVerticalAlignment _verticalAlignment = ChartSankeyVerticalAlignment.Center;
     private ChartSankeyNodeOrder _nodeOrder = ChartSankeyNodeOrder.Auto;
+    private ChartSankeyLabelPlacement _labelPlacement = ChartSankeyLabelPlacement.Right;
+    private ChartSankeyEdgeLabelPlacement? _edgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Outside;
     private double _nodeWidth = 10;
     private double? _nodeGap, _nodeCornerRadius;
     private double _ribbonOpacity = .35;
@@ -27,6 +29,20 @@ public sealed class ChartSankeyOptions {
     public ChartSankeyNodeOrder NodeOrder {
         get => _nodeOrder;
         set { Defined(value); _nodeOrder = value; }
+    }
+
+    /// <summary>Gets or sets the side of each node used for its measured label. The default is Right.</summary>
+    /// <remarks>Label placement does not change node positions, flow thickness or authored facts. Labels still shorten or omit when they cannot fit.</remarks>
+    public ChartSankeyLabelPlacement LabelPlacement {
+        get => _labelPlacement;
+        set { Defined(value); _labelPlacement = value; }
+    }
+
+    /// <summary>Gets or sets an override for labels in the first and last columns. The default is Outside.</summary>
+    /// <remarks>Inside places first-column labels to the right and last-column labels to the left; Outside reverses those sides. Null uses LabelPlacement at both edges.</remarks>
+    public ChartSankeyEdgeLabelPlacement? EdgeLabelPlacement {
+        get => _edgeLabelPlacement;
+        set { if (value.HasValue) Defined(value.Value); _edgeLabelPlacement = value; }
     }
 
     /// <summary>Gets or sets the finite positive node-bar width in logical units. The default is ten; an unfittable width is rejected during preparation.</summary>
