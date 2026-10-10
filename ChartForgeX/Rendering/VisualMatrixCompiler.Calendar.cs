@@ -47,6 +47,7 @@ internal static partial class VisualMatrixCompiler {
                     : ChartHeatmapSurface.CalendarBlend(colors, model.Series.Color, day.Value, model.RampMin, model.Max, VisualChartPaint.SeriesRole(model.Series))
                     : CalendarMissingBlend(chart, colors);
                 var metadata = new Dictionary<string, string> {
+                    ["data-cfx-series"] = "0", ["data-cfx-region"] = model.DateText(date), ["data-cfx-label"] = label,
                     ["data-cfx-date"] = model.DateText(date), ["data-cfx-empty"] = present ? "false" : "true",
                     ["data-cfx-row"] = model.Row(date).ToString(CultureInfo.InvariantCulture),
                     ["data-cfx-week-index"] = model.Column(date).ToString(CultureInfo.InvariantCulture),

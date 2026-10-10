@@ -13,21 +13,23 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects raw-value pointer and keyboard readouts when canonical numeric colors replace legacy intensity levels.</summary>
 public sealed class InteractiveHeatmapColorScaleBrowserTests {
     [Theory]
-    [InlineData(ChartSeriesKind.Heatmap, 360, false)]
-    [InlineData(ChartSeriesKind.Heatmap, 800, true)]
-    [InlineData(ChartSeriesKind.HexbinHeatmap, 360, true)]
-    [InlineData(ChartSeriesKind.HexbinHeatmap, 800, false)]
-    [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false)]
-    [InlineData(ChartSeriesKind.CalendarHeatmap, 800, true)]
-    public async Task PointerKeyboardAndSelectionKeepObservedValuesAndMissingIdentities(ChartSeriesKind kind, int width, bool dark) {
+    [InlineData(ChartSeriesKind.Heatmap, 360, false, true)]
+    [InlineData(ChartSeriesKind.Heatmap, 800, true, true)]
+    [InlineData(ChartSeriesKind.HexbinHeatmap, 360, true, true)]
+    [InlineData(ChartSeriesKind.HexbinHeatmap, 800, false, true)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false, true)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap, 360, true, false)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap, 800, true, true)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap, 800, false, false)]
+    public async Task PointerKeyboardAndSelectionKeepObservedValuesAndMissingIdentities(ChartSeriesKind kind, int width, bool dark, bool explicitScale) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(width, 400).WithDataLabels(false)
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .WithHeatmapColorScale(ChartColorScale.Discrete(new[] {
+            .WithHeatmapColorScale(explicitScale ? ChartColorScale.Discrete(new[] {
                 new ChartColorBand(10, ChartColor.FromHex("#DAE8F8"), "Low"),
                 new ChartColorBand(20, ChartColor.FromHex("#6F9ECE"), "Middle"),
                 new ChartColorBand(null, ChartColor.FromHex("#1C5CAB"), "High")
-            }));
+            }) : null);
         if (kind == ChartSeriesKind.CalendarHeatmap) chart.AddCalendarHeatmap("Observed", new[] {
             new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 0), new ChartCalendarHeatmapItem(new DateTime(2026, 1, 7), 10),
             new ChartCalendarHeatmapItem(new DateTime(2026, 1, 8), 20)
@@ -49,21 +51,37 @@ public sealed class InteractiveHeatmapColorScaleBrowserTests {
             else await MoveToAsync(page, selector);
             await page.WaitForFunctionAsync("value => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && Array.from(tip.querySelectorAll('dt')).some(term => term.textContent === 'Value' && term.nextElementSibling.textContent === value); }", value);
             var terms = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync();
-            Assert.DoesNotContain("Level", terms); Assert.DoesNotContain("Status", terms); Assert.DoesNotContain("Color", terms);
-            Assert.Null(await page.Locator(selector).GetAttributeAsync("data-cfx-level"));
-            Assert.Null(await page.Locator(selector).GetAttributeAsync("data-cfx-status"));
+            if (explicitScale) {
+                Assert.DoesNotContain("Level", terms); Assert.DoesNotContain("Status", terms); Assert.DoesNotContain("Color", terms);
+                Assert.Null(await page.Locator(selector).GetAttributeAsync("data-cfx-level"));
+                Assert.Null(await page.Locator(selector).GetAttributeAsync("data-cfx-status"));
+            }
         }
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.heatmapSelection = event.detail.target)");
         await MoveAwayAsync(page);
         await page.Locator(cells + "[data-cfx-value='20']").FocusAsync(); await page.Keyboard.PressAsync("Space");
         var selected = await page.EvaluateAsync<JsonElement>("() => window.heatmapSelection");
         Assert.Equal("20", selected.GetProperty("value").GetString());
+        if (kind == ChartSeriesKind.CalendarHeatmap) {
+            Assert.Equal("region", selected.GetProperty("targetKind").GetString());
+            Assert.Equal("2026-01-08", selected.GetProperty("targetId").GetString());
+            var missing = page.Locator("[data-cfx-role='calendar-cell'][data-cfx-date='2026-01-06']");
+            await MoveAwayAsync(page); await missing.FocusAsync();
+            await page.WaitForFunctionAsync("() => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.textContent.includes('2026-01-06'); }");
+            Assert.DoesNotContain("Value", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
+            Assert.Null(await missing.GetAttributeAsync("data-cfx-value"));
+            Assert.Null(await missing.GetAttributeAsync("data-cfx-point"));
+            await page.Keyboard.PressAsync("Space");
+            var empty = await page.EvaluateAsync<JsonElement>("() => window.heatmapSelection");
+            Assert.Equal("2026-01-06", empty.GetProperty("targetId").GetString());
+            Assert.Equal("", empty.GetProperty("value").GetString());
+        }
         Assert.True(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth + 1"));
         Assert.Empty(errors); AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(captures)) {
             Directory.CreateDirectory(captures);
-            var name = "heatmap-color-scale-" + kind + "-" + width + "-" + (dark ? "dark" : "light");
+            var name = "heatmap-color-scale-" + kind + "-" + width + "-" + (dark ? "dark" : "light") + (explicitScale ? "-explicit" : "-default");
             await File.WriteAllTextAsync(Path.Combine(captures, name + ".svg"), prepared.ToSvg());
             await File.WriteAllBytesAsync(Path.Combine(captures, name + ".png"), prepared.ToPng());
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + ".browser.png") });

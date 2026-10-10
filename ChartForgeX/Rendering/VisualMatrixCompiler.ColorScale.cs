@@ -113,7 +113,18 @@ internal static partial class VisualMatrixCompiler {
             using (VisualStateSceneTools.Mark(builder, prefix + "-" + index, prefix + "-step", box, label, source))
                 builder.Rect(box, blend.Color, radius: 1, role: prefix + "-swatch", paint: VisualChartPaint.Fill(blend.Paint));
         }
-        void Caption(string text, ChartRect box, string id, TextAlignment alignment) =>
-            VisualStateSceneTools.Text(builder, text, box, style, prefix + "-label", prefix + "-label-" + id, alignment);
+        void Caption(string text, ChartRect box, string id, TextAlignment alignment) {
+            var captionStyle = style;
+            if (captions != null && builder.MeasureText(text, style).Width > box.Width) {
+                // A bounded key can need more columns than its preferred caption size allows.
+                // Keep ordinary numeric intervals complete without shrinking below readable text.
+                captionStyle = style.Clone();
+                var minimum = Math.Min(8, style.EffectiveFontSize);
+                captionStyle.FontSize = style.EffectiveFontSize; captionStyle.Baseline = TextBaseline.Normal;
+                while (captionStyle.FontSize > minimum && builder.MeasureText(text, captionStyle).Width > box.Width)
+                    captionStyle.FontSize = Math.Max(minimum, captionStyle.FontSize - .25);
+            }
+            VisualStateSceneTools.Text(builder, text, box, captionStyle, prefix + "-label", prefix + "-label-" + id, alignment);
+        }
     }
 }

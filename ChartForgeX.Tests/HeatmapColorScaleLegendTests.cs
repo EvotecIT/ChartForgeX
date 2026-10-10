@@ -1,9 +1,11 @@
+using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -68,6 +70,34 @@ public sealed class HeatmapColorScaleLegendTests {
         var hiddenContext = VisualExportRequest.ForChart(chart.WithHeatmapScaleLegend()).Context;
         var frameHidden = new VisualRenderContext(hiddenContext.Layout, hiddenContext.Theme, hiddenContext.ThemeMode, new VisualFrame(showLegend: false), hiddenContext.Font);
         Assert.DoesNotContain(chart.Prepare(frameHidden).Regions, region => region.Role == prefix);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CompactGalleryBandsRenderTheirCompleteIntervalsAtReadableSizeBelowTheHeader(bool dark) {
+        const string family = "CFX Heatmap Legend Carlito";
+        var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
+        FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Regular.ttf"), 400);
+        FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Bold.ttf"), 700);
+        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var chart = V2GalleryModels.Create(ChartSeriesKind.HexbinHeatmap, "compact-color-scale", mode);
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)),
+            VisualTheme.Graphite(), mode, new VisualFrame("Service coverage in hexagonal cells", "Named numeric intervals keep their exact boundaries"),
+            FontSpec.FromFamily(family)));
+        var document = XDocument.Parse(prepared.ToSvg());
+        var captions = Role(document, "heatmap-scale-label").SelectMany(group => group.Descendants().Where(element => element.Name.LocalName == "text")).ToArray();
+        Assert.Equal(new[] { "Low · < 40", "Medium · 40 ≤ value < 80", "High · ≥ 80" }, captions.Select(caption => caption.Value));
+        Assert.All(captions, caption => Assert.True(double.Parse(caption.Attribute("font-size")!.Value, CultureInfo.InvariantCulture) >= 8));
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "matrix.scale-overflow" or "text.overflow");
+        var colors = chart.Options.HeatmapColorScale!.Bands.Select(band => band.Color).ToArray();
+        var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-scale-swatch").ToArray();
+        var image = RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        Assert.Equal(colors, swatches.Select(swatch => swatch.Fill!.Value));
+        for (var index = 0; index < swatches.Length; index++) {
+            Assert.Equal(12, swatches[index].Bounds.Height, 6);
+            Assert.Equal(colors[index], Pixel(image, swatches[index].Bounds));
+        }
     }
 
     [Fact]
