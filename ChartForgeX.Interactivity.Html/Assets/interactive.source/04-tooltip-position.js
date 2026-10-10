@@ -32,7 +32,8 @@
   };
   const tooltipPositionAvailable = (state) => state.root.isConnected && state.tip.isConnected && state.node.isConnected
     && state.root.contains(state.tip) && state.root.contains(state.node) && !state.tip.hidden && !state.root.hidden
-    && hasFeature(state.root, 'Tooltips') && state.stage.getClientRects().length > 0;
+    && hasFeature(state.root, 'Tooltips') && state.stage.getClientRects().length > 0
+    && tooltipReadoutAvailable(state.node, state.readoutEvent);
   const queueTooltipPositionRefresh = () => {
     if (tooltipPositionFrame || !activeTooltipPositions.size) return;
     tooltipPositionFrame = requestAnimationFrame(() => {
@@ -125,8 +126,10 @@
     let state = tooltipPositions.get(tip);
     const pinned = state && root.dataset.cfxTooltipPinned === 'true' && state.key === root.dataset.cfxPinnedTarget;
     if (!state) { state = { root, tip, stage, trees: tooltipRootTrees(root) }; tooltipPositions.set(tip, state); }
-    if (!pinned) { state.node = node; state.key = targetKey(targetIdentity(node)); }
+    // A pin retains its acquisition mode: later pointer movement must not invalidate a keyboard-only fact.
+    if (!pinned) { state.node = node; state.key = targetKey(targetIdentity(node)); state.readoutEvent = event; }
     state.event = event; state.anchor = root.dataset.cfxTooltipAnchor || 'pointer';
+    if (!tooltipPositionAvailable(state)) { hideTip(root, tip, true); return; }
     placeTooltip(state);
     if (state.anchor !== 'pointer') watchTooltipPosition(state);
   };
