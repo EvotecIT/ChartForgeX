@@ -36,13 +36,14 @@ public static partial class V2Examples {
                     ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), Snippet(family, variant, mode, width, height));
                     artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
                         prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count,
-                        DiagnosticMessages: prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray()));
+                        DiagnosticMessages: prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray(), Compact: variant == "compact"));
                 }
             }
         }
         if (!curated) WriteRadialLabels(output, artifacts);
         WriteDiagrams(output, artifacts);
         WriteFamilies(output, artifacts, curated);
+        WriteHistograms(output, artifacts);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);
     }

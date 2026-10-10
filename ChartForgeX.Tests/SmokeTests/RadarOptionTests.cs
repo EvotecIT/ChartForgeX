@@ -56,6 +56,7 @@ internal static partial class SmokeTests {
         var formattedSvg = formattedRings.ToSvg();
         Assert(formattedSvg.Contains(">explicit-ring</text>", System.StringComparison.Ordinal), "Radar rings should honor explicit y-axis labels.");
         Assert(formattedSvg.Contains(">ring-40</text>", System.StringComparison.Ordinal), "Radar rings should honor generated y-axis label formatters.");
+        Assert(formattedSvg.Contains(">ring-60</text>", System.StringComparison.Ordinal) && formattedSvg.Contains(">ring-80</text>", System.StringComparison.Ordinal), "A partial explicit radar label should preserve the remaining generated rings.");
         var formattedPng = formattedRings.ToPng();
         formattedRings.Options.YAxis.Labels.Clear();
         formattedRings.Options.YAxis.LabelFormatter = _ => "different-ring";

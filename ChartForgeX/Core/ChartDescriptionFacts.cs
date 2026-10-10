@@ -106,7 +106,7 @@ public sealed class ChartDescriptionFacts {
     /// <summary>Gets the chart title, or null when the chart has none.</summary>
     public string? Title { get; }
 
-    /// <summary>Gets the described series names: every series with points, or the one calendar or map series.</summary>
+    /// <summary>Gets the described series names: every series with source data, or the one calendar or map series.</summary>
     public IReadOnlyList<string> SeriesNames => _seriesNames;
 
     /// <summary>
