@@ -32,12 +32,12 @@ internal static class VisualChartCompiler {
     }
 
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(VisualChartFamily family, Chart chart, VisualThemeColors colors,
-        ChartBubbleSizeScale? bubbleScale = null) => family switch {
-        VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors, bubbleScale),
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null) => family switch {
+        VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors, bubbleScale: bubbleScale),
         VisualChartFamily.Radial => VisualRadialCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Gauge => VisualGaugeCompiler.LegendEntries(chart, colors),
         VisualChartFamily.RadialProgress => VisualRadialProgressCompiler.LegendEntries(chart, colors),
-        VisualChartFamily.NumericRadial => VisualCartesianCompiler.LegendEntries(chart, colors),
+        VisualChartFamily.NumericRadial => VisualCartesianCompiler.LegendEntries(chart, colors, axisLabels),
         VisualChartFamily.Polar => VisualPolarCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Scalar => VisualScalarProgressCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Matrix => VisualMatrixCompiler.LegendEntries(chart, colors),
@@ -50,7 +50,7 @@ internal static class VisualChartCompiler {
     };
 
     internal static void Build(VisualChartFamily family, Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content,
-        ChartBubbleSizeScale? bubbleScale = null) {
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null) {
         using var coordinateScope = family is VisualChartFamily.Radial or VisualChartFamily.RadialProgress or VisualChartFamily.Polar or VisualChartFamily.NumericRadial
             || family == VisualChartFamily.Gauge && chart.Options.Gauge.Form != ChartGaugeForm.Linear
             || family == VisualChartFamily.Hierarchy && chart.Series[0].Kind == ChartSeriesKind.Sunburst
@@ -60,7 +60,7 @@ internal static class VisualChartCompiler {
             case VisualChartFamily.Radial: VisualRadialCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Gauge: VisualGaugeCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.RadialProgress: VisualRadialProgressCompiler.Build(chart, context, builder, content); break;
-            case VisualChartFamily.NumericRadial: VisualNumericRadialCompiler.Build(chart, context, builder, content); break;
+            case VisualChartFamily.NumericRadial: VisualNumericRadialCompiler.Build(chart, context, builder, content, axisLabels); break;
             case VisualChartFamily.Polar: VisualPolarCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Scalar: VisualScalarProgressCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Matrix: VisualMatrixCompiler.Build(chart, context, builder, content); break;

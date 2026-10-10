@@ -114,9 +114,9 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void ObservationLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int observation,
-        ChartPoint anchor, ChartRect bounds, double value, ResolvedPointLabel label, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartPoint anchor, ChartRect bounds, double value, ResolvedPointLabel label, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, double? barDirection = null) {
         obstacles.Add(new LabelObstacle(PointId(seriesIndex, observation), bounds));
-        AddLabel(chart, context, series, seriesIndex, observation, anchor, bounds, label, labels, value);
+        AddLabel(chart, context, series, seriesIndex, observation, anchor, bounds, label, labels, value, barDirection: barDirection);
     }
 
     private static ChartRect Extents(double x1, double y1, double x2, double y2, double inflate = 0) =>
