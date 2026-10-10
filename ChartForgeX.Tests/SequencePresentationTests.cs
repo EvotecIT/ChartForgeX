@@ -49,6 +49,7 @@ public sealed class SequencePresentationTests {
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         Assert.Equal(expected.ToCss(), envelope.Presentation!.Theme!.Background);
         Assert.Equal("Georgia, serif", envelope.Presentation.Theme.FontFamily);
+        AssertStatusColors(model.Theme.Resolve(mode), envelope.Presentation.Theme);
         Assert.Equal(artifact.ToInterchangeJson(), envelope.ToJson());
     }
 
@@ -67,6 +68,7 @@ public sealed class SequencePresentationTests {
         Assert.Equal(context.Theme.Resolve(context.ThemeMode).Background.ToCss(), Background(originalSvg));
         Assert.Equal(context.Theme.Resolve(context.ThemeMode).Background.ToCss(), theme.Background);
         Assert.Equal("Courier New, monospace", theme.FontFamily);
+        AssertStatusColors(context.Theme.Resolve(context.ThemeMode), theme);
         Assert.Contains("Courier New", originalSvg);
         model.ThemeMode = VisualThemeMode.Light;
         model.Theme = VisualTheme.Graphite();
@@ -120,6 +122,15 @@ public sealed class SequencePresentationTests {
     }
 
     private static string Source(string theme) => "---\nconfig:\n  theme: default\n  fontFamily: Arial, sans-serif\n  sequence:\n    theme: " + theme + "\n    fontFamily: Georgia, serif\n---\n" + Body;
+
+    private static void AssertStatusColors(VisualThemeColors colors, VisualArtifactInterchangeTheme theme) {
+        var status = colors.Status;
+        Assert.Equal(status.Pass.Fill.ToCss(), theme.Healthy);
+        Assert.Equal(status.Medium.Fill.ToCss(), theme.Warning);
+        Assert.Equal(status.Critical.Fill.ToCss(), theme.Critical);
+        Assert.Equal(status.Neutral.Fill.ToCss(), theme.Unknown);
+        Assert.Equal(status.Maintenance.Fill.ToCss(), theme.Disabled);
+    }
 
     private static string Background(string svg) => (string)XDocument.Parse(svg).Descendants()
         .Single(element => (string?)element.Attribute("data-cfx-role") == "background").Attribute("fill")!;

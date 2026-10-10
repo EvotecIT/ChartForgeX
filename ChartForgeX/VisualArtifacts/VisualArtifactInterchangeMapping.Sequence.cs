@@ -30,7 +30,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Warning = status.Medium.Fill.ToCss(),
             Critical = status.Critical.Fill.ToCss(),
             Unknown = status.Neutral.Fill.ToCss(),
-            Disabled = status.Neutral.Fill.ToCss(),
+            Disabled = status.Maintenance.Fill.ToCss(),
             FontFamily = fontFamily
         };
     }
