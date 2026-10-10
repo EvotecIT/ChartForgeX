@@ -46,11 +46,12 @@ public sealed partial class SvgVisualBlockRenderer {
     }
 
     private static void WritePacketBitLabels(SvgMarkupWriter writer, PacketLayoutBlock packet, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartForgeX.Themes.ChartTheme theme, double fontSize) {
+        var inset = VisualBlockRendering.PacketBitInset(width);
         var start = slice.StartBit.ToString(CultureInfo.InvariantCulture);
-        writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-start").Attribute("x", F(x)).Attribute("y", F(y)).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "700").Text(start).EndElement().Line();
+        writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-start").Attribute("x", F(x + inset)).Attribute("y", F(y)).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "700").Text(start).EndElement().Line();
         if (slice.EndBit != slice.StartBit) {
             var end = slice.EndBit.ToString(CultureInfo.InvariantCulture);
-            writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-end").Attribute("x", F(x + width)).Attribute("y", F(y)).Attribute("text-anchor", "end").Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "700").Text(end).EndElement().Line();
+            writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-end").Attribute("x", F(x + width - inset)).Attribute("y", F(y)).Attribute("text-anchor", "end").Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "700").Text(end).EndElement().Line();
         }
     }
 }

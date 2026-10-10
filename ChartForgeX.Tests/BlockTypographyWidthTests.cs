@@ -32,11 +32,13 @@ public sealed class BlockTypographyWidthTests {
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task LargeBitNumbersFitNarrowFieldsWithoutDroppingTheirValues(bool graphite) {
+    [InlineData(false, 520)]
+    [InlineData(true, 520)]
+    [InlineData(false, 320)]
+    [InlineData(true, 320)]
+    public async Task LargeBitNumbersFitNarrowFieldsWithoutDroppingTheirValues(bool graphite, int width) {
         var theme = Theme(graphite); theme.DataLabelFontSize = 256;
-        var packet = Packet(theme).AddField(0, 0, "FlagA").AddField(1, 1, "FlagB").AddField(2, 31, "Data");
+        var packet = Packet(theme).WithSize(width, 300).AddField(0, 0, "FlagA").AddField(1, 1, "FlagB").AddField(2, 31, "Data");
         var elements = XDocument.Parse(packet.ToSvg()).Descendants().ToArray();
         var fields = elements.Where(element => (string?)element.Attribute("data-cfx-role") == "packet-field").ToArray();
         var labels = elements.Where(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("packet-bit-", StringComparison.Ordinal) == true).ToArray();
@@ -47,7 +49,21 @@ public sealed class BlockTypographyWidthTests {
             var available = Number(field, "width") / (field.Attribute("data-bit-start")!.Value == field.Attribute("data-bit-end")!.Value ? 1 : 2);
             Assert.InRange(Measure(label), .01, available);
         }
-        await Capture(packet, "packet-narrow-bits-" + (graphite ? "graphite" : "classic"));
+        await Capture(packet, "packet-narrow-bits-" + (graphite ? "graphite-" : "classic-") + width);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AdjacentFieldBoundaryBitNumbersKeepBothValuesVisible(bool graphite) {
+        var theme = Theme(graphite); theme.DataLabelFontSize = 21;
+        var packet = Packet(theme).AddField(0, 15, "Source Port").AddField(16, 31, "Destination Port");
+        var labels = XDocument.Parse(packet.ToSvg()).Descendants().Where(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("packet-bit-", StringComparison.Ordinal) == true).ToArray();
+        Assert.Equal(new[] { "0", "15", "16", "31" }, labels.Select(label => label.Value));
+        Assert.All(labels, label => Assert.NotEqual("none", (string?)label.Attribute("display")));
+        var previous = labels.Single(label => label.Value == "15"); var next = labels.Single(label => label.Value == "16");
+        Assert.True(Number(next, "x") - Number(previous, "x") >= 2, "Adjacent end/start bit labels need the shared scene's collision separation.");
+        await Capture(packet, "packet-adjacent-bits-" + (graphite ? "graphite" : "classic"));
     }
 
     [Fact]

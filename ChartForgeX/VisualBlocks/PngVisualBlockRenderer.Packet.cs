@@ -34,10 +34,11 @@ public sealed partial class PngVisualBlockRenderer {
     }
 
     private static void DrawPacketBitLabels(RgbaCanvas canvas, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartColor color, double fontSize) {
-        canvas.DrawTextEmphasized(x, y, slice.StartBit.ToString(CultureInfo.InvariantCulture), color, fontSize);
+        var inset = VisualBlockRendering.PacketBitInset(width);
+        canvas.DrawTextEmphasized(x + inset, y, slice.StartBit.ToString(CultureInfo.InvariantCulture), color, fontSize);
         if (slice.EndBit == slice.StartBit) return;
         var end = slice.EndBit.ToString(CultureInfo.InvariantCulture);
         var endWidth = canvas.MeasureTextEmphasizedWidth(end, fontSize);
-        canvas.DrawTextEmphasized(x + width - endWidth, y, end, color, fontSize);
+        canvas.DrawTextEmphasized(x + width - inset - endWidth, y, end, color, fontSize);
     }
 }

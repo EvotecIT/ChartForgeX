@@ -22,12 +22,19 @@ internal static partial class VisualBlockRendering {
         foreach (var slice in slices) {
             var width = Math.Max(1, slice.BitLength * content.Width / packet.BitsPerRow - 1);
             var numbers = ChartLabelScene.MeasureText(slice.StartBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
-            if (slice.EndBit != slice.StartBit) numbers += ChartLabelScene.MeasureText(slice.EndBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
-            if (numbers > 0) bits = Math.Min(bits, width * .9 / numbers);
+            var available = width - PacketBitInset(width) * 2;
+            if (slice.EndBit != slice.StartBit) {
+                numbers += ChartLabelScene.MeasureText(slice.EndBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
+                available -= LabelPlacementService.DefaultGap;
+            }
+            if (numbers > 0) bits = Math.Min(bits, Math.Max(1, available / numbers));
         }
         var label = Math.Min(BodyFontSize(packet.Options.Theme, Math.Max(9, Math.Min(13.5, height * .31))), height * .6);
         return new PacketRowMetrics(labelTop, gap, height, bits, label);
     }
+
+    // End/start numbers on adjoining fields share the measured scene's label separation.
+    public static double PacketBitInset(double width) => Math.Min(LabelPlacementService.DefaultGap / 2, width / 4);
 
     public readonly struct PacketRowMetrics {
         public PacketRowMetrics(double labelTop, double gap, double height, double bitFontSize, double fieldFontSize) {
