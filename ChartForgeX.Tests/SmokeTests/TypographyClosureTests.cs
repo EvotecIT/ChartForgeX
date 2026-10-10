@@ -14,7 +14,7 @@ internal static partial class SmokeTests {
             var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
                 .WithSize(360, 220)
                 .WithTitle("Directional baseline")
-                .WithTitleStyle(style => style.WithColor("#ff00ff").WithFontSize(fontSize).WithBaseline(baseline))
+                .ConfigureTitleStyle(style => style.WithColor("#ff00ff").WithFontSize(fontSize).WithBaseline(baseline))
                 .AddLine("Values", Points(1, 3, 2));
             var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
             return FindNearColorBounds(pixels, width, 255, 0, 255, 12);
@@ -32,11 +32,11 @@ internal static partial class SmokeTests {
 
     private static void SvgSpecializedLayoutsReserveTransformedText() {
         var regularBullet = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().AddBullet("nnnnnnnnnnnn", 82, 90).ToSvg();
-        var uppercaseBullet = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().WithDataLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddBullet("nnnnnnnnnnnn", 82, 90).ToSvg();
+        var uppercaseBullet = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().ConfigureDataLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddBullet("nnnnnnnnnnnn", 82, 90).ToSvg();
         Assert(GetAttribute(uppercaseBullet, "data-cfx-role=\"bullet-value\"", "x") > GetAttribute(regularBullet, "data-cfx-role=\"bullet-value\"", "x"), "Bullet layout should reserve the transformed series label width before placing the bar.");
 
         var regularHorizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 260).WithXLabels("nnnnnnnn", "short").AddHorizontalBar("Values", Points(12, 20)).ToSvg();
-        var uppercaseHorizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 260).WithXLabels("nnnnnnnn", "short").WithTickLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddHorizontalBar("Values", Points(12, 20)).ToSvg();
+        var uppercaseHorizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 260).WithXLabels("nnnnnnnn", "short").ConfigureTickLabelStyle(style => style.WithTextCase(TextCaseTransform.Uppercase)).AddHorizontalBar("Values", Points(12, 20)).ToSvg();
         Assert(GetAttribute(uppercaseHorizontal, "data-cfx-role=\"horizontal-bar\"", "x") > GetAttribute(regularHorizontal, "data-cfx-role=\"horizontal-bar\"", "x"), "Horizontal charts should reserve transformed category labels before placing their plot.");
 
         var closePoints = new[] {
@@ -45,7 +45,7 @@ internal static partial class SmokeTests {
         };
         var regularLabels = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 240).WithDataLabels().WithValueFormatter(_ => "mmmmmmmm").AddScatter("Dense", closePoints).ToSvg();
         var styledChart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 240).WithDataLabels().WithValueFormatter(_ => "mmmmmmmm").AddScatter("Dense", closePoints);
-        styledChart.Series[0].WithDataLabelStyle(style => style.WithFontSize(36).WithTextCase(TextCaseTransform.Uppercase));
+        styledChart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(36).WithTextCase(TextCaseTransform.Uppercase));
         var styledLabels = styledChart.ToSvg();
         Assert(CountVisibleDataLabels(regularLabels) == 2 && CountVisibleDataLabels(styledLabels) >= 1, "Measured placement should retain labels when an alternative lane fits the transformed text.");
         Assert(Rendering.ChartLabelScene.Inspect(styledLabels, FontSpec.SystemSans()).LabelLabel == 0, "Styled labels must not overlap after relocation or shortening.");
@@ -55,7 +55,7 @@ internal static partial class SmokeTests {
         var heatmap = Chart.Create()
             .WithSize(440, 360)
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
-            .WithDataLabelStyle(style => style.WithFontSize(42));
+            .ConfigureDataLabelStyle(style => style.WithFontSize(42));
         for (var row = 0; row < 8; row++) heatmap.AddHeatmapRow("Row " + row.ToString(CultureInfo.InvariantCulture), Points(1));
         var matrix = PreparedFamily(heatmap);
         var heatmapCells = matrix.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-cell-shape").ToArray();
@@ -67,7 +67,7 @@ internal static partial class SmokeTests {
         var funnel = Chart.Create()
             .WithSize(560, 300)
             .WithDataLabels()
-            .WithDataLabelStyle(style => style.WithFontSize(42))
+            .ConfigureDataLabelStyle(style => style.WithFontSize(42))
             .WithXLabels("Qualified", "Validated", "Closed")
             .AddFunnel("Pipeline", Points(120, 74, 32));
         var stages = PreparedFamily(funnel);

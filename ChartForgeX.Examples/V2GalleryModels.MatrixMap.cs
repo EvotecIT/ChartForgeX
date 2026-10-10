@@ -31,7 +31,7 @@ public static partial class V2GalleryModels {
             default: return null;
         }
         if (kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap && variant == "options")
-            chart.WithMapColorScale(ChartMapColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
+            chart.WithMapColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
                 .WithValueRange(0, 100).WithLabels("Below target", "Target", "Above target").WithNoDataColor(colors.Border))
                 .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
         if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap)

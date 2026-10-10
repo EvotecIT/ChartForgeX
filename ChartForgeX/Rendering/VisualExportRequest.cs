@@ -19,10 +19,14 @@ internal sealed partial class VisualExportRequest {
         var options = chart.Options;
         var theme = FromTheme(options.Theme);
         ChartGuards.RenderCompatibility(chart, preparing: true);
-        var legendEntries = VisualChartCompiler.LegendEntries(VisualChartCompiler.Family(chart), chart, theme.Resolve(VisualThemeMode.Light));
+        var family = VisualChartCompiler.Family(chart);
+        // Category captions are formatted during preparation, rather than while counting entries here.
+        var showLegend = family == VisualChartFamily.NumericRadial || family == VisualChartFamily.Cartesian && chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall
+            ? ChartLegendVisibility.ForSeries(chart)
+            : ChartLegendVisibility.ForPreparedContent(chart, VisualChartCompiler.LegendEntries(family, chart, theme.Resolve(VisualThemeMode.Light)).Count);
         var frame = new VisualFrame(options.ShowHeader && !options.HostOwnsFrame ? chart.Title : string.Empty,
             options.ShowHeader && !options.HostOwnsFrame ? chart.Subtitle : string.Empty,
-            ChartLegendVisibility.ForPreparedContent(chart, legendEntries.Count) && !options.HostOwnsFrame, options.LegendPosition,
+            showLegend && !options.HostOwnsFrame, options.LegendPosition,
             options.ShowPlotBackground && !options.HostOwnsFrame, options.TransparentBackground || options.HostOwnsFrame,
             legendMaximumRows: options.LegendMaximumRows, legendMaximumHeightFraction: options.LegendMaximumHeightFraction,
             showCard: options.ShowCard && options.Theme.UseCard && !options.HostOwnsFrame);

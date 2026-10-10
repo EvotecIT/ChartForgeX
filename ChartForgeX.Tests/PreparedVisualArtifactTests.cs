@@ -198,7 +198,7 @@ public sealed class PreparedVisualArtifactTests {
         frame: new VisualFrame(showLegend: false));
 
     private static Chart CreateChart() => Chart.Create().WithTitle("CPU load")
-        .WithAccessibility(accessibility => accessibility.WithTextAlternative("CPU load", "Synthetic CPU utilization.", "pl-PL"))
+        .ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("CPU load", "Synthetic CPU utilization.", "pl-PL"))
         .AddLine("CPU", new[] { new ChartPoint(0, 20), new ChartPoint(1, 35), new ChartPoint(2, 28) });
 
     private static VisualRenderContext Context() => new(

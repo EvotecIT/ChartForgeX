@@ -5,6 +5,9 @@ namespace ChartForgeX.Rendering;
 internal static class ChartMath {
     internal static double Normalize(double value, double minimum, double maximum) {
         if (!IsFinite(value) || !IsFinite(minimum) || !IsFinite(maximum) || maximum <= minimum) return 0.5;
+        var directSpan = maximum - minimum;
+        var directOffset = value - minimum;
+        if (IsFinite(directSpan) && IsFinite(directOffset)) return directOffset / directSpan;
         var scale = Math.Max(Math.Abs(value), Math.Max(Math.Abs(minimum), Math.Abs(maximum)));
         if (scale == 0) return 0.5;
         var normalizedMinimum = minimum / scale;
@@ -12,6 +15,14 @@ internal static class ChartMath {
         var span = normalizedMaximum - normalizedMinimum;
         if (!IsFinite(span) || span <= 0) return 0.5;
         return (value / scale - normalizedMinimum) / span;
+    }
+
+    /// <summary>Interpolates finite range endpoints without overflowing their span, preserving both endpoints exactly.</summary>
+    internal static double InterpolateRange(double minimum, double maximum, double ratio) {
+        if (ratio <= 0) return minimum;
+        if (ratio >= 1) return maximum;
+        var span = maximum - minimum;
+        return IsFinite(span) ? minimum + span * ratio : minimum * (1 - ratio) + maximum * ratio;
     }
 
     internal static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);

@@ -104,7 +104,7 @@ internal static class ReportHostExamples {
             .WithSize(760, 230)
             .WithPngOutputScale(pngOutputScale)
             .WithCalendarHeatmapCells(maximumSize: 18)
-            .WithLabels(labels => {
+            .ConfigureLabels(labels => {
                 labels.Less = "Moins";
                 labels.More = "Plus";
                 labels.NoData = "Aucune donnée";

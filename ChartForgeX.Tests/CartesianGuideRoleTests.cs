@@ -25,6 +25,6 @@ public sealed class CartesianGuideRoleTests {
         Assert.NotEmpty(grid);
         Assert.All(axes, element => Assert.Equal("#A02030", (string?)element.Attribute("stroke")));
         Assert.All(grid, element => Assert.Equal("#2040A0", (string?)element.Attribute("stroke")));
-        Assert.NotEqual(chart.ToPng(), chart.WithTheme(theme => { theme.Axis = ChartColors.Transparent; theme.Grid = ChartColors.Transparent; }).ToPng());
+        Assert.NotEqual(chart.ToPng(), chart.ConfigureTheme(theme => { theme.Axis = ChartColors.Transparent; theme.Grid = ChartColors.Transparent; }).ToPng());
     }
 }
