@@ -5,6 +5,23 @@ using System.Globalization;
 namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidGanttParser {
+    private static bool ValidateCalendarAnchor(MermaidGanttDocument document, MermaidParseResult<MermaidDocument> result) {
+        if (document.DateAnchor.HasValue || !MermaidGanttInputDateFormat.OmitsYear(document.DateFormat)) return true;
+        var valid = true;
+        foreach (var statement in document.Statements) {
+            var offset = StartsWithKeyword(statement.Text, "excludes") || StartsWithKeyword(statement.Text, "includes") ? 8 : 0;
+            if (offset == 0) continue;
+            var requiresAnchor = false;
+            CalendarTokens(statement.Text.Substring(offset), document.DateFormat, null, _ => requiresAnchor = true);
+            if (requiresAnchor) {
+                Add(result, statement.Span.Line, statement.Span.Column, statement.Span.Length, MermaidDiagnosticSeverity.Error,
+                    "Gantt calendar dates using '" + document.DateFormat + "' require MermaidParseOptions.GanttDateAnchor or complete ISO dates.");
+                valid = false;
+            }
+        }
+        return valid;
+    }
+
     // Duration-based ends advance past excluded calendar dates. Explicit ends remain authored dates.
     private static bool TryResolveDurationEnd(DateTime start, double amount, string unit, MermaidGanttDocument document, out DateTime end, out DateTime renderEnd) {
         end = renderEnd = start;
@@ -48,7 +65,7 @@ internal static partial class MermaidGanttParser {
         catch (OverflowException) { return false; }
     }
 
-    private static HashSet<string> CalendarTokens(string? value, string format, DateTime? dateAnchor) {
+    private static HashSet<string> CalendarTokens(string? value, string format, DateTime? dateAnchor, Action<string>? unrecognized = null) {
         var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var chunk in (value ?? string.Empty).Split(',')) {
             var trimmed = chunk.Trim();
@@ -63,7 +80,8 @@ internal static partial class MermaidGanttParser {
                     else if (IsCalendarKeyword(token)) list.Add(token);
                     else { standalone = false; break; }
                 }
-                if (standalone) tokens.UnionWith(list); else tokens.Add(trimmed);
+                if (standalone) tokens.UnionWith(list);
+                else { tokens.Add(trimmed); unrecognized?.Invoke(trimmed); }
             }
         }
         return tokens;

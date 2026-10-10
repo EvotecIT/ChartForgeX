@@ -57,6 +57,7 @@ internal static partial class MermaidGanttParser {
             }
         }
 
+        if (!ValidateCalendarAnchor(document, result)) return;
         ResolveSchedule(document, tasks, taskIds, result);
         if (document.Tasks.Count == 0) Add(result, document.HeaderSpan.Line, document.HeaderSpan.Column, document.HeaderSpan.Length, MermaidDiagnosticSeverity.Error, "Mermaid Gantt diagrams require at least one task.");
     }

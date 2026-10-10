@@ -764,7 +764,7 @@ var rendered = MermaidRenderer.Render(source, new MermaidRenderOptions { ParseOp
 var markdown = new MermaidVisualMarkupParser(new MermaidRenderOptions { ParseOptions = context });
 ```
 
-Source rendering and Markdown fences use the same parser context; the Markdown adapter snapshots its options at construction. The document exposes `DateAnchor`, and portable artifacts retain it as `mermaid.dateAnchor`. An anchor does not supply a today line. Without an anchor, partial inputs produce a located error. Complete ISO dates remain accepted even under a yearless configured format.
+Source rendering and Markdown fences use the same parser context; the Markdown adapter snapshots its options at construction. The document exposes `DateAnchor`, and portable artifacts retain it as `mermaid.dateAnchor`. An anchor does not supply a today line. Without an anchor, partial task inputs and calendar dates produce a located error. Complete ISO dates and recurring weekday/weekend rules remain accepted even under a yearless configured format. Configured calendar dates retain their resolved date even when the format omits a month or day; `YYYY-MM` identifies the first day of that month, rather than a recurring rule for every date in the month.
 
 Migration: loose date parsing no longer fills missing fields from the system date. Use an explicit `dateFormat` and anchor for partial inputs. Complete legacy spellings remain accepted, including unpadded ISO dates, single-digit hours, English named-month dates, and numeric slash dates with four-digit years. Use the configured format for other spellings. Endpoints use the same anchor; a time-only end does not infer a following day or a following year.
 

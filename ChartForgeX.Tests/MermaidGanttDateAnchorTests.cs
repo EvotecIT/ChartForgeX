@@ -102,11 +102,36 @@ public sealed class MermaidGanttDateAnchorTests {
     [InlineData("MM-DD", "excludes weekends\nincludes 01-03", "01-02", "1d", "2026-01-03")]
     [InlineData("MM-DD", "excludes 01-01", "2026-12-30", "3d", "2027-01-02")]
     [InlineData("HH:mm", "excludes 13:00", "13:00", "2d", "2026-01-04")]
+    [InlineData("YYYY-MM", "excludes 2026-01", "2026-01-02", "2d", "2026-01-04")]
+    [InlineData("YYYY-[Q]Q", "excludes 2026-Q1", "2026-01-02", "2d", "2026-01-04")]
+    [InlineData("YYYY HH:mm", "excludes 2026 13:00", "2026-01-02T13:00", "2d", "2026-01-04")]
+    [InlineData("YYYY-MM", "excludes weekends\nincludes 2026-01", "2026-01-02", "1d", "2026-01-05")]
     public void CalendarDatesUseTheAnchorAndDoNotBecomeRecurringRules(string format, string calendar, string input, string duration, string expectedEnd) {
         var parsed = new MermaidParser().ParseGantt("gantt\n" + calendar + "\ndateFormat " + format + "\nTask :" + input + "," + duration,
             new MermaidParseOptions { GanttDateAnchor = new DateTime(2026, 1, 2) });
         Assert.Empty(parsed.Diagnostics);
         Assert.Equal(expectedEnd, Assert.Single(parsed.Document!.Tasks).End.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+    }
+
+    [Theory]
+    [InlineData("MM-DD", "excludes 02-29")]
+    [InlineData("MM-DD", "includes 02-29")]
+    [InlineData("MMM D", "excludes Feb 29")]
+    [InlineData("HH:mm", "excludes 13:00")]
+    [InlineData("MM-dd", "includes 02-29")]
+    [InlineData("%m/%d", "includes 02/29")]
+    public void CompleteTaskFallbackDoesNotHideAMissingCalendarAnchor(string format, string calendar) {
+        var rendered = MermaidRenderer.Render("gantt\n" + calendar + "\ndateFormat " + format + "\nTask :task,2028-02-28,2d");
+        Assert.True(rendered.HasErrors);
+        Assert.Null(rendered.Artifact);
+        Assert.Contains(rendered.Diagnostics, diagnostic => diagnostic.Span.Line == 2 && diagnostic.Message.Contains("GanttDateAnchor", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void CompleteIsoAndRecurringCalendarRulesDoNotRequireAnAnchor() {
+        var parsed = new MermaidParser().ParseGantt("gantt\nexcludes weekends 2028-02-29\nincludes monday\ndateFormat MM-DD\nTask :task,2028-02-28,2d");
+        Assert.Empty(parsed.Diagnostics);
+        Assert.Equal(new DateTime(2028, 3, 2), Assert.Single(parsed.Document!.Tasks).End);
     }
 
     [Fact]

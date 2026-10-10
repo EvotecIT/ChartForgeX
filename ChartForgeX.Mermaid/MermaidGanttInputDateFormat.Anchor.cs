@@ -15,7 +15,7 @@ internal static partial class MermaidGanttInputDateFormat {
     }
 
     internal static string CalendarKey(DateTime value, string format) => "format:" +
-        (OmitsYear(format) ? value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "|" : string.Empty) + FormatCalendarDate(value, format);
+        value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "|" + FormatCalendarDate(value, format);
 
     private static bool ApplyDateDefaults(StringBuilder input, StringBuilder format, DateTime? anchor) {
         DateFields(format.ToString(), out var year, out var month, out var day);
