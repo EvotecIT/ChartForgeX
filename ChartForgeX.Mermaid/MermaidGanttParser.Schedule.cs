@@ -70,12 +70,12 @@ internal static partial class MermaidGanttParser {
         var valid = references.Length > 0;
         foreach (var id in references) {
             ids.Add(id);
-            if (!taskIds.TryGetValue(id, out var target) || (keyword == "after" && target.Index >= slot.Task.Index)) {
+            if (!taskIds.TryGetValue(id, out var target)) {
                 valid = false;
             } else AddDependency(slot, keyword == "after" ? target.End : target.Start);
         }
         if (!valid) Fail(slot, result, keyword == "after"
-            ? "Gantt after clauses must reference earlier task ids."
+            ? "Gantt after clauses must reference declared task ids."
             : "Gantt until clauses must reference declared task ids.");
     }
 
