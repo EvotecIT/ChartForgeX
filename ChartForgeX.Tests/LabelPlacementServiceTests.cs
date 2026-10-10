@@ -55,6 +55,9 @@ public sealed class LabelPlacementServiceTests {
     [Fact]
     public void MixedAxisAnglesUseTheirOwnPreparedMetricsDuringEllipsisAndPainting() {
         var style = Style.Clone(); style.TextCase = TextCaseTransform.ToggleCase;
+        // The retained prefix depends on glyph widths, so use the checked-in face on every platform.
+        style.Font = FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        Assert.Equal(style.Font.FilePath, TypographyFontResolver.ResolveFace(style.Font).Path);
         var builder = new VisualSceneBuilder(new VisualSize(120, 100), style.Font);
         var requests = new[] {
             new LabelPlacementRequest("WWWiii long vertical caption", new ChartPoint(0, 0), style, new[] { new LabelCandidate(0, 0) }) { RotationDegrees = 450, Bounds = new ChartRect(0, 0, 30, 50) },
