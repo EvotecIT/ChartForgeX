@@ -27,12 +27,12 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await CentreReadableTargetAsync(page, Point(0, 3));
         await TraceAsync(page);
         await PointerAsync(page, Point(0, 3));
-        Assert.True(await TipHiddenAsync(page));
-        await CaptureDelayAsync(page, "delay-example-" + theme + "-" + width + "-pending", await TraceStateAsync(page), session);
+        await CaptureDelayAsync(page, "delay-example-" + theme + "-" + width + "-entry", await TraceStateAsync(page), session);
         await WaitForTipAsync(page);
         var trace = await TraceStateAsync(page);
         await CaptureDelayAsync(page, "delay-example-" + theme + "-" + width + "-shown", trace, session);
         Assert.Equal(new[] { "Failed", "Passed", "Warnings" }, (await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key]").AllTextContentsAsync()).OrderBy(name => name, StringComparer.Ordinal));
+        Assert.All(trace.GetProperty("entry").EnumerateArray(), entry => Assert.True(entry.GetProperty("hidden").GetBoolean()));
         AssertDelay(trace);
         await MoveAwayAsync(page);
         await page.Locator(Point(0, 4)).FocusAsync();

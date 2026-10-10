@@ -21,13 +21,13 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await MountFragmentAsync(page, host);
         await RecordHostExpiryAsync(page);
         await MoveToHostTargetAsync(page, Point(0, 0));
-        Assert.True(await HostedTipHiddenAsync(page));
         await WaitForHostExpiryAsync(page);
         var receipt = await HostReceiptAsync(page);
         await CaptureDelayAsync(page, "delay-host-native-" + host, receipt, session);
         Assert.False(receipt.GetProperty("hidden").GetBoolean());
         Assert.Contains("Reading", receipt.GetProperty("text").GetString()!, StringComparison.Ordinal);
         Assert.Single(receipt.GetProperty("trace").GetProperty("shown").EnumerateArray());
+        Assert.All(receipt.GetProperty("trace").GetProperty("entry").EnumerateArray(), entry => Assert.True(entry.GetProperty("hidden").GetBoolean()));
         AssertDelay(receipt.GetProperty("trace"));
         AssertNoConsoleErrors(session);
     }
