@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Xml.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Rendering;
@@ -106,6 +107,62 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Equal(MermaidDiagnosticSeverity.Warning, warning.Severity);
         Assert.Equal(2, warning.Span.Line);
         Assert.Equal("todayMarker stroke:#ff0000,stroke-width:3px", Assert.Single(style.Document!.RawStatements).Text);
+    }
+
+    [Theory]
+    [InlineData("off")]
+    [InlineData("OFF")]
+    [InlineData("oFf")]
+    public void TodayMarkerOffFollowsCaseInsensitiveDirectiveKeywords(string control) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ntodayMarker " + control + "\nTask :2026-01-01,4d");
+        Assert.Empty(parsed.Diagnostics);
+        Assert.Equal(control, parsed.Document!.TodayMarker);
+        Assert.Null(parsed.Document.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(1) }).Options.GanttToday);
+    }
+
+    [Theory]
+    [InlineData(false, 960)]
+    [InlineData(true, 320)]
+    public async Task MarkerLineAndCaptionSelectTheAuthoredSeriesWhileOrdinaryAnnotationsRemainIndependent(bool dark, int width) {
+        var chart = Chart.Create().WithSize(width, 360).WithLegend(false)
+            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .AddGanttTask("Work", Start, Start.AddDays(8)).AddGanttMarker("Deadline", Start.AddDays(3))
+            .AddVerticalLine(Start.AddDays(6).ToOADate(), "Reference");
+        chart.Series[1].WithInteractionKey("deadline-source");
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Single(prepared.Regions, region => region.Role == "gantt-vertical-marker");
+        if (!InteractiveChartBrowser.Enabled) {
+            Assert.Single(prepared.Regions, region => region.Role == "annotation");
+            return;
+        }
+        await using var session = await InteractiveChartBrowser.OpenAsync(chart.ToInteractiveHtmlPage(), width, 500);
+        var page = session.Page;
+        await page.EvaluateAsync("() => { window.cfxSelections = []; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.cfxSelections.push(event.detail)); }");
+        var marker = page.Locator("[data-cfx-role='gantt-vertical-marker']");
+        Assert.Equal("series", await marker.GetAttributeAsync("data-cfx-target-kind"));
+        Assert.Equal("deadline-source", await marker.GetAttributeAsync("data-cfx-target-id"));
+        await marker.Locator("[data-cfx-role='annotation-label']").ClickAsync();
+        Assert.Equal(1, await page.EvaluateAsync<int>("() => window.cfxSelections.length"));
+        Assert.Equal("series", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetKind"));
+        Assert.Equal("deadline-source", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetId"));
+        var line = await marker.Locator("[data-cfx-role='annotation-line']").BoundingBoxAsync();
+        Assert.NotNull(line);
+        await page.Mouse.ClickAsync(line!.X, line.Y + 1);
+        Assert.Equal(2, await page.EvaluateAsync<int>("() => window.cfxSelections.length"));
+        Assert.Equal("false", await marker.GetAttributeAsync("aria-selected"));
+        await marker.FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal(3, await page.EvaluateAsync<int>("() => window.cfxSelections.length"));
+        Assert.Equal("true", await marker.GetAttributeAsync("aria-selected"));
+        var annotation = page.Locator("[data-cfx-role='annotation']");
+        await annotation.Locator("[data-cfx-role='annotation-label']").ClickAsync();
+        Assert.Equal("annotation", await page.EvaluateAsync<string>("() => window.cfxSelections[3].target.targetKind"));
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            Directory.CreateDirectory(captures);
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "gantt-marker-selection-" + (dark ? "dark-" : "light-") + width + ".png"), FullPage = true });
+        }
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        Assert.Single(prepared.Regions, region => region.Role == "annotation");
     }
 
     [Theory]

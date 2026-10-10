@@ -10,7 +10,8 @@ namespace ChartForgeX.Rendering;
 
 internal static class VisualAnnotationCompiler {
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
-    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-") {
+    // A caller that already describes its mark can reuse annotation painting without a nested interaction target.
+    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true) {
         for (var index = 0; index < annotations.Count; index++) {
             var annotation = annotations[index];
             if (annotation.EndValue.HasValue != bands || (include != null && !include(annotation))) continue;
@@ -22,11 +23,11 @@ internal static class VisualAnnotationCompiler {
             var description = annotation.Kind + ": " + Number(annotation.Value)
                 + (annotation.EndValue.HasValue ? " to " + Number(annotation.EndValue.Value) : string.Empty)
                 + (annotation.Label.Length > 0 ? ": " + annotation.Label : string.Empty);
-            using (builder.PushGroup(id, "annotation", new Dictionary<string, string> {
+            using (describeAnnotations ? builder.PushGroup(id, "annotation", new Dictionary<string, string> {
                 ["data-cfx-kind"] = annotation.Kind.ToString(), ["data-cfx-value"] = Number(annotation.Value),
                 ["data-cfx-end-value"] = annotation.EndValue.HasValue ? Number(annotation.EndValue.Value) : string.Empty,
                 ["data-cfx-label"] = annotation.Label, ["data-cfx-show-label"] = annotation.ShowLabel ? "true" : "false", ["aria-label"] = description
-            })) {
+            }) : null) {
             if (annotation.EndValue.HasValue) {
                 var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, mapY(annotation.EndValue.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, mapX(annotation.EndValue.Value)));
                 bounds = horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
@@ -40,7 +41,7 @@ internal static class VisualAnnotationCompiler {
                     stroke: color, strokeWidth: context.Theme.AxisStrokeWidth, role: "annotation-line", cap: VisualStrokeCap.Butt,
                     dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, SvgColorRole.Axis));
             }
-            builder.AddRegion(new VisualSemanticRegion(id, "annotation", bounds, description));
+            if (describeAnnotations) builder.AddRegion(new VisualSemanticRegion(id, "annotation", bounds, description));
             if (annotation.ShowLabel && !string.IsNullOrEmpty(annotation.Label)) {
                 var plate = new ChartColorBlend(colors.Surface, SvgColorRole.Surface, color, SvgColorRole.Axis, .12);
                 var backplate = plate.Color;

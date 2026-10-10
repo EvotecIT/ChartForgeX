@@ -21,7 +21,7 @@ public static class MermaidGanttRendering {
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height)
             .WithXAxisValueFormatter(value => FormatAxisValue(value, document));
-        if (options.Today.HasValue && document.TodayMarker != "off") chart.WithGanttToday(options.Today.Value);
+        if (options.Today.HasValue && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase)) chart.WithGanttToday(options.Today.Value);
         chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
         foreach (var task in document.Tasks) {
             var name = string.IsNullOrWhiteSpace(task.Section) ? task.Title : task.Section + " / " + task.Title;
