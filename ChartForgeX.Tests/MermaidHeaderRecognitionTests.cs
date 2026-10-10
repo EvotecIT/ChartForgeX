@@ -88,6 +88,20 @@ public sealed class MermaidHeaderRecognitionTests {
         Assert.Contains(result.Diagnostics, item => item.Severity == MermaidDiagnosticSeverity.Error && item.Span.Line == 2);
     }
 
+    [Theory]
+    [InlineData("flowchart-elk")]
+    [InlineData("flowchart_elk")]
+    [InlineData("FLOWCHARTELK")]
+    public void EveryAcceptedElkSpellingReportsTheLayoutOnItsHeaderToken(string header) {
+        var result = MermaidRenderer.Render("  " + header + " LR; A --> B");
+        Assert.False(result.HasErrors);
+        Assert.NotNull(result.Artifact);
+        var warning = Assert.Single(result.Diagnostics, item => item.Code == "CFXM003");
+        Assert.Equal(1, warning.Span.Line);
+        Assert.Equal(3, warning.Span.Column);
+        Assert.Equal(header.Length, warning.Span.Length);
+    }
+
     [Fact]
     public void UnknownHeadersRemainLocatedErrors() {
         var result = MermaidRenderer.Render("%% heading\n  unsupported-family\nbody");
