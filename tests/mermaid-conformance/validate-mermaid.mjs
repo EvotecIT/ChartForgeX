@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { isSyntaxRejection } from './reference-errors.mjs';
 import { timeFormat } from 'd3-time-format';
+import * as calendar from 'd3-time';
+
+// Reference calendar facts use the same deterministic UTC wall-clock interpretation as native Gantt dates.
+process.env.TZ = 'UTC';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const manifest = JSON.parse(await readFile(join(root, 'compatibility.json'), 'utf8'));
@@ -156,6 +160,16 @@ for (const { folder, file, hasExpected } of files) {
           const task = tasks.find(value => value.id === contract.id);
           assert.ok(task, `Axis format task ${contract.id}`);
           for (const [format, label] of contract.values) assert.equal(timeFormat(format)(task.startTime), label, `Axis format ${format}`);
+        }
+      }
+      if (expected.tickCases) {
+        assert.equal(diagram.db.getTickInterval(), expected.tickInterval);
+        assert.equal(diagram.db.getWeekday(), expected.weekday);
+        const format = timeFormat('%Y-%m-%dT%H:%M:%S.%L');
+        for (const contract of expected.tickCases) {
+          const interval = calendar[contract.unit === 'Week' ? 'time' + contract.weekday : 'time' + contract.unit].every(contract.count);
+          const values = interval.range(new Date(contract.start + 'Z'), new Date(+new Date(contract.end + 'Z') + 1)).map(format);
+          assert.deepEqual(values, contract.values, `Calendar ticks ${contract.unit}/${contract.count}/${contract.weekday}`);
         }
       }
       if (expected.taskRenderEnds) {

@@ -22,6 +22,7 @@ public static class MermaidGanttRendering {
             .WithSize(options.Width, options.Height)
             .WithXAxisValueFormatter(value => FormatAxisValue(value, document));
         if (options.Today.HasValue) chart.WithGanttToday(options.Today.Value);
+        chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
         foreach (var task in document.Tasks) {
             var name = string.IsNullOrWhiteSpace(task.Section) ? task.Title : task.Section + " / " + task.Title;
             if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2));
@@ -65,6 +66,7 @@ public static class MermaidGanttRendering {
         artifact.Metadata["mermaid.dateFormat"] = document.DateFormat;
         if (!string.IsNullOrWhiteSpace(document.AxisFormat)) artifact.Metadata["mermaid.axisFormat"] = document.AxisFormat!;
         if (!string.IsNullOrWhiteSpace(document.TickInterval)) artifact.Metadata["mermaid.tickInterval"] = document.TickInterval!;
+        artifact.Metadata["mermaid.weekday"] = document.Weekday.ToString().ToLowerInvariant();
         if (!string.IsNullOrWhiteSpace(document.Excludes)) artifact.Metadata["mermaid.excludes"] = document.Excludes!;
         if (!string.IsNullOrWhiteSpace(document.TodayMarker)) artifact.Metadata["mermaid.todayMarker"] = document.TodayMarker!;
         artifact.Metadata["render.model"] = nameof(Chart);

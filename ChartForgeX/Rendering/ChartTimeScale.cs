@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 /// Generates calendar-aligned ticks and default labels for <see cref="ChartScaleKind.Time"/> axes.
 /// Axis values are OLE Automation dates holding UTC instants; alignment and labels use the axis display zone.
 /// </summary>
-internal static class ChartTimeScale {
+internal static partial class ChartTimeScale {
     private const int MaximumTicks = 2_000;
     private const int MaximumSteps = 100_000;
     private const double MinimumOaDate = -657434.0;
