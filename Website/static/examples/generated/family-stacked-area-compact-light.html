@@ -312,6 +312,7 @@ public static partial class V2GalleryModels {
 public static partial class V2GalleryModels {
     private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
         var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
+        if (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) return MatrixColorScale(kind, variant, mode);
         switch (kind) {
             case ChartSeriesKind.Heatmap:
                 if (variant == &quot;options&quot;) return States(mode).WithXLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;)
@@ -342,6 +343,31 @@ public static partial class V2GalleryModels {
         if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap)
             chart.WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
         return chart;
+    }
+    private static Chart MatrixColorScale(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        if (kind == ChartSeriesKind.CalendarHeatmap)
+            return Chart.Create().AddCalendarHeatmap(&quot;Daily observations&quot;, Enumerable.Range(0, 120)
+                .Where(index =&gt; index % 7 != 0 &amp;&amp; index % 9 != 0)
+                .Select(index =&gt; new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)), firstDayOfWeek: DayOfWeek.Monday)
+                .WithHeatmapColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
+                    .WithLabels(&quot;Quiet&quot;, null, &quot;Busy&quot;).WithNoDataColor(colors.Border));
+        var chart = Categories(kind).WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).WithDataLabels();
+        if (kind == ChartSeriesKind.Heatmap)
+            return chart.AddHeatmapRow(&quot;Primary&quot;, new double?[] { -20, -10, 0, null, 10, 20 })
+                .AddHeatmapRow(&quot;Secondary&quot;, new double?[] { -15, 0, 5, 15, null, 25 })
+                .WithHeatmapColorScale((variant == &quot;color-scale&quot;
+                    ? ChartColorScale.Diverging(new[] { colors.Status.Critical.Fill }, colors.Surface,
+                        new[] { colors.SequentialRamp[2], colors.SequentialRamp[3], colors.SequentialRamp[4] }, 0)
+                    : ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Palette[0], 0))
+                    .WithValueRange(-20, 20).WithLabels(&quot;Below target&quot;, &quot;Target&quot;, &quot;Above target&quot;));
+        return chart.AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 0, 30, 40, null, 80, 100 })
+            .AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 15, 40, 60, 80, null, 120 })
+            .WithHeatmapColorScale(ChartColorScale.Discrete(new[] {
+                new ChartColorBand(40, colors.SequentialRamp[0], &quot;Low&quot;),
+                new ChartColorBand(80, colors.SequentialRamp[colors.SequentialRamp.Count / 2], &quot;Medium&quot;),
+                new ChartColorBand(null, colors.SequentialRamp[colors.SequentialRamp.Count - 1], &quot;High&quot;)
+            }));
     }
     private static ChartRegionMapItem[] RegionValues() =&gt; new[] {
         new ChartRegionMapItem(&quot;CA&quot;, 82), new ChartRegionMapItem(&quot;TX&quot;, 64), new ChartRegionMapItem(&quot;NY&quot;, 91), new ChartRegionMapItem(&quot;FL&quot;, 47),
@@ -759,7 +785,8 @@ public static partial class V2GalleryModels {
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
         var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant)
+        var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
             ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
@@ -1072,6 +1099,7 @@ public static partial class V2GalleryModels {
 public static partial class V2GalleryModels {
     private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
         var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
+        if (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) return MatrixColorScale(kind, variant, mode);
         switch (kind) {
             case ChartSeriesKind.Heatmap:
                 if (variant == &quot;options&quot;) return States(mode).WithXLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;)
@@ -1102,6 +1130,31 @@ public static partial class V2GalleryModels {
         if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap)
             chart.WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
         return chart;
+    }
+    private static Chart MatrixColorScale(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        if (kind == ChartSeriesKind.CalendarHeatmap)
+            return Chart.Create().AddCalendarHeatmap(&quot;Daily observations&quot;, Enumerable.Range(0, 120)
+                .Where(index =&gt; index % 7 != 0 &amp;&amp; index % 9 != 0)
+                .Select(index =&gt; new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)), firstDayOfWeek: DayOfWeek.Monday)
+                .WithHeatmapColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
+                    .WithLabels(&quot;Quiet&quot;, null, &quot;Busy&quot;).WithNoDataColor(colors.Border));
+        var chart = Categories(kind).WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;).WithDataLabels();
+        if (kind == ChartSeriesKind.Heatmap)
+            return chart.AddHeatmapRow(&quot;Primary&quot;, new double?[] { -20, -10, 0, null, 10, 20 })
+                .AddHeatmapRow(&quot;Secondary&quot;, new double?[] { -15, 0, 5, 15, null, 25 })
+                .WithHeatmapColorScale((variant == &quot;color-scale&quot;
+                    ? ChartColorScale.Diverging(new[] { colors.Status.Critical.Fill }, colors.Surface,
+                        new[] { colors.SequentialRamp[2], colors.SequentialRamp[3], colors.SequentialRamp[4] }, 0)
+                    : ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Palette[0], 0))
+                    .WithValueRange(-20, 20).WithLabels(&quot;Below target&quot;, &quot;Target&quot;, &quot;Above target&quot;));
+        return chart.AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 0, 30, 40, null, 80, 100 })
+            .AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 15, 40, 60, 80, null, 120 })
+            .WithHeatmapColorScale(ChartColorScale.Discrete(new[] {
+                new ChartColorBand(40, colors.SequentialRamp[0], &quot;Low&quot;),
+                new ChartColorBand(80, colors.SequentialRamp[colors.SequentialRamp.Count / 2], &quot;Medium&quot;),
+                new ChartColorBand(null, colors.SequentialRamp[colors.SequentialRamp.Count - 1], &quot;High&quot;)
+            }));
     }
     private static ChartRegionMapItem[] RegionValues() =&gt; new[] {
         new ChartRegionMapItem(&quot;CA&quot;, 82), new ChartRegionMapItem(&quot;TX&quot;, 64), new ChartRegionMapItem(&quot;NY&quot;, 91), new ChartRegionMapItem(&quot;FL&quot;, 47),
@@ -1519,7 +1572,8 @@ public static partial class V2GalleryModels {
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
         var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant)
+        var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
             ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
