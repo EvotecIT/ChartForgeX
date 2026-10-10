@@ -70,11 +70,37 @@ public sealed class MermaidGanttDurationTests {
     [InlineData("1year")]
     [InlineData("1years")]
     [InlineData("1Y")]
+    [InlineData("1 M")]
+    [InlineData("1 y")]
+    [InlineData("1\tM")]
+    [InlineData("1\ty")]
+    [InlineData(".5M")]
+    [InlineData("1.M")]
+    [InlineData(".5y")]
+    [InlineData("1.y")]
     public void UnsupportedCalendarUnitNamesProduceSourceDiagnostics(string duration) {
         var result = new MermaidParser().ParseGantt("gantt\nTask :task, 2026-01-31, " + duration);
         Assert.True(result.HasErrors);
         Assert.Empty(result.Document!.Tasks);
         Assert.Contains(result.Diagnostics, item => item.Span.Line == 2 && item.Severity == MermaidDiagnosticSeverity.Error);
+    }
+
+    [Theory]
+    [InlineData("9999-10-31", "2M", "9999-12-31T00:00:00.000")]
+    [InlineData("9999-12-30", "1d", "9999-12-31T00:00:00.000")]
+    [InlineData("9999-12-31", "1h", "9999-12-31T01:00:00.000")]
+    [InlineData("9999-12-31", "1ms", "9999-12-31T00:00:00.001")]
+    public void ValidUpperRangeDatesDoNotOverflowTheExclusionCursor(string start, string duration, string expectedEnd) {
+        var result = new MermaidParser().ParseGantt("gantt\nexcludes 0001-01-01\nTask :task, " + start + ", " + duration);
+        Assert.False(result.HasErrors);
+        Assert.Equal(expectedEnd, Assert.Single(result.Document!.Tasks).End.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public void ExcludingTheLastSupportedDateStillReportsAnUnreachableEnd() {
+        var result = new MermaidParser().ParseGantt("gantt\nexcludes 9999-12-31\nTask :task, 9999-12-30, 1d");
+        Assert.True(result.HasErrors);
+        Assert.Contains(result.Diagnostics, item => item.Span.Line == 3 && item.Severity == MermaidDiagnosticSeverity.Error);
     }
 
     [Theory]

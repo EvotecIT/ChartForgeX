@@ -24,10 +24,13 @@ internal static partial class MermaidGanttParser {
             case "h": case "hour": case "hours":
             case "d": case "day": case "days":
             case "w": case "week": case "weeks":
-            case "M":
                 return true;
+            case "M":
             case "y":
-                return authoredUnit == "y";
+                // New calendar units follow Mermaid's adjacent suffix and decimal grammar.
+                // Preserve existing clock-unit aliases without extending calendar syntax.
+                return authoredUnit == unit && index == text.Length - 1 &&
+                    text[0] != '.' && text[index - 1] != '.';
             default:
                 return false;
         }

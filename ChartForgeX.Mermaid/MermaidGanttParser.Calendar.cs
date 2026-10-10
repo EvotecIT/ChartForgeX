@@ -11,7 +11,7 @@ internal static partial class MermaidGanttParser {
         try {
             end = AddDuration(start, amount, unit);
             var excluded = CalendarTokens(document.Excludes);
-            if (excluded.Count == 0 || end == start) return true;
+            if (excluded.Count == 0 || end - start < TimeSpan.FromDays(1)) return true;
             var included = CalendarTokens(document.Includes);
             var cursor = start.AddDays(1);
             var extension = 0;
@@ -27,6 +27,7 @@ internal static partial class MermaidGanttParser {
                     if (++extension > 10000) return false;
                     end = end.AddDays(1);
                 }
+                if (end - cursor < TimeSpan.FromDays(1)) break;
                 cursor = cursor.AddDays(1);
             }
             return true;
