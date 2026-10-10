@@ -16,7 +16,7 @@ internal static class MermaidGanttInputDateFormat {
         input = input.Trim(); format = format.Trim();
         if (format == "X" || format == "x") return TryUnix(input, format == "X", out value);
         var fields = Parts(format);
-        if (!fields.Exists(part => part.Token == "YYYY" || part.Token == "YY")) return false;
+        if (!UsesMermaidFields(fields)) return false;
         var pattern = new StringBuilder("\\A");
         for (var i = 0; i < fields.Count; i++) {
             var part = fields[i];
@@ -58,15 +58,17 @@ internal static class MermaidGanttInputDateFormat {
     }
 
     internal static string FormatCalendarDate(DateTime value, string format) {
-        if (format.IndexOf('%') >= 0 || format.IndexOf("ffff", StringComparison.Ordinal) >= 0)
-            return value.ToString(MermaidGanttParser.ToDotNetDateFormat(format), CultureInfo.InvariantCulture);
-        if (format.Trim() == "X" || format.Trim() == "x") {
+        format = format.Trim();
+        if (format == "X" || format == "x") {
             var milliseconds = (value.Ticks - new DateTime(1970, 1, 1).Ticks) / TimeSpan.TicksPerMillisecond;
-            return format.Trim() == "x" ? milliseconds.ToString(CultureInfo.InvariantCulture)
+            return format == "x" ? milliseconds.ToString(CultureInfo.InvariantCulture)
                 : (milliseconds / 1000m).ToString("0.###", CultureInfo.InvariantCulture);
         }
+        var fields = Parts(format);
+        if (!UsesMermaidFields(fields))
+            return value.ToString(MermaidGanttParser.ToDotNetDateFormat(format), CultureInfo.InvariantCulture);
         var result = new StringBuilder();
-        foreach (var part in Parts(format)) {
+        foreach (var part in fields) {
             if (part.Token == null) result.Append(part.Text);
             else if (part.Token == "Q") result.Append(((value.Month - 1) / 3 + 1).ToString(CultureInfo.InvariantCulture));
             else if (part.Token == "Do") result.Append(value.Day.ToString(CultureInfo.InvariantCulture)).Append(Ordinal(value.Day));
@@ -79,6 +81,14 @@ internal static class MermaidGanttInputDateFormat {
         }
         return result.ToString();
     }
+
+    // Explicit Mermaid years identify the native field language. Retained .NET/percent
+    // formats use the same fallback for parsing and calendar matching. Bracket contents
+    // are authored literals and cannot switch the format language.
+    private static bool UsesMermaidFields(List<Part> fields) =>
+        fields.Exists(part => part.Token == "YYYY" || part.Token == "YY") &&
+        !fields.Exists(part => part.Token == null && !part.Bracketed &&
+            part.Text.IndexOfAny(new[] { '%', 'f', 'F', 'y', 'd', 't', 'z', 'g', 'K', '\\', '\'', '"' }) >= 0);
 
     private static bool TryUnix(string text, bool seconds, out DateTime value) {
         value = default;
@@ -103,7 +113,8 @@ internal static class MermaidGanttInputDateFormat {
         var parts = new List<Part>(); var literal = new StringBuilder();
         for (var i = 0; i < format.Length;) {
             if (format[i] == '[' && format.IndexOf(']', i + 1) is var end && end >= 0) {
-                literal.Append(format.Substring(i + 1, end - i - 1)); i = end + 1; continue;
+                if (literal.Length > 0) { parts.Add(new Part(literal.ToString(), null)); literal.Clear(); }
+                parts.Add(new Part(format.Substring(i + 1, end - i - 1), null, true)); i = end + 1; continue;
             }
             string? token = null;
             foreach (var candidate in Tokens) if (i + candidate.Length <= format.Length && string.CompareOrdinal(format, i, candidate, 0, candidate.Length) == 0) { token = candidate; break; }
@@ -142,8 +153,9 @@ internal static class MermaidGanttInputDateFormat {
     }
 
     private sealed class Part {
-        internal Part(string text, string? token) { Text = text; Token = token; }
+        internal Part(string text, string? token, bool bracketed = false) { Text = text; Token = token; Bracketed = bracketed; }
         internal string Text { get; }
         internal string? Token { get; }
+        internal bool Bracketed { get; }
     }
 }

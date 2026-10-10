@@ -71,6 +71,21 @@ public sealed class MermaidGanttInputDateFormatTests {
         Assert.Equal(new DateTime(2026, 1, 5), Assert.Single(parsed.Document!.Tasks).End);
     }
 
+    [Theory]
+    [InlineData("YYYY-MM-DD[ffff]", "2026-01-02ffff", "2026-01-03ffff", "2026-01-04ffff")]
+    [InlineData("YYYY-MM-DD[ffff']", "2026-01-02ffff'", "2026-01-03ffff'", "2026-01-04ffff'")]
+    [InlineData("YYYY-MM-DD[%]", "2026-01-02%", "2026-01-03%", "2026-01-04%")]
+    [InlineData("dd/MM/yyyy", "02/01/2026", "03/01/2026", "04/01/2026")]
+    [InlineData("YYYY/MM/dd", "2026/01/02", "2026/01/03", "2026/01/04")]
+    [InlineData("YYYY-MM-DDTHH:mm:ss.fff", "2026-01-02T00:00:00.000", "2026-01-03T00:00:00.000", "2026-01-04T00:00:00.000")]
+    [InlineData("%Y-%m-%d", "2026-01-02", "2026-01-03", "2026-01-04")]
+    public void CalendarMatchingUsesTheSameFormatLanguageAsTaskDates(string format, string start, string excluded, string included) {
+        var source = "gantt\ndateFormat " + format + "\nexcludes " + excluded + "," + included + "\nincludes " + included + "\nTask :task," + start + ",2d";
+        var parsed = new MermaidParser().ParseGantt(source);
+        Assert.Empty(parsed.Diagnostics);
+        Assert.Equal(new DateTime(2026, 1, 5), Assert.Single(parsed.Document!.Tasks).End);
+    }
+
     [Fact]
     public void HundredthsKeepBothAuthoredEndpoints() {
         var parser = new MermaidParser();
