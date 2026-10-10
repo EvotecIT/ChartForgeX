@@ -605,6 +605,13 @@
     tip.appendChild(list);
     return true;
   };
+  // Separately painted captions are pointer surfaces of their declared native point, never new observations.
+  const pointLabelTarget = (root, target) => {
+    const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
+    const point = label && label._cfxLabelTarget;
+    return point && root.contains(label) && root.contains(point) ? point : null;
+  };
+  const pointLabelSurfaces = (root, point) => (point._cfxPointLabels || []).filter(label => root.contains(label));
   // Core exports describe immutable source identity and layout. Browser-only focus and hit areas belong here.
   const prepareChartTargets = (root) => {
     const svg = root.querySelector('.cfx-stage svg');
@@ -711,6 +718,14 @@
       hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
       hit.setAttribute('data-cfx-browser-hit-area', 'true');
       node.appendChild(hit);
+    });
+    const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
+    svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
+      const mark = marks.get(label.dataset.cfxLabelFor);
+      const point = mark && mark.closest('[data-cfx-point]');
+      if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text')) return;
+      label._cfxLabelTarget = point;
+      (point._cfxPointLabels ||= []).push(label);
     });
   };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
@@ -1534,7 +1549,7 @@
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
     const styles = new Map();
-    const hit = event.target instanceof Element ? event.target.closest(targetSelector) : null;
+    const hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest(targetSelector) : null);
     let native = null;
     if (hit && root.contains(hit) && pointerTargetPaint(hit, styles)) {
       const box = hit.getBoundingClientRect();
@@ -2064,15 +2079,18 @@
     const targets = interactiveTargets(root);
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
-      node.addEventListener('pointerenter', (event) => {
-        if (!pointerTargetPaint(node)) return;
-        setHover(root, node, true, true);
-        showTip(root, tip, node, event);
-      });
-      node.addEventListener('pointermove', (event) => moveTip(tip, event, node));
-      node.addEventListener('pointerleave', () => {
-        clearHover(root, true, true);
-        hideTip(root, tip, false);
+      const labels = pointLabelSurfaces(root, node);
+      [node, ...labels].forEach(surface => {
+        surface.addEventListener('pointerenter', (event) => {
+          if (!pointerTargetPaint(node)) return;
+          setHover(root, node, true, true);
+          showTip(root, tip, node, event);
+        });
+        surface.addEventListener('pointermove', (event) => moveTip(tip, event, node));
+        surface.addEventListener('pointerleave', () => {
+          clearHover(root, true, true);
+          hideTip(root, tip, false);
+        });
       });
       // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
@@ -2088,7 +2106,7 @@
           hideTip(root, tip, false);
         });
       }
-      focusNode.addEventListener('click', (event) => {
+      const activateTarget = (event) => {
         event.stopPropagation();
         if (!tooltipReadoutAvailable(node, event)) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
@@ -2099,7 +2117,9 @@
           toggleSelection(root, node);
           pinTip(root, tip, node, event);
         }
-      });
+      };
+      focusNode.addEventListener('click', activateTarget);
+      labels.forEach(label => label.addEventListener('click', activateTarget));
       if (hasFeature(root, 'KeyboardNavigation')) focusNode.addEventListener('keydown', (event) => {
         if (!hasFeature(root, 'KeyboardNavigation') || event.defaultPrevented || event.target !== focusNode) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
