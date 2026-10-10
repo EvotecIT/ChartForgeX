@@ -12,7 +12,8 @@ public sealed partial class Chart {
     public IReadOnlyList<ChartGanttDependency> GanttDependencies => ResolveGanttDependencies().AsReadOnly();
 
     /// <summary>Adds a finish-to-start visual link after both Gantt tasks have been added.</summary>
-    /// <remarks>Indices address Gantt rows in their authored order. A successor can precede its predecessor visually,
+    /// <remarks>Indices address Gantt series, including vertical markers, in their authored order. Links involving a
+    /// vertical marker remain available as metadata but do not paint a row connector. A successor can precede its predecessor visually,
     /// and a task can have several predecessors. The link does not reschedule task dates. Repeated links render once.</remarks>
     public Chart AddGanttDependency(int predecessorIndex, int successorIndex) {
         RequireGanttDependencyRows();

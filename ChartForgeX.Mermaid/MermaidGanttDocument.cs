@@ -102,7 +102,10 @@ public sealed class MermaidGanttTask : MermaidAstNode {
     /// <summary>Gets whether the task is a milestone.</summary>
     public bool IsMilestone { get; }
 
-    /// <summary>Gets Mermaid tags such as active, done, crit, and milestone.</summary>
+    /// <summary>Gets whether this source task paints a vertical guide instead of reserving a task row.</summary>
+    public bool IsVerticalMarker => Tags.Exists(tag => string.Equals(tag, "vert", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Gets Mermaid tags such as active, done, crit, milestone, and vert.</summary>
     public List<string> Tags { get; }
 
     /// <summary>Gets referenced dependency ids from after clauses.</summary>
