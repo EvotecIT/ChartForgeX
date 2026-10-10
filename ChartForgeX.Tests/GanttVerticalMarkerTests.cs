@@ -201,9 +201,9 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Equal("deadline-source", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetId"));
         Assert.Equal(Start.AddDays(3).ToOADate().ToString("R", CultureInfo.InvariantCulture),
             await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.value"));
-        var line = await marker.Locator("[data-cfx-role='annotation-line']").BoundingBoxAsync();
-        Assert.NotNull(line);
-        await page.Mouse.ClickAsync(line!.X, line.Y + 1);
+        // Click the first painted dash using the path's actual screen transform.
+        var linePoint = await page.EvaluateAsync<float[]>("() => { const line = document.querySelector('[data-cfx-role=\"gantt-vertical-marker\"] [data-cfx-role=\"annotation-line\"]'); const p = line.getPointAtLength(1); const point = new DOMPoint(p.x,p.y).matrixTransform(line.getScreenCTM()); return [point.x,point.y]; }");
+        await page.Mouse.ClickAsync(linePoint[0], linePoint[1]);
         Assert.Equal(2, await page.EvaluateAsync<int>("() => window.cfxSelections.length"));
         Assert.Equal("false", await marker.GetAttributeAsync("aria-selected"));
         await marker.FocusAsync(); await page.Keyboard.PressAsync("Space");
