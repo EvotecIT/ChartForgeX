@@ -371,6 +371,14 @@
   const hideTip = (root, tip, force) => {
     cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
+    // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
+    const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
+    const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
+    if (focused && tooltipReadoutAvailable(focused)) {
+      if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(focused))) setHover(root, focused, true, true);
+      showTip(root, tip, focused);
+      return;
+    }
     forgetTooltipPosition(tip);
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');

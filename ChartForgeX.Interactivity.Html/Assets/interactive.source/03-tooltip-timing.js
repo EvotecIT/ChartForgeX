@@ -2,13 +2,30 @@
   const tooltipRequests = new WeakMap();
   const pendingTooltips = new Set();
   let tooltipObserver = null;
+  const tooltipObservedTrees = new Set();
+  // A closed shadow tree is still reachable from its chart. Keep every enclosing tree in the lifetime boundary.
+  const tooltipRootTrees = (root) => {
+    const trees = [];
+    for (let tree = root.getRootNode(); tree; tree = tree.host && tree.host.getRootNode()) trees.push(tree);
+    return trees;
+  };
   const tooltipDelay = (root) => {
     const value = Number(root.dataset.cfxTooltipDelay || 0);
     return Number.isInteger(value) && value >= 0 && value <= 2147483647 ? value : 0;
   };
   const removePendingTooltip = (request) => {
     pendingTooltips.delete(request);
-    if (!pendingTooltips.size && tooltipObserver) { tooltipObserver.disconnect(); tooltipObserver = null; }
+    if (!pendingTooltips.size && tooltipObserver) {
+      tooltipObserver.disconnect(); tooltipObserver = null; tooltipObservedTrees.clear();
+    } else if (tooltipObserver && Array.from(tooltipObservedTrees).some(tree =>
+      !Array.from(pendingTooltips).some(pending => pending.trees.includes(tree)))) {
+      // A shared observer cannot unobserve one tree. Rebuild through the same watcher to release canceled hosts.
+      // Preserve queued removals for surviving requests before disconnect discards the native record queue.
+      checkPendingTooltipMutations(tooltipObserver.takeRecords());
+      if (!tooltipObserver) return;
+      tooltipObserver.disconnect(); tooltipObservedTrees.clear();
+      for (const pending of pendingTooltips) watchPendingTooltips(pending);
+    }
   };
   const cancelTooltipRequest = (root) => {
     const request = tooltipRequests.get(root);
@@ -23,7 +40,13 @@
   const currentPointerTooltip = (root, event) => {
     if (!event || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY) || !hasFeature(root, 'Tooltips')) return null;
     // The event's old hit can outlive a scroll, reflow or host update. Resolve the actual native surface again.
-    const hit = document.elementFromPoint(event.clientX, event.clientY);
+    let hit = root.ownerDocument.elementFromPoint(event.clientX, event.clientY);
+    const trees = tooltipRootTrees(root);
+    // Descend only through the actual enclosing host hit: outer dialogs must continue to obscure the chart.
+    for (let index = trees.length - 2; index >= 0; index--) {
+      if (hit !== trees[index].host) return null;
+      hit = trees[index].elementFromPoint(event.clientX, event.clientY);
+    }
     if (!hit || !root.contains(hit)) return null;
     const legend = hit && hit.closest('[data-cfx-role="legend-item"]');
     if (legend && root.contains(legend) && pointerTargetPaint(legend)) return legend;
@@ -31,17 +54,22 @@
     const point = acquiredTooltipPoint(root, candidates);
     return point && point.node;
   };
-  const watchPendingTooltips = () => {
-    if (tooltipObserver) return;
+  const checkPendingTooltipMutations = (records) => {
+    for (const pending of Array.from(pendingTooltips)) {
+      const removed = records.some(record => record.type === 'childList'
+        && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)
+          || pending.trees.some(tree => tree.host && node.contains(tree.host))));
+      if (removed || !tooltipRequestAvailable(pending)) cancelTooltipRequest(pending.root);
+    }
+  };
+  const watchPendingTooltips = (request) => {
     // Observe only while a request is queued, so a detached or briefly replaced host cannot retain a long timer.
-    tooltipObserver = new MutationObserver((records) => {
-      for (const request of Array.from(pendingTooltips)) {
-        const removed = records.some(record => record.type === 'childList'
-          && Array.from(record.removedNodes).some(node => node.contains(request.root) || node.contains(request.node) || node.contains(request.tip)));
-        if (removed || !tooltipRequestAvailable(request)) cancelTooltipRequest(request.root);
-      }
-    });
-    tooltipObserver.observe(document.documentElement, { childList: true, attributes: true, subtree: true });
+    if (!tooltipObserver) tooltipObserver = new MutationObserver(checkPendingTooltipMutations);
+    for (const tree of request.trees) {
+      if (tooltipObservedTrees.has(tree)) continue;
+      tooltipObserver.observe(tree, { childList: true, attributes: true, subtree: true });
+      tooltipObservedTrees.add(tree);
+    }
   };
   const requestPointerTip = (root, tip, node, event) => {
     const key = targetKey(targetIdentity(node));
@@ -53,10 +81,10 @@
     }
     cancelTooltipRequest(root);
     tip.hidden = true;
-    const request = { root, tip, node, key, event, shown: false };
+    const request = { root, tip, node, key, event, shown: false, trees: tooltipRootTrees(root) };
     tooltipRequests.set(root, request);
     pendingTooltips.add(request);
-    watchPendingTooltips();
+    watchPendingTooltips(request);
     request.timer = window.setTimeout(() => {
       removePendingTooltip(request);
       request.timer = undefined;

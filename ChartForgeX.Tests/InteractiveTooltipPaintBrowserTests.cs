@@ -89,13 +89,18 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ExactFeatures), 950, 720);
         var page = session.Page;
         var selector = "[data-cfx-role='annotation'][data-cfx-kind='" + kind + "']";
+        var annotationId = await page.Locator(selector).GetAttributeAsync("data-cfx-target-id");
+        await page.EvaluateAsync("()=>{window.cfxBandEvents=[];const root=document.querySelector('.cfx-interactive-chart');for(const type of ['cfxhover','cfxselect','cfxtooltip'])root.addEventListener(type,event=>window.cfxBandEvents.push({type,detail:event.detail}));}");
         await MoveToAsync(page, selector);
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
         await page.Mouse.DownAsync(); await page.Mouse.UpAsync();
         Assert.Null(await page.Locator(selector).GetAttributeAsync("aria-selected"));
         Assert.Null(await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
-        Assert.Null(await page.Locator(Root).GetAttributeAsync("data-cfx-hover-key"));
-        await CaptureContractAsync(page, "paint-transparent-" + kind, new { Opacity = 0, ShowLabel = false });
+        // Native SVG focus can retain a different keyboard observation after this background click.
+        Assert.Equal(0, await page.EvaluateAsync<int>("id=>window.cfxBandEvents.filter(event=>event.detail.target?.targetKind==='annotation'&&event.detail.target?.targetId===id).length", annotationId));
+        var focus = await page.EvaluateAsync<JsonElement>("()=>{const root=document.querySelector('.cfx-interactive-chart'),node=root.getRootNode().activeElement;return {kind:node?.dataset?.cfxTargetKind||null,id:node?.dataset?.cfxTargetId||null,events:window.cfxBandEvents};}");
+        await CaptureContractAsync(page, "paint-transparent-" + kind, new { Opacity = 0, ShowLabel = false, AnnotationId = annotationId, Focus = focus });
+        await page.EvaluateAsync("()=>document.activeElement?.blur()");
         // A host can restore the real shape, and later hide that child without altering semantic bounds.
         await page.Locator(selector + " rect").EvaluateAsync("n => n.style.fill = '#ef4444'");
         await MoveAwayAsync(page); await MoveToAsync(page, selector);
@@ -138,6 +143,17 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         Assert.Contains("Measured", await TooltipTextAsync(page), StringComparison.Ordinal);
         await page.Locator(Legend(0)).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
+        // Let layout dispatch its real pointer exit while keyboard focus stays on the legend.
+        await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
+        Assert.Contains("Measured", await TooltipTextAsync(page), StringComparison.Ordinal);
+        Assert.Equal("0", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-delay"));
+        Assert.Equal(await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-target-id"),
+            await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
+        await CaptureContractAsync(page, "paint-caption-only-legend-" + layout + "-compact-dark", new { Layout = layout.ToString(), Muted = true,
+            ActiveTarget = await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId || ''") });
+        await page.Keyboard.PressAsync("Space");
+        await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
+        Assert.Equal("false", await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
         Assert.Contains("Measured", await TooltipTextAsync(page), StringComparison.Ordinal);
         AssertNoConsoleErrors(session);
     }

@@ -2,6 +2,7 @@ using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Themes;
+using HtmlTinkerX;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
@@ -53,11 +54,12 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.InRange(elapsed, Delay - 4, 5000);
     }
 
-    private static async Task CaptureDelayAsync(IPage page, string name, object observations) {
+    private static async Task CaptureDelayAsync(IPage page, string name, object observations, HtmlBrowserSession? session = null) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;
         Directory.CreateDirectory(directory);
         await File.WriteAllTextAsync(Path.Combine(directory, name + ".json"), JsonSerializer.Serialize(observations));
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png") });
+        if (session != null) await File.WriteAllTextAsync(Path.Combine(directory, name + ".console.json"), JsonSerializer.Serialize(session.ConsoleLog));
     }
 }
