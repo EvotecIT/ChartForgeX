@@ -15,7 +15,7 @@ Object.defineProperty(globalThis, 'navigator', {
 const { default: mermaid } = await import('mermaid');
 
 const root = fileURLToPath(new URL('.', import.meta.url));
-const fixtures = join(root, 'fixtures');
+const fixtures = join(root, process.argv[2] ?? 'fixtures');
 const files = (await readdir(fixtures)).filter((file) => file.endsWith('.mmd')).sort();
 const fixtureFiles = new Set(await readdir(fixtures));
 

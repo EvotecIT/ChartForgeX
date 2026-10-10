@@ -12,10 +12,10 @@ public static class MermaidRenderer {
         var parsed = new MermaidParser().Parse(source);
         var result = new MermaidRenderResult { Document = parsed.Document };
         result.Diagnostics.AddRange(parsed.Diagnostics);
-        if (parsed.HasErrors || parsed.Document == null || parsed.Document.Kind == MermaidDiagramKind.ZenUml) return result;
+        if (parsed.HasErrors || parsed.Document == null || parsed.Document.IsDiagnosticOnly) return result;
         try { result.Artifact = parsed.Document.ToVisualArtifact(options); }
         catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is OverflowException) {
-            result.Diagnostics.Add(new MermaidDiagnostic { Severity = MermaidDiagnosticSeverity.Error, Span = parsed.Document.HeaderSpan, Message = exception.Message });
+            result.Diagnostics.Add(new MermaidDiagnostic { Code = MermaidDiagnosticCodes.ConversionFailed, Severity = MermaidDiagnosticSeverity.Error, Span = parsed.Document.HeaderSpan, Message = exception.Message });
         }
         return result;
     }

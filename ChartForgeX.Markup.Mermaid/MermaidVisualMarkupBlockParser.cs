@@ -101,11 +101,12 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
             result.Diagnostics.Add(new MarkupDiagnostic {
                 Line = diagnostic.Span.Line <= 0 ? block.FenceLine : block.StartLine + diagnostic.Span.Line - 1,
                 Severity = diagnostic.Severity,
-                Message = diagnostic.Message
+                Message = diagnostic.Message,
+                Code = diagnostic.Code
             });
         }
 
-        if (mermaidResult.HasErrors || mermaidResult.Document == null || mermaidResult.Document.Kind == MermaidDiagramKind.ZenUml) return;
+        if (mermaidResult.HasErrors || mermaidResult.Document == null || mermaidResult.Document.IsDiagnosticOnly) return;
         try {
             var options = BuildRenderOptions(block, mermaidResult.Document.Kind);
             var artifact = mermaidResult.Document.ToVisualArtifact(options);
@@ -118,6 +119,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
             result.Diagnostics.Add(new MarkupDiagnostic {
                 Line = block.FenceLine,
                 Severity = MarkupDiagnosticSeverity.Error,
+                Code = MermaidDiagnosticCodes.ConversionFailed,
                 Message = ex.Message
             });
         }
