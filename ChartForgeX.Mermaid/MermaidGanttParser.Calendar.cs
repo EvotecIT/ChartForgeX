@@ -77,7 +77,6 @@ internal static partial class MermaidGanttParser {
             else {
                 var list = new List<string>(); var standalone = true; var tokenOffset = 0;
                 var unknownStart = -1; var unknownEnd = 0;
-                var dateHasSpaces = MermaidGanttInputDateFormat.CalendarDateContainsWhitespace(format);
                 void ReportUnknown() {
                     if (unknownStart < 0) return;
                     unrecognized?.Invoke(trimmed.Substring(unknownStart, unknownEnd - unknownStart), sourceOffset + unknownStart);
@@ -91,7 +90,7 @@ internal static partial class MermaidGanttParser {
                         standalone = false;
                         if (unknownStart < 0) unknownStart = tokenOffset;
                         unknownEnd = tokenOffset + token.Length;
-                        if (!dateHasSpaces) ReportUnknown();
+                        if (!MermaidGanttInputDateFormat.CalendarDateContainsWhitespace(format, token)) ReportUnknown();
                     }
                     tokenOffset += token.Length;
                 }

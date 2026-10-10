@@ -69,6 +69,9 @@ public sealed class MermaidGanttRetainedDateFormatTests {
     [InlineData("MM-DD", "weekends 02-29 03-01 monday", "02-29", "03-01")]
     [InlineData("MMM D", "weekends Feb 29 monday Mar 1", "Feb 29", "Mar 1")]
     [InlineData("M", "weekends February 29 monday March 1", "February 29", "March 1")]
+    [InlineData("M", "2 3", "2", "3")]
+    [InlineData("D", "2 3", "2", "3")]
+    [InlineData("m", "2 3", "2", "3")]
     public void MissingCalendarAnchorsLocateEachDateWithoutSwallowingWeekdays(string format, string tokens, string first, string second) {
         var line = "excludes " + tokens;
         var result = new MermaidParser().ParseGantt("gantt\ndateFormat " + format + "\n" + line + "\nTask :2028-02-28,2d");
