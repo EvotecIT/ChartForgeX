@@ -68,6 +68,60 @@ public sealed class GanttVerticalMarkerTests {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void IncomingMarkerLinksRemainInSvgMetadataWithoutInventingConnectors(bool mermaid) {
+        var chart = mermaid
+            ? new MermaidParser().ParseGantt("gantt\nDesign :design,2026-01-01,2d\nOther :other,2026-01-01,3d\nDeadline :vert,deadline,after design other,1d\nAfter :aftermark,after deadline,1d").Document!.ToChart()
+            : Chart.Create().AddGanttTask("Design", 1, 3).AddGanttTask("Other", 1, 4).AddGanttMarker("Deadline", 4, 5)
+                .AddGanttTask("After", 5, 6).AddGanttDependency(0, 2).AddGanttDependency(1, 2).AddGanttDependency(2, 3);
+        chart.AddGanttDependency(0, 1);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = XDocument.Parse(prepared.ToSvg());
+        var marker = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "gantt-vertical-marker");
+        Assert.Equal(mermaid ? "1" : "0", (string?)marker.Attribute("data-cfx-dependency"));
+        Assert.Equal(mermaid ? "1,0" : "0,1", (string?)marker.Attribute("data-cfx-dependencies"));
+        var successor = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "gantt-task" && (string?)element.Attribute("data-cfx-series") == "3");
+        Assert.Equal("2", (string?)successor.Attribute("data-cfx-dependency"));
+        Assert.Equal(4, chart.GanttDependencies.Count);
+        Assert.Single(prepared.Regions, region => region.Role == "gantt-dependency");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MarkerPointColorOverridesSeriesInkInSvgAndNativePixels(bool pointOverride) {
+        var seriesColor = ChartColor.FromHex("#d83b19");
+        var pointColor = ChartColor.FromHex("#19d871");
+        var chart = Chart.Create().WithSize(640, 320).WithLegend(false).WithDataLabels(false)
+            .AddGanttTask("Work", 1, 9).AddGanttMarker("Deadline", 4, color: seriesColor);
+        if (pointOverride) chart.Series[1].WithPointColor(0, pointColor);
+        var expected = pointOverride ? pointColor : seriesColor;
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "annotation-line");
+        Assert.Equal(expected, line.Stroke);
+        var svgLine = Assert.Single(XDocument.Parse(prepared.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "annotation-line");
+        Assert.Equal(expected.ToCss(), (string?)svgLine.Attribute("stroke"));
+        var pixels = prepared.ToRgba();
+        var control = VisualSceneRasterRenderer.Render(new VisualScene(prepared.Scene.Size, prepared.Scene.Nodes.Where(node => node.Role != "annotation-line").ToArray(), prepared.Scene.Diagnostics, prepared.Scene.Regions));
+        var task = Assert.Single(prepared.Regions, region => region.Role == "gantt-task");
+        var matches = 0;
+        for (var y = (int)Math.Ceiling(task.Bounds.Top + 3); y < task.Bounds.Bottom - 3; y++) {
+            for (var x = (int)Math.Floor(line.Commands[0].X - 1); x <= Math.Ceiling(line.Commands[0].X + 1); x++) {
+                var offset = (y * pixels.Width + x) * 4;
+                var dominant = pointOverride ? pixels.Pixels[offset + 1] > pixels.Pixels[offset] + 25 : pixels.Pixels[offset] > pixels.Pixels[offset + 1] + 25;
+                if (dominant && Enumerable.Range(0, 3).Any(channel => Math.Abs(pixels.Pixels[offset + channel] - control.Pixels[offset + channel]) > 30)) matches++;
+            }
+        }
+        Assert.True(matches >= 4, "The authored marker ink must survive task fills in native output; pixels: " + matches);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            Directory.CreateDirectory(captures);
+            File.WriteAllBytes(Path.Combine(captures, "gantt-marker-" + (pointOverride ? "point" : "series") + "-color.png"), prepared.ToPng());
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void MarkerOnlySchedulesHaveNoTaskRowsAndKeepTheirAuthoredWindow(bool explicitBounds) {
         var chart = Chart.Create().WithLegend(false).AddGanttMarker("Begin", Start, Start.AddDays(9)).AddGanttMarker("End", Start.AddDays(9));
         if (explicitBounds) chart.ConfigureXAxis(axis => axis.WithBounds(Start.AddDays(2).ToOADate(), Start.AddDays(7).ToOADate()));
