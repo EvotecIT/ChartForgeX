@@ -84,9 +84,9 @@ internal static partial class VisualScheduleCompiler {
         var outlined = model.Rows.SelectMany(row => row.Items).Any(item => item.Category.Pattern == ChartStatePattern.Outlined);
         var open = model.Rows.SelectMany(row => row.Items).Any(item => item.Item.IsOpen);
         var outlineExtent = outlined ? ChartStateMark.OutlineWidth / 2 : 0;
-        var minimumExtent = Math.Max(outlineExtent, model.Now == model.Min ? context.Theme.AxisStrokeWidth / 2 : 0);
+        var minimumExtent = Math.Max(outlineExtent, model.Now == model.Min ? TodayWidth(chart, context) / 2 : 0);
         var maximumExtent = Math.Max(Math.Max(outlineExtent, open ? GanttLaneOpenEndStrokeWidth / 2 : 0),
-            model.Now == model.Max ? context.Theme.AxisStrokeWidth / 2 : 0);
+            model.Now == model.Max ? TodayWidth(chart, context) / 2 : 0);
         var projection = MarkProjection(chart.Options.XAxis, layout.Plot, minimumExtent, maximumExtent);
         model = model.Repack(projection.Width);
         var plot = layout.Plot; var tops = model.RowTops(plot); var band = model.Band(plot);

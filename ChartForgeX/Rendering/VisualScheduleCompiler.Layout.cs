@@ -85,7 +85,8 @@ internal static partial class VisualScheduleCompiler {
         var strokeStyle = chart.Options.GanttTodayStyle;
         var stroke = VisualReferenceStroke.Paint(strokeStyle, colors.Status.Critical.Fill, SvgColorRole.Status, out var strokeColor);
         using (builder.PushGroup("schedule-now", "gantt-now", new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(now) }))
-            builder.Line(x, plot.Top, x, plot.Bottom, strokeColor, strokeStyle?.Width ?? context.Theme.AxisStrokeWidth, "gantt-now-line",
+        using (builder.PushClip(plot))
+            builder.Line(x, plot.Top, x, plot.Bottom, strokeColor, TodayWidth(chart, context), "gantt-now-line",
                 dash: strokeStyle?.ResolveDash(new[] { 4d, 3d }) ?? new[] { 4d, 3d }, paint: stroke);
         var style = VisualStateSceneTools.TickStyle(chart, context); var measured = builder.MeasureText(chart.Options.Labels.Now, style);
         var width = Math.Min(plot.Width, measured.Width + 4); var left = Math.Max(plot.Left, Math.Min(plot.Right - width, x - width / 2));
