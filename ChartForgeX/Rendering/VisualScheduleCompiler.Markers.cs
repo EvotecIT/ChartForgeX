@@ -16,7 +16,8 @@ internal static partial class VisualScheduleCompiler {
                 "schedule.annotation-label-overflow");
             foreach (var item in items.Where(item => item.Marker && item.Start >= min && item.Start <= max)) {
                 var series = chart.Series[item.Index];
-                var color = ChartSeriesColours.Point(series, 0, series.Color ?? colors.MutedForeground);
+                var color = ChartSeriesColours.Point(series, 0, colors, colors.MutedForeground);
+                var colorRole = VisualChartPaint.SeriesRole(series, 0, fallbackRole: SvgColorRole.Text);
                 var bounds = new ChartRect(project(item.Start), plot.Top, 0, plot.Height);
                 var id = VisualStateSceneTools.SourceId(item.Index, 0);
                 var metadata = new Dictionary<string, string> {
@@ -29,7 +30,7 @@ internal static partial class VisualScheduleCompiler {
                 using (VisualStateSceneTools.Mark(builder, id, "gantt-vertical-marker", bounds, series.Name, metadata)) {
                     var annotation = new ChartAnnotation(ChartAnnotationKind.VerticalLine, item.Start, null, series.Name, color, 1);
                     VisualAnnotationCompiler.Draw(new[] { annotation }, context, builder, plot, project, _ => 0, colors, false, obstacles,
-                        overflowCode: "schedule.annotation-label-overflow", idPrefix: id + "-annotation-", describeAnnotations: false);
+                        overflowCode: "schedule.annotation-label-overflow", idPrefix: id + "-annotation-", describeAnnotations: false, colorRole: colorRole);
                 }
             }
         }

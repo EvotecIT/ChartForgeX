@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static class VisualAnnotationCompiler {
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
     // A caller that already describes its mark can reuse annotation painting without a nested interaction target.
-    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true) {
+    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true, SvgColorRole colorRole = SvgColorRole.Axis) {
         for (var index = 0; index < annotations.Count; index++) {
             var annotation = annotations[index];
             if (annotation.EndValue.HasValue != bands || (include != null && !include(annotation))) continue;
@@ -33,17 +33,17 @@ internal static class VisualAnnotationCompiler {
                 bounds = horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
                     : new ChartRect(Math.Min(position, end), plot.Top, Math.Abs(end - position), plot.Height);
                 builder.Rect(bounds, ChartColorMath.WithOpacity(color, annotation.Opacity), role: "annotation-band",
-                    paint: VisualChartPaint.Fill(SvgPaint.Of(color, SvgColorRole.Axis).WithOpacity(ChartColorMath.WithOpacity(color, annotation.Opacity), annotation.Opacity)));
+                    paint: VisualChartPaint.Fill(SvgPaint.Of(color, colorRole).WithOpacity(ChartColorMath.WithOpacity(color, annotation.Opacity), annotation.Opacity)));
             } else {
                 var start = horizontal ? new ChartPoint(plot.Left, position) : new ChartPoint(position, plot.Top);
                 var end = horizontal ? new ChartPoint(plot.Right, position) : new ChartPoint(position, plot.Bottom);
                 builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(end.X, end.Y) }),
                     stroke: color, strokeWidth: context.Theme.AxisStrokeWidth, role: "annotation-line", cap: VisualStrokeCap.Butt,
-                    dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, SvgColorRole.Axis));
+                    dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, colorRole));
             }
             if (describeAnnotations) builder.AddRegion(new VisualSemanticRegion(id, "annotation", bounds, description));
             if (annotation.ShowLabel && !string.IsNullOrEmpty(annotation.Label)) {
-                var plate = new ChartColorBlend(colors.Surface, SvgColorRole.Surface, color, SvgColorRole.Axis, .12);
+                var plate = new ChartColorBlend(colors.Surface, SvgColorRole.Surface, color, colorRole, .12);
                 var backplate = plate.Color;
                 var ink = ChartColorBlend.Contrast(plate);
                 var style = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = ink.Color };
@@ -60,7 +60,7 @@ internal static class VisualAnnotationCompiler {
                     builder.Rect(label.Bounds, backplate, ChartColorMath.WithOpacity(color, .36), radius: Math.Min(4, context.Theme.BarRadius),
                         role: "annotation-label-backplate", paint: new VisualScenePaintBinding(
                             fill: plate.Paint,
-                            stroke: SvgPaint.Of(color, SvgColorRole.Axis).WithOpacity(ChartColorMath.WithOpacity(color, .36), .36)));
+                            stroke: SvgPaint.Of(color, colorRole).WithOpacity(ChartColorMath.WithOpacity(color, .36), .36)));
                     builder.Text(label.Text, label.Bounds.Left + labelPadding, label.Bounds.Top + labelPadding + builder.TextAscent(style), style,
                         role: "annotation-label", paint: ink.Paint);
                 }
