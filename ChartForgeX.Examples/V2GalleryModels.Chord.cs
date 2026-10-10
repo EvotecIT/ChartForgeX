@@ -23,6 +23,10 @@ public static partial class V2GalleryModels {
                 options.LabelContent = ChartChordLabelContent.LabelAndTotals;
             });
             chart.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
+            chart.Series[0].WithFlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
+                fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex("#764415"), strokeWidth: 1))
+                .WithFlowState("north-priority", ChartSeriesState.Warning)
+                .WithFlowStyle("support-internal", new ChartFlowStyle(strokeWidth: 1));
         }
         return chart;
     }

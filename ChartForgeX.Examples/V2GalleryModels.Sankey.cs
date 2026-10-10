@@ -26,6 +26,9 @@ public static partial class V2GalleryModels {
         });
         chart.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
         chart.Series[0].WithPointColor(0, ChartColor.FromHex("#7356BD"));
+        chart.Series[0].WithFlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
+            fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex("#764415"), strokeWidth: 1))
+            .WithFlowState("north-priority", ChartSeriesState.Warning);
         return chart;
     }
 }

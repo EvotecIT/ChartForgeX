@@ -1,6 +1,7 @@
 using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using Microsoft.Playwright;
@@ -19,8 +20,9 @@ public sealed class InteractiveChordBrowserTests {
         if (!Enabled) return;
         var chart = V2GalleryModels.Create(ChartSeriesKind.Chord, "options").WithSize(width, width < 500 ? 320 : 460)
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithTitle("Directed transfers").WithLegend(true);
+        chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         chart.Series[0].WithInteractionKey("transfer-source");
-        var name = "chord-" + width + "-" + (dark ? "dark" : "light");
+        var name = "chord-styled-" + width + "-" + (dark ? "dark" : "light");
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 460 : 600);
         var page = session.Page;
@@ -28,6 +30,12 @@ public sealed class InteractiveChordBrowserTests {
         Assert.Equal(4, await page.Locator("[data-cfx-target-kind=node]").CountAsync());
         Assert.Equal(9, await page.Locator("[data-cfx-target-kind=link]").CountAsync());
         Assert.Equal(0, await page.Locator("[data-cfx-target-kind=node][data-cfx-point], [data-cfx-target-kind=link][data-cfx-point]").CountAsync());
+        var priority = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=north-priority]");
+        var priorityRibbon = priority.Locator("[data-cfx-role=chord-ribbon]");
+        Assert.Equal(ChartColorMath.WithOpacity(ChartColor.FromHex("#AF6B24"), .7).ToCss(), await priorityRibbon.GetAttributeAsync("fill"));
+        Assert.Equal(ChartColor.FromHex("#764415").ToCss(), await priorityRibbon.GetAttributeAsync("stroke"));
+        Assert.Equal("1", await priorityRibbon.GetAttributeAsync("stroke-width"));
+        Assert.Equal("Warning", await priority.GetAttributeAsync("data-cfx-state"));
         await page.EvaluateAsync("() => { window.selections = []; window.hovers = []; const root = document.querySelector('.cfx-interactive-chart'); root.addEventListener('cfxselect', event => window.selections.push(event.detail)); root.addEventListener('cfxhover', event => window.hovers.push(event.detail)); }");
         foreach (var id in new[] { "north-standard", "north-priority", "south-north", "support-internal", "zero-transfer" }) {
             var fact = chart.Series[0].FlowLinks.Single(link => link.Id == id);
@@ -47,6 +55,7 @@ public sealed class InteractiveChordBrowserTests {
             Assert.Equal(fact.TargetId, await link.GetAttributeAsync("data-cfx-target"));
             Assert.Equal(await link.GetAttributeAsync("data-cfx-value"), selected.GetProperty("value").GetString());
             Assert.False(selected.TryGetProperty("point", out _)); Assert.False(selected.TryGetProperty("sourcePoint", out _));
+            if (id == "north-priority") await CaptureAsync(chart, page, name + "-styled-keyboard", html, native: false);
             if (id == "zero-transfer") {
                 Assert.Equal("zero", await link.GetAttributeAsync("data-cfx-geometry-status"));
                 Assert.Equal(0, await link.Locator("[data-cfx-role=chord-ribbon]").CountAsync());
@@ -54,8 +63,9 @@ public sealed class InteractiveChordBrowserTests {
                 await CaptureAsync(chart, page, name + "-zero-keyboard", html, native: false);
             }
         }
-        await page.Keyboard.PressAsync("Space"); // Unpin the zero fact before checking native link hover.
-        await page.EvaluateAsync("() => document.activeElement.blur()");
+        var zero = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=zero-transfer]");
+        await zero.FocusAsync(); await page.Keyboard.PressAsync("Space"); // Unpin after the full-page capture before checking native link hover.
+        await zero.EvaluateAsync("node => node.blur()");
         foreach (var id in new[] { "north-standard", "north-priority", "support-internal" }) {
             var link = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id='" + id + "']");
             var endpoint = await link.EvaluateAsync<double[]>("""
@@ -80,6 +90,7 @@ public sealed class InteractiveChordBrowserTests {
             Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node => node.hidden"));
             await page.Mouse.ClickAsync((float)endpoint[0], (float)endpoint[1]);
             Assert.Equal(id, await page.EvaluateAsync<string>("() => window.selections.at(-1).target.targetId"));
+            if (id == "north-priority") await CaptureAsync(chart, page, name + "-styled-pointer", html, native: false);
             // Selection can resize the compare tray; unpin the clicked identity before reading another hover.
             await link.FocusAsync();
             await page.Keyboard.PressAsync("Space");
@@ -111,6 +122,8 @@ public sealed class InteractiveChordBrowserTests {
         await page.Mouse.ClickAsync((float)position[0], (float)position[1]);
         Assert.Equal("north-support", await page.EvaluateAsync<string>("() => window.selections.at(-1).target.targetId"));
         AssertNoConsoleErrors(session);
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory)) await File.WriteAllTextAsync(Path.Combine(directory, name + "-console.json"), JsonSerializer.Serialize(session.ConsoleLog));
     }
 
     [Theory]
@@ -245,6 +258,6 @@ public sealed class InteractiveChordBrowserTests {
             await File.WriteAllTextAsync(Path.Combine(directory, name + "-native.svg"), prepared.ToSvg());
             await File.WriteAllTextAsync(Path.Combine(directory, name + ".html"), html);
         }
-        await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png") });
+        await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png"), FullPage = true });
     }
 }
