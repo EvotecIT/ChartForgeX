@@ -8,7 +8,7 @@ public sealed partial class TopologyChart {
     public VisualAccessibility Accessibility { get; } = new();
 
     /// <summary>Configures the topology text alternative and language metadata.</summary>
-    public TopologyChart WithAccessibility(Action<VisualAccessibility> configure) {
+    public TopologyChart ConfigureAccessibility(Action<VisualAccessibility> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(Accessibility);
         return this;
@@ -18,7 +18,7 @@ public sealed partial class TopologyChart {
     public TopologyLabels Labels { get; internal set; } = new();
 
     /// <summary>Configures the words the renderers write on their own (see <see cref="TopologyLabels"/>).</summary>
-    public TopologyChart WithLabels(Action<TopologyLabels> configure) {
+    public TopologyChart ConfigureLabels(Action<TopologyLabels> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(Labels);
         return this;

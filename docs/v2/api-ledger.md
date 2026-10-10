@@ -1,10 +1,10 @@
 # Public API ownership ledger
 
-The post-extraction inventory covers eight assemblies, including the shared visual-default contracts:
+The pinned post-extraction inventory covers eight assemblies, including typed family options, aggregate source snapshots, relationship identities and the shared visual defaults. It describes the source revision in its manifest; later breaking changes are documented in the [migration guide](migration.md).
 
 | Artifact | Purpose |
 | --- | --- |
-| [api-ledger-phase4.csv](api-ledger-phase4.csv) | Current exported source symbols and their assembly owners. |
+| [api-ledger-phase4.csv](api-ledger-phase4.csv) | Exported source symbols and assembly owners at the pinned post-extraction revision. |
 | [api-ledger-phase4-diff.csv](api-ledger-phase4-diff.csv) | Assembly moves, changed signatures and removed/replaced APIs relative to the merged Phase 3 source. |
 | [api-ledger-phase4-manifest.json](api-ledger-phase4-manifest.json) | Pinned source commits, source counts and disposition totals. |
 

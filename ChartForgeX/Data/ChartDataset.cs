@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Data;
 
@@ -78,7 +79,7 @@ public sealed class ChartDataset<T> : IReadOnlyList<T> {
         return ChartDataset<TResult>.From(GroupBy(keySelector, comparer).Select(group => summarize(group.Key, group.Dataset.Rows)));
     }
 
-    /// <summary>Partitions a numeric measure into equal-width bins.</summary>
+    /// <summary>Partitions a numeric measure into the same rounded, equal-width layout used by scalar histogram ingestion.</summary>
     public ChartDataset<ChartDataBin<T>> Bin(Func<T, double> valueSelector, int binCount) {
         if (valueSelector == null) throw new ArgumentNullException(nameof(valueSelector));
         if (binCount <= 0) throw new ArgumentOutOfRangeException(nameof(binCount), binCount, "Bin count must be greater than zero.");
@@ -95,24 +96,34 @@ public sealed class ChartDataset<T> : IReadOnlyList<T> {
             maximum = Math.Max(maximum, value);
         }
 
-        if (Math.Abs(maximum - minimum) < 0.000000000001) {
-            return ChartDataset<ChartDataBin<T>>.From(new[] { new ChartDataBin<T>(minimum, maximum, From(_rows)) });
-        }
+        return Bin(values, ChartHistogramBinLayout.FromCount(minimum, maximum, binCount));
+    }
 
-        var width = (maximum - minimum) / binCount;
-        var buckets = new List<T>[binCount];
-        for (var i = 0; i < binCount; i++) buckets[i] = new List<T>();
+    /// <summary>Partitions measurements through an explicit shared layout, preserving empty intervals and rejecting observations outside intervals or in gaps.</summary>
+    public ChartDataset<ChartDataBin<T>> Bin(Func<T, double> valueSelector, ChartHistogramBinLayout layout) {
+        if (valueSelector == null) throw new ArgumentNullException(nameof(valueSelector));
+        if (layout == null) throw new ArgumentNullException(nameof(layout));
+        return Bin(_rows.Select(valueSelector).ToArray(), layout);
+    }
+
+    private ChartDataset<ChartDataBin<T>> Bin(double[] values, ChartHistogramBinLayout layout) {
+        var buckets = new List<T>[layout.Count];
+        var measurements = new List<double>[layout.Count];
+        var indices = new List<int>[layout.Count];
+        for (var i = 0; i < layout.Count; i++) {
+            buckets[i] = new List<T>(); measurements[i] = new List<double>(); indices[i] = new List<int>();
+        }
         for (var i = 0; i < _rows.Count; i++) {
-            var index = values[i] >= maximum ? binCount - 1 : Math.Min(binCount - 1, (int)((values[i] - minimum) / width));
+            var index = layout.GetIndex(values[i]);
             buckets[index].Add(_rows[i]);
+            measurements[index].Add(values[i]);
+            indices[index].Add(i);
         }
 
-        var bins = new ChartDataBin<T>[binCount];
-        for (var i = 0; i < binCount; i++) {
-            var lower = minimum + width * i;
-            var upper = i == binCount - 1 ? maximum : minimum + width * (i + 1);
-            bins[i] = new ChartDataBin<T>(lower, upper, From(buckets[i]));
-        }
+        var bins = new ChartDataBin<T>[layout.Count];
+        var sourceIdentity = new object();
+        for (var i = 0; i < layout.Count; i++)
+            bins[i] = new ChartDataBin<T>(layout, i, From(buckets[i]), measurements[i].ToArray(), indices[i].ToArray(), sourceIdentity, _rows.Count);
 
         return ChartDataset<ChartDataBin<T>>.From(bins);
     }

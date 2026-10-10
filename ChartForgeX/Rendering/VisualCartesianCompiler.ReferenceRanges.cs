@@ -5,10 +5,10 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static bool ExpandCartesianRanges(Chart chart, VisualRenderContext context, ChartRect plot,
-        ChartRange range, ChartRange? secondaryRange, bool horizontalBars) {
+        ChartRange range, ChartRange? secondaryRange, bool horizontalBars, ChartStackLayout stacks, ChartBubbleSizeScale? bubbleScale) {
         return horizontalBars
             ? ExpandReferenceRanges(chart, context, plot, range, secondaryRange, horizontalBars)
-            : ExpandMarkerRanges(chart, context, plot, range, secondaryRange);
+            : ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale);
     }
 
     private static bool ExpandReferenceRanges(Chart chart, VisualRenderContext context, ChartRect plot,

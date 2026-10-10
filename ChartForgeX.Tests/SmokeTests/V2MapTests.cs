@@ -53,7 +53,7 @@ public sealed class V2MapTests {
     public void ExplicitMapScaleKeepsDomainMidpointNoDataAndPointOverrides(ChartMapScaleLegendPosition position) {
         var low = ChartColor.FromHex("#123456"); var middle = ChartColor.FromHex("#ABCDEF"); var high = ChartColor.FromHex("#654321");
         var missing = ChartColor.FromHex("#CCCCCC"); var explicitPoint = ChartColor.FromHex("#987654");
-        var scale = ChartMapColorScale.Diverging(low, middle, high, 20).WithValueRange(0, 100).WithNoDataColor(missing).WithLabels("Low", "Mid", "High");
+        var scale = ChartColorScale.Diverging(low, middle, high, 20).WithValueRange(0, 100).WithNoDataColor(missing).WithLabels("Low", "Mid", "High");
         var chart = Chart.Create().AddRegionMap("Rate", Definition(), new[] { new ChartRegionMapItem("A", 20), new ChartRegionMapItem("B", 80, explicitPoint) })
             .WithMapColorScale(scale).WithMapScaleLegendPosition(position).WithMapLabels(false);
         chart.Options.ValueFormatter = value => value.ToString("0.0", CultureInfo.GetCultureInfo("pl-PL")) + " %";

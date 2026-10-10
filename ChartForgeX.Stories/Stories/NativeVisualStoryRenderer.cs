@@ -15,7 +15,10 @@ internal static partial class NativeVisualStoryRenderer {
     internal static PreparedVisual Prepare(VisualStory story, int sceneIndex, double? elapsed, int outputScale, string transcript) {
         var scene = story.Scenes[sceneIndex]; var theme = story.Theme;
         var builder = new VisualSceneBuilder(new VisualSize(story.Width, story.Height), FontSpec.FromFamily(theme.FontFamily));
-        builder.Rect(new ChartRect(0, 0, story.Width, story.Height), theme.Background);
+        if (theme.BackgroundEnd.HasValue) {
+            builder.RectGradient(new ChartRect(0, 0, story.Width, story.Height), new ChartPoint(0, 0), new ChartPoint(story.Width, story.Height),
+                new[] { new VisualGradientStop(0, theme.Background), new VisualGradientStop(1, theme.BackgroundEnd.Value) }, role: "story-desktop-background");
+        } else builder.Rect(new ChartRect(0, 0, story.Width, story.Height), theme.Background);
         builder.Ellipse(story.Width * 0.15, 0, story.Width * 0.38, story.Height * 0.28, theme.Accent.WithOpacity(0.04));
         var padding = VisualStoryLayout.OuterPadding;
         var titleWidth = story.Width - padding * 2;

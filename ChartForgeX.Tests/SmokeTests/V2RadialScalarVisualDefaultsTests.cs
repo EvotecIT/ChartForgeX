@@ -34,7 +34,7 @@ public sealed class V2RadialScalarVisualDefaultsTests {
     [InlineData(ChartSeriesState.Danger)]
     public void GaugeBandsReserveAttentionForWarningsAndDangersWhileExplicitStateAndPaintWin(ChartSeriesState state) {
         var context = new VisualRenderContext(); var colors = context.Theme.Resolve(context.ThemeMode);
-        var chart = Chart.Create().AddGauge("Declared bands", 40).WithGauge(options => options.Bands.Add(new ChartGaugeBand(0, 100, state)));
+        var chart = Chart.Create().AddGauge("Declared bands", 40).ConfigureGauge(options => options.Bands.Add(new ChartGaugeBand(0, 100, state)));
         var scene = Compile(chart, context);
         var expected = state == ChartSeriesState.Success ? colors.Palette[0] : ChartSeriesColours.State(state, colors, colors.Palette[0]);
         Assert.Equal(expected, Assert.Single(scene.Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "gauge-value").Fill);
@@ -54,7 +54,7 @@ public sealed class V2RadialScalarVisualDefaultsTests {
     public void ResolvedCarlitoGaugeRowsPaintTheScalarAndCaptionWithoutOverlapping(ChartGaugeForm form, VisualThemeMode mode) {
         var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(path), "The gallery's Carlito fixture must be available.");
-        var chart = Chart.Create().AddGauge("Capacity", 76).WithGauge(options => {
+        var chart = Chart.Create().AddGauge("Capacity", 76).ConfigureGauge(options => {
             options.Form = form; options.Target = 85; options.Caption = "Available capacity";
             options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
             options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
