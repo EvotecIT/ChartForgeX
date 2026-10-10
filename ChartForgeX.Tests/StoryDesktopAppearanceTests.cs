@@ -144,7 +144,25 @@ public sealed class StoryDesktopAppearanceTests {
         Assert.Equal("Linux", (string?)Roles(document, "terminal-window-chrome").Single().Attribute("data-cfx-window-style"));
         Assert.Single(Roles(document, "terminal-window-close"));
         Assert.Contains("Linux output", document.Root!.Value);
-        Assert.Equal(480, PngReader.Decode(terminal.ToPng()).Width);
+        var image = PngReader.Decode(terminal.ToPng());
+        Assert.Equal(480, image.Width);
+        // Use the SVG control bounds to locate independent PNG title-bar ink.
+        var maximize = Roles(document, "terminal-window-maximize").Single();
+        var left = (int)Math.Floor((double)maximize.Attribute("x")!) - 1;
+        var top = (int)Math.Floor((double)maximize.Attribute("y")!) - 1;
+        var right = left + (int)Math.Ceiling((double)maximize.Attribute("width")!) + 2;
+        var bottom = top + (int)Math.Ceiling((double)maximize.Attribute("height")!) + 2;
+        var ink = terminal.Theme.Text;
+        var controlPixels = 0;
+        for (var y = top; y <= bottom; y++)
+            for (var x = left; x <= right; x++) {
+                var offset = (y * image.Width + x) * 4;
+                // Thin strokes share output pixels with the dark title-bar background.
+                if (Math.Abs(image.Pixels[offset] - ink.R) <= 90 &&
+                    Math.Abs(image.Pixels[offset + 1] - ink.G) <= 90 &&
+                    Math.Abs(image.Pixels[offset + 2] - ink.B) <= 90) controlPixels++;
+            }
+        Assert.True(controlPixels >= 12, "Linux PNG chrome must include visible title-bar control strokes.");
     }
 
     private static VisualStory ReplayStory(VisualStoryTheme theme, TerminalTheme? palette = null) {
