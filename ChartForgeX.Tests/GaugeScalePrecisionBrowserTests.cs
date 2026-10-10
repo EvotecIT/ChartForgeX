@@ -19,7 +19,7 @@ public sealed class GaugeScalePrecisionBrowserTests {
         var chart = Chart.Create().WithSize(width, height).WithPngFont(path)
             .WithTheme((dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithFontFamily("CFX Gauge Carlito"))
             .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands").AddGauge("Readiness", 74)
-            .WithGauge(options => {
+            .ConfigureGauge(options => {
                 options.Form = ChartGaugeForm.Needle; options.Target = 90;
                 options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Danger));
                 options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning));
