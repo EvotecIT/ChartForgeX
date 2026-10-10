@@ -121,6 +121,7 @@ internal sealed partial class VisualSceneBuilder {
 
     internal void PatternSlice(double cx, double cy, double outerRadius, double innerRadius, double start, double sweep,
         ChartFillPattern pattern, ChartColor color, double spacing = 8, double strokeWidth = 1.5, string? role = null, Themes.SvgPaint? paint = null) {
+        if (!ChartSlicePathGeometry.HasEncodedFillArea(cx, cy, outerRadius, innerRadius, start, sweep)) return;
         // Retain one numeric contour clip independent of either export backend.
         var slice = new VisualSceneSlice(cx, cy, outerRadius, innerRadius, start, sweep, color, null, 0, null, null);
         var contours = VisualSceneGeometry.Flatten(slice, 4);
