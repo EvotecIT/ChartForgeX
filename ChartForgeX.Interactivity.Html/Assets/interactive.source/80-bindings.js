@@ -22,14 +22,17 @@
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
       if (focusNode === node && !node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
-      node.addEventListener('pointerenter', (event) => {
-        setHover(root, node, true, true);
-        showTip(root, tip, node, event);
-      });
-      node.addEventListener('pointermove', (event) => moveTip(tip, event, node));
-      node.addEventListener('pointerleave', () => {
-        clearHover(root, true, true);
-        hideTip(root, tip, false);
+      const labels = pointLabelSurfaces(root, node);
+      [node, ...labels].forEach(surface => {
+        surface.addEventListener('pointerenter', (event) => {
+          setHover(root, node, true, true);
+          showTip(root, tip, node, event);
+        });
+        surface.addEventListener('pointermove', (event) => moveTip(tip, event, node));
+        surface.addEventListener('pointerleave', () => {
+          clearHover(root, true, true);
+          hideTip(root, tip, false);
+        });
       });
       focusNode.addEventListener('focus', (event) => {
         setHover(root, node, true, true);
@@ -39,7 +42,7 @@
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      focusNode.addEventListener('click', (event) => {
+      const activateTarget = (event) => {
         event.stopPropagation();
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
@@ -49,7 +52,9 @@
           toggleSelection(root, node);
           pinTip(root, tip, node, event);
         }
-      });
+      };
+      focusNode.addEventListener('click', activateTarget);
+      labels.forEach(label => label.addEventListener('click', activateTarget));
       focusNode.addEventListener('keydown', (event) => {
         event.stopPropagation();
         if (!hasFeature(root, 'KeyboardNavigation')) return;

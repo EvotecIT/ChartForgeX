@@ -1,3 +1,10 @@
+  // Separately painted captions are pointer surfaces of their declared native point, never new observations.
+  const pointLabelTarget = (root, target) => {
+    const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
+    const point = label && label._cfxLabelTarget;
+    return point && root.contains(label) && root.contains(point) ? point : null;
+  };
+  const pointLabelSurfaces = (root, point) => (point._cfxPointLabels || []).filter(label => root.contains(label));
   // Core exports describe immutable source identity and layout. Browser-only focus and hit areas belong here.
   const prepareChartTargets = (root) => {
     const svg = root.querySelector('.cfx-stage svg');
@@ -66,5 +73,13 @@
       hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
       hit.setAttribute('data-cfx-browser-hit-area', 'true');
       node.appendChild(hit);
+    });
+    const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
+    svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
+      const mark = marks.get(label.dataset.cfxLabelFor);
+      const point = mark && mark.closest('[data-cfx-point]');
+      if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text')) return;
+      label._cfxLabelTarget = point;
+      (point._cfxPointLabels ||= []).push(label);
     });
   };

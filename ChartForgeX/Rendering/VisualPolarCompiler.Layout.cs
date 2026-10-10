@@ -72,21 +72,22 @@ internal static partial class VisualPolarCompiler {
             first = new LabelCandidate(Math.Cos(angle) * inward - Math.Sin(angle) * spread, Math.Sin(angle) * inward + Math.Cos(angle) * spread, .5, .5);
         }
         AddLabel(builder, labels, text, point, style, id + "-label", radar ? "radar-data-label" : "polar-data-label", plot,
-            new[] { first, new LabelCandidate(0, -gap, .5, 1), new LabelCandidate(0, gap, .5, 0), new LabelCandidate(-gap, 0, 1, .5), new LabelCandidate(gap, 0, 0, .5) }, 40);
+            new[] { first, new LabelCandidate(0, -gap, .5, 1), new LabelCandidate(0, gap, .5, 0), new LabelCandidate(-gap, 0, 1, .5), new LabelCandidate(gap, 0, 0, .5) }, 40,
+            source >= 0 ? id : null);
     }
 
     private static void AddLabel(VisualSceneBuilder builder, List<PolarLabel> labels, string text, ChartPoint anchor, TextStyle style,
-        string id, string role, ChartRect bounds, IReadOnlyList<LabelCandidate> candidates, int priority) {
+        string id, string role, ChartRect bounds, IReadOnlyList<LabelCandidate> candidates, int priority, string? markId = null) {
         // The viewport describes the retained label; the placed rectangle describes only its displayed text.
         builder.AddRegion(new VisualSemanticRegion(id, role, bounds, text));
-        labels.Add(new PolarLabel(new LabelPlacementRequest(text, anchor, style, candidates, priority) { MeasuredSize = builder.MeasureText(text, style) }, id, role));
+        labels.Add(new PolarLabel(new LabelPlacementRequest(text, anchor, style, candidates, priority) { MeasuredSize = builder.MeasureText(text, style) }, id, role, markId));
     }
 
     private static void DrawLabels(VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<PolarLabel> labels, double gap) {
         var placed = new LabelPlacementService().Place(labels.Select(label => label.Request).ToArray(), plot, null, Math.Max(1, gap / 3), builder.MeasureText);
         for (var index = 0; index < placed.Count; index++) {
             var result = placed[index]; var label = labels[index];
-            using (builder.PushGroup(label.Id + "-source", label.Role + "-source", new Dictionary<string, string> { ["data-cfx-full-label"] = label.Request.Text })) {
+            using (builder.PushGroup(label.Id + "-source", label.Role + "-source", VisualMarkLabel.Metadata(label.Request.Text, label.MarkId))) {
                 if (result.IsDropped || result.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("polar.label-overflow", "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."));
                 if (result.IsDropped) continue;
                 var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
@@ -112,7 +113,8 @@ internal static partial class VisualPolarCompiler {
         internal double Cx { get; } internal double Cy { get; } internal double Radius { get; }
     }
     private sealed class PolarLabel {
-        internal PolarLabel(LabelPlacementRequest request, string id, string role) { Request = request; Id = id; Role = role; }
+        internal PolarLabel(LabelPlacementRequest request, string id, string role, string? markId) { Request = request; Id = id; Role = role; MarkId = markId; }
         internal LabelPlacementRequest Request { get; } internal string Id { get; } internal string Role { get; }
+        internal string? MarkId { get; }
     }
 }

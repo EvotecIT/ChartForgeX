@@ -315,7 +315,7 @@
       return { node: nativeHit, x: event.clientX, y: event.clientY, distance: 0 };
     }
     // Native SVG hit testing identifies curved marks more accurately than their rectangular envelopes.
-    const hit = event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null;
+    const hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null);
     if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && !hit.classList.contains('cfx-series-muted')) {
       if (usesPolarCoordinates(hit)) return { node: hit, x: event.clientX, y: event.clientY, distance: 0 };
       const box = hit.getBoundingClientRect();

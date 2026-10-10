@@ -12,7 +12,10 @@ internal static partial class VisualNumericRadialCompiler {
     private static RadialSeriesGeometry Layout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         IReadOnlyList<string> categories, Dictionary<ChartAxisSide, string[]> valueLabels, bool bars) {
         var style = TickStyle(chart, context);
-        var texts = chart.Options.ShowAxes ? categories.Concat(valueLabels.Values.SelectMany(labels => labels)).ToArray() : Array.Empty<string>();
+        var texts = chart.Options.ShowAxes
+            ? (chart.Options.XAxis.Visible ? categories : Array.Empty<string>())
+                .Concat(valueLabels.Where(pair => Axis(chart, pair.Key).Visible).SelectMany(pair => pair.Value)).ToArray()
+            : Array.Empty<string>();
         var width = texts.Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
         var height = texts.Select(text => builder.MeasureText(text, style).Height).DefaultIfEmpty(0).Max();
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - Math.Min(plot.Width * .22, width) - context.Theme.Spacing,

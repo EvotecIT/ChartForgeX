@@ -352,6 +352,13 @@
     moveTip(tip, event, node);
     emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
   };
+  // Separately painted captions are pointer surfaces of their declared native point, never new observations.
+  const pointLabelTarget = (root, target) => {
+    const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
+    const point = label && label._cfxLabelTarget;
+    return point && root.contains(label) && root.contains(point) ? point : null;
+  };
+  const pointLabelSurfaces = (root, point) => (point._cfxPointLabels || []).filter(label => root.contains(label));
   // Core exports describe immutable source identity and layout. Browser-only focus and hit areas belong here.
   const prepareChartTargets = (root) => {
     const svg = root.querySelector('.cfx-stage svg');
@@ -420,6 +427,14 @@
       hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
       hit.setAttribute('data-cfx-browser-hit-area', 'true');
       node.appendChild(hit);
+    });
+    const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
+    svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
+      const mark = marks.get(label.dataset.cfxLabelFor);
+      const point = mark && mark.closest('[data-cfx-point]');
+      if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text')) return;
+      label._cfxLabelTarget = point;
+      (point._cfxPointLabels ||= []).push(label);
     });
   };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
@@ -999,7 +1014,7 @@
       return { node: nativeHit, x: event.clientX, y: event.clientY, distance: 0 };
     }
     // Native SVG hit testing identifies curved marks more accurately than their rectangular envelopes.
-    const hit = event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null;
+    const hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest('[data-cfx-point]') : null);
     if (hit && root.contains(hit) && !hit.closest('[data-cfx-role="legend-item"]') && !hit.classList.contains('cfx-series-muted')) {
       if (usesPolarCoordinates(hit)) return { node: hit, x: event.clientX, y: event.clientY, distance: 0 };
       const box = hit.getBoundingClientRect();
@@ -1540,14 +1555,17 @@
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
       if (focusNode === node && !node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
-      node.addEventListener('pointerenter', (event) => {
-        setHover(root, node, true, true);
-        showTip(root, tip, node, event);
-      });
-      node.addEventListener('pointermove', (event) => moveTip(tip, event, node));
-      node.addEventListener('pointerleave', () => {
-        clearHover(root, true, true);
-        hideTip(root, tip, false);
+      const labels = pointLabelSurfaces(root, node);
+      [node, ...labels].forEach(surface => {
+        surface.addEventListener('pointerenter', (event) => {
+          setHover(root, node, true, true);
+          showTip(root, tip, node, event);
+        });
+        surface.addEventListener('pointermove', (event) => moveTip(tip, event, node));
+        surface.addEventListener('pointerleave', () => {
+          clearHover(root, true, true);
+          hideTip(root, tip, false);
+        });
       });
       focusNode.addEventListener('focus', (event) => {
         setHover(root, node, true, true);
@@ -1557,7 +1575,7 @@
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      focusNode.addEventListener('click', (event) => {
+      const activateTarget = (event) => {
         event.stopPropagation();
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
@@ -1567,7 +1585,9 @@
           toggleSelection(root, node);
           pinTip(root, tip, node, event);
         }
-      });
+      };
+      focusNode.addEventListener('click', activateTarget);
+      labels.forEach(label => label.addEventListener('click', activateTarget));
       focusNode.addEventListener('keydown', (event) => {
         event.stopPropagation();
         if (!hasFeature(root, 'KeyboardNavigation')) return;
