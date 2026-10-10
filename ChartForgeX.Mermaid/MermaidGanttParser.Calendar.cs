@@ -18,9 +18,9 @@ internal static partial class MermaidGanttParser {
         end = authoredEnd;
         renderEnd = authoredEnd;
         try {
-            var excluded = CalendarTokens(document.Excludes);
+            var excluded = CalendarTokens(document.Excludes, document.DateFormat);
             if (excluded.Count == 0 || end - start < TimeSpan.FromDays(1)) return true;
-            var included = CalendarTokens(document.Includes);
+            var included = CalendarTokens(document.Includes, document.DateFormat);
             var cursor = start.AddDays(1);
             var extension = 0;
             var previousExcluded = false;
@@ -48,14 +48,37 @@ internal static partial class MermaidGanttParser {
         catch (OverflowException) { return false; }
     }
 
-    private static HashSet<string> CalendarTokens(string? value) => new(
-        (value ?? string.Empty).Split(new[] { ',', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries), StringComparer.OrdinalIgnoreCase);
+    private static HashSet<string> CalendarTokens(string? value, string format) {
+        var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var chunk in (value ?? string.Empty).Split(',')) {
+            var trimmed = chunk.Trim();
+            // A complete formatted date may contain spaces. Only lists that are not
+            // dates use the retained whitespace-separated weekday/date shorthand.
+            if (TryNormalizeCalendarDate(trimmed, format, out var date)) tokens.Add(date);
+            else foreach (var token in trimmed.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries))
+                tokens.Add(TryNormalizeCalendarDate(token, format, out date) ? date : token);
+        }
+        return tokens;
+    }
+
+    private static bool TryNormalizeCalendarDate(string token, string format, out string date) {
+        date = string.Empty;
+        if (DateTime.TryParseExact(token, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var value)) {
+            date = value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            return true;
+        }
+        if (token.Length == 0 || !TryParseDate(token, format, out value)) return false;
+        date = MermaidGanttInputDateFormat.FormatCalendarDate(value, format);
+        return true;
+    }
 
     private static string MergeCalendarTokens(string? existing, string added) {
         var tokens = new List<string>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var token in ((existing ?? string.Empty) + "," + added).Split(new[] { ',', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)) {
-            if (seen.Add(token)) tokens.Add(token.ToLowerInvariant());
+        // Keep complete declarations until all directives establish the final format.
+        foreach (var raw in ((existing ?? string.Empty) + "," + added).Split(',')) {
+            var token = raw.Trim();
+            if (token.Length > 0 && seen.Add(token)) tokens.Add(token);
         }
         return string.Join(", ", tokens);
     }
