@@ -22,6 +22,8 @@ public static partial class V2GalleryModels {
             var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options => {
                 options.CornerRadius = 6;
+                options.SecondaryLabelFormatter = context => context.Item.Id == "all" ? "Allocation" : context.Item.Id == "engineering" ? "Delivery teams"
+                    : context.Item.Id == "operations-support" ? "Shared service" : null;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
                 options.ColorLegendTitle = "Change (%)";
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)

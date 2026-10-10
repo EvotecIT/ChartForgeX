@@ -340,6 +340,12 @@ body {
   font-weight: 800;
 }
 
+.cfx-tooltip__secondary {
+  margin-top: 4px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
 .cfx-tooltip__title--series {
   display: flex;
   align-items: center;

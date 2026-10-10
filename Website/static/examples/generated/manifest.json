@@ -9586,9 +9586,13 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
@@ -9629,6 +9633,7 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -9637,6 +9642,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
@@ -9672,9 +9678,13 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
@@ -9715,6 +9725,7 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -9723,6 +9734,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
@@ -9824,9 +9836,13 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
@@ -9867,6 +9883,7 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -9875,6 +9892,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
@@ -9910,9 +9928,13 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
@@ -9953,6 +9975,7 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -9961,6 +9984,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
