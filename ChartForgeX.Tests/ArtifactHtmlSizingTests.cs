@@ -15,6 +15,7 @@ public sealed class ArtifactHtmlSizingTests {
     [InlineData("native", 320)]
     [InlineData("prepared", 320)]
     [InlineData("decorated", 320)]
+    [InlineData("trusted-svg", 320)]
     [InlineData("source", 1040)]
     public async Task SequenceLabelsKeepLogicalSizeAndCompactHostsCanScrollWithTheKeyboard(string route, int width) {
         if (!InteractiveChartBrowser.Enabled) return;
@@ -23,7 +24,10 @@ public sealed class ArtifactHtmlSizingTests {
             .Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(960, 560)))).ToArtifact();
         if (route == "native") artifact = Assert.IsType<SequenceArtifact>(artifact.Model).ToVisualArtifact();
         if (route == "decorated") artifact = artifact.ToWatermarkedArtifact(VisualWatermark.FromText("REVIEW"));
-        await using var session = await InteractiveChartBrowser.OpenAsync(artifact.ToHtmlPage(), width, 620);
+        var html = route == "trusted-svg"
+            ? artifact.ToWatermarkedHtmlPage(artifact.ToSvg(), VisualWatermark.FromText("REVIEW"))
+            : artifact.ToHtmlPage();
+        await using var session = await InteractiveChartBrowser.OpenAsync(html, width, 620);
         var host = session.Page.Locator(".chartforgex-visual-artifact");
         Assert.Equal("region", await host.GetAttributeAsync("role"));
         var text = session.Page.Locator("svg text").First;

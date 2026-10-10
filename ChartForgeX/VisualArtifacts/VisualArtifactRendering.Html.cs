@@ -3,7 +3,7 @@ using System;
 namespace ChartForgeX.VisualArtifacts;
 
 public static partial class VisualArtifactRendering {
-    private static VisualArtifactHtmlSizing HtmlSizing(VisualArtifact artifact, VisualArtifactRenderOptions? options) {
+    internal static VisualArtifactHtmlSizing HtmlSizing(VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         var sizing = options?.HtmlSizing ?? VisualArtifactHtmlSizing.Automatic;
         return sizing == VisualArtifactHtmlSizing.Automatic
             ? artifact.Model is SequenceArtifact || artifact.Kind == VisualArtifactKind.Sequence ? VisualArtifactHtmlSizing.PreserveSize : VisualArtifactHtmlSizing.FitToWidth
