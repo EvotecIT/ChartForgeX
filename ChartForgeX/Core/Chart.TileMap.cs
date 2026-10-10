@@ -28,7 +28,7 @@ public sealed partial class Chart {
     /// <param name="regions">The region values to render. Each tile is colored independently from its own value.</param>
     /// <param name="scale">An optional map color scale used to color the tiles.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddTileHeatmap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartMapColorScale? scale = null) {
+    public Chart AddTileHeatmap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColorScale? scale = null) {
         EnsureCanAddSeries();
         if (scale != null) Options.MapColorScale = scale;
         return AddTileMap(name, definition, regions);

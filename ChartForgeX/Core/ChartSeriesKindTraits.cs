@@ -13,19 +13,23 @@ internal static class ChartSeriesKindTraits {
         ChartSeriesKind.RegionMap,
         ChartSeriesKind.Gauge,
         ChartSeriesKind.Circle,
+        ChartSeriesKind.ProgressRing,
         ChartSeriesKind.RadialBar,
+        ChartSeriesKind.RadialColumn,
         ChartSeriesKind.LayeredRadial,
         ChartSeriesKind.Bullet,
         ChartSeriesKind.Waterfall,
         ChartSeriesKind.Radar,
         ChartSeriesKind.Polar,
         ChartSeriesKind.Funnel,
+        ChartSeriesKind.Pyramid,
         ChartSeriesKind.Treemap,
         ChartSeriesKind.Timeline,
         ChartSeriesKind.StateTimeline,
         ChartSeriesKind.GanttLane,
         ChartSeriesKind.Gantt,
         ChartSeriesKind.Sankey,
+        ChartSeriesKind.Chord,
         ChartSeriesKind.Tree,
         ChartSeriesKind.Sunburst,
         ChartSeriesKind.Pictorial,
@@ -47,7 +51,14 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.Scatter ||
         kind == ChartSeriesKind.Bar ||
         kind == ChartSeriesKind.HorizontalBar ||
+        kind == ChartSeriesKind.RadialBar ||
+        kind == ChartSeriesKind.RadialColumn ||
         kind == ChartSeriesKind.Lollipop;
+
+    public static bool SupportsMarkers(ChartSeriesKind kind) => kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine
+        or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.Scatter
+        or ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop
+        or ChartSeriesKind.Slope or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.Radar or ChartSeriesKind.Polar;
 
     public static bool SupportsPointLegend(ChartSeriesKind kind) =>
         kind == ChartSeriesKind.Scatter ||
@@ -61,9 +72,12 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.BoxPlot ||
         kind == ChartSeriesKind.HorizontalBar ||
         kind == ChartSeriesKind.DottedMap ||
+        kind == ChartSeriesKind.ProgressRing ||
         kind == ChartSeriesKind.RadialBar ||
+        kind == ChartSeriesKind.RadialColumn ||
         kind == ChartSeriesKind.Waterfall ||
         kind == ChartSeriesKind.Funnel ||
+        kind == ChartSeriesKind.Pyramid ||
         kind == ChartSeriesKind.Pie ||
         kind == ChartSeriesKind.Donut ||
         kind == ChartSeriesKind.Treemap ||
@@ -89,12 +103,14 @@ internal static class ChartSeriesKindTraits {
             kind == ChartSeriesKind.TileMap ||
             kind == ChartSeriesKind.RegionMap ||
             kind == ChartSeriesKind.Circle ||
-            kind == ChartSeriesKind.RadialBar ||
+            kind == ChartSeriesKind.ProgressRing ||
             kind == ChartSeriesKind.LayeredRadial ||
             kind == ChartSeriesKind.Waterfall ||
             kind == ChartSeriesKind.Funnel ||
+            kind == ChartSeriesKind.Pyramid ||
             kind == ChartSeriesKind.Treemap ||
             kind == ChartSeriesKind.Sankey ||
+            kind == ChartSeriesKind.Chord ||
             kind == ChartSeriesKind.Tree ||
             kind == ChartSeriesKind.Sunburst ||
             kind == ChartSeriesKind.Pictorial ||
@@ -107,6 +123,7 @@ internal static class ChartSeriesKindTraits {
 
     public static bool RequiresPositiveValues(ChartSeriesKind kind) {
         return kind == ChartSeriesKind.Funnel ||
+            kind == ChartSeriesKind.Pyramid ||
             kind == ChartSeriesKind.Treemap ||
             kind == ChartSeriesKind.Pie ||
             kind == ChartSeriesKind.Donut ||

@@ -63,11 +63,14 @@ public static class MermaidTreemapRendering {
         return document.Header;
     }
 
-    private static ChartTreemapItem[] ToItems(MermaidTreemapDocument document) {
-        var items = new List<ChartTreemapItem>();
+    private static ChartHierarchyItem[] ToItems(MermaidTreemapDocument document) {
+        // Mermaid labels have no authored ID syntax; source-order IDs preserve distinct repeated labels.
+        var ids = new Dictionary<MermaidTreemapNode, string>();
+        for (var index = 0; index < document.Nodes.Count; index++) ids.Add(document.Nodes[index], "node-" + index.ToString(CultureInfo.InvariantCulture));
+        var items = new List<ChartHierarchyItem>();
         foreach (var node in document.Nodes) {
-            if (!node.Value.HasValue) continue;
-            items.Add(new ChartTreemapItem(node.Path, node.Value.Value));
+            if (node.Parent != null && !ids.ContainsKey(node.Parent)) throw new InvalidOperationException("Treemap parents must belong to the document.");
+            items.Add(new ChartHierarchyItem(ids[node], node.Label, node.Parent == null ? null : ids[node.Parent], node.Value));
         }
 
         return items.ToArray();

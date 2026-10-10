@@ -112,10 +112,11 @@ public sealed class V2CartesianMigrationTests {
         chart.Options.ShowStackTotals = true;
         chart.Options.ValueFormatter = value => "total/value " + value.ToString(CultureInfo.InvariantCulture);
         var coordinates = ChartBarCoordinateMap.Create(chart);
-        Assert.Equal(4, ChartBarStacking.BaseValue(chart, coordinates, 2, 0));
-        Assert.Equal(20, ChartBarStacking.BaseValue(chart, coordinates, 3, 0));
-        Assert.Equal(-3, ChartBarStacking.BaseValue(chart, coordinates, 2, 1));
-        Assert.Equal(-15, ChartBarStacking.BaseValue(chart, coordinates, 3, 1));
+        var stacks = ChartStackLayout.Create(chart, coordinates);
+        Assert.Equal(4, stacks.Point(2, 0).Base);
+        Assert.Equal(20, stacks.Point(3, 0).Base);
+        Assert.Equal(-3, stacks.Point(2, 1).Base);
+        Assert.Equal(-15, stacks.Point(3, 1).Base);
         var range = ChartRange.FromChart(chart, coordinates);
         var secondary = ChartRange.FromSecondaryYAxis(chart, range);
         Assert.Equal(-10, range.MinY); Assert.Equal(-50, secondary.MinY);

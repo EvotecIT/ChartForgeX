@@ -1,0 +1,110 @@
+  // Transient HTML paint is separate from native primitives and their current host CSS.
+  // The probe attribute is deliberately outside the scoped availability observer's attribute filter.
+  const withNativeHighlightPaint = (node, read) => {
+    const root = node && node.closest('.cfx-interactive-chart');
+    if (!root || !root._cfxBranchHighlights || root.hasAttribute('data-cfx-highlight-probe')) return read();
+    root.setAttribute('data-cfx-highlight-probe', '');
+    try { return read(); } finally { root.removeAttribute('data-cfx-highlight-probe'); }
+  };
+  const prepareRootBranchHighlights = (root) => {
+    if (root.dataset.cfxHighlightMode !== 'root-branch') return;
+    // Prepared targets normalize family names; native metadata also accepts the enum spelling.
+    const nodes = Array.from(root.querySelectorAll('[data-cfx-kind="sunburst" i][data-cfx-target-kind="node"]'));
+    if (!nodes.length) return;
+    root._cfxBranchHighlights = nodes;
+    nodes.forEach((node) => {
+      node.dataset.cfxHighlightManaged = 'true';
+      const paint = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      paint.setAttribute('data-cfx-highlight-paint', '');
+      // Keep accessible names on the identity owner. Captions and hatches stay with their native mark.
+      Array.from(node.children).filter(child => !child.matches('title,desc')).forEach(child => paint.appendChild(child));
+      node.appendChild(paint);
+    });
+  };
+  const highlightStyle = (root, group) => {
+    const prefix = 'data-cfx-highlight-' + group + '-';
+    const result = {};
+    ['stroke', 'stroke-width', 'opacity'].forEach(key => {
+      const value = root.getAttribute(prefix + key);
+      if (value !== null) result[key] = value;
+    });
+    return result;
+  };
+  const highlightOutline = (paint, style) => {
+    const primary = paint.querySelector('[data-cfx-role="sunburst-segment-mark"]');
+    let outline = paint.querySelector('[data-cfx-highlight-outline]');
+    if (!primary || style.stroke === undefined && style['stroke-width'] === undefined) {
+      if (outline) outline.remove();
+      return;
+    }
+    // Copy only the primary geometry: no hatch, IDs, targets, tab stops or native paint attributes.
+    if (!outline) {
+      outline = document.createElementNS('http://www.w3.org/2000/svg', primary.localName);
+      outline.setAttribute('data-cfx-role', 'interaction-highlight');
+      outline.setAttribute('data-cfx-highlight-outline', '');
+      outline.setAttribute('aria-hidden', 'true');
+      outline.setAttribute('focusable', 'false');
+      paint.insertBefore(outline, paint.firstChild);
+    }
+    ['d', 'transform', 'fill-rule'].forEach(key => {
+      const value = primary.getAttribute(key);
+      if (value === null) outline.removeAttribute(key); else outline.setAttribute(key, value);
+    });
+    const native = getComputedStyle(primary);
+    const width = Number(style['stroke-width'] ?? 2.5);
+    // Native stroke stays on top. The extra width exposes the requested outline outside it.
+    paint.style.setProperty('--cfx-highlight-stroke', style.stroke ?? native.stroke);
+    paint.style.setProperty('--cfx-highlight-stroke-width', width > 0 ? String(Math.min(Number.MAX_VALUE, (parseFloat(native.strokeWidth) || 0) + width * 2)) : '0');
+  };
+  const clearRootBranchHighlight = (root) => {
+    (root._cfxBranchHighlights || []).forEach(node => {
+      delete node.dataset.cfxHighlightState;
+      const paint = node.querySelector('[data-cfx-highlight-paint]');
+      paint.style.removeProperty('--cfx-highlight-opacity');
+      paint.style.removeProperty('--cfx-highlight-stroke');
+      paint.style.removeProperty('--cfx-highlight-stroke-width');
+      const outline = paint.querySelector('[data-cfx-highlight-outline]');
+      if (outline) outline.remove();
+    });
+  };
+  const refreshRootBranchHighlightAvailability = (root) => {
+    let hiddenActive = false;
+    withNativeHighlightPaint(root, () => (root._cfxBranchHighlights || []).forEach(node => {
+      const available = !!pointerTargetPaint(node);
+      node.toggleAttribute('data-cfx-highlight-unavailable', !available);
+      // Zero/collapsed facts deliberately have no pointer paint, but keep keyboard readouts.
+      if (!available && node.dataset.cfxHighlightState === 'item' && node.dataset.cfxGeometryStatus === 'visible') hiddenActive = true;
+    }));
+    // Host paint is local to this chart; losing it must not clear an available peer's hover.
+    if (hiddenActive) clearHover(root, true, false);
+  };
+  const applyRootBranchHighlight = (root, active) => {
+    const nodes = root._cfxBranchHighlights;
+    if (!nodes || !nodes.includes(active)) return false;
+    if (!tooltipReadoutAvailable(active, null)) return false;
+    const branch = active.dataset.cfxBranchRoot;
+    const graphite = root.dataset.cfxLook === 'graphite';
+    const branchStyle = highlightStyle(root, 'branch'), itemStyle = highlightStyle(root, 'item');
+    const otherItemStyle = highlightStyle(root, 'other-item'), otherBranchStyle = highlightStyle(root, 'other-branch');
+    withNativeHighlightPaint(root, () => nodes.forEach(node => {
+      const ownBranch = node.dataset.cfxBranchRoot;
+      const highlighted = node === active;
+      const related = branch && ownBranch === branch;
+      // The central root has no branch. Focusing it leaves the surrounding branches at native strength.
+      let style = {}, state = 'neutral';
+      if (highlighted) { style = { opacity: '1', ...(branch ? branchStyle : {}), ...itemStyle }; state = 'item'; }
+      else if (related) { style = { opacity: graphite ? '1' : '.82', ...branchStyle, ...otherItemStyle }; state = 'branch'; }
+      else if (branch && ownBranch) { style = { opacity: graphite ? '.3' : '.38', ...otherBranchStyle }; state = 'other-branch'; }
+      node.dataset.cfxHighlightState = state;
+      setNodeHovered(node, highlighted, !!related && !highlighted);
+      const paint = node.querySelector('[data-cfx-highlight-paint]');
+      paint.style.setProperty('--cfx-highlight-opacity', style.opacity ?? '1');
+      highlightOutline(paint, style);
+    }));
+    root.dataset.cfxHovering = 'true';
+    root.dataset.cfxHoverMode = 'root-branch';
+    root.dataset.cfxHoverUnit = 'branch';
+    root.dataset.cfxHoverLabel = text(active);
+    refreshRootBranchHighlightAvailability(root);
+    return true;
+  };
