@@ -19,6 +19,9 @@ public sealed class ChartLabels {
     private string _remainder = "Remainder";
     private string _allValues = "All values";
     private string _value = "value";
+    private string _change = "Change";
+    private string _subtotal = "Subtotal";
+    private string _total = "Total";
     private string _untitledChart = "ChartForgeX chart";
     private const string DefaultLevel = "Level";
     private string _level = DefaultLevel;
@@ -69,6 +72,15 @@ public sealed class ChartLabels {
 
     /// <summary>Gets or sets the word between the bounds of an interior discrete color band, for example <c>10 ≤ value &lt; 20</c>. Default <c>value</c>.</summary>
     public string Value { get => _value; set => _value = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the waterfall tooltip row name for a supplied change. Default <c>Change</c>.</summary>
+    public string Change { get => _change; set => _change = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the default waterfall subtotal axis caption and tooltip row name. Default <c>Subtotal</c>.</summary>
+    public string Subtotal { get => _subtotal; set => _subtotal = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the default waterfall total axis caption and tooltip row name. Default <c>Total</c>.</summary>
+    public string Total { get => _total; set => _total = Required(value, nameof(value)); }
 
     /// <summary>
     /// Gets or sets the accessible name of a chart without a title (the SVG <c>title</c> element and the HTML page title).

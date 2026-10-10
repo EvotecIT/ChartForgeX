@@ -93,7 +93,8 @@ public sealed class V2CartesianExtensionTests {
         Assert.Equal(new[] { "10", "20", "40" }, points.Select(point => point.Metadata["data-cfx-x"]));
         Assert.Equal("100", points[1].Metadata["data-cfx-start"]); Assert.Equal("60", points[1].Metadata["data-cfx-end"]);
         var total = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "waterfall-total");
-        Assert.Equal("-1", total.Metadata["data-cfx-source-point"]); Assert.Equal("140", total.Metadata["data-cfx-end"]);
+        Assert.False(total.Metadata.ContainsKey("data-cfx-source-point")); Assert.Equal("0,1,2", total.Metadata["data-cfx-source-points"]);
+        Assert.Equal("waterfall-total", total.Metadata["data-cfx-derived"]); Assert.Equal("140", total.Metadata["data-cfx-end"]);
         Assert.Contains(prepared.Regions, region => region.Role == "axis-x-label" && region.Label?.StartsWith("Total", StringComparison.Ordinal) == true);
         Assert.Equal(3, chart.Series[0].Points.Count); Assert.Equal(-40, chart.Series[0].Points[1].Y);
     }

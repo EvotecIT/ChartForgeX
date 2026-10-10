@@ -97,9 +97,11 @@ internal static partial class SmokeTests {
                 var mark = region.Bounds;
                 var source = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(node => node.Id == region.Id);
                 Assert(source.Metadata["data-cfx-label"] == label.Text.Lines.Single().Text
-                    && source.Metadata["data-cfx-delta"] == "100" && source.Metadata["data-cfx-source-count"] == "1"
+                    && source.Metadata["data-cfx-value"] == "100" && source.Metadata["data-cfx-source-count"] == "1"
                     && source.Metadata["data-cfx-derived-total"] == (region.Role == "waterfall-total" ? "true" : "false")
-                    && source.Metadata["data-cfx-source-point"] == (region.Role == "waterfall-total" ? "-1" : "0"),
+                    && (region.Role == "waterfall-total"
+                        ? !source.Metadata.ContainsKey("data-cfx-source-point") && !source.Metadata.ContainsKey("data-cfx-delta") && source.Metadata["data-cfx-source-points"] == "0"
+                        : source.Metadata["data-cfx-source-point"] == "0" && source.Metadata["data-cfx-delta"] == "100"),
                     "Contained captions must remain associated with their truthful source delta or derived total.");
                 var fill = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "waterfall-bar" && node.Bounds.Equals(mark)).Fill!.Value;
                 var backdrop = ChartStateMark.Backdrop(chart.Options, context.Theme.Resolve(context.ThemeMode), context.Frame);

@@ -91,6 +91,6 @@ internal static partial class SmokeTests {
         Verify.Equal(11, FamilyNumber(waterfallSource, "data-cfx-end"));
         Verify.Equal(-7, FamilyNumber(waterfallSource, "data-cfx-delta"));
         Verify.Equal("1", waterfallSource.Metadata["data-cfx-source-point"]);
-        Verify.Contains(waterfall.Regions, region => region.Id == "series-0-point-1" && region.Label!.Contains("start=18 end=11 delta=-7", StringComparison.Ordinal));
+        Verify.Contains(waterfall.Regions, region => region.Id == "series-0-point-1" && region.Label!.Contains("start=18 end=11 Change=-7", StringComparison.Ordinal));
     }
 }

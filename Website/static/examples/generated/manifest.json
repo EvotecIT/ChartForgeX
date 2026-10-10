@@ -7684,7 +7684,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-compact-options-light",
@@ -7715,9 +7715,15 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 16
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-wide-dark",
@@ -7816,7 +7822,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-compact-options-dark",
@@ -7847,9 +7853,15 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 16
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 22
     },
     {
       "id": "family-radar-wide-light",

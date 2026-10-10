@@ -56,7 +56,7 @@ public sealed partial class ChartSeries {
     public ChartSeriesKind Kind { get; }
 
     /// <summary>
-    /// Gets the ordered data points in the series.
+    /// Gets the ordered numeric points. Typed waterfall and relationship series keep their source in their typed collections.
     /// </summary>
     public List<ChartPoint> Points { get; } = new();
 
@@ -598,27 +598,8 @@ public sealed partial class ChartSeries {
     }
 
     private void ValidatePointIndex(int pointIndex) {
-        var count = LogicalPointCount;
+        var count = AuthoredObservationCount;
         if (pointIndex < 0 || pointIndex >= count) throw new ArgumentOutOfRangeException(nameof(pointIndex), pointIndex, "Point index must refer to an existing point.");
     }
 
-    private int LogicalPointCount {
-        get {
-            if (IsRelationshipKind(Kind)) return Nodes.Count;
-            var tupleSize = Kind == ChartSeriesKind.Bubble ||
-                Kind == ChartSeriesKind.RangeBand ||
-                Kind == ChartSeriesKind.RangeArea ||
-                Kind == ChartSeriesKind.RangeBar ||
-                Kind == ChartSeriesKind.Dumbbell
-                    ? 2
-                    : Kind == ChartSeriesKind.ErrorBar
-                        ? 3
-                        : Kind == ChartSeriesKind.Candlestick || Kind == ChartSeriesKind.Ohlc
-                            ? 4
-                            : Kind == ChartSeriesKind.BoxPlot
-                                ? 5
-                                : 1;
-            return Points.Count / tupleSize;
-        }
-    }
 }

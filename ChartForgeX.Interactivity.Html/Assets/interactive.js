@@ -216,6 +216,14 @@
       : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
+  const waterfallTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if (!data.cfxWaterfallKind) return [];
+    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : 'Change';
+    return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
+      { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
+      .filter((row) => row.value !== undefined && row.value !== '');
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -224,8 +232,11 @@
     };
     push('Series', seriesLabel(node));
     push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
-    push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
-    push('End', data.cfxEnd);
+    if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
+    else {
+      push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+      push('End', data.cfxEnd);
+    }
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
@@ -235,7 +246,7 @@
     if (Number(data.cfxRemainderValue) > 0)
       push(rowName(node, 'remainder', 'Remainder'), data.cfxRemainderValue);
     push('Percent', percentText(data.cfxPercent));
-    push('Delta', data.cfxDelta);
+    if (!data.cfxWaterfallKind) push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
     metadataRows(node).forEach((row) => push(row.name, row.value));
     return rows;
@@ -770,6 +781,7 @@
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
+    if (data.cfxWaterfallKind) return waterfallTooltipRows(item);
     const reference = legendTarget(item);
     if (reference) {
       const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
