@@ -32,6 +32,8 @@ internal static partial class NativeVisualStoryRenderer {
                 background.Background = ChartColorMath.BlendPremultiplied(background.Background, tab.Tab.Theme.Background, amount);
                 background.HeaderBackground = ChartColorMath.BlendPremultiplied(background.HeaderBackground, tab.Tab.Theme.HeaderBackground, amount);
                 background.Border = ChartColorMath.BlendPremultiplied(background.Border, tab.Tab.Theme.Border, amount);
+                background.Text = ChartColorMath.BlendPremultiplied(background.Text, tab.Tab.Theme.Text, amount);
+                background.Accent = ChartColorMath.BlendPremultiplied(background.Accent, tab.Tab.Theme.Accent, amount);
             }
             weight += opacity;
         }
@@ -59,7 +61,7 @@ internal static partial class NativeVisualStoryRenderer {
             builder.Rect(new ChartRect(bounds.X, bounds.Y, bounds.Width, 35), theme.HeaderBackground, radius: 10);
             builder.Line(bounds.X, bounds.Y + 35, bounds.X + bounds.Width, bounds.Y + 35, theme.Border);
         } else if (story.Theme.WindowStyle != TerminalWindowStyle.None)
-            DrawStoryWindowHeaderBackground(builder, bounds, TerminalWindowChrome.HeaderHeight(story.Theme.WindowStyle), theme);
+            DrawStoryWindowFrame(builder, bounds, story.Theme.WindowStyle, theme);
         parent.Append(builder.Build());
     }
 
@@ -75,7 +77,7 @@ internal static partial class NativeVisualStoryRenderer {
         var title = active.Title + (tabs.Count > 1 ? " · " + (Array.FindIndex(tabs.ToArray(), tab => tab.Id == active.Id) + 1).ToString(CultureInfo.InvariantCulture) + "/" + tabs.Count.ToString(CultureInfo.InvariantCulture) : "");
         if (story.Theme.WindowStyle == TerminalWindowStyle.Minimal)
             FitText(builder, title, bounds.X + 14, bounds.Y + 23, bounds.Width - 28, 13, ChartColorMath.WithOpacity(theme.Text, opacity), 700);
-        else if (header > 0) DrawStoryWindowHeader(builder, bounds, story.Theme.WindowStyle, theme, title, opacity, paintHeader: false);
+        else if (header > 0) DrawStoryWindowTitle(builder, bounds, story.Theme.WindowStyle, theme, title, opacity);
         var columns = Math.Max(1, (int)(content.Width / builder.MeasureText("M", size).Width));
         var rows = new Queue<TerminalViewportLine>(); var removed = discarded;
         foreach (var line in lines) {

@@ -165,6 +165,43 @@ public sealed class StoryDesktopAppearanceTests {
         Assert.True(controlPixels >= 12, "Linux PNG chrome must include visible title-bar control strokes.");
     }
 
+    [Theory]
+    [InlineData(TerminalWindowStyle.MacOS)]
+    [InlineData(TerminalWindowStyle.WindowsTerminal)]
+    [InlineData(TerminalWindowStyle.Linux)]
+    public void DesktopControlsStaySolidWhileAuthoredTabTitlesCrossFade(TerminalWindowStyle style) {
+        var palette = TerminalTheme.GraphiteDark();
+        var terminal = TerminalStory.Create().WithInitialTab("first", "First", TerminalDialect.PowerShell, "~", palette)
+            .WithTiming(0, 200, 0).WithTabHold(0).WithFinalPrompt(false).Output("First output")
+            .OpenTab("second", "Second", TerminalDialect.Bash, "~", palette.Copy(), transitionSeconds: 1)
+            .Output("Second output").Pause(1);
+        var layout = TerminalStoryLayout.Build(terminal);
+        var transition = layout.Transitions.Single();
+        var theme = VisualStoryTheme.MacOS(); theme.WindowStyle = style;
+        var story = VisualStory.Create("Switch tabs").WithSize(600, 400).WithTheme(theme);
+        story.Scene("tabs", "Authored tabs", layout.DurationSeconds)
+            .Panel("terminal", new VisualStoryTerminalSurface(terminal, options: new VisualStoryTerminalOptions(18)));
+        story.Outcome("ready", "Ready", "terminal");
+        var prepared = story.Prepare();
+        var beforeTime = TimeSpan.FromSeconds(transition.StartSeconds - 0.01);
+        var midpointTime = TimeSpan.FromSeconds(transition.StartSeconds + transition.DurationSeconds / 2);
+        var before = XDocument.Parse(prepared.ToSvg(beforeTime));
+        var midpoint = XDocument.Parse(prepared.ToSvg(midpointTime));
+        var role = style == TerminalWindowStyle.WindowsTerminal ? "story-window-maximize" : "story-window-control";
+        var expectedCount = style == TerminalWindowStyle.MacOS ? 3 : 1;
+        Assert.Equal(expectedCount, Roles(midpoint, role).Length);
+        var control = Roles(before, role).First();
+        var x = style == TerminalWindowStyle.WindowsTerminal ? (double)control.Attribute("x")! + 5 : (double)control.Attribute("cx")!;
+        var y = style == TerminalWindowStyle.WindowsTerminal ? (double)control.Attribute("y")! : (double)control.Attribute("cy")!;
+        var beforeImage = PngReader.Decode(prepared.ToPng(beforeTime));
+        var midpointImage = PngReader.Decode(prepared.ToPng(midpointTime));
+        for (var row = (int)y - 2; row <= (int)y + 2; row++)
+            for (var column = (int)x - 2; column <= (int)x + 2; column++) {
+                var pixel = (row * beforeImage.Width + column) * 4;
+                Assert.Equal(beforeImage.Pixels.AsSpan(pixel, 4).ToArray(), midpointImage.Pixels.AsSpan(pixel, 4).ToArray());
+            }
+    }
+
     private static VisualStory ReplayStory(VisualStoryTheme theme, TerminalTheme? palette = null) {
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(1)).Output(TimeSpan.Zero, "Ready");
         var story = VisualStory.Create("Replay").WithSize(600, 400).WithTheme(theme);
