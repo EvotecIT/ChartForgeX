@@ -22,15 +22,18 @@
     const targets = interactiveTargets(root);
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
-      node.addEventListener('pointerenter', (event) => {
-        if (!pointerTargetPaint(node)) return;
-        setHover(root, node, true, true);
-        showTip(root, tip, node, event);
-      });
-      node.addEventListener('pointermove', (event) => moveTip(tip, event, node));
-      node.addEventListener('pointerleave', (event) => {
-        clearHover(root, true, true);
-        if (!retainPointerTip(root, event)) hideTip(root, tip, false);
+      const labels = pointLabelSurfaces(root, node);
+      [node, ...labels].forEach(surface => {
+        surface.addEventListener('pointerenter', (event) => {
+          if (!pointerTargetPaint(node)) return;
+          setHover(root, node, true, true);
+          showTip(root, tip, node, event);
+        });
+        surface.addEventListener('pointermove', (event) => moveTip(tip, event, node));
+        surface.addEventListener('pointerleave', (event) => {
+          clearHover(root, true, true);
+          if (!retainPointerTip(root, event)) hideTip(root, tip, false);
+        });
       });
       // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
@@ -46,7 +49,7 @@
           hideTip(root, tip, false);
         });
       }
-      focusNode.addEventListener('click', (event) => {
+      const activateTarget = (event) => {
         event.stopPropagation();
         if (!tooltipReadoutAvailable(node, event)) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
@@ -57,7 +60,9 @@
           toggleSelection(root, node);
           pinTip(root, tip, node, event);
         }
-      });
+      };
+      focusNode.addEventListener('click', activateTarget);
+      labels.forEach(label => label.addEventListener('click', activateTarget));
       if (hasFeature(root, 'KeyboardNavigation')) focusNode.addEventListener('keydown', (event) => {
         if (!hasFeature(root, 'KeyboardNavigation') || event.defaultPrevented || event.target !== focusNode) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {

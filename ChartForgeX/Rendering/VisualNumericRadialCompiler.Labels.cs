@@ -29,7 +29,8 @@ internal static partial class VisualNumericRadialCompiler {
             ChartDataLabelPlacement.Right => new LabelCandidate(gap, 0, 0, .5),
             _ => inside ? new LabelCandidate(0, 0, .5, .5) : new LabelCandidate(mark.Offset.X * gap, mark.Offset.Y * gap, .5, .5)
         };
-        var request = AddLabel(builder, labels, text, inside && mark.Painted ? mark.Center : mark.End, style, id + "-label", "radial-data-label", plot, candidate, 40);
+        var request = AddLabel(builder, labels, text, inside && mark.Painted ? mark.Center : mark.End, style, id + "-label", "radial-data-label", plot, candidate, 40,
+            VisualMarkLabel.Metadata(text, id));
         // The shared placement engine permits containment in the associated curved mark,
         // rejects partial crossings, and retains the original description if no ink fits.
         if (inside) { request.Bounds = bounds; request.AssociatedMarkId = id; }
