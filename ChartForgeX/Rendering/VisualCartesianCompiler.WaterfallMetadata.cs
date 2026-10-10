@@ -7,15 +7,16 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
-    private static string WaterfallKind(ChartWaterfallStep step) => step.Kind.ToString().ToLowerInvariant();
+    private static string WaterfallKind(ChartWaterfallStep step) => step.Kind == ChartWaterfallItemKind.OpeningBalance ? "opening-balance" : step.Kind.ToString().ToLowerInvariant();
     private static string WaterfallRole(ChartWaterfallStep step) => step.IsCheckpoint ? "waterfall-" + WaterfallKind(step) : "point";
     private static string WaterfallId(int seriesIndex, ChartWaterfallStep step) => step.IsAppendedTotal ? SeriesId(seriesIndex) + "-total" : PointId(seriesIndex, step.ItemIndex);
     private static string WaterfallValueName(Chart chart, ChartWaterfallStep step) => step.Kind == ChartWaterfallItemKind.Total ? chart.Options.Labels.Total
-        : step.Kind == ChartWaterfallItemKind.Subtotal ? chart.Options.Labels.Subtotal : chart.Options.Labels.Change;
+        : step.Kind == ChartWaterfallItemKind.Subtotal ? chart.Options.Labels.Subtotal
+        : step.Kind == ChartWaterfallItemKind.OpeningBalance ? chart.Options.Labels.OpeningBalance : chart.Options.Labels.Change;
 
     private static ChartColor WaterfallColor(ChartSeries series, int seriesIndex, ChartWaterfallStep step, VisualThemeColors colors) =>
         HasSeriesPaint(series, step.ItemIndex) ? PointColor(series, seriesIndex, step.ItemIndex, colors)
-        : step.IsCheckpoint ? colors.Status.Medium.Fill : step.Value >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
+        : step.Kind != ChartWaterfallItemKind.Delta ? colors.Status.Medium.Fill : step.Value >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
 
     private static Dictionary<string, string> WaterfallMetadata(Chart chart, int seriesIndex, ChartWaterfallStep step, string category) {
         var metadata = new Dictionary<string, string> {
@@ -35,7 +36,7 @@ internal static partial class VisualCartesianCompiler {
             metadata["data-cfx-derived-identity"] = WaterfallKind(step) + ":" + Number(step.X) + ":sources:" + sources;
         } else {
             metadata["data-cfx-source-point"] = Number(step.SourceIndex);
-            metadata["data-cfx-delta"] = Number(step.Value);
+            if (step.Kind == ChartWaterfallItemKind.Delta) metadata["data-cfx-delta"] = Number(step.Value);
         }
         return metadata;
     }

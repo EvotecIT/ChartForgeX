@@ -38,7 +38,7 @@ public static partial class V2GalleryModels {
             var horizontal = variant is "horizontal" or "compact-horizontal";
             var chart = Chart.Create().WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance")
                 .AddWaterfall("Movement", new[] {
-                    ChartWaterfallItem.Delta(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
                     ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
                     ChartWaterfallItem.Total(7)
                 });

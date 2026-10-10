@@ -15,8 +15,12 @@ internal static class ChartWaterfallCategoryLabels {
         var captions = new Dictionary<double, string>();
         foreach (var step in steps) {
             captions[step.X] = cache.Format(axis, step.X, value => ChartAxisValueFormatter.FindExplicitLabel(labels, value)
-                ?? (step.IsCheckpoint && axis.LabelFormatter == null ? step.Kind == ChartWaterfallItemKind.Total
-                    ? chart.Options.Labels.Total : chart.Options.Labels.Subtotal : formatter(value)));
+                ?? (axis.LabelFormatter == null ? step.Kind switch {
+                    ChartWaterfallItemKind.OpeningBalance => chart.Options.Labels.OpeningBalance,
+                    ChartWaterfallItemKind.Subtotal => chart.Options.Labels.Subtotal,
+                    ChartWaterfallItemKind.Total => chart.Options.Labels.Total,
+                    _ => formatter(value)
+                } : formatter(value)));
         }
         return captions;
     }

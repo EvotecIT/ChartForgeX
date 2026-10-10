@@ -17,8 +17,8 @@ public sealed class WaterfallCheckpointTests {
         items[0] = ChartWaterfallItem.Delta(40, 999);
         Assert.Empty(series.Points);
         Assert.Equal(4, series.SourcePointCount);
-        Assert.Equal(100, series.WaterfallItems[0].DeltaValue);
-        Assert.Null(series.WaterfallItems[1].DeltaValue);
+        Assert.Equal(100, series.WaterfallItems[0].Value);
+        Assert.Null(series.WaterfallItems[1].Value);
         Assert.Equal(ChartWaterfallItemKind.Subtotal, series.WaterfallItems[1].Kind);
         Assert.Throws<NotSupportedException>(() => ((IList<ChartWaterfallItem>)series.WaterfallItems)[0] = items[0]);
         series.Points.Add(new ChartPoint(90, 10));

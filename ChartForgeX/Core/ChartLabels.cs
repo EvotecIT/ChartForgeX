@@ -20,6 +20,7 @@ public sealed class ChartLabels {
     private string _allValues = "All values";
     private string _value = "value";
     private string _change = "Change";
+    private string _openingBalance = "Opening balance";
     private string _subtotal = "Subtotal";
     private string _total = "Total";
     private string _untitledChart = "ChartForgeX chart";
@@ -75,6 +76,9 @@ public sealed class ChartLabels {
 
     /// <summary>Gets or sets the waterfall tooltip row name for a supplied change. Default <c>Change</c>.</summary>
     public string Change { get => _change; set => _change = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the default waterfall opening-balance axis caption and tooltip row name. Default <c>Opening balance</c>.</summary>
+    public string OpeningBalance { get => _openingBalance; set => _openingBalance = Required(value, nameof(value)); }
 
     /// <summary>Gets or sets the default waterfall subtotal axis caption and tooltip row name. Default <c>Subtotal</c>.</summary>
     public string Subtotal { get => _subtotal; set => _subtotal = Required(value, nameof(value)); }
