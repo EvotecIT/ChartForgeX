@@ -8,6 +8,68 @@ namespace ChartForgeX.Tests;
 
 public sealed class GaugeScalePrecisionBrowserTests {
     [Theory]
+    [InlineData(false, 396, 294)]
+    [InlineData(true, 396, 294)]
+    [InlineData(false, 800, 440)]
+    [InlineData(true, 800, 440)]
+    public async Task BandedNeedleKeepsResolvedSummaryVisibleAboveItsScale(bool dark, int width, int height) {
+        if (!Enabled) return;
+        var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        Assert.True(File.Exists(path), "The existing Carlito fixture must be available.");
+        var chart = Chart.Create().WithSize(width, height).WithPngFont(path)
+            .WithTheme((dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithFontFamily("CFX Gauge Carlito"))
+            .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands").AddGauge("Readiness", 74)
+            .WithGauge(options => {
+                options.Form = ChartGaugeForm.Needle; options.Target = 90;
+                options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Danger));
+                options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning));
+                options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Quiet));
+            });
+        var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
+        var html = "<!doctype html><html><head><style>@font-face{font-family:'CFX Gauge Carlito';src:url(data:font/ttf;base64,"
+            + Convert.ToBase64String(File.ReadAllBytes(path)) + ") format('truetype');font-weight:400}</style></head>"
+            + "<body style='margin:24px;background:" + (dark ? "#111827" : "#fff") + "'>" + prepared.ToSvg()
+            + "<img style='display:block' width='" + width + "' height='" + height + "' src='data:image/png;base64,"
+            + Convert.ToBase64String(prepared.ToPng()) + "'></body></html>";
+        await using var session = await OpenAsync(html, width + 48, height * 2 + 48);
+        await session.Page.EvaluateAsync("async () => { await document.fonts.ready; await document.querySelector('img').decode(); }");
+        var defects = await session.Page.EvaluateAsync<string[]>("""
+            () => {
+                const svg = document.querySelector('svg'), defects = [];
+                const needle = svg.querySelector('[data-cfx-role="gauge-needle"]');
+                const pivotBottom = needle.getBBox().y + needle.getBBox().height + Number(needle.getAttribute('stroke-width')) / 2;
+                const scale = [...svg.querySelectorAll('[data-cfx-role="gauge-min-label"],[data-cfx-role="gauge-max-label"]')];
+                const overlaps = (left, right) => left.x < right.x + right.width && left.x + left.width > right.x
+                    && left.y < right.y + right.height && left.y + left.height > right.y;
+                let previous;
+                for (const [role, expected] of [['gauge-label', '74'], ['gauge-title', 'Readiness']]) {
+                    const row = svg.querySelector('[data-cfx-role="' + role + '"]');
+                    if (!row || row.textContent !== expected) { defects.push(role + ': summary omitted or shortened'); continue; }
+                    const box = row.getBBox();
+                    if (box.y < pivotBottom) defects.push(role + ': overlaps the needle');
+                    if (previous && overlaps(previous, box)) defects.push(role + ': overlaps the measurement');
+                    if (scale.some(label => overlaps(label.getBBox(), box))) defects.push(role + ': overlaps the scale');
+                    for (const text of row.querySelectorAll('text')) {
+                        const style = getComputedStyle(text);
+                        if (parseFloat(style.fontSize) < 12) defects.push(role + ': unreadable font size');
+                        if (!style.fontFamily.includes('CFX Gauge Carlito')) defects.push(role + ': lost the resolved face');
+                    }
+                    previous = box;
+                }
+                if (!document.fonts.check('12px "CFX Gauge Carlito"')) defects.push('Fixture font was not loaded');
+                return defects;
+            }
+            """);
+        Assert.Empty(defects);
+        var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(output)) {
+            Directory.CreateDirectory(output);
+            await session.Page.ScreenshotAsync(new() { Path = Path.Combine(output, "banded-needle-carlito-" + width + "-" + (dark ? "dark" : "light") + ".png"), FullPage = true });
+        }
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
     [InlineData(false, 0d, 360, 360)]
     [InlineData(false, .1, 360, 360)]
     [InlineData(false, .9, 360, 360)]
