@@ -62,6 +62,7 @@ internal static class VisualColorScaleLegendScene {
         builder.AddRegion(new VisualSemanticRegion(prefix, prefix, bounds, !hasDomain ? labels.NoData : captions != null ? string.Join("; ", captions)
             : string.Join(" – ", formatValues(new[] { scale.EffectiveMinimum(min), scale.EffectiveMaximum(max) }))));
         using (builder.PushGroup(prefix, prefix, metadata)) {
+            PositionedStops(builder, scale, bounds, prefix, formatValues);
             if (missing && missingBounds.HasValue) using (builder.PushClip(missingBounds.Value)) Missing(missingBounds.Value.Top, missingBounds);
             using (builder.PushClip(bounds)) {
                 if (!hasDomain) {
@@ -130,17 +131,40 @@ internal static class VisualColorScaleLegendScene {
                 builder.Rect(box, blend.Color, radius: 1, role: prefix + "-swatch", paint: VisualChartPaint.Fill(blend.Paint));
         }
         void Caption(string text, ChartRect box, string id, TextAlignment alignment) {
-            var captionStyle = style;
-            if ((captions != null || id == "midpoint") && builder.MeasureText(text, style).Width > box.Width) {
-                // A bounded key or endpoint caption can need less width than its preferred size allows.
-                // Keep ordinary numeric intervals complete without shrinking below readable text.
-                captionStyle = style.Clone();
-                var minimum = Math.Min(8, style.EffectiveFontSize);
-                captionStyle.FontSize = style.EffectiveFontSize; captionStyle.Baseline = TextBaseline.Normal;
-                while (captionStyle.FontSize > minimum && builder.MeasureText(text, captionStyle).Width > box.Width)
-                    captionStyle.FontSize = Math.Max(minimum, captionStyle.FontSize - .25);
-            }
+            var captionStyle = captions != null || id == "midpoint" ? FitCaptionStyle(builder, text, style, box.Width) : style;
             VisualStateSceneTools.Text(builder, text, box, captionStyle, prefix + "-label", prefix + "-label-" + id, alignment);
+        }
+    }
+
+    /// <summary>Fits bounded key captions using the same measured, readable size policy for every consumer.</summary>
+    internal static TextStyle FitCaptionStyle(VisualSceneBuilder builder, string text, TextStyle style, double width) {
+        if (builder.MeasureText(text, style).Width <= width) return style;
+        var fitted = style.Clone(); var minimum = Math.Min(8, style.EffectiveFontSize);
+        fitted.FontSize = style.EffectiveFontSize; fitted.Baseline = TextBaseline.Normal;
+        while (fitted.FontSize > minimum && builder.MeasureText(text, fitted).Width > width)
+            fitted.FontSize = Math.Max(minimum, fitted.FontSize - .25);
+        return fitted;
+    }
+
+    /// <summary>Retains every authored anchor as a source fact, independently of the bounded painted samples.</summary>
+    internal static void PositionedStops(VisualSceneBuilder builder, ChartColorScale scale, ChartRect bounds, string prefix,
+        Func<IReadOnlyList<double>, string[]> formatValues) {
+        if (!scale.HasPositionedStops) return;
+        var stops = scale.Stops;
+        var values = formatValues(stops.Select(stop => stop.Value).ToArray());
+        var captions = stops.Select((stop, index) => values[index] + " · " + stop.Color.ToHexRgba()).ToArray();
+        var description = string.Join("; ", captions);
+        builder.AddRegion(new VisualSemanticRegion(prefix + "-stops", prefix + "-stops", bounds, description));
+        using (builder.PushGroup(prefix + "-stops", prefix + "-stops", new Dictionary<string, string> {
+            ["data-cfx-positioning"] = "absolute", ["data-cfx-stop-count"] = VisualStateSceneTools.Number(stops.Count),
+            ["aria-label"] = description
+        })) for (var index = 0; index < stops.Count; index++) {
+            var metadata = new Dictionary<string, string> {
+                ["data-cfx-stop"] = VisualStateSceneTools.Number(index), ["data-cfx-value"] = VisualStateSceneTools.Number(stops[index].Value),
+                ["data-cfx-color"] = stops[index].Color.ToHexRgba(), ["data-cfx-label"] = captions[index], ["aria-label"] = captions[index]
+            };
+            if (scale.Mode == ChartColorScaleMode.Diverging && scale.MidpointIndex == index) metadata["data-cfx-midpoint"] = "true";
+            using (builder.PushGroup(prefix + "-stop-" + VisualStateSceneTools.Number(index), prefix + "-stop-source", metadata)) { }
         }
     }
 

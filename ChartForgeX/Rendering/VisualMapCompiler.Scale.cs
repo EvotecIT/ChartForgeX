@@ -42,26 +42,33 @@ internal static partial class VisualMapCompiler {
             .Max(text => builder.MeasureText(text, style).Height);
         var missing = HasMissingMapValues(chart);
         var steps = ChartHeatmapSurface.MapScaleSteps(chart, min, max);
+        var scale = chart.Options.MapColorScale; var positioned = scale?.HasPositionedStops == true;
         using (builder.PushGroup("map-scale", "map-scale", new Dictionary<string, string> {
             ["data-cfx-scale-mode"] = chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Diverging ? "diverging" : "sequential",
             ["data-cfx-min-value"] = N(ChartHeatmapSurface.MapScaleValue(chart, min, max, 0)),
             ["data-cfx-max-value"] = N(ChartHeatmapSurface.MapScaleValue(chart, min, max, 1)),
             ["data-cfx-midpoint-value"] = N(ChartHeatmapSurface.MapScaleMidpoint(chart, min, max))
         })) using (builder.PushClip(area)) {
+            if (scale != null) VisualColorScaleLegendScene.PositionedStops(builder, scale, area, "map-scale",
+                values => ChartNumericFormatter.FormatScaleValues(chart.Options, values));
             if (layout.Right) {
                 VisualRadialPrimitives.Text(builder, chart.Series[0].Name, new ChartRect(area.Left, area.Top, area.Width, Math.Min(row, area.Height)), style, "map-scale-title", "map-scale-title");
                 var top = Math.Min(area.Bottom, area.Top + row + gap); var height = Math.Max(0, area.Height - row * (missing ? 2 : 1) - gap * 2);
                 var swatchWidth = Math.Min(row, area.Width * .2);
-                for (var index = 0; index < 32; index++) {
-                    var value = ChartHeatmapSurface.MapScaleValue(chart, min, max, 1 - index / 31d);
+                var count = positioned ? steps.Length : 32;
+                for (var index = 0; index < count; index++) {
+                    var value = positioned ? steps[steps.Length - 1 - index] : ChartHeatmapSurface.MapScaleValue(chart, min, max, 1 - index / 31d);
                     var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, High(chart.Series[0], colors), value, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
-                    builder.Rect(new ChartRect(area.Left, top + height * index / 32, swatchWidth, height / 32),
+                    using (positioned ? builder.PushGroup(null, "map-scale-step-source", new Dictionary<string, string> { ["data-cfx-value"] = N(value) }) : null)
+                    builder.Rect(new ChartRect(area.Left, top + height * index / count, swatchWidth, height / count),
                         blend.Color, role: "map-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
                 }
                 var textWidth = Math.Max(0, area.Width - swatchWidth - gap);
                 var midpoint = ChartHeatmapSurface.MapRatio(chart, ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), min, max);
                 var labelHeight = Math.Min(row, height / 3);
-                var centers = new[] { top + labelHeight / 2, VisualRadialPrimitives.Clamp(top + height * (1 - midpoint), top + labelHeight * 1.5, top + height - labelHeight * 1.5), top + height - labelHeight / 2 };
+                var midpointY = positioned ? top + (count - .5 - ChartColorScaleLegend.MidpointStep(scale!, min, max, count)) * height / count
+                    : top + height * (1 - midpoint);
+                var centers = new[] { top + labelHeight / 2, VisualRadialPrimitives.Clamp(midpointY, top + labelHeight * 1.5, top + height - labelHeight * 1.5), top + height - labelHeight / 2 };
                 for (var index = 0; index < layout.Texts.Length; index++) VisualRadialPrimitives.Text(builder, layout.Texts[index],
                     Intersect(new ChartRect(area.Left + swatchWidth + gap, centers[index] - labelHeight / 2, textWidth, labelHeight), area), style, "map-scale-label", "map-scale-label-" + index);
                 if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, area.Bottom - row, area.Width, row), area), style, row);

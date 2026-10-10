@@ -895,6 +895,31 @@ var high = scale.ColorFor(100);
 
 Continuous scales infer their finite domain from source values or use `WithValueRange(minimum, maximum)` for a fixed domain. `ColorFor(value)` requires that fixed domain; `ColorFor(value, sourceMinimum, sourceMaximum)` uses the supplied source bounds when no domain is fixed. An inferred constant domain keeps its one observed value and uses the low color. `WithNoDataColor` sets the missing-data paint; otherwise each renderer uses its theme fallback. [Numeric color-scale migration](docs/v2/migration.md#numeric-color-scales) describes the type and converter renames.
 
+Use `ChartColorStop` when colors belong at specific values rather than equal intervals. Stops use finite, strictly ascending absolute values; their first and last values fix the domain. Values between two stops interpolate between those colors, exact stops retain their colors, and values outside the endpoints clamp. The same scale works with every numeric-color family:
+
+```csharp
+var cold = ChartColor.FromHex("#2166AC");
+var cool = ChartColor.FromHex("#67A9CF");
+var neutral = ChartColor.FromHex("#D1D5DB");
+var warm = ChartColor.FromHex("#D9A441");
+var hot = ChartColor.FromHex("#B2182B");
+var sequential = ChartColorScale.Sequential(new[] {
+    new ChartColorStop(-20, cold), new ChartColorStop(0, neutral),
+    new ChartColorStop(5, warm), new ChartColorStop(40, hot)
+});
+var diverging = ChartColorScale.Diverging(
+    new[] { new ChartColorStop(-20, cold), new ChartColorStop(-3, cool) },
+    new ChartColorStop(0, neutral),
+    new[] { new ChartColorStop(5, warm), new ChartColorStop(40, hot) }
+).WithLabels("Cold", "Freezing", "Warm");
+chart.WithMapColorScale(diverging);
+var colorAtTwo = sequential.ColorFor(2);
+```
+
+`Stops` exposes the detached authored anchors; existing color-only ramps and discrete scales have an empty stop list. `WithValueRange` moves only the endpoint anchors and rejects a range that crosses an interior stop. On a positioned diverging scale, `WithMidpoint` moves the pivot between its neighboring stops. Numeric keys sample the domain in at most 11 swatches and retain every authored value/color pair in their descriptive metadata; they do not promise a separate visible caption for each stop.
+
+The new sequential overload makes the invalid calls `ChartColorScale.Sequential(null)` and `Sequential(default)` ambiguous at compile time. Null-validation callers can select an overload with `(IEnumerable<ChartColor>)null!` or `(IEnumerable<ChartColorStop>)null!`; valid color-only calls keep their existing behavior.
+
 Numeric heatmaps share one color domain across all rows. An explicit scale maps every observed value, including zero, and overrides the legacy `HeatmapScale` and `HeatmapRelativeScale` coloring without changing those settings. Cell or day colors still take precedence. The measured key uses the same stops or named intervals, and `WithHeatmapScaleLegend(false)` hides it. Values remain in their original units in labels and tooltips; explicit scales do not attach legacy intensity levels or status meanings.
 
 ```csharp
