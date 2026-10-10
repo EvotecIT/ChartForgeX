@@ -2100,7 +2100,13 @@
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
     const styles = new Map();
-    const hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest(targetSelector) : null);
+    let hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest(targetSelector) : null);
+    // Native captions can repeat their owner's facts without becoming separate interactive targets.
+    // Stop at the nearest independent identity before checking paint; unavailable marks never fall through.
+    while (hit && root.contains(hit) && !isInteractiveTarget(hit)) {
+      if (hit.dataset.cfxRole === 'legend-entry-omitted') { hit = null; break; }
+      hit = hit.parentElement && hit.parentElement.closest(targetSelector);
+    }
     let native = null;
     if (hit && root.contains(hit) && pointerTargetPaint(hit, styles)) {
       const box = hit.getBoundingClientRect();
