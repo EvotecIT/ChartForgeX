@@ -109,6 +109,72 @@ public sealed class HorizontalWaterfallTests {
         AssertCaptions(fallback, new[] { "Income", "Balance" });
     }
 
+    [Theory]
+    [InlineData(120d, false)]
+    [InlineData(-120d, true)]
+    public void HorizontalOpeningDefaultsShareLocalizedCaptionsAndRetainRawSourceAndContributorFacts(double opening, bool reverse) {
+        var chart = Opening(opening).WithDataLabels().WithBarStyle(ChartBarStyle.SegmentedCapsule);
+        chart.ConfigureLabels(labels => { labels.OpeningBalance = "Initial balance"; labels.Subtotal = "Stage sum"; labels.Total = "Balance"; });
+        chart.Options.XAxis.WithBounds(-160, 160).WithReversal(reverse);
+        chart.Options.YAxis.WithReversal();
+        var expected = new[] { "Initial balance", "2", "Stage sum", "4", "Stage sum", "Balance" };
+        var prepared = AssertCaptions(chart, expected);
+        Assert.Equal(expected, prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "legend-label")
+            .Select(text => string.Concat(text.Text.Lines.Select(line => line.Text))));
+        var marks = Marks(prepared.Scene);
+        var first = marks[0].Metadata;
+        Assert.Equal(3, chart.Series[0].SourcePointCount);
+        Assert.Equal("opening-balance", first["data-cfx-waterfall-kind"]);
+        Assert.Equal("horizontal", first["data-cfx-orientation"]);
+        Assert.Equal("1", first["data-cfx-x"]); Assert.Equal("0", first["data-cfx-source-point"]);
+        Assert.Equal("0", first["data-cfx-start"]);
+        Assert.Equal(opening.ToString(CultureInfo.InvariantCulture), first["data-cfx-value"]);
+        Assert.Equal(first["data-cfx-value"], first["data-cfx-end"]);
+        Assert.False(first.ContainsKey("data-cfx-delta")); Assert.False(first.ContainsKey("data-cfx-derived"));
+        Assert.False(first.ContainsKey("data-cfx-derived-identity")); Assert.False(first.ContainsKey("data-cfx-source-points"));
+        Assert.False(ChartWaterfallSteps.Create(chart.Series[0])[0].IsCheckpoint);
+        Assert.Equal("1", marks[1].Metadata["data-cfx-source-point"]);
+        Assert.Equal("2", marks[3].Metadata["data-cfx-source-point"]);
+        Assert.Equal("1", marks[2].Metadata["data-cfx-source-points"]);
+        Assert.Equal("2", marks[4].Metadata["data-cfx-source-points"]);
+        Assert.Equal("0,1,2", marks[5].Metadata["data-cfx-source-points"]);
+        Assert.Equal((opening > 0 ? -30 : 30).ToString(CultureInfo.InvariantCulture), marks[2].Metadata["data-cfx-value"]);
+        Assert.Equal((opening > 0 ? -40 : 40).ToString(CultureInfo.InvariantCulture), marks[5].Metadata["data-cfx-value"]);
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture);
+            var name = "horizontal-waterfall-opening-source-" + (opening > 0 ? "positive" : "negative");
+            File.WriteAllText(Path.Combine(capture, name + ".native.svg"), prepared.ToSvg());
+            File.WriteAllBytes(Path.Combine(capture, name + ".native.png"), prepared.ToPng());
+        }
+    }
+
+    [Fact]
+    public void HorizontalOpeningCategoryLabelsPrecedeCallbacksAndPreparationFormatsEachUnmappedCategoryOnce() {
+        var chart = Opening(120).WithXLabels("Previous balance");
+        chart.Options.YAxis.Labels.Add(new ChartAxisLabel(1, "Carried balance"));
+        var calls = new Dictionary<double, int>();
+        chart.Options.YAxis.WithLabelFormatter(value => {
+            calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
+            return "Stage " + value.ToString("0", CultureInfo.InvariantCulture);
+        });
+        _ = VisualExportRequest.ForChart(chart);
+        Assert.Empty(calls);
+        AssertCaptions(chart, new[] { "Carried balance", "Stage 2", "Stage 3", "Stage 4", "Stage 5", "Stage 6" });
+        Assert.Equal(5, calls.Count); Assert.False(calls.ContainsKey(1)); Assert.All(calls.Values, count => Assert.Equal(1, count));
+        calls.Clear(); chart.Options.YAxis.Labels.Clear();
+        AssertCaptions(chart, new[] { "Previous balance", "Stage 2", "Stage 3", "Stage 4", "Stage 5", "Stage 6" });
+        Assert.Equal(5, calls.Count); Assert.False(calls.ContainsKey(1)); Assert.All(calls.Values, count => Assert.Equal(1, count));
+        calls.Clear(); chart.Options.XAxis.Labels.Clear();
+        var prepared = AssertCaptions(chart, new[] { "Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5", "Stage 6" });
+        Assert.Equal(6, calls.Count); Assert.All(calls.Values, count => Assert.Equal(1, count));
+        var svg = prepared.ToSvg(); var png = prepared.ToPng();
+        chart.Options.YAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed category callback"));
+        chart.ConfigureLabels(labels => labels.OpeningBalance = "Changed"); chart.Series.Clear();
+        Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
+        Assert.All(calls.Values, count => Assert.Equal(1, count));
+    }
+
     [Fact]
     public void LegendVisibilityCountsAuthoredItemsWithoutFormattingCategoriesOrCountingLegacyTotals() {
         var cases = new[] {
@@ -230,7 +296,7 @@ public sealed class HorizontalWaterfallTests {
         Assert.Equal(3, scene.Nodes.Count(node => node.Role == "waterfall-bar-cap"));
     }
 
-    private static void AssertCaptions(Chart chart, string[] expected) {
+    private static PreparedVisual AssertCaptions(Chart chart, string[] expected) {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var groups = Marks(prepared.Scene);
         Assert.Equal(expected, groups.Select(group => group.Metadata["data-cfx-category-label"]));
@@ -238,12 +304,19 @@ public sealed class HorizontalWaterfallTests {
         foreach (var caption in expected) Assert.Contains(categoryRegions, region => region.Label!.StartsWith(caption + " (", StringComparison.Ordinal));
         var legends = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "legend-entry" && group.Metadata.ContainsKey("data-cfx-waterfall-kind")).ToArray();
         Assert.Equal(expected, legends.Select(group => group.Metadata["data-cfx-category-label"]));
+        return prepared;
     }
 
     private static VisualSceneGroup[] Marks(VisualScene scene) => scene.Nodes.OfType<VisualSceneGroup>().Where(group =>
         group.Role is "point" or "waterfall-subtotal" or "waterfall-total").ToArray();
 
     private static Chart Horizontal() => Sample().ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal);
+
+    private static Chart Opening(double value) => Chart.Create().WithSize(900, 500).WithPointLegend()
+        .ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal).AddWaterfall("Movement", new[] {
+            ChartWaterfallItem.OpeningBalance(1, value), ChartWaterfallItem.Delta(2, value > 0 ? -30 : 30), ChartWaterfallItem.Subtotal(3),
+            ChartWaterfallItem.Delta(4, value > 0 ? -130 : 130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Total(6)
+        });
 
     private static Chart Sample() => Chart.Create().WithSize(900, 500).AddWaterfall("Movement", new[] {
         ChartWaterfallItem.Delta(4, 100), ChartWaterfallItem.Subtotal(1), ChartWaterfallItem.Delta(3, -140),

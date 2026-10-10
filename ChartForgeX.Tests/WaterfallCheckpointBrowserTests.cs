@@ -23,9 +23,16 @@ public sealed class WaterfallCheckpointBrowserTests {
     [InlineData(360, true, false, -120d)]
     [InlineData(900, false, false, -120d)]
     [InlineData(900, true, false, 120d)]
+    [InlineData(360, false, true, 120d)]
+    [InlineData(360, true, true, -120d)]
+    [InlineData(900, false, true, -120d)]
+    [InlineData(900, true, true, 120d)]
     public async Task PointerCaptionsKeyboardAndPointLegendsRetainOpeningCheckpointAndRawDeltaFacts(int width, bool dark, bool horizontal, double? opening) {
         if (!Enabled) return;
         var sign = opening < 0 ? -1 : 1;
+        var openingCategory = horizontal ? "Initial balance" : "Open";
+        var totalCategory = horizontal ? opening.HasValue ? "Total" : "Step 7" : "Balance";
+        var deltaCategory = horizontal ? opening.HasValue ? "8" : "Step 8" : "Late";
         var chart = Create(width, dark, horizontal, opening);
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         var name = (opening.HasValue ? "waterfall-opening-" : "waterfall-checkpoints-")
@@ -53,7 +60,15 @@ public sealed class WaterfallCheckpointBrowserTests {
             AssertRows(await TooltipRowsAsync(page), "Initial balance", Signed(120, sign), "Start", "0", "End", Signed(120, sign));
             Assert.Equal("opening-balance", await openingMark.GetAttributeAsync("data-cfx-waterfall-kind"));
             Assert.Equal("0", await openingMark.GetAttributeAsync("data-cfx-source-point"));
+            Assert.Equal(Signed(120, sign), await openingMark.GetAttributeAsync("data-cfx-value"));
+            Assert.Equal("0", await openingMark.GetAttributeAsync("data-cfx-start"));
+            Assert.Equal(Signed(120, sign), await openingMark.GetAttributeAsync("data-cfx-end"));
+            Assert.Equal(openingCategory, await openingMark.GetAttributeAsync("data-cfx-category-label"));
+            Assert.Equal(openingCategory, await openingMark.GetAttributeAsync("data-cfx-x-label"));
+            Assert.Equal(new[] { "Category", openingCategory }, (await TooltipRowsAsync(page)).Skip(2).Take(2));
+            if (horizontal) Assert.Contains("Initial balance", await page.Locator("[data-cfx-role='axis-y-label']").AllTextContentsAsync());
             Assert.Null(await openingMark.GetAttributeAsync("data-cfx-delta")); Assert.Null(await openingMark.GetAttributeAsync("data-cfx-derived"));
+            Assert.Null(await openingMark.GetAttributeAsync("data-cfx-derived-identity")); Assert.Null(await openingMark.GetAttributeAsync("data-cfx-source-points"));
             Assert.Equal("movement:0", await openingMark.GetAttributeAsync("data-cfx-target-id"));
             await page.Mouse.ClickAsync(openingX, openingY);
             Assert.Equal("true", await openingMark.GetAttributeAsync("aria-selected"));
@@ -102,10 +117,10 @@ public sealed class WaterfallCheckpointBrowserTests {
         var captionBox = await caption.BoundingBoxAsync() ?? throw new InvalidOperationException("The total caption was not painted.");
         await page.Mouse.MoveAsync((float)(captionBox.X + captionBox.Width * .4), (float)(captionBox.Y + captionBox.Height * .5), new MouseMoveOptions { Steps = 4 });
         AssertRows(await TooltipRowsAsync(page), "Total", Signed(30, sign), "Start", "0", "End", Signed(30, sign));
-        Assert.Equal(new[] { "Category", horizontal ? "Step 7" : "Balance" }, (await TooltipRowsAsync(page)).Skip(2).Take(2));
+        Assert.Equal(new[] { "Category", totalCategory }, (await TooltipRowsAsync(page)).Skip(2).Take(2));
         await page.Mouse.ClickAsync((float)(captionBox.X + captionBox.Width * .4), (float)(captionBox.Y + captionBox.Height * .5));
         var total = page.Locator(Mark(6));
-        Assert.Equal(horizontal ? "Step 7" : "Balance", await total.GetAttributeAsync("data-cfx-x-label"));
+        Assert.Equal(totalCategory, await total.GetAttributeAsync("data-cfx-x-label"));
         Assert.Equal("true", await total.GetAttributeAsync("aria-selected"));
         Assert.Equal(3, await page.EvaluateAsync<int>("() => window.waterfallSelections.length"));
         Assert.Equal(await total.GetAttributeAsync("data-cfx-target-id"), await page.EvaluateAsync<string>("() => window.waterfallSelections.at(-1).targetId"));
@@ -121,13 +136,13 @@ public sealed class WaterfallCheckpointBrowserTests {
         await MoveAwayAsync(page);
         var delta = page.Locator(Mark(7));
         var deltaLegend = page.Locator("[data-cfx-role='legend-item'][data-cfx-point='7']");
-        Assert.Equal(horizontal ? "Step 8" : "Late", await delta.GetAttributeAsync("data-cfx-x-label"));
+        Assert.Equal(deltaCategory, await delta.GetAttributeAsync("data-cfx-x-label"));
         Assert.Equal(await delta.GetAttributeAsync("data-cfx-x-label"), await deltaLegend.GetAttributeAsync("data-cfx-x-label"));
         Assert.Equal("4", await delta.GetAttributeAsync("data-cfx-source-point"));
         Assert.Equal(await delta.GetAttributeAsync("data-cfx-target-id"), await deltaLegend.GetAttributeAsync("data-cfx-target-id"));
         await deltaLegend.FocusAsync();
         AssertRows(await TooltipRowsAsync(page), "Change", Signed(-20, sign), "Start", Signed(30, sign), "End", Signed(10, sign));
-        Assert.Equal(horizontal ? "Step 8" : "Late", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal(deltaCategory, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         var subtotalLegend = page.Locator("[data-cfx-role='legend-item'][data-cfx-point='4']");
         Assert.Equal(subtotalId, await subtotalLegend.GetAttributeAsync("data-cfx-target-id"));
         await subtotalLegend.FocusAsync();
@@ -136,7 +151,10 @@ public sealed class WaterfallCheckpointBrowserTests {
         if (opening.HasValue) {
             var openingLegend = page.Locator("[data-cfx-role='legend-item'][data-cfx-point='0']");
             Assert.Equal("movement:0", await openingLegend.GetAttributeAsync("data-cfx-target-id"));
+            Assert.Equal(openingCategory, await openingLegend.GetAttributeAsync("data-cfx-category-label"));
+            Assert.Equal(openingCategory, await openingLegend.GetAttributeAsync("data-cfx-x-label"));
             await openingLegend.FocusAsync();
+            Assert.Equal(openingCategory, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
             AssertRows(await TooltipRowsAsync(page), "Initial balance", Signed(120, sign), "Start", "0", "End", Signed(120, sign));
             await page.Keyboard.PressAsync("Space");
             Assert.Equal("true", await openingLegend.GetAttributeAsync("data-cfx-muted"));
@@ -192,12 +210,14 @@ public sealed class WaterfallCheckpointBrowserTests {
                 chart.WithBarStyle(ChartBarStyle.SegmentedCapsule);
                 chart.Options.XAxis.WithReversal();
             }
-            chart.Options.YAxis.WithReversal().WithLabelFormatter(value => "Step " + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
+            chart.Options.YAxis.WithReversal();
+            if (opening.HasValue) chart.Options.XAxis.WithBounds(-160, 160);
+            else chart.Options.YAxis.WithLabelFormatter(value => "Step " + value.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(5, "Costs"));
         }
         if (opening.HasValue) {
             chart.ConfigureLabels(labels => labels.OpeningBalance = "Initial balance");
-            chart.Series[0].WithPointLabel(0, "Opening caption");
+            if (!horizontal) chart.Series[0].WithPointLabel(0, "Opening caption");
         }
         return chart;
     }
