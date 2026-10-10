@@ -2,7 +2,7 @@
 
 This matrix is the working contract for ChartForgeX Mermaid support. A family is complete only when it has source-preserving parsing, typed semantic models where rendering is implemented, diagnostics for unsupported syntax, deterministic SVG and PNG output where renderable, Markdown fence coverage, Mermaid.js conformance fixtures, and smoke tests that prove the public artifact contract.
 
-The current compatibility reference is **Mermaid.js 12.1.0**, pinned by [the test-time harness](../tests/mermaid-conformance/package.json). This inventory was checked against `main` at `09065c59` and upstream 12.1.0 documentation on 10 October 2026. Open candidates are listed separately below; their APIs and proof must be rechecked after merge.
+The current semantic reference is **Mermaid.js 12.1.0**. The [test-time harness](../tests/mermaid-conformance/package.json) also pins 10.9.8 and 11.17.2; [per-fixture compatibility metadata](../tests/mermaid-conformance/compatibility.json) records syntax outcomes and explicit older semantic differences. These tested examples do not establish full compatibility with every release or syntax form in those majors. This inventory was checked against `main` at `09065c59` and upstream 12.1.0 documentation on 10 October 2026. Open candidates are listed separately below; their APIs and proof must be rechecked after merge.
 
 ## What support means
 
