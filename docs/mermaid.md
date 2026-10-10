@@ -748,7 +748,25 @@ Input `dateFormat` fields include `YYYY`/`YY`, numeric and English named months,
 
 Calendar dates use the configured input fields for parsing and normalization. Separate dates containing spaces with commas, for example `excludes 3rd January 2026, 4th January 2026` with `dateFormat Do MMMM YYYY`. Equivalent accepted spellings such as `03rd` and `3rd` match the same date, and UTC offsets compare their resolved instant. The configured format takes precedence when a value could also be read as an ISO date. ISO dates and whitespace-separated weekday lists remain available. General task-date fallback does not turn an unmatched calendar timestamp into a whole-day rule. Unix calendar matching retains all accepted `DateTime` ticks, including fractional milliseconds.
 
-`X` means Unix seconds and `x` means Unix milliseconds for both start and end dates, including decimal fractions. Explicit `Z`/`ZZ` offsets normalize to UTC before scheduling. These documented meanings are retained where the reference engines disagree: Mermaid 11/12 interpret integer `X` starts as milliseconds while Mermaid 10 uses seconds; some fractional, offset-end and day-of-year inputs also resolve differently upstream. The corpus records reference outcomes separately from native expectations. Legacy fallback parsing remains available; formats that omit the year still need an explicit anchor policy before they can provide the same deterministic contract.
+`X` means Unix seconds and `x` means Unix milliseconds for both start and end dates, including decimal fractions. Explicit `Z`/`ZZ` offsets normalize to UTC before scheduling. These documented meanings are retained where the reference engines disagree: Mermaid 11/12 interpret integer `X` starts as milliseconds while Mermaid 10 uses seconds; some fractional, offset-end and day-of-year inputs also resolve differently upstream. The corpus records reference outcomes separately from native expectations.
+
+Input formats without a year require `MermaidParseOptions.GanttDateAnchor`. Month/day fields use its year; a day without a month also uses its month; time-only fields use its complete date. An authored month or quarter without a day starts on that month's first day. Formats with an explicit year default omitted month/day fields to January 1. The anchor's time and `DateTimeKind` are ignored. Leap-day and day-of-year validation use the resolved year. The same policy applies to retained .NET/percent formats and calendar exclusions/inclusions; anchored dates are specific dates, while weekday and `weekends` rules recur.
+
+```csharp
+using ChartForgeX.Markup.Mermaid;
+
+using ChartForgeX.Mermaid;
+
+const string source = "gantt\ndateFormat MM-DD\nBuild :02-29,1d";
+var context = new MermaidParseOptions { GanttDateAnchor = new DateTime(2028, 1, 1) };
+var parsed = new MermaidParser().ParseGantt(source, context);
+var rendered = MermaidRenderer.Render(source, new MermaidRenderOptions { ParseOptions = context });
+var markdown = new MermaidVisualMarkupParser(new MermaidRenderOptions { ParseOptions = context });
+```
+
+Source rendering and Markdown fences use the same parser context; the Markdown adapter snapshots its options at construction. The document exposes `DateAnchor`, and portable artifacts retain it as `mermaid.dateAnchor`. An anchor does not supply a today line. Without an anchor, partial inputs produce a located error. Complete ISO dates remain accepted even under a yearless configured format.
+
+Migration: loose date parsing no longer fills missing fields from the system date. Use an explicit `dateFormat` and anchor for partial inputs. Complete legacy spellings remain accepted, including unpadded ISO dates, single-digit hours, English named-month dates, and numeric slash dates with four-digit years. Use the configured format for other spellings. Endpoints use the same anchor; a time-only end does not infer a following day or a following year.
 
 Supported Gantt parsing includes:
 
@@ -806,7 +824,7 @@ Today lines use only `MermaidGanttRenderOptions.Today`; rendering never reads th
 
 Callers can supply `MermaidGanttRenderOptions.TodayStyle` to override source styling with a native `ChartStrokeStyle`. Source `off` still suppresses the line. Native charts use `chart.Options.GanttTodayStyle` for classic and lane current-time guides; line annotations use `chart.Annotations[index].StrokeStyle`. The immutable style has optional color and width, an opacity multiplier and an optional dash pattern. A null pattern retains the guide's default dash, while an empty pattern is solid. Annotation band fills and caption styles retain their existing appearance.
 
-For a milestone with a nonzero duration, `Start` and `End` retain the range used by Mermaid dependency calculations. Callers that previously treated `Start` as its rendered point should compute the midpoint of that range. Zero-duration milestones and their rendering retain the same date. An explicit anchor policy for input formats that omit the year and remaining marker configuration are tracked in the [support matrix](mermaid-support-matrix.md).
+For a milestone with a nonzero duration, `Start` and `End` retain the range used by Mermaid dependency calculations. Callers that previously treated `Start` as its rendered point should compute the midpoint of that range. Zero-duration milestones and their rendering retain the same date. Remaining calendar and chart work is tracked in the [support matrix](mermaid-support-matrix.md).
 
 `tickInterval` accepts a positive integer followed by `millisecond`, `second`, `minute`, `hour`, `day`, `week`, or `month`, such as `2week`. `weekday tuesday` aligns weekly boundaries to Tuesday; the Mermaid default is Sunday. Ticks select calendar boundaries: `2day` selects days 1, 3, 5 and so on within each month, while `2month` selects January, March and so on within each year. A window without a matching boundary has no generated tick labels. Invalid interval spellings, counts above `Int32.MaxValue`, unsupported date windows, or intervals exceeding the native 2,000-tick budget use automatic ticks. Native callers use `WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2, DayOfWeek.Tuesday))`; explicit axis labels take precedence. Applied native millisecond intervals use date and time labels with millisecond precision so boundaries remain distinct across midnight. Automatic fallback retains its usual date labels, and caller formatters still take precedence. Gantt lane charts and numeric schedules retain their existing tick behavior.
 

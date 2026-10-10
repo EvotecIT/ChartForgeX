@@ -91,8 +91,8 @@ internal static partial class MermaidGanttParser {
                     }
                 }
                 slot.Value = latest;
-            } else if (TryParseDate(task.StartSpec!, document.DateFormat, out var start)) slot.Value = start;
-            else Fail(slot, result, "Gantt task start dates must match dateFormat '" + document.DateFormat + "'.");
+            } else if (TryParseDate(task.StartSpec!, document.DateFormat, out var start, document.DateAnchor)) slot.Value = start;
+            else Fail(slot, result, "Gantt task start dates must match dateFormat '" + document.DateFormat + "'." + AnchorHint(document));
             return;
         }
 
@@ -114,8 +114,8 @@ internal static partial class MermaidGanttParser {
                 return;
             }
             task.RenderEnd = renderEnd;
-        } else if (!TryParseDate(task.EndSpec, document.DateFormat, out end)) {
-            Fail(slot, result, "Gantt task end values must be dates, durations or until clauses.");
+        } else if (!TryParseDate(task.EndSpec, document.DateFormat, out end, document.DateAnchor)) {
+            Fail(slot, result, "Gantt task end values must be dates, durations or until clauses." + AnchorHint(document));
             return;
         }
         if (end < taskStart) Fail(slot, result, "Gantt task end must be greater than or equal to start.");
@@ -127,6 +127,9 @@ internal static partial class MermaidGanttParser {
         var span = slot.Task.Span;
         Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, message);
     }
+
+    private static string AnchorHint(MermaidGanttDocument document) => !document.DateAnchor.HasValue && MermaidGanttInputDateFormat.OmitsYear(document.DateFormat)
+        ? " Formats without a year require MermaidParseOptions.GanttDateAnchor." : string.Empty;
 
     private sealed class DateSlot {
         public DateSlot(TaskDefinition task, bool isEnd) { Task = task; IsEnd = isEnd; }

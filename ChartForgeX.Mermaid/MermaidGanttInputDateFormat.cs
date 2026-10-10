@@ -7,22 +7,26 @@ using System.Text.RegularExpressions;
 namespace ChartForgeX.Mermaid;
 
 /// <summary>Maps explicit Mermaid input-date fields to the platform calendar parser.</summary>
-internal static class MermaidGanttInputDateFormat {
+internal static partial class MermaidGanttInputDateFormat {
     private static readonly CultureInfo English = CreateEnglishCalendar();
     private static readonly string[] Tokens = { "YYYY", "MMMM", "DDDD", "MMM", "DDD", "SSS", "YY", "MM", "DD", "Do", "HH", "hh", "mm", "ss", "SS", "ZZ", "Q", "M", "D", "H", "h", "m", "s", "S", "A", "a", "Z" };
 
-    internal static bool TryParseConfigured(string input, string format, out DateTime value) {
+    internal static bool TryParseConfigured(string input, string format, out DateTime value, DateTime? dateAnchor = null) {
         value = default;
         if (format.Length > 256) return false;
         try {
             format = format.Trim();
-            if (format == "X" || format == "x" || UsesMermaidFields(Parts(format))) return TryParseFields(input, format, out value);
-            return DateTime.TryParseExact(input.Trim(), MermaidGanttParser.ToDotNetDateFormat(format), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value);
+            if (format == "X" || format == "x" || UsesMermaidFields(Parts(format))) return TryParseFields(input, format, out value, dateAnchor);
+            var nativeFormat = new StringBuilder(ExpandNativeFormat(MermaidGanttParser.ToDotNetDateFormat(format)));
+            var normalized = new StringBuilder(input.Trim());
+            return ApplyDateDefaults(normalized, nativeFormat, dateAnchor)
+                && DateTime.TryParseExact(normalized.ToString(), nativeFormat.ToString(), CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeLocal | DateTimeStyles.NoCurrentDateDefault, out value);
         } catch (FormatException) { return false; }
         catch (RegexMatchTimeoutException) { return false; }
     }
 
-    private static bool TryParseFields(string input, string format, out DateTime value) {
+    private static bool TryParseFields(string input, string format, out DateTime value, DateTime? dateAnchor) {
         value = default;
         input = input.Trim(); format = format.Trim();
         if (format == "X" || format == "x") return TryUnix(input, format == "X", out value);
@@ -52,14 +56,15 @@ internal static class MermaidGanttInputDateFormat {
                 if (text == "Z") text = "+00:00";
                 else if (text.Length == 5) text = text.Insert(3, ":");
             } else if (token == "DDD" || token == "DDDD") {
-                var year = Year(fields, match);
+                var year = Year(fields, match, dateAnchor);
                 var day = int.Parse(text, CultureInfo.InvariantCulture);
                 if (year < 1 || day < 1 || day > (DateTime.IsLeapYear(year) ? 366 : 365)) return false;
                 text = new DateTime(year, 1, 1).AddDays(day - 1).ToString("MM-dd", CultureInfo.InvariantCulture);
             }
             normalized.Append(text); nativeFormat.Append(Native(token));
         }
-        // No implicit current date or machine-local offset enters a resolved schedule.
+        if (!ApplyDateDefaults(normalized, nativeFormat, dateAnchor)) return false;
+        // Configured fields never acquire a current date or machine-local offset.
         if (offset) {
             if (!DateTimeOffset.TryParseExact(normalized.ToString(), nativeFormat.ToString(), English, DateTimeStyles.None, out var instant)) return false;
             value = DateTime.SpecifyKind(instant.UtcDateTime, DateTimeKind.Unspecified);
@@ -93,11 +98,11 @@ internal static class MermaidGanttInputDateFormat {
         return result.ToString();
     }
 
-    // Explicit Mermaid years identify the native field language. Retained .NET/percent
+    // Mermaid fields identify the native language. Retained .NET/percent
     // formats use the same fallback for parsing and calendar matching. Bracket contents
     // are authored literals and cannot switch the format language.
     private static bool UsesMermaidFields(List<Part> fields) =>
-        fields.Exists(part => part.Token == "YYYY" || part.Token == "YY") &&
+        fields.Exists(part => part.Token != null) &&
         !fields.Exists(part => part.Token == null && !part.Bracketed &&
             part.Text.IndexOfAny(new[] { '%', 'f', 'F', 'y', 'd', 't', 'z', 'g', 'K', '\\', '\'', '"' }) >= 0);
 
@@ -112,12 +117,12 @@ internal static class MermaidGanttInputDateFormat {
         catch (OverflowException) { return false; }
     }
 
-    private static int Year(List<Part> fields, Match match) {
+    private static int Year(List<Part> fields, Match match, DateTime? dateAnchor) {
         for (var i = 0; i < fields.Count; i++) if (fields[i].Token == "YYYY" || fields[i].Token == "YY") {
             var year = int.Parse(match.Groups["f" + i.ToString(CultureInfo.InvariantCulture)].Value, CultureInfo.InvariantCulture);
             return fields[i].Token == "YY" ? English.DateTimeFormat.Calendar.ToFourDigitYear(year) : year;
         }
-        return 0;
+        return dateAnchor?.Year ?? 0;
     }
 
     private static List<Part> Parts(string format) {

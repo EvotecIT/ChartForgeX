@@ -69,6 +69,7 @@ public static class MermaidGanttRendering {
         artifact.Metadata["mermaid.dependencies"] = DependencyCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.untilReferences"] = UntilReferenceCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.dateFormat"] = document.DateFormat;
+        if (document.DateAnchor.HasValue) artifact.Metadata["mermaid.dateAnchor"] = document.DateAnchor.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
         if (!string.IsNullOrWhiteSpace(document.AxisFormat)) artifact.Metadata["mermaid.axisFormat"] = document.AxisFormat!;
         if (!string.IsNullOrWhiteSpace(document.TickInterval)) artifact.Metadata["mermaid.tickInterval"] = document.TickInterval!;
         artifact.Metadata["mermaid.weekday"] = document.Weekday.ToString().ToLowerInvariant();
