@@ -343,6 +343,7 @@ body {
 .cfx-tooltip__secondary {
   margin-top: 4px;
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .cfx-tooltip__title--series {

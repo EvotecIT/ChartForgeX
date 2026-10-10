@@ -86,6 +86,58 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
         await Capture(page, prepared, html, width, dark, radius, "zero", errors, session.ConsoleLog.Select(entry => entry.Type + ": " + entry.Text));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LongSecondaryTextWrapsWithinCompactPointerAndKeyboardReadouts(bool combiningCharacters) {
+        if (!Enabled) return;
+        var text = "Environment <&>\n" + (combiningCharacters
+            ? string.Concat(Enumerable.Repeat("e\u0301", 100))
+            : string.Concat(Enumerable.Repeat("tenant_2a3c7e91_environment_", 5)));
+        var chart = SunburstSecondaryLabelTests.Gallery(360, false, 6);
+        chart.ConfigureSunburst(options => options.SecondaryLabelFormatter = context => context.Item.Id == "engineering" ? text : null);
+        var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
+        await using var session = await OpenAsync(html, 384, 510);
+        var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
+        var engineering = page.Locator("[data-cfx-node=engineering]");
+        var point = await NativeHit(engineering);
+        await page.Mouse.MoveAsync((float)point[0], (float)point[1], new MouseMoveOptions { Steps = 3 });
+        var readouts = new List<(string State, double[] Bounds)>();
+        readouts.Add(("pointer", await ReadoutBounds(page, text, combiningCharacters, "pointer", errors)));
+        await MoveAwayAsync(page);
+        await engineering.FocusAsync(); await page.Keyboard.PressAsync("Enter");
+        readouts.Add(("keyboard", await ReadoutBounds(page, text, combiningCharacters, "keyboard", errors)));
+        Assert.Empty(errors); AssertNoConsoleErrors(session);
+        foreach (var readout in readouts) {
+            var bounds = readout.Bounds;
+            Assert.True(bounds[0] >= 0 && bounds[1] <= bounds[2], readout.State + " tooltip must stay inside the viewport.");
+            Assert.True(bounds[5] >= bounds[3] - .5 && bounds[6] <= bounds[4] + .5,
+                readout.State + " literal secondary text must stay inside its readout: " + string.Join(", ", bounds));
+            Assert.True(bounds[7] > 2, readout.State + " long secondary text must wrap beyond its authored newline.");
+        }
+    }
+
+    private static async Task<double[]> ReadoutBounds(IPage page, string text, bool combiningCharacters, string state, List<string> errors) {
+        await page.WaitForFunctionAsync("() => { const tip=document.querySelector('.cfx-tooltip'); return tip && !tip.hidden; }");
+        var secondary = page.Locator(".cfx-tooltip__secondary");
+        Assert.Equal(text, await secondary.TextContentAsync());
+        Assert.Equal(0, await secondary.Locator("*").CountAsync());
+        var bounds = await secondary.EvaluateAsync<double[]>("""
+            node => { const box=node.getBoundingClientRect(), tip=node.closest('.cfx-tooltip').getBoundingClientRect();
+                const range=document.createRange(); range.selectNodeContents(node); const lines=Array.from(range.getClientRects());
+                return [tip.left,tip.right,innerWidth,box.left,box.right,Math.min(...lines.map(line=>line.left)),
+                    Math.max(...lines.map(line=>line.right)),new Set(lines.map(line=>line.top)).size]; }
+            """);
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            Directory.CreateDirectory(directory);
+            var stem = "secondary-overflow-" + (combiningCharacters ? "combining" : "identifier") + "-" + state;
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, stem + ".png") });
+            await File.WriteAllTextAsync(Path.Combine(directory, stem + ".json"), JsonSerializer.Serialize(new { state, text, bounds, errors }, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        return bounds;
+    }
+
     private static async Task AssertSecondary(IPage page, string text) {
         await page.WaitForFunctionAsync("() => { const tip=document.querySelector('.cfx-tooltip'); return tip && !tip.hidden; }");
         Assert.Equal(text, await page.Locator(".cfx-tooltip__secondary").InnerTextAsync());
