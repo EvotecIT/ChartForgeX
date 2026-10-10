@@ -12,19 +12,22 @@ internal static partial class VisualNumericRadialCompiler {
     private static RadialSeriesGeometry Layout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         IReadOnlyList<string> categories, Dictionary<ChartAxisSide, string[]> valueLabels, bool bars) {
         var style = TickStyle(chart, context);
-        var texts = chart.Options.ShowAxes
+        var metrics = chart.Options.ShowAxes
             ? (chart.Options.XAxis.Visible ? categories : Array.Empty<string>())
-                .Concat(valueLabels.Where(pair => Axis(chart, pair.Key).Visible).SelectMany(pair => pair.Value)).ToArray()
-            : Array.Empty<string>();
-        var width = texts.Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
-        var height = texts.Select(text => builder.MeasureText(text, style).Height).DefaultIfEmpty(0).Max();
+                .Select(text => VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), chart.Options.XAxis.LabelAngle))
+                .Concat(valueLabels.Where(pair => Axis(chart, pair.Key).Visible).SelectMany(pair => pair.Value
+                    .Select(text => VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), Axis(chart, pair.Key).LabelAngle)))).ToArray()
+            : Array.Empty<TextMetrics>();
+        var width = metrics.Select(measured => measured.Width).DefaultIfEmpty(0).Max();
+        var height = metrics.Select(measured => measured.Height).DefaultIfEmpty(0).Max();
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - Math.Min(plot.Width * .22, width) - context.Theme.Spacing,
             plot.Height / 2 - Math.Min(plot.Height * .18, height) - context.Theme.Spacing));
         // Each visible radial-bar scale gets a measured perimeter lane. Reserving the
         // widest caption's diagonal separates its ink at every tick angle and keeps
         // the outer lane inside the same SVG/PNG viewport, including styled text.
         var lane = bars && chart.Options.ShowAxes && valueLabels.Count > 1 && valueLabels.Keys.All(side => Axis(chart, side).Visible)
-            ? valueLabels.Values.SelectMany(labels => labels).Select(text => builder.MeasureText(text, style))
+            ? valueLabels.SelectMany(pair => pair.Value.Select(text =>
+                VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), Axis(chart, pair.Key).LabelAngle)))
                 .Select(metrics => Math.Sqrt(metrics.Width * metrics.Width + metrics.Height * metrics.Height)).DefaultIfEmpty(0).Max() + context.Theme.Spacing
             : 0;
         radius = Math.Max(0, radius - lane);
@@ -89,7 +92,8 @@ internal static partial class VisualNumericRadialCompiler {
                         var dx = -Math.Sin(angle) * direction; var dy = Math.Cos(angle) * direction;
                         AddLabel(builder, labels, text, anchor, style, "radial-value-label-" + pair.Key + "-" + index, "radial-value-label", plot,
                             bars ? new LabelCandidate(0, 0, Math.Cos(angle) > .3 ? 0 : Math.Cos(angle) < -.3 ? 1 : .5, Math.Sin(angle) > .3 ? 0 : Math.Sin(angle) < -.3 ? 1 : .5)
-                                : new LabelCandidate(dx * gap / 2, dy * gap / 2, dx > .3 ? 0 : dx < -.3 ? 1 : .5, dy > .3 ? 0 : dy < -.3 ? 1 : .5), 90);
+                                : new LabelCandidate(dx * gap / 2, dy * gap / 2, dx > .3 ? 0 : dx < -.3 ? 1 : .5, dy > .3 ? 0 : dy < -.3 ? 1 : .5), 90)
+                            .RotationDegrees = VisualAxisText.Angle(axis.LabelAngle);
                     }
                 }
                 if (chart.Options.ShowAxes && axis.Visible && axis.ShowLine) {
@@ -112,7 +116,8 @@ internal static partial class VisualNumericRadialCompiler {
             var anchor = On(geometry, angle, radius);
             AddLabel(builder, labels, categoryLabels[index], anchor, style, "radial-category-label-" + index, "radial-category-label", plot,
                 bars ? BeforeStartRay(angle, gap)
-                    : new LabelCandidate(0, 0, Math.Cos(angle) > .3 ? 0 : Math.Cos(angle) < -.3 ? 1 : .5, Math.Sin(angle) > .3 ? 0 : Math.Sin(angle) < -.3 ? 1 : .5), 100);
+                    : new LabelCandidate(0, 0, Math.Cos(angle) > .3 ? 0 : Math.Cos(angle) < -.3 ? 1 : .5, Math.Sin(angle) > .3 ? 0 : Math.Sin(angle) < -.3 ? 1 : .5), 100)
+                .RotationDegrees = VisualAxisText.Angle(chart.Options.XAxis.LabelAngle);
         }
     }
 

@@ -27,7 +27,15 @@ public sealed class NumericRadialAxisBrowserTests {
         chart.WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width + 40, width == 360 ? 420 : 510);
         await CaptureAsync(session, chart, name);
-        Assert.Equal(dual ? 10 : 3, await session.Page.Locator(dual ? "[data-cfx-role='radial-value-label'] text" : "[data-cfx-role='radial-category-label'] text").CountAsync());
+        var displayed = await session.Page.Locator(dual ? "[data-cfx-role='radial-value-label'] text" : "[data-cfx-role='radial-category-label'] text").CountAsync();
+        if (name.StartsWith("gallery-", StringComparison.Ordinal) && width == 360) {
+            // The authored value title now reserves space. Compact fitting may omit
+            // one crowded caption while retaining both complete scale descriptions.
+            Assert.InRange(displayed, 9, 10);
+            Assert.Equal(10, await session.Page.Locator("[data-cfx-role='radial-value-label-source']").CountAsync());
+            Assert.Equal("Resolved (%)", await session.Page.Locator("[data-cfx-role='radial-value-axis-title'] text").TextContentAsync());
+            if (displayed < 10) Assert.Contains(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Diagnostics, diagnostic => diagnostic.Code == "numeric-radial.label-overflow");
+        } else Assert.Equal(dual ? 10 : 3, displayed);
         if (dual) Assert.True(await session.Page.EvaluateAsync<bool>("() => {const boxes=Array.from(document.querySelectorAll('[data-cfx-role=\"radial-value-label\"] text')).map(text=>text.getBoundingClientRect());return boxes.every((a,i)=>boxes.slice(i+1).every(b=>a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top));}"));
         if (!dual && width == 800) Assert.Equal(new[] { "North", "South", "East" }, await session.Page.Locator("[data-cfx-role='radial-category-label'] text").AllTextContentsAsync());
         Assert.True(await session.Page.EvaluateAsync<bool>("() => Array.from(document.querySelectorAll('[data-cfx-role=\"radial-value-label\"] text,[data-cfx-role=\"radial-category-label\"] text')).every(text => {const b=text.getBoundingClientRect();return b.width>0&&b.height>0&&b.left>=0&&b.right<=innerWidth;})"));

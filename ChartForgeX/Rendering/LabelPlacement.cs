@@ -69,6 +69,9 @@ public sealed class LabelPlacementRequest {
     public ChartRect? Bounds { get; set; }
     /// <summary>Gets or sets padding around text, such as its halo or badge inset, in logical pixels.</summary>
     public double Padding { get; set; }
+    // Prepared axis requests retain their rotation so shortened strings use the same footprint.
+    // MeasuredSize remains the unrotated text measurement for requests with this value set.
+    internal double RotationDegrees { get; set; }
     internal TextMetrics? MeasuredSize { get; set; }
     internal TextMetrics? DecorationSize { get; set; }
 }

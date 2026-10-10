@@ -12454,6 +12454,8 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -12464,9 +12466,11 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-bar-compact-options-light",
@@ -12507,6 +12511,7 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -12519,9 +12524,10 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-bar-dual-axes-light",
@@ -12554,7 +12560,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-radial-bar-compact-dual-axes-light",
@@ -12587,7 +12593,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-radial-bar-wide-dark",
@@ -12732,6 +12738,8 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -12742,9 +12750,11 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-bar-compact-options-dark",
@@ -12785,6 +12795,7 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -12797,9 +12808,10 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-bar-dual-axes-dark",
@@ -12832,7 +12844,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-radial-bar-compact-dual-axes-dark",
@@ -12865,7 +12877,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-radial-column-wide-light",
@@ -13028,7 +13040,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-column-compact-options-light",
@@ -13066,6 +13078,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -13075,9 +13092,14 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-column-wide-dark",
@@ -13240,7 +13262,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-column-compact-options-dark",
@@ -13278,6 +13300,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -13287,9 +13314,14 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-chord-wide-light",

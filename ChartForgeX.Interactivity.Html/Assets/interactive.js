@@ -557,20 +557,21 @@
   };
   const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
     ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  const retainedGeometryFact = (node) => ['zero', 'precision-collapse', 'layout-collapse'].includes((node.dataset || {}).cfxGeometryStatus);
   // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
   // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
   const pointerTargetPaint = (node, styles = new Map()) => {
     if (!node || !isInteractiveTarget(node)) return null;
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
     if (legend) return childPaint(node, true, styles);
-    if (node.closest('.cfx-series-muted') || ['zero', 'precision-collapse'].includes(node.dataset.cfxGeometryStatus)) return null;
+    if (node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
     return observationPaint(node, styles);
   };
   const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
     if (pointerTargetPaint(node, styles)) return true;
-    // Authored zero/precision-collapse facts remain a keyboard readout, without becoming pointer targets.
+    // Authored facts without painted geometry remain a keyboard readout, without becoming pointer targets.
     const pointer = event instanceof PointerEvent || event instanceof MouseEvent && event.detail > 0;
-    return !pointer && ['zero', 'precision-collapse'].includes((node.dataset || {}).cfxGeometryStatus)
+    return !pointer && retainedGeometryFact(node)
       && paintAncestorsVisible(node, styles) && keyboardTargetAvailable(node);
   };
   const paintColour = (node, styles = new Map()) => {
@@ -730,7 +731,7 @@
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
       // Retained numeric facts have keyboard semantics without a pointer surface.
-      if (['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return;
+      if (retainedGeometryFact(node)) return;
       if (box.width > 0 && box.height > 0) return;
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const width = Math.max(8, region.width); const height = Math.max(8, region.height);
@@ -1015,7 +1016,7 @@
     if (pointerTargetPaint(node)) return true;
     // Retained authored facts can have no filled geometry, while still belonging to the data component.
     const data = node.dataset;
-    if (!data.cfxTargetKind || !data.cfxTargetId || !['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return false;
+    if (!data.cfxTargetKind || !data.cfxTargetId || !retainedGeometryFact(node)) return false;
     const svg = node.ownerSVGElement;
     if (!svg) return false;
     // The viewport detects hidden hosts; CSS-hidden inner groups need their own ancestor check.

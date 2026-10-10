@@ -141,6 +141,7 @@ public sealed class LabelPlacementService {
         if (text.Length == 0) return null;
         var metrics = !ellipsized && request.MeasuredSize.HasValue ? request.MeasuredSize.Value
             : measureText != null ? measureText(text, displayedStyle!) : MeasureDisplayed(text, request.Style);
+        metrics = VisualAxisText.RotatedMetrics(metrics, request.RotationDegrees);
         var decoration = text != request.Text ? request.DecorationSize : null;
         var width = metrics.Width + request.Padding * 2 + (decoration?.Width ?? 0);
         var height = metrics.Height + request.Padding * 2 + (decoration?.Height ?? 0);

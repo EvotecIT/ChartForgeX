@@ -28,6 +28,9 @@ public static partial class V2GalleryModels {
         if (variant is "options" or "compact-options") {
             foreach (var series in chart.Series) series.WithStackGroup("work").WithNormalization(100);
             chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            chart.WithXAxis("Region").WithYAxis("Share of regional workload (%)")
+                .ConfigureXAxis(axis => axis.LabelAngle = -30)
+                .ConfigureYAxis(axis => axis.LabelAngle = 30);
             chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
         } else {
             chart.WithYAxisBounds(0, 1500).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);

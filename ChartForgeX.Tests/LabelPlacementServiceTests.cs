@@ -53,6 +53,31 @@ public sealed class LabelPlacementServiceTests {
     }
 
     [Fact]
+    public void MixedAxisAnglesUseTheirOwnPreparedMetricsDuringEllipsisAndPainting() {
+        var style = Style.Clone(); style.TextCase = TextCaseTransform.ToggleCase;
+        // The retained prefix depends on glyph widths, so use the checked-in face on every platform.
+        style.Font = FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        Assert.Equal(style.Font.FilePath, TypographyFontResolver.ResolveFace(style.Font).Path);
+        var builder = new VisualSceneBuilder(new VisualSize(120, 100), style.Font);
+        var requests = new[] {
+            new LabelPlacementRequest("WWWiii long vertical caption", new ChartPoint(0, 0), style, new[] { new LabelCandidate(0, 0) }) { RotationDegrees = 450, Bounds = new ChartRect(0, 0, 30, 50) },
+            new LabelPlacementRequest("WWWiii long diagonal caption", new ChartPoint(40, 0), style, new[] { new LabelCandidate(0, 0) }) { RotationDegrees = -30, Bounds = new ChartRect(40, 0, 65, 60) }
+        };
+        foreach (var request in requests) request.MeasuredSize = builder.MeasureText(request.Text, request.Style);
+        var placed = new LabelPlacementService().Place(requests, new ChartRect(0, 0, 120, 100), null, 0, builder.MeasureText);
+        Assert.All(placed, result => { Assert.False(result.IsDropped); Assert.True(result.IsEllipsized); Assert.StartsWith("wwwIII", result.Text); });
+        for (var index = 0; index < placed.Count; index++) VisualAxisText.Draw(builder, placed[index], "axis-label", "label-" + index);
+        var painted = NumericRadialAxisTextTests.Footprints(builder.Build());
+        for (var index = 0; index < placed.Count; index++) {
+            Assert.Equal(placed[index].Bounds.Width, painted[index].Bounds.Width, 6);
+            Assert.Equal(placed[index].Bounds.Height, painted[index].Bounds.Height, 6);
+            Assert.Equal(placed[index].Bounds.Left, painted[index].Bounds.Left, 6);
+            Assert.Equal(placed[index].Bounds.Top, painted[index].Bounds.Top, 6);
+            Assert.True(LabelPlacementService.Contains(requests[index].Bounds!.Value, painted[index].Bounds));
+        }
+    }
+
+    [Fact]
     public void ExhaustedCandidatesDropRatherThanOverlapping() {
         var service = new LabelPlacementService();
         var label = Request("Value: 12345", 10);

@@ -344,6 +344,9 @@ public static partial class V2GalleryModels {
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
             foreach (var series in chart.Series) series.WithStackGroup(&quot;work&quot;).WithNormalization(100);
             chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            chart.WithXAxis(&quot;Region&quot;).WithYAxis(&quot;Share of regional workload (%)&quot;)
+                .ConfigureXAxis(axis =&gt; axis.LabelAngle = -30)
+                .ConfigureYAxis(axis =&gt; axis.LabelAngle = 30);
             chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
         } else {
             chart.WithYAxisBounds(0, 1500).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
@@ -1027,6 +1030,9 @@ public static partial class V2GalleryModels {
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
             foreach (var series in chart.Series) series.WithStackGroup(&quot;work&quot;).WithNormalization(100);
             chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            chart.WithXAxis(&quot;Region&quot;).WithYAxis(&quot;Share of regional workload (%)&quot;)
+                .ConfigureXAxis(axis =&gt; axis.LabelAngle = -30)
+                .ConfigureYAxis(axis =&gt; axis.LabelAngle = 30);
             chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
         } else {
             chart.WithYAxisBounds(0, 1500).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
