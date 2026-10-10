@@ -65,11 +65,13 @@ Topology diagram dimensions set the minimum canvas. The renderer expands the can
 
 ## Source configuration
 
-`MermaidDocument.Configuration` exposes the effective `Theme`, `Layout`, `Look` and `FontFamily`, plus retained `Settings` with dotted paths, scalar values and original locations. `Theme` on the document addresses the same effective theme for callers that convert a model directly.
+`MermaidDocument.Configuration` exposes the effective `Theme`, `Layout`, `Look`, `FontFamily` and `FontSize`, plus retained `Settings` with dotted paths, scalar values and original locations. `Theme` on the document addresses the same effective theme for callers that convert a model directly.
 
 Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. A setting scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. This follows the tested upstream merge contract. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
 
 `themeVariables.fontFamily` selects the native default font stack for chart, topology, sequence and visual-block output. It overrides global `fontFamily`; an explicit current-family `fontFamily` takes precedence over both. The original declarations remain in `Settings`, and `Configuration.FontFamily` reports the effective native stack. This sets the shared native typography default; it does not reproduce every Mermaid family-specific font role or fetch remote fonts.
+
+`themeVariables.fontSize` sets the native base data-label size in logical pixels, with other native text roles scaled proportionally. It accepts a number or decimal pixel string such as `18.5px`, from 1 through 256. `Configuration.FontSize` reports the applied size. Relative units, physical units and CSS expressions remain in the source with an unsupported-configuration warning. Global and family-specific `fontSize` settings retain their diagnostics. Invalid pixel sizes produce a located configuration error. SVG and PNG share the resulting typography; topology and sequence `Prepare` calls with an explicit host context use that context instead of the authored defaults.
 
 ```mermaid
 ---
@@ -85,7 +87,7 @@ A[API] --> B[Database]
 
 The supported YAML subset uses consistently space-indented mappings with plain, single-quoted or JSON double-quoted scalar values and comments. Nested mapping paths are retained. JSON objects are also accepted as the value of the root `config` key. YAML anchors, aliases, tags, sequences and block scalars are not interpreted as native settings. Their source remains available, and nested unsupported declarations produce diagnostics.
 
-Plain Boolean/null spellings, finite decimal and radix numbers, and YAML `.inf`/`.nan` forms retain their scalar types. Supported presentation settings require strings, so those typed values report `CFXM006`. Quoting preserves a string. Mixed-case spellings such as `tRuE`, bare `Infinity`, and overflowing decimal forms such as `1e9999` remain strings, following the current reference's YAML reader. This classification is consistent across the supported .NET targets.
+Plain Boolean/null spellings, finite decimal and radix numbers, and YAML `.inf`/`.nan` forms retain their scalar types. Theme, layout, look and font-family settings require strings, so other scalar types report `CFXM006`; the pixel font-size setting also accepts decimal numbers. Quoting preserves a string. Mixed-case spellings such as `tRuE`, bare `Infinity`, and overflowing decimal forms such as `1e9999` remain strings, following the current reference's YAML reader. This classification is consistent across the supported .NET targets.
 
 Legacy `%%{init: {...}}%%` and `%%{initialize: {...}}%%` declarations accept quoted JSON keys and either single-quoted or double-quoted strings. They can span lines and appear before or after the family header. Blanking declarations before family parsing preserves the original locations of nodes and other statements. YAML settings identify their source line; legacy settings identify the complete directive declaration.
 

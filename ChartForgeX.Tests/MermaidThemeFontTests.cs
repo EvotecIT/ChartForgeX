@@ -62,7 +62,7 @@ public sealed class MermaidThemeFontTests {
     public void OtherVariablesAndUnsupportedFamiliesKeepTheirDiagnostics() {
         var result = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontFamily':'Georgia','fontSize':'18px','primaryColor':'#123456'}}}%%\nflowchart LR\nA --> B");
         Assert.False(result.HasErrors);
-        Assert.Equal(2, result.Diagnostics.Count);
+        Assert.Single(result.Diagnostics);
         Assert.All(result.Diagnostics, item => Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, item.Code));
         var unsupported = new MermaidParser().Parse("%%{init: {'themeVariables':{'fontFamily':'Georgia'}}}%%\nagentflow-beta\nflow A");
         Assert.Contains(unsupported.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);

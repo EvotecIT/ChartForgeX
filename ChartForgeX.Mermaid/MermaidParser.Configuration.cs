@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using ChartForgeX.Core;
@@ -70,16 +71,16 @@ public sealed partial class MermaidParser {
             var key = Regex.IsMatch(pair.Key, @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant) ? pair.Key : "[" + pair.Key + "]";
             var path = prefix + key;
             if (pair.Value.TryAsObject(out var nested) && nested.Count > 0) {
-                if (IsConfigurationStringPath(path)) configuration.Add(new MermaidConfigurationSetting(path, null, false, span));
+                if (IsConfigurationScalarPath(path)) configuration.Add(new MermaidConfigurationSetting(path, null, false, span));
                 AddConfigurationJson(nested, path + ".", span, configuration);
             }
             else configuration.Add(new MermaidConfigurationSetting(path, pair.Value.AsOptionalString(), pair.Value.IsString, span));
         }
     }
 
-    private static bool IsConfigurationStringPath(string path) {
+    private static bool IsConfigurationScalarPath(string path) {
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look";
+        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look";
     }
 
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
@@ -100,9 +101,14 @@ public sealed partial class MermaidParser {
         configuration.Layout = ReadString("layout");
         configuration.Look = ReadString("look");
         configuration.FontFamily = ReadString("fontFamily");
+        var fontSize = configuration.Last("themeVariables.fontSize");
+        configuration.FontSize = ReadConfigurationFontSize(fontSize, result);
         foreach (var setting in configuration.Settings) {
             var theme = Selected("theme");
             var font = Selected("fontFamily");
+            if (setting.Path == "themeVariables.fontSize" && !ReferenceEquals(setting, fontSize)) continue;
+            if (ReferenceEquals(setting, fontSize) && configuration.FontSize.HasValue &&
+                kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
                 if (kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             } else if (ReferenceEquals(setting, font) && setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) &&
@@ -117,6 +123,21 @@ public sealed partial class MermaidParser {
                 setting.Path == "layout" || setting.Path == "defaultRenderer" || setting.Path.EndsWith(".layout", StringComparison.Ordinal) || setting.Path.EndsWith(".defaultRenderer", StringComparison.Ordinal)
                     ? MermaidDiagnosticCodes.UnsupportedLayout : MermaidDiagnosticCodes.UnsupportedConfiguration);
         }
+    }
+
+    private static double? ReadConfigurationFontSize(MermaidConfigurationSetting? setting, MermaidParseResult<MermaidDocument> result) {
+        if (setting == null) return null;
+        var value = setting.Value?.Trim();
+        if (!setting.IsString && value != null && double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var numeric) &&
+            numeric >= 1 && numeric <= 256) return numeric;
+        if (value != null && value.Length <= 32 &&
+            Regex.IsMatch(value, @"^[0-9]+(?:\.[0-9]+)?(?:px)?$", RegexOptions.CultureInvariant) &&
+            double.TryParse(value.EndsWith("px", StringComparison.Ordinal) ? value.Substring(0, value.Length - 2) : value,
+                NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var size) && size >= 1 && size <= 256) return size;
+        if (setting.IsString && value != null && value.Length <= 4096 &&
+            Regex.IsMatch(value, @"^(?:[0-9]+(?:\.[0-9]+)?(?:em|rem|pt|pc|in|cm|mm|vh|vw|vmin|vmax|ch|ex|%)|(?:calc|var)\(.+\))$", RegexOptions.CultureInvariant)) return null;
+        ConfigurationError(result, setting.Span, "Mermaid configuration 'themeVariables.fontSize' must be a pixel size from 1 through 256, such as 18 or '18px'.");
+        return null;
     }
 
     private static string ConfigurationScope(MermaidDiagramKind kind) => kind switch {
