@@ -383,7 +383,7 @@ internal static partial class SmokeTests {
         Assert(saas.Contains("#356AF4", StringComparison.Ordinal) && PreparedFamily(saasChart).Scene.Nodes.OfType<VisualSceneEllipse>().Where(mark => mark.Role == "marker").All(mark => mark.Rx == 4.2), "SaaS dashboard themes should retain their series palette and explicit endpoint marker radius.");
         var customized = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithTitle("Custom typography")
-            .WithTheme(theme => theme
+            .ConfigureTheme(theme => theme
                 .WithSurfaceColors(ChartColor.FromRgb(250, 250, 250), ChartColor.FromRgb(1, 1, 1), ChartColor.FromRgb(2, 2, 2), ChartColor.FromRgb(3, 3, 3), ChartColor.FromRgb(4, 4, 4))
                 .WithTextColors(ChartColor.FromRgb(5, 5, 5), ChartColor.FromRgb(6, 6, 6))
                 .WithGuideColors(ChartColor.FromRgb(7, 7, 7), ChartColor.FromRgb(8, 8, 8))
@@ -415,7 +415,7 @@ internal static partial class SmokeTests {
         Assert(SvgHasAttributes(customized, "data-cfx-role=\"frame-card\" rx=\"73\"")
             && SvgHasAttributes(customized, "data-cfx-role=\"content-surface\" rx=\"2\""), "Theme callbacks should preserve independent outer card and plot corner geometry.");
         var bare = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithTheme(theme => theme.WithSurfaceStyle(ChartSurfaceStyle.Bare))
+            .ConfigureTheme(theme => theme.WithSurfaceStyle(ChartSurfaceStyle.Bare))
             .AddLine("Values", Points(1, 2, 3))
             .ToSvg();
         Assert(!SvgHasAttributes(bare, "data-cfx-role=\"frame-card\""), "Bare surface style should suppress the outer card surface.");
@@ -425,7 +425,7 @@ internal static partial class SmokeTests {
         Assert(compact.TitleFontSize == 22 && compact.MarkerRadius < ChartTheme.Light().MarkerRadius, "Compact surface style should tighten typography and markers.");
         var grid = ChartGrid.Create()
             .WithTitle("Custom grid")
-            .WithTheme(theme => theme.WithFontFamily(ChartFontStacks.Mono).WithTypography(22, 12, 11, 10, 11, 10))
+            .ConfigureTheme(theme => theme.WithFontFamily(ChartFontStacks.Mono).WithTypography(22, 12, 11, 10, 11, 10))
             .Add(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddLine("Values", Points(1, 2, 3)))
             .ToSvg();
         Assert(grid.Contains(ChartFontStacks.Mono, StringComparison.Ordinal), "Grid theme callbacks should let users customize grid typography fluently.");

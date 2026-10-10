@@ -47,7 +47,7 @@ public sealed class CartesianReversalLabelTests {
         Assert.True(LabelPlacementService.Contains(mark, Bounds(label)));
         Assert.Equal(ChartColorMath.AccessibleTextOnBackground(fill), label.Color);
         Assert.True(prepared.ToPng().Length > 64);
-        chart.Series[0].WithDataLabelStyle(style => style.WithColor("#FFFF00"));
+        chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
         Assert.Equal(ChartColor.FromHex("#FFFF00"), Assert.Single(Prepare(chart).Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label").Color);
     }
 

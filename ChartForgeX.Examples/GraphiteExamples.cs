@@ -52,12 +52,12 @@ internal static class GraphiteExamples {
         line.Options.YAxis.Maximum=1400; line.Options.YAxis.TickCount=8;
         var donut=Frame("Findings by control","Largest slices first",596,314).WithXLabels("Mail authentication","TLS","DNSSEC","Policy","Monitoring","Other")
             .AddDonut("Findings",Points(356,268,214,188,142,116));
-        var gauge=Frame("Control readiness","Target 90",396,294).AddGauge("Readiness",87).WithGauge(o=> {
+        var gauge=Frame("Control readiness","Target 90",396,294).AddGauge("Readiness",87).ConfigureGauge(o=> {
             o.Target=90; o.Caption="3 below target";
             o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet));
         });
-        var needle=Frame("Readiness needle","Explicit target and bands",396,294).AddGauge("Readiness",74).WithGauge(o=> { o.Form=ChartGaugeForm.Needle; o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
-        var linear=Frame("Linear readiness","Explicit target and bands",596,230).AddLinearGauge("Readiness",87).WithGauge(o=> { o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
+        var needle=Frame("Readiness needle","Explicit target and bands",396,294).AddGauge("Readiness",74).ConfigureGauge(o=> { o.Form=ChartGaugeForm.Needle; o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
+        var linear=Frame("Linear readiness","Explicit target and bands",596,230).AddLinearGauge("Readiness",87).ConfigureGauge(o=> { o.Target=90; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
         var bullet=Frame("Control coverage","Actual values and targets",556,294).WithValueFormatter(value=>value.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+" %").AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
         var funnel=Frame("Remediation stages","Percentage of the first stage",556,324).WithXLabels("Detected","Triaged","Assigned","Fixed","Verified").AddFunnel("Findings",Points(1284,1012,744,521,466));
         var sankey=Frame("Remediation flow","Source-coloured links",556,324).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Remediated", "Remediated"), new ChartNode("In progress", "In progress"), new ChartNode("Overdue", "Overdue"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("GPO", "GPO") }, new[] {

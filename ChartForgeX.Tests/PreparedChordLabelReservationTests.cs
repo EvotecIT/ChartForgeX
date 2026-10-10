@@ -61,7 +61,7 @@ public sealed class PreparedChordLabelReservationTests {
             new[] { new ChartFlowLink("zero", "north", "south", 0) });
         var unlabelled = chart.ConfigureChord(options => options.LabelContent = ChartChordLabelContent.None).Prepare(Context());
         chart.Options.Chord.LabelContent = ChartChordLabelContent.LabelAndTotals;
-        chart.Series[0].WithPointLabel(1, new string('W', 180)).WithPointDataLabelStyle(1, style => style.WithFontSize(96));
+        chart.Series[0].WithPointLabel(1, new string('W', 180)).ConfigurePointDataLabelStyle(1, style => style.WithFontSize(96));
         var labelled = chart.Prepare(Context());
         Capture(labelled, "all-zero");
 
@@ -79,7 +79,7 @@ public sealed class PreparedChordLabelReservationTests {
         if (disableAtSeries) chart.Series[0].ShowDataLabels = false;
         else chart.Options.Chord.LabelContent = ChartChordLabelContent.None;
         var baseline = chart.Prepare(Context());
-        chart.Series[0].WithPointLabel(0, new string('W', 180)).WithPointDataLabelStyle(0, style => style.WithFontSize(96));
+        chart.Series[0].WithPointLabel(0, new string('W', 180)).ConfigurePointDataLabelStyle(0, style => style.WithFontSize(96));
         var changed = chart.Prepare(Context());
         AssertSameVisibleScene(baseline, changed);
         Assert.DoesNotContain(changed.Scene.Nodes, node => node.Role == "chord-node-label");
@@ -93,7 +93,7 @@ public sealed class PreparedChordLabelReservationTests {
             if (zeroLink) links.Add(new ChartFlowLink("zero", "north", "semantic", 0));
         }
         var chart = Chart.Create().AddChord("Transfers", nodes, links);
-        if (semanticNode && oversizedStyle) chart.Series[0].WithPointDataLabelStyle(2, style => style.WithFontSize(96));
+        if (semanticNode && oversizedStyle) chart.Series[0].ConfigurePointDataLabelStyle(2, style => style.WithFontSize(96));
         return chart;
     }
 
@@ -102,7 +102,7 @@ public sealed class PreparedChordLabelReservationTests {
         var chart = Chart.Create().AddChord("Transfers", new[] { new ChartNode("semantic", label), new ChartNode("north", "North"), new ChartNode("south", "South") },
             new[] { new ChartFlowLink("tiny", "semantic", "semantic", tiny), new ChartFlowLink("flow", "north", "south", 1) })
             .ConfigureChord(options => options.StartAngleDegrees = 0);
-        if (changedCaption && oversizedStyle) chart.Series[0].WithPointDataLabelStyle(0, style => style.WithFontSize(96));
+        if (changedCaption && oversizedStyle) chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.WithFontSize(96));
         return chart;
     }
 

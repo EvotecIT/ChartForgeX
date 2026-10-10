@@ -194,7 +194,7 @@ internal static partial class SmokeTests {
         foreach (var item in cases) {
             var regular = item.Create();
             var styled = item.Create();
-            styled.Series[0].WithDataLabelStyle(style => style.WithColor("#c026d3").WithFontFamily("monospace").WithWeight("750").WithItalic().WithUnderline().WithFontSize(14));
+            styled.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#c026d3").WithFontFamily("monospace").WithWeight("750").WithItalic().WithUnderline().WithFontSize(14));
             var svg = styled.ToSvg();
             Assert(svg.Contains("data-cfx-role=\"" + item.Role + "\"", StringComparison.Ordinal), item.Name + " data labels should render when enabled.");
             var prepared = PreparedFamily(styled);
@@ -227,10 +227,10 @@ internal static partial class SmokeTests {
 
     private static void AssertCenterDataLabelSpacing(Func<Chart> create, string valueRole, string titleRole, string name) {
         var compact = create();
-        compact.Series[0].WithDataLabelStyle(style => style.WithFontSize(10));
+        compact.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(10));
         var compactPrepared = PreparedFamily(compact);
         var large = create();
-        large.Series[0].WithDataLabelStyle(style => style.WithFontSize(24));
+        large.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(24));
         var largePrepared = PreparedFamily(large);
         var compactValue = FamilyLabels(compactPrepared, valueRole).Single();
         var largeValue = FamilyLabels(largePrepared, valueRole).Single();

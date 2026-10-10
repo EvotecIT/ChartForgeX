@@ -17,7 +17,7 @@ public sealed class TopologyLabelsTests {
     [Fact]
     public void Formatter_ReceivesTheCountsAndWritesTheDescription() {
         ChartDescriptionFacts? seen = null;
-        var chart = Diagram("Sieć").WithLabels(labels => {
+        var chart = Diagram("Sieć").ConfigureLabels(labels => {
             labels.UntitledTopology = "Topologia";
             labels.AccessibleTextFormatter = facts => {
                 seen = facts;
@@ -32,15 +32,15 @@ public sealed class TopologyLabelsTests {
         Assert.Equal(ChartDescriptionKind.Topology, seen!.Kind);
         Assert.Equal((3, 1, 2), (seen.Count, seen.GroupCount, seen.EdgeCount));
         Assert.Equal("Sieć", Element(svg, "title"));
-        Assert.Equal("Topologia", Element(XDocument.Parse(Diagram(null).WithLabels(labels => labels.UntitledTopology = "Topologia").ToSvg()), "title"));
+        Assert.Equal("Topologia", Element(XDocument.Parse(Diagram(null).ConfigureLabels(labels => labels.UntitledTopology = "Topologia").ToSvg()), "title"));
     }
 
     [Fact]
     public void Formatter_ReturningNothing_KeepsEnglish_AndAnExplicitDescriptionWins() {
-        var blank = Diagram("Net").WithLabels(labels => labels.AccessibleTextFormatter = _ => " ");
+        var blank = Diagram("Net").ConfigureLabels(labels => labels.AccessibleTextFormatter = _ => " ");
         Assert.Equal("Net with 1 groups, 3 nodes, and 2 edges.", Element(XDocument.Parse(blank.ToSvg()), "desc"));
         var called = false;
-        var described = Diagram("Net").WithAccessibility(a => a.Description = "Two sites.").WithLabels(labels => labels.AccessibleTextFormatter = _ => { called = true; return "x"; });
+        var described = Diagram("Net").ConfigureAccessibility(a => a.Description = "Two sites.").ConfigureLabels(labels => labels.AccessibleTextFormatter = _ => { called = true; return "x"; });
         Assert.Equal("Two sites.", Element(XDocument.Parse(described.ToSvg()), "desc"));
         Assert.False(called);
         Assert.Throws<ArgumentException>(() => new TopologyLabels().UntitledTopology = " ");
@@ -48,7 +48,7 @@ public sealed class TopologyLabelsTests {
 
     [Fact]
     public void HtmlPage_TakesTheUntitledNameAndLanguage() {
-        var chart = Diagram(null).WithLabels(labels => labels.UntitledTopology = "Topologia").WithAccessibility(a => a.Language = "pl");
+        var chart = Diagram(null).ConfigureLabels(labels => labels.UntitledTopology = "Topologia").ConfigureAccessibility(a => a.Language = "pl");
         var html = chart.ToHtmlPage();
         Assert.Contains("<title>Topologia</title>", html, StringComparison.Ordinal);
         Assert.Contains("lang=\"pl\"", html, StringComparison.Ordinal);
@@ -56,7 +56,7 @@ public sealed class TopologyLabelsTests {
 
     [Fact]
     public void Report_UsesTheUntitledReportNameAndCarriesTheFormatterToItsPages() {
-        var chart = Diagram(null).WithLabels(labels => {
+        var chart = Diagram(null).ConfigureLabels(labels => {
             labels.UntitledReport = "Raport";
             labels.AccessibleTextFormatter = facts => "Opis: " + facts.Count;
         });

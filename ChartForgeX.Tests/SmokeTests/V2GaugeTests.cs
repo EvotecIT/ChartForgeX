@@ -14,7 +14,7 @@ public sealed class V2GaugeTests {
     [InlineData(ChartGaugeForm.Needle)]
     [InlineData(ChartGaugeForm.Linear)]
     public void Forms_RetainRawOutOfRangeValuesAndClampDrawnMarks(ChartGaugeForm form) {
-        var chart = Chart.Create().AddGauge("Capacity", 140, 0, 100).WithGauge(options => {
+        var chart = Chart.Create().AddGauge("Capacity", 140, 0, 100).ConfigureGauge(options => {
             options.Form = form; options.Target = 75; options.Caption = "Available capacity";
             options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Warning));
             options.Bands.Add(new ChartGaugeBand(50, 100, ChartSeriesState.Success));
@@ -47,7 +47,7 @@ public sealed class V2GaugeTests {
     [Fact]
     public void ExplicitPointPaintAndLabelsWinWhileFullTextSurvivesFittingAndArtifactHandoff() {
         const string full = "Complete operator-provided measurement label with additional retained context";
-        var chart = Chart.Create().AddGauge("Long caption that will not fit a compact surface", 42).WithGauge(options => options.Target = 110);
+        var chart = Chart.Create().AddGauge("Long caption that will not fit a compact surface", 42).ConfigureGauge(options => options.Target = 110);
         var explicitColor = ChartColor.FromHex("#123456");
         chart.Series[0].WithPointColor(0, explicitColor).WithPointLabel(0, full);
         var scene = Compile(chart, new ChartRect(0, 0, 160, 130));
@@ -64,7 +64,7 @@ public sealed class V2GaugeTests {
 
     [Fact]
     public void OverlappingBandsAndInvalidMutableRangesFailBeforePainting() {
-        var chart = Chart.Create().AddGauge("Load", 40).WithGauge(options => {
+        var chart = Chart.Create().AddGauge("Load", 40).ConfigureGauge(options => {
             options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Success));
             options.Bands.Add(new ChartGaugeBand(50, 100, ChartSeriesState.Warning));
         });
@@ -85,7 +85,7 @@ public sealed class V2GaugeTests {
 
     [Fact]
     public void LinearAxesUseFiveResolvedValuesAndBandsKeepUnclampedSourceRanges() {
-        var chart = Chart.Create().AddLinearGauge("Range", 50, 0, 100).WithGauge(options => options.Bands.Add(new ChartGaugeBand(-20, 120, ChartSeriesState.Info)));
+        var chart = Chart.Create().AddLinearGauge("Range", 50, 0, 100).ConfigureGauge(options => options.Bands.Add(new ChartGaugeBand(-20, 120, ChartSeriesState.Info)));
         var seen = new List<double>(); chart.Options.ValueFormatter = number => { seen.Add(number); return "V=" + number; };
         var scene = Compile(chart);
         Assert.Equal(5, scene.Nodes.Count(node => node.Role == "gauge-tick"));

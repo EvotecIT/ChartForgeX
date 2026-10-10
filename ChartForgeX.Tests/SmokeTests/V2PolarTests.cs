@@ -104,7 +104,7 @@ public sealed class V2PolarTests {
     public void RadarPointOverridesFollowSourceOrderAfterCategoriesAreSorted() {
         var chart = Chart.Create().AddRadar("Unsorted", new[] { new ChartPoint(3, 90), new ChartPoint(1, 70), new ChartPoint(2, 80) }).WithDataLabels();
         chart.Options.ShowAxes = false;
-        chart.Series[0].WithPointLabel(0, "kept").WithPointDataLabelStyle(0, style => style.WithFontSize(18).WithTextCase(TextCaseTransform.Uppercase));
+        chart.Series[0].WithPointLabel(0, "kept").ConfigurePointDataLabelStyle(0, style => style.WithFontSize(18).WithTextCase(TextCaseTransform.Uppercase));
         var scene = Compile(chart);
         var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Id == "series-0-point-0-label");
         Assert.Equal("KEPT", Assert.Single(label.Text.Lines).Text); Assert.Equal(18, label.Text.Size);

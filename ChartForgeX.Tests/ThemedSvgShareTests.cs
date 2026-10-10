@@ -346,7 +346,7 @@ public sealed class ThemedSvgShareTests {
         var day = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
         switch (family) {
             case "gauge":
-                return Host(tokens).AddGauge("Readiness", 74).WithGauge(o => { o.Target = 90; o.Bands.Add(new(60, 80, ChartSeriesState.Warning)); });
+                return Host(tokens).AddGauge("Readiness", 74).ConfigureGauge(o => { o.Target = 90; o.Bands.Add(new(60, 80, ChartSeriesState.Warning)); });
             case "bullet":
                 return Host(tokens).AddBullet("Coverage", 74, 90).AddBullet("TLS", 92, 80);
             case "funnel":

@@ -13,7 +13,7 @@ public sealed class SunburstLabelLayoutTests {
     [InlineData(VisualThemeMode.Dark)]
     public void BroadThreeLevelHierarchyKeepsEveryFullCaptionInsideItsOwnSegment(VisualThemeMode mode) {
         var chart = Teams();
-        chart.Series[0].WithDataLabelStyle(style => style.WithFontSize(13));
+        chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(13));
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(fontPath), "The existing Carlito validation fixture must be available.");
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), themeMode: mode,

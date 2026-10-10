@@ -19,7 +19,7 @@ public sealed class InteractiveTreemapColorTooltipBrowserTests {
         if (!Enabled) return;
         var colorLabel = titleOverride ? "Zmiana (%) <&>" : "Kolor";
         var chart = Chart.Create().WithSize(width, 380).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .WithTitle("Przydział pracy").WithDataLabels(false).WithLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; })
+            .WithTitle("Przydział pracy").WithDataLabels(false).ConfigureLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; })
             .AddTreemap("Zespoły", new[] {
                 new ChartHierarchyItem("positive", "Obsługa", value: 9, colorValue: 7.125),
                 new ChartHierarchyItem("zero", "Zerowa zmiana", value: 4, colorValue: 0),
@@ -33,7 +33,7 @@ public sealed class InteractiveTreemapColorTooltipBrowserTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg();
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
-        chart.WithLabels(labels => { labels.Color = "Changed"; labels.NoData = "Changed"; });
+        chart.ConfigureLabels(labels => { labels.Color = "Changed"; labels.NoData = "Changed"; });
         chart.Options.Treemap.ColorLegendTitle = "Changed";
         Assert.Equal(svg, prepared.ToSvg());
         await using var session = await OpenAsync(html, width + 24, 500);

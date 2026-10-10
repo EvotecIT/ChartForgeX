@@ -41,7 +41,7 @@ public sealed class ColorScaleLocalizationTests {
         }
         var suffix = family + (oneBand ? "-single" : "-interior");
         Capture(chart.Prepare(VisualExportRequest.ForChart(chart).Context), suffix + "-english");
-        chart.WithLabels(labels => { labels.AllValues = "Wszystkie wartości"; labels.Value = "wartość"; });
+        chart.ConfigureLabels(labels => { labels.AllValues = "Wszystkie wartości"; labels.Value = "wartość"; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         Capture(prepared, suffix + "-localized");
@@ -53,7 +53,7 @@ public sealed class ColorScaleLocalizationTests {
             : new[] { "Niski · < 10", "Średni · 10 ≤ wartość < 20", "Wysoki · ≥ 20" }, captions);
         Assert.Equal(oneBand ? new[] { "" } : new[] { "", "10", "20" }, bands.Select(node => (string?)node.Attribute("data-cfx-lower-bound")));
         Assert.Equal(oneBand ? new[] { "" } : new[] { "10", "20", "" }, bands.Select(node => (string?)node.Attribute("data-cfx-upper-bound")));
-        chart.WithLabels(labels => { labels.AllValues = "Changed"; labels.Value = "changed"; });
+        chart.ConfigureLabels(labels => { labels.AllValues = "Changed"; labels.Value = "changed"; });
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.NotEqual(svg, chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg());

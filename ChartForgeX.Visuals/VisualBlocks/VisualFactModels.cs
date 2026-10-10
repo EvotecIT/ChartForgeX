@@ -143,7 +143,7 @@ public sealed class ChartTable : FactualVisualBlock<ChartTable> {
     }
 
     /// <summary>Configures one existing row.</summary>
-    public ChartTable WithRow(int rowIndex, Action<ChartTableRow> configure) {
+    public ChartTable ConfigureRow(int rowIndex, Action<ChartTableRow> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (rowIndex < 0 || rowIndex >= _rows.Count) throw new ArgumentOutOfRangeException(nameof(rowIndex), rowIndex, "Row index must reference an existing table row.");
         configure(_rows[rowIndex]);

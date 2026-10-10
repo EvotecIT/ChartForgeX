@@ -192,7 +192,7 @@ public sealed class PyramidGeometryTests {
         var chart = Pyramid(50, 30, 20, 0).WithDataLabels().WithSize(360, 360).WithPointLegend()
             .ConfigurePyramid(options => { options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = true; });
         chart.Series[0].WithPointFillPattern(1, ChartFillPattern.Crosshatch).WithPointLabel(0, "Complete")
-            .WithPointDataLabelStyle(0, style => { style.Color = ChartColor.FromHex("#B14091"); style.FontWeight = "700"; });
+            .ConfigurePointDataLabelStyle(0, style => { style.Color = ChartColor.FromHex("#B14091"); style.FontWeight = "700"; });
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360))));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "fill-pattern");

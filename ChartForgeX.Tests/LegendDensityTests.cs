@@ -81,7 +81,7 @@ public sealed class LegendDensityTests {
     [Fact]
     public void OverflowSummaryUsesResolvedLegendTypographyAndFullLabelsRemainAvailable() {
         var chart = Dense("line", 40).WithLegendBudget(maximumRows: 2)
-            .WithLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase).WithFontSize(18));
+            .ConfigureLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase).WithFontSize(18));
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains(ByRole(svg, "legend-label"), element => element.Value.Contains("MORE ENTRIES"));
         Assert.Contains(ByRole(svg, "legend-entry-omitted"), element => ((string?)element.Attribute("aria-label"))?.StartsWith("Service", StringComparison.Ordinal) == true);

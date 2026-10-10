@@ -50,7 +50,7 @@ public static partial class V2Examples {
     }
 
     private static FlowArtifact ThumbnailFlow() => FlowArtifact.Create("request-overview").WithSize(ThumbnailWidth, ThumbnailHeight, 16)
-        .AddStep("received", "Received", FlowArtifactStepKind.Start).WithStep("received", step => { step.Width = 128; step.Height = 64; })
-        .AddStep("complete", "Complete", FlowArtifactStepKind.End).WithStep("complete", step => { step.Width = 128; step.Height = 64; })
+        .AddStep("received", "Received", FlowArtifactStepKind.Start).ConfigureStep("received", step => { step.Width = 128; step.Height = 64; })
+        .AddStep("complete", "Complete", FlowArtifactStepKind.End).ConfigureStep("complete", step => { step.Width = 128; step.Height = 64; })
         .AddConnector("received", "complete", "Process");
 }

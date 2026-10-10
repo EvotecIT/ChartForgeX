@@ -8,7 +8,7 @@ public sealed partial class VisualCanvas {
     public VisualAccessibility Accessibility { get; } = new();
 
     /// <summary>Configures the canvas text alternative and language metadata.</summary>
-    public VisualCanvas WithAccessibility(Action<VisualAccessibility> configure) {
+    public VisualCanvas ConfigureAccessibility(Action<VisualAccessibility> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(Accessibility);
         return this;

@@ -32,7 +32,7 @@ public sealed class GraphiteFamilyTests {
 
     [Fact]
     public void LinearGaugePlacesValueAndTargetOnItsDeclaredScale() {
-        var chart = Chart.Create().AddLinearGauge("Readiness", 87).WithGauge(options => options.Target = 90);
+        var chart = Chart.Create().AddLinearGauge("Readiness", 87).ConfigureGauge(options => options.Target = 90);
         var svg = Literal(chart);
         var track = Assert.Single(Roles(svg, "gauge-track")); var value = Assert.Single(Roles(svg, "gauge-value"));
         Assert.Equal(Number(track, "height") / 3, Number(value, "height"), 3);
@@ -71,7 +71,7 @@ public sealed class GraphiteFamilyTests {
     [InlineData(74, ChartSeriesState.Warning)]
     [InlineData(87, ChartSeriesState.Quiet)]
     public void GaugeUsesDeclaredBandStateAcrossItsForms(double value, ChartSeriesState state) {
-        var chart = Chart.Create().AddGauge("Readiness", value).WithGauge(options => {
+        var chart = Chart.Create().AddGauge("Readiness", value).ConfigureGauge(options => {
             options.Target = 90; options.Bands.Add(new(0, 60, ChartSeriesState.Danger));
             options.Bands.Add(new(60, 80, ChartSeriesState.Warning)); options.Bands.Add(new(80, 100, ChartSeriesState.Quiet));
         });

@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
         Assert(fullScene.Regions.Any(region => region.Role == "axis-x-label" && region.Label?.StartsWith("Total", System.StringComparison.Ordinal) == true), "The derived total must keep its category label.");
 
         foreach (var hideX in new[] { false, true }) {
-            var chart = WaterfallSample().WithLegend(false).WithTickLabelStyle(style => style.WithColor("#00FFFF"));
+            var chart = WaterfallSample().WithLegend(false).ConfigureTickLabelStyle(style => style.WithColor("#00FFFF"));
             chart.Options.XAxis.Visible = !hideX;
             chart.Options.YAxis.Visible = hideX;
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -38,7 +38,7 @@ internal static partial class SmokeTests {
 
         var cramped = Chart.Create().WithSize(420, 220).WithLegend(false).WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
-            .WithDataLabelStyle(style => style.WithColor("#FF00FF").WithFontSize(72))
+            .ConfigureDataLabelStyle(style => style.WithColor("#FF00FF").WithFontSize(72))
             .AddWaterfall("Delta", Points(.01, 100, -25));
         cramped.Options.YAxis.Visible = false;
         var withLabels = cramped.Prepare(VisualExportRequest.ForChart(cramped).Context).Scene;
@@ -111,9 +111,9 @@ internal static partial class SmokeTests {
         foreach (var level in new[] { "chart", "series", "point" }) {
             var chart = WaterfallLabelSample(180, false).AddWaterfall("Delta", Points(100), ChartColor.FromHex("#172554"));
             chart.Options.YAxis.WithBounds(0, 100).WithReversal();
-            if (level == "chart") chart.WithDataLabelStyle(style => style.WithColor("#FFFF00"));
-            else if (level == "series") chart.Series[0].WithDataLabelStyle(style => style.WithColor("#FFFF00"));
-            else chart.Series[0].WithPointDataLabelStyle(0, style => style.WithColor("#FFFF00"));
+            if (level == "chart") chart.ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
+            else if (level == "series") chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
+            else chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.WithColor("#FFFF00"));
             var labels = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
             Assert(labels[0].Color.Equals(ChartColor.FromHex("#FFFF00")), "Chart, series, and point authored label ink must remain authoritative inside Waterfall marks.");
             Assert(labels[1].Color.Equals(level == "point" ? ChartColor.White : ChartColor.FromHex("#FFFF00")), "A source point ink override must not spill into the independently derived total.");

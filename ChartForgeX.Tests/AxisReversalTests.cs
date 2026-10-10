@@ -14,7 +14,7 @@ public sealed class AxisReversalTests {
     public void CartesianAxisReversalMovesMarksGridAndTickFactsTogether(ChartScaleKind scale) {
         var xs = scale == ChartScaleKind.Time ? new[] { 45000d, 45001, 45002 } : new[] { 1d, 10, 100 };
         var ys = new[] { 1d, 10, 100 };
-        var chart = Chart.Create().WithSize(800, 460).WithLegend(false).WithLineMarkers(ChartLineMarkerMode.All).WithGridStyle(style => style.WithVerticalLines())
+        var chart = Chart.Create().WithSize(800, 460).WithLegend(false).WithLineMarkers(ChartLineMarkerMode.All).ConfigureGridStyle(style => style.WithVerticalLines())
             .AddLine("Values", xs.Select((x, index) => new ChartPoint(x, ys[index])));
         chart.Options.XAxis.WithScale(scale).WithBounds(xs[0], xs[2]);
         chart.Options.YAxis.WithScale(scale == ChartScaleKind.Logarithmic ? scale : ChartScaleKind.Linear).WithBounds(1, 100);
