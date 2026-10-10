@@ -41,7 +41,8 @@ public static class VisualWatermarkDecoration {
     public static string ToWatermarkedHtmlPage(this VisualArtifact artifact, string renderedSvg, params VisualWatermark[] watermarks) {
         var svg = ToWatermarkedSvg(artifact, renderedSvg, watermarks);
         return VisualArtifactRendering.WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title,
-            svg, artifact.Accessibility.Language, clipSvgViewport: true);
+            svg, artifact.Accessibility.Language, clipSvgViewport: true,
+            sizing: VisualArtifactRendering.HtmlSizing(artifact, null));
     }
 
     /// <summary>Creates a detached artifact envelope with watermark presentation in declaration order.</summary>
