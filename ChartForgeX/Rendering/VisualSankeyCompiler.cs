@@ -65,7 +65,7 @@ internal static partial class VisualSankeyCompiler {
                 }
                 builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "sankey-node", bounds, labels[node.Index]));
             }
-            if (showLabels) Labels(builder, plot, model, styles, labels, colors, context.Theme.Spacing);
+            if (showLabels) Labels(builder, plot, model, styles, labels, colors, context.Theme.Spacing, options);
         }
     }
 

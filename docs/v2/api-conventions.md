@@ -160,6 +160,8 @@ chart.ConfigureSankey(options => {
 | `Alignment` | `Justify` retains longest source depths and moves sinks to the final layer. `Left`, `Right` and `Center` select other feasible layers. |
 | `VerticalAlignment` | `Center` splits each column's unused space equally; `Top` and `Bottom` place it against the corresponding content edge. |
 | `NodeOrder` | `Auto` uses bounded weighted ordering passes. `Input` retains input order per layer; `LabelAscending` and `LabelDescending` compare labels ordinally and preserve input order for ties. |
+| `LabelPlacement` | `Right` places measured labels to the right of node bars. `Left` places them to the left; `Center` centers them over the bars with the existing readable backdrop. |
+| `EdgeLabelPlacement` | `Outside` keeps first-column labels on the left and last-column labels on the right. `Inside` reverses those sides. `null` applies `LabelPlacement` to both edge columns. |
 | `NodeWidth` | `10` logical units; must be finite and positive. |
 | `NodeGap` | `null` uses `max(12, theme.Spacing * 1.5)`; an explicit gap must be finite and non-negative. |
 | `NodeCornerRadius` | `null` uses `theme.BarRadius`; an explicit radius must be finite and non-negative and is bounded to half the bar's smaller dimension. |
@@ -169,7 +171,9 @@ chart.ConfigureSankey(options => {
 
 The earliest feasible layer is the longest path depth from any source. The latest is the graph's final layer minus the longest remaining path to a sink. `Left` uses the earliest layer, `Right` the latest, and `Center` uses `floor((earliest + latest) / 2)`. This midpoint policy also applies to disconnected components and keeps every edge directed to a later layer.
 
-Explicit point colors take precedence over the corresponding family fill, then series colors and state/theme fallbacks. Layout order never reorders `Nodes` or `FlowLinks`, changes source ordinals, or reassigns point styles and ID-keyed states. All node and ribbon thicknesses use the same scale; gaps and widths do not inflate small weights. Preparation rejects node widths or gaps that cannot fit the supplied viewport. Per-flow styling, additional label placement policies and any truthful minimum-width treatment remain separate work.
+Explicit point colors take precedence over the corresponding family fill, then series colors and state/theme fallbacks. Layout order never reorders `Nodes` or `FlowLinks`, changes source ordinals, or reassigns point styles and ID-keyed states. All node and ribbon thicknesses use the same scale; gaps and widths do not inflate small weights. Preparation rejects node widths or gaps that cannot fit the supplied viewport.
+
+Label placement uses the same node and ribbon geometry under every policy. Opposing labels share the available gap in separate slots; the shared measured label placer avoids caption collisions. Captions wrap, shorten or omit when space is insufficient, while full node text and raw flow facts remain available in native semantics and interactive readouts. Point-specific typography and colors apply under every placement. Per-flow styling and any truthful minimum-width treatment remain separate work.
 
 ## Histogram ingestion
 
