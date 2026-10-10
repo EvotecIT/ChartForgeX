@@ -79,9 +79,7 @@ internal static partial class VisualNumericRadialCompiler {
             using (builder.PushGroup(label.Id + "-source", label.Role + "-source", facts)) {
                 if (result.IsDropped || result.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.label-overflow", "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."));
                 if (result.IsDropped) continue;
-                var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
-                style.TextCase = TextCaseTransform.None; style.Alignment = TextAlignment.Left;
-                builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(style), style, label.Role, label.Id, paint: result.Request.Paint ?? VisualChartPaint.Text(style));
+                VisualAxisText.Draw(builder, result, label.Role, label.Id, result.Request.Paint);
             }
         }
     }

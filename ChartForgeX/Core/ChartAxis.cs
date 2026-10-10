@@ -103,6 +103,7 @@ public sealed class ChartAxis {
     }
 
     /// <summary>Gets or sets label rotation in degrees.</summary>
+    /// <remarks>Numeric radial category and value axes use an independent fixed screen angle. Rotation does not orient text relative to a radial spoke.</remarks>
     public double LabelAngle {
         get => _labelAngle;
         set {
