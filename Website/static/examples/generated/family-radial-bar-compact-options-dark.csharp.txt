@@ -260,6 +260,7 @@ public static partial class V2GalleryModels {
         }
         Add("Requests", 1200, 950, 680, 1050); Add("Follow-ups", 320, 410, 260, 360);
         if (variant is "options" or "compact-options") {
+            chart.WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15, cornerRadius: 6));
             foreach (var series in chart.Series) series.WithStackGroup("work").WithNormalization(100);
             chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
             chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
@@ -542,6 +543,7 @@ public static partial class V2GalleryModels {
             var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
             var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options => {
+                options.CornerRadius = 6;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
                 options.ColorLegendTitle = "Change (%)";
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
