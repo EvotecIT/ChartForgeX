@@ -77,9 +77,14 @@
   };
   const shapePaint = (node, styles, subject = node) => {
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
-    if (/-(highlight|pattern|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
+    if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
       || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)
       || subject !== node && !paintWithinNativeClips(node, subject)) return null;
+    // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
+    if (node.matches('circle,ellipse')) {
+      const box = node.getBBox();
+      if (!(box.width > 0 && box.height > 0)) return null;
+    }
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
     // Open line marks never paint their inherited default black fill.
@@ -105,17 +110,31 @@
     if (!node) return null;
     const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
     const primary = shapes.filter((shape) => shape.matches('[data-cfx-role^="circle-value"],[data-cfx-role^="gauge-value"],[data-cfx-role="gauge-needle"],[data-cfx-role="bullet-value"]'));
-    for (const shape of primary.concat(shapes)) {
+    const authoredPattern = (shape) => /-pattern$/.test(shape.dataset.cfxRole || '');
+    const patterns = shapes.filter(authoredPattern);
+    for (const shape of primary.concat(shapes.filter((shape) => !authoredPattern(shape)))) {
       if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
       const paint = shapePaint(shape, styles, subject || shape);
       if (paint) return paint;
     }
-    return primaryTextPaint(node, decoration, styles);
+    const text = primaryTextPaint(node, decoration, styles);
+    if (text) return text;
+    // Authored hatches can be the only mark ink; captions and ordinary surfaces keep their paint precedence.
+    for (const shape of patterns) {
+      if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
+      const paint = shapePaint(shape, styles, subject || shape);
+      if (paint) return paint;
+    }
+    return null;
   };
   const seriesPaint = (node, styles) => {
     const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
     if (!owner) return null;
     for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
+      const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
+      if (paint) return paint;
+    }
+    for (const layer of owner.querySelectorAll('[data-cfx-role="area-pattern"],[data-cfx-role="range-area-pattern"],[data-cfx-role="range-band-pattern"],[data-cfx-role="radar-pattern"]')) {
       const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
     }
