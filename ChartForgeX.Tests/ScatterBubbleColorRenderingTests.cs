@@ -140,6 +140,25 @@ public sealed class ScatterBubbleColorRenderingTests {
         Assert.NotEqual(svg, Prepare(chart).ToSvg());
     }
 
+    [Fact]
+    public void BubbleSizeLabelIsLocalizedWithoutAColorScaleAndDetachedWithNumericKeys() {
+        Assert.Equal("Size", new ChartLabels().Size);
+        Assert.Throws<ArgumentException>(() => new ChartLabels().Size = " ");
+        var chart = Create(true, 0, null).ConfigureLabels(labels => { labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
+        var withoutScale = XDocument.Parse(Prepare(chart).ToSvg());
+        Assert.All(Role(withoutScale, "point"), point => Assert.Equal("Volume (m³)", (string?)point.Attribute("data-cfx-label-size")));
+        Assert.Equal(new[] { "1", "4" }, Role(withoutScale, "point").Select(point => (string?)point.Attribute("data-cfx-size")));
+        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
+        var prepared = Prepare(chart); var svg = prepared.ToSvg(); var document = XDocument.Parse(svg);
+        Assert.Equal("Samples · Temperature (°C)", (string?)Role(document, "color-scale-source").Single().Attribute("data-cfx-label"));
+        Assert.Equal("Not sampled", (string?)Role(document, "color-scale-source").Single().Attribute("data-cfx-label-no-data"));
+        chart.ConfigureLabels(labels => { labels.Color = "Changed color"; labels.Size = "Changed size"; labels.NoData = "Changed missing"; });
+        Assert.Equal(svg, prepared.ToSvg());
+        var changed = XDocument.Parse(Prepare(chart).ToSvg());
+        Assert.All(Role(changed, "point"), point => Assert.Equal("Changed size", (string?)point.Attribute("data-cfx-label-size")));
+        Assert.Equal("Samples · Changed color", (string?)Role(changed, "color-scale-source").Single().Attribute("data-cfx-label"));
+    }
+
     [Theory]
     [InlineData(ChartDecimationMode.MinMax, false)]
     [InlineData(ChartDecimationMode.LargestTriangleThreeBuckets, true)]

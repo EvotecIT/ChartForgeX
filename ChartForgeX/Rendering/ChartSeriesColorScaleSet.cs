@@ -10,19 +10,25 @@ namespace ChartForgeX.Rendering;
 internal sealed class ChartSeriesColorScaleSet {
     private readonly ChartSeriesColorSurface?[] _series;
     internal ChartSeriesColorScaleSet(Chart chart) {
+        var labels = chart.Options.Labels;
+        Labels = new ChartLabels { Color = labels.Color, Size = labels.Size, NoData = labels.NoData,
+            Less = labels.Less, More = labels.More, AllValues = labels.AllValues, Value = labels.Value };
         _series = chart.Series.Select(series => series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble
-            ? new ChartSeriesColorSurface(series, chart.Options.Labels) : null).ToArray();
+            ? new ChartSeriesColorSurface(series, Labels) : null).ToArray();
     }
+    internal ChartLabels Labels { get; }
     internal ChartSeriesColorSurface? this[int index] => _series[index];
 }
 
 /// <summary>A detached color dimension; manual paint and marker visibility do not alter its inferred extent.</summary>
 internal sealed class ChartSeriesColorSurface {
     private readonly double?[] _values;
-    private readonly string _colorLabel, _noDataLabel;
+    private readonly string _colorLabel, _noDataLabel, _sizeLabel;
+    private readonly bool _bubble;
     internal ChartSeriesColorSurface(ChartSeries series, ChartLabels labels) {
-        Scale = series.ColorScale; _colorLabel = labels.Color; _noDataLabel = labels.NoData;
-        var stride = series.Kind == ChartSeriesKind.Bubble ? 2 : 1;
+        Scale = series.ColorScale; _colorLabel = labels.Color; _noDataLabel = labels.NoData; _sizeLabel = labels.Size;
+        _bubble = series.Kind == ChartSeriesKind.Bubble;
+        var stride = _bubble ? 2 : 1;
         _values = Enumerable.Range(0, series.Points.Count / stride).Select(index => series.Points[index * stride].ColorValue).ToArray();
         var values = _values.Where(value => value.HasValue).Select(value => value!.Value).ToArray();
         HasValues = values.Length > 0; Missing = values.Length < _values.Length;
@@ -46,6 +52,7 @@ internal sealed class ChartSeriesColorSurface {
     }
 
     internal string AddFacts(Dictionary<string, string> metadata, int point, string description) {
+        if (_bubble) metadata["data-cfx-label-size"] = _sizeLabel;
         if (Scale == null && !_values[point].HasValue) return description;
         metadata["data-cfx-label-color"] = _colorLabel;
         metadata["data-cfx-label-no-data"] = _noDataLabel;

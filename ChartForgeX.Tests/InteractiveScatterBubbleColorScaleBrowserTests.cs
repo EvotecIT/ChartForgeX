@@ -29,7 +29,7 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
             .WithXAxisBounds(0, 4).WithYAxisBounds(0, 50)
             .WithValueFormat(ChartValueFormat.Number("0.0 'kWh'", CultureInfo.InvariantCulture))
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; });
+            .ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
         var x = new[] { 1d, 2, 3 }; var y = new[] { 18d, 30, 24 }; var sizes = new[] { 9d, 36, 81 };
         var colors = new double?[] { -12, 0, null };
         if (kind == ChartSeriesKind.Bubble) chart.AddBubble("Samples", Enumerable.Range(0, 3)
@@ -56,6 +56,7 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
             Assert.Equal(y[index].ToString(CultureInfo.InvariantCulture), await point.GetAttributeAsync("data-cfx-y"));
             Assert.Equal(kind == ChartSeriesKind.Bubble ? sizes[index].ToString(CultureInfo.InvariantCulture) : null,
                 await point.GetAttributeAsync("data-cfx-size"));
+            Assert.Equal(kind == ChartSeriesKind.Bubble ? "Volume (m³)" : null, await point.GetAttributeAsync("data-cfx-label-size"));
             Assert.Equal(colors[index]?.ToString(CultureInfo.InvariantCulture), await point.GetAttributeAsync("data-cfx-color-value"));
             Assert.Equal(index == 2 ? "true" : null, await point.GetAttributeAsync("data-cfx-color-missing"));
             Assert.Equal(index.ToString(CultureInfo.InvariantCulture), await point.GetAttributeAsync("data-cfx-source-point"));
@@ -64,17 +65,17 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.colorSelection = event.detail.target)");
         await MoveToAsync(page, Point(0, 0));
         await AssertRowAsync("Temperature (°C)", "-12"); await AssertRowAsync("Y", "18");
-        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "9");
+        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Volume (m³)", "9");
         await CaptureAsync("negative-pointer");
         await MoveAwayAsync(page); await page.Locator(Point(0, 1)).FocusAsync();
         await AssertRowAsync("Temperature (°C)", "0"); await AssertRowAsync("Y", "30");
-        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "36");
+        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Volume (m³)", "36");
         await CaptureAsync("zero-focus");
         await page.Keyboard.PressAsync("ArrowRight");
         var missing = page.Locator(Point(0, 2));
         Assert.True(await missing.EvaluateAsync<bool>("node => node === document.activeElement"));
         await AssertRowAsync("Temperature (°C)", "Not sampled"); await AssertRowAsync("Y", "24");
-        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "81");
+        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Volume (m³)", "81");
         Assert.Null(await missing.GetAttributeAsync("data-cfx-color-value"));
         await page.Keyboard.PressAsync("Space");
         var selected = await page.EvaluateAsync<JsonElement>("() => window.colorSelection");
@@ -85,7 +86,7 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
         Assert.Equal("24", selected.GetProperty("value").GetString());
         Assert.Equal("true", await missing.GetAttributeAsync("aria-selected"));
         Assert.Equal("true", await root.GetAttributeAsync("data-cfx-tooltip-pinned"));
-        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "81");
+        if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Volume (m³)", "81");
         await CaptureAsync("missing-selected");
         await page.Keyboard.PressAsync("Space");
         Assert.Null(await root.GetAttributeAsync("data-cfx-tooltip-pinned"));

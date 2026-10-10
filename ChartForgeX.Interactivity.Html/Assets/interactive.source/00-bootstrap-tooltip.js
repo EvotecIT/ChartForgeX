@@ -216,6 +216,12 @@
       : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
+  const sizeTooltipRows = (node) => {
+    const value = (node.dataset || {}).cfxSize;
+    return value === undefined || value === null || value === '' ? [] : [{ name: rowName(node, 'size', 'Size'), value }];
+  };
+  const dimensionTooltipRows = (node) => sizeTooltipRows(node).map((row) => ({ ...row, dimension: 'size' }))
+    .concat(colorTooltipRows(node).map((row) => ({ ...row, dimension: 'color' })));
   // A financial Y is the tuple's opening member; all readouts use the complete prices.
   const financialTooltipRows = (node) => {
     const data = node.dataset || {};
@@ -249,7 +255,7 @@
       push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
       push('End', data.cfxEnd);
     }
-    push(rowName(node, 'size', 'Size'), data.cfxSize);
+    sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);

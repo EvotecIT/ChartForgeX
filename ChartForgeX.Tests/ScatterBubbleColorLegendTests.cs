@@ -11,6 +11,26 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Per-series keys reuse the matrix scene while preserving independent color formatting and bounded layout.</summary>
 public sealed class ScatterBubbleColorLegendTests {
+    [Fact]
+    public void OffsetPlotKeepsItsMarksAndClippingAboveTheNumericKey() {
+        var chart = Chart.Create().WithXAxisBounds(0, 3).WithYAxisBounds(0, 100)
+            .AddScatter("Samples", new[] { new ChartPoint(1, 0).WithColorValue(0), new ChartPoint(2, 100).WithColorValue(10) });
+        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 320)));
+        var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
+        var plot = new ChartRect(60, 80, 520, 180);
+        VisualCartesianCompiler.Build(chart, context, builder, plot, new ChartRect(30, 20, 580, 240));
+        var scene = builder.Build();
+        var key = scene.Regions.Single(region => region.Id == "color-scale-0");
+        var marks = scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker").ToArray();
+        Assert.Equal(2, marks.Length);
+        Assert.All(marks, mark => Assert.True(mark.Cy <= key.Bounds.Top + .000001));
+        var clips = scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Clip.HasValue)
+            .Select(node => node.Clip!.Value).Where(bounds => bounds.Top == plot.Top && bounds.Width == plot.Width).ToArray();
+        Assert.NotEmpty(clips);
+        Assert.All(clips, bounds => Assert.True(bounds.Bottom <= key.Bounds.Top + .000001));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

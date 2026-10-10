@@ -66,7 +66,7 @@ internal static partial class VisualCartesianCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode);
         colorScales ??= new ChartSeriesColorScaleSet(chart);
         viewport = ColorScaleViewport(chart, context, builder, viewport, colorScales, legendHeight);
-        if (!measureAxes) plot = new ChartRect(plot.Left, plot.Top, plot.Width, Math.Min(plot.Height, viewport.Height));
+        if (!measureAxes) plot = new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, Math.Min(plot.Height, viewport.Bottom - plot.Top)));
         var coordinates = ChartBarCoordinateMap.Create(chart);
         var stacks = ChartStackLayout.Create(chart, coordinates);
         if (!chart.Series.Any(series => series.HasSourceData) && chart.Annotations.Count == 0) {
