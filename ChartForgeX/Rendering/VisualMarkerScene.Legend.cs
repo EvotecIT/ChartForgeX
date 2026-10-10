@@ -8,7 +8,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMarkerScene {
     internal static Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? Legend(Chart chart, ChartSeries series,
-        ChartColor color, SvgPaint paint, int point = -1, ChartFillPattern pattern = ChartFillPattern.None) {
+        ChartColor color, SvgPaint paint, int point = -1, ChartFillPattern pattern = ChartFillPattern.None, ChartBubbleSizeScale? bubbleScale = null) {
         if (!ChartSeriesKindTraits.SupportsMarkers(series.Kind)) return null;
         var connected = series.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area
             or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.RangeArea or ChartSeriesKind.RangeBand;
@@ -34,7 +34,7 @@ internal static partial class VisualMarkerScene {
             if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea)
                 familyDefault = series.MarkerRadius.HasValue || series.PointColors.Any(value => value.HasValue)
                     || series.PointFillPatterns.Any(value => value.HasValue);
-            var hasRadius = series.Kind == ChartSeriesKind.Bubble ? !series.MarkerRadius.HasValue || series.MarkerRadius > 0 : Radius(series, context) > 0;
+            var hasRadius = series.Kind == ChartSeriesKind.Bubble ? bubbleScale?.HasVisibleRadius ?? true : Radius(series, context) > 0;
             if (!Enabled(series, familyDefault) || !hasRadius) return;
             var strokeWidth = FamilyStrokeWidth(series); ChartColor? stroke = strokeWidth > 0 ? colors.Surface : null;
             SvgPaint? strokePaint = stroke.HasValue ? SvgPaint.Of(colors.Surface, SvgColorRole.Surface) : null;

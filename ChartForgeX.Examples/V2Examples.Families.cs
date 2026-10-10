@@ -80,7 +80,7 @@ public static partial class V2Examples {
         ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
         ChartSeriesKind.Waterfall => "Reversed axes retain signed changes and the derived total",
         ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
-        ChartSeriesKind.Bubble => "Marker shape changes; source size still controls each series' scale",
+        ChartSeriesKind.Bubble => "Equal request volumes share a radius; values above 100 retain their facts",
         ChartSeriesKind.Radar => "A filled area and an unfilled target line share one radial scale",
         ChartSeriesKind.Pyramid => "Reversed horizontal pyramid; areas encode values including zero",
         ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn => "Named stacks reach 100; labels retain source counts",

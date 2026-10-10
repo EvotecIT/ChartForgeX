@@ -28,6 +28,23 @@ For example, use `chart.ConfigureLabels(labels => labels.NoData = "Brak danych")
 
 Object ownership is unchanged. Getter-owned options, accessibility, labels and text styles are edited in place. Bar, line and grid-style callbacks configure a working clone and install a separate copy after success. Chart and topology theme callbacks edit the stored theme; chart-grid and visual-grid callbacks reuse an existing theme or install a newly created light theme after success. Mutations to existing objects can remain after a callback throws. See the [API conventions](api-conventions.md#operation-names) for point-label ownership and the complete naming boundary.
 
+## Bubble size mapping
+
+Bubble series share one chart-wide size domain. Previously, each series inferred its own domain, so equal source sizes could render at different radii. Single-series defaults retain their existing square-root radius mapping and responsive endpoints. A constant automatic domain retains the radius midpoint.
+
+Replace bubble `Markers.Radius`, `MarkerRadius` or `WithMarkerRadius(...)` overrides with `ChartOptions.Bubble` endpoints. Any non-null series radius now throws during preparation, including zero. Clear an existing override with `UseThemeMarkerRadius()` and configure the shared range:
+
+```csharp
+chart.Series[0].UseThemeMarkerRadius();
+chart.ConfigureBubble(bubble => {
+    bubble.WithSizeDomain(0, 100);
+    bubble.MinimumRadius = 3;
+    bubble.MaximumRadius = 24;
+});
+```
+
+Use `series.ConfigureMarkers(markers => markers.Enabled = false)` to hide one series' glyphs. Marker shape, fill, outline and point-label overrides remain available. Explicit domains clamp geometry while retaining raw source sizes; `Reversed = true` maps larger values to smaller radii. Pin the domain and both radius endpoints for stable sizing across data and layout changes. Source sizes remain finite and positive, and the mapping does not promise equal painted areas across shapes. See [bubble sizing](api-conventions.md#bubble-size-scale) for validation and automatic defaults.
+
 ## HTML tooltip options
 
 Configure tooltip content through `HtmlChartInteractionOptions.Tooltip.Mode` and `HtmlInteractiveDashboardOptions.Tooltip.Mode`; these replace the flat `TooltipMode` property. The existing `HtmlChartTooltipMode.Single` and `.SharedX` values are unchanged. Getter-owned `Tooltip` options also expose `Range`: `Exact`, `Nearest`, or `HtmlChartTooltipRange.WithinDistance(cssPixels)`.

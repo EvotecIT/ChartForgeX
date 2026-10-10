@@ -1,7 +1,9 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -51,6 +53,17 @@ internal static class PackageAssertions {
             frame: new VisualFrame(title: "Packed chart"), theme: theme));
         Require(Contains(prepared.ToSvg(), "<svg"), "Prepared SVG failed.");
         Png(prepared.ToPng());
+        var bubbles = ChartForgeX.Core.Chart.Create().WithSize(320, 200)
+            .AddBubble("First", new[] { new ChartBubble(1, 20, 100) })
+            .AddBubble("Second", new[] { new ChartBubble(2, 30, 100), new ChartBubble(3, 40, 1000) })
+            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 2; bubble.MaximumRadius = 14; });
+        var bubbleSvg = XDocument.Parse(bubbles.ToSvg());
+        var bubbleMarks = bubbleSvg.Descendants().Where(mark => (string?)mark.Attribute("data-cfx-role") == "bubble").ToArray();
+        Require(bubbleMarks.Length == 3 && bubbleMarks.All(mark => double.Parse(mark.Attribute("rx")!.Value, CultureInfo.InvariantCulture) == 14),
+            "Packed bubble size-domain or radius contract failed.");
+        Require(bubbleSvg.Descendants().Any(group => (string?)group.Attribute("data-cfx-size") == "1000"),
+            "Packed bubble size clamping changed the raw observation.");
+        Png(bubbles.ToPng());
         var artifact = prepared.ToArtifact("packed-chart", VisualArtifactKind.Chart);
         Require(Contains(artifact.ToInterchangeJson(), "packed-chart"), "Neutral artifact interchange failed.");
         var topology = Topology();

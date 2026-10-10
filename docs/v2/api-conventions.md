@@ -43,6 +43,7 @@ Immutable render requests use constructors and read-only properties. They do not
 | `ChartSeries.WithNodeState(id, state)` | Mutable semantic styling keyed by an existing authored node ID, scoped to that series. `NodeStates` exposes a read-only view; preparation snapshots the resulting paint. |
 | `ChartOptions.Chord` | Typed circular span/start, node geometry, opacity, direction and label settings over the canonical weighted-flow facts. See [weighted chord charts](../chord.md). |
 | `ChartOptions.Sankey` | Getter-owned mutable alignment, ordering, node geometry and flow paint options. `ConfigureSankey` edits the existing object and returns the chart. |
+| `ChartOptions.Bubble` | Getter-owned mutable size-domain, radius endpoints and reversal settings shared by every bubble series. `ConfigureBubble` edits the existing object and returns the chart. |
 
 Keep the numeric scene and painter implementation internal. Public signatures use core-owned types and do not reference Visuals, Stories, browser hosts, their encoders or their policy objects. Static rendering is script-free. Optional animation, interaction and composition have the ownership described in the architecture and [consumer migration guide](migration.md).
 
@@ -207,7 +208,7 @@ Migration: use these typed source collections and `HistogramSourcePoints` in pla
 
 ## Point markers and radial forms
 
-`ChartSeries.Markers` is the shared point-marker configuration for connected Cartesian series, scatter, bubble, radar and polar. `ConfigureMarkers` configures one of nine built-in shapes, logical radius, visibility, fill and outline. Null dimensions and paints preserve the family defaults; explicit point colors retain precedence over the marker fill. `MarkerRadius`, `WithMarkerRadius` and `UseThemeMarkerRadius` use the same radius value. Dotted maps retain their existing radius override; their map geometry does not accept the other marker options.
+`ChartSeries.Markers` is the shared point-marker configuration for connected Cartesian series, scatter, bubble, radar and polar. `ConfigureMarkers` configures one of nine built-in shapes, visibility, fill and outline. Ordinary point glyphs also accept a logical radius override. Null dimensions and paints preserve the family defaults; explicit point colors retain precedence over the marker fill. `MarkerRadius`, `WithMarkerRadius` and `UseThemeMarkerRadius` use the same radius value. Bubble series require a null marker radius and use `ChartOptions.Bubble` for size mapping. Dotted maps retain their existing radius override; their map geometry does not accept the other marker options.
 
 ```csharp
 chart.Series[0].ConfigureMarkers(markers => {
@@ -217,7 +218,7 @@ chart.Series[0].ConfigureMarkers(markers => {
 });
 ```
 
-`Enabled = false` or a radius of zero hides glyphs while retaining source descriptions and connected lines or areas. Bubble values retain their existing series-local size mapping; a radius override scales that mapping. Different shapes can paint different areas at the same radius, and this is not a shared cross-series bubble size domain. SVG, native PNG and legend markers use the same shape geometry. Custom marker paths and dashed marker outlines remain separate options.
+`Enabled = false` hides glyphs while retaining source descriptions and connected lines or areas. Ordinary marker radii of zero also hide glyphs. Different shapes can paint different areas at the same logical radius. SVG, native PNG and legend markers use the same shape geometry. Custom marker paths and dashed marker outlines remain separate options.
 
 `ChartForgeX.Core.ChartLineAreaForm` is the shared form type for `ChartSeries.Radar.Form` and `MetricCard.MiniSparklineStyle`. Its values are `Area = 0` and `Line = 1`; both models default to Area. Metric cards select the same form through `WithMiniSparklineStyle`.
 
@@ -226,6 +227,27 @@ chart.Series[0].ConfigureMarkers(markers => {
 Numeric radial `ChartPoint.X` identifies an ordinal category; `Y` is the signed source value. The numeric domain belongs to `YAxis` or `SecondaryYAxis` in both angular-bar and radial-column orientations. `ChartRadialGeometryOptions` owns finite clockwise start/end angles, inner radius and category/series spacing. Reversal belongs to the corresponding `ChartAxis`, so tick placement and mark projection agree. Fixed nonzero numeric bounds constrain visible geometry without rewriting observations. Percent rings use the separate `AddProgressRing` API and retain their 0–100 contract.
 
 Numeric radial `Inside` and `Center` captions fit entirely within their painted sector. Captions that cannot fit are shortened or omitted with `numeric-radial.label-overflow`; their full source values remain in descriptive regions and point metadata. Outside captions avoid painted marks, and automatic inside ink resolves contrast against the composited fill. Explicit label colors remain caller-controlled.
+
+## Bubble size scale
+
+`ChartOptions.Bubble` owns one size domain for every bubble series, including series on the secondary Y axis and series with hidden glyphs. Automatic bounds use the minimum and maximum positive source sizes across those series; empty tuple series contribute no extent. Equal source sizes therefore map to equal logical radii. Adding an observation outside the automatic domain changes that domain. Pin both the domain and radius endpoints when sizes must remain stable across additional series or viewport changes.
+
+```csharp
+chart.ConfigureBubble(bubble => {
+    bubble.WithSizeDomain(0, 100);
+    bubble.MinimumRadius = 3;
+    bubble.MaximumRadius = 24;
+});
+chart.Series[0].ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
+```
+
+`WithSizeDomain(minimumValue, maximumValue)` atomically installs finite, non-negative, increasing bounds; `MinimumValue` and `MaximumValue` expose them read-only. `UseAutomaticSizeDomain()` clears both. Source `ChartBubble.Size` values remain finite and positive. An explicit domain can start at zero, but does not admit zero-valued observations.
+
+`MinimumRadius` defaults to six logical pixels. A null `MaximumRadius` uses 7.5% of the smaller final plot dimension, bounded between 14 and 32 pixels and raised to the minimum radius when needed. Explicit radius endpoints are finite and non-negative, and the maximum must be at least the minimum during preparation. Equal endpoints select a fixed radius; two zero endpoints suppress bubble and legend glyphs while retaining source facts and legend text. Use `Markers.Enabled = false` to hide only one series.
+
+The existing square-root interpolation of the radius range is preserved: for a nonconstant domain, `t = Clamp((size - minimumValue) / (maximumValue - minimumValue), 0, 1)` and `radius = minimumRadius + Sqrt(t) * (maximumRadius - minimumRadius)`. `Reversed = true` replaces `t` with `1 - t` before taking the square root. Sizes outside an explicit domain use its endpoint radii. A constant automatic domain uses the arithmetic radius midpoint, including when reversed. This mapping does not promise proportional painted areas or equal areas across different marker shapes.
+
+Preparation snapshots the domain and radius settings once. Mark drawing, automatic paint bounds and legend glyph eligibility use that snapshot; the ordinary legend remains a fixed-size style key. Prepared SVG, native PNG, descriptive regions and raw `data-cfx-size` metadata stay detached from later source or option changes. Point-label overrides still change display text without changing raw sizes.
 
 ## Enforcement boundary
 
