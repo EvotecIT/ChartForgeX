@@ -13,8 +13,14 @@ internal static partial class VisualScheduleCompiler {
         if (chart.Series.Any(series => series.Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane))
             return chart.Options.StateCategories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray();
         return chart.Series.Select((series, index) => new { Series = series, Index = index }).Where(item => item.Series.ShowInLegend)
-            .Select(item => new VisualLegendEntry(item.Series.Name, VisualStateSceneTools.SeriesColor(item.Series, item.Index, colors), "series-" + item.Index,
-                paint: VisualChartPaint.Series(item.Series, VisualStateSceneTools.SeriesColor(item.Series, item.Index, colors)))).ToArray();
+            .Select(item => RangeLegendEntry(item.Series, item.Index, colors)).ToArray();
+    }
+
+    private static VisualLegendEntry RangeLegendEntry(ChartSeries series, int index, VisualThemeColors colors) {
+        var marker = IsMarker(series);
+        var color = marker ? MarkerColor(series, colors) : VisualStateSceneTools.SeriesColor(series, index, colors);
+        var paint = marker ? SvgPaint.Of(color, MarkerColorRole(series)) : VisualChartPaint.Series(series, color);
+        return new VisualLegendEntry(series.Name, color, "series-" + index, stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey, paint: paint);
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport) {
@@ -78,9 +84,9 @@ internal static partial class VisualScheduleCompiler {
         var outlined = model.Rows.SelectMany(row => row.Items).Any(item => item.Category.Pattern == ChartStatePattern.Outlined);
         var open = model.Rows.SelectMany(row => row.Items).Any(item => item.Item.IsOpen);
         var outlineExtent = outlined ? ChartStateMark.OutlineWidth / 2 : 0;
-        var minimumExtent = Math.Max(outlineExtent, model.Now == model.Min ? context.Theme.AxisStrokeWidth / 2 : 0);
+        var minimumExtent = Math.Max(outlineExtent, model.Now == model.Min ? TodayWidth(chart, context) / 2 : 0);
         var maximumExtent = Math.Max(Math.Max(outlineExtent, open ? GanttLaneOpenEndStrokeWidth / 2 : 0),
-            model.Now == model.Max ? context.Theme.AxisStrokeWidth / 2 : 0);
+            model.Now == model.Max ? TodayWidth(chart, context) / 2 : 0);
         var projection = MarkProjection(chart.Options.XAxis, layout.Plot, minimumExtent, maximumExtent);
         model = model.Repack(projection.Width);
         var plot = layout.Plot; var tops = model.RowTops(plot); var band = model.Band(plot);

@@ -180,7 +180,7 @@ public sealed class GanttVerticalMarkerTests {
     public async Task MarkerLineAndCaptionSelectTheAuthoredSeriesWhileOrdinaryAnnotationsRemainIndependent(bool dark, int width) {
         var chart = Chart.Create().WithSize(width, 360).WithLegend(false)
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .AddGanttTask("Work", Start, Start.AddDays(8)).AddGanttMarker("Deadline", Start.AddDays(3))
+            .AddGanttTask("Work", Start, Start.AddDays(8)).AddGanttMarker("Deadline", Start.AddDays(3), Start.AddDays(5))
             .AddVerticalLine(Start.AddDays(6).ToOADate(), "Reference");
         chart.Series[1].WithInteractionKey("deadline-source");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -199,6 +199,8 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Equal(1, await page.EvaluateAsync<int>("() => window.cfxSelections.length"));
         Assert.Equal("series", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetKind"));
         Assert.Equal("deadline-source", await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.targetId"));
+        Assert.Equal(Start.AddDays(3).ToOADate().ToString("R", CultureInfo.InvariantCulture),
+            await page.EvaluateAsync<string>("() => window.cfxSelections[0].target.value"));
         var line = await marker.Locator("[data-cfx-role='annotation-line']").BoundingBoxAsync();
         Assert.NotNull(line);
         await page.Mouse.ClickAsync(line!.X, line.Y + 1);
@@ -206,6 +208,8 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Equal("false", await marker.GetAttributeAsync("aria-selected"));
         await marker.FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal(3, await page.EvaluateAsync<int>("() => window.cfxSelections.length"));
+        Assert.Equal(Start.AddDays(3).ToOADate().ToString("R", CultureInfo.InvariantCulture),
+            await page.EvaluateAsync<string>("() => window.cfxSelections[2].target.value"));
         Assert.Equal("true", await marker.GetAttributeAsync("aria-selected"));
         var annotation = page.Locator("[data-cfx-role='annotation']");
         await annotation.Locator("[data-cfx-role='annotation-label']").ClickAsync();

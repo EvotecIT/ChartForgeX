@@ -21,7 +21,7 @@ internal static partial class VisualScheduleCompiler {
             var dependency = gantt ? series.Points[1].Y : -1;
             if (!ChartMath.IsFinite(progress) || progress < 0 || progress > 1 || !ChartMath.IsFinite(dependency) || dependency < -1 || dependency >= index || dependency != Math.Truncate(dependency))
                 throw new InvalidOperationException("Gantt progress must be between zero and one, and dependencies must reference an earlier task.");
-            var marker = gantt && series.Points[2].Y >= .5;
+            var marker = IsMarker(series);
             items.Add(new RangeItem(index, marker ? -1 : row++, start, end, progress, gantt && series.Points[2].X >= .5, marker));
         }
         var links = gantt ? chart.ResolveGanttDependencies() : new List<ChartGanttDependency>();
@@ -50,11 +50,11 @@ internal static partial class VisualScheduleCompiler {
         var slot = plot.Height / Math.Max(1, row); var height = Math.Max(0, Math.Min(gantt ? 30 : 34, slot * .65));
         var milestoneSize = Math.Min(height, plot.Width);
         var milestoneExtent = items.Any(item => item.Milestone) ? milestoneSize / 2 : 0;
-        var markerAtMin = items.Any(item => item.Marker && item.Start == min) || chart.Annotations.Any(annotation => annotation.Kind == ChartAnnotationKind.VerticalLine && annotation.Value == min);
-        var markerAtMax = items.Any(item => item.Marker && item.Start == max) || chart.Annotations.Any(annotation => annotation.Kind == ChartAnnotationKind.VerticalLine && annotation.Value == max);
-        var minimumExtent = Math.Max(milestoneExtent, now == min || markerAtMin ? context.Theme.AxisStrokeWidth / 2 : 0);
+        var markerAtMin = items.Any(item => item.Marker && item.Start == min);
+        var markerAtMax = items.Any(item => item.Marker && item.Start == max);
+        var minimumExtent = Math.Max(milestoneExtent, GuideExtent(chart, context, min, markerAtMin, now));
         var instantExtent = items.Any(item => !item.Milestone && item.Start == item.End) ? 1 : 0;
-        var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), now == max || markerAtMax ? context.Theme.AxisStrokeWidth / 2 : 0);
+        var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), GuideExtent(chart, context, max, markerAtMax, now));
         if (renderedLinks.Length > 0) maximumExtent = Math.Max(maximumExtent,
             (renderedLinks.Any(link => items[link.SuccessorIndex].Milestone) ? milestoneExtent : 0) + Math.Min(5, height / 3) + context.Theme.AxisStrokeWidth / 2);
         var projection = MarkProjection(axis, plot, minimumExtent, maximumExtent);
@@ -123,7 +123,7 @@ internal static partial class VisualScheduleCompiler {
                     DataLabel(chart, context, builder, series, 0, label, bounds, viewport, colors, fill);
                 }
             }
-            Markers(chart, context, builder, plot, items, Project, min, max, colors, obstacles, predecessors);
+            Markers(chart, context, builder, plot, items, Project, Format, min, max, colors, obstacles, predecessors);
             if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             // Links are foreground annotations: successor fills must not cover their arrowheads.
             if (gantt) Dependencies(chart, context, builder, plot, items, renderedLinks, Project, slot, height);
