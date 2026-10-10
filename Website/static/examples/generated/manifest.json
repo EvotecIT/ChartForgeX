@@ -184,6 +184,30 @@
     "family-box-plot-wide-light.svg",
     "family-box-plot-wide-light.thumbnail.png",
     "family-box-plot-wide-light.thumbnail.svg",
+    "family-bubble-color-scale-dark.csharp.txt",
+    "family-bubble-color-scale-dark.html",
+    "family-bubble-color-scale-dark.png",
+    "family-bubble-color-scale-dark.svg",
+    "family-bubble-color-scale-dark.thumbnail.png",
+    "family-bubble-color-scale-dark.thumbnail.svg",
+    "family-bubble-color-scale-light.csharp.txt",
+    "family-bubble-color-scale-light.html",
+    "family-bubble-color-scale-light.png",
+    "family-bubble-color-scale-light.svg",
+    "family-bubble-color-scale-light.thumbnail.png",
+    "family-bubble-color-scale-light.thumbnail.svg",
+    "family-bubble-compact-color-scale-dark.csharp.txt",
+    "family-bubble-compact-color-scale-dark.html",
+    "family-bubble-compact-color-scale-dark.png",
+    "family-bubble-compact-color-scale-dark.svg",
+    "family-bubble-compact-color-scale-dark.thumbnail.png",
+    "family-bubble-compact-color-scale-dark.thumbnail.svg",
+    "family-bubble-compact-color-scale-light.csharp.txt",
+    "family-bubble-compact-color-scale-light.html",
+    "family-bubble-compact-color-scale-light.png",
+    "family-bubble-compact-color-scale-light.svg",
+    "family-bubble-compact-color-scale-light.thumbnail.png",
+    "family-bubble-compact-color-scale-light.thumbnail.svg",
     "family-bubble-compact-dark.csharp.txt",
     "family-bubble-compact-dark.html",
     "family-bubble-compact-dark.png",
@@ -1588,6 +1612,30 @@
     "family-sankey-wide-light.svg",
     "family-sankey-wide-light.thumbnail.png",
     "family-sankey-wide-light.thumbnail.svg",
+    "family-scatter-color-scale-dark.csharp.txt",
+    "family-scatter-color-scale-dark.html",
+    "family-scatter-color-scale-dark.png",
+    "family-scatter-color-scale-dark.svg",
+    "family-scatter-color-scale-dark.thumbnail.png",
+    "family-scatter-color-scale-dark.thumbnail.svg",
+    "family-scatter-color-scale-light.csharp.txt",
+    "family-scatter-color-scale-light.html",
+    "family-scatter-color-scale-light.png",
+    "family-scatter-color-scale-light.svg",
+    "family-scatter-color-scale-light.thumbnail.png",
+    "family-scatter-color-scale-light.thumbnail.svg",
+    "family-scatter-compact-color-scale-dark.csharp.txt",
+    "family-scatter-compact-color-scale-dark.html",
+    "family-scatter-compact-color-scale-dark.png",
+    "family-scatter-compact-color-scale-dark.svg",
+    "family-scatter-compact-color-scale-dark.thumbnail.png",
+    "family-scatter-compact-color-scale-dark.thumbnail.svg",
+    "family-scatter-compact-color-scale-light.csharp.txt",
+    "family-scatter-compact-color-scale-light.html",
+    "family-scatter-compact-color-scale-light.png",
+    "family-scatter-compact-color-scale-light.svg",
+    "family-scatter-compact-color-scale-light.thumbnail.png",
+    "family-scatter-compact-color-scale-light.thumbnail.svg",
     "family-scatter-compact-dark.csharp.txt",
     "family-scatter-compact-dark.html",
     "family-scatter-compact-dark.png",
@@ -3646,6 +3694,82 @@
       "semanticRegions": 19
     },
     {
+      "id": "family-scatter-color-scale-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-color-scale-light.csharp.txt",
+      "svg": "family-scatter-color-scale-light.svg",
+      "png": "family-scatter-color-scale-light.png",
+      "html": "family-scatter-color-scale-light.html",
+      "thumbnail": "family-scatter-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 36
+    },
+    {
+      "id": "family-scatter-compact-color-scale-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-color-scale-light.csharp.txt",
+      "svg": "family-scatter-compact-color-scale-light.svg",
+      "png": "family-scatter-compact-color-scale-light.png",
+      "html": "family-scatter-compact-color-scale-light.html",
+      "thumbnail": "family-scatter-compact-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 36
+    },
+    {
       "id": "family-scatter-options-light",
       "family": "scatter",
       "familyLabel": "Scatter",
@@ -3778,6 +3902,82 @@
       "semanticRegions": 19
     },
     {
+      "id": "family-scatter-color-scale-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-color-scale-dark.csharp.txt",
+      "svg": "family-scatter-color-scale-dark.svg",
+      "png": "family-scatter-color-scale-dark.png",
+      "html": "family-scatter-color-scale-dark.html",
+      "thumbnail": "family-scatter-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 36
+    },
+    {
+      "id": "family-scatter-compact-color-scale-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-color-scale-dark.csharp.txt",
+      "svg": "family-scatter-compact-color-scale-dark.svg",
+      "png": "family-scatter-compact-color-scale-dark.png",
+      "html": "family-scatter-compact-color-scale-dark.html",
+      "thumbnail": "family-scatter-compact-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 36
+    },
+    {
       "id": "family-scatter-options-dark",
       "family": "scatter",
       "familyLabel": "Scatter",
@@ -3908,6 +4108,82 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-bubble-color-scale-light",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-color-scale-light.csharp.txt",
+      "svg": "family-bubble-color-scale-light.svg",
+      "png": "family-bubble-color-scale-light.png",
+      "html": "family-bubble-color-scale-light.html",
+      "thumbnail": "family-bubble-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-bubble-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 34
+    },
+    {
+      "id": "family-bubble-compact-color-scale-light",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-bubble-compact-color-scale-light.csharp.txt",
+      "svg": "family-bubble-compact-color-scale-light.svg",
+      "png": "family-bubble-compact-color-scale-light.png",
+      "html": "family-bubble-compact-color-scale-light.html",
+      "thumbnail": "family-bubble-compact-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-bubble-compact-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 34
     },
     {
       "id": "family-bubble-options-light",
@@ -4044,6 +4320,82 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-bubble-color-scale-dark",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-color-scale-dark.csharp.txt",
+      "svg": "family-bubble-color-scale-dark.svg",
+      "png": "family-bubble-color-scale-dark.png",
+      "html": "family-bubble-color-scale-dark.html",
+      "thumbnail": "family-bubble-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-bubble-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 34
+    },
+    {
+      "id": "family-bubble-compact-color-scale-dark",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-bubble-compact-color-scale-dark.csharp.txt",
+      "svg": "family-bubble-compact-color-scale-dark.svg",
+      "png": "family-bubble-compact-color-scale-dark.png",
+      "html": "family-bubble-compact-color-scale-dark.html",
+      "thumbnail": "family-bubble-compact-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-bubble-compact-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 34
     },
     {
       "id": "family-bubble-options-dark",

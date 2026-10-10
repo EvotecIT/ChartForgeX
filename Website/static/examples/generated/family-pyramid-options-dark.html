@@ -148,6 +148,44 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart? NumericColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        if (kind is not (ChartSeriesKind.Scatter or ChartSeriesKind.Bubble) || variant is not (&quot;color-scale&quot; or &quot;compact-color-scale&quot;)) return null;
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var samples = new[] {
+            new { Batch = 15d, Minutes = 28d, Requests = 9d, Temperature = (double?)-12 },
+            new { Batch = 30d, Minutes = 42d, Requests = 36d, Temperature = (double?)0 },
+            new { Batch = 45d, Minutes = 18d, Requests = 81d, Temperature = (double?)null },
+            new { Batch = 60d, Minutes = 35d, Requests = 36d, Temperature = (double?)12 },
+            new { Batch = 80d, Minutes = 22d, Requests = 120d, Temperature = (double?)35 }
+        };
+        var chart = Chart.Create().WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
+            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
+            .ConfigureLabels(labels =&gt; { labels.Color = &quot;Temperature (&#176;C)&quot;; labels.NoData = &quot;Not sampled&quot;; });
+        ChartColorScale scale;
+        if (kind == ChartSeriesKind.Scatter) {
+            chart.AddScatter(&quot;Recorded batches&quot;, samples.Select(sample =&gt; new ChartPoint(sample.Batch, sample.Minutes).WithColorValue(sample.Temperature)));
+            scale = ChartColorScale.Diverging(new[] { colors.Palette[0] }, colors.Surface,
+                new[] { ChartColor.FromHex(&quot;#D9A441&quot;), ChartColor.FromHex(&quot;#CF6A42&quot;), colors.Status.Critical.Fill }, 0)
+                .WithValueRange(-15, 30).WithLabels(&quot;Cold&quot;, &quot;Freezing&quot;, &quot;Warm&quot;);
+        } else {
+            chart.AddBubble(&quot;Recorded batches&quot;, samples.Select(sample =&gt; new ChartBubble(sample.Batch, sample.Minutes, sample.Requests).WithColorValue(sample.Temperature)))
+                .ConfigureBubble(bubble =&gt; { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20; });
+            scale = ChartColorScale.Discrete(new[] {
+                new ChartColorBand(0, colors.Palette[0], &quot;Cold&quot;),
+                new ChartColorBand(15, colors.Status.Medium.Fill, &quot;Mild&quot;),
+                new ChartColorBand(null, colors.Status.Critical.Fill, &quot;Warm&quot;)
+            });
+        }
+        chart.Series[0].WithColorScale(scale.WithNoDataColor(colors.Border))
+            .WithInteractionKey(&quot;recorded-batches&quot;).ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+        chart.AddLine(&quot;Target duration&quot;, new[] { new ChartPoint(0, 30), new ChartPoint(100, 30) });
+        chart.Series[1].ConfigureMarkers(markers =&gt; markers.Enabled = false);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates a fixed comparison grid with shared Cartesian axes.&lt;/summary&gt;
     public static ChartGrid CreateGrid() =&gt; ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
         .Add(Create(ChartSeriesKind.Line).WithTitle(&quot;Observed requests&quot;))
@@ -785,11 +823,11 @@ public static partial class V2GalleryModels {
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
         var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
-        var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
+        var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
-            ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
         if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.Area) {
@@ -935,6 +973,44 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart? NumericColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        if (kind is not (ChartSeriesKind.Scatter or ChartSeriesKind.Bubble) || variant is not (&quot;color-scale&quot; or &quot;compact-color-scale&quot;)) return null;
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var samples = new[] {
+            new { Batch = 15d, Minutes = 28d, Requests = 9d, Temperature = (double?)-12 },
+            new { Batch = 30d, Minutes = 42d, Requests = 36d, Temperature = (double?)0 },
+            new { Batch = 45d, Minutes = 18d, Requests = 81d, Temperature = (double?)null },
+            new { Batch = 60d, Minutes = 35d, Requests = 36d, Temperature = (double?)12 },
+            new { Batch = 80d, Minutes = 22d, Requests = 120d, Temperature = (double?)35 }
+        };
+        var chart = Chart.Create().WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
+            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
+            .ConfigureLabels(labels =&gt; { labels.Color = &quot;Temperature (&#176;C)&quot;; labels.NoData = &quot;Not sampled&quot;; });
+        ChartColorScale scale;
+        if (kind == ChartSeriesKind.Scatter) {
+            chart.AddScatter(&quot;Recorded batches&quot;, samples.Select(sample =&gt; new ChartPoint(sample.Batch, sample.Minutes).WithColorValue(sample.Temperature)));
+            scale = ChartColorScale.Diverging(new[] { colors.Palette[0] }, colors.Surface,
+                new[] { ChartColor.FromHex(&quot;#D9A441&quot;), ChartColor.FromHex(&quot;#CF6A42&quot;), colors.Status.Critical.Fill }, 0)
+                .WithValueRange(-15, 30).WithLabels(&quot;Cold&quot;, &quot;Freezing&quot;, &quot;Warm&quot;);
+        } else {
+            chart.AddBubble(&quot;Recorded batches&quot;, samples.Select(sample =&gt; new ChartBubble(sample.Batch, sample.Minutes, sample.Requests).WithColorValue(sample.Temperature)))
+                .ConfigureBubble(bubble =&gt; { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20; });
+            scale = ChartColorScale.Discrete(new[] {
+                new ChartColorBand(0, colors.Palette[0], &quot;Cold&quot;),
+                new ChartColorBand(15, colors.Status.Medium.Fill, &quot;Mild&quot;),
+                new ChartColorBand(null, colors.Status.Critical.Fill, &quot;Warm&quot;)
+            });
+        }
+        chart.Series[0].WithColorScale(scale.WithNoDataColor(colors.Border))
+            .WithInteractionKey(&quot;recorded-batches&quot;).ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+        chart.AddLine(&quot;Target duration&quot;, new[] { new ChartPoint(0, 30), new ChartPoint(100, 30) });
+        chart.Series[1].ConfigureMarkers(markers =&gt; markers.Enabled = false);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates a fixed comparison grid with shared Cartesian axes.&lt;/summary&gt;
     public static ChartGrid CreateGrid() =&gt; ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
         .Add(Create(ChartSeriesKind.Line).WithTitle(&quot;Observed requests&quot;))
@@ -1572,11 +1648,11 @@ public static partial class V2GalleryModels {
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
         var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
-        var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
+        var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
-            ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
         if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.Area) {
