@@ -108,6 +108,7 @@ internal sealed partial class VisualSceneBuilder {
         if (pattern == ChartFillPattern.None || strokeWidth == 0) return;
         var shape = SnapshotPath(clip, close: true);
         var contours = VisualSceneGeometry.Flatten(shape, 1);
+        if (!VisualSceneGeometry.HasEvenOddFillArea(contours)) return;
         var points = contours.SelectMany(contour => contour).ToArray();
         if (points.Length == 0) return;
         var left = points.Min(point => point.X); var top = points.Min(point => point.Y);
