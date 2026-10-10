@@ -207,15 +207,16 @@ public sealed partial class PreparedVisualStory {
     }
 
     private VisualStoryFrameOptions DefaultSvgSampling() {
-        var normal = new VisualStoryFrameOptions();
-        var count = RequiredFrameCount(normal.FramesPerSecond);
-        if (count > normal.MaximumFrames || SceneCoverageFailure(count, index => TimeSpan.FromTicks(SampleTicks(index, normal.FramesPerSecond))) == null) return normal;
-        foreach (var rate in new[] { 12, 24, 30, 60 }) {
+        // Prefer the usual cadence, then resolve short chapters or longer plays
+        // without silently raising the default resource limit.
+        foreach (var rate in new[] { 6, 12, 24, 30, 60, 4, 3, 2 }) {
             var candidate = new VisualStoryFrameOptions(rate);
-            count = RequiredFrameCount(rate);
-            if (count > candidate.MaximumFrames || SceneCoverageFailure(count, index => TimeSpan.FromTicks(SampleTicks(index, rate))) == null) return candidate;
+            var count = RequiredFrameCount(rate);
+            if (count <= candidate.MaximumFrames &&
+                SceneCoverageFailure(count, index => TimeSpan.FromTicks(SampleTicks(index, rate))) == null) return candidate;
         }
-        return new VisualStoryFrameOptions(60);
+        throw new InvalidOperationException("Default SVG sampling cannot keep every chapter readable within 600 frames. " +
+            "Supply VisualStoryFrameOptions with a suitable frame rate and a larger maximumFrames budget, or adjust scene durations or the completed-state hold.");
     }
 
     private static VisualStory Capture(VisualStory story, out long assetBytes) {

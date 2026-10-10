@@ -13,7 +13,9 @@ public sealed partial class PreparedVisualStory {
         new HtmlVisualStoryRenderer().RenderPage(_story, ToAnimatedSvg(options, cancellationToken: cancellationToken));
 
     /// <summary>Exports sampled native frames as a self-contained, script-free SVG animation using the prepared playback clock.</summary>
-    /// <remarks>Reduced motion and print show the completed poster. The complete SVG document has a 64 MiB character budget, including escaped text and embedded frames.</remarks>
+    /// <remarks>Default sampling adapts cadence within 600 frames while preserving readable chapters; longer or denser stories require explicit options.
+    /// Reduced motion and print show the completed poster. The complete SVG document has a 64 MiB character budget, including escaped text and embedded frames.</remarks>
+    /// <exception cref="InvalidOperationException">Sampling exceeds its frame budget, misses a readable chapter, or exceeds the document budget.</exception>
     public string ToAnimatedSvg(VisualStoryFrameOptions? options = null, string idScope = "", CancellationToken cancellationToken = default) {
         if (idScope == null) throw new ArgumentNullException(nameof(idScope));
         var sampling = options ?? DefaultSvgSampling(); var count = FrameCount(sampling);
