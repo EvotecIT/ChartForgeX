@@ -29,10 +29,11 @@ internal static partial class VisualScheduleCompiler {
         if (now.HasValue) { min = Math.Min(min, now.Value); max = Math.Max(max, now.Value); }
         min = axis.Minimum ?? min; max = axis.Maximum ?? max;
         (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
+        var fixedTicks = axis.Labels.Count == 0 && gantt && axis.Scale == ChartScaleKind.Time && chart.Options.GanttTickInterval != null
+            ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null;
         var ticks = axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= min && value <= max).Distinct().OrderBy(value => value).ToArray()
-            : (gantt && axis.Scale == ChartScaleKind.Time && chart.Options.GanttTickInterval != null
-                ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null) ?? ChartTicks.GenerateInside(axis, min, max);
-        var milliseconds = gantt && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
+            : fixedTicks ?? ChartTicks.GenerateInside(axis, min, max);
+        var milliseconds = fixedTicks != null && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
         var tickLabels = ticks.ToDictionary(value => value, value => ChartAxisValueFormatter.Format(axis, value,
             tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick, milliseconds) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks));
         string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : ChartAxisValueFormatter.Format(axis, value,

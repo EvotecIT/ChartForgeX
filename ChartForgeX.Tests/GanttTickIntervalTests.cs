@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Markup.Mermaid;
@@ -107,17 +108,45 @@ public sealed class GanttTickIntervalTests {
     }
 
     [Fact]
-    public void NativeMillisecondLabelsPreservePrecisionAndExplicitFormattingWins() {
+    public async Task NativeMillisecondLabelsPreservePrecisionAndExplicitFormattingWins() {
         var start = new DateTime(2026, 1, 1);
         var chart = Chart.Create().WithLegend(false).AddGanttTask("Window", start, start.AddMilliseconds(300))
             .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100));
         var svg = chart.ToSvg();
-        foreach (var label in new[] { "00:00:00.000", "00:00:00.100", "00:00:00.200", "00:00:00.300" }) Assert.Contains(">" + label + "</text>", svg);
+        foreach (var label in new[] { "00:00:00.000", "00:00:00.100", "00:00:00.200", "00:00:00.300" }) Assert.Contains(">2026-01-01 " + label + "</text>", svg);
         Assert.NotEmpty(chart.ToPng());
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            Directory.CreateDirectory(captures);
+            File.WriteAllBytes(Path.Combine(captures, "gantt-ticks-milliseconds-native.png"), chart.ToPng());
+        }
+        if (InteractiveChartBrowser.Enabled) {
+            await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", 960, 600);
+            var labels = await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync();
+            Assert.Equal(new[] { "2026-01-01 00:00:00.000", "2026-01-01 00:00:00.100", "2026-01-01 00:00:00.200", "2026-01-01 00:00:00.300" }, labels);
+            InteractiveChartBrowser.AssertNoConsoleErrors(session);
+            if (!string.IsNullOrWhiteSpace(captures)) await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "gantt-ticks-milliseconds.png"), FullPage = true });
+        }
         chart.WithXAxisValueFormatter(value => "Custom " + DateTime.FromOADate(value).Millisecond.ToString(CultureInfo.InvariantCulture));
         Assert.Contains(">Custom 100</text>", chart.ToSvg());
         chart.WithXAxisValueFormatter(null).ConfigureXAxis(axis => axis.Labels.Add(new ChartAxisLabel(start.AddMilliseconds(100), "Authored tick")));
         Assert.Contains(">Authored tick</text>", chart.ToSvg());
+    }
+
+    [Theory]
+    [InlineData(100, false)]
+    [InlineData(86400000, true)]
+    public void DenseFallbackAndLargeMillisecondIntervalsKeepDateIdentity(int count, bool fixedInterval) {
+        var start = new DateTime(2026, 1, 1);
+        var chart = Chart.Create().WithLegend(false).WithSize(960, 360).AddGanttTask("Window", start, start.AddDays(7))
+            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, count));
+        var svg = chart.ToSvg();
+        var labels = XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").Select(element => element.Value).ToArray();
+        Assert.Contains(labels, label => label.StartsWith("2026-01-01", StringComparison.Ordinal));
+        Assert.Contains(labels, label => label.StartsWith("2026-01-08", StringComparison.Ordinal));
+        Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(fixedInterval, labels.Any(label => label.Contains("00:00:00.000", StringComparison.Ordinal)));
+        Assert.NotEmpty(chart.ToPng());
     }
 
     [Theory]
