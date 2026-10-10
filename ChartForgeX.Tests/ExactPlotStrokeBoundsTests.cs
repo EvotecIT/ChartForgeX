@@ -8,6 +8,37 @@ namespace ChartForgeX.Tests;
 
 public sealed class ExactPlotStrokeBoundsTests {
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task AuthoredAxisEndStillAllowsFullWidthGuidesToFitTheAutomaticEnd(bool gantt, bool maximum) {
+        var chart = Chart.Create().WithSize(640, 320).WithPadding(0, 0, 0, 0)
+            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);
+        if (gantt) chart.AddGanttTask("Task", 0, 1);
+        else chart.AddLine("Values", new[] { new ChartPoint(0, 0), new ChartPoint(1, 1) });
+        if (maximum) chart.Options.XAxis.Maximum = 1;
+        else chart.Options.XAxis.Minimum = 0;
+        chart.AddVerticalLine(0).AddVerticalLine(1);
+        foreach (var annotation in chart.Annotations)
+            annotation.StrokeStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 640, .15);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var references = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "annotation-line").ToArray();
+        Assert.Equal(2, references.Length);
+        Assert.InRange(references[maximum ? 0 : 1].Commands[0].X, 319.999, 320.001);
+        Assert.InRange(references[maximum ? 1 : 0].Commands[0].X, maximum ? 639.999 : -.001, maximum ? 640.001 : .001);
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + prepared.ToSvg() + "</body></html>", 640, 320);
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        var name = "plot-width-authored-" + (maximum ? "maximum-" : "minimum-") + (gantt ? "gantt" : "cartesian");
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
+        File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), prepared.ToPng());
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ConflictingPlotWidthReferencesPreserveDataAndSmallerGuideGeometry(bool gantt) {

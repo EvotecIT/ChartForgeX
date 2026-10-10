@@ -32,7 +32,7 @@ internal static partial class VisualScheduleCompiler {
         var bounds = new VisualAxisPaintBounds();
         bounds.Include(0, left); bounds.Include(1, right);
         foreach (var guide in guides) bounds.Include(guide.X, guide.Y);
-        var fullWidthConflict = bounds.HasFullWidthConflict(plot.Width);
+        var fullWidthConflict = !axis.Minimum.HasValue && !axis.Maximum.HasValue && bounds.HasFullWidthConflict(plot.Width);
         foreach (var guide in guides) {
             // Preserve task and containable-guide geometry when a wider stroke must clip.
             if (guide.Y * 2 > plot.Width || fullWidthConflict && guide.Y * 2 == plot.Width) continue;

@@ -28,7 +28,7 @@ internal sealed class VisualAxisPaintBounds {
         out double expandedMinimum, out double expandedMaximum) {
         expandedMinimum = minimum; expandedMaximum = maximum;
         if (_extents.Count == 0 || !(pixels > 0) || !(maximum > minimum) || fixedMinimum && fixedMaximum) return false;
-        var fullWidthConflict = HasFullWidthConflict(pixels);
+        var fullWidthConflict = !fixedMinimum && !fixedMaximum && HasFullWidthConflict(pixels);
         var low = maximum - minimum;
         if (TryPosition(low, out _)) return false;
         var high = low;
