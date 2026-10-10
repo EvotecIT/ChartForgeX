@@ -85,7 +85,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 540.0,
       "svg": {
-        "minVisualNodes": 2,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -93,7 +93,7 @@
         "outputScale": 1,
         "minVisiblePixels": 259200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 706,
+        "minDistinctColors": 717,
         "maxEdgeInkPixels": 0
       }
     },
@@ -181,7 +181,7 @@
       "logicalWidth": 1200.0,
       "logicalHeight": 675.0,
       "svg": {
-        "minVisualNodes": 2,
+        "minVisualNodes": 29,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -189,7 +189,7 @@
         "outputScale": 1,
         "minVisiblePixels": 405000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1312,
+        "minDistinctColors": 1374,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3805,7 +3805,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 540.0,
       "svg": {
-        "minVisualNodes": 2,
+        "minVisualNodes": 18,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -3813,7 +3813,7 @@
         "outputScale": 1,
         "minVisiblePixels": 259200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 879,
+        "minDistinctColors": 905,
         "maxEdgeInkPixels": 0
       }
     },
@@ -7534,6 +7534,78 @@
         "minVisiblePixels": 739900,
         "minTransparentPixels": 108,
         "minDistinctColors": 1750,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "write-fix-reveal-portrait",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 480,
+      "height": 853,
+      "logicalWidth": 480.0,
+      "logicalHeight": 853.0,
+      "svg": {
+        "minVisualNodes": 48,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 204720,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 657,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "write-fix-reveal-square",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 720,
+      "height": 720,
+      "logicalWidth": 720.0,
+      "logicalHeight": 720.0,
+      "svg": {
+        "minVisualNodes": 48,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 259200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 546,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "write-fix-reveal-widescreen",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1280,
+      "height": 720,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 720.0,
+      "svg": {
+        "minVisualNodes": 48,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 460800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 727,
         "maxEdgeInkPixels": 0
       }
     },

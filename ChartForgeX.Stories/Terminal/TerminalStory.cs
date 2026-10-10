@@ -113,7 +113,7 @@ public sealed class TerminalStoryStep {
 /// <summary>
 /// Models a deterministic, script-free animated terminal presentation.
 /// </summary>
-public sealed class TerminalStory {
+public sealed partial class TerminalStory {
     private const int MaximumTabTitleLength = 256;
     private const string DefaultTabId = "main";
     private readonly List<TerminalStoryStep> _steps = new();

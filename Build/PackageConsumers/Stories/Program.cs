@@ -42,6 +42,19 @@ internal static class Program {
         var options = VisualStoryAnimationOptions.Create().WithFramesPerSecond(2).WithEndHold(0).WithTransition(0).WithLoop(false);
         PackageAssertions.Gif(story.ToGif(options));
         PackageAssertions.Apng(story.ToApng(options));
+        var editor = StorySourceTimeline.Create(StorySourceText.Create("", "powershell"))
+            .Type("Write-Output Ready", TimeSpan.FromSeconds(.5));
+        var editing = VisualStory.Create("Packed editor").WithSize(480, 320);
+        editing.Scene("edit", "Edit", 1).Panel("source", new VisualStorySourceSurface(editor));
+        editing.Outcome("source", "Ready", "source");
+        var prepared = editing.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
+        PackageAssertions.Owner(typeof(PreparedVisualStory), "ChartForgeX.Stories");
+        PackageAssertions.Require(PackageAssertions.Contains(prepared.ToSvg(), "Write-Output Ready"), "Prepared source is missing.");
+        using (var stream = new System.IO.MemoryStream()) {
+            prepared.WriteAnimation(stream, RasterAnimationFormat.Apng, new VisualStoryFrameOptions(2, maximumFrames: 2));
+            PackageAssertions.Apng(stream.ToArray());
+            PackageAssertions.Require(stream.CanWrite, "Story export closed its caller stream.");
+        }
 
         var topology = PackageAssertions.Topology();
         var motion = topology.WithMotion(TopologyMotionOptions.RoutePulseForEdges("api-db")

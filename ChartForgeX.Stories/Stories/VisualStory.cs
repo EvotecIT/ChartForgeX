@@ -4,6 +4,16 @@ using System.Linq;
 
 namespace ChartForgeX.Stories;
 
+/// <summary>Common presentation aspect ratios with panel reflow enabled.</summary>
+public enum VisualStoryFormat {
+    /// <summary>Sixteen-by-nine landscape video.</summary>
+    Widescreen,
+    /// <summary>A square social post.</summary>
+    Square,
+    /// <summary>Nine-by-sixteen portrait video.</summary>
+    Portrait
+}
+
 /// <summary>Specifies how panels are arranged within one visual-story scene.</summary>
 public enum VisualStorySceneLayout {
     /// <summary>One primary panel fills the content region.</summary>
@@ -128,6 +138,22 @@ public sealed class VisualStory {
     /// <summary>Gets the logical output height.</summary>
     public int Height { get; private set; } = 675;
 
+    /// <summary>Gets whether split panels stack in a portrait viewport.</summary>
+    public bool ReflowPanels { get; private set; }
+
+    /// <summary>Sets a sharing format. Authoring stays in logical units; raster scale controls pixel density.</summary>
+    public VisualStory WithFormat(VisualStoryFormat format, int shortSide = 720) {
+        if (!Enum.IsDefined(typeof(VisualStoryFormat), format)) throw new ArgumentOutOfRangeException(nameof(format));
+        if (shortSide < 480 || shortSide > 1215) throw new ArgumentOutOfRangeException(nameof(shortSide));
+        var longSide = (int)Math.Round(shortSide * 16d / 9);
+        WithSize(format == VisualStoryFormat.Widescreen ? longSide : shortSide,
+            format == VisualStoryFormat.Portrait ? longSide : shortSide);
+        ReflowPanels = true; return this;
+    }
+
+    /// <summary>Enables portrait stacking for split scenes without changing explicit stacked layouts.</summary>
+    public VisualStory WithPanelReflow(bool enabled = true) { ReflowPanels = enabled; return this; }
+
     /// <summary>Gets the output theme.</summary>
     public VisualStoryTheme Theme { get; private set; } = VisualStoryTheme.PremiumDark();
 
@@ -139,6 +165,9 @@ public sealed class VisualStory {
 
     /// <summary>Creates a visual story.</summary>
     public static VisualStory Create(string title) => new(title);
+
+    /// <summary>Captures a detached presentation for deterministic seeking and repeated exports.</summary>
+    public PreparedVisualStory Prepare(VisualStoryPlaybackOptions? playback = null) => new(this, playback ?? new VisualStoryPlaybackOptions());
 
     /// <summary>Sets the accessible story description.</summary>
     public VisualStory WithDescription(string description) {

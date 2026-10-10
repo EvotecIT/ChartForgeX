@@ -84,6 +84,7 @@ internal sealed class AnimatedRasterFrames {
         var apngDelays = format == RasterAnimationFormat.Apng ? new RasterFrameDelay[frames.Count] : null;
         var width = frames[0].Image.Width;
         var height = frames[0].Image.Height;
+        var clock = new GifFrameClock();
         for (var index = 0; index < frames.Count; index++) {
             cancellationToken.ThrowIfCancellationRequested();
             var frame = frames[index];
@@ -92,7 +93,7 @@ internal sealed class AnimatedRasterFrames {
                 throw new ArgumentException("Animation frames must have matching canvas dimensions.", nameof(frames));
             }
             images[index] = frame.Image;
-            if (gifDelays != null) gifDelays[index] = RasterFrameDelay.GifCentiseconds(frame.Duration);
+            if (gifDelays != null) gifDelays[index] = clock.Next(frame.Duration);
             if (apngDelays != null) apngDelays[index] = RasterFrameDelay.Apng(frame.Duration);
         }
         return new AnimatedRasterFrames(images, width, height, 1, 1, playCount, gifDelays, apngDelays);

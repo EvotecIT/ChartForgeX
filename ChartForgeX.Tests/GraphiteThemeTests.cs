@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 public sealed class GraphiteThemeTests {
     [Fact]
     public void GeneratedJsonOptInLoadsTheIndependentGraphiteRoles() {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        var directory = new DirectoryInfo(TestRepository.Root);
         while (directory != null && !File.Exists(Path.Combine(directory.FullName, "ChartForgeX.sln"))) directory = directory.Parent;
         var path = Path.Combine(directory!.FullName, "ChartForgeX.Tests", "Fixtures", "tokens", "palette-v1-graphite.json");
         var document = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!;

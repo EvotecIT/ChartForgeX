@@ -497,6 +497,8 @@ The renderer models a presentation, not a shell. Dialects control prompt behavio
 
 ### Generic visual stories
 
+Prepare a story once to seek its source edits and embedded terminal playback, export consistent GIF/APNG timing, or use the optional browser player. Landscape, square and portrait presets reflow panels while keeping source text at an explicit readable size. See [story authoring and playback](docs/stories.md).
+
 `VisualStory` presents resolved source, terminal, text, image, or SVG surfaces as a sequence of scenes. It is deliberately not tied to charts: API request/response demos, image before/after walkthroughs, deployment evidence, tutorials, and product tours use the same contract. Every story declares one or more outcomes, and rendering fails unless the completed scene still contains each outcome panel. A demo that promises a chart therefore has to show the chart, not merely print a filename.
 
 ```csharp

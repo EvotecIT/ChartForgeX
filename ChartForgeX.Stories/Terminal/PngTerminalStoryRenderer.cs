@@ -26,26 +26,30 @@ public sealed class PngTerminalStoryRenderer {
         TerminalStory story,
         double targetWidth,
         double targetHeight,
-        int outputScale) {
+        int outputScale,
+        double? elapsedSeconds = null) {
         ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
         var layout = BuildFittedLayout(story, out var fonts);
         var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
-        return RenderImage(story, layout, fonts, renderScale, null);
+        return RenderImage(story, layout, fonts, renderScale, elapsedSeconds);
     }
 
     internal static long EstimateFittedWorkingBytes(
         TerminalStory story,
         double targetWidth,
         double targetHeight,
-        int outputScale) {
+        int outputScale) => EstimateFittedWorkingBytes(story, targetWidth, targetHeight, outputScale, out _);
+
+    internal static long EstimateFittedWorkingBytes(
+        TerminalStory story, double targetWidth, double targetHeight, int outputScale, out long retainedBytes) {
         ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
         var layout = BuildFittedLayout(story, out _);
         var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
         RasterAllocationGuard.Calculate(layout.Width, layout.Height, 2, renderScale);
         var width = checked((long)layout.Width * renderScale);
         var height = checked((long)layout.Height * renderScale);
-        return checked(AnimatedRasterMemoryBudget.RenderWorkingBytes(width, height, 2) +
-            AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(width, height, 1));
+        retainedBytes = AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(width, height, 1);
+        return checked(AnimatedRasterMemoryBudget.RenderWorkingBytes(width, height, 2) + retainedBytes);
     }
 
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {
@@ -85,7 +89,7 @@ public sealed class PngTerminalStoryRenderer {
                 var state = VisibleState(line, elapsedSeconds);
                 if (!state.Visible) continue;
                 var y = layout.ContentTop + line.RowIndex * story.LineHeight + state.TranslateY;
-                var visibleText = line.IsCommand && elapsedSeconds.HasValue ? VisibleCommand(line, state.Progress) : line.Text;
+                var visibleText = line.IsCommand && elapsedSeconds.HasValue ? VisibleCommand(line, elapsedSeconds.Value) : line.Text;
                 if (line.IsCommand) {
                     var promptLength = Math.Min(line.PromptLength, visibleText.Length);
                     var prompt = visibleText.Substring(0, promptLength);
@@ -158,28 +162,27 @@ public sealed class PngTerminalStoryRenderer {
     private static VisibleLineState VisibleState(TerminalRenderedLine line, double? elapsedSeconds) {
         if (!elapsedSeconds.HasValue) return new VisibleLineState(true, 1, 1, 0);
         var elapsed = elapsedSeconds.Value;
-        if (elapsed < line.StartSeconds) return new VisibleLineState(false, 0, 0, 0);
+        if (!StoryPlaybackClock.Started(elapsed, line.StartSeconds)) return new VisibleLineState(false, 0, 0, 0);
         if (line.IsCommand) {
-            var progress = line.DurationSeconds <= 0 ? 1 : Unit((elapsed - line.StartSeconds) / line.DurationSeconds);
+            var progress = StoryPlaybackClock.Progress(elapsed, line.StartSeconds, line.DurationSeconds);
             return new VisibleLineState(true, progress, 1, 0);
         }
 
-        var reveal = line.DurationSeconds <= 0 ? 1 : Unit((elapsed - line.StartSeconds) / line.DurationSeconds);
+        var reveal = StoryPlaybackClock.Progress(elapsed, line.StartSeconds, line.DurationSeconds);
         var eased = 1 - Math.Pow(1 - reveal, 3);
         return new VisibleLineState(true, reveal, eased, (1 - eased) * 3);
     }
 
-    private static string VisibleCommand(TerminalRenderedLine line, double progress) {
-        if (progress >= 1) return line.Text;
+    private static string VisibleCommand(TerminalRenderedLine line, double elapsed) {
         var elements = TerminalTextWidth.VisibleElements(line.Text).ToArray();
-        var count = Math.Max(0, Math.Min(elements.Length, (int)Math.Floor(elements.Length * progress)));
+        var count = StoryPlaybackClock.Elements(elements.Length, elapsed, line.StartSeconds, line.DurationSeconds);
         return string.Concat(elements.Take(count));
     }
 
     internal static bool CursorVisible(TerminalStoryLayout layout, TerminalRenderedLine line, double? elapsedSeconds) {
         if (!elapsedSeconds.HasValue) return true;
-        if (elapsedSeconds.Value < line.StartSeconds) return false;
-        return (elapsedSeconds.Value - line.StartSeconds) % 1 < 0.47;
+        if (!StoryPlaybackClock.Started(elapsedSeconds.Value, line.StartSeconds)) return false;
+        return (StoryPlaybackClock.Ticks(elapsedSeconds.Value) - StoryPlaybackClock.Ticks(line.StartSeconds)) % TimeSpan.TicksPerSecond < 4_700_000;
     }
 
     private static ChartColor WithOpacity(ChartColor color, double opacity) {
