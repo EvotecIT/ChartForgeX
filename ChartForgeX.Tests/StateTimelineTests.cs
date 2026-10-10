@@ -222,7 +222,7 @@ public sealed class StateTimelineTests {
     public void Render_ConfiguredVerticalGridStyle_AppliesToBothOutputs()
     {
         var chart = CreateChart();
-        chart.WithGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
+        chart.ConfigureGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
         var lines = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-grid");
         Assert.NotEmpty(lines);
         Assert.All(lines, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal("4 6", (string?)line.RenderedAttribute("stroke-dasharray")); });
@@ -234,11 +234,11 @@ public sealed class StateTimelineTests {
     [Fact]
     public void Render_VerticalGridDisabled_MatchesGlobalGridDisabled()
     {
-        var vertical = CreateChart().WithGridStyle(style => style.ShowVerticalLines = false);
+        var vertical = CreateChart().ConfigureGridStyle(style => style.ShowVerticalLines = false);
         var global = CreateChart(); global.Options.ShowGrid = false;
         Assert.Empty(ByRole(XDocument.Parse(vertical.ToSvg()), "schedule-grid"));
         Assert.NotEmpty(ByRole(XDocument.Parse(vertical.ToSvg()), "schedule-row-grid"));
-        vertical.WithGridStyle(style => style.ShowHorizontalLines = false);
+        vertical.ConfigureGridStyle(style => style.ShowHorizontalLines = false);
         Assert.Equal(global.ToPng(), vertical.ToPng());
     }
 

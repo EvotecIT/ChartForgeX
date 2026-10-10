@@ -52,7 +52,7 @@ internal static partial class SmokeTests {
         heatmap.Series[1].WithDataLabels(false);
         Assert(CountOccurrences(heatmap.ToSvg(), "data-cfx-role=\"data-label\"") == 2, "Heatmap row overrides should hide labels for one row only.");
 
-        var sankey = Chart.Create().AddSankey("Flow", new[] { new ChartSankeyLink("A", "B", 10) });
+        var sankey = Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") }, new[] { new ChartFlowLink("flow-1", "A", "B", 10) });
         sankey.Series[0].WithDataLabels();
         Assert(sankey.ToSvg().Contains("data-cfx-role=\"sankey-node-label\"", System.StringComparison.Ordinal), "Sankey series overrides should enable node labels without chart-level labels.");
         Assert(pie.ToPng().Length > 64 && polar.ToPng().Length > 64 && heatmap.ToPng().Length > 64 && sankey.ToPng().Length > 64, "Specialized label overrides should render valid PNG output.");
@@ -71,9 +71,9 @@ internal static partial class SmokeTests {
         circle.Series[0].WithDataLabels(false);
         Assert(!circle.ToSvg().Contains("data-cfx-role=\"circle-label\"", System.StringComparison.Ordinal), "Circle series overrides should hide intrinsic labels.");
 
-        var radial = Chart.Create().WithLegend(false).AddRadialBar("Coverage", Points(90, 75, 66));
+        var radial = Chart.Create().WithLegend(false).AddProgressRing("Coverage", Points(90, 75, 66));
         radial.Series[0].WithDataLabels(false);
-        Assert(!radial.ToSvg().Contains("data-cfx-role=\"radial-bar-value\"", System.StringComparison.Ordinal), "Radial bar series overrides should hide center labels.");
+        Assert(!radial.ToSvg().Contains("data-cfx-role=\"progress-ring-value\"", System.StringComparison.Ordinal), "Radial bar series overrides should hide center labels.");
 
         var funnel = Chart.Create().AddFunnel("Pipeline", Points(100, 74, 51));
         funnel.Series[0].WithDataLabels(false);
@@ -92,8 +92,8 @@ internal static partial class SmokeTests {
 
     private static void HierarchyLabelsCanBeSuppressed() {
         var treemap = Chart.Create().AddTreemap("Findings", new[] {
-            new ChartTreemapItem("Spoofing", 42),
-            new ChartTreemapItem("Policy gaps", 28)
+            new ChartHierarchyItem("Spoofing", "Spoofing", value: 42),
+            new ChartHierarchyItem("Policy gaps", "Policy gaps", value: 28)
         });
         treemap.Series[0].WithDataLabels(false);
         var treemapSvg = treemap.ToSvg();
@@ -101,7 +101,7 @@ internal static partial class SmokeTests {
         Assert(!treemapSvg.Contains("data-cfx-role=\"treemap-label\"", System.StringComparison.Ordinal), "Treemap series overrides should hide tile labels.");
         Assert(!treemapSvg.Contains("data-cfx-role=\"treemap-value\"", System.StringComparison.Ordinal), "Treemap series overrides should hide tile values.");
 
-        var tree = Chart.Create().AddTree("Hierarchy", new[] {
+        var tree = Chart.Create().AddTree("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("A", "A"), new ChartNode("B", "B") }, new[] {
             new ChartTreeLink("Root", "A"),
             new ChartTreeLink("Root", "B")
         });
@@ -176,15 +176,15 @@ internal static partial class SmokeTests {
 
     private static void IntrinsicSpecializedDataLabelStylesRenderAcrossFormats() {
         var cases = new (Func<Chart> Create, string Role, string Name)[] {
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 320).WithDataLabels().AddSankey("Flow", new[] { new ChartSankeyLink("Found", "Fixed", 10) }), "sankey-node-label", "Sankey"),
+            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 320).WithDataLabels().AddSankey("Flow", new[] { new ChartNode("Found", "Found"), new ChartNode("Fixed", "Fixed") }, new[] { new ChartFlowLink("flow-2", "Found", "Fixed", 10) }), "sankey-node-label", "Sankey"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddGauge("Score", 87), "gauge-label", "gauge"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddCircle("Progress", 72), "circle-label", "circle"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)), "radial-bar-value", "radial bar"),
+            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithLegend(false).WithDataLabels().AddProgressRing("Coverage", Points(90, 75, 66)), "progress-ring-value", "progress ring"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithDataLabels().AddFunnel("Pipeline", Points(100, 74, 51)), "funnel-label", "funnel"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 300).WithDataLabels().AddDonut("Checks", Points(70, 30)), "donut-total-label", "donut center"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 340).WithDataLabels().AddTreemap("Findings", new[] { new ChartTreemapItem("Spoofing", 42), new ChartTreemapItem("Policy", 28) }), "treemap-label", "treemap"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 320).WithDataLabels().AddTree("Hierarchy", new[] { new ChartTreeLink("Root", "Mail"), new ChartTreeLink("Root", "Web") }), "tree-node-label", "tree"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 360).WithDataLabels().AddSunburst("Hierarchy", new[] { new ChartTreeLink("Root", "Mail", 3), new ChartTreeLink("Root", "Web", 2) }), "sunburst-label", "sunburst"),
+            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 340).WithDataLabels().AddTreemap("Findings", new[] { new ChartHierarchyItem("Spoofing", "Spoofing", value: 42), new ChartHierarchyItem("Policy", "Policy", value: 28) }), "treemap-label", "treemap"),
+            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 320).WithDataLabels().AddTree("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("Mail", "Mail"), new ChartNode("Web", "Web") }, new[] { new ChartTreeLink("Root", "Mail"), new ChartTreeLink("Root", "Web") }), "tree-node-label", "tree"),
+            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 360).WithDataLabels().AddSunburst("Hierarchy", new[] { new ChartHierarchyItem("Root", "Root"), new ChartHierarchyItem("Mail", "Mail", "Root", 3), new ChartHierarchyItem("Web", "Web", "Root", 2) }), "sunburst-label", "sunburst"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)), "layered-radial-value", "layered radial"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().AddBullet("Control", 82, 90), "bullet-row-label", "bullet"),
             (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 360).WithDataLabels().AddTimelineRange("Migration", 1, 5), "data-label", "timeline"),
@@ -194,7 +194,7 @@ internal static partial class SmokeTests {
         foreach (var item in cases) {
             var regular = item.Create();
             var styled = item.Create();
-            styled.Series[0].WithDataLabelStyle(style => style.WithColor("#c026d3").WithFontFamily("monospace").WithWeight("750").WithItalic().WithUnderline().WithFontSize(14));
+            styled.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#c026d3").WithFontFamily("monospace").WithWeight("750").WithItalic().WithUnderline().WithFontSize(14));
             var svg = styled.ToSvg();
             Assert(svg.Contains("data-cfx-role=\"" + item.Role + "\"", StringComparison.Ordinal), item.Name + " data labels should render when enabled.");
             var prepared = PreparedFamily(styled);
@@ -214,10 +214,10 @@ internal static partial class SmokeTests {
             "donut-title",
             "donut");
         AssertCenterDataLabelSpacing(
-            () => Chart.Create().WithSize(460, 320).WithLegend(false).WithDataLabels().AddRadialBar("Coverage", Points(90, 75, 66)),
-            "radial-bar-value",
-            "radial-bar-title",
-            "radial bar");
+            () => Chart.Create().WithSize(460, 320).WithLegend(false).WithDataLabels().AddProgressRing("Coverage", Points(90, 75, 66)),
+            "progress-ring-value",
+            "progress-ring-title",
+            "progress ring");
         AssertCenterDataLabelSpacing(
             () => Chart.Create().WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)),
             "layered-radial-value",
@@ -227,10 +227,10 @@ internal static partial class SmokeTests {
 
     private static void AssertCenterDataLabelSpacing(Func<Chart> create, string valueRole, string titleRole, string name) {
         var compact = create();
-        compact.Series[0].WithDataLabelStyle(style => style.WithFontSize(10));
+        compact.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(10));
         var compactPrepared = PreparedFamily(compact);
         var large = create();
-        large.Series[0].WithDataLabelStyle(style => style.WithFontSize(24));
+        large.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(24));
         var largePrepared = PreparedFamily(large);
         var compactValue = FamilyLabels(compactPrepared, valueRole).Single();
         var largeValue = FamilyLabels(largePrepared, valueRole).Single();

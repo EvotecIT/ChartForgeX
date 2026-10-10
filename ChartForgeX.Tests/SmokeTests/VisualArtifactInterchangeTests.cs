@@ -128,7 +128,7 @@ internal static partial class SmokeTests {
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json), "Topology artifacts should declare their implemented semantic JSON export.");
 
         var mutableAccessibilityTopology = TopologyChart.Create()
-            .WithAccessibility(accessibility => accessibility.WithTextAlternative("Initial name", "Initial description", "en"));
+            .ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("Initial name", "Initial description", "en"));
         mutableAccessibilityTopology.Nodes.Add(new TopologyNode { Id = "current", Label = "Current" });
         VisualArtifact mutableAccessibilityArtifact = mutableAccessibilityTopology.ToVisualArtifact();
         mutableAccessibilityTopology.Accessibility.WithTextAlternative("Current name", "Current description", "pl-PL");
@@ -353,7 +353,7 @@ internal static partial class SmokeTests {
             .AddStep("submit", "Submit", FlowArtifactStepKind.Start, "requester")
             .AddStep("approve", "Approve?", FlowArtifactStepKind.Decision, "requester")
             .AddConnector("submit", "approve", "Review", FlowArtifactConnectorKind.Flow);
-        flow.WithStep("submit", step => step.Metadata["owner"] = "requester");
+        flow.ConfigureStep("submit", step => step.Metadata["owner"] = "requester");
         flow.Metadata["scope"] = "model";
         flow.Metadata["model-only"] = "preserved";
         var flowArtifact = flow.ToVisualArtifact();

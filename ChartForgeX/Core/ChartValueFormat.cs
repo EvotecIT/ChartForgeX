@@ -39,7 +39,10 @@ public sealed class ChartValueFormat {
         if (_formatter != null) return _formatter(value) ?? string.Empty;
         if (_notation == Notation.Number) return value.ToString(_format, Culture);
         var magnitude = Math.Abs(value);
-        if (_notation == Notation.ExistingValue && magnitude < 10000) return value.ToString("#,0.##", Culture);
+        if (_notation == Notation.ExistingValue && magnitude < 10000) {
+            var caption = value.ToString("#,0.##", Culture);
+            return value != 0 && (caption == "0" || caption == "-0") ? FormatSignificant(value) : caption;
+        }
         if (magnitude >= 1000000000) return (value / 1000000000).ToString("0.#", Culture) + "B";
         if (magnitude >= 1000000) return (value / 1000000).ToString("0.#", Culture) + "M";
         if (magnitude >= 1000) return (value / 1000).ToString("0.#", Culture) + "k";
@@ -48,5 +51,7 @@ public sealed class ChartValueFormat {
 
     internal static ChartValueFormat ExistingValue { get; } = new(Notation.ExistingValue, "0.##", null);
     internal static ChartValueFormat InvariantCompact { get; } = Compact();
+    // Automatic value and axis policies share this bounded fallback; authored formats remain exact policies.
+    internal static string FormatSignificant(double value) => value.ToString("G6", CultureInfo.InvariantCulture);
     internal Func<double, string> Callback => _formatter ?? Format;
 }

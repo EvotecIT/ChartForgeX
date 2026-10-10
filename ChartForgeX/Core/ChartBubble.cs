@@ -18,7 +18,7 @@ public readonly struct ChartBubble {
     public readonly double Y;
 
     /// <summary>
-    /// Gets the positive value used to scale the marker area.
+    /// Gets the positive source value mapped to a logical marker radius by <see cref="ChartOptions.Bubble"/>.
     /// </summary>
     public readonly double Size;
 
