@@ -24,10 +24,15 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
     public async Task PointerFocusAndSelectionComposeSparsePaintWithoutChangingNativeInk(int width, bool dark, bool graphite, bool composed) {
         if (!Enabled) return;
         var chart = SunburstBranchHighlightExamples.CreateChart(width, dark, graphite);
-        if (composed) chart.ConfigureSunburst(options => {
-            options.CornerRadius = 6;
-            options.SecondaryLabelFormatter = context => context.Item.Id == "engineering-support" ? "Delivery team" : context.Item.Id == "engineering" ? "Delivery" : null;
-        });
+        if (composed) {
+            chart.WithHeader(false).WithLegend(false);
+            RoundedRadialSeriesTests.UseFixtureFont(chart);
+            chart.ConfigureSunburst(options => {
+                options.CornerRadius = 6;
+                options.ShowColorScaleLegend = false;
+                options.SecondaryLabelFormatter = context => context.Item.Id == "engineering-support" ? "Delivery team" : context.Item.Id == "engineering" ? "Delivery" : null;
+            });
+        }
         var html = chart.ToInteractiveHtmlPage(options => {
             Configure(options);
             if (composed) {
@@ -35,6 +40,10 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
                 options.Tooltip.Position.Anchor = width < 500 ? HtmlChartTooltipAnchor.Node : HtmlChartTooltipAnchor.Pointer;
             }
         });
+        if (composed) {
+            var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.PngFontPath!));
+            html = html.Replace("</head>", "<style>@font-face{font-family:'Carlito';src:url(data:font/ttf;base64," + font + ")}</style></head>", StringComparison.Ordinal);
+        }
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 540 : 650);
         var page = session.Page;
         var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

@@ -26,11 +26,11 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         // Stay in plot background so acquisition switches without a native mark's pointerleave hide path.
         await PointerAsync(page, offsetY: 24);
         await WaitForTipAsync(page);
-        await PointerAsync(page, Point(0, 1), offsetY: 24);
+        var pointer = await PointerAsync(page, Point(0, 1), offsetY: 24);
         Assert.True(await TipHiddenAsync(page));
         await WaitForTipAsync(page);
         Assert.Contains("6", await TooltipTextAsync(page), StringComparison.Ordinal);
-        var geometry = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, selector: Point(0, 1));
+        var geometry = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, pointer: pointer, selector: Point(0, 1));
         await CaptureAsync(page, "position-delay-switch-" + anchor, geometry);
         AssertNoConsoleErrors(session);
     }
