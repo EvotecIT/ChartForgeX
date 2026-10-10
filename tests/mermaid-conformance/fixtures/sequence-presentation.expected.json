@@ -1,0 +1,5 @@
+{
+  "participants": ["API", "Store"],
+  "messages": [["API", "Store", "Save request"], ["Store", "API", "Complete"]],
+  "configuration": { "theme": "dark", "fontFamily": "Georgia, serif" }
+}

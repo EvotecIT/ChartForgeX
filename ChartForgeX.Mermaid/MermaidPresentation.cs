@@ -21,6 +21,13 @@ internal static class MermaidPresentation {
         } else if (model is SequenceArtifact sequence) {
             sequence.Accessibility.Name = document.Accessibility.Name;
             sequence.Accessibility.Description = document.Accessibility.Description;
+            if (document.Theme != null) sequence.ThemeMode = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            if (document.Configuration.FontFamily != null) {
+                var typography = sequence.Theme.Typography;
+                sequence.Theme = sequence.Theme.WithTypography(new VisualTypography(document.Configuration.FontFamily,
+                    typography.TitleSize, typography.SubtitleSize, typography.AxisSize, typography.LegendSize,
+                    typography.DataLabelSize, typography.ScalarValueSize, typography.CenterValueSize));
+            }
         } else if (model is TopologyChart topology) {
             topology.Accessibility.Name = document.Accessibility.Name;
             topology.Accessibility.Description = document.Accessibility.Description;

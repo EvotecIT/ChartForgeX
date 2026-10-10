@@ -16,7 +16,7 @@ internal static partial class SequencePreparedCompiler {
 
     internal static PreparedVisual PrepareDefault(SequenceArtifact model) {
         if (model == null) throw new ArgumentNullException(nameof(model));
-        var theme = VisualTheme.Graphite();
+        var theme = model.Theme;
         double nesting = Math.Max(model.Blocks.Select(b => b.Depth).DefaultIfEmpty(0).Max(), model.Branches.Select(b => b.Depth).DefaultIfEmpty(0).Max());
         double gap = Math.Max(10, theme.Spacing), stroke = Math.Max(2, theme.SeriesStrokeWidth);
         double inset = gap + nesting * 10 + stroke + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.Over) ? 32 : 0);
@@ -24,7 +24,7 @@ internal static partial class SequencePreparedCompiler {
             + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.RightOf) ? 120 + gap : 0);
         double width = Math.Max(model.Width, model.Padding * 2 + inset * 2 + noteReserve + (model.Messages.Any(m => m.SourceId == m.TargetId) ? 70 : 0) + model.Participants.Count * 140);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, Math.Max(model.Height, model.Padding * 2 + 512)), model.Padding),
-            theme, frame: new VisualFrame(showLegend: false));
+            theme, model.ThemeMode, frame: new VisualFrame(showLegend: false));
         return Prepare(model, context, true);
     }
 
@@ -34,7 +34,7 @@ internal static partial class SequencePreparedCompiler {
         context = VisualDiagramPrimitives.WithFrame(context, model.Title, model.Subtitle);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var plot = VisualFrameLayout.Build(builder, context, Array.Empty<VisualLegendEntry>());
-        var semantics = VisualArtifactInterchangeMapping.FromPreparedSequence(model, context.Layout.Size);
+        var semantics = VisualArtifactInterchangeMapping.FromPreparedSequence(model, context);
         var layout = SequencePreparedLayout.Calculate(model, semantics, builder, context, plot, fitContent);
         if (fitContent) {
             var resolvedSize = new VisualSize(context.Layout.Size.Width, Math.Max(model.Height, layout.Bottom + model.Padding + Math.Max(2, context.Theme.SeriesStrokeWidth)));
