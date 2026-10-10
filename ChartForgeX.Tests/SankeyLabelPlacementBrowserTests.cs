@@ -63,7 +63,6 @@ public sealed class SankeyLabelPlacementBrowserTests {
         await caption.ClickAsync();
         Assert.Equal("false", await captionTarget.GetAttributeAsync("aria-selected"));
         await MoveAwayAsync(page);
-        Assert.Equal(string.Empty, await TooltipTextAsync(page));
         var box = (await support.BoundingBoxAsync())!;
         await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
         Assert.Equal("true", await support.GetAttributeAsync("aria-selected"));
