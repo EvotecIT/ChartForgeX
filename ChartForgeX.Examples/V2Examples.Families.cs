@@ -17,7 +17,7 @@ public static partial class V2Examples {
     private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
         ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel, ChartSeriesKind.Waterfall,
         ChartSeriesKind.Scatter, ChartSeriesKind.Bubble, ChartSeriesKind.Radar, ChartSeriesKind.Pyramid,
-        ChartSeriesKind.RadialBar, ChartSeriesKind.RadialColumn
+        ChartSeriesKind.RadialBar, ChartSeriesKind.RadialColumn, ChartSeriesKind.Candlestick, ChartSeriesKind.Ohlc
     };
 
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
@@ -81,6 +81,8 @@ public static partial class V2Examples {
         ChartSeriesKind.Waterfall => "Reversed axes retain signed changes and the derived total",
         ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
         ChartSeriesKind.Bubble => "Marker shape changes; source size still controls each series' scale",
+        ChartSeriesKind.Candlestick => "Hollow rising bodies, filled falling bodies and independent wick strokes",
+        ChartSeriesKind.Ohlc => "Rising and falling stroke colors, alpha and width retain source prices",
         ChartSeriesKind.Radar => "A filled area and an unfilled target line share one radial scale",
         ChartSeriesKind.Pyramid => "Reversed horizontal pyramid; areas encode values including zero",
         ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn => "Named stacks reach 100; labels retain source counts",

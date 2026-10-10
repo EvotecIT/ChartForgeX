@@ -28,7 +28,8 @@ internal static partial class VisualCartesianCompiler {
                     color = series.Points[point].Y >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
                 var paint = VisualChartPaint.Series(series, color, point);
                 entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
-                    marker: VisualMarkerScene.Legend(chart, series, color, paint, point, pattern), paint: paint));
+                    marker: FinancialLegend(chart, series, 0, colors, point, pattern)
+                        ?? VisualMarkerScene.Legend(chart, series, color, paint, point, pattern), paint: paint));
             }
             return entries;
         }
@@ -37,7 +38,8 @@ internal static partial class VisualCartesianCompiler {
             if (series.ShowInLegend) {
                 var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
                 entries.Add(new VisualLegendEntry(series.Name, color, SeriesId(index), series.Kind, series.FillPattern, series.StateRole,
-                    series.InteractionIdentityKey, marker: VisualMarkerScene.Legend(chart, series, color, paint, pattern: series.FillPattern), paint: paint));
+                    series.InteractionIdentityKey, marker: FinancialLegend(chart, series, index, colors, pattern: series.FillPattern)
+                        ?? VisualMarkerScene.Legend(chart, series, color, paint, pattern: series.FillPattern), paint: paint));
             }
         }
         return entries;
