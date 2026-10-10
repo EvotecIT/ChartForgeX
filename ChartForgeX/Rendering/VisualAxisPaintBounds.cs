@@ -14,10 +14,21 @@ internal sealed class VisualAxisPaintBounds {
             _extents.Add(new ChartPoint(value, radius));
     }
 
+    internal bool HasFullWidthConflict(double pixels) {
+        double? center = null;
+        foreach (var extent in _extents) {
+            if (extent.Y * 2 != pixels) continue;
+            if (center.HasValue && center.Value != extent.X) return true;
+            center = extent.X;
+        }
+        return false;
+    }
+
     internal bool TryExpand(double minimum, double maximum, double pixels, bool fixedMinimum, bool fixedMaximum,
         out double expandedMinimum, out double expandedMaximum) {
         expandedMinimum = minimum; expandedMaximum = maximum;
         if (_extents.Count == 0 || !(pixels > 0) || !(maximum > minimum) || fixedMinimum && fixedMaximum) return false;
+        var fullWidthConflict = HasFullWidthConflict(pixels);
         var low = maximum - minimum;
         if (TryPosition(low, out _)) return false;
         var high = low;
@@ -44,7 +55,7 @@ internal sealed class VisualAxisPaintBounds {
             var upper = fixedMaximum ? maximum - span : minimum;
             foreach (var extent in _extents) {
                 // An uncontainable mark clips independently; it must not cancel other marks' gutters.
-                if (extent.Y * 2 > pixels) continue;
+                if (extent.Y * 2 > pixels || fullWidthConflict && extent.Y * 2 == pixels) continue;
                 var fraction = extent.Y / pixels;
                 // An authored bound is a clipping boundary, so only the other side expands.
                 if (!fixedMaximum) lower = Math.Max(lower, extent.X - (1 - fraction) * span);
