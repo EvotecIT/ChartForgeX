@@ -34,7 +34,7 @@ public sealed partial class Chart {
     public Chart AddGanttMilestone(string name, double when, int dependsOn = -1, ChartColor? color = null) =>
         AddGanttRange(name, when, when, 1, dependsOn, true, color);
 
-    private Chart AddGanttRange(string name, double start, double end, double progress, int dependsOn, bool milestone, ChartColor? color) {
+    private Chart AddGanttRange(string name, double start, double end, double progress, int dependsOn, bool milestone, ChartColor? color, bool verticalMarker = false) {
         ChartGuards.Finite(start, nameof(start));
         ChartGuards.Finite(end, nameof(end));
         ChartGuards.UnitInterval(progress, nameof(progress));
@@ -45,8 +45,8 @@ public sealed partial class Chart {
         AppendSeries(new ChartSeries(name, ChartSeriesKind.Gantt, new[] {
             new ChartPoint(start, end),
             new ChartPoint(progress, dependsOn),
-            new ChartPoint(milestone ? 1 : 0, 0)
-        }) { Color = color });
+            new ChartPoint(milestone ? 1 : 0, verticalMarker ? 1 : 0)
+        }) { Color = color, ShowInLegend = !verticalMarker });
         return this;
     }
 }

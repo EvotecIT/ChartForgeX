@@ -14,9 +14,10 @@ internal static partial class VisualScheduleCompiler {
         using (builder.PushClip(plot)) foreach (var link in links) {
             var previous = items[link.PredecessorIndex];
             var item = items[link.SuccessorIndex];
+            if (previous.Marker || item.Marker) continue;
             var milestoneExtent = Math.Min(height, plot.Width) / 2;
-            var start = new ChartPoint(project(previous.End) + (previous.Milestone ? milestoneExtent : 0), plot.Top + (previous.Index + .5) * slot);
-            var end = new ChartPoint(project(item.Start) + (item.Milestone ? milestoneExtent : 0), plot.Top + (item.Index + .5) * slot);
+            var start = new ChartPoint(project(previous.End) + (previous.Milestone ? milestoneExtent : 0), plot.Top + (previous.Row + .5) * slot);
+            var end = new ChartPoint(project(item.Start) + (item.Milestone ? milestoneExtent : 0), plot.Top + (item.Row + .5) * slot);
             var elbow = Math.Max(start.X, end.X) + Math.Min(context.Theme.Spacing, plot.Right - Math.Max(start.X, end.X));
             var id = "gantt-dependency-" + previous.Index + "-" + item.Index;
             using (VisualStateSceneTools.Mark(builder, id, "gantt-dependency", new ChartRect(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y),

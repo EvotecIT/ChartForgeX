@@ -121,6 +121,10 @@ for (const { folder, file, hasExpected } of files) {
       const expected = JSON.parse(await readFile(join(fixtures, expectedFile), 'utf8'));
       const diagram = await mermaid.mermaidAPI.getDiagramFromText(source);
       const keys = values => values instanceof Map ? [...values.keys()] : Object.keys(values);
+      if (expected.markerFacts) {
+        assert.equal(diagram.db.getTodayMarker(), expected.todayMarker);
+        assert.deepEqual(diagram.db.getTasks().map(task => [task.id, !!task.vert, task.order]), expected.markerFacts);
+      }
       if (expected.states && referenceId === '10') diagram.db.extract(diagram.db.getRootDocV2());
       if (expected.classes) assert.deepEqual(keys(diagram.db.getClasses()), expected.classes);
       if (expected.entities) assert.deepEqual(keys(diagram.db.getEntities()), expected.entities);

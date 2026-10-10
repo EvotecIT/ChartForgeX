@@ -11,6 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualScheduleCompiler {
     private static void Ranges(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, bool gantt) {
         var items = new List<RangeItem>();
+        var row = 0;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             if (series.Points.Count < (gantt ? 3 : 1)) throw new InvalidOperationException("Schedule series is missing its range or task metadata.");
@@ -20,12 +21,17 @@ internal static partial class VisualScheduleCompiler {
             var dependency = gantt ? series.Points[1].Y : -1;
             if (!ChartMath.IsFinite(progress) || progress < 0 || progress > 1 || !ChartMath.IsFinite(dependency) || dependency < -1 || dependency >= index || dependency != Math.Truncate(dependency))
                 throw new InvalidOperationException("Gantt progress must be between zero and one, and dependencies must reference an earlier task.");
-            items.Add(new RangeItem(index, start, end, progress, gantt && series.Points[2].X >= .5));
+            var marker = gantt && series.Points[2].Y >= .5;
+            items.Add(new RangeItem(index, marker ? -1 : row++, start, end, progress, gantt && series.Points[2].X >= .5, marker));
         }
         var links = gantt ? chart.ResolveGanttDependencies() : new List<ChartGanttDependency>();
+        var renderedLinks = links.Where(link => !items[link.PredecessorIndex].Marker && !items[link.SuccessorIndex].Marker).ToArray();
         var predecessors = links.GroupBy(link => link.SuccessorIndex).ToDictionary(group => group.Key, group => group.Select(link => link.PredecessorIndex).ToArray());
         var axis = chart.Options.XAxis; var now = gantt ? chart.Options.GanttToday : null;
         var min = items.Min(item => item.Start); var max = items.Max(item => item.End);
+        foreach (var annotation in chart.Annotations.Where(annotation => annotation.Kind == ChartAnnotationKind.VerticalLine)) {
+            min = Math.Min(min, annotation.Value); max = Math.Max(max, annotation.Value);
+        }
         if (now.HasValue) { min = Math.Min(min, now.Value); max = Math.Max(max, now.Value); }
         min = axis.Minimum ?? min; max = axis.Maximum ?? max;
         (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
@@ -38,32 +44,38 @@ internal static partial class VisualScheduleCompiler {
             tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick, milliseconds) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks));
         string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : ChartAxisValueFormatter.Format(axis, value,
             tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick, milliseconds) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks);
-        var layout = LaneLayout(chart, context, builder, viewport, chart.Series.Select(series => series.Name), Array.Empty<string>(), false,
+        var layout = LaneLayout(chart, context, builder, viewport, items.Where(item => !item.Marker).Select(item => chart.Series[item.Index].Name), Array.Empty<string>(), false,
             now.HasValue && now.Value >= min && now.Value <= max, ticks, Format);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);
-        var slot = plot.Height / items.Count; var height = Math.Max(0, Math.Min(gantt ? 30 : 34, slot * .65));
+        var slot = plot.Height / Math.Max(1, row); var height = Math.Max(0, Math.Min(gantt ? 30 : 34, slot * .65));
         var milestoneSize = Math.Min(height, plot.Width);
         var milestoneExtent = items.Any(item => item.Milestone) ? milestoneSize / 2 : 0;
-        var minimumExtent = Math.Max(milestoneExtent, now == min ? context.Theme.AxisStrokeWidth / 2 : 0);
+        var markerAtMin = items.Any(item => item.Marker && item.Start == min) || chart.Annotations.Any(annotation => annotation.Kind == ChartAnnotationKind.VerticalLine && annotation.Value == min);
+        var markerAtMax = items.Any(item => item.Marker && item.Start == max) || chart.Annotations.Any(annotation => annotation.Kind == ChartAnnotationKind.VerticalLine && annotation.Value == max);
+        var minimumExtent = Math.Max(milestoneExtent, now == min || markerAtMin ? context.Theme.AxisStrokeWidth / 2 : 0);
         var instantExtent = items.Any(item => !item.Milestone && item.Start == item.End) ? 1 : 0;
-        var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), now == max ? context.Theme.AxisStrokeWidth / 2 : 0);
-        if (links.Count > 0) maximumExtent = Math.Max(maximumExtent,
-            (links.Any(link => items[link.SuccessorIndex].Milestone) ? milestoneExtent : 0) + Math.Min(5, height / 3) + context.Theme.AxisStrokeWidth / 2);
+        var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), now == max || markerAtMax ? context.Theme.AxisStrokeWidth / 2 : 0);
+        if (renderedLinks.Length > 0) maximumExtent = Math.Max(maximumExtent,
+            (renderedLinks.Any(link => items[link.SuccessorIndex].Milestone) ? milestoneExtent : 0) + Math.Min(5, height / 3) + context.Theme.AxisStrokeWidth / 2);
         var projection = MarkProjection(axis, plot, minimumExtent, maximumExtent);
         double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
+            var obstacles = new List<LabelObstacle>();
             Axis(chart, context, builder, viewport, layout, ticks, Project, Format);
             foreach (var item in items) {
-                var center = plot.Top + (item.Index + .5) * slot;
+                if (item.Marker) continue;
+                var center = plot.Top + (item.Row + .5) * slot;
                 LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index);
             }
             foreach (var item in items) {
-                var series = chart.Series[item.Index]; var center = plot.Top + (item.Index + .5) * slot;
+                if (item.Marker) continue;
+                var series = chart.Series[item.Index]; var center = plot.Top + (item.Row + .5) * slot;
                 var visible = item.End >= min && item.Start <= max;
                 var left = Project(item.Start); var right = Project(item.End);
                 var bounds = new ChartRect(left, center - height / 2, visible ? Math.Min(plot.Right - left, Math.Max(1, right - left)) : 0, height);
                 if (item.Milestone) bounds = new ChartRect(left - milestoneSize / 2, center - milestoneSize / 2, milestoneSize, milestoneSize);
                 var id = VisualStateSceneTools.SourceId(item.Index, 0);
+                if (visible) obstacles.Add(new LabelObstacle(id, bounds));
                 var duration = chart.Options.ValueFormatter?.Invoke(item.End - item.Start) ?? ChartStateTimelineModel.FormatDuration(item.End - item.Start);
                 var completion = (item.Progress * 100).ToString("0.#", chart.Options.ValueFormat.Culture) + "%";
                 var summary = series.Name + ": " + Format(item.Start) + " – " + Format(item.End) + ", " + (gantt ? completion : duration);
@@ -111,17 +123,18 @@ internal static partial class VisualScheduleCompiler {
                     DataLabel(chart, context, builder, series, 0, label, bounds, viewport, colors, fill);
                 }
             }
+            Markers(chart, context, builder, plot, items, Project, min, max, colors, obstacles);
             if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             // Links are foreground annotations: successor fills must not cover their arrowheads.
-            if (gantt) Dependencies(chart, context, builder, plot, items, links, Project, slot, height);
+            if (gantt) Dependencies(chart, context, builder, plot, items, renderedLinks, Project, slot, height);
         }
     }
 
     private sealed class RangeItem {
-        internal RangeItem(int index, double start, double end, double progress, bool milestone) {
-            Index = index; Start = start; End = end; Progress = progress; Milestone = milestone;
+        internal RangeItem(int index, int row, double start, double end, double progress, bool milestone, bool marker) {
+            Index = index; Row = row; Start = start; End = end; Progress = progress; Milestone = milestone; Marker = marker;
         }
         internal int Index { get; } internal double Start { get; } internal double End { get; }
-        internal double Progress { get; } internal bool Milestone { get; }
+        internal int Row { get; } internal double Progress { get; } internal bool Milestone { get; } internal bool Marker { get; }
     }
 }

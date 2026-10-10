@@ -21,11 +21,12 @@ public static class MermaidGanttRendering {
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height)
             .WithXAxisValueFormatter(value => FormatAxisValue(value, document));
-        if (options.Today.HasValue) chart.WithGanttToday(options.Today.Value);
+        if (options.Today.HasValue && document.TodayMarker != "off") chart.WithGanttToday(options.Today.Value);
         chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
         foreach (var task in document.Tasks) {
             var name = string.IsNullOrWhiteSpace(task.Section) ? task.Title : task.Section + " / " + task.Title;
-            if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2));
+            if (task.IsVerticalMarker) chart.AddGanttMarker(name, task.Start, task.End);
+            else if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2));
             else chart.AddGanttTask(name, task.Start, task.RenderEnd, task.Progress);
         }
         var ids = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -61,6 +62,9 @@ public static class MermaidGanttRendering {
         artifact.Metadata["mermaid.tasks"] = document.Tasks.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.sections"] = document.Sections.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.milestones"] = MilestoneCount(document).ToString(CultureInfo.InvariantCulture);
+        var verticalMarkers = 0;
+        foreach (var task in document.Tasks) if (task.IsVerticalMarker) verticalMarkers++;
+        artifact.Metadata["mermaid.verticalMarkers"] = verticalMarkers.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.dependencies"] = DependencyCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.untilReferences"] = UntilReferenceCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.dateFormat"] = document.DateFormat;
