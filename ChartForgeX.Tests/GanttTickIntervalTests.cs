@@ -106,6 +106,20 @@ public sealed class GanttTickIntervalTests {
             ChartTimeScale.GenerateFixed(new ChartAxis { TimeZone = offsetZone }, start, start + .000001, interval));
     }
 
+    [Fact]
+    public void NativeMillisecondLabelsPreservePrecisionAndExplicitFormattingWins() {
+        var start = new DateTime(2026, 1, 1);
+        var chart = Chart.Create().WithLegend(false).AddGanttTask("Window", start, start.AddMilliseconds(300))
+            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100));
+        var svg = chart.ToSvg();
+        foreach (var label in new[] { "00:00:00.000", "00:00:00.100", "00:00:00.200", "00:00:00.300" }) Assert.Contains(">" + label + "</text>", svg);
+        Assert.NotEmpty(chart.ToPng());
+        chart.WithXAxisValueFormatter(value => "Custom " + DateTime.FromOADate(value).Millisecond.ToString(CultureInfo.InvariantCulture));
+        Assert.Contains(">Custom 100</text>", chart.ToSvg());
+        chart.WithXAxisValueFormatter(null).ConfigureXAxis(axis => axis.Labels.Add(new ChartAxisLabel(start.AddMilliseconds(100), "Authored tick")));
+        Assert.Contains(">Authored tick</text>", chart.ToSvg());
+    }
+
     [Theory]
     [InlineData(11, 1, 4)]
     [InlineData(3, 8, 5)]

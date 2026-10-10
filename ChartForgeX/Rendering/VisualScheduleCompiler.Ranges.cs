@@ -32,10 +32,11 @@ internal static partial class VisualScheduleCompiler {
         var ticks = axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= min && value <= max).Distinct().OrderBy(value => value).ToArray()
             : (gantt && axis.Scale == ChartScaleKind.Time && chart.Options.GanttTickInterval != null
                 ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null) ?? ChartTicks.GenerateInside(axis, min, max);
+        var milliseconds = gantt && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
         var tickLabels = ticks.ToDictionary(value => value, value => ChartAxisValueFormatter.Format(axis, value,
-            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks));
+            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick, milliseconds) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks));
         string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : ChartAxisValueFormatter.Format(axis, value,
-            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks);
+            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick, milliseconds) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks);
         var layout = LaneLayout(chart, context, builder, viewport, chart.Series.Select(series => series.Name), Array.Empty<string>(), false,
             now.HasValue && now.Value >= min && now.Value <= max, ticks, Format);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);
