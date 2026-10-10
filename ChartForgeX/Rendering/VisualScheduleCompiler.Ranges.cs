@@ -20,8 +20,10 @@ internal static partial class VisualScheduleCompiler {
             var dependency = gantt ? series.Points[1].Y : -1;
             if (!ChartMath.IsFinite(progress) || progress < 0 || progress > 1 || !ChartMath.IsFinite(dependency) || dependency < -1 || dependency >= index || dependency != Math.Truncate(dependency))
                 throw new InvalidOperationException("Gantt progress must be between zero and one, and dependencies must reference an earlier task.");
-            items.Add(new RangeItem(index, start, end, progress, (int)dependency, gantt && series.Points[2].X >= .5));
+            items.Add(new RangeItem(index, start, end, progress, gantt && series.Points[2].X >= .5));
         }
+        var links = gantt ? chart.ResolveGanttDependencies() : new List<ChartGanttDependency>();
+        var predecessors = links.GroupBy(link => link.SuccessorIndex).ToDictionary(group => group.Key, group => group.Select(link => link.PredecessorIndex).ToArray());
         var axis = chart.Options.XAxis; var now = gantt ? chart.Options.GanttToday : null;
         var min = items.Min(item => item.Start); var max = items.Max(item => item.End);
         if (now.HasValue) { min = Math.Min(min, now.Value); max = Math.Max(max, now.Value); }
@@ -51,12 +53,13 @@ internal static partial class VisualScheduleCompiler {
                 LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index);
             }
             if (gantt) {
-                using (builder.PushClip(plot)) foreach (var item in items.Where(item => item.Dependency >= 0)) {
-                    var previous = items[item.Dependency];
+                using (builder.PushClip(plot)) foreach (var link in links) {
+                    var previous = items[link.PredecessorIndex];
+                    var item = items[link.SuccessorIndex];
                     var start = new ChartPoint(Project(previous.End), plot.Top + (previous.Index + .5) * slot);
                     var end = new ChartPoint(Project(item.Start), plot.Top + (item.Index + .5) * slot);
                     var elbow = Math.Max(start.X, end.X) + Math.Min(context.Theme.Spacing, plot.Right - Math.Max(start.X, end.X));
-                    var id = "gantt-dependency-" + item.Dependency + "-" + item.Index;
+                    var id = "gantt-dependency-" + previous.Index + "-" + item.Index;
                     using (VisualStateSceneTools.Mark(builder, id, "gantt-dependency", new ChartRect(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y),
                         Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y)), chart.Series[previous.Index].Name + " → " + chart.Series[item.Index].Name,
                         new Dictionary<string, string> { ["data-cfx-source"] = "series-" + previous.Index, ["data-cfx-target"] = "series-" + item.Index })) {
@@ -84,8 +87,9 @@ internal static partial class VisualScheduleCompiler {
                     ["data-cfx-series"] = item.Index.ToString(), ["data-cfx-point"] = "0", ["data-cfx-start"] = VisualStateSceneTools.Number(item.Start),
                     ["data-cfx-end"] = VisualStateSceneTools.Number(item.End), ["data-cfx-duration"] = duration,
                     ["data-cfx-progress"] = VisualStateSceneTools.Number(item.Progress), ["data-cfx-milestone"] = item.Milestone ? "true" : "false",
-                    ["data-cfx-dependency"] = item.Dependency.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey
+                    ["data-cfx-dependency"] = (predecessors.TryGetValue(item.Index, out var incoming) ? incoming[0] : -1).ToString(CultureInfo.InvariantCulture), ["data-cfx-series-key"] = series.InteractionIdentityKey
                 };
+                if (incoming != null && incoming.Length > 1) metadata["data-cfx-dependencies"] = string.Join(",", incoming.Select(index => index.ToString(CultureInfo.InvariantCulture)));
                 using (VisualStateSceneTools.Mark(builder, id, item.Milestone ? "gantt-milestone" : gantt ? "gantt-task" : "timeline-item", bounds, summary, metadata)) {
                     if (!visible) continue;
                     var fill = series.PointColors.Count > 0 && series.PointColors[0].HasValue ? series.PointColors[0]!.Value : VisualStateSceneTools.SeriesColor(series, item.Index, colors);
@@ -127,10 +131,10 @@ internal static partial class VisualScheduleCompiler {
     }
 
     private sealed class RangeItem {
-        internal RangeItem(int index, double start, double end, double progress, int dependency, bool milestone) {
-            Index = index; Start = start; End = end; Progress = progress; Dependency = dependency; Milestone = milestone;
+        internal RangeItem(int index, double start, double end, double progress, bool milestone) {
+            Index = index; Start = start; End = end; Progress = progress; Milestone = milestone;
         }
         internal int Index { get; } internal double Start { get; } internal double End { get; }
-        internal double Progress { get; } internal int Dependency { get; } internal bool Milestone { get; }
+        internal double Progress { get; } internal bool Milestone { get; }
     }
 }

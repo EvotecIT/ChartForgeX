@@ -15,6 +15,10 @@
     }
   },
   "fixtures": {
+    "fixtures/gantt-forward-after.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored forward and multiple after-reference regression from https://mermaid.js.org/syntax/gantt.html; resolved dates verified against all three pinned reference engines."
+    },
     "fixtures/theme-variable-font.mmd": {
       "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
       "provenance": "Authored font configuration regression from https://mermaid.js.org/config/theming.html; the pinned references retain global and theme-variable font values independently."
