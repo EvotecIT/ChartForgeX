@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
@@ -8,6 +9,48 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
+    [Theory]
+    [InlineData("nearest")]
+    [InlineData("distance")]
+    [InlineData("exact")]
+    public async Task ExternalOverlayCannotPublishAReadoutAtExpiry(string range) {
+        if (!Enabled) return;
+        await using var session = await OpenAsync(Observations(false).ToInteractiveHtmlPage(options => ConfigureDelay(options, range)), 950, 760);
+        var page = session.Page;
+        await TraceAsync(page);
+        await page.EvaluateAsync("""
+            () => {
+                const root=document.querySelector('.cfx-interactive-chart'), tip=root.querySelector('.cfx-tooltip');
+                const nativeTimer=window.setTimeout.bind(window), delay=Number(root.dataset.cfxTooltipDelay);
+                window.overlayExpiry=[];
+                // Place the real host overlay at the timer boundary and record the callback's transient state.
+                // A final hidden-state assertion alone would miss a readout shown before pointerleave arrives.
+                window.setTimeout=(callback,ms,...args)=>nativeTimer((...values)=>{
+                    if(ms!==delay) { callback(...values); return; }
+                    const overlay=document.createElement('div');
+                    overlay.id='delay-host-overlay'; overlay.textContent='Host dialog';
+                    overlay.style.cssText='position:fixed;inset:0;background:#eee;z-index:5;padding:24px;';
+                    document.body.append(overlay);
+                    const hit=document.elementFromPoint(...window.delayTrace.pointer);
+                    callback(...values);
+                    window.overlayExpiry.push({hit:hit?.id,owned:!!hit&&root.contains(hit),hidden:tip.hidden,readout:tip.innerText});
+                },ms,...args);
+            }
+            """);
+        await PointerAsync(page, Point(0, 0));
+        Assert.True(await TipHiddenAsync(page));
+        await page.WaitForFunctionAsync("() => window.overlayExpiry.length>0", null, new PageWaitForFunctionOptions { Timeout = 5000 });
+        var expiry = await page.EvaluateAsync<JsonElement>("() => window.overlayExpiry");
+        var trace = await TraceStateAsync(page);
+        await CaptureDelayAsync(page, "delay-overlay-expiry-" + range, new { expiry, trace });
+        var observed = Assert.Single(expiry.EnumerateArray());
+        Assert.Equal("delay-host-overlay", observed.GetProperty("hit").GetString());
+        Assert.False(observed.GetProperty("owned").GetBoolean());
+        Assert.True(observed.GetProperty("hidden").GetBoolean());
+        Assert.Empty(trace.GetProperty("shown").EnumerateArray());
+        AssertNoConsoleErrors(session);
+    }
+
     [Theory]
     [InlineData("target-paint")]
     [InlineData("root-hidden")]
