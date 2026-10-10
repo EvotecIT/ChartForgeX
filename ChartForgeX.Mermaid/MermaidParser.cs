@@ -34,8 +34,8 @@ public sealed partial class MermaidParser {
         MermaidDocument document;
         if (descriptor.Kind == MermaidDiagramKind.Flowchart || descriptor.Kind == MermaidDiagramKind.Swimlane) {
             document = ParseFlowchart(source, lines, frontMatter, header.Value, descriptor, result);
-            if (string.Equals(descriptor.HeaderKind, "flowchart-elk", StringComparison.OrdinalIgnoreCase)) {
-                Add(result, header.Value.Line, header.Value.Column, header.Value.Text.Length, MermaidDiagnosticSeverity.Warning,
+            if (Normalize(descriptor.HeaderKind) == "flowchartelk") {
+                Add(result, header.Value.Line, header.Value.Column, descriptor.HeaderKind.Length, MermaidDiagnosticSeverity.Warning,
                     "The flowchart-elk header uses ChartForgeX static layout; ELK layout is not applied.", MermaidDiagnosticCodes.UnsupportedLayout);
             }
         } else if (descriptor.Kind == MermaidDiagramKind.UseCase) {
