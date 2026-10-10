@@ -48,19 +48,21 @@ internal static partial class VisualNumericRadialCompiler {
             var participants = Enumerable.Range(0, chart.Series.Count).ToArray();
             for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
                 var series = chart.Series[seriesIndex];
-                var scale = scales[series.YAxis];
                 var slot = stacks.Slot(participants, seriesIndex);
-                using (builder.PushGroup(SeriesId(seriesIndex), "series", new Dictionary<string, string> {
+                var seriesMetadata = new Dictionary<string, string> {
                     ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey,
                     ["data-cfx-label"] = series.Name, ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
-                    ["data-cfx-min-value"] = N(scale.Minimum), ["data-cfx-max-value"] = N(scale.Maximum),
                     ["data-cfx-radial-kind"] = bars ? "bar" : "column"
-                })) {
+                };
+                if (scales.TryGetValue(series.YAxis, out var scale)) {
+                    seriesMetadata["data-cfx-min-value"] = N(scale.Minimum); seriesMetadata["data-cfx-max-value"] = N(scale.Maximum);
+                }
+                using (builder.PushGroup(SeriesId(seriesIndex), "series", seriesMetadata)) {
                     for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
                         var key = coordinates.Resolve(seriesIndex, pointIndex);
                         var category = Array.FindIndex(categories, value => value.Id == key.Id);
                         var stack = stacks.Point(seriesIndex, pointIndex);
-                        var mark = Mark(chart, geometry, scale, stack.Base, stack.End, category, categories.Length, slot, bars);
+                        var mark = Mark(chart, geometry, scale!, stack.Base, stack.End, category, categories.Length, slot, bars);
                         DrawPoint(chart, context, builder, plot, geometry, series, seriesIndex, pointIndex, categoryLabels[category],
                             stack, mark, colors, labels, obstacles);
                     }
@@ -99,7 +101,11 @@ internal static partial class VisualNumericRadialCompiler {
                     .SelectMany(point => new[] { stacks.Point(series, point).Base, stacks.Point(series, point).End }))
                 .Where(value => axis.Scale != ChartScaleKind.Logarithmic || value != 0).ToArray();
             // A series with no observations retains its legend and slot, but does not set another axis's domain.
-            if (values.Length == 0) values = axis.Scale == ChartScaleKind.Logarithmic ? new[] { 1d, 10d } : new[] { 0d, 1d };
+            if (values.Length == 0) {
+                // Without a complete authored domain there is no scale to display or measure.
+                if (!axis.Minimum.HasValue || !axis.Maximum.HasValue) continue;
+                values = new[] { axis.Minimum.Value, axis.Maximum.Value };
+            }
             result.Add(side, RadialValueScale.Create(axis, values, "Numeric radial", true));
         }
         return result;
@@ -124,6 +130,8 @@ internal static partial class VisualNumericRadialCompiler {
             ["data-cfx-clipped"] = mark.Clipped ? "true" : "false",
             ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false"
         };
+        if (!mark.Painted && !mark.Clipped)
+            metadata["data-cfx-geometry-status"] = point.Y == 0 ? "zero" : "precision-collapse";
         ChartStackLayout.AddMetadata(metadata, stack);
         var bounds = mark.Painted ? ChartSlicePathGeometry.Bounds(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep)
             : new ChartRect(mark.End.X, mark.End.Y, 0, 0);
