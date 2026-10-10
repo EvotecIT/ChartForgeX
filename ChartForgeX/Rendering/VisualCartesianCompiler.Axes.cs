@@ -12,16 +12,13 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     // One formatter result per axis/value serves gutter measurement, placement and detached semantics.
     private sealed class AxisLabelCache {
-        private readonly Dictionary<ChartAxis, Dictionary<double, string>> _labels = new();
+        private readonly ChartAxisValueFormatter.Cache _labels = new();
         private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _ticks = new();
         private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _captionTicks = new();
         private readonly Dictionary<ChartAxis, Func<double, string>> _formatters = new();
         internal ChartAxis? HorizontalValueAxis { get; set; }
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
-        internal void Set(ChartAxis axis, double value, string text) {
-            if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
-            labels[value] = text;
-        }
+        internal void Set(ChartAxis axis, double value, string text) => _labels.Set(axis, value, text);
         internal void SetTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _ticks[axis] = ticks;
         internal void IncludeValueTicks(ChartAxis axis, double minimum, double maximum) {
             if (axis.Labels.Count == 0) return;
@@ -37,12 +34,8 @@ internal static partial class VisualCartesianCompiler {
             return ticks;
         }
         internal string Format(ChartAxis axis, double value, Func<double, string>? fallback, IReadOnlyList<double> ticks) {
-            if (!_labels.TryGetValue(axis, out var labels)) _labels.Add(axis, labels = new Dictionary<double, string>());
-            if (labels.TryGetValue(value, out var text)) return text;
             if (!_formatters.TryGetValue(axis, out var formatter)) _formatters.Add(axis, formatter = ChartAxisValueFormatter.Create(axis, ticks, fallback));
-            text = formatter(value);
-            if (axis.Scale == ChartScaleKind.Time || axis.LabelFormatter != null || fallback != null) labels.Add(value, text);
-            return text;
+            return _labels.Format(axis, value, formatter, axis.Scale == ChartScaleKind.Time || axis.LabelFormatter != null || fallback != null);
         }
     }
 

@@ -492,7 +492,7 @@
   };
   const shapePaint = (node, styles, subject = node) => {
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
-    if (/-(highlight|pattern|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
+    if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
       || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)
       || subject !== node && !paintWithinNativeClips(node, subject)) return null;
     const paint = paintStyle(node, styles);
@@ -520,17 +520,31 @@
     if (!node) return null;
     const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
     const primary = shapes.filter((shape) => shape.matches('[data-cfx-role^="circle-value"],[data-cfx-role^="gauge-value"],[data-cfx-role="gauge-needle"],[data-cfx-role="bullet-value"]'));
-    for (const shape of primary.concat(shapes)) {
+    const authoredPattern = (shape) => /-pattern$/.test(shape.dataset.cfxRole || '');
+    const patterns = shapes.filter(authoredPattern);
+    for (const shape of primary.concat(shapes.filter((shape) => !authoredPattern(shape)))) {
       if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
       const paint = shapePaint(shape, styles, subject || shape);
       if (paint) return paint;
     }
-    return primaryTextPaint(node, decoration, styles);
+    const text = primaryTextPaint(node, decoration, styles);
+    if (text) return text;
+    // Authored hatches can be the only mark ink; captions and ordinary surfaces keep their paint precedence.
+    for (const shape of patterns) {
+      if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
+      const paint = shapePaint(shape, styles, subject || shape);
+      if (paint) return paint;
+    }
+    return null;
   };
   const seriesPaint = (node, styles) => {
     const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
     if (!owner) return null;
     for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
+      const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
+      if (paint) return paint;
+    }
+    for (const layer of owner.querySelectorAll('[data-cfx-role="area-pattern"],[data-cfx-role="range-area-pattern"],[data-cfx-role="range-band-pattern"],[data-cfx-role="radar-pattern"]')) {
       const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
     }
@@ -1554,6 +1568,8 @@
   // A producer's coordinate contract controls inferred geometry; native painted targets always retain their identity.
   const usesPolarCoordinates = (node) => !!node.closest('[data-cfx-coordinate-system="polar"]');
   const usesCartesianCoordinates = (node) => node.closest('[data-cfx-coordinate-system]')?.dataset.cfxCoordinateSystem === 'cartesian';
+  const inferredPlotSurfaceRoles = new Set(['background', 'frame-card', 'frame-card-shadow', 'content-surface',
+    'grid-x', 'grid-y', 'axis-x', 'axis-y', 'axis-secondary-y']);
   // Retain native summaries separately: an Exact line hit is not an inferred observation or crosshair.
   const pointerCandidates = (root, event, searchNearest) => {
     const stage = root.querySelector('.cfx-stage');
@@ -1572,7 +1588,10 @@
     }
     // Sparse-plot inference starts on the native stage surface, never on an unrelated host veil.
     // Explicit native targets and mapped captions retain their own acquisition contract.
-    const plotSurface = event.target === stage || event.target instanceof SVGElement && stage.querySelector('svg')?.contains(event.target);
+    const svg = stage.querySelector('svg');
+    const plotSurface = event.target === stage || event.target === svg || event.target instanceof SVGElement
+      && svg?.contains(event.target) && !event.target.closest('foreignObject')
+      && inferredPlotSurfaceRoles.has(event.target.dataset.cfxRole);
     if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {

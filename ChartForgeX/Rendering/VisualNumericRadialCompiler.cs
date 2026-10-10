@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Compiles numeric radial bars and columns from canonical category, stack and value-axis snapshots.</summary>
 internal static partial class VisualNumericRadialCompiler {
-    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
+    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartAxisValueFormatter.Cache? axisLabels = null) {
         var bars = chart.Series[0].Kind == ChartSeriesKind.RadialBar;
         var colors = context.Theme.Resolve(context.ThemeMode);
         Validate(chart);
@@ -26,7 +26,9 @@ internal static partial class VisualNumericRadialCompiler {
         }
         var scales = Scales(chart, stacks);
         var categoryValues = categories.Select(category => category.Value).ToArray();
-        var categoryLabels = categoryValues.Select(ChartAxisValueFormatter.Create(chart.Options.XAxis, categoryValues)).ToArray();
+        axisLabels ??= new ChartAxisValueFormatter.Cache();
+        var categoryFormatter = ChartAxisValueFormatter.Create(chart.Options.XAxis, categoryValues);
+        var categoryLabels = categoryValues.Select(value => axisLabels.Format(chart.Options.XAxis, value, categoryFormatter)).ToArray();
         var tickLabels = scales.ToDictionary(pair => pair.Key, pair => {
             var format = ChartAxisValueFormatter.Create(Axis(chart, pair.Key), pair.Value.Ticks,
                 pair.Key == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxisValueFormatter : chart.Options.ValueFormatter);
