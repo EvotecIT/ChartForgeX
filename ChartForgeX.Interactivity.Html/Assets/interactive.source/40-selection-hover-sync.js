@@ -143,6 +143,8 @@
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
     root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column,.cfx-hover-series').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series'));
+    // A published hover change supersedes the peer's guide emphasis; the next guide must restore it.
+    if (emit !== false || sync !== false) delete root._cfxCrosshairMode;
     if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
     if (sync !== false) emitSync(root, { action: 'hover-clear' });
   };
@@ -344,12 +346,14 @@
     root.dataset.cfxHoverKey = targetKey(target);
     recordFocusTrail(root, target, emit, sync);
     revealNodes(root, [node], emit, sync, 'hover');
+    if (emit !== false || sync !== false) delete root._cfxCrosshairMode;
     if (emit !== false) emitHostEvent(root, 'cfxhover', { label: text(node), target });
     if (sync !== false) emitSync(root, { action: 'hover', label: text(node), target });
   };
   const hideCrosshair = (root, crosshair) => {
     if (crosshair) crosshair.hidden = true;
     root.removeAttribute('data-cfx-crosshair');
+    delete root._cfxCrosshairMode;
   };
   // A producer's coordinate contract controls inferred geometry; native painted targets always retain their identity.
   const usesPolarCoordinates = (node) => !!node.closest('[data-cfx-coordinate-system="polar"]');
@@ -388,7 +392,7 @@
     const range = root.dataset.cfxTooltipRange || 'distance';
     return range === 'nearest' || range === 'distance' && point.distance <= Number(root.dataset.cfxTooltipDistance ?? 120);
   };
-  const showCrosshair = (root, crosshair, point, event, emit) => {
+  const showCrosshair = (root, crosshair, point, event) => {
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
@@ -399,10 +403,14 @@
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
     if (label) label.textContent = text(point.node);
     const target = targetIdentity(point.node);
-    root.dataset.cfxCrosshair = targetKey(target);
-    if (emit !== false) {
+    const key = targetKey(target), mode = crosshairHoverMode(event, point.node);
+    // A native summary can stay unchanged while its independently inferred guide advances.
+    const changed = root.dataset.cfxCrosshair !== key || root._cfxCrosshairMode !== mode;
+    root.dataset.cfxCrosshair = key;
+    root._cfxCrosshairMode = mode;
+    if (changed) {
       emitHostEvent(root, 'cfxcrosshair', { label: text(point.node), target, x: event.clientX, y: event.clientY });
-      emitSync(root, { action: 'crosshair', label: text(point.node), target, mode: root.dataset.cfxHoverMode || 'shared' });
+      emitSync(root, { action: 'crosshair', label: text(point.node), target, mode });
     }
   };
   // A pointer resting on a mark of the nearest point's series emphasizes that series; anywhere else on the
@@ -438,7 +446,7 @@
       ? crosshairHoverMode(event, point.node) : 'series';
     const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
     if (changed) setHover(root, point.node, true, true, mode);
-    if (guidePoint) showCrosshair(root, crosshair, guidePoint, event, changed);
+    if (guidePoint) showCrosshair(root, crosshair, guidePoint, event);
     else hideCrosshair(root, crosshair);
     // Recheck paint on each event: host CSS may change while the semantic target remains the same.
     if (tooltipPoint) showTip(root, tip, tooltipPoint.node, event);

@@ -66,6 +66,8 @@ Distances use CSS pixels after responsive layout and SVG transforms, so the same
 
 Tooltip acquisition works with `ChartInteractionFeatures.Tooltips` even when `Crosshair` is disabled. The crosshair keeps its own 120 CSS pixel guide range. `Crosshair.ShowLabel` controls the guide's label and defaults to true for every palette; set it to false when a compact layout already provides the same information in the tooltip. These options do not enable either feature.
 
+`cfxcrosshair` and crosshair synchronization follow the guide's observation independently of a retained `Exact` tooltip summary. They update when the guide's observation or series/shared emphasis changes and restore the guide after a native hover change. Pointer movement within the same state does not repeat these notifications.
+
 ```csharp
 chart.SaveInteractiveHtml("observations.html", options => {
     options.Tooltip.Range = HtmlChartTooltipRange.WithinDistance(64);
