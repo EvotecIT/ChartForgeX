@@ -109,16 +109,16 @@ public sealed partial class SvgVisualBlockRenderer {
 
     internal static void RenderBlockHeading(SvgMarkupWriter writer, IVisualBlock block, ref double y, double contentX, double contentWidth) {
         var theme = block.Options.Theme;
+        var headings = VisualBlockRendering.Headings(block);
+        var titleSize = headings.TitleFontSize; var subtitleSize = headings.SubtitleFontSize;
         if (block.Title.Length > 0) {
-            writer.StartElement("text").Attribute("data-cfx-role", "visual-title").Attribute("x", contentX).Attribute("y", y + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", "800").Text(VisualBlockRendering.FitText(block.Title, theme.TitleFontSize, contentWidth)).EndElement().Line();
-            y += theme.TitleFontSize + 7;
+            writer.StartElement("text").Attribute("data-cfx-role", "visual-title").Attribute("x", contentX).Attribute("y", y + headings.TitleAscent).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", titleSize).Attribute("font-weight", "800").Text(VisualBlockRendering.FitText(block.Title, titleSize, contentWidth)).EndElement().Line();
+            y += headings.TitleAdvance;
         }
 
         if (block.Subtitle.Length > 0) {
-            writer.StartElement("text").Attribute("data-cfx-role", "visual-subtitle").Attribute("x", contentX).Attribute("y", y + theme.SubtitleFontSize * 0.75).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.SubtitleFontSize).Text(VisualBlockRendering.FitText(block.Subtitle, theme.SubtitleFontSize, contentWidth)).EndElement().Line();
-            y += theme.SubtitleFontSize + 13;
-        } else if (block.Title.Length > 0) {
-            y += 8;
+            writer.StartElement("text").Attribute("data-cfx-role", "visual-subtitle").Attribute("x", contentX).Attribute("y", y + headings.SubtitleAscent).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", subtitleSize).Text(VisualBlockRendering.FitText(block.Subtitle, subtitleSize, contentWidth)).EndElement().Line();
+            y += headings.SubtitleAdvance;
         }
     }
 

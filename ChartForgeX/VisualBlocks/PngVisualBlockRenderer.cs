@@ -54,16 +54,16 @@ public sealed partial class PngVisualBlockRenderer {
 
     internal static void DrawHeading(RgbaCanvas canvas, IVisualBlock block, ref double y, double x, double width) {
         var theme = block.Options.Theme;
+        var headings = VisualBlockRendering.Headings(block);
+        var titleSize = headings.TitleFontSize; var subtitleSize = headings.SubtitleFontSize;
         if (block.Title.Length > 0) {
-            canvas.DrawTextEmphasized(x, y, FitText(canvas, block.Title, theme.TitleFontSize, width), theme.Text, theme.TitleFontSize);
-            y += theme.TitleFontSize + 8;
+            DrawAlignedTextAtBaseline(canvas, block.Title, x, y + headings.TitleAscent, width, TextAlignment.Left, theme.Text, titleSize, true);
+            y += headings.TitleAdvance;
         }
 
         if (block.Subtitle.Length > 0) {
-            canvas.DrawText(x, y, FitText(canvas, block.Subtitle, theme.SubtitleFontSize, width), theme.MutedText, theme.SubtitleFontSize);
-            y += theme.SubtitleFontSize + 13;
-        } else if (block.Title.Length > 0) {
-            y += 8;
+            DrawAlignedTextAtBaseline(canvas, block.Subtitle, x, y + headings.SubtitleAscent, width, TextAlignment.Left, theme.MutedText, subtitleSize, false);
+            y += headings.SubtitleAdvance;
         }
     }
 

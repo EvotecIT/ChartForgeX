@@ -1,12 +1,36 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualBlocks;
 
 internal static partial class VisualBlockRendering {
     public const int MaximumPacketFields = 10000;
     public const int MaximumPacketBits = 10000;
+
+    public static PacketRowMetrics PacketRows(PacketLayoutBlock packet, ChartRect content, double top, int rows) {
+        var remaining = Math.Max(0, content.Bottom - top);
+        var gap = Math.Min(Math.Min(12, Math.Max(5, content.Height * .025)), remaining / (rows * 2));
+        var slot = Math.Max(0, (remaining - gap * Math.Max(0, rows - 1)) / rows);
+        var labelTop = packet.ShowBitNumbers ? Math.Min(BodyFontSize(packet.Options.Theme, 16), slot * .4) : 0;
+        var height = Math.Min(52, slot - labelTop);
+        var bits = Math.Min(BodyFontSize(packet.Options.Theme, 9.5), labelTop * .75);
+        var label = Math.Min(BodyFontSize(packet.Options.Theme, Math.Max(9, Math.Min(13.5, height * .31))), height * .6);
+        return new PacketRowMetrics(labelTop, gap, height, bits, label);
+    }
+
+    public readonly struct PacketRowMetrics {
+        public PacketRowMetrics(double labelTop, double gap, double height, double bitFontSize, double fieldFontSize) {
+            LabelTop = labelTop; Gap = gap; Height = height; BitFontSize = bitFontSize; FieldFontSize = fieldFontSize;
+        }
+        public double LabelTop { get; }
+        public double Gap { get; }
+        public double Height { get; }
+        public double BitFontSize { get; }
+        public double BitBaselineOffset => Math.Min(LabelTop * .25, Math.Max(4, BitFontSize * .3));
+        public double FieldFontSize { get; }
+    }
 
     public static void ValidatePacketLayout(PacketLayoutBlock packet) {
         if (packet.Fields.Count == 0) throw new InvalidOperationException("Packet layout blocks must contain at least one field.");

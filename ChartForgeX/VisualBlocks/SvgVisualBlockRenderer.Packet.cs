@@ -16,9 +16,8 @@ public sealed partial class SvgVisualBlockRenderer {
         var slices = VisualBlockRendering.PacketSlices(packet);
         var rowCount = slices.Count == 0 ? 0 : slices[slices.Count - 1].Row + 1;
         if (rowCount == 0) return;
-        var labelTop = packet.ShowBitNumbers ? VisualBlockRendering.BodyFontSize(theme, 16) : 0.0;
-        var rowGap = Math.Min(12, Math.Max(5, content.Height * 0.025));
-        var rowHeight = Math.Max(22, Math.Min(52, (options.Size.Height - options.Padding.Bottom - y - rowGap * Math.Max(0, rowCount - 1)) / rowCount - labelTop));
+        var metrics = VisualBlockRendering.PacketRows(packet, content, y, rowCount);
+        var labelTop = metrics.LabelTop; var rowGap = metrics.Gap; var rowHeight = metrics.Height;
         var bitWidth = content.Width / packet.BitsPerRow;
         for (var index = 0; index < slices.Count; index++) {
             var slice = slices[index];
@@ -40,15 +39,14 @@ public sealed partial class SvgVisualBlockRenderer {
                 .EndEmptyElement()
                 .Line();
 
-            if (packet.ShowBitNumbers) WritePacketBitLabels(writer, packet, slice, x, rowY - 4, width, theme);
-            var fontSize = VisualBlockRendering.BodyFontSize(theme, Math.Max(9, Math.Min(13.5, rowHeight * 0.31)));
+            if (packet.ShowBitNumbers) WritePacketBitLabels(writer, packet, slice, x, rowY - metrics.BitBaselineOffset, width, theme, metrics.BitFontSize);
+            var fontSize = metrics.FieldFontSize;
             WriteText(writer, slice.Field.Label, x + 5, rowY + rowHeight * 0.58, Math.Max(1, width - 10), TextAlignment.Center, theme.Text, theme.FontFamily, fontSize, "700");
         }
     }
 
-    private static void WritePacketBitLabels(SvgMarkupWriter writer, PacketLayoutBlock packet, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WritePacketBitLabels(SvgMarkupWriter writer, PacketLayoutBlock packet, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartForgeX.Themes.ChartTheme theme, double fontSize) {
         var start = slice.StartBit.ToString(CultureInfo.InvariantCulture);
-        var fontSize = VisualBlockRendering.BodyFontSize(theme, 9.5);
         writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-start").Attribute("x", F(x)).Attribute("y", F(y)).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "650").Text(start).EndElement().Line();
         if (slice.EndBit != slice.StartBit) {
             var end = slice.EndBit.ToString(CultureInfo.InvariantCulture);

@@ -134,8 +134,8 @@ public sealed partial class MermaidParser {
         if (!setting.IsString && value != null && double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var numeric) &&
             numeric >= 1 && numeric <= 256) return numeric;
         if (value != null && value.Length <= 32 &&
-            Regex.IsMatch(value, @"^[0-9]+(?:\.[0-9]+)?(?:px)?$", RegexOptions.CultureInvariant) &&
-            double.TryParse(value.EndsWith("px", StringComparison.Ordinal) ? value.Substring(0, value.Length - 2) : value,
+            Regex.IsMatch(value, @"^[0-9]+(?:\.[0-9]+)?(?:px)?$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) &&
+            double.TryParse(value.EndsWith("px", StringComparison.OrdinalIgnoreCase) ? value.Substring(0, value.Length - 2) : value,
                 NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var size) && size >= 1 && size <= 256) return size;
         if (setting.IsString && value != null && value.Length <= 4096 &&
             Regex.IsMatch(value, @"^(?:[0-9]+(?:\.[0-9]+)?(?:em|rem|pt|pc|in|cm|mm|vh|vw|vmin|vmax|ch|ex|%)|(?:calc|var|min|max|clamp|env)\(.+\)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger|inherit|initial|unset|revert|revert-layer)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)) return null;
