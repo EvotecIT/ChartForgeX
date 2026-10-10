@@ -83,6 +83,10 @@ public sealed class NumericRadialAxisTextTests {
         if (hidden is "category" or "all") { chart.WithXAxis(new string('W', 100)); chart.Options.XAxis.LabelAngle = 90; }
         if (hidden is "primary" or "all") { chart.WithYAxis(new string('W', 100)); chart.Options.YAxis.LabelAngle = -90; }
         if (hidden is "secondary" or "all") { chart.WithSecondaryYAxis(new string('W', 100)); chart.Options.SecondaryYAxis.LabelAngle = 180; }
+        foreach (var name in new[] { "category", "primary", "secondary" }.Where(name => hidden == "all" || hidden == name)) {
+            Axis(chart, name).LabelOrientation = ChartAxisLabelOrientation.Perpendicular;
+            Axis(chart, name).LabelDensity = ChartLabelDensity.Relaxed;
+        }
         Assert.Equal(initial, Prepare(chart).ToSvg());
         chart = Configured(bars, 800);
         var visible = Prepare(chart).Scene;
@@ -102,6 +106,8 @@ public sealed class NumericRadialAxisTextTests {
         var primaryPrepared = Prepare(chart); var primary = primaryPrepared.Scene;
         Assert.DoesNotContain(primary.Nodes.OfType<VisualSceneText>(), text => text.Id == "radial-value-axis-title-secondary");
         chart.WithSecondaryYAxis("Unused caption that must not shrink the plot"); chart.Options.SecondaryYAxis.LabelAngle = -90;
+        chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
+        chart.Options.SecondaryYAxis.LabelDensity = ChartLabelDensity.Relaxed;
         Assert.Equal(primaryPrepared.ToSvg(), Prepare(chart).ToSvg());
         NumericRadialSeriesTests.Add(chart, bars, "Missing rate", Array.Empty<ChartPoint>()).Series[1].UseSecondaryYAxis();
         chart.Options.SecondaryYAxis.WithAutomaticBounds();
@@ -121,11 +127,17 @@ public sealed class NumericRadialAxisTextTests {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return value.ToString("0", CultureInfo.InvariantCulture) + " requests";
         }));
+        chart.Options.XAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
+        chart.Options.YAxis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular;
+        chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
+        chart.Options.YAxis.LabelDensity = ChartLabelDensity.Relaxed;
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.All(calls.Values, count => Assert.Equal(1, count));
         chart.WithXAxis("Changed region").WithYAxis("Changed requests").WithSecondaryYAxis("Changed rate");
         chart.Options.XAxis.LabelAngle = 90; chart.Options.YAxis.LabelAngle = -90; chart.Options.AxisTitleStyle.WithFontSize(30);
         chart.Options.YAxis.WithLabelFormatter(_ => "Changed tick"); chart.Series[0].Points[0] = new ChartPoint(1, 1);
+        chart.Options.XAxis.LabelOrientation = chart.Options.YAxis.LabelOrientation = ChartAxisLabelOrientation.Fixed;
+        chart.Options.YAxis.LabelDensity = ChartLabelDensity.All;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.NotEqual(svg, Prepare(chart).ToSvg());
     }

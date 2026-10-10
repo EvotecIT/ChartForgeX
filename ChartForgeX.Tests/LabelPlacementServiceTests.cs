@@ -31,6 +31,39 @@ public sealed class LabelPlacementServiceTests {
         Assert.Equal(first.LeaderEnd, second.LeaderEnd);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LargerRequestedGapIsPreservedAcrossSpatialCellsInEitherOrder(bool reverse) {
+        // The first box occupies cell zero; the second occupies cell one. Its own
+        // zero gap would miss the first box's required forty-pixel separation.
+        var relaxed = new LabelPlacementRequest("A", new ChartPoint(30, 20), Style, new[] { new LabelCandidate(0, 0) }) {
+            MinimumLabelGap = 40, MeasuredSize = new TextMetrics(10, 10, 10), Fallback = LabelFallbackRule.Drop
+        };
+        var dense = new LabelPlacementRequest("B", new ChartPoint(70, 20), Style, new[] { new LabelCandidate(0, 0) }) {
+            MinimumLabelGap = 0, MeasuredSize = new TextMetrics(10, 10, 10), Fallback = LabelFallbackRule.Drop
+        };
+        var results = new LabelPlacementService().Place(reverse ? new[] { dense, relaxed } : new[] { relaxed, dense }, new ChartRect(0, 0, 200, 100));
+        Assert.False(results[0].IsDropped); Assert.True(results[1].IsDropped);
+    }
+
+    [Fact]
+    public void AcceptedCaptionOverlapsStillAvoidMarksAndBlockLaterLabels() {
+        LabelPlacementRequest Caption(string text, double x, int priority, double width = 40) => new(text, new ChartPoint(x, 20), Style,
+            new[] { new LabelCandidate(0, 0) }, priority) {
+            AllowLabelOverlap = true, MinimumLabelGap = 0, MeasuredSize = new TextMetrics(width, 10, 10), Fallback = LabelFallbackRule.Drop
+        };
+        var first = Caption("First axis", 20, 100); var second = Caption("Second axis", 40, 90);
+        var data = Caption("Data", 70, 40, 10); data.AllowLabelOverlap = false;
+        var mark = Caption("Blocked by mark", 105, 90, 5);
+        var outside = Caption("Outside viewport", 195, 90, 10);
+        var results = new LabelPlacementService().Place(new[] { first, second, data, mark, outside }, new ChartRect(0, 0, 200, 100),
+            new[] { new LabelObstacle("mark", new ChartRect(100, 10, 20, 30)) });
+        Assert.False(results[0].IsDropped); Assert.False(results[1].IsDropped);
+        Assert.All(results.Skip(2), result => Assert.True(result.IsDropped));
+        Assert.Equal("Data", results[2].Request.Text);
+    }
+
     [Fact]
     public void DisplayCasingIsAppliedOnceAndDoesNotReportEllipsis() {
         var service = new LabelPlacementService();

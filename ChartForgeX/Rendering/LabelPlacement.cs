@@ -72,6 +72,10 @@ public sealed class LabelPlacementRequest {
     // Prepared axis requests retain their rotation so shortened strings use the same footprint.
     // MeasuredSize remains the unrotated text measurement for requests with this value set.
     internal double RotationDegrees { get; set; }
+    /// <summary>Overrides separation from other labels; mark separation retains the scene policy.</summary>
+    internal double? MinimumLabelGap { get; set; }
+    /// <summary>Accepts existing label intersections while preserving mark and viewport checks. Accepted bounds still block later labels.</summary>
+    internal bool AllowLabelOverlap { get; set; }
     internal TextMetrics? MeasuredSize { get; set; }
     internal TextMetrics? DecorationSize { get; set; }
 }

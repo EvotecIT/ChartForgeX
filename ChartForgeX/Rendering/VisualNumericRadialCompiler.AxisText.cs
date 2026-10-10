@@ -7,6 +7,28 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualNumericRadialCompiler {
+    // Reservation and placement resolve the same physical axis track, including reversal.
+    private static double CategoryAngle(ChartAxis axis, int index, int count, double start, double sweep, bool bars) {
+        var physical = axis.Reversed ? count - 1 - index : index;
+        return bars ? start : start + (physical + .5) * sweep / count;
+    }
+
+    private static double ValueAngle(ChartAxisSide side, double ratio, double start, double sweep, bool bars) =>
+        start + (bars ? ratio * sweep : side == ChartAxisSide.Secondary ? sweep : 0);
+
+    private static double AxisLabelRotation(ChartAxis axis, double spokeAngle, bool angular) =>
+        VisualAxisText.Rotation(axis, spokeAngle * 180 / Math.PI + (angular ? 90 : 0));
+
+    private static void ConfigureAxisLabel(LabelPlacementRequest request, ChartAxis axis, double spokeAngle, bool angular, double spacing) {
+        request.RotationDegrees = AxisLabelRotation(axis, spokeAngle, angular);
+        request.MinimumLabelGap = axis.LabelDensity switch {
+            ChartLabelDensity.Dense or ChartLabelDensity.All => 0,
+            ChartLabelDensity.Relaxed => spacing * 2,
+            _ => Math.Max(1, spacing / 3)
+        };
+        request.AllowLabelOverlap = axis.LabelDensity == ChartLabelDensity.All;
+    }
+
     /// <summary>Reserves title strips inside the shared frame, before fitting the radial geometry and tick lanes.</summary>
     private static ChartRect AxisTitles(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content,
         Dictionary<ChartAxisSide, RadialValueScale> scales) {

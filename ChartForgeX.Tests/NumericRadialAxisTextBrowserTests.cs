@@ -107,7 +107,7 @@ public sealed class NumericRadialAxisTextBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static void UseProofFonts(Chart chart) {
+    internal static void UseProofFonts(Chart chart) {
         _ = ProofFontCss.Value;
         chart.WithFontFamily(ProofFont);
         chart.Options.PngFontPath = null;
@@ -125,7 +125,7 @@ public sealed class NumericRadialAxisTextBrowserTests {
         return "<style>" + Face("Carlito-Regular.ttf", 400) + Face("Carlito-Bold.ttf", 700) + "</style>";
     }
 
-    private static async Task<HtmlBrowserSession> OpenTitleChartAsync(Chart chart, int width, int height) {
+    internal static async Task<HtmlBrowserSession> OpenTitleChartAsync(Chart chart, int width, int height) {
         var html = chart.ToInteractiveHtmlPage().Replace("</head>", ProofFontCss.Value + "</head>", StringComparison.Ordinal);
         var session = await OpenAsync(html, width, height);
         try {

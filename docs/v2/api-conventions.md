@@ -290,7 +290,20 @@ Numeric radial `Inside` and `Center` captions fit entirely within their painted 
 
 Numeric radial axis text uses the existing chart options. `WithXAxis`, `WithYAxis` and `WithSecondaryYAxis` place horizontal titles in measured strips inside the shared frame. Primary and secondary value titles share the top strip; the category title uses the bottom strip. A value title participates when that axis has observations or a complete authored domain. `AxisTitleStyle` controls all title text; shortened or omitted titles report `numeric-radial.axis-title-overflow` and retain their full descriptive text. An entirely empty chart keeps its no-data surface.
 
-`ConfigureXAxis`, `ConfigureYAxis` and `ConfigureSecondaryYAxis` set each axis's independent `LabelAngle` in fixed screen degrees. Zero is horizontal; equivalent full turns normalize before layout and paint. The angle affects category/value captions, including ellipsis measurements, without rotating titles or data labels. `ShowAxes = false` or an axis's `Visible = false` excludes its text and spacing; `ShowLine = false` controls only the axis rule. Radial/tangential orientation and numeric radial `LabelDensity` policies remain separate work.
+`ConfigureXAxis`, `ConfigureYAxis` and `ConfigureSecondaryYAxis` set each axis's independent `LabelOrientation` and `LabelAngle`. `Fixed`, the default orientation, uses screen degrees: zero is horizontal, and equivalent full turns normalize before layout and paint. `Parallel` follows the local axis track; `Perpendicular` uses the direction across it. An angular axis follows its local tangent, while a radius axis follows its spoke. For radial bars the category axis is radial and the value axes are angular; radial columns use the opposite arrangement. Relative modes add `LabelAngle` as an offset, then keep the baseline upright. Reversal uses the projected position, and primary and secondary value axes keep independent settings. Other chart families reject a nonfixed orientation during preparation.
+
+Numeric radial `LabelDensity` controls caption spacing independently on each axis. `Auto` keeps the balanced spacing; `Dense` accepts touching captions; `Relaxed` reserves more separation. `All` accepts caption overlaps without collision thinning, while each label still fits the viewport and avoids painted marks. Text may therefore be shortened or omitted when no safe footprint fits. The coincident first/last tick of a full turn retains one seam caption. Every fitted axis caption remains an obstacle for later ordinary captions, stack totals and data labels. Complete text remains in descriptive regions. Orientation and density do not rotate titles or data labels. `ShowAxes = false` or an axis's `Visible = false` excludes its text and spacing; `ShowLine = false` controls only the axis rule.
+
+```csharp
+chart.ConfigureXAxis(axis => {
+    axis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
+    axis.LabelAngle = 10;
+    axis.LabelDensity = ChartLabelDensity.Relaxed;
+}).ConfigureYAxis(axis => {
+    axis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular;
+    axis.LabelDensity = ChartLabelDensity.Dense;
+});
+```
 
 If measured text leaves no plotted radius, `numeric-radial.insufficient-space` reports the omitted geometry. Point identities, values and descriptive regions remain available with `data-cfx-geometry-status="layout-collapse"`; the HTML adapter retains keyboard readouts without creating pointer hit areas.
 

@@ -18,6 +18,15 @@ public static partial class V2GalleryModels {
 
     private static Chart NumericRadial(ChartSeriesKind kind, string variant) {
         var bars = kind == ChartSeriesKind.RadialBar;
+        if (variant is "all-labels" or "compact-all-labels") {
+            var labels = Chart.Create().WithXLabels(Enumerable.Range(1, 20).Select(index => "Region " + index + " request volume").ToArray())
+                .WithRadialGeometry(new ChartRadialGeometryOptions(-75, 195, .2, .25, .1))
+                .WithYAxisBounds(0, 1500).WithDataLabels(false).WithXAxis("All region captions; overlaps are intentional")
+                .ConfigureXAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
+            labels.Options.YAxis.Visible = false;
+            var observations = Enumerable.Range(1, 20).Select(index => new ChartPoint(index, 500 + index * 20));
+            return bars ? labels.AddRadialBar("Requests", observations) : labels.AddRadialColumn("Requests", observations);
+        }
         var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
             .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15));
         ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
@@ -35,6 +44,11 @@ public static partial class V2GalleryModels {
             chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
         } else {
             chart.WithYAxisBounds(0, 1500).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+        }
+        if (variant is "axis-labels" or "compact-axis-labels") {
+            chart.WithXAxis("Region").WithYAxis("Requests")
+                .ConfigureXAxis(axis => { axis.LabelOrientation = ChartAxisLabelOrientation.Parallel; axis.LabelAngle = 10; axis.LabelDensity = ChartLabelDensity.Relaxed; })
+                .ConfigureYAxis(axis => { axis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular; axis.LabelDensity = ChartLabelDensity.Dense; });
         }
         return chart;
     }
