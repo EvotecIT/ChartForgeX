@@ -83,12 +83,12 @@ internal static partial class VisualScheduleCompiler {
                     ["data-cfx-series"] = item.Index.ToString(), ["data-cfx-point"] = "0", ["data-cfx-start"] = VisualStateSceneTools.Number(item.Start),
                     ["data-cfx-end"] = VisualStateSceneTools.Number(item.End), ["data-cfx-duration"] = duration,
                     ["data-cfx-progress"] = VisualStateSceneTools.Number(item.Progress), ["data-cfx-milestone"] = item.Milestone ? "true" : "false",
-                    ["data-cfx-dependency"] = (predecessors.TryGetValue(item.Index, out var incoming) ? incoming[0] : -1).ToString(CultureInfo.InvariantCulture), ["data-cfx-series-key"] = series.InteractionIdentityKey
+                    ["data-cfx-series-key"] = series.InteractionIdentityKey
                 };
-                if (incoming != null && incoming.Length > 1) metadata["data-cfx-dependencies"] = string.Join(",", incoming.Select(index => index.ToString(CultureInfo.InvariantCulture)));
+                DependencyMetadata(metadata, predecessors, item.Index);
                 using (VisualStateSceneTools.Mark(builder, id, item.Milestone ? "gantt-milestone" : gantt ? "gantt-task" : "timeline-item", bounds, summary, metadata)) {
                     if (!visible) continue;
-                    var fill = series.PointColors.Count > 0 && series.PointColors[0].HasValue ? series.PointColors[0]!.Value : VisualStateSceneTools.SeriesColor(series, item.Index, colors);
+                    var fill = ChartSeriesColours.Point(series, item.Index, 0, colors);
                     var fillRole = VisualChartPaint.SeriesRole(series, 0); var fillPaint = SvgPaint.Of(fill, fillRole);
                     using (builder.PushClip(plot)) {
                         ChartPath shape;
@@ -123,7 +123,7 @@ internal static partial class VisualScheduleCompiler {
                     DataLabel(chart, context, builder, series, 0, label, bounds, viewport, colors, fill);
                 }
             }
-            Markers(chart, context, builder, plot, items, Project, min, max, colors, obstacles);
+            Markers(chart, context, builder, plot, items, Project, min, max, colors, obstacles, predecessors);
             if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             // Links are foreground annotations: successor fills must not cover their arrowheads.
             if (gantt) Dependencies(chart, context, builder, plot, items, renderedLinks, Project, slot, height);
