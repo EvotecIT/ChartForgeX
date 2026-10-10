@@ -10,6 +10,57 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GanttStyledGuideBoundaryTests {
+    [Fact]
+    public void OppositeReferenceReservationsKeepEachGuidesOwnWidthInsideThePlot() {
+        var chart = Chart.Create().WithSize(320, 360).WithLegend(false).AddGanttTask("Task", 1, 4)
+            .WithGanttToday(1.001).AddVerticalLine(3.999, "");
+        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 20);
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 50);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var axis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "schedule-axis");
+        var now = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gantt-now-line");
+        var annotation = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "annotation-line");
+        Assert.InRange(now.Start.X, axis.Start.X + 10, axis.End.X - 10);
+        Assert.InRange(annotation.Commands[0].X, axis.Start.X + 25, axis.End.X - 25);
+    }
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(0, true)]
+    [InlineData(1, false)]
+    [InlineData(1, true)]
+    [InlineData(2, false)]
+    [InlineData(2, true)]
+    [InlineData(3, false)]
+    [InlineData(3, true)]
+    public async Task NearBoundaryScheduleGuidesKeepTheirCompletePaintedWidth(int family, bool maximum) {
+        var start = new DateTime(2026, 1, 2); var end = start.AddDays(3);
+        var value = (maximum ? end.AddDays(-.001) : start.AddDays(.001)).ToOADate();
+        var chart = Chart.Create().WithSize(320, 360).WithLegend(false);
+        if (family == 1) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
+            .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, end, "work") });
+        else if (family == 3) chart.AddTimelineItem("Task", start, end);
+        else chart.AddGanttTask("Task", start, end);
+        var style = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 20, dash: Array.Empty<double>());
+        if (family < 2) { chart.WithGanttToday(value); chart.Options.GanttTodayStyle = style; }
+        else { chart.AddVerticalLine(value, ""); chart.Annotations[0].StrokeStyle = style; }
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var axis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "schedule-axis");
+        var coordinate = family < 2
+            ? Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gantt-now-line").Start.X
+            : Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "annotation-line").Commands[0].X;
+        Assert.InRange(coordinate, axis.Start.X + 10 - .001, axis.End.X - 10 + .001);
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + prepared.ToSvg() + "</body></html>", 320, 380);
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        var name = "schedule-near-edge-" + family + "-" + (maximum ? "max" : "min");
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + ".png"), FullPage = true });
+        File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), prepared.ToPng());
+    }
+
     [Theory]
     [InlineData(false, 0)]
     [InlineData(false, 1)]

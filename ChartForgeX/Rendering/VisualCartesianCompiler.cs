@@ -72,10 +72,13 @@ internal static partial class VisualCartesianCompiler {
         }
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
-        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange)) {
-            axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
-            if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-            if (measureAxes) plot = MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
+        if (ExpandCartesianRanges(chart, context, plot, range, secondaryRange, horizontal)) {
+            if (!horizontal) {
+                axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
+                if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+            }
+            if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
+                : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         }
         if (plot.Width <= 0 || plot.Height <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.insufficient-space", "No plotting area remains after measuring the frame and axes."));
@@ -89,9 +92,11 @@ internal static partial class VisualCartesianCompiler {
         if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(plot, horizontalTotals, context.Theme.Spacing);
         if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(plot, verticalTotals, context.Theme.Spacing);
         // Axis measurement and total lanes can change the final radius-to-plot ratio.
-        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange)) {
-            axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
-            if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+        if (ExpandCartesianRanges(chart, context, plot, range, secondaryRange, horizontal)) {
+            if (!horizontal) {
+                axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
+                if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+            }
         }
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);

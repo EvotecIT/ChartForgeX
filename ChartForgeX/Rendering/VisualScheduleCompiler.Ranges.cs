@@ -52,12 +52,12 @@ internal static partial class VisualScheduleCompiler {
         var milestoneExtent = items.Any(item => item.Milestone) ? milestoneSize / 2 : 0;
         var markerAtMin = items.Any(item => item.Marker && item.Start == min);
         var markerAtMax = items.Any(item => item.Marker && item.Start == max);
-        var minimumExtent = Math.Max(milestoneExtent, GuideExtent(chart, context, min, markerAtMin, now));
+        var minimumExtent = Math.Max(milestoneExtent, markerAtMin ? context.Theme.AxisStrokeWidth / 2 : 0);
         var instantExtent = items.Any(item => !item.Milestone && item.Start == item.End) ? 1 : 0;
-        var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), GuideExtent(chart, context, max, markerAtMax, now));
+        var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), markerAtMax ? context.Theme.AxisStrokeWidth / 2 : 0);
         if (renderedLinks.Length > 0) maximumExtent = Math.Max(maximumExtent,
             (renderedLinks.Any(link => items[link.SuccessorIndex].Milestone) ? milestoneExtent : 0) + Math.Min(5, height / 3) + context.Theme.AxisStrokeWidth / 2);
-        var projection = MarkProjection(axis, plot, minimumExtent, maximumExtent);
+        var projection = GuideProjection(chart, context, plot, min, max, minimumExtent, maximumExtent, now);
         double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
             var obstacles = new List<LabelObstacle>();
