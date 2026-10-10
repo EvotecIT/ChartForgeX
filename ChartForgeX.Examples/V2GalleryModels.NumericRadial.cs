@@ -26,6 +26,7 @@ public static partial class V2GalleryModels {
         }
         Add("Requests", 1200, 950, 680, 1050); Add("Follow-ups", 320, 410, 260, 360);
         if (variant is "options" or "compact-options") {
+            chart.WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15, cornerRadius: 6));
             foreach (var series in chart.Series) series.WithStackGroup("work").WithNormalization(100);
             chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
             chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);

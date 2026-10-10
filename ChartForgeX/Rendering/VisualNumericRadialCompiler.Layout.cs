@@ -56,7 +56,7 @@ internal static partial class VisualNumericRadialCompiler {
             : new ChartPoint(Math.Cos(endAngle) * direction, Math.Sin(endAngle) * direction);
         return new RadialSeriesMark(start, sweep, inner, outer, On(geometry, endAngle, endRadius), center, offset,
             baseline < scale.Minimum || baseline > scale.Maximum || end < scale.Minimum || end > scale.Maximum,
-            ChartSlicePathGeometry.HasEncodedFillArea(geometry.Cx, geometry.Cy, outer, inner, start, sweep));
+            ChartSlicePathGeometry.HasEncodedFillArea(geometry.Cx, geometry.Cy, outer, inner, start, sweep, options.CornerRadius));
     }
 
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, RadialSeriesGeometry geometry,

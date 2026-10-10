@@ -227,6 +227,22 @@ Numeric radial `ChartPoint.X` identifies an ordinal category; `Y` is the signed 
 
 Numeric radial `Inside` and `Center` captions fit entirely within their painted sector. Captions that cannot fit are shortened or omitted with `numeric-radial.label-overflow`; their full source values remain in descriptive regions and point metadata. Outside captions avoid painted marks, and automatic inside ink resolves contrast against the composited fill. Explicit label colors remain caller-controlled.
 
+`ChartRadialGeometryOptions.CornerRadius` rounds numeric radial bars and columns. `ChartSunburstOptions.CornerRadius` rounds Sunburst sectors through `ConfigureSunburst`. Both values are finite, nonnegative maximum radii in logical pixels and default to zero. The native outline is shared by SVG, PNG, patterns, gradients and label fitting.
+
+```csharp
+var bars = Chart.Create()
+    .WithRadialGeometry(new ChartRadialGeometryOptions(
+        startAngleDegrees: -90, endAngleDegrees: 180, cornerRadius: 6))
+    .AddRadialBar("Requests", observations);
+var sunburst = Chart.Create()
+    .ConfigureSunburst(options => options.CornerRadius = 6)
+    .AddSunburst("Allocation", hierarchy);
+```
+
+Rounding stays inside each projected sector and clamps independently at its outer and inner corners to the thickness and angular space available. Each painted stack segment rounds separately, including clipped or reversed segments. The scale extents and source values remain unchanged. A zero inner radius retains its sharp central apex; a full circle or annulus has no corners and keeps its seamless outline. Zero-size or encoded-collapsed sectors retain facts without a minimum painted size.
+
+These options apply to their named families. A positive numeric radial radius on another populated family, or a positive Sunburst radius on a different family, fails preparation. Pie, Donut, PolarArea and Chord keep their existing sector geometry; progress rings keep their separate line-cap treatment.
+
 ## Enforcement boundary
 
 `V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Public typed configuration callbacks on the Core and Visuals `With*`/`Configure*` builder boundary must use `Configure*` and return their receiver. Data-adding callbacks and substantive exports keep their operation names. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.
