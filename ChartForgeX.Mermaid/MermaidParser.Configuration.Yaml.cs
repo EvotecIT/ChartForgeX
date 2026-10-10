@@ -80,8 +80,7 @@ public sealed partial class MermaidParser {
                     if (valueText.StartsWith("\"", StringComparison.Ordinal)) {
                         value = GeoJsonValue.Parse(valueText, StringComparer.Ordinal, ConfigurationJsonLimits).AsString("Mermaid YAML scalar");
                     } else if (valueText.StartsWith("'", StringComparison.Ordinal)) {
-                        if (valueText.Length < 2 || valueText[valueText.Length - 1] != '\'') throw new ArgumentException("Mermaid YAML scalar has an unterminated single-quoted string.");
-                        value = valueText.Substring(1, valueText.Length - 2).Replace("''", "'");
+                        value = ReadSingleQuotedConfigurationYaml(valueText);
                     } else if (valueText.StartsWith("{", StringComparison.Ordinal) || valueText.StartsWith("[", StringComparison.Ordinal) ||
                         valueText.StartsWith("|", StringComparison.Ordinal) || valueText.StartsWith(">", StringComparison.Ordinal) ||
                         valueText.StartsWith("&", StringComparison.Ordinal) || valueText.StartsWith("*", StringComparison.Ordinal) || valueText.StartsWith("!", StringComparison.Ordinal)) {
@@ -92,6 +91,16 @@ public sealed partial class MermaidParser {
                 }
             } catch (ArgumentException exception) { ConfigurationError(result, span, exception.Message); }
         }
+    }
+
+    private static string ReadSingleQuotedConfigurationYaml(string value) {
+        if (value.Length < 2 || value[value.Length - 1] != '\'') throw new ArgumentException("Mermaid YAML scalar has an unterminated single-quoted string.");
+        for (var index = 1; index < value.Length - 1; index++) {
+            if (value[index] != '\'') continue;
+            if (index + 1 >= value.Length - 1 || value[index + 1] != '\'') throw new ArgumentException("Mermaid YAML single-quoted strings must escape interior quotes as ''.");
+            index++;
+        }
+        return value.Substring(1, value.Length - 2).Replace("''", "'");
     }
 
     private static bool IsTypedConfigurationYamlScalar(string value) {
