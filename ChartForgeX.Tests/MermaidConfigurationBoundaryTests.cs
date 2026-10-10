@@ -62,18 +62,61 @@ public sealed class MermaidConfigurationBoundaryTests {
     }
 
     [Theory]
-    [InlineData("1e9999")]
-    [InlineData("-1e9999")]
     [InlineData("1e-9999")]
     [InlineData("+1.0")]
     [InlineData(".5")]
     [InlineData("1.")]
+    [InlineData(".Inf")]
+    [InlineData("-.INF")]
+    [InlineData(".NaN")]
+    [InlineData("0x10")]
+    [InlineData("0o10")]
+    [InlineData("0b10")]
     public void PlainNumericYamlSettingsHaveOneClassificationAcrossFrameworks(string scalar) {
         var rendered = MermaidRenderer.Render("---\nconfig:\n  theme: " + scalar + "\n---\nflowchart LR\nA --> B");
         Assert.True(rendered.HasErrors);
         Assert.Null(rendered.Artifact);
         Assert.False(Assert.Single(rendered.Document!.Configuration.Settings).IsString);
         Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration);
+    }
+
+    [Theory]
+    [InlineData("True")]
+    [InlineData("TRUE")]
+    [InlineData("False")]
+    [InlineData("FALSE")]
+    [InlineData("Null")]
+    [InlineData("NULL")]
+    public void PlainYamlBooleanAndNullVariantsAreTypedWhileQuotedValuesRemainStrings(string scalar) {
+        foreach (var key in new[] { "theme", "fontFamily", "layout", "look" }) {
+            foreach (var scoped in new[] { false, true }) {
+                var prefix = scoped ? "  flowchart:\n    " : "  ";
+                foreach (var quoted in new[] { false, true }) {
+                    var value = quoted ? "'" + scalar + "'" : scalar;
+                    var rendered = MermaidRenderer.Render("---\nconfig:\n" + prefix + key + ": " + value + "\n---\nflowchart LR\nA --> B");
+                    Assert.Equal(quoted, Assert.Single(rendered.Document!.Configuration.Settings).IsString);
+                    Assert.Equal(!quoted, rendered.HasErrors);
+                    Assert.Equal(!quoted, rendered.Artifact == null);
+                }
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("1e9999")]
+    [InlineData("-1e9999")]
+    [InlineData("tRuE")]
+    [InlineData(".iNf")]
+    [InlineData("Infinity")]
+    [InlineData("NaN")]
+    [InlineData("+.5")]
+    [InlineData("1_000")]
+    public void PlainYamlStringFormsRemainStrings(string scalar) {
+        var rendered = MermaidRenderer.Render("---\nconfig:\n  fontFamily: " + scalar + "\n---\nflowchart LR\nA --> B");
+        Assert.Empty(rendered.Diagnostics);
+        Assert.NotNull(rendered.Artifact);
+        Assert.Equal(scalar, Assert.Single(rendered.Document!.Configuration.Settings).Value);
+        Assert.True(Assert.Single(rendered.Document.Configuration.Settings).IsString);
     }
 
     [Theory]

@@ -4802,6 +4802,30 @@
       }
     },
     {
+      "name": "mermaid-source-font",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 640,
+      "height": 320,
+      "logicalWidth": 640.0,
+      "logicalHeight": 320.0,
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 102400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 446,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-swimlane-basic",
       "layout": {
         "heightMode": "natural",

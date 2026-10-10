@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using ChartForgeX.Core;
 
@@ -86,13 +87,28 @@ public sealed partial class MermaidParser {
                         valueText.StartsWith("&", StringComparison.Ordinal) || valueText.StartsWith("*", StringComparison.Ordinal) || valueText.StartsWith("!", StringComparison.Ordinal)) {
                         value = null; isString = false;
                         opaqueIndent = indent;
-                    } else if (valueText == "true" || valueText == "false" || valueText == "null" || valueText == "~" ||
-                        Regex.IsMatch(valueText, @"^[+-]?(?:(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?|\.?inf(?:inity)?|\.?nan)$",
-                            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)) isString = false;
+                    } else if (IsTypedConfigurationYamlScalar(valueText)) isString = false;
                     configuration.Add(new MermaidConfigurationSetting(path, value, isString, span));
                 }
             } catch (ArgumentException exception) { ConfigurationError(result, span, exception.Message); }
         }
+    }
+
+    private static bool IsTypedConfigurationYamlScalar(string value) {
+        if (Regex.IsMatch(value, @"^(?:~|null|Null|NULL|true|True|TRUE|false|False|FALSE|[-+]?\.(?:inf|Inf|INF)|\.(?:nan|NaN|NAN))$", RegexOptions.CultureInvariant)) return true;
+        if (Regex.IsMatch(value, @"^(?:[-+]?[0-9]+(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?|\.[0-9]+(?:[eE][-+]?[0-9]+)?)$", RegexOptions.CultureInvariant))
+            return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) && !double.IsInfinity(number) && !double.IsNaN(number);
+        var radixMatch = Regex.Match(value, @"^[-+]?0(?:(b)[01]+|(o)[0-7]+|(x)[0-9a-fA-F]+)$", RegexOptions.CultureInvariant);
+        if (!radixMatch.Success) return false;
+        var radix = radixMatch.Groups[1].Success ? 2 : radixMatch.Groups[2].Success ? 8 : 16;
+        var start = value[0] == '+' || value[0] == '-' ? 3 : 2;
+        var magnitude = 0.0;
+        for (var index = start; index < value.Length; index++) {
+            var digit = value[index];
+            magnitude = magnitude * radix + (digit <= '9' ? digit - '0' : char.ToUpperInvariant(digit) - 'A' + 10);
+            if (double.IsInfinity(magnitude)) return false;
+        }
+        return true;
     }
 
     private static string TrimYamlComment(string value) {
