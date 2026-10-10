@@ -56,6 +56,8 @@ These families are detected and returned as `MermaidDocument` with raw body stat
 | Family | Header | Current state | Best next target | Notes |
 | --- | --- | --- | --- | --- |
 | ZenUML | `zenuml` | Recognized, raw statements retained, warning diagnostic | Sequence-like artifact after grammar evaluation | Keep separate from Mermaid sequence until semantic differences are understood. |
+| Agentflow | `agentflow-beta` | Recognized, raw source retained, `CFXM002`, no artifact | Typed workflows over reusable topology contracts | Semantic parsing and native rendering remain open. |
+| Railroad | `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta` | Recognized, raw source retained, `CFXM002`, no artifact | Typed grammar model and reusable railroad geometry | Body grammar is not validated by recognition. |
 
 ## Missing Upstream Families
 

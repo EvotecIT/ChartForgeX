@@ -1,0 +1,6 @@
+agentflow-beta LR
+flow worker[Worker]
+  request[Request]@{ shape: input }
+  run[Process]@{ shape: task }
+  request --> run
+end
