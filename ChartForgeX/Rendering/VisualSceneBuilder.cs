@@ -66,12 +66,17 @@ internal sealed partial class VisualSceneBuilder {
 
     /// <summary>Adds a clockwise slice in radians, including a full-ring case without a radial seam.</summary>
     internal void Slice(double cx, double cy, double outerRadius, double innerRadius, double start, double sweep,
-        ChartColor fill, ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
+        ChartColor fill, ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null, double cornerRadius = 0) {
         ChartGuards.Finite(cx, nameof(cx)); ChartGuards.Finite(cy, nameof(cy)); ChartGuards.Finite(start, nameof(start));
         NonNegative(outerRadius, nameof(outerRadius)); NonNegative(innerRadius, nameof(innerRadius));
-        NonNegative(sweep, nameof(sweep)); NonNegative(strokeWidth, nameof(strokeWidth));
+        NonNegative(sweep, nameof(sweep)); NonNegative(strokeWidth, nameof(strokeWidth)); NonNegative(cornerRadius, nameof(cornerRadius));
         if (innerRadius > outerRadius) throw new ArgumentOutOfRangeException(nameof(innerRadius));
         if (sweep > Math.PI * 2 + 0.000001) throw new ArgumentOutOfRangeException(nameof(sweep));
+        var rounded = ChartSlicePathGeometry.RoundedPath(cx, cy, outerRadius, innerRadius, start, sweep, cornerRadius);
+        if (rounded != null) {
+            Path(rounded, fill, stroke, strokeWidth, role, id, close: true, paint: paint);
+            return;
+        }
         _nodes.Add(new VisualSceneSlice(cx, cy, outerRadius, innerRadius, start, Math.Min(sweep, Math.PI * 2), fill, stroke, strokeWidth, role, id, paint));
     }
 

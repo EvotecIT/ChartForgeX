@@ -2,9 +2,21 @@ using System;
 
 namespace ChartForgeX.Core;
 
-/// <summary>Controls Sunburst parent sizes and its independent numeric color scale.</summary>
+/// <summary>Controls Sunburst sector geometry, parent sizes and its independent numeric color scale.</summary>
 public sealed class ChartSunburstOptions {
     private ChartHierarchyValuePolicy _parentValuePolicy;
+    private double _cornerRadius;
+
+    /// <summary>Gets or sets the maximum inward corner radius in pixels for each Sunburst sector. Default: zero.</summary>
+    /// <remarks>Must be finite and nonnegative. Clamped to each sector's thickness and angular space. A central apex stays sharp; full rings have no corners.</remarks>
+    public double CornerRadius {
+        get => _cornerRadius;
+        set {
+            ChartGuards.Finite(value, nameof(value));
+            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+            _cornerRadius = value;
+        }
+    }
 
     /// <summary>Gets or sets the group-size interpretation. Default: descendant leaf aggregation.</summary>
     /// <remarks>Authored totals must contain their resolved children. Preparation validates changes made after ingestion.</remarks>

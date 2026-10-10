@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -21,8 +22,12 @@ internal static partial class VisualHierarchyCompiler {
         var x = model.CenterX + Math.Cos(mid) * radius;
         var y = model.CenterY + Math.Sin(mid) * radius;
         var tangent = mid * 180 / Math.PI + 90;
+        var contours = chart.Options.Sunburst.CornerRadius > 0
+            ? ChartSlicePathGeometry.Contours(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, chart.Options.Sunburst.CornerRadius, 8) : null;
         while (tangent > 90) tangent -= 180;
         while (tangent < -90) tangent += 180;
+        var horizontalShape = RoundedShape(0);
+        var tangentShape = Math.Abs(tangent) < .001 ? horizontalShape : RoundedShape(tangent);
         if (TryCaption(original, metrics)) return;
         // Wrapping preserves a multiword caption before shortening. Geometry checks
         // still use the actual shaped width and combined line height of that result.
@@ -42,6 +47,8 @@ internal static partial class VisualHierarchyCompiler {
         bool TryCaption(string text, TextMetrics measured) {
             foreach (var degrees in node.Depth == 0 || Math.Abs(tangent) < .001 ? new[] { 0d } : new[] { 0d, tangent }) {
                 if (!SunburstCaptionFits(node, x - model.CenterX, y - model.CenterY, measured, degrees)) continue;
+                var roundedShape = degrees == 0 ? horizontalShape : tangentShape;
+                if (roundedShape != null && !roundedShape.Contains(new ChartRect(-measured.Width / 2 - 2, -measured.Height / 2 - 2, measured.Width + 4, measured.Height + 4))) continue;
                 var paint = VisualChartPaint.ExplicitDataLabelColor(chart, node.Index) ? VisualChartPaint.Text(style)
                     : SvgPaint.Contrast(fill, fillPaint);
                 style.Alignment = TextAlignment.Center;
@@ -51,6 +58,13 @@ internal static partial class VisualHierarchyCompiler {
                 return true;
             }
             return false;
+        }
+
+        LabelMarkShape? RoundedShape(double degrees) {
+            if (contours == null) return null;
+            var angle = -degrees * Math.PI / 180; var cosine = Math.Cos(angle); var sine = Math.Sin(angle);
+            return new LabelMarkShape(contours.Select(contour => contour.Select(point => new ChartPoint(
+                (point.X - x) * cosine - (point.Y - y) * sine, (point.X - x) * sine + (point.Y - y) * cosine)).ToList()).ToList(), true, 0);
         }
     }
 

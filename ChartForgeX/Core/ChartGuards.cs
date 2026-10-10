@@ -45,6 +45,10 @@ internal static class ChartGuards {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.ValidateHourWeekdayHeatmapOwnership();
         ValidateRenderableChart(chart, preparing);
+        if (chart.Options.RadialGeometry.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn))
+            throw new InvalidOperationException("Radial geometry corner radius requires numeric radial bars or columns.");
+        if (chart.Options.Sunburst.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
+            throw new InvalidOperationException("Sunburst corner radius requires a Sunburst chart.");
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
