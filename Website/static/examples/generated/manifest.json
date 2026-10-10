@@ -8932,19 +8932,9 @@
         "html"
       ],
       "diagnostics": [
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
@@ -9078,19 +9068,9 @@
         "html"
       ],
       "diagnostics": [
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
