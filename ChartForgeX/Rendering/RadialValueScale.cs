@@ -56,6 +56,7 @@ internal sealed class RadialValueScale {
 
         var generatedTicks = axis.Labels.Count > 0 ? ChartTicks.ForValueAxis(axis, minimum, maximum)
             : axis.Minimum.HasValue || axis.Maximum.HasValue ? ChartTicks.ForAxis(axis, minimum, maximum) : ChartTicks.Generate(axis, minimum, maximum);
+        if (generatedTicks.Count > 0 && !axis.Minimum.HasValue) minimum = Math.Min(minimum, generatedTicks[0]);
         var ticks = ChartTicks.PreserveFormatting(generatedTicks, generatedTicks.Where(tick => tick >= minimum).ToArray());
         if (ticks.Count > 0 && !axis.Maximum.HasValue) maximum = Math.Max(maximum, ticks[ticks.Count - 1]);
         return new RadialValueScale(axis, minimum, maximum, ticks);

@@ -374,7 +374,10 @@
         y: usesPolarCoordinates(hit) || summary ? event.clientY : box.top + box.height / 2, distance: 0, exact: true, summary };
       if (!summary) return { native, observation: hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit) ? native : null };
     }
-    if (!searchNearest) return { native, observation: null };
+    // Sparse-plot inference starts on the native stage surface, never on an unrelated host veil.
+    // Explicit native targets and mapped captions retain their own acquisition contract.
+    const plotSurface = event.target === stage || event.target instanceof SVGElement && stage.querySelector('svg')?.contains(event.target);
+    if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
       if (!usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
@@ -437,8 +440,8 @@
     const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
     if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
-      hideTip(root, tip, false);
       clearHover(root, true, true);
+      hideTip(root, tip, false);
       return;
     }
     const point = tooltipPoint || guidePoint;

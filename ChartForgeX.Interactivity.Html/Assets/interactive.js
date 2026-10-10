@@ -283,9 +283,9 @@
     moveTip(tip, event, node);
   };
   const moveTip = (tip, event, node) => {
-    if (!event || tip.hidden) return;
-    let clientX = event.clientX;
-    let clientY = event.clientY;
+    if (tip.hidden) return;
+    let clientX = event && event.clientX;
+    let clientY = event && event.clientY;
     if ((!Number.isFinite(clientX) || !Number.isFinite(clientY)) && node && node.getBoundingClientRect) {
       const rect = node.getBoundingClientRect();
       clientX = rect.left + rect.width / 2;
@@ -383,6 +383,14 @@
   };
   const hideTip = (root, tip, force) => {
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
+    // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
+    const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
+    const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
+    if (focused && tooltipReadoutAvailable(focused)) {
+      if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(focused))) setHover(root, focused, true, true);
+      showTip(root, tip, focused);
+      return;
+    }
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');
     root.removeAttribute('data-cfx-tooltip-pinned');
@@ -414,7 +422,7 @@
   };
   const paintAncestorsVisible = (node, styles) => {
     if (!node || node.closest('defs,[hidden]')) return false;
-    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement) {
+    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement || ancestor.getRootNode().host) {
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }
@@ -491,7 +499,7 @@
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
     // Open line marks never paint their inherited default black fill.
     if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
-    return paintValue(node, paint.fill, paint.fillOpacity, styles) || stroke;
+    return (node.dataset.cfxFillArea !== 'false' && paintValue(node, paint.fill, paint.fillOpacity, styles)) || stroke;
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
@@ -702,6 +710,8 @@
       }
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
+      // Retained numeric facts have keyboard semantics without a pointer surface.
+      if (['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return;
       if (box.width > 0 && box.height > 0) return;
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const width = Math.max(8, region.width); const height = Math.max(8, region.height);
@@ -723,7 +733,7 @@
   };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
-  const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop']);
+  const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop', 'radialbar', 'radialcolumn']);
   const legendSeriesValues = (item) => {
     const data = item.dataset || {};
     const svg = item.closest('svg');
@@ -1035,8 +1045,7 @@
     if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
     const style = getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
-    const box = node.getBoundingClientRect();
-    if (box.width > 0 || box.height > 0) return true;
+    if (pointerTargetPaint(node)) return true;
     // Retained authored facts can have no filled geometry, while still belonging to the data component.
     const data = node.dataset;
     if (!data.cfxTargetKind || !data.cfxTargetId || !['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return false;
@@ -1100,7 +1109,7 @@
   const refreshKeyboardNavigation = (root, focused) => {
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
-    const activeElement = root.ownerDocument.activeElement;
+    const activeElement = root.getRootNode().activeElement;
     const activeOwned = root.contains(activeElement) && state.owned.has(activeElement);
     const targets = keyboardTargets(root);
     state.legends = targets.filter((node) => renderedTargetKind(node) === 'legend');
@@ -1129,12 +1138,46 @@
     }
     return state;
   };
+  const bindKeyboardNavigationAvailability = (root) => {
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return;
+    let frame = 0;
+    let resizeObserver;
+    let paintObserver;
+    const queueRefresh = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (!root.isConnected) {
+          if (resizeObserver) resizeObserver.disconnect();
+          if (paintObserver) paintObserver.disconnect();
+          window.removeEventListener('resize', queueRefresh);
+          return;
+        }
+        refreshKeyboardNavigation(root);
+      });
+    };
+    window.addEventListener('resize', queueRefresh);
+    if (typeof ResizeObserver !== 'undefined') {
+      // Tabs and other initially hidden hosts acquire layout without a window resize.
+      resizeObserver = new ResizeObserver(queueRefresh);
+      resizeObserver.observe(stage);
+    }
+    // Native paint and host styles can change without a resize. Tab and arrow availability share this owner.
+    paintObserver = new MutationObserver(() => {
+      if (!root.isConnected) { queueRefresh(); return; }
+      refreshKeyboardNavigation(root);
+    });
+    paintObserver.observe(root, { subtree: true, attributes: true,
+      attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'clip-path'] });
+  };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) return;
     root._cfxKeyboardNavigation = { owned: new Set() };
     // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
     refreshKeyboardNavigation(root);
+    bindKeyboardNavigationAvailability(root);
   };
   const scrollKeyboardTargetIntoView = (root, node) => {
     const stage = root.querySelector('.cfx-stage');
@@ -1579,7 +1622,10 @@
         y: usesPolarCoordinates(hit) || summary ? event.clientY : box.top + box.height / 2, distance: 0, exact: true, summary };
       if (!summary) return { native, observation: hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit) ? native : null };
     }
-    if (!searchNearest) return { native, observation: null };
+    // Sparse-plot inference starts on the native stage surface, never on an unrelated host veil.
+    // Explicit native targets and mapped captions retain their own acquisition contract.
+    const plotSurface = event.target === stage || event.target instanceof SVGElement && stage.querySelector('svg')?.contains(event.target);
+    if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
       if (!usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
@@ -1642,8 +1688,8 @@
     const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
     if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
-      hideTip(root, tip, false);
       clearHover(root, true, true);
+      hideTip(root, tip, false);
       return;
     }
     const point = tooltipPoint || guidePoint;
