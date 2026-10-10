@@ -51,10 +51,17 @@ public sealed class SankeyLabelPlacementBrowserTests {
                     && box.top>=bounds.top-1 && box.bottom<=bounds.bottom+1); }
             """));
         var support = page.Locator("[data-cfx-target-kind=node][data-cfx-target-id=south-support]");
-        var caption = page.Locator("[data-cfx-label-for=series-0-node-south-support]");
+        var caption = page.Locator("[data-cfx-label-for^='series-0-node-']").First;
+        var markId = await caption.GetAttributeAsync("data-cfx-label-for");
+        var captionTarget = page.Locator($"[data-cfx-target-kind=node][data-cfx-source-id='{markId}']");
         await caption.HoverAsync();
-        Assert.Contains("Support", await TooltipTextAsync(page)); Assert.Contains("28", await TooltipTextAsync(page));
+        Assert.Contains((await captionTarget.GetAttributeAsync("data-cfx-label"))!, await TooltipTextAsync(page));
+        Assert.Contains((await captionTarget.GetAttributeAsync("data-cfx-value"))!, await TooltipTextAsync(page));
         await Capture(page, prepared, html, name, "caption", errors, session);
+        await caption.ClickAsync();
+        Assert.Equal("true", await captionTarget.GetAttributeAsync("aria-selected"));
+        await caption.ClickAsync();
+        Assert.Equal("false", await captionTarget.GetAttributeAsync("aria-selected"));
         await MoveAwayAsync(page);
         Assert.Equal(string.Empty, await TooltipTextAsync(page));
         var box = (await support.BoundingBoxAsync())!;
@@ -62,8 +69,6 @@ public sealed class SankeyLabelPlacementBrowserTests {
         Assert.Equal("true", await support.GetAttributeAsync("aria-selected"));
         Assert.Contains("Support", await TooltipTextAsync(page)); Assert.Contains("28", await TooltipTextAsync(page));
         await Capture(page, prepared, html, name, "pointer", errors, session);
-        await caption.ClickAsync();
-        Assert.Equal("false", await support.GetAttributeAsync("aria-selected"));
         var flow = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=north-priority]");
         await flow.FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await flow.GetAttributeAsync("aria-selected"));
