@@ -110,7 +110,7 @@ public sealed class NativeTopologyDuplicateEdgeTests {
 
     [Fact]
     public void AuthoredAccessibilityRemainsSubjectToPortableValidationWithoutRestrictingStaticOutput() {
-        var chart = Diagram().WithAccessibility(accessibility => accessibility.Description = new string('x', VisualArtifactInterchangeValidation.MaximumTextCharacters + 1));
+        var chart = Diagram().ConfigureAccessibility(accessibility => accessibility.Description = new string('x', VisualArtifactInterchangeValidation.MaximumTextCharacters + 1));
         var prepared = chart.Prepare();
         Assert.Contains(new string('x', 128), prepared.ToSvg(), StringComparison.Ordinal);
         Assert.Throws<ArgumentException>(() => prepared.ToInterchangeEnvelope());

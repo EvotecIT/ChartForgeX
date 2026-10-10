@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.VisualArtifacts;
 
@@ -19,7 +20,7 @@ public static class MermaidSankeyRendering {
             .WithTitle(ResolveTitle(options))
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height)
-            .AddSankey(string.IsNullOrWhiteSpace(options.SeriesName) ? "Flow" : options.SeriesName!, ToLinks(document));
+            .AddSankey(string.IsNullOrWhiteSpace(options.SeriesName) ? "Flow" : options.SeriesName!, ToNodes(document), ToLinks(document));
         return MermaidPresentation.Apply(chart, document);
     }
 
@@ -59,9 +60,20 @@ public static class MermaidSankeyRendering {
         return document.Header;
     }
 
-    private static ChartSankeyLink[] ToLinks(MermaidSankeyDocument document) {
-        var links = new ChartSankeyLink[document.Links.Count];
-        for (var i = 0; i < links.Length; i++) links[i] = new ChartSankeyLink(document.Links[i].Source, document.Links[i].Target, document.Links[i].Value);
+    // Sankey CSV uses endpoint text as identity. Make that language mapping explicit at this boundary.
+    private static IReadOnlyList<ChartNode> ToNodes(MermaidSankeyDocument document) {
+        var nodes = new List<ChartNode>();
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var link in document.Links) {
+            if (ids.Add(link.Source)) nodes.Add(new ChartNode(link.Source, link.Source));
+            if (ids.Add(link.Target)) nodes.Add(new ChartNode(link.Target, link.Target));
+        }
+        return nodes;
+    }
+
+    private static ChartFlowLink[] ToLinks(MermaidSankeyDocument document) {
+        var links = new ChartFlowLink[document.Links.Count];
+        for (var i = 0; i < links.Length; i++) links[i] = new ChartFlowLink("flow-" + i.ToString(CultureInfo.InvariantCulture), document.Links[i].Source, document.Links[i].Target, document.Links[i].Value);
         return links;
     }
 }

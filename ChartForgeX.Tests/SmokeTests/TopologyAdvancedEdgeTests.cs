@@ -25,7 +25,7 @@ internal static partial class SmokeTests {
             .WithEdgeEndpointLabels("api-db", "gRPC", "5432")
             .WithEdgeLayoutHints("api-db", preferredLength: 260, minimumRankSpan: 2, routingPriority: 25);
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeLayoutDiagnosticOverlay = true };
-        chart.WithAccessibility(accessibility => accessibility.WithTextAlternative("API to database topology", "Shows the public query path.", "en"));
+        chart.ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("API to database topology", "Shows the public query path.", "en"));
 
         var svg = chart.ToSvg(options);
         var png = chart.ToPng(options);
