@@ -15,6 +15,8 @@
     }
   },
   "fixtures": {
+    "fixtures/gantt-unix-seconds.mmd": { "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" }, "expectedByReference": { "10": "gantt-unix-seconds.expected.10.json" }, "notes": { "10": "Mermaid10 interprets X starts as seconds. Mermaid11/12 incorrectly interpret integer X starts as milliseconds while ends remain seconds. CFX follows the documented seconds meaning for both endpoints." }, "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: Unix seconds; native and reference outcomes deliberately recorded separately" },
+    "fixtures/gantt-input-dates.mmd": { "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" }, "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: explicit fields and resolved timestamps shared across the three pinned reference engines" },
     "fixtures/gantt-vertical-marker.mmd": { "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" }, "expectedByReference": { "10": "gantt-vertical-marker.expected.10.json" }, "notes": { "10": "Mermaid 10 treats vert as an ordinary task id; current 11/12 interpretation is a vertical marker without a task row." }, "provenance": "https://mermaid.js.org/syntax/gantt.html#vertical-markers: authored marker scheduling range and explicit off directive" },
     "fixtures/gantt-tick-interval.mmd": { "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" }, "provenance": "https://mermaid.js.org/syntax/gantt.html and https://d3js.org/d3-time#interval_every: authored weekly ticks and UTC calendar boundary cases" },
     "fixtures/gantt-axis-format.mmd": {

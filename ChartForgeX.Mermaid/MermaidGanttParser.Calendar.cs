@@ -29,7 +29,7 @@ internal static partial class MermaidGanttParser {
                 // ends before that trailing run. Interior exclusions still extend it.
                 if (!previousExcluded) renderEnd = end;
                 var date = cursor.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-                var formatted = cursor.ToString(ToDotNetDateFormat(document.DateFormat), CultureInfo.InvariantCulture);
+                var formatted = MermaidGanttInputDateFormat.FormatCalendarDate(cursor, document.DateFormat);
                 var weekday = cursor.DayOfWeek.ToString().ToLowerInvariant();
                 var weekend = document.Weekend == "friday"
                     ? cursor.DayOfWeek == DayOfWeek.Friday || cursor.DayOfWeek == DayOfWeek.Saturday
