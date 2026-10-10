@@ -47,9 +47,18 @@ prepared.WriteAnimation(gif, RasterAnimationFormat.Gif, frames);
 
 `prepared.ToHtmlPage(frames)` exports a script-free HTML page with the same captured inputs and custom timing. Add the optional browser adapter when the page needs playback controls.
 
-`VisualStoryPlaybackOptions` controls transitions, the final hold and total plays. A play count of zero repeats indefinitely; one plays once. `VisualStoryFrameOptions` controls cadence, pixel scale and the explicit frame budget. Frame durations sum to one play in .NET ticks. GIF rounds cumulative boundaries to 10 milliseconds to avoid drift at rates such as six frames per second, and validates chapter readability on that display clock. GIF accepts up to 50 frames per second and requires a final delay of at least 20 milliseconds; increase the hold or change cadence when the rounded remainder is shorter. APNG supports up to 60 frames per second and retains fractions within its 16-bit timing precision. Each chapter needs a sample at least half opaque, including its incoming cross-fade, and an opacity-weighted display duration of at least one sampling interval, capped by its authored duration. A cadence that misses this visibility or reveals the final chapter before its boundary fails before producing frames. Default SVG sampling increases from six up to sixty frames per second when needed, within the same explicit frame budget; supplied sampling stays explicit.
+`VisualStoryPlaybackOptions` controls transitions, the final hold and total plays. A play count of zero repeats indefinitely; one plays once. `VisualStoryFrameOptions` controls cadence, pixel scale and the explicit frame budget. Frame durations sum to one play in .NET ticks. GIF rounds cumulative boundaries to 10 milliseconds to avoid drift at rates such as six frames per second, and validates chapter readability on that display clock. GIF accepts up to 50 frames per second and requires a final delay of at least 20 milliseconds; increase the hold or change cadence when the rounded remainder is shorter. APNG supports up to 60 frames per second and retains fractions within its 16-bit timing precision. Each chapter needs a sample at least half opaque, including its incoming cross-fade, and an opacity-weighted display duration of at least one sampling interval, capped by its authored duration. A cadence that misses this visibility or reveals the final chapter before its boundary fails before producing frames. Default SVG and HTML sampling starts at six frames per second, increases cadence for short chapters, or lowers it for longer plays, while staying within 600 frames. If no candidate keeps every chapter readable within that limit, export fails before embedding frames and requires explicit sampling options. Supplied options retain their requested cadence and frame budget.
 
 The convenience methods `story.ToSvg()`, `ToPng()`, `ToGif()` and `ToApng()` use this engine. `ToSvg()` produces animation; `prepared.ToSvg()` produces a static frame. Existing `VisualStoryAnimationOptions` configures convenience GIF/APNG exports. Prepare once when several outputs must share custom timing.
+
+For a longer presentation, set the frame budget explicitly. For example, a ten-minute story with a 1.5-second final hold needs 1,203 frames at two frames per second:
+
+```csharp
+var longFrames = new VisualStoryFrameOptions(framesPerSecond: 2, maximumFrames: 1800);
+File.WriteAllText("long-story.svg", prepared.ToAnimatedSvg(longFrames));
+```
+
+Choose a faster cadence for short chapters. Explicit budgets support up to 3,600 frames; the SVG document and chapter-readability limits still apply. Static posters and timestamp frames do not need sampled-animation options.
 
 ## Source and terminal panels
 

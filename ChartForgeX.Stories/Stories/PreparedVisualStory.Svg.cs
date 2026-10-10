@@ -9,6 +9,7 @@ namespace ChartForgeX.Stories;
 
 public sealed partial class PreparedVisualStory {
     /// <summary>Exports a script-free HTML page using the captured story and prepared playback clock.</summary>
+    /// <remarks>Default cadence stays within 600 readable frames. Pass explicit sampling options for longer or denser presentations.</remarks>
     public string ToHtmlPage(VisualStoryFrameOptions? options = null, CancellationToken cancellationToken = default) =>
         new HtmlVisualStoryRenderer().RenderPage(_story, ToAnimatedSvg(options, cancellationToken: cancellationToken));
 
