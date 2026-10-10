@@ -106,19 +106,7 @@ public sealed partial class MermaidParser {
 
     private static bool IsTypedConfigurationYamlScalar(string value) {
         if (Regex.IsMatch(value, @"^(?:~|null|Null|NULL|true|True|TRUE|false|False|FALSE|[-+]?\.(?:inf|Inf|INF)|\.(?:nan|NaN|NAN))$", RegexOptions.CultureInvariant)) return true;
-        if (Regex.IsMatch(value, @"^(?:[-+]?[0-9]+(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?|\.[0-9]+(?:[eE][-+]?[0-9]+)?)$", RegexOptions.CultureInvariant))
-            return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) && !double.IsInfinity(number) && !double.IsNaN(number);
-        var radixMatch = Regex.Match(value, @"^[-+]?0(?:(b)[01]+|(o)[0-7]+|(x)[0-9a-fA-F]+)$", RegexOptions.CultureInvariant);
-        if (!radixMatch.Success) return false;
-        var radix = radixMatch.Groups[1].Success ? 2 : radixMatch.Groups[2].Success ? 8 : 16;
-        var start = value[0] == '+' || value[0] == '-' ? 3 : 2;
-        var magnitude = 0.0;
-        for (var index = start; index < value.Length; index++) {
-            var digit = value[index];
-            magnitude = magnitude * radix + (digit <= '9' ? digit - '0' : char.ToUpperInvariant(digit) - 'A' + 10);
-            if (double.IsInfinity(magnitude)) return false;
-        }
-        return true;
+        return MermaidConfigurationNumber.TryParse(value, out _);
     }
 
     private static string TrimYamlComment(string value) {
