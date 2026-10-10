@@ -14,23 +14,21 @@ internal static partial class VisualCartesianCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors, ChartAxisValueFormatter.Cache? axisLabels = null) {
         var entries = new List<VisualLegendEntry>();
         if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
-            && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].Points.Count > 1) {
+            && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].RenderedPointCount > 1) {
             var series = chart.Series[0];
+            if (series.Kind == ChartSeriesKind.Waterfall) return WaterfallLegendEntries(chart, series, colors);
             var stride = ObservationStride(series.Kind);
             var numericRadial = series.Kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
             if (numericRadial) axisLabels ??= new ChartAxisValueFormatter.Cache();
             var categoryFormatter = numericRadial ? ChartAxisValueFormatter.Create(chart.Options.XAxis,
                 series.Points.Select(point => point.X).Distinct().OrderBy(value => value).ToArray()) : null;
-            for (var point = 0; point < series.Points.Count / stride; point++) {
+            for (var point = 0; point < series.AuthoredObservationCount; point++) {
                 var label = numericRadial ? axisLabels!.Format(chart.Options.XAxis, series.Points[point].X, categoryFormatter!)
                     : ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.Points[point * stride].X) ?? "Item " + Number(point + 1);
                 var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
                 var color = PointColor(series, 0, point, colors);
                 if (series.Kind == ChartSeriesKind.Candlestick || series.Kind == ChartSeriesKind.Ohlc)
                     color = FinancialColor(series, 0, point, series.Points[point * stride + 3].Y >= series.Points[point * stride].Y, colors);
-                else if (series.Kind == ChartSeriesKind.Waterfall && !series.Color.HasValue && series.StateRole == ChartSeriesState.None
-                    && !(point < series.PointColors.Count && series.PointColors[point].HasValue))
-                    color = series.Points[point].Y >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
                 var paint = VisualChartPaint.Series(series, color, point);
                 entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
                     marker: VisualMarkerScene.Legend(chart, series, color, paint, point, pattern), paint: paint));
@@ -60,7 +58,7 @@ internal static partial class VisualCartesianCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var coordinates = ChartBarCoordinateMap.Create(chart);
         var stacks = ChartStackLayout.Create(chart, coordinates);
-        if (!chart.Series.Any(series => series.Points.Count > 0) && chart.Annotations.Count == 0) {
+        if (!chart.Series.Any(series => series.HasSourceData) && chart.Annotations.Count == 0) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.no-data", "The chart has no observations."));
             builder.Text(chart.Options.Labels.NoData, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
                 context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center, paint: SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text));
@@ -82,8 +80,9 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall) {
             var steps = ChartWaterfallSteps.Create(chart.Series[0]);
             axisLabels.SetTicks(chart.Options.XAxis, steps.Select(step => step.X).Distinct().OrderBy(value => value).ToArray());
-            if (steps.Count > 0 && chart.Options.XAxis.LabelFormatter == null && ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, steps[steps.Count - 1].X) == null)
-                axisLabels.Set(chart.Options.XAxis, steps[steps.Count - 1].X, "Total");
+            foreach (var step in steps.Where(step => step.IsCheckpoint))
+                if (chart.Options.XAxis.LabelFormatter == null && ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, step.X) == null)
+                    axisLabels.Set(chart.Options.XAxis, step.X, WaterfallValueName(chart, step));
         }
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
@@ -136,7 +135,8 @@ internal static partial class VisualCartesianCompiler {
                     ["data-cfx-series-name"] = series.Name, ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(),
                     ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false",
                     ["data-cfx-kind"] = series.Kind.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
-                    ["data-cfx-source-points"] = Number(series.SourcePointCount), ["data-cfx-rendered-points"] = Number(series.Points.Count),
+                    ["data-cfx-source-points"] = Number(series.SourcePointCount),
+                    ["data-cfx-rendered-points"] = Number(series.RenderedPointCount),
                     ["data-cfx-decimation"] = series.DecimationMode?.ToString() ?? string.Empty, ["aria-label"] = series.Name
                 })) {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);

@@ -34,6 +34,14 @@ Configure tooltip content through `HtmlChartInteractionOptions.Tooltip.Mode` and
 
 The default range remains 120 CSS pixels. Enabling only `ChartInteractionFeatures.Tooltips` now also acquires nearby observations without requiring `Crosshair`. Choose `Exact` for direct pointer hits only. Crosshair labels default to visible for every palette; set `Crosshair.ShowLabel = false` to retain a compact label-free presentation. Keyboard and pinned readouts keep explicit target semantics.
 
+## Waterfall checkpoints
+
+Keep `AddWaterfall(name, IEnumerable<ChartPoint>)` for signed deltas with an automatically appended final total. For intermediate subtotals or totals, pass `ChartWaterfallItem.Delta(x, value)`, `.Subtotal(x)` and `.Total(x)` to the typed overload. Include every desired display position explicitly; typed input appends no extra total. Items accumulate in input order with distinct X coordinates. Subtotals sum changes since the preceding subtotal or total without resetting the running balance; totals sum all changes from zero. Use existing axis labels, point labels, point colors, fill patterns and label styles.
+
+For typed input, read `ChartSeries.WaterfallItems` instead of `Points`; the immutable snapshot includes checkpoints whose `DeltaValue` is null. `SourcePointCount` counts numeric deltas. Point overrides and point legends index authored items, including checkpoints. A raw delta after a checkpoint therefore has different item and numeric-source ordinals.
+
+Checkpoint metadata, including the legacy appended total, exposes a derived identity and contributor ordinals in `data-cfx-source-points`. It omits `data-cfx-source-point` and `data-cfx-delta`; replace selectors that expected the appended total's former point/source index `-1` with a checkpoint-kind selector. `data-cfx-waterfall-kind` distinguishes `delta`, `subtotal` and `total`; `data-cfx-value`, `data-cfx-start` and `data-cfx-end` describe the displayed calculation. The HTML adapter uses these facts for pointer, keyboard, caption and point-legend readouts. Opening balances and horizontal orientation remain separate roadmap work.
+
 ## Hierarchy and flow identities
 
 Replace the label-based relationship overloads with explicit nodes and links:
