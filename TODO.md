@@ -83,20 +83,86 @@ SVG and PNG charts share measured label placement, including data labels, target
 
 ## Mermaid
 
-- Keep `docs/mermaid-support-matrix.md` current as the family-by-family completion contract.
-- Continue expanding Mermaid support through typed AST models plus Mermaid.js-backed conformance fixtures before advertising a family as implemented.
-- Broaden class/state/ER/mindmap/kanban syntax coverage from Mermaid documentation examples, preserving raw statements where static CFX rendering cannot yet match Mermaid exactly.
-- Harden C4 with richer boundary/deployment examples and deliberate handling for Mermaid update style/layout statements now that a typed C4-to-topology model exists.
-- Harden Venn with area-proportional/Euler layout research and broader style fidelity while keeping the current one-to-three-set `VennDiagramBlock` deterministic and dependency-free.
-- Harden Ishikawa/fishbone rendering with Mermaid layout/style parity and richer nested cause examples while keeping `FishboneDiagramBlock` product-neutral.
-- Harden Wardley map rendering with Mermaid browser visual parity, annotation-box rendering, pipeline styling, sourcing-strategy overlays, and broader grammar examples while keeping `WardleyMapBlock` product-neutral.
-- Harden TreeView rendering with Mermaid browser visual parity, row indentation fidelity, directory/file styling, and configuration/theme mapping while keeping the implementation on reusable topology contracts.
-- Harden Event Modeling rendering with Mermaid browser visual parity, richer relation syntax, data block display, and Event Modeling-specific swimlane styling while keeping the implementation on reusable topology contracts.
-- Keep recognized diagnostic-only handling current with Mermaid families before adding renderers.
-- Harden git graph rendering with Mermaid config/theme support, alternate orientation rendering, and more docs examples now that the reusable git graph model exists.
-- Harden block rendering with nested/composite blocks, full shape fidelity, and style/class application now that the reusable block layout model exists.
-- Harden architecture rendering with richer nested-group boundaries, endpoint-side routing, and icon-specific visual styling now that the typed model exists.
-- Keep runtime packages JavaScript-free; Mermaid.js belongs only in test-time compatibility fixtures.
+The [support matrix](docs/mermaid-support-matrix.md) records current parsing, rendering limits, upstream references and open owner dependencies. Thirty families have native render paths; that breadth does not establish complete grammar or visual fidelity. ZenUML is diagnostic-only, and Agentflow and Railroad are missing. The current conformance reference is Mermaid.js 12.1.0.
+
+The compatibility goal is to adopt newer documented Mermaid syntax while preserving supported older syntax through regression fixtures. Start with explicit Mermaid 10, 11 and 12 reference versions; qualify the promised window before publishing it. Keep one semantic model where old and new spellings mean the same thing. Record deliberate grammar changes and migration guidance rather than maintaining separate renderer forks. Older majors and beta syntax need evidence for their individual contracts.
+
+The stages set the default work order. Independent family fixes can proceed once their own fixtures and owner APIs are available; chart/calendar correctness does not depend on completing unrelated graph notation.
+
+### 1. Compatibility evidence and honest results
+
+- [ ] Expand the 42-source conformance corpus from representative examples into feature coverage for every supported family, using upstream documentation and parser regressions with recorded version and provenance.
+- [ ] Add isolated test-time reference lanes for selected Mermaid 10 and 11 releases alongside the current 12 reference. Mark each fixture with the versions that accept it; do not require newer syntax to parse on older engines.
+- [ ] Compare typed semantic facts in both implementations: nodes, edges, nesting, labels, styles, time calculations, attributes and values. The current upstream harness checks syntax for every fixture and semantic expectations for selected flowchart and Gantt fixtures; extend both upstream and .NET assertions deliberately.
+- [ ] Distinguish invalid source, recognized-but-unimplemented features, retained metadata, approximate rendering and exact semantic mapping in parse/render results. Give diagnostics stable identities and original source spans, including through front matter, compact statements and Markdown fences.
+- [ ] Close silent fall-through paths where unsupported statements can become ordinary class/state/ER nodes or labels. Add focused regression cases that preserve useful raw source without reporting misleading success.
+- [ ] Inventory all registered upstream families and header aliases, including Agentflow, the four Railroad dialects and `flowchart-elk`. Keep unknown-family errors separate from recognized-but-unrenderable diagnostics.
+
+Completion: every advertised feature has versioned positive and meaningful negative fixtures, preserved semantic facts, and an explicit rendering or diagnostic outcome. Parser acceptance alone cannot mark a family complete.
+
+### 2. Shared presentation, layout and host policy
+
+- [ ] Replace scalar-only source theme handling with typed, bounded front-matter and legacy `%%{init}%%` configuration handling. Define precedence between host options, source settings and family defaults; diagnose unmapped keys.
+- [ ] Map supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Cover sequence themes too; current sequence previews retain a fixed palette.
+- [ ] Handle Mermaid 12 `theme`/`look`/`layout` changes deliberately. Preserve older `defaultRenderer` declarations with a documented diagnostic or mapping. Keep deterministic CFX layout and appearance explicit; reproducing ELK or browser paint is a separate fidelity goal.
+- [ ] Extend the existing safe label/text pipeline for escaped text, entities, multiline labels and Mermaid Markdown strings. Specify literal fallback and diagnostics for HTML labels and math until a native implementation has artifact proof.
+- [ ] Apply supported `classDef`, default classes, `class`, `style`, `linkStyle` and edge-ID styling consistently across families. Preserve inheritance and source order; report properties retained without visible effect.
+- [ ] Extend shared topology layout for nested compound groups, group endpoints, local direction, ports, self-loops, parallel edges and obstacle-aware label routing where fixtures expose gaps. Preserve identical scene geometry in SVG and PNG.
+- [ ] Add a coherent host policy for accepted diagram families, source styling, safe links/assets and bounded source/model/render size. Reuse existing SVG, URI and artwork safety owners; prove script-free output and deterministic rejection without fetching remote assets or invoking source callbacks.
+
+Completion: source presentation produces consistent SVG/PNG scenes or specific diagnostics, host policy has a single reusable owner, and compact/dense fixtures remain readable and bounded.
+
+### 3. Core diagram semantics
+
+- [ ] Complete flowchart shape aliases and the expanded shape catalog, icon/image metadata, edge IDs, circle/cross/bidirectional markers, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
+- [ ] Complete sequence participant creation/destruction, participant boxes, supported message variants, nested parallel/critical branches, branch labels, notes, activations and autonumber behavior. Keep actor menus and links as safe host-facing data.
+- [ ] Complete class generics, visibility/static/abstract members, lollipop and two-way relationships, labeled/nested namespaces, notes, styling and safe link metadata.
+- [ ] Complete state choice/fork/join notation, concurrent regions, nested composites, multiline notes and classes; keep transition and start/end meaning visible.
+- [ ] Complete ER aliases, optional attribute types, keys/comments, direction, subgraphs and styling while preserving identifying relationships and cardinalities.
+- [ ] Complete requirement kinds, fields, one-line blocks, relation directions, Markdown labels and classes with typed validation.
+
+Completion: the corresponding matrix rows have grammar, semantic and visible-notation proof through direct rendering and Markdown fences; generic topology previews no longer hide supported diagram meaning.
+
+### 4. Chart and calendar fidelity
+
+- [ ] Fix Gantt duration-unit case semantics first: `TryParseDuration` currently lowercases `M` to `m`, treating Mermaid's month token as minutes. Add an upstream-resolved-date regression before implementing month/year arithmetic.
+- [ ] Finish hierarchical treemap qualification through the existing owner candidate in PR #271, also integrated in #273. Revalidate after merge; then close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
+- [ ] Reuse the stable Sankey identity work in PR #261 and the shared XY orientation work in #251, also integrated in #273. Qualify Mermaid label/configuration handling and all series orientations against the settled owner APIs.
+- [ ] Map radar graticule, curve appearance and scale options into shared polar geometry. PR #257 supplies native series forms but does not apply Mermaid graticule metadata; that mapping remains separate work.
+- [ ] Complete Gantt `until`, month/year arithmetic, repeated calendar declarations, date/axis/tick formats, vertical markers and explicit today-marker behavior. Preserve the existing excludes/includes/weekend duration calculation and compare resolved dates against upstream.
+- [ ] Render journey sections, actors and score paths as a reusable journey scene, quadrant regions and their labels as chart geometry, and timeline sections/events in both directions. Keep the current score-bar/scatter/ordered-time mappings explicit until replaced.
+- [ ] Broaden pie/show-data, XY numeric/category axes and legends, Sankey CSV/configuration/colors, and packet row/label/configuration cases, including Mermaid 12 bit-numbering direction.
+
+Completion: values, dates, hierarchy, direction and requested encodings survive conversion and are visibly represented. Existing owner PRs supply shared capability; they do not by themselves complete Mermaid configuration or compatibility proof.
+
+### 5. Existing specialized diagram depth
+
+- [ ] Complete C4 boundary/deployment notation, relationship variants and update style/layout statements; block composites, spans, shapes and styles; and architecture nested boundaries, endpoint-side routing, row/column alignment and safe icon mapping.
+- [ ] Replace TreeView's topology approximation with reusable tree-row geometry that supports box-drawing input, descriptions, classes and file/directory icons. Complete mindmap Markdown labels, shapes, classes and icon handling.
+- [ ] Complete Event Modeling frame/reset order, relation syntax, typed data tables and swimlane geometry; render Kanban column/task metadata with deliberate board layout.
+- [ ] Qualify Venn area/overlap semantics and higher-arity cases before extending the current one-to-three-set preview. Keep research and unsupported-layout diagnostics visible; size metadata is not a proportional rendering guarantee.
+- [ ] Complete Ishikawa dense nested-cause layout and Wardley annotation boxes, pipeline styling, inertia and sourcing overlays through `FishboneDiagramBlock` and `WardleyMapBlock`.
+- [ ] Complete swimlane nested responsibility groups, use-case notes/business actors/JSON tables/association styles, and Cynefin domain boundaries/cliff notation without introducing host dashboards or product data collection.
+
+Completion: each row's retained-only or approximate features either have tested native scene mappings or remain explicitly documented limits. Inspect actual compact/wide and light/dark SVG/PNG pairs before changing visual baselines.
+
+### 6. Missing language families
+
+- [ ] Recognize `agentflow-beta` with retained source and a deliberate unsupported diagnostic, then add typed flows/global scope, collapsed containers, metadata, connectors and sequence/reference/failure edges. Reuse topology scene primitives; model/instruction/connector metadata is data, never executable work.
+- [ ] Recognize `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta` and `railroad-peg-beta`, then implement one reusable grammar-diagram model with distinct front ends for each notation. Qualify rule references, alternatives, repetition, recursion and bounded layout before enabling rendering.
+- [ ] Evaluate ZenUML grammar, licensing and semantic differences against `SequenceArtifact`. Implement a native mapping only after that evaluation; keep the existing diagnostic-only result until then. A JavaScript plugin is not a runtime fallback.
+
+Completion: each new family passes the same source/model/diagnostic/scene/export/fence/version gates as existing families. No new production dependency is implied by this roadmap.
+
+### 7. Consumer and release qualification
+
+- [ ] Propagate each completed contract through `MermaidRenderer`, direct typed APIs, `VisualArtifact` serialization, `ChartForgeX.Markup.Mermaid`, examples and supported CLI/editor/OfficeIMO/HTML host paths. Keep grammar and conversion in `ChartForgeX.Mermaid` and hosts thin.
+- [ ] Add observed upstream/CFX render comparisons to the existing gallery workflow through HtmlTinkerX test-time browser tooling. Compare meaning, labels, clipping and routing; record intentional appearance differences instead of treating pixel equality as the compatibility contract.
+- [ ] Run focused semantic/artifact tests first, then the full `Build.ps1 -Configuration Release` loop for stable implementation candidates. Qualify all supported target frameworks, Windows/Linux/macOS, Native AOT, package consumers, deterministic output and consequential resource limits.
+- [ ] Update the support matrix, generated examples and user-facing compatibility/migration notes with each completed tranche. Keep package/feed evidence distinct from local source and open PRs.
+- [ ] Complete PR CI/review settlement, then publish and verify owner packages and dependent hosts only with release authority. Remove superseded validation output and close completed roadmap items after the durable contract is documented.
+
+Completion: the documented support window is backed by source, artifacts, host workflows and package evidence. Implementation, merge, publication and installed-consumer qualification remain separate gates.
 
 ## Formats
 

@@ -26,15 +26,21 @@ For each Mermaid family ChartForgeX supports, the implementation should:
 
 Reference rendering tools can be useful in tests and compatibility checks, but they are not a runtime dependency for ChartForgeX packages.
 
+The current upstream reference is Mermaid.js 12.1.0. Older spellings such as `graph`, `stateDiagram`/`stateDiagram-v2`, and `xychart`/`xychart-beta` are accepted where implemented, but the test harness currently runs one upstream version. This does not establish complete compatibility with every Mermaid 10, 11 or 12 release.
+
+The [Mermaid roadmap](../TODO.md#mermaid) plans newer-syntax adoption and regression coverage for supported older syntax. The [support matrix](mermaid-support-matrix.md) separates native render paths, retained-only features, approximate mappings and missing families. CFX uses its own deterministic scene and appearance; syntax compatibility does not imply the same layout or pixels as Mermaid's browser renderer.
+
 ## Current Scope
 
 Flowchart, sequence, class, state, entity relationship, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, treemap, swimlane, use case, and Cynefin diagrams have semantic implementations with static ChartForgeX rendering. Flowcharts, class diagrams, state diagrams, entity relationship diagrams, requirement diagrams, architecture diagrams, C4 diagrams, mindmaps, tree views, event modeling diagrams, kanban boards, swimlanes, use cases, and Cynefin diagrams render through `TopologyChart`; sequence diagrams render through `SequenceArtifact`; git graph diagrams render through `GitGraphBlock`; block diagrams render through `BlockLayoutBlock`; packet diagrams render through `PacketLayoutBlock`; Venn diagrams render through `VennDiagramBlock`; Ishikawa diagrams render through `FishboneDiagramBlock`; Wardley maps render through `WardleyMapBlock`; pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap diagrams render through native `Chart` models.
 
 Recognized but not yet semantically parsed families include ZenUML. These produce an inspectable `MermaidDocument` with retained raw body statements plus a warning that the family is not implemented yet.
 
+Agentflow (`agentflow-beta`) and the Railroad primitive/EBNF/ABNF/PEG headers are not recognized yet. They follow the unknown-family error path; recognition and native implementation are tracked in the roadmap.
+
 Unknown diagram families produce a parser error.
 
-For the family-by-family completion status, evidence, and priority order, see `mermaid-support-matrix.md`.
+For the family-by-family completion status, evidence, and priority order, see the [support matrix](mermaid-support-matrix.md).
 
 ## Render source directly
 
@@ -724,7 +730,7 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Exclusion calendars are preserved but not yet applied to duration math.
+The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes/includes, weekend selection, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Duration-based ends advance over excluded dates, with includes overriding exclusions; explicit end dates remain authored dates. `until` dependencies, month/year durations and broader date/configuration coverage remain open in the [support matrix](mermaid-support-matrix.md). Use the supported minute/hour/day/week units explicitly: month token `M` currently follows the minute path and does not represent a month.
 
 ## XY Charts
 
@@ -1198,7 +1204,7 @@ Fence attributes such as `id`, `title`, `subtitle`, `width`, `height`, and famil
 
 ## Mermaid.js Conformance Fixtures
 
-The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It validates representative Mermaid sources with the official Mermaid parser while keeping ChartForgeX packages dependency-free at runtime.
+The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It validates representative Mermaid sources with the official Mermaid parser while keeping ChartForgeX packages dependency-free at runtime. The harness uses Mermaid.js 12.1.0 and checks selected flowchart node/edge and Gantt task-date expectations in addition to syntax acceptance. It does not render upstream reference images or run older Mermaid versions.
 
 ```powershell
 Set-Location .\tests\mermaid-conformance
@@ -1305,7 +1311,7 @@ Fence attributes currently understood by the bridge are `id`, `title`, `subtitle
 
 ## Growth Path
 
-The next Mermaid families should follow the same pattern:
+The [Mermaid roadmap](../TODO.md#mermaid) tracks language depth, version coverage and missing families. New families follow the same pattern:
 
 1. Detect the diagram family and preserve source spans.
 2. Add typed AST nodes for the real Mermaid grammar used by that family.

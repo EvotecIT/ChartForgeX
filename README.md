@@ -170,7 +170,7 @@ Optional visual artifact, markup, Mermaid, and interaction support is split into
 | `ChartForgeX` | Charts, genuine diagrams, prepared scenes, semantic artifacts and still-image codecs. |
 | `ChartForgeX.Visuals` | Static canvas, image composition, metric tiles, tables, lists and ordered watermark decoration. |
 | `ChartForgeX.Stories` | Visual and terminal stories, transcripts, motion, animated topology and GIF/APNG output. |
-| `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with first-class flowchart, sequence, class, state, ER, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap rendering. |
+| `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with native flowchart, sequence, class, state, ER, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, treemap, swimlane, use case and Cynefin rendering. See the [support matrix](docs/mermaid-support-matrix.md) for syntax and fidelity limits. |
 | `ChartForgeX.Markup` | Markdown-friendly v1 ChartForgeX visual fences for chart, timeline, topology, flow, sequence, and table artifacts. |
 | `ChartForgeX.Markup.Mermaid` | Thin optional bridge that lets `ChartForgeX.Markup` parse Mermaid fences through `ChartForgeX.Mermaid`. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
