@@ -64,7 +64,7 @@ public sealed class RadialLabelEligibilityBrowserTests {
         Assert.Equal("text", hover.GetProperty("hit").GetProperty("tag").GetString());
         Assert.Equal("series-0-point-" + source, hover.GetProperty("hit").GetProperty("alias").GetString());
         Assert.Equal(JsonValueKind.Null, hover.GetProperty("hit").GetProperty("pointAncestor").ValueKind);
-        await AssertRejectedAsync(page);
+        await AssertRejectedAsync(page, id);
         Assert.Equal(selected, await native.GetAttributeAsync("aria-selected"));
         Assert.True(await native.EvaluateAsync<bool>("node=>!!node.closest('.cfx-series-muted')"));
 
@@ -127,31 +127,44 @@ public sealed class RadialLabelEligibilityBrowserTests {
     }
 
     [Theory]
-    [InlineData("zero", "0")]
-    [InlineData("precision-collapse", "1e-20")]
-    public async Task RetainedNativeFactsKeepTheirKeyboardReadoutAndSelectionWithoutPointerPaint(string status, string value) {
+    [InlineData(true, "zero")]
+    [InlineData(false, "zero")]
+    [InlineData(true, "precision-collapse")]
+    [InlineData(false, "precision-collapse")]
+    public async Task RetainedNativeFactsKeepTheirKeyboardReadoutAndSelectionWithoutPointerPaint(bool bars, string status) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithLegend(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddHorizontalLine(6, "Reference guide");
-        var html = chart.ToInteractiveHtmlPage();
-        // Exercise the exported native metadata boundary in the real adapter without inventing
-        // a mouse hit area or adding a production hook.
-        var fact = "<g data-cfx-role='link' data-cfx-target-kind='link' data-cfx-target-id='native-fact' data-cfx-geometry-status='"
-            + status + "' data-cfx-label='Native retained fact' data-cfx-value='" + value + "' aria-label='Native retained fact'></g>";
-        html = html.Insert(html.IndexOf('>', html.IndexOf("<svg", StringComparison.Ordinal)) + 1, fact);
-        await using var session = await OpenAsync(html);
+        var (chart, series) = NumericRadialOwnerClosureTests.RetainedFact(bars, status);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
         AssertNoConsoleErrors(session);
         var page = session.Page;
         await RecordEventsAsync(page);
-        var native = page.Locator("[data-cfx-target-id='native-fact']");
-        Assert.True(await native.EvaluateAsync<bool>("node=>{const box=node.getBoundingClientRect();return node.childElementCount===0&&box.width===0&&box.height===0;}"));
+        var native = page.Locator(Point(series, 0));
+        Assert.True(await native.EvaluateAsync<bool>("node=>node.childElementCount===0"));
+        Assert.Equal(status, await native.GetAttributeAsync("data-cfx-geometry-status"));
+        var id = await native.GetAttributeAsync("data-cfx-target-id");
+        var source = await native.EvaluateAsync<float[]>("""
+            node=>{
+              const root=node.closest('.cfx-interactive-chart'),prepared=JSON.parse(root.dataset.cfxPreparedChart);
+              const region=prepared.regions.find(region=>region.id===node.dataset.cfxSourceId);
+              const location=new DOMPoint(region.x+region.width/2,region.y+region.height/2).matrixTransform(node.ownerSVGElement.getScreenCTM());
+              return [location.x,location.y];
+            }
+            """);
+        await page.Mouse.ClickAsync(source[0], source[1]);
+        var pointer = await StateAsync(page, (source[0], source[1]));
+        Assert.Equal(0, await page.EvaluateAsync<int>("id=>window.cfxEligibilityEvents.filter(event=>event.detail.target?.targetId===id&&['cfxhover','cfxselect','cfxtooltip'].includes(event.type)).length", id));
+        Assert.NotEqual("true", await native.GetAttributeAsync("aria-selected"));
+        await MoveAwayAsync(page);
+        if (await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned") == "true")
+            await page.Locator("[data-cfx-reset]").ClickAsync();
+        await ResetEventsAsync(page);
         await native.FocusAsync();
-        Assert.Contains("Native retained fact", await TooltipTextAsync(page));
+        Assert.Contains("Retained", await TooltipTextAsync(page));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await native.GetAttributeAsync("aria-selected"));
         Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
-        Assert.Equal("native-fact", await page.EvaluateAsync<string>("()=>window.cfxEligibilityEvents.find(event=>event.type==='cfxselect').detail.target.targetId"));
-        await CaptureAsync(page, "native-keyboard-" + status, new { status, value });
+        Assert.Equal(id, await page.EvaluateAsync<string>("()=>window.cfxEligibilityEvents.find(event=>event.type==='cfxselect').detail.target.targetId"));
+        await CaptureAsync(page, "native-keyboard-" + (bars ? "bar-" : "column-") + status, new { status, series, id, pointer });
         AssertNoConsoleErrors(session);
     }
 
@@ -171,12 +184,13 @@ public sealed class RadialLabelEligibilityBrowserTests {
     private static Task RecordEventsAsync(IPage page) => page.EvaluateAsync("() => { window.cfxEligibilityEvents=[]; const root=document.querySelector('.cfx-interactive-chart'); for(const type of ['cfxhover','cfxhoverclear','cfxselect','cfxtooltip'])root.addEventListener(type,event=>window.cfxEligibilityEvents.push({type,detail:event.detail})); }");
     private static Task ResetEventsAsync(IPage page) => page.EvaluateAsync("()=>window.cfxEligibilityEvents=[]");
 
-    private static async Task AssertRejectedAsync(IPage page) {
+    private static async Task AssertRejectedAsync(IPage page, string? nativeId = null) {
         var root = page.Locator(".cfx-interactive-chart");
         Assert.Null(await root.GetAttributeAsync("data-cfx-hover-key"));
         Assert.Null(await root.GetAttributeAsync("data-cfx-tooltip-pinned"));
         Assert.Equal(string.Empty, await TooltipTextAsync(page));
-        Assert.Equal(0, await page.EvaluateAsync<int>("()=>window.cfxEligibilityEvents.filter(event=>['cfxhover','cfxselect','cfxtooltip'].includes(event.type)).length"));
+        // A focused legend can retain its readout while the muted observation's caption rejects pointer input.
+        Assert.Equal(0, await page.EvaluateAsync<int>("id=>window.cfxEligibilityEvents.filter(event=>['cfxhover','cfxselect','cfxtooltip'].includes(event.type)&&(!id||event.detail.target?.targetKind==='point'&&event.detail.target?.targetId===id)).length", nativeId));
     }
 
     private static Task<JsonElement> StateAsync(IPage page, (float X, float Y) pointer) => page.EvaluateAsync<JsonElement>("""

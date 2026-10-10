@@ -99,6 +99,8 @@
       }
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
+      // Retained numeric facts have keyboard semantics without a pointer surface.
+      if (['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return;
       if (box.width > 0 && box.height > 0) return;
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const width = Math.max(8, region.width); const height = Math.max(8, region.height);
