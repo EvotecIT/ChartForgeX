@@ -83,7 +83,7 @@ SVG and PNG charts share measured label placement, including data labels, target
 
 ## Mermaid
 
-The [support matrix](docs/mermaid-support-matrix.md) records current parsing, rendering limits, upstream references and open owner dependencies. Thirty families have native render paths; that breadth does not establish complete grammar or visual fidelity. ZenUML is diagnostic-only, and Agentflow and Railroad are missing. The current conformance reference is Mermaid.js 12.1.0.
+The [support matrix](docs/mermaid-support-matrix.md) records current parsing, rendering limits, upstream references and open owner dependencies. Thirty families have native render paths; that breadth does not establish complete grammar or visual fidelity. ZenUML, Agentflow and Railroad are diagnostic-only. The current conformance reference is Mermaid.js 12.1.0.
 
 The compatibility goal is to adopt newer documented Mermaid syntax while preserving supported older syntax through regression fixtures. Start with explicit Mermaid 10, 11 and 12 reference versions; qualify the promised window before publishing it. Keep one semantic model where old and new spellings mean the same thing. Record deliberate grammar changes and migration guidance rather than maintaining separate renderer forks. Older majors and beta syntax need evidence for their individual contracts.
 
@@ -96,7 +96,7 @@ The stages set the default work order. Independent family fixes can proceed once
 - [ ] Compare typed semantic facts in both implementations: nodes, edges, nesting, labels, styles, time calculations, attributes and values. The current upstream harness checks syntax for every fixture and semantic expectations for selected flowchart and Gantt fixtures; extend both upstream and .NET assertions deliberately.
 - [ ] Distinguish invalid source, recognized-but-unimplemented features, retained metadata, approximate rendering and exact semantic mapping in parse/render results. Give diagnostics stable identities and original source spans, including through front matter, compact statements and Markdown fences.
 - [ ] Close silent fall-through paths where unsupported statements can become ordinary class/state/ER nodes or labels. Add focused regression cases that preserve useful raw source without reporting misleading success.
-- [ ] Inventory all registered upstream families and header aliases, including Agentflow, the four Railroad dialects and `flowchart-elk`. Keep unknown-family errors separate from recognized-but-unrenderable diagnostics.
+- [x] Inventory the registered upstream families and header aliases, including Agentflow, the four Railroad dialects and `flowchart-elk`. Known families without native implementations preserve source and report `CFXM002`; unknown headers report `CFXM001`, and the static ELK-header flowchart fallback reports `CFXM003`.
 
 Completion: every advertised feature has versioned positive and meaningful negative fixtures, preserved semantic facts, and an explicit rendering or diagnostic outcome. Parser acceptance alone cannot mark a family complete.
 

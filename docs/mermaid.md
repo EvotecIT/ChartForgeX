@@ -38,8 +38,6 @@ ZenUML (`zenuml`), Agentflow (`agentflow-beta`) and Railroad (`railroad-beta`, `
 
 Diagram selection diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for the `flowchart-elk` layout fallback, and `CFXM004` for native conversion failure. The Markdown bridge preserves these codes and maps source lines into the host document. Other parser diagnostics keep their located messages with an empty code until they are classified.
 
-Agentflow (`agentflow-beta`) and the Railroad primitive/EBNF/ABNF/PEG headers are not recognized yet. They follow the unknown-family error path; recognition and native implementation are tracked in the roadmap.
-
 Unknown diagram families produce a parser error.
 
 For the family-by-family completion status, evidence, and priority order, see the [support matrix](mermaid-support-matrix.md).
@@ -95,7 +93,7 @@ Supported flowchart parsing includes:
 
 Flowcharts accept semicolon-separated statements, including statements on the header line. Semicolons inside quoted labels, node shapes, and pipe edge labels stay inside that label. Every retained statement carries its original line and column. Incomplete shapes, missing edge targets, and unmatched `subgraph`/`end` declarations produce located errors; unsupported trailing syntax is diagnosed instead of being silently discarded.
 
-The compact, quoted-shape, and modern flowchart fixtures compare node ids and edge endpoints with Mermaid.js. The calendar fixture compares task dates. Every conformance fixture also exercises static SVG and PNG export, Markdown fences, and deterministic interchange JSON in .NET.
+The compact, quoted-shape, and modern flowchart fixtures compare node ids and edge endpoints with Mermaid.js. The calendar fixtures compare task dates. Renderable fixtures in `fixtures/` also exercise static SVG and PNG export, Markdown fences, and deterministic interchange JSON in .NET. The `recognition/` corpus instead proves preserved source, diagnostic-only outcomes and upstream syntax acceptance.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -1218,7 +1216,7 @@ npm ci --ignore-scripts --no-audit --no-fund
 npm run validate
 ```
 
-`Build.ps1` runs the same conformance validation after the .NET test suite. Add fixtures here when expanding a supported Mermaid family so syntax compatibility is checked against Mermaid.js before ChartForgeX-specific rendering expectations are added.
+`Build.ps1` runs the same conformance validation after the .NET test suite. The default command validates both `fixtures/` and `recognition/`; pass a directory name to `node validate-mermaid.mjs` for a focused run. Add fixtures here when expanding a supported Mermaid family so syntax compatibility is checked against Mermaid.js before ChartForgeX-specific rendering expectations are added.
 
 ````markdown
 ```mermaid {#incident-flow title="Incident Flow" subtitle="Static preview" width=1180 height=720}

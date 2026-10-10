@@ -59,16 +59,7 @@ These families are detected and returned as `MermaidDocument` with raw body stat
 | Agentflow | `agentflow-beta` | Recognized, raw source retained, `CFXM002`, no artifact | Typed workflows over reusable topology contracts | Semantic parsing and native rendering remain open. |
 | Railroad | `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta` | Recognized, raw source retained, `CFXM002`, no artifact | Typed grammar model and reusable railroad geometry | Body grammar is not validated by recognition. |
 
-## Missing Upstream Families
-
-The Mermaid 12.1.0 source registers both families below. They are absent from the CFX header dispatcher, rather than recognized diagnostic-only families.
-
-| Family | Headers | Current CFX state | Implementation target |
-| --- | --- | --- | --- |
-| [Agentflow](https://mermaid.js.org/syntax/agentflow.html) | `agentflow-beta` | Unknown-family error; no typed model or conformance fixture | Typed nested flows/global scope, collapsed containers, metadata, connectors and sequence/reference/failure edges over reusable topology scenes. Treat instructions/models/connectors as inert diagram data. |
-| [Railroad](https://github.com/mermaid-js/mermaid/blob/mermaid%4012.1.0/packages/mermaid/src/docs/syntax/railroad.md) | `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta` | Unknown-family errors; no typed grammar model or renderer | One product-neutral grammar-diagram model and native scene renderer, with separate notation parsers and bounded rule-reference/repetition layout. |
-
-Start with recognition and preserved-source diagnostics, then complete the semantic and artifact gates. ZenUML remains a separate grammar/license evaluation; translating it as ordinary Mermaid sequence syntax would discard meaning.
+Complete the semantic and artifact gates for [Agentflow](https://mermaid.js.org/syntax/agentflow.html) and the [Railroad dialects](https://github.com/mermaid-js/mermaid/blob/mermaid%4012.1.0/packages/mermaid/src/docs/syntax/railroad.md). Treat workflow instructions/models/connectors as inert diagram data, and reuse one product-neutral grammar model for the Railroad notations. ZenUML remains a separate grammar/license evaluation; translating it as ordinary Mermaid sequence syntax would discard meaning.
 
 ## Cross-Family Gaps
 
