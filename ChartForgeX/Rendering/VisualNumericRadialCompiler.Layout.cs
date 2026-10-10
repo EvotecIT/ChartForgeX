@@ -55,7 +55,8 @@ internal static partial class VisualNumericRadialCompiler {
         var offset = bars ? new ChartPoint(-Math.Sin(endAngle) * direction, Math.Cos(endAngle) * direction)
             : new ChartPoint(Math.Cos(endAngle) * direction, Math.Sin(endAngle) * direction);
         return new RadialSeriesMark(start, sweep, inner, outer, On(geometry, endAngle, endRadius), center, offset,
-            baseline < scale.Minimum || baseline > scale.Maximum || end < scale.Minimum || end > scale.Maximum);
+            baseline < scale.Minimum || baseline > scale.Maximum || end < scale.Minimum || end > scale.Maximum,
+            ChartSlicePathGeometry.HasEncodedFillArea(geometry.Cx, geometry.Cy, outer, inner, start, sweep));
     }
 
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, RadialSeriesGeometry geometry,
@@ -134,11 +135,11 @@ internal static partial class VisualNumericRadialCompiler {
         internal double TickLane { get; }
     }
     private sealed class RadialSeriesMark {
-        internal RadialSeriesMark(double start, double sweep, double inner, double outer, ChartPoint end, ChartPoint center, ChartPoint offset, bool clipped) {
-            Start = start; Sweep = sweep; Inner = inner; Outer = outer; End = end; Center = center; Offset = offset; Clipped = clipped;
+        internal RadialSeriesMark(double start, double sweep, double inner, double outer, ChartPoint end, ChartPoint center, ChartPoint offset, bool clipped, bool painted) {
+            Start = start; Sweep = sweep; Inner = inner; Outer = outer; End = end; Center = center; Offset = offset; Clipped = clipped; Painted = painted;
         }
         internal double Start { get; } internal double Sweep { get; } internal double Inner { get; } internal double Outer { get; }
         internal ChartPoint End { get; } internal ChartPoint Center { get; } internal ChartPoint Offset { get; } internal bool Clipped { get; }
-        internal bool Painted => Sweep > 0 && Outer > Inner;
+        internal bool Painted { get; }
     }
 }
