@@ -218,7 +218,7 @@ public static partial class MermaidTopologyRendering {
     /// <summary>Renders a Mermaid kanban board to PNG.</summary>
     public static byte[] ToPng(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();
 
-    private static TopologyLayoutDirection DiagramDirection(string? direction, TopologyLayoutDirection fallback) => direction switch {
+    private static TopologyLayoutDirection DiagramDirection(string? direction, TopologyLayoutDirection fallback) => direction?.ToUpperInvariant() switch {
         "LR" => TopologyLayoutDirection.LeftToRight, "RL" => TopologyLayoutDirection.RightToLeft,
         "TB" => TopologyLayoutDirection.TopToBottom, "BT" => TopologyLayoutDirection.BottomToTop, _ => fallback
     };

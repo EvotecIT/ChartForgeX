@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace ChartForgeX.Mermaid;
 
@@ -101,13 +102,17 @@ internal static class MermaidParserUtilities {
 
     public static string StableId(string prefix, int index) => prefix + "-" + index.ToString(CultureInfo.InvariantCulture);
 
-    public static bool StartsStatement(string text, string keyword) => text.StartsWith(keyword, StringComparison.Ordinal) &&
-        (text.Length == keyword.Length || char.IsWhiteSpace(text[keyword.Length]));
+    public static bool StartsStatement(string text, string keyword, bool ignoreCase = false) => text.StartsWith(keyword, ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal) &&
+        text.Length > keyword.Length && char.IsWhiteSpace(text[keyword.Length]);
 
-    public static bool TryReadDirection(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result, out string? direction) {
+    public static bool IsMultilineStateNote(string text) => Regex.IsMatch(text,
+        @"^note\s+(?:left|right)\s+of\s+[^:\s]+\s*$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+    public static bool TryReadDirection(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result, out string? direction, bool ignoreCase = false) {
         direction = null;
-        if (!StartsStatement(text, "direction")) return false;
+        if (!StartsStatement(text, "direction", ignoreCase)) return false;
         var value = text.Substring(9).Trim().TrimEnd(';').Trim();
+        if (ignoreCase) value = value.ToUpperInvariant();
         if (value == "LR" || value == "RL" || value == "TB" || value == "BT") direction = value;
         else Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid direction must be LR, RL, TB or BT.", MermaidDiagnosticCodes.InvalidStatement);
         return true;

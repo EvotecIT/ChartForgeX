@@ -31,7 +31,7 @@ internal static class MermaidEntityRelationshipParser {
                 continue;
             }
 
-            if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction)) {
+            if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction, ignoreCase: true)) {
                 if (subgraphDepth == 0) document.Direction = direction;
                 else MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "ER subgraph direction");
                 continue;

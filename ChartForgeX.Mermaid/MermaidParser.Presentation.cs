@@ -15,7 +15,7 @@ public sealed partial class MermaidParser {
                 if (statement == "end note") insideStateNote = false;
                 continue;
             }
-            if (kind == MermaidDiagramKind.State && MermaidParserUtilities.StartsStatement(statement, "note") && statement.IndexOf(':') < 0) {
+            if (kind == MermaidDiagramKind.State && MermaidParserUtilities.IsMultilineStateNote(statement)) {
                 insideStateNote = true;
                 continue;
             }

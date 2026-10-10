@@ -20,7 +20,7 @@ internal static class MermaidStateParser {
                 continue;
             }
 
-            if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction)) {
+            if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction, ignoreCase: true)) {
                 if (composites.Count == 0) document.Direction = direction;
                 else {
                     document.Statements.Add(new MermaidStateStatement(trimmed, span));
@@ -29,8 +29,8 @@ internal static class MermaidStateParser {
                 continue;
             }
 
-            if (MermaidParserUtilities.StartsStatement(trimmed, "note")) {
-                if (trimmed.IndexOf(':') < 0) line = ReadNote(document, lines, line, span, originalLineStarts, result);
+            if (MermaidParserUtilities.StartsStatement(trimmed, "note", ignoreCase: true)) {
+                if (MermaidParserUtilities.IsMultilineStateNote(trimmed)) line = ReadNote(document, lines, line, span, originalLineStarts, result);
                 else {
                     document.Statements.Add(new MermaidStateStatement(trimmed, span));
                     MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "state note");
