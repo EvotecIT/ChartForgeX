@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualHierarchyCompiler {
     /// <summary>Fits measured horizontal or upright tangential captions within the actual annular segment.</summary>
     private static void SunburstLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
-        ChartSunburstModel model, ChartSunburstNode node, ChartColor fill, SvgPaint fillPaint) {
+        ChartSunburstModel model, ChartSunburstNode node, ChartColor fill, SvgPaint fillPaint, string? secondary) {
         var style = LabelStyle(chart, context, fill, node.Index);
         var series = chart.Series[0];
         var original = node.Index < series.PointLabels.Count && series.PointLabels[node.Index] != null ? series.PointLabels[node.Index]! : node.Label;
@@ -45,10 +45,11 @@ internal static partial class VisualHierarchyCompiler {
         builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A sunburst label was omitted to fit its segment; complete text remains in source semantics."));
 
         bool TryCaption(string text, TextMetrics measured) {
-            foreach (var degrees in node.Depth == 0 || Math.Abs(tangent) < .001 ? new[] { 0d } : new[] { 0d, tangent }) {
-                if (!SunburstCaptionFits(node, x - model.CenterX, y - model.CenterY, measured, degrees)) continue;
-                var roundedShape = degrees == 0 ? horizontalShape : tangentShape;
-                if (roundedShape != null && !roundedShape.Contains(new ChartRect(-measured.Width / 2 - 2, -measured.Height / 2 - 2, measured.Width + 4, measured.Height + 4))) continue;
+            var orientations = node.Depth == 0 || Math.Abs(tangent) < .001 ? new[] { 0d } : new[] { 0d, tangent };
+            if (secondary != null && SunburstSecondaryLabel(chart, builder, node, fill, fillPaint, style, text, measured, secondary, x, y, orientations, Fits)) return true;
+            foreach (var degrees in orientations) {
+                if (!Fits(measured, degrees)) continue;
+                if (secondary != null) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."));
                 var paint = VisualChartPaint.ExplicitDataLabelColor(chart, node.Index) ? VisualChartPaint.Text(style)
                     : SvgPaint.Contrast(fill, fillPaint);
                 style.Alignment = TextAlignment.Center;
@@ -58,6 +59,12 @@ internal static partial class VisualHierarchyCompiler {
                 return true;
             }
             return false;
+        }
+
+        bool Fits(TextMetrics measured, double degrees) {
+            if (!SunburstCaptionFits(node, x - model.CenterX, y - model.CenterY, measured, degrees)) return false;
+            var roundedShape = degrees == 0 ? horizontalShape : tangentShape;
+            return roundedShape == null || roundedShape.Contains(new ChartRect(-measured.Width / 2 - 2, -measured.Height / 2 - 2, measured.Width + 4, measured.Height + 4));
         }
 
         LabelMarkShape? RoundedShape(double degrees) {

@@ -1,11 +1,30 @@
 using System;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Core;
 
-/// <summary>Controls Sunburst sector geometry, parent sizes and its independent numeric color scale.</summary>
+/// <summary>Controls Sunburst geometry, parent sizes, captions and its independent numeric color scale.</summary>
 public sealed class ChartSunburstOptions {
     private ChartHierarchyValuePolicy _parentValuePolicy;
     private double _cornerRadius;
+    private double _secondaryLabelSpacing = 2;
+
+    /// <summary>Gets or sets the optional secondary caption formatter. Default: null.</summary>
+    /// <remarks>Evaluated once per item during preparation, including hidden and zero-size items. Null, empty or whitespace output suppresses the secondary caption. Complete text remains in source semantics when it cannot fit. Exceptions propagate to the caller.</remarks>
+    public Func<ChartSunburstLabelContext, string?>? SecondaryLabelFormatter { get; set; }
+
+    /// <summary>Gets the secondary caption overrides. Inherits the node's data-label typography at 80% of its font size, then applies these overrides.</summary>
+    public TextStyleOverride SecondaryLabelStyle { get; } = new();
+
+    /// <summary>Gets or sets the finite, nonnegative spacing in logical pixels between primary and secondary captions. Default: two.</summary>
+    public double SecondaryLabelSpacing {
+        get => _secondaryLabelSpacing;
+        set {
+            ChartGuards.Finite(value, nameof(value));
+            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+            _secondaryLabelSpacing = value;
+        }
+    }
 
     /// <summary>Gets or sets the maximum inward corner radius in pixels for each Sunburst sector. Default: zero.</summary>
     /// <remarks>Must be finite and nonnegative. Clamped to each sector's thickness and angular space. A central apex stays sharp; full rings have no corners.</remarks>

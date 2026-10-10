@@ -258,6 +258,13 @@
       title.classList.add('cfx-tooltip__title--series');
     }
     tip.appendChild(title);
+    const secondary = (node.dataset || {}).cfxSecondaryLabel;
+    if (secondary) {
+      const caption = document.createElement('div');
+      caption.className = 'cfx-tooltip__secondary';
+      caption.textContent = secondary;
+      tip.appendChild(caption);
+    }
     const rows = tooltipRows(node);
     if (rows.length) {
       const list = document.createElement('dl');

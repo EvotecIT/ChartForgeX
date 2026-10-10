@@ -28,8 +28,11 @@ internal static partial class VisualHierarchyCompiler {
             }
             var formatted = ChartNumericFormatter.FormatValue(chart.Options, node.Value);
             var full = node.Index < series.PointLabels.Count && series.PointLabels[node.Index] != null ? series.PointLabels[node.Index]! : node.Label;
+            var secondary = chart.Options.Sunburst.SecondaryLabelFormatter?.Invoke(new ChartSunburstLabelContext(item, node.Value, formatted));
+            if (string.IsNullOrWhiteSpace(secondary)) secondary = null;
             var metadata = ChartRelationshipMetadata.Node(series, node.Id, node.Label, node.Index);
             metadata["data-cfx-full-label"] = full; metadata["data-cfx-state"] = state.ToString();
+            if (secondary != null) metadata["data-cfx-secondary-label"] = secondary;
             metadata["data-cfx-depth"] = N(node.Depth); metadata["data-cfx-value"] = N(node.Value);
             metadata["data-cfx-formatted-value"] = formatted; metadata["data-cfx-leaf"] = node.Children.Count == 0 ? "true" : "false";
             if (item.ParentId != null) metadata["data-cfx-parent"] = item.ParentId;
@@ -50,11 +53,12 @@ internal static partial class VisualHierarchyCompiler {
                 var pattern = Pattern(series, node.Index);
                 if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, pattern,
                     ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sunburst-pattern", cornerRadius: cornerRadius);
-                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) SunburstLabel(chart, context, builder, model, node, color, paint);
+                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) SunburstLabel(chart, context, builder, model, node, color, paint, secondary);
             }
             var bounds = visible ? new ChartRect(model.CenterX - node.OuterRadius, model.CenterY - node.OuterRadius, node.OuterRadius * 2, node.OuterRadius * 2)
                 : new ChartRect(model.CenterX, model.CenterY, 0, 0);
             var description = full + ": " + formatted;
+            if (secondary != null) description += "; " + secondary;
             if (node.Children.Count > 0 && item.Value.HasValue && item.Value.Value != node.Value)
                 description += "; " + chart.Options.Labels.AuthoredValue + ": " + ChartNumericFormatter.FormatValue(chart.Options, item.Value.Value);
             if (item.ColorValue.HasValue) description += "; " + (surface.Title ?? chart.Options.Labels.Color) + ": " + ChartNumericFormatter.FormatValue(chart.Options, item.ColorValue.Value);
