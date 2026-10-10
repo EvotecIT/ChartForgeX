@@ -42,9 +42,10 @@ public sealed class GanttMarkerPaintTests {
         var tokens = new VisualDesignTokens { MutedForeground = shared };
         tokens.Status.Critical = new VisualTokenColor(shared, ChartColor.White);
         var context = new VisualRenderContext(theme: new VisualTheme(tokens, tokens));
-        var chart = Chart.Create().WithSize(640, 320).WithLegend(false).AddGanttTask("Work", 1, 9).AddGanttMarker("Deadline", 4)
+        var chart = Chart.Create().WithSize(640, 320).AddGanttTask("Work", 1, 9).AddGanttMarker("Deadline", 4)
             .AddVerticalLine(7, "Reference", shared);
         var marker = chart.Series[1];
+        marker.WithLegendEntry();
         if (source != "neutral") marker.StateRole = ChartSeriesState.Danger;
         if (source is "series" or "point") marker.Color = source == "point" ? ChartColor.FromHex("#ff0000") : shared;
         if (source == "point") marker.WithPointColor(0, shared);
@@ -52,6 +53,8 @@ public sealed class GanttMarkerPaintTests {
             .Add("--series", shared, SvgColorRole.Series).Add("--status", shared, SvgColorRole.Status).Add("--text", shared, SvgColorRole.Text);
         chart.Options.SvgColorVariables = variables;
         var prepared = chart.Prepare(context);
+        var entry = Assert.Single(VisualScheduleCompiler.LegendEntries(chart, context.Theme.Resolve(context.ThemeMode)), item => item.Label == "Deadline");
+        Assert.Equal(shared, entry.Color);
         var svg = prepared.ToSvg();
         var document = XDocument.Parse(svg);
         var group = Assert.Single(document.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "gantt-vertical-marker");
@@ -60,6 +63,12 @@ public sealed class GanttMarkerPaintTests {
         Assert.Contains("var(" + variable + ",", (string?)line.Attribute("stroke"));
         Assert.Contains("var(" + variable + ",", (string?)plate.Attribute("fill"));
         Assert.Contains("var(" + variable + ",", (string?)plate.Attribute("stroke"));
+        var legend = Assert.Single(document.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "legend-entry"
+            && (string?)node.Attribute("data-cfx-source-id") == "legend-series-1");
+        Assert.Equal(marker.InteractionIdentityKey, (string?)legend.Attribute("data-cfx-series-key"));
+        Assert.Equal(marker.StateRole.ToString(), (string?)legend.Attribute("data-cfx-state"));
+        var swatch = Assert.Single(legend.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "legend-swatch");
+        Assert.Contains("var(" + variable + ",", (string?)swatch.Attribute("fill"));
         var ordinary = Assert.Single(document.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "annotation");
         Assert.Contains("var(--axis,", (string?)ordinary.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "annotation-line").Attribute("stroke"));
         if (!InteractiveChartBrowser.Enabled) return;
@@ -67,6 +76,8 @@ public sealed class GanttMarkerPaintTests {
         await session.Page.EvaluateAsync("() => { const svg = document.querySelector('svg'); for (const [name, value] of Object.entries({'--axis':'#aa00aa','--series':'#008000','--status':'#c80000','--text':'#0000c8'})) svg.style.setProperty(name, value); }");
         Assert.Equal(expectedInk, await session.Page.Locator("[data-cfx-role='gantt-vertical-marker'] [data-cfx-role='annotation-line']")
             .EvaluateAsync<string>("element => getComputedStyle(element).stroke"));
+        Assert.Equal(expectedInk, await session.Page.Locator("[data-cfx-source-id='legend-series-1'] [data-cfx-role='legend-swatch']")
+            .EvaluateAsync<string>("element => getComputedStyle(element).fill"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(captures)) {

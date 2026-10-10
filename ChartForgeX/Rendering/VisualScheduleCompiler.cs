@@ -13,8 +13,14 @@ internal static partial class VisualScheduleCompiler {
         if (chart.Series.Any(series => series.Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane))
             return chart.Options.StateCategories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray();
         return chart.Series.Select((series, index) => new { Series = series, Index = index }).Where(item => item.Series.ShowInLegend)
-            .Select(item => new VisualLegendEntry(item.Series.Name, VisualStateSceneTools.SeriesColor(item.Series, item.Index, colors), "series-" + item.Index,
-                paint: VisualChartPaint.Series(item.Series, VisualStateSceneTools.SeriesColor(item.Series, item.Index, colors)))).ToArray();
+            .Select(item => RangeLegendEntry(item.Series, item.Index, colors)).ToArray();
+    }
+
+    private static VisualLegendEntry RangeLegendEntry(ChartSeries series, int index, VisualThemeColors colors) {
+        var marker = IsMarker(series);
+        var color = marker ? MarkerColor(series, colors) : VisualStateSceneTools.SeriesColor(series, index, colors);
+        var paint = marker ? SvgPaint.Of(color, MarkerColorRole(series)) : VisualChartPaint.Series(series, color);
+        return new VisualLegendEntry(series.Name, color, "series-" + index, stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey, paint: paint);
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport) {
