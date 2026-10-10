@@ -161,7 +161,7 @@ public sealed partial class ChartGrid {
     /// </summary>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithTitleStyle(Action<TextStyleOverride> configure) {
+    public ChartGrid ConfigureTitleStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(TitleStyle);
         return this;
@@ -172,7 +172,7 @@ public sealed partial class ChartGrid {
     /// </summary>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithSubtitleStyle(Action<TextStyleOverride> configure) {
+    public ChartGrid ConfigureSubtitleStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         configure(SubtitleStyle);
         return this;

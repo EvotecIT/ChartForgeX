@@ -5,6 +5,15 @@
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
     applyRenderedTargetContract(root);
+    prepareRootBranchHighlights(root);
+    if (root._cfxBranchHighlights) root.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      clearHover(root, true, true);
+      hideCrosshair(root, crosshair);
+      hideTip(root, tip, true);
+    });
     applyViewport(root, getState(root));
     renderCompare(root);
     if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());
@@ -18,29 +27,45 @@
         applyInteractionState(root, detail.snapshot || detail.state || detail, true, detail.sync);
       });
     }
+    prepareKeyboardNavigation(root);
+    bindStageLayout(root, stage, crosshair);
     const targets = interactiveTargets(root);
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
-      if (focusNode === node && !node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
-      node.addEventListener('pointerenter', (event) => {
-        setHover(root, node, true, true);
-        showTip(root, tip, node, event);
+      const labels = pointLabelSurfaces(root, node);
+      [node, ...labels].forEach(surface => {
+        surface.addEventListener('pointerenter', (event) => {
+          if (!pointerTargetPaint(node)) return;
+          if (!ownsTooltipPointer(root, event)) hideCrosshair(root, crosshair);
+          setHover(root, node, true, true);
+          showTip(root, tip, node, event);
+        });
+        surface.addEventListener('pointermove', (event) => {
+          if (ownsTooltipPointer(root, event)) moveTip(tip, event, node);
+        });
+        surface.addEventListener('pointerleave', (event) => {
+          if (!ownsTooltipPointer(root, event)) return;
+          clearHover(root, true, true);
+          if (!retainPointerTip(root, event)) hideTip(root, tip, false);
+        });
       });
-      node.addEventListener('pointermove', (event) => moveTip(tip, event, node));
-      node.addEventListener('pointerleave', () => {
-        clearHover(root, true, true);
-        hideTip(root, tip, false);
-      });
-      focusNode.addEventListener('focus', (event) => {
-        setHover(root, node, true, true);
-        showTip(root, tip, node, event);
-      });
-      focusNode.addEventListener('blur', () => {
-        clearHover(root, true, true);
-        hideTip(root, tip, false);
-      });
-      focusNode.addEventListener('click', (event) => {
+      // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
+      if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
+        focusNode.addEventListener('focus', (event) => {
+          refreshKeyboardNavigation(root, node);
+          if (hasFeature(root, 'KeyboardNavigation')) scrollKeyboardTargetIntoView(root, focusNode);
+          if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
+          setHover(root, node, true, true);
+          showTip(root, tip, node, event);
+        });
+        focusNode.addEventListener('blur', () => {
+          clearHover(root, true, true);
+          hideTip(root, tip, false);
+        });
+      }
+      const activateTarget = (event) => {
         event.stopPropagation();
+        if (!tooltipReadoutAvailable(node, event)) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
           else toggleSeries(root, node);
@@ -49,30 +74,29 @@
           toggleSelection(root, node);
           pinTip(root, tip, node, event);
         }
-      });
-      focusNode.addEventListener('keydown', (event) => {
-        event.stopPropagation();
-        if (!hasFeature(root, 'KeyboardNavigation')) return;
+      };
+      focusNode.addEventListener('click', activateTarget);
+      labels.forEach(label => label.addEventListener('click', activateTarget));
+      if (hasFeature(root, 'KeyboardNavigation')) focusNode.addEventListener('keydown', (event) => {
+        if (!hasFeature(root, 'KeyboardNavigation') || event.defaultPrevented || event.target !== focusNode) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();
+          event.stopPropagation();
           toggleSeriesFocus(root, node, true, true);
           return;
         }
         if (focusAdjacentTarget(root, node, event.key)) {
           event.preventDefault();
+          event.stopPropagation();
           return;
         }
         if (event.key !== 'Enter' && event.key !== ' ') return;
         // Enter on a link must retain native navigation. Space selects the cell without following the link.
-        if (focusNode !== node && event.key === 'Enter') return;
+        if (event.key === 'Enter' && focusNode.matches('a[href]')) return;
         event.preventDefault();
-        if (focusNode !== node) {
-          toggleSelection(root, node);
-          pinTip(root, tip, node, event);
-          return;
-        }
-        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.shiftKey) toggleSeriesFocus(root, node, true, true);
-        else node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        event.stopPropagation();
+        // Keep the keyboard event: a synthetic click's finite (0,0) would replace the focused mark's position.
+        activateTarget(event);
       });
     });
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
@@ -154,6 +178,10 @@
       if (hasFeature(root, 'StepPlayback') && initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) startScenarioPlayback(root, initialRoute, 0, false, true);
     }
     if (stage) {
+      stage.addEventListener('pointerenter', (event) => {
+        // A new contact can acquire sparse plot space before any native mark receives its own entry.
+        if (!ownsTooltipPointer(root, event)) updateNearestPoint(root, crosshair, tip, event);
+      });
       stage.addEventListener('wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
         event.preventDefault();
@@ -164,30 +192,33 @@
         if (event.button !== 0) return;
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           const state = getState(root);
-          drag = { mode: 'pan', id: event.pointerId, x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY };
+          const point = stagePointer(stage, event);
+          drag = { mode: 'pan', id: event.pointerId, x: point.x, y: point.y, panX: state.panX, panY: state.panY };
+          event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
-          const rect = stage.getBoundingClientRect();
-          drag = { mode: 'brush', id: event.pointerId, left: event.clientX - rect.left, top: event.clientY - rect.top };
+          const point = stagePointer(stage, event, true);
+          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y };
           brush.hidden = false;
           brush.style.left = drag.left + 'px';
           brush.style.top = drag.top + 'px';
           brush.style.width = '0px';
           brush.style.height = '0px';
+          event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         }
       });
       stage.addEventListener('pointermove', (event) => {
         if (!drag || drag.id !== event.pointerId) {
+          if (!ownsTooltipPointer(root, event)) return;
           updateNearestPoint(root, crosshair, tip, event);
           return;
         }
         if (drag.mode === 'pan') {
-          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + event.clientX - drag.x, panY: drag.panY + event.clientY - drag.y });
+          const point = stagePointer(stage, event);
+          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
         } else if (drag.mode === 'brush' && brush) {
-          const rect = stage.getBoundingClientRect();
-          const x = clamp(event.clientX - rect.left, 0, rect.width);
-          const y = clamp(event.clientY - rect.top, 0, rect.height);
+          const { x, y } = stagePointer(stage, event, true);
           const left = Math.min(drag.left, x);
           const top = Math.min(drag.top, y);
           brush.style.left = left + 'px';
@@ -215,13 +246,15 @@
         stage.releasePointerCapture(event.pointerId);
         drag = null;
       });
-      stage.addEventListener('pointerleave', () => {
+      stage.addEventListener('pointerleave', (event) => {
+        if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      stage.addEventListener('pointercancel', () => {
-        drag = null;
+      stage.addEventListener('pointercancel', (event) => {
+        if (drag && drag.id === event.pointerId) drag = null;
+        if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
@@ -238,11 +271,13 @@
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
       setSeriesIsolation(root, null, false);
+      refreshKeyboardNavigation(root);
       clearFocusTrail(root);
       clearReveals(root);
       if (brush) brush.hidden = true;
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
+      if (root._cfxBranchHighlights) clearHover(root, true, true);
       publishCompare(root, true);
       syncResetControl(root);
     });

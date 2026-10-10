@@ -160,7 +160,7 @@ public sealed class DesignTokenJsonTests {
         Assert.Equal("#3987E5", dark.DivergingRamp!.Positive[1].ToHex());
         Assert.Equal("#2B2E34", dark.DivergingRamp!.Neutral.ToHex());
 
-        var scale = light.DivergingRamp.ToMapColorScale(0);
+        var scale = light.DivergingRamp.ToColorScale(0);
         Assert.Equal("#B8292A", scale.LowColor.ToHex());
         Assert.Equal("#1C5CAB", scale.HighColor.ToHex());
         Assert.Equal(0, scale.MidpointValue);
@@ -168,9 +168,9 @@ public sealed class DesignTokenJsonTests {
         Assert.Equal(7, scale.Colors.Count);
         Assert.Equal("#ECEEF0", scale.MidpointColor!.Value.ToHex());
         Assert.Equal("#E0645B", scale.ColorFor(-2, -3, 3).ToHex());
-        Assert.Equal(light.SequentialRamp!.Select(color => color.ToHex()), light.ToSequentialMapColorScale()!.Colors.Select(color => color.ToHex()));
-        Assert.Equal("#2A78D6", light.ToSequentialMapColorScale()!.ColorFor(50, 0, 100).ToHex());
-        Assert.Equal("#104281", light.ToSequentialMapColorScale()!.HighColor.ToHex());
+        Assert.Equal(light.SequentialRamp!.Select(color => color.ToHex()), light.ToSequentialColorScale()!.Colors.Select(color => color.ToHex()));
+        Assert.Equal("#2A78D6", light.ToSequentialColorScale()!.ColorFor(50, 0, 100).ToHex());
+        Assert.Equal("#104281", light.ToSequentialColorScale()!.HighColor.ToHex());
         Assert.Equal(light.SequentialRamp![0], light.Clone().SequentialRamp![0]);
     }
 
@@ -181,7 +181,7 @@ public sealed class DesignTokenJsonTests {
         var tokens = VisualDesignTokens.FromJson(withoutRamps);
         Assert.Null(tokens.SequentialRamp);
         Assert.Null(tokens.DivergingRamp);
-        Assert.Null(tokens.ToSequentialMapColorScale());
+        Assert.Null(tokens.ToSequentialColorScale());
         Assert.Null(Chart.Create().WithDesignTokens(tokens).Options.Theme.SequentialRamp);
         var replaced = Chart.Create().WithDesignTokens(VisualDesignTokens.FromJson(GraphiteJson)).WithDesignTokens(tokens);
         Assert.Null(replaced.Options.Theme.SequentialRamp);

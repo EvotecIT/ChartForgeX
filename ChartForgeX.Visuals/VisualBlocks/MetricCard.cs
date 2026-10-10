@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.VisualBlocks;
@@ -30,7 +31,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     private VisualStatus _status;
     private MetricCardBadgePlacement _badgePlacement;
     private MetricCardMicroVisualPlacement _microVisualPlacement;
-    private MetricCardSparklineStyle _miniSparklineStyle;
+    private ChartLineAreaForm _miniSparklineStyle;
     private MetricCardMicroVisualSurface _microVisualSurface;
 
     /// <summary>Gets compact bar values rendered inside the metric card.</summary>
@@ -129,7 +130,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     public ChartColor? SecondaryMiniSparklineColor { get; set; }
 
     /// <summary>Gets or sets the mini sparkline presentation style.</summary>
-    public MetricCardSparklineStyle MiniSparklineStyle {
+    public ChartLineAreaForm MiniSparklineStyle {
         get => _miniSparklineStyle;
         set {
             VisualBlockGuards.EnumDefined(value, nameof(value));
@@ -301,7 +302,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     }
 
     /// <summary>Sets the mini sparkline presentation style.</summary>
-    public MetricCard WithMiniSparklineStyle(MetricCardSparklineStyle style) {
+    public MetricCard WithMiniSparklineStyle(ChartLineAreaForm style) {
         MiniSparklineStyle = style;
         return this;
     }

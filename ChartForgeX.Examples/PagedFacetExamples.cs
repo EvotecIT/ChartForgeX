@@ -12,7 +12,7 @@ internal static class PagedFacetExamples {
                 .WithSize(440, 280)
                 .WithTheme(ChartTheme.ReportLight())
                 .WithDashboardTrendPanelStyle(showLegend: false, showYAxis: true)
-                .WithTitleStyle(style => style.WithFontSize(20))
+                .ConfigureTitleStyle(style => style.WithFontSize(20))
                 .WithXAxis("Hour")
                 .WithYAxis("CPU (%)")
                 .AddLine("CPU", rows, sample => sample.Hour, sample => sample.Cpu), columns: 2)
