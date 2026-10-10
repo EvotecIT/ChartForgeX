@@ -4,6 +4,13 @@ using ChartForgeX.VisualArtifacts;
 internal static class MermaidExamples {
     internal static void Write(string output) {
         var examples = new Dictionary<string, string> {
+            ["mermaid-source-font-size-packet"] = "%%{init: {\"themeVariables\":{\"fontSize\":21}}}%%\npacket-beta\n0-15: \"Source Port\"\n16-31: \"Destination Port\"\n32-63: \"Sequence Number\"\n+32: \"Acknowledgment Number\"\n",
+            ["mermaid-source-font-size-block"] = "%%{init: {\"themeVariables\":{\"fontSize\":21}}}%%\nblock-beta\ncolumns 3\nfrontend api database\nspace worker:2\nfrontend --> api\napi --> database\n",
+            ["mermaid-source-font-size-gitgraph"] = "%%{init: {\"themeVariables\":{\"fontSize\":21}}}%%\ngitGraph LR:\n  commit id: \"base\" tag: \"v1\"\n  branch develop order: 1\n  checkout develop\n  commit id: \"work\" type: HIGHLIGHT\n  checkout main\n  merge develop id: \"merge\" tag: \"v2\"\n  branch hotfix order: 2\n  checkout hotfix\n  cherry-pick id: \"work\"\n  checkout main\n  merge hotfix\n",
+            ["mermaid-source-font-size-wardley"] = "%%{init: {\"themeVariables\":{\"fontSize\":21}}}%%\nwardley-beta\ntitle Platform map\nsize [900, 600]\nevolution Genesis -> Custom Built -> Product -> Commodity\nanchor User [0.95, 0.05]\ncomponent Portal [0.80, 0.35] inertia\ncomponent API [0.70, 0.45] (build)\ncomponent Identity [0.55, 0.65] label [-12, 18]\nUser -> Portal\nPortal +'uses'> API\nAPI -.-> Identity;optional\nevolve API 0.75\nnote \"Operational pressure\" [0.35, 0.75]\nannotations [0.12, 0.88]\nannotation 1, [0.60, 0.50] \"Improve automation\"\naccelerator Faster [0.42, 0.62]\ndeaccelerator Risk [0.48, 0.68]\npipeline API {\n  component Build [0.30]\n  component Buy [0.55]\n  component Commodity [0.80]\n}\n",
+            ["mermaid-source-font-size-venn"] = "%%{init: {\"themeVariables\":{\"fontSize\":21}}}%%\nvenn-beta\ntitle Capability overlap\nset API [\"API\"] : 60\nset UI [\"UI\"] : 55\nset Ops [\"Operations\"] : 45\nunion API,UI [\"Shared UX\"] : 18\nunion API,Ops [\"Automation\"] : 12\nunion UI,Ops [\"Runbooks\"] : 8\nunion API,UI,Ops [\"Platform\"] : 5\ntext API,UI note [\"Reviewed\"]\n",
+            ["mermaid-source-font-size-fishbone"] = "%%{init: {\"themeVariables\":{\"fontSize\":21}}}%%\nishikawa-beta\nDelayed release\n  People\n    Handoffs\n      Timezone gaps\n  Process\n    Late review\n  Platform\n    Slow build\n",
+            ["mermaid-source-font-size-sequence"] = "%%{init: {\"themeVariables\":{\"fontSize\":21}}}%%\nsequenceDiagram\nparticipant API\nparticipant Store\nAPI->>Store: Save request\nNote right of Store: Stored record\nAPI->>API: Inspect result\n",
             ["mermaid-source-font-size"] = "---\nconfig:\n  themeVariables:\n    fontSize: 18.5px\n    fontFamily: Georgia, serif\n---\nflowchart LR\nA[API] --> B[Store]\n",
             ["mermaid-flowchart-modern"] = "flowchart LR\nA@{ shape: cloud, label: \"API, cloud\" } & B --> C & D --> E\n",
             ["mermaid-accessibility-dark"] = "---\nconfig:\n  theme: dark\n---\nflowchart LR\naccTitle: Service path\naccDescr {\n API to storage\n}\nA --> B\n",
@@ -26,6 +33,8 @@ internal static class MermaidExamples {
         foreach (var item in examples) {
             var result = MermaidRenderer.Render(item.Value);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
+            if (item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
+                block.Options.ShowCard = false;
             result.Artifact.SaveSvg(Path.Combine(output, item.Key + ".svg"));
             result.Artifact.SavePng(Path.Combine(output, item.Key + ".png"));
             result.Artifact.SaveHtml(Path.Combine(output, item.Key + ".html"));

@@ -17,6 +17,36 @@ public sealed class MermaidFontSizeTests {
     [Theory]
     [InlineData(1)]
     [InlineData(256)]
+    public async Task AcceptedPixelLimitsKeepSequenceParticipantsMessagesAndNotesRenderable(int size) {
+        var result = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontSize':" + size.ToString(CultureInfo.InvariantCulture)
+            + "}}}%%\nsequenceDiagram\nparticipant API\nparticipant Store\nAPI->>Store: WWW\nNote right of Store: WWW\nAPI->>API: WWW");
+        Assert.Empty(result.Diagnostics);
+        var artifact = result.Artifact!;
+        var svg = XDocument.Parse(artifact.ToSvg());
+        Assert.Contains(svg.Descendants(), item => item.Name.LocalName == "text" && item.Value.Contains("A", StringComparison.Ordinal));
+        var headings = svg.Descendants().Where(item => ((string?)item.Attribute("data-cfx-role"))?.StartsWith("frame-heading", StringComparison.Ordinal) == true)
+            .SelectMany(item => item.Descendants().Where(child => child.Name.LocalName == "text")).ToArray();
+        var participants = svg.Descendants().Where(item => (string?)item.Attribute("data-cfx-role") == "sequence-participant")
+            .SelectMany(item => item.Descendants().Where(child => child.Name.LocalName == "rect")).ToArray();
+        Assert.NotEmpty(participants);
+        var participantTop = participants.Min(item => double.Parse(item.Attribute("y")!.Value, CultureInfo.InvariantCulture));
+        Assert.All(headings, item => Assert.True(double.Parse(item.Attribute("y")!.Value, CultureInfo.InvariantCulture)
+            + double.Parse(item.Attribute("font-size")!.Value, CultureInfo.InvariantCulture) * 0.3 <= participantTop));
+        Assert.NotEmpty(artifact.ToPng());
+        if (!InteractiveChartBrowser.Enabled || size != 256) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync(artifact.ToHtmlPage(), 960, 720);
+        Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "sequence-font-256-browser.png"), FullPage = true });
+        File.WriteAllBytes(Path.Combine(captures, "sequence-font-256-native.png"), artifact.ToPng());
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(256)]
     public void AcceptedPixelLimitsKeepTopologyLabelTextAvailable(int size) {
         var result = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontSize':" + size.ToString(CultureInfo.InvariantCulture) + "}}}%%\nflowchart LR\nA[API] --> B[Store]");
         Assert.Empty(result.Diagnostics);
@@ -74,7 +104,9 @@ public sealed class MermaidFontSizeTests {
         var result = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontSize':" + value + "}}}%%\nflowchart LR\nA --> B");
         Assert.True(result.HasErrors);
         Assert.Null(result.Artifact);
-        Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Span.Line == 1);
+        var diagnostic = Assert.Single(result.Diagnostics);
+        Assert.Equal(MermaidDiagnosticCodes.InvalidConfiguration, diagnostic.Code);
+        Assert.Equal(1, diagnostic.Span.Line);
     }
 
     [Theory]

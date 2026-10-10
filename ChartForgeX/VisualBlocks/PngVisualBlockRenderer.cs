@@ -67,6 +67,9 @@ public sealed partial class PngVisualBlockRenderer {
         }
     }
 
+    internal static void DrawAlignedTextAtBaseline(RgbaCanvas canvas, string text, double x, double baseline, double width, TextAlignment alignment, ChartColor color, double fontSize, bool emphasized) =>
+        DrawAlignedText(canvas, text, x, baseline - canvas.TextAscent(fontSize, emphasized), width, alignment, color, fontSize, emphasized);
+
     internal static void DrawAlignedText(RgbaCanvas canvas, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, double fontSize, bool emphasized) {
         var fitted = FitText(canvas, text, fontSize, Math.Max(1, width));
         var textWidth = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, fontSize) : canvas.MeasureTextWidth(fitted, fontSize);

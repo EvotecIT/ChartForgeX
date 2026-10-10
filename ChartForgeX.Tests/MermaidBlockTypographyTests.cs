@@ -15,6 +15,11 @@ public sealed class MermaidBlockTypographyTests {
         var svg = XDocument.Parse(Render(body, 21).ToSvg());
         var circle = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "wardley-annotation");
         var number = Assert.Single(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "1");
+        var callout = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "wardley-annotation-callout");
+        Assert.Same(callout, circle.Parent);
+        Assert.Same(callout, number.Parent);
+        Assert.Contains(callout.Elements(), element => element.Name.LocalName == "text" && element.Value.Contains("Improve", StringComparison.Ordinal));
+        Assert.Equal("placed", (string?)callout.Attribute("data-cfx-label-status"));
         Assert.Equal((string?)circle.Attribute("transform"), (string?)number.Attribute("transform"));
         var x = double.Parse(number.Attribute("x")!.Value, CultureInfo.InvariantCulture);
         var y = double.Parse(number.Attribute("y")!.Value, CultureInfo.InvariantCulture);

@@ -102,11 +102,13 @@ public sealed partial class MermaidParser {
         configuration.Look = ReadString("look");
         configuration.FontFamily = ReadString("fontFamily");
         var fontSize = configuration.Last("themeVariables.fontSize");
-        configuration.FontSize = ReadConfigurationFontSize(fontSize, result);
+        configuration.FontSize = ReadConfigurationFontSize(fontSize, result, out var invalidFontSize);
         foreach (var setting in configuration.Settings) {
             var theme = Selected("theme");
             var font = Selected("fontFamily");
             if (setting.Path == "themeVariables.fontSize" && !ReferenceEquals(setting, fontSize)) continue;
+            if (ReferenceEquals(setting, fontSize) && invalidFontSize) continue;
+            if (invalidFontSize && setting.Path.StartsWith("themeVariables.fontSize.", StringComparison.Ordinal)) continue;
             if (ReferenceEquals(setting, fontSize) && configuration.FontSize.HasValue &&
                 kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
@@ -125,7 +127,8 @@ public sealed partial class MermaidParser {
         }
     }
 
-    private static double? ReadConfigurationFontSize(MermaidConfigurationSetting? setting, MermaidParseResult<MermaidDocument> result) {
+    private static double? ReadConfigurationFontSize(MermaidConfigurationSetting? setting, MermaidParseResult<MermaidDocument> result, out bool invalid) {
+        invalid = false;
         if (setting == null) return null;
         var value = setting.Value?.Trim();
         if (!setting.IsString && value != null && double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var numeric) &&
@@ -136,6 +139,7 @@ public sealed partial class MermaidParser {
                 NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var size) && size >= 1 && size <= 256) return size;
         if (setting.IsString && value != null && value.Length <= 4096 &&
             Regex.IsMatch(value, @"^(?:[0-9]+(?:\.[0-9]+)?(?:em|rem|pt|pc|in|cm|mm|vh|vw|vmin|vmax|ch|ex|%)|(?:calc|var|min|max|clamp|env)\(.+\)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger|inherit|initial|unset|revert|revert-layer)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)) return null;
+        invalid = true;
         ConfigurationError(result, setting.Span, "Mermaid configuration 'themeVariables.fontSize' must be a pixel size from 1 through 256, such as 18 or '18px'.");
         return null;
     }

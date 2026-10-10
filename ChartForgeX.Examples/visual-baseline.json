@@ -4899,13 +4899,195 @@
     },
     {
       "name": "mermaid-source-font-size",
-      "layout": { "heightMode": "fixed", "frameFontRequest": "", "frameFontFingerprint": "" },
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
       "width": 640,
       "height": 320,
       "logicalWidth": 640,
       "logicalHeight": 320,
-      "svg": { "minVisualNodes": 7, "maxClippedTextNodes": 0, "maxNearEdgeTextNodes": 0 },
-      "png": { "outputScale": 1, "minVisiblePixels": 102400, "minTransparentPixels": 0, "minDistinctColors": 407, "maxEdgeInkPixels": 0 }
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 102400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 407,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-block",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 420,
+      "logicalWidth": 900,
+      "logicalHeight": 420,
+      "svg": {
+        "minVisualNodes": 8,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 189000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 916,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-fishbone",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 520,
+      "logicalWidth": 900,
+      "logicalHeight": 520,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 234000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 768,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-gitgraph",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 980,
+      "height": 460,
+      "logicalWidth": 980,
+      "logicalHeight": 460,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 225400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 694,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-packet",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 420,
+      "logicalWidth": 900,
+      "logicalHeight": 420,
+      "svg": {
+        "minVisualNodes": 10,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 189000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1182,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-sequence",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960,
+      "logicalHeight": 560,
+      "svg": {
+        "minVisualNodes": 10,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 478,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-venn",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 780,
+      "height": 460,
+      "logicalWidth": 780,
+      "logicalHeight": 460,
+      "svg": {
+        "minVisualNodes": 10,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 179400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1942,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-wardley",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 600,
+      "logicalWidth": 900,
+      "logicalHeight": 600,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 270000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 733,
+        "maxEdgeInkPixels": 0
+      }
     },
     {
       "name": "mermaid-state-direction",

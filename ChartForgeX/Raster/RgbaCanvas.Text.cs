@@ -37,6 +37,10 @@ internal sealed partial class RgbaCanvas {
 
     public void DrawText(double x, double y, string text, ChartColor color, double fontSize) => DrawText(x, y, text, color, fontSize, _outlineFont);
 
+    internal double TextAscent(double fontSize, bool emphasized) =>
+        (emphasized ? EmphasisFace(_outlineFont) ?? _outlineFont : _outlineFont)?.Ascent(Math.Max(1, fontSize))
+            ?? 7 * FallbackScaleForFontSize(fontSize);
+
     internal void DrawText(double x, double y, string text, ChartColor color, double fontSize, bool italic) => DrawText(x, y, text, color, fontSize, _outlineFont, italic);
 
     internal void DrawText(double x, double y, string text, ChartColor color, double fontSize, TrueTypeFont? font) {
