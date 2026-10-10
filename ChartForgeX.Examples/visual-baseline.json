@@ -2,16 +2,6 @@
   "version": 1,
   "charts": [
     {
-      "name": "mermaid-source-font-size",
-      "layout": { "heightMode": "fixed", "frameFontRequest": "", "frameFontFingerprint": "" },
-      "width": 640,
-      "height": 320,
-      "logicalWidth": 640,
-      "logicalHeight": 320,
-      "svg": { "minVisualNodes": 7, "maxClippedTextNodes": 0, "maxNearEdgeTextNodes": 0 },
-      "png": { "outputScale": 1, "minVisiblePixels": 102400, "minTransparentPixels": 0, "minDistinctColors": 407, "maxEdgeInkPixels": 0 }
-    },
-    {
       "name": "advanced-topology",
       "layout": {
         "heightMode": "natural",
@@ -4906,6 +4896,16 @@
         "minDistinctColors": 446,
         "maxEdgeInkPixels": 0
       }
+    },
+    {
+      "name": "mermaid-source-font-size",
+      "layout": { "heightMode": "fixed", "frameFontRequest": "", "frameFontFingerprint": "" },
+      "width": 640,
+      "height": 320,
+      "logicalWidth": 640,
+      "logicalHeight": 320,
+      "svg": { "minVisualNodes": 7, "maxClippedTextNodes": 0, "maxNearEdgeTextNodes": 0 },
+      "png": { "outputScale": 1, "minVisiblePixels": 102400, "minTransparentPixels": 0, "minDistinctColors": 407, "maxEdgeInkPixels": 0 }
     },
     {
       "name": "mermaid-state-direction",
