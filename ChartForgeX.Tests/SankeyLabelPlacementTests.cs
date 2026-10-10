@@ -1,5 +1,6 @@
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
@@ -13,7 +14,10 @@ public sealed class SankeyLabelPlacementTests {
     [InlineData(ChartSankeyLabelPlacement.Right)]
     [InlineData(ChartSankeyLabelPlacement.Center)]
     public void UniformPlacementMovesOnlyMeasuredCaptionsAndPreservesEveryFlowFact(ChartSankeyLabelPlacement placement) {
-        var chart = Chain(); var original = Prepare(chart);
+        var chart = Chain();
+        var captionColor = ChartColor.FromHex("#CC22AA");
+        chart.Series[0].ConfigurePointDataLabelStyle(1, style => style.Color = captionColor);
+        var original = Prepare(chart);
         chart.ConfigureSankey(options => { options.LabelPlacement = placement; options.EdgeLabelPlacement = null; });
         var prepared = Prepare(chart);
         Assert.Equal(original.Regions.Select(region => (region.Id, region.Role, region.Bounds, region.Label)),
@@ -25,7 +29,13 @@ public sealed class SankeyLabelPlacementTests {
         }
         Assert.Equal(new[] { "first", "middle", "last" }, chart.Series[0].Nodes.Select(node => node.Id));
         Assert.Equal(new[] { 10d, 10d }, chart.Series[0].FlowLinks.Select(link => link.Value));
-        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        var image = PngReader.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        var ink = CaptionInkBounds(image, captionColor);
+        var middle = Node(prepared, "middle");
+        if (placement == ChartSankeyLabelPlacement.Left) Assert.True(ink.Right < middle.Left);
+        else if (placement == ChartSankeyLabelPlacement.Right) Assert.True(ink.Left > middle.Right);
+        else Assert.InRange(ink.X + ink.Width / 2, middle.X + middle.Width / 2 - 3, middle.X + middle.Width / 2 + 3);
+        Assert.InRange(ink.Y + ink.Height / 2, middle.Top, middle.Bottom);
     }
 
     [Theory]
@@ -82,6 +92,18 @@ public sealed class SankeyLabelPlacementTests {
         if (placement == ChartSankeyLabelPlacement.Left) Assert.True(label.X < node.Left);
         else if (placement == ChartSankeyLabelPlacement.Right) Assert.True(label.X > node.Right);
         else Assert.Equal(node.X + node.Width / 2, label.X, 8);
+    }
+    private static ChartRect CaptionInkBounds(RgbaImage image, ChartColor color) {
+        var left = image.Width; var top = image.Height; var right = -1; var bottom = -1; var count = 0;
+        for (var y = 0; y < image.Height; y++) for (var x = 0; x < image.Width; x++) {
+            var offset = (y * image.Width + x) * 4;
+            if (image.Pixels[offset + 3] < 240 || Math.Abs(image.Pixels[offset] - color.R) > 24 ||
+                Math.Abs(image.Pixels[offset + 1] - color.G) > 24 || Math.Abs(image.Pixels[offset + 2] - color.B) > 24) continue;
+            left = Math.Min(left, x); right = Math.Max(right, x);
+            top = Math.Min(top, y); bottom = Math.Max(bottom, y); count++;
+        }
+        Assert.True(count > 15, "The exported PNG must paint the styled middle-node caption.");
+        return new ChartRect(left, top, right - left + 1, bottom - top + 1);
     }
     private static void AssertSeparateBackdrops(PreparedVisual prepared) {
         var boxes = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "sankey-label-backdrop").Select(node => node.Bounds).ToArray();
