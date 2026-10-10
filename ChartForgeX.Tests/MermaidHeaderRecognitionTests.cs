@@ -1,5 +1,7 @@
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
+using ChartForgeX.VisualArtifacts;
+using System.Xml.Linq;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -72,6 +74,18 @@ public sealed class MermaidHeaderRecognitionTests {
         Assert.Equal("A", Assert.Single(document.Edges).SourceId);
         Assert.Equal("B", document.Edges[0].TargetId);
         Assert.Contains(result.Diagnostics, item => item.Code == "CFXM003" && item.Severity == MermaidDiagnosticSeverity.Warning && item.Message.Contains("ELK", StringComparison.Ordinal));
+        var svg = XDocument.Parse(result.Artifact!.ToSvg());
+        Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-edge");
+        Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "A");
+        Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "B");
+    }
+
+    [Fact]
+    public void ElkHeaderRejectsMalformedFlowchartSyntax() {
+        var result = MermaidRenderer.Render("flowchart-elk LR\nA -->");
+        Assert.True(result.HasErrors);
+        Assert.Null(result.Artifact);
+        Assert.Contains(result.Diagnostics, item => item.Severity == MermaidDiagnosticSeverity.Error && item.Span.Line == 2);
     }
 
     [Fact]
