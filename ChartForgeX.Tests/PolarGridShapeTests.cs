@@ -12,11 +12,13 @@ namespace ChartForgeX.Tests;
 
 public sealed class PolarGridShapeTests {
     [Theory]
-    [InlineData("circle", false, 320)]
-    [InlineData("polygon", true, 960)]
-    public async Task MermaidGuidesRemainVisibleInStaticHosts(string shape, bool dark, int width) {
+    [InlineData("circle", false, 320, false)]
+    [InlineData("polygon", true, 960, false)]
+    [InlineData("circle", false, 960, true)]
+    public async Task MermaidGuidesRemainVisibleInStaticHosts(string shape, bool dark, int width, bool missing) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var document = new MermaidParser().ParseRadar("radar-beta\naxis A, B, C\ncurve c{17, 31, 73}\nmax 100\nticks 3\ngraticule " + shape).Document!;
+        var values = missing ? "curve c{A: -30, B: -10}\nmin -40" : "curve c{17, 31, 73}\nmax 100";
+        var document = new MermaidParser().ParseRadar("radar-beta\naxis A, B, C\n" + values + "\nticks 3\ngraticule " + shape).Document!;
         var chart = document.ToChart(new MermaidRadarRenderOptions { Width = 520, Height = 380 })
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style=\"margin:0\">" + chart.ToHtmlFragment() + "</body></html>", width, 460);
@@ -31,7 +33,7 @@ public sealed class PolarGridShapeTests {
         if (!string.IsNullOrWhiteSpace(captures)) {
             Directory.CreateDirectory(captures);
             await session.Page.ScreenshotAsync(new PageScreenshotOptions {
-                Path = Path.Combine(captures, "radar-" + shape + "-" + (dark ? "dark-" : "light-") + width + ".png"), FullPage = true
+                Path = Path.Combine(captures, "radar-" + shape + "-" + (dark ? "dark-" : "light-") + width + (missing ? "-missing" : "") + ".png"), FullPage = true
             });
         }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
@@ -145,6 +147,22 @@ public sealed class PolarGridShapeTests {
         var chart = result.Document!.ToChart();
         Assert.Equal(73, chart.Options.YAxis.Maximum);
         Assert.Equal(count, Prepare(chart).Scene.Nodes.Count(node => node.Role == "radar-ring"));
+    }
+
+    [Theory]
+    [InlineData("c{A: -30, B: -10}", 0)]
+    [InlineData("c{A: -30, B: -10, C: -20}", -10)]
+    [InlineData("c{-30, -10, -20}", -10)]
+    public void AutomaticRadarBoundsIncludeRenderedMissingValues(string curve, double expectedMaximum) {
+        var source = "radar-beta\naxis A, B, C\ncurve " + curve + "\nmin -40\nticks 4";
+        var parsed = new MermaidParser().ParseRadar(source);
+        Assert.False(parsed.HasErrors);
+        var automatic = parsed.Document!.ToChart();
+        Assert.Equal(expectedMaximum, automatic.Options.YAxis.Maximum);
+        var explicitBounds = new MermaidParser().ParseRadar(source + "\nmax " + expectedMaximum).Document!.ToChart();
+        Assert.Equal(Prepare(explicitBounds).Regions.Where(region => region.Role == "radar-point").Select(region => region.Bounds),
+            Prepare(automatic).Regions.Where(region => region.Role == "radar-point").Select(region => region.Bounds));
+        Assert.Equal(explicitBounds.ToPng(), automatic.ToPng());
     }
 
     [Theory]

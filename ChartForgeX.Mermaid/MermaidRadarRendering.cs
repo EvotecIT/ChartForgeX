@@ -82,10 +82,7 @@ public static class MermaidRadarRendering {
     private static ChartPoint[] Points(MermaidRadarDocument document, MermaidRadarCurve curve) {
         var points = new ChartPoint[document.Axes.Count];
         for (var i = 0; i < points.Length; i++) {
-            var value = curve.ValuesByAxisId.Count > 0
-                ? curve.ValuesByAxisId.TryGetValue(document.Axes[i].Id, out var keyed) ? keyed : 0
-                : curve.OrderedValues[i];
-            points[i] = new ChartPoint(i + 1, value);
+            points[i] = new ChartPoint(i + 1, CurveValue(document, curve, i));
         }
 
         return points;
@@ -94,12 +91,16 @@ public static class MermaidRadarRendering {
     private static double ResolveMaximum(MermaidRadarDocument document) {
         var max = double.NegativeInfinity;
         foreach (var curve in document.Curves) {
-            foreach (var value in curve.OrderedValues) max = Math.Max(max, value);
-            foreach (var value in curve.ValuesByAxisId.Values) max = Math.Max(max, value);
+            for (var i = 0; i < document.Axes.Count; i++) max = Math.Max(max, CurveValue(document, curve, i));
         }
 
         return max <= (document.Minimum ?? 0) ? (document.Minimum ?? 0) + 1 : max;
     }
+
+    private static double CurveValue(MermaidRadarDocument document, MermaidRadarCurve curve, int axisIndex) =>
+        curve.ValuesByAxisId.Count > 0
+            ? curve.ValuesByAxisId.TryGetValue(document.Axes[axisIndex].Id, out var value) ? value : 0
+            : curve.OrderedValues[axisIndex];
 
     private static ChartPolarGridShape GraticuleShape(MermaidRadarDocument document) {
         if (string.IsNullOrWhiteSpace(document.Graticule) || document.Graticule == "circle") return ChartPolarGridShape.Circle;
