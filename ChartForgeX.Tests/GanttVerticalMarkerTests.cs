@@ -23,7 +23,7 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Empty(parsed.Diagnostics);
         var document = parsed.Document!;
         using var expected = JsonDocument.Parse(File.ReadAllText(Fixture("expected.json")));
-        Assert.Equal(expected.RootElement.GetProperty("taskTimestamps").EnumerateArray().Select(task => (task[1].GetString(), task[2].GetString())),
+        Assert.Equal(expected.RootElement.GetProperty("taskTimestamps").EnumerateArray().Select(task => (task[1].GetString()!, task[2].GetString()!)),
             document.Tasks.Select(task => (Stamp(task.Start), Stamp(task.End))));
         Assert.Equal(new[] { false, true, false }, document.Tasks.Select(task => task.IsVerticalMarker));
         var chart = document.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2) }).WithLegend(false);
@@ -53,9 +53,10 @@ public sealed class GanttVerticalMarkerTests {
     public void ReferencesToMarkerRangesScheduleTasksWithoutInventingRowConnectors() {
         var parsed = new MermaidParser().ParseGantt("gantt\nDesign :design,2026-01-01,3d\nDeadline :vert,deadline,2026-01-02,4d\nAfter marker :aftermark,after deadline,2d\nDelivery :delivery,after design,2d");
         Assert.Empty(parsed.Diagnostics);
-        var chart = parsed.Document!.ToChart();
-        Assert.Equal(Start.AddDays(5), parsed.Document.Tasks[2].Start);
-        Assert.Equal(Start.AddDays(7), parsed.Document.Tasks[2].End);
+        var document = parsed.Document!;
+        var chart = document.ToChart();
+        Assert.Equal(Start.AddDays(5), document.Tasks[2].Start);
+        Assert.Equal(Start.AddDays(7), document.Tasks[2].End);
         Assert.Equal(2, chart.GanttDependencies.Count);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(3, prepared.Regions.Count(region => region.Role == "gantt-task"));
