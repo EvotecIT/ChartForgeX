@@ -9,6 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed class PacketLayoutBlock : VisualBlock<PacketLayoutBlock> {
     private readonly List<PacketLayoutField> _fields = new();
     private int _bitsPerRow = 32;
+    private PacketBitOrder _bitOrder;
 
     /// <summary>Gets packet fields in bit order.</summary>
     public IReadOnlyList<PacketLayoutField> Fields => _fields;
@@ -24,6 +25,16 @@ public sealed class PacketLayoutBlock : VisualBlock<PacketLayoutBlock> {
 
     /// <summary>Gets or sets whether bit start and end numbers are rendered above fields.</summary>
     public bool ShowBitNumbers { get; set; } = true;
+
+    /// <summary>Gets or sets the visual bit direction within each row without changing field ranges.</summary>
+    public PacketBitOrder BitOrder {
+        get => _bitOrder;
+        set {
+            if (value != PacketBitOrder.Ascending && value != PacketBitOrder.Descending)
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Packet bit order must be ascending or descending.");
+            _bitOrder = value;
+        }
+    }
 
     /// <summary>Gets a concise accessibility label.</summary>
     public override string AccessibleName => Options.Accessibility.Name ?? (Title.Length == 0 ? "Packet layout" : Title);
@@ -43,6 +54,17 @@ public sealed class PacketLayoutBlock : VisualBlock<PacketLayoutBlock> {
     /// <summary>Sets whether bit start and end numbers are rendered above fields.</summary>
     public PacketLayoutBlock WithBitNumbers(bool visible = true) { ShowBitNumbers = visible; return this; }
 
+    /// <summary>Sets the visual bit direction within each row.</summary>
+    public PacketLayoutBlock WithBitOrder(PacketBitOrder order) { BitOrder = order; return this; }
+
+}
+
+/// <summary>Defines which bit appears at the left of each packet row.</summary>
+public enum PacketBitOrder {
+    /// <summary>The lowest bit appears at the left.</summary>
+    Ascending,
+    /// <summary>The highest bit appears at the left.</summary>
+    Descending
 }
 
 /// <summary>

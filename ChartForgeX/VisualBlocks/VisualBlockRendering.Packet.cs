@@ -36,6 +36,15 @@ internal static partial class VisualBlockRendering {
     // End/start numbers on adjoining fields share the measured scene's label separation.
     public static double PacketBitInset(double width) => Math.Min(LabelPlacementService.DefaultGap / 2, width / 4);
 
+    public static int PacketColumn(PacketLayoutBlock packet, PacketLayoutSlice slice) => packet.BitOrder == PacketBitOrder.Descending
+        ? packet.BitsPerRow - slice.StartBit % packet.BitsPerRow - slice.BitLength : slice.StartBit % packet.BitsPerRow;
+
+    public static int PacketLeftBit(PacketLayoutBlock packet, PacketLayoutSlice slice) =>
+        packet.BitOrder == PacketBitOrder.Descending ? slice.EndBit : slice.StartBit;
+
+    public static int PacketRightBit(PacketLayoutBlock packet, PacketLayoutSlice slice) =>
+        packet.BitOrder == PacketBitOrder.Descending ? slice.StartBit : slice.EndBit;
+
     public readonly struct PacketRowMetrics {
         public PacketRowMetrics(double labelTop, double gap, double height, double bitFontSize, double fieldFontSize) {
             LabelTop = labelTop; Gap = gap; Height = height; BitFontSize = bitFontSize; FieldFontSize = fieldFontSize;
