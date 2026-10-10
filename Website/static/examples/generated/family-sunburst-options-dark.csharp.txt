@@ -15,7 +15,7 @@ FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
 var model = V2GalleryModels.Create(ChartSeriesKind.Sunburst, "options", VisualThemeMode.Dark);
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Dark,
-    new VisualFrame("Allocation through the team hierarchy", "Explore configured marks, scales and labels", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("Allocation through the team hierarchy", "Leaf totals size sectors; measured color stays independent", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 System.IO.File.WriteAllText("visual.svg", prepared.ToSvg());
 System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
@@ -26,6 +26,9 @@ public static partial class V2GalleryModels {
     private static Chart AxisPrecision() => Chart.Create().WithXAxis("Measurement").WithYAxis("Fitted drift")
         .AddTrendLine("Least-squares drift", Enumerable.Range(0, 4096)
             .Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)));
+
+    private static Chart GaugePrecision() => Chart.Create().AddLinearGauge("Tolerance", 1.003, 1.001, 1.005)
+        .ConfigureGauge(options => options.Target = 1.0025);
 }
 
 
@@ -234,6 +237,19 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    /// <summary>Compares request counts and resolution rates on independent radial value scales from a rightward start ray.</summary>
+    public static Chart CreateRadialBarScales() {
+        var chart = Chart.Create().WithXLabels("Overall").WithDataLabels(false)
+            .WithRadialGeometry(new ChartRadialGeometryOptions(0, 270, .2, .25, .1))
+            .AddRadialBar("Requests", new[] { new ChartPoint(1, 800) })
+            .AddRadialBar("Resolved (%)", new[] { new ChartPoint(1, 85) })
+            .WithYAxisBounds(0, 1000).WithSecondaryYAxisBounds(0, 100)
+            .WithSecondaryYAxis("Resolved (%)", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%");
+        chart.Series[1].UseSecondaryYAxis();
+        chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
+        return chart;
+    }
+
     private static Chart NumericRadial(ChartSeriesKind kind, string variant) {
         var bars = kind == ChartSeriesKind.RadialBar;
         var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
@@ -289,7 +305,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Waterfall) {
             var chart = Basic(kind, variant)!;
             chart.Options.XAxis.WithReversal();
-            return chart;
+            chart.Options.YAxis.WithReversal();
+            return chart.WithDataLabels();
         }
         if (kind == ChartSeriesKind.StackedArea) {
             var chart = Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Share (%)")
@@ -344,7 +361,7 @@ public static partial class V2GalleryModels {
             case ChartSeriesKind.Pie: chart.AddPie("Revenue", values); break;
             case ChartSeriesKind.Donut: chart.AddDonut("Revenue", values); break;
             case ChartSeriesKind.Gauge:
-                chart.AddGauge("Capacity", 76).WithGauge(options => {
+                chart.AddGauge("Capacity", 76).ConfigureGauge(options => {
                     options.Form = variant == "options" ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
                     options.Target = 85; options.Caption = "Available capacity";
                     options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
@@ -404,7 +421,7 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
-    private static Chart TeamRelationships(ChartSeriesKind kind, string variant) {
+    private static Chart TeamRelationships(string variant) {
         var configured = variant == "options";
         var nodes = new[] {
             new ChartNode("all", "All teams"), new ChartNode("engineering", "Engineering"), new ChartNode("operations", "Operations"),
@@ -417,23 +434,11 @@ public static partial class V2GalleryModels {
             new ChartTreeLink("operations", "operations-support", 40)
         };
         var chart = Chart.Create().WithDataLabels();
-        return kind == ChartSeriesKind.Tree ? chart.AddTree("Teams", nodes, links) : chart.AddSunburst("Teams", nodes, links);
+        return chart.AddTree("Teams", nodes, links);
     }
 
     private static Chart FlowRelationships(string variant) {
-        if (variant == "options") {
-            var configured = Chart.Create().AddSankey("Requests", new[] {
-                new ChartNode("received", "Received"), new ChartNode("north", "North"), new ChartNode("south", "South"),
-                new ChartNode("north-support", "Support"), new ChartNode("south-support", "Support"), new ChartNode("completed", "Completed")
-            }, new[] {
-                new ChartFlowLink("received-north", "received", "north", 72), new ChartFlowLink("received-south", "received", "south", 28),
-                new ChartFlowLink("north-standard", "north", "north-support", 52), new ChartFlowLink("north-priority", "north", "north-support", 20),
-                new ChartFlowLink("south-standard", "south", "south-support", 28),
-                new ChartFlowLink("north-completed", "north-support", "completed", 72), new ChartFlowLink("south-completed", "south-support", "completed", 28)
-            });
-            configured.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
-            return configured;
-        }
+        if (variant is "options" or "compact-options") return ConfiguredSankey();
         return Chart.Create().AddSankey("Requests", new[] {
             new ChartNode("received", "Received"), new ChartNode("automatic", "Automatic"), new ChartNode("manual", "Manual"),
             new ChartNode("completed", "Completed"), new ChartNode("review", "Review")
@@ -442,6 +447,35 @@ public static partial class V2GalleryModels {
             new ChartFlowLink("automatic-completed", "automatic", "completed", 65), new ChartFlowLink("automatic-review", "automatic", "review", 7),
             new ChartFlowLink("manual-completed", "manual", "completed", 20), new ChartFlowLink("manual-review", "manual", "review", 8)
         });
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart ConfiguredSankey() {
+        var chart = Chart.Create().AddSankey("Requests", new[] {
+            new ChartNode("received", "Received"), new ChartNode("north", "North"), new ChartNode("south", "South"),
+            new ChartNode("north-support", "Support"), new ChartNode("south-support", "Support"), new ChartNode("completed", "Completed"),
+            new ChartNode("review", "Review"), new ChartNode("imported", "Imported")
+        }, new[] {
+            new ChartFlowLink("received-north", "received", "north", 72), new ChartFlowLink("received-south", "received", "south", 28),
+            new ChartFlowLink("north-standard", "north", "north-support", 52), new ChartFlowLink("north-priority", "north", "north-support", 20),
+            new ChartFlowLink("south-standard", "south", "south-support", 28),
+            new ChartFlowLink("north-completed", "north-support", "completed", 72), new ChartFlowLink("south-completed", "south-support", "completed", 28),
+            new ChartFlowLink("received-review", "received", "review", 5), new ChartFlowLink("imported-completed", "imported", "completed", 10)
+        }).ConfigureSankey(options => {
+            options.Alignment = ChartSankeyAlignment.Center;
+            options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
+            options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
+            options.NodeWidth = 16;
+            options.NodeGap = 12;
+            options.NodeCornerRadius = 1;
+            options.RibbonFill = ChartColor.FromHex("#607DAA");
+            options.RibbonOpacity = .45;
+        });
+        chart.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
+        chart.Series[0].WithPointColor(0, ChartColor.FromHex("#7356BD"));
+        return chart;
     }
 }
 
@@ -462,8 +496,8 @@ public static partial class V2GalleryModels {
                 .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
             case ChartSeriesKind.Sankey: return FlowRelationships(variant);
             case ChartSeriesKind.Chord: return ChordRelationships(variant);
-            case ChartSeriesKind.Tree:
-            case ChartSeriesKind.Sunburst: return TeamRelationships(kind, variant);
+            case ChartSeriesKind.Tree: return TeamRelationships(variant);
+            case ChartSeriesKind.Sunburst: return Sunburst(variant, mode);
             case ChartSeriesKind.Treemap: return Treemap(variant, mode);
             case ChartSeriesKind.Pictorial:
                 chart = Chart.Create().AddPictorial("Assessments", new[] { new ChartPictorialItem("Team A", 74), new ChartPictorialItem("Team B", 46), new ChartPictorialItem("Team C", 61) }, ChartPictorialShape.Person)
@@ -490,23 +524,55 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart Sunburst(string variant, VisualThemeMode mode) {
+        var inclusive = variant is "authored-total" or "compact-authored-total";
+        var configured = inclusive || variant is "options" or "compact-options";
+        var items = new[] {
+            new ChartHierarchyItem("all", "All teams", value: configured ? 140 : null, colorValue: configured ? -10 : null),
+            new ChartHierarchyItem("engineering", "Engineering", "all", configured ? 80 : null, configured ? 12 : null),
+            new ChartHierarchyItem("operations", "Operations", "all", colorValue: configured ? 0 : null),
+            new ChartHierarchyItem("platform", "Platform", "engineering", 35, configured ? -4 : null),
+            new ChartHierarchyItem("engineering-support", "Support", "engineering", 25, configured ? 5 : null),
+            new ChartHierarchyItem("operations-support", "Support", "operations", 40),
+            new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
+        };
+        var chart = Chart.Create().WithDataLabels().AddSunburst("Allocated work", items);
+        if (configured) {
+            var colors = VisualTheme.Graphite().Resolve(mode);
+            var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+            var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+            chart.ConfigureSunburst(options => {
+                options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
+                options.ColorLegendTitle = "Change (%)";
+                options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
+                    .WithLabels("Decrease", "No change", "Increase").WithNoDataColor(colors.Surface);
+            });
+            chart.Series[0].WithNodeState("engineering-support", ChartSeriesState.Warning);
+            chart.Series[0].WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     private static Chart Treemap(string variant, VisualThemeMode mode) {
         var items = variant == "sparse" ? new[] {
-            new ChartTreemapItem("independent", "Independent team", value: 100, colorValue: 7),
-            new ChartTreemapItem("reserve", "Reserve", value: 0)
+            new ChartHierarchyItem("independent", "Independent team", value: 100, colorValue: 7),
+            new ChartHierarchyItem("reserve", "Reserve", value: 0)
         } : new[] {
-            new ChartTreemapItem("north", "North"),
-            new ChartTreemapItem("north-services", "Services", parentId: "north"),
-            new ChartTreemapItem("north-support", "Support", parentId: "north-services", value: 18, colorValue: -4),
-            new ChartTreemapItem("north-research", "Research", parentId: "north-services", value: 12, colorValue: 11),
-            new ChartTreemapItem("north-platform", "Platform", parentId: "north", value: 18, colorValue: 3),
-            new ChartTreemapItem("south", "South"),
-            new ChartTreemapItem("south-services", "Services", parentId: "south"),
-            new ChartTreemapItem("south-support", "Support", parentId: "south-services", value: 22, colorValue: 8),
-            new ChartTreemapItem("south-field", "Field", parentId: "south-services", value: 15, colorValue: 1),
-            new ChartTreemapItem("south-operations", "Operations", parentId: "south", value: 15),
-            new ChartTreemapItem("research", "Independent research", value: 8, colorValue: 14),
-            new ChartTreemapItem("reserve", "Reserve", value: 0)
+            new ChartHierarchyItem("north", "North"),
+            new ChartHierarchyItem("north-services", "Services", parentId: "north"),
+            new ChartHierarchyItem("north-support", "Support", parentId: "north-services", value: 18, colorValue: -4),
+            new ChartHierarchyItem("north-research", "Research", parentId: "north-services", value: 12, colorValue: 11),
+            new ChartHierarchyItem("north-platform", "Platform", parentId: "north", value: 18, colorValue: 3),
+            new ChartHierarchyItem("south", "South"),
+            new ChartHierarchyItem("south-services", "Services", parentId: "south"),
+            new ChartHierarchyItem("south-support", "Support", parentId: "south-services", value: 22, colorValue: 8),
+            new ChartHierarchyItem("south-field", "Field", parentId: "south-services", value: 15, colorValue: 1),
+            new ChartHierarchyItem("south-operations", "Operations", parentId: "south", value: 15),
+            new ChartHierarchyItem("research", "Independent research", value: 8, colorValue: 14),
+            new ChartHierarchyItem("reserve", "Reserve", value: 0)
         };
         var colors = VisualTheme.Graphite().Resolve(mode);
         var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
@@ -532,10 +598,11 @@ public static partial class V2GalleryModels {
     /// <summary>Creates an actual source model for every chart kind, without selecting a renderer or export backend.</summary>
     public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
         var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
-        var precisionVariant = (variant is "precision" or "compact-precision") && kind == ChartSeriesKind.TrendLine;
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant)
+        var precisionVariant = (variant is "precision" or "compact-precision") && kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
+        var authoredHierarchyVariant = (variant is "authored-total" or "compact-authored-total") && kind == ChartSeriesKind.Sunburst;
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (precisionVariant ? AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant ? GeometryOptions(kind, variant) : null)
+        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant ? GeometryOptions(kind, variant) : null)
             ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
@@ -606,7 +673,8 @@ public static partial class V2GalleryModels {
             ChartSeriesKind.Lollipop => chart.AddLollipop("Orders", values),
             ChartSeriesKind.HorizontalBar => chart.AddHorizontalBar("Orders", values),
             ChartSeriesKind.StackedArea => chart.AddStackedArea("Requests", values).AddStackedArea("Follow-ups", Observations(variant, -10)),
-            ChartSeriesKind.Waterfall => chart.AddWaterfall("Changes", new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
+            ChartSeriesKind.Waterfall => chart.WithXLabels("North", "South", "East", "West", "Central", "Total")
+                .AddWaterfall("Changes", new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
             ChartSeriesKind.Slope => Chart.Create().AddSlope("Team A", 28, 64, "Before", "After").AddSlope("Team B", 52, 43, "Before", "After").AddSlope("Team C", 38, 57, "Before", "After"),
             ChartSeriesKind.TrendLine => chart.AddScatter("Observations", values).AddTrendLine("Least-squares trend", values),
             _ => null

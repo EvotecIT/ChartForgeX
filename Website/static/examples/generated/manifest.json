@@ -1090,6 +1090,18 @@
     "family-radial-bar-compact-dark.svg",
     "family-radial-bar-compact-dark.thumbnail.png",
     "family-radial-bar-compact-dark.thumbnail.svg",
+    "family-radial-bar-compact-dual-axes-dark.csharp.txt",
+    "family-radial-bar-compact-dual-axes-dark.html",
+    "family-radial-bar-compact-dual-axes-dark.png",
+    "family-radial-bar-compact-dual-axes-dark.svg",
+    "family-radial-bar-compact-dual-axes-dark.thumbnail.png",
+    "family-radial-bar-compact-dual-axes-dark.thumbnail.svg",
+    "family-radial-bar-compact-dual-axes-light.csharp.txt",
+    "family-radial-bar-compact-dual-axes-light.html",
+    "family-radial-bar-compact-dual-axes-light.png",
+    "family-radial-bar-compact-dual-axes-light.svg",
+    "family-radial-bar-compact-dual-axes-light.thumbnail.png",
+    "family-radial-bar-compact-dual-axes-light.thumbnail.svg",
     "family-radial-bar-compact-light.csharp.txt",
     "family-radial-bar-compact-light.html",
     "family-radial-bar-compact-light.png",
@@ -1108,6 +1120,18 @@
     "family-radial-bar-compact-options-light.svg",
     "family-radial-bar-compact-options-light.thumbnail.png",
     "family-radial-bar-compact-options-light.thumbnail.svg",
+    "family-radial-bar-dual-axes-dark.csharp.txt",
+    "family-radial-bar-dual-axes-dark.html",
+    "family-radial-bar-dual-axes-dark.png",
+    "family-radial-bar-dual-axes-dark.svg",
+    "family-radial-bar-dual-axes-dark.thumbnail.png",
+    "family-radial-bar-dual-axes-dark.thumbnail.svg",
+    "family-radial-bar-dual-axes-light.csharp.txt",
+    "family-radial-bar-dual-axes-light.html",
+    "family-radial-bar-dual-axes-light.png",
+    "family-radial-bar-dual-axes-light.svg",
+    "family-radial-bar-dual-axes-light.thumbnail.png",
+    "family-radial-bar-dual-axes-light.thumbnail.svg",
     "family-radial-bar-options-dark.csharp.txt",
     "family-radial-bar-options-dark.html",
     "family-radial-bar-options-dark.png",
@@ -1312,6 +1336,18 @@
     "family-sankey-compact-light.svg",
     "family-sankey-compact-light.thumbnail.png",
     "family-sankey-compact-light.thumbnail.svg",
+    "family-sankey-compact-options-dark.csharp.txt",
+    "family-sankey-compact-options-dark.html",
+    "family-sankey-compact-options-dark.png",
+    "family-sankey-compact-options-dark.svg",
+    "family-sankey-compact-options-dark.thumbnail.png",
+    "family-sankey-compact-options-dark.thumbnail.svg",
+    "family-sankey-compact-options-light.csharp.txt",
+    "family-sankey-compact-options-light.html",
+    "family-sankey-compact-options-light.png",
+    "family-sankey-compact-options-light.svg",
+    "family-sankey-compact-options-light.thumbnail.png",
+    "family-sankey-compact-options-light.thumbnail.svg",
     "family-sankey-options-dark.csharp.txt",
     "family-sankey-options-dark.html",
     "family-sankey-options-dark.png",
@@ -1528,6 +1564,30 @@
     "family-step-line-wide-light.svg",
     "family-step-line-wide-light.thumbnail.png",
     "family-step-line-wide-light.thumbnail.svg",
+    "family-sunburst-authored-total-dark.csharp.txt",
+    "family-sunburst-authored-total-dark.html",
+    "family-sunburst-authored-total-dark.png",
+    "family-sunburst-authored-total-dark.svg",
+    "family-sunburst-authored-total-dark.thumbnail.png",
+    "family-sunburst-authored-total-dark.thumbnail.svg",
+    "family-sunburst-authored-total-light.csharp.txt",
+    "family-sunburst-authored-total-light.html",
+    "family-sunburst-authored-total-light.png",
+    "family-sunburst-authored-total-light.svg",
+    "family-sunburst-authored-total-light.thumbnail.png",
+    "family-sunburst-authored-total-light.thumbnail.svg",
+    "family-sunburst-compact-authored-total-dark.csharp.txt",
+    "family-sunburst-compact-authored-total-dark.html",
+    "family-sunburst-compact-authored-total-dark.png",
+    "family-sunburst-compact-authored-total-dark.svg",
+    "family-sunburst-compact-authored-total-dark.thumbnail.png",
+    "family-sunburst-compact-authored-total-dark.thumbnail.svg",
+    "family-sunburst-compact-authored-total-light.csharp.txt",
+    "family-sunburst-compact-authored-total-light.html",
+    "family-sunburst-compact-authored-total-light.png",
+    "family-sunburst-compact-authored-total-light.svg",
+    "family-sunburst-compact-authored-total-light.thumbnail.png",
+    "family-sunburst-compact-authored-total-light.thumbnail.svg",
     "family-sunburst-compact-dark.csharp.txt",
     "family-sunburst-compact-dark.html",
     "family-sunburst-compact-dark.png",
@@ -1540,6 +1600,18 @@
     "family-sunburst-compact-light.svg",
     "family-sunburst-compact-light.thumbnail.png",
     "family-sunburst-compact-light.thumbnail.svg",
+    "family-sunburst-compact-options-dark.csharp.txt",
+    "family-sunburst-compact-options-dark.html",
+    "family-sunburst-compact-options-dark.png",
+    "family-sunburst-compact-options-dark.svg",
+    "family-sunburst-compact-options-dark.thumbnail.png",
+    "family-sunburst-compact-options-dark.thumbnail.svg",
+    "family-sunburst-compact-options-light.csharp.txt",
+    "family-sunburst-compact-options-light.html",
+    "family-sunburst-compact-options-light.png",
+    "family-sunburst-compact-options-light.svg",
+    "family-sunburst-compact-options-light.thumbnail.png",
+    "family-sunburst-compact-options-light.thumbnail.svg",
     "family-sunburst-options-dark.csharp.txt",
     "family-sunburst-options-dark.html",
     "family-sunburst-options-dark.png",
@@ -1744,6 +1816,30 @@
     "family-waterfall-compact-light.svg",
     "family-waterfall-compact-light.thumbnail.png",
     "family-waterfall-compact-light.thumbnail.svg",
+    "family-waterfall-compact-options-dark.csharp.txt",
+    "family-waterfall-compact-options-dark.html",
+    "family-waterfall-compact-options-dark.png",
+    "family-waterfall-compact-options-dark.svg",
+    "family-waterfall-compact-options-dark.thumbnail.png",
+    "family-waterfall-compact-options-dark.thumbnail.svg",
+    "family-waterfall-compact-options-light.csharp.txt",
+    "family-waterfall-compact-options-light.html",
+    "family-waterfall-compact-options-light.png",
+    "family-waterfall-compact-options-light.svg",
+    "family-waterfall-compact-options-light.thumbnail.png",
+    "family-waterfall-compact-options-light.thumbnail.svg",
+    "family-waterfall-options-dark.csharp.txt",
+    "family-waterfall-options-dark.html",
+    "family-waterfall-options-dark.png",
+    "family-waterfall-options-dark.svg",
+    "family-waterfall-options-dark.thumbnail.png",
+    "family-waterfall-options-dark.thumbnail.svg",
+    "family-waterfall-options-light.csharp.txt",
+    "family-waterfall-options-light.html",
+    "family-waterfall-options-light.png",
+    "family-waterfall-options-light.svg",
+    "family-waterfall-options-light.thumbnail.png",
+    "family-waterfall-options-light.thumbnail.svg",
     "family-waterfall-wide-dark.csharp.txt",
     "family-waterfall-wide-dark.html",
     "family-waterfall-wide-dark.png",
@@ -7558,6 +7654,72 @@
       "semanticRegions": 16
     },
     {
+      "id": "family-waterfall-options-light",
+      "family": "waterfall",
+      "familyLabel": "Waterfall",
+      "group": "compare",
+      "title": "Changes in available capacity",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-waterfall-options-light.csharp.txt",
+      "svg": "family-waterfall-options-light.svg",
+      "png": "family-waterfall-options-light.png",
+      "html": "family-waterfall-options-light.html",
+      "thumbnail": "family-waterfall-options-light.thumbnail.svg",
+      "thumbnailPng": "family-waterfall-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-waterfall-compact-options-light",
+      "family": "waterfall",
+      "familyLabel": "Waterfall",
+      "group": "compare",
+      "title": "Changes in available capacity",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-waterfall-compact-options-light.csharp.txt",
+      "svg": "family-waterfall-compact-options-light.svg",
+      "png": "family-waterfall-compact-options-light.png",
+      "html": "family-waterfall-compact-options-light.html",
+      "thumbnail": "family-waterfall-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-waterfall-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
+    },
+    {
       "id": "family-waterfall-wide-dark",
       "family": "waterfall",
       "familyLabel": "Waterfall",
@@ -7612,6 +7774,72 @@
       "html": "family-waterfall-compact-dark.html",
       "thumbnail": "family-waterfall-compact-dark.thumbnail.svg",
       "thumbnailPng": "family-waterfall-compact-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-waterfall-options-dark",
+      "family": "waterfall",
+      "familyLabel": "Waterfall",
+      "group": "compare",
+      "title": "Changes in available capacity",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-waterfall-options-dark.csharp.txt",
+      "svg": "family-waterfall-options-dark.svg",
+      "png": "family-waterfall-options-dark.png",
+      "html": "family-waterfall-options-dark.html",
+      "thumbnail": "family-waterfall-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-waterfall-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
+    },
+    {
+      "id": "family-waterfall-compact-options-dark",
+      "family": "waterfall",
+      "familyLabel": "Waterfall",
+      "group": "compare",
+      "title": "Changes in available capacity",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-waterfall-compact-options-dark.csharp.txt",
+      "svg": "family-waterfall-compact-options-dark.svg",
+      "png": "family-waterfall-compact-options-dark.png",
+      "html": "family-waterfall-compact-options-dark.html",
+      "thumbnail": "family-waterfall-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-waterfall-compact-options-dark.thumbnail.png",
       "thumbnailWidth": 400,
       "thumbnailHeight": 280,
       "supportedOutputs": [
@@ -8672,7 +8900,54 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-sankey-compact-options-light",
+      "family": "sankey",
+      "familyLabel": "Sankey",
+      "group": "relationships",
+      "title": "Requests across processing stages",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Sankey"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-sankey-compact-options-light.csharp.txt",
+      "svg": "family-sankey-compact-options-light.svg",
+      "png": "family-sankey-compact-options-light.png",
+      "html": "family-sankey-compact-options-light.html",
+      "thumbnail": "family-sankey-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-sankey-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
+      ],
+      "semanticRegions": 17
     },
     {
       "id": "family-sankey-wide-dark",
@@ -8771,7 +9046,54 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-sankey-compact-options-dark",
+      "family": "sankey",
+      "familyLabel": "Sankey",
+      "group": "relationships",
+      "title": "Requests across processing stages",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Sankey"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-sankey-compact-options-dark.csharp.txt",
+      "svg": "family-sankey-compact-options-dark.svg",
+      "png": "family-sankey-compact-options-dark.png",
+      "html": "family-sankey-compact-options-dark.html",
+      "thumbnail": "family-sankey-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-sankey-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow",
+        "sankey.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
+        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
+      ],
+      "semanticRegions": 17
     },
     {
       "id": "family-tree-wide-light",
@@ -9010,7 +9332,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 6
+      "semanticRegions": 7
     },
     {
       "id": "family-sunburst-compact-light",
@@ -9043,7 +9365,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 6
+      "semanticRegions": 7
     },
     {
       "id": "family-sunburst-options-light",
@@ -9074,9 +9396,148 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 6
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+      ],
+      "semanticRegions": 12
+    },
+    {
+      "id": "family-sunburst-compact-options-light",
+      "family": "sunburst",
+      "familyLabel": "Sunburst",
+      "group": "proportion",
+      "title": "Allocation through the team hierarchy",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-sunburst-compact-options-light.csharp.txt",
+      "svg": "family-sunburst-compact-options-light.svg",
+      "png": "family-sunburst-compact-options-light.png",
+      "html": "family-sunburst-compact-options-light.html",
+      "thumbnail": "family-sunburst-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-sunburst-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+      ],
+      "semanticRegions": 12
+    },
+    {
+      "id": "family-sunburst-authored-total-light",
+      "family": "sunburst",
+      "familyLabel": "Sunburst",
+      "group": "proportion",
+      "title": "Allocation through the team hierarchy",
+      "variant": "authored-total",
+      "primary": false,
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sunburst-authored-total-light.csharp.txt",
+      "svg": "family-sunburst-authored-total-light.svg",
+      "png": "family-sunburst-authored-total-light.png",
+      "html": "family-sunburst-authored-total-light.html",
+      "thumbnail": "family-sunburst-authored-total-light.thumbnail.svg",
+      "thumbnailPng": "family-sunburst-authored-total-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+      ],
+      "semanticRegions": 12
+    },
+    {
+      "id": "family-sunburst-compact-authored-total-light",
+      "family": "sunburst",
+      "familyLabel": "Sunburst",
+      "group": "proportion",
+      "title": "Allocation through the team hierarchy",
+      "variant": "compact-authored-total",
+      "primary": false,
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-sunburst-compact-authored-total-light.csharp.txt",
+      "svg": "family-sunburst-compact-authored-total-light.svg",
+      "png": "family-sunburst-compact-authored-total-light.png",
+      "html": "family-sunburst-compact-authored-total-light.html",
+      "thumbnail": "family-sunburst-compact-authored-total-light.thumbnail.svg",
+      "thumbnailPng": "family-sunburst-compact-authored-total-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+      ],
+      "semanticRegions": 12
     },
     {
       "id": "family-sunburst-wide-dark",
@@ -9109,7 +9570,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 6
+      "semanticRegions": 7
     },
     {
       "id": "family-sunburst-compact-dark",
@@ -9142,7 +9603,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 6
+      "semanticRegions": 7
     },
     {
       "id": "family-sunburst-options-dark",
@@ -9173,9 +9634,148 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
-      "semanticRegions": 6
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+      ],
+      "semanticRegions": 12
+    },
+    {
+      "id": "family-sunburst-compact-options-dark",
+      "family": "sunburst",
+      "familyLabel": "Sunburst",
+      "group": "proportion",
+      "title": "Allocation through the team hierarchy",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-sunburst-compact-options-dark.csharp.txt",
+      "svg": "family-sunburst-compact-options-dark.svg",
+      "png": "family-sunburst-compact-options-dark.png",
+      "html": "family-sunburst-compact-options-dark.html",
+      "thumbnail": "family-sunburst-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-sunburst-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+      ],
+      "semanticRegions": 12
+    },
+    {
+      "id": "family-sunburst-authored-total-dark",
+      "family": "sunburst",
+      "familyLabel": "Sunburst",
+      "group": "proportion",
+      "title": "Allocation through the team hierarchy",
+      "variant": "authored-total",
+      "primary": false,
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-sunburst-authored-total-dark.csharp.txt",
+      "svg": "family-sunburst-authored-total-dark.svg",
+      "png": "family-sunburst-authored-total-dark.png",
+      "html": "family-sunburst-authored-total-dark.html",
+      "thumbnail": "family-sunburst-authored-total-dark.thumbnail.svg",
+      "thumbnailPng": "family-sunburst-authored-total-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+      ],
+      "semanticRegions": 12
+    },
+    {
+      "id": "family-sunburst-compact-authored-total-dark",
+      "family": "sunburst",
+      "familyLabel": "Sunburst",
+      "group": "proportion",
+      "title": "Allocation through the team hierarchy",
+      "variant": "compact-authored-total",
+      "primary": false,
+      "seriesKinds": [
+        "Sunburst"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-sunburst-compact-authored-total-dark.csharp.txt",
+      "svg": "family-sunburst-compact-authored-total-dark.svg",
+      "png": "family-sunburst-compact-authored-total-dark.png",
+      "html": "family-sunburst-compact-authored-total-dark.html",
+      "thumbnail": "family-sunburst-compact-authored-total-dark.thumbnail.svg",
+      "thumbnailPng": "family-sunburst-compact-authored-total-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+      ],
+      "semanticRegions": 12
     },
     {
       "id": "family-pie-wide-light",
@@ -11924,6 +12524,72 @@
       "semanticRegions": 28
     },
     {
+      "id": "family-radial-bar-dual-axes-light",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests and resolution rate",
+      "variant": "dual-axes",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-bar-dual-axes-light.csharp.txt",
+      "svg": "family-radial-bar-dual-axes-light.svg",
+      "png": "family-radial-bar-dual-axes-light.png",
+      "html": "family-radial-bar-dual-axes-light.html",
+      "thumbnail": "family-radial-bar-dual-axes-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-dual-axes-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 15
+    },
+    {
+      "id": "family-radial-bar-compact-dual-axes-light",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests and resolution rate",
+      "variant": "compact-dual-axes",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-bar-compact-dual-axes-light.csharp.txt",
+      "svg": "family-radial-bar-compact-dual-axes-light.svg",
+      "png": "family-radial-bar-compact-dual-axes-light.png",
+      "html": "family-radial-bar-compact-dual-axes-light.html",
+      "thumbnail": "family-radial-bar-compact-dual-axes-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-compact-dual-axes-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 15
+    },
+    {
       "id": "family-radial-bar-wide-dark",
       "family": "radial-bar",
       "familyLabel": "Radial Bar",
@@ -12134,6 +12800,72 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
       "semanticRegions": 28
+    },
+    {
+      "id": "family-radial-bar-dual-axes-dark",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests and resolution rate",
+      "variant": "dual-axes",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-bar-dual-axes-dark.csharp.txt",
+      "svg": "family-radial-bar-dual-axes-dark.svg",
+      "png": "family-radial-bar-dual-axes-dark.png",
+      "html": "family-radial-bar-dual-axes-dark.html",
+      "thumbnail": "family-radial-bar-dual-axes-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-dual-axes-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 15
+    },
+    {
+      "id": "family-radial-bar-compact-dual-axes-dark",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests and resolution rate",
+      "variant": "compact-dual-axes",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-bar-compact-dual-axes-dark.csharp.txt",
+      "svg": "family-radial-bar-compact-dual-axes-dark.svg",
+      "png": "family-radial-bar-compact-dual-axes-dark.png",
+      "html": "family-radial-bar-compact-dual-axes-dark.html",
+      "thumbnail": "family-radial-bar-compact-dual-axes-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-compact-dual-axes-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 15
     },
     {
       "id": "family-radial-column-wide-light",
