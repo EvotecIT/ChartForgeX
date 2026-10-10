@@ -26,13 +26,17 @@
       [node, ...labels].forEach(surface => {
         surface.addEventListener('pointerenter', (event) => {
           if (!pointerTargetPaint(node)) return;
+          if (!ownsTooltipPointer(root, event)) hideCrosshair(root, crosshair);
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
-        surface.addEventListener('pointermove', (event) => moveTip(tip, event, node));
-        surface.addEventListener('pointerleave', () => {
+        surface.addEventListener('pointermove', (event) => {
+          if (ownsTooltipPointer(root, event)) moveTip(tip, event, node);
+        });
+        surface.addEventListener('pointerleave', (event) => {
+          if (!ownsTooltipPointer(root, event)) return;
           clearHover(root, true, true);
-          hideTip(root, tip, false);
+          if (!retainPointerTip(root, event)) hideTip(root, tip, false);
         });
       });
       // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
@@ -169,6 +173,10 @@
       if (hasFeature(root, 'StepPlayback') && initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) startScenarioPlayback(root, initialRoute, 0, false, true);
     }
     if (stage) {
+      stage.addEventListener('pointerenter', (event) => {
+        // A new contact can acquire sparse plot space before any native mark receives its own entry.
+        if (!ownsTooltipPointer(root, event)) updateNearestPoint(root, crosshair, tip, event);
+      });
       stage.addEventListener('wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
         event.preventDefault();
@@ -194,6 +202,7 @@
       });
       stage.addEventListener('pointermove', (event) => {
         if (!drag || drag.id !== event.pointerId) {
+          if (!ownsTooltipPointer(root, event)) return;
           updateNearestPoint(root, crosshair, tip, event);
           return;
         }
@@ -230,13 +239,15 @@
         stage.releasePointerCapture(event.pointerId);
         drag = null;
       });
-      stage.addEventListener('pointerleave', () => {
+      stage.addEventListener('pointerleave', (event) => {
+        if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      stage.addEventListener('pointercancel', () => {
-        drag = null;
+      stage.addEventListener('pointercancel', (event) => {
+        if (drag && drag.id === event.pointerId) drag = null;
+        if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);

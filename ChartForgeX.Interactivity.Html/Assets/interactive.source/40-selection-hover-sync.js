@@ -400,6 +400,8 @@
     const range = root.dataset.cfxTooltipRange || 'distance';
     return range === 'nearest' || range === 'distance' && point.distance <= Number(root.dataset.cfxTooltipDistance ?? 120);
   };
+  const acquiredTooltipPoint = (root, candidates) => candidates && (tooltipAcquiresPoint(root, candidates.observation)
+    ? candidates.observation : tooltipAcquiresPoint(root, candidates.native) ? candidates.native : null);
   const showCrosshair = (root, crosshair, point, event) => {
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
@@ -438,9 +440,8 @@
     const searchNearest = guideEnabled || root.dataset.cfxTooltipRange !== 'exact';
     const candidates = pointerCandidates(root, event, searchNearest);
     const observation = candidates && candidates.observation;
-    const native = candidates && candidates.native;
     // Nearest/bounded acquisition can refine a line summary to a real observation; Exact retains the summary.
-    const tooltipPoint = tooltipAcquiresPoint(root, observation) ? observation : tooltipAcquiresPoint(root, native) ? native : null;
+    const tooltipPoint = acquiredTooltipPoint(root, candidates);
     const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
     if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
