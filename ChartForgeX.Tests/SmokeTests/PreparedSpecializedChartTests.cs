@@ -43,26 +43,26 @@ internal static partial class SmokeTests {
         Verify.NotEmpty(prepared.ToPng());
     }
 
-    private static void RadialBarSeriesRenderProgressRings() {
+    private static void ProgressRingSeriesRenderProgressRings() {
         var chart = Chart.Create().WithSize(720, 460).WithXLabels("Mail auth", "DNSSEC", "TLS")
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddRadialBar("Control coverage", Points(92, 74, 88));
+            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddProgressRing("Control coverage", Points(92, 74, 88));
         var prepared = PreparedFamily(chart);
-        Verify.Equal(3, FamilyGroups(prepared, "radial-bar-point").Length);
-        var tracks = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "radial-bar-track").ToArray();
-        var rings = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "radial-bar-ring").ToArray();
+        Verify.Equal(3, FamilyGroups(prepared, "progress-ring-point").Length);
+        var tracks = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "progress-ring-track").ToArray();
+        var rings = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "progress-ring-ring").ToArray();
         Verify.Equal(3, tracks.Length); Verify.Equal(3, rings.Length);
         for (var index = 0; index < rings.Length; index++) {
             Verify.Equal(chart.Series[0].Points[index].Y / 100, rings[index].Sweep / tracks[index].Sweep, 6);
             Verify.Equal(tracks[index].Outer, rings[index].Outer);
         }
-        Verify.Contains(prepared.Regions, region => region.Role == "radial-bar-ring" && region.Label == "Mail auth: 92%");
+        Verify.Contains(prepared.Regions, region => region.Role == "progress-ring-ring" && region.Label == "Mail auth: 92%");
         Verify.NotEmpty(prepared.ToPng());
     }
 
     private static void SankeyLinksRenderWeightedFlows() {
-        var chart = Chart.Create().WithSize(900, 520).WithDataLabels().AddSankey("Finding flow", new[] {
-            new ChartSankeyLink("Discovered", "Validated", 70), new("Discovered", "Accepted risk", 20),
-            new("Validated", "Remediated", 44), new("Validated", "Monitoring", 26)
+        var chart = Chart.Create().WithSize(900, 520).WithDataLabels().AddSankey("Finding flow", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Remediated", "Remediated"), new ChartNode("Monitoring", "Monitoring") }, new[] {
+            new ChartFlowLink("flow-1", "Discovered", "Validated", 70), new("flow-2", "Discovered", "Accepted risk", 20),
+            new("flow-3", "Validated", "Remediated", 44), new("flow-4", "Validated", "Monitoring", 26)
         });
         var prepared = PreparedFamily(chart);
         var links = FamilyGroups(prepared, "sankey-link");
@@ -75,7 +75,7 @@ internal static partial class SmokeTests {
     }
 
     private static void TreeLinksRenderHierarchy() {
-        var chart = Chart.Create().WithSize(900, 520).AddTree("Control hierarchy", new[] {
+        var chart = Chart.Create().WithSize(900, 520).WithDataLabels().AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("Expiry monitoring", "Expiry monitoring") }, new[] {
             new ChartTreeLink("Security posture", "Mail authentication"), new("Security posture", "Certificate lifecycle"),
             new("Mail authentication", "SPF"), new("Mail authentication", "DKIM"), new("Certificate lifecycle", "Expiry monitoring")
         });
@@ -157,9 +157,9 @@ internal static partial class SmokeTests {
         Verify.NotEmpty(prepared.ToPng());
     }
 
-    private static void TreemapItemsRenderProportionalTiles() {
+    private static void HierarchyItemsRenderProportionalTiles() {
         var chart = Chart.Create().WithSize(720, 420).WithDataLabels().AddTreemap("Findings", new[] {
-            new ChartTreemapItem("Critical", 50), new("High", 28), new("Medium", 14), new("Low", 8)
+            new ChartHierarchyItem("Critical", "Critical", value: 50), new("High", "High", value: 28), new("Medium", "Medium", value: 14), new("Low", "Low", value: 8)
         });
         var prepared = PreparedFamily(chart);
         var tiles = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "treemap-tile-mark").ToArray();

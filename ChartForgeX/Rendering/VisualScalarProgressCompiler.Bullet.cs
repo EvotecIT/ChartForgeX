@@ -80,10 +80,13 @@ internal static partial class VisualScalarProgressCompiler {
         if (axisHeight > 0) {
             var y = plot.Bottom - axisHeight;
             builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
+            var ticks = new double[5];
+            for (var index = 0; index < ticks.Length; index++) ticks[index] = min + (max - min) * index / 4;
+            var formatTick = ChartAxisValueFormatter.Create(chart.Options.XAxis, ticks, chart.Options.ValueFormatter);
             for (var index = 0; index < 5; index++) {
-                var tick = min + (max - min) * index / 4; var x = X(tick);
+                var tick = ticks[index]; var x = X(tick);
                 builder.Line(x, y, x, y + axisHeight / 6, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis-tick", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
-                var text = ChartAxisValueFormatter.Format(chart.Options.XAxis, tick, chart.Options.ValueFormatter);
+                var text = formatTick(tick);
                 var boxWidth = width / 4;
                 var boxLeft = Math.Max(left, Math.Min(left + width - boxWidth, x - boxWidth / 2));
                 Text(chart, context, builder, chart.Series[0], -1, text, new ChartRect(boxLeft, y + axisHeight / 6, boxWidth, axisHeight * 5 / 6),

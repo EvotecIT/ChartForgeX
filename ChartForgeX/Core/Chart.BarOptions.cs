@@ -29,7 +29,7 @@ public sealed partial class Chart {
     /// </summary>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithBarVisualStyle(Action<ChartBarVisualStyle> configure) {
+    public Chart ConfigureBarVisualStyle(Action<ChartBarVisualStyle> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         var style = Options.BarVisualStyle.Clone();
         configure(style);
