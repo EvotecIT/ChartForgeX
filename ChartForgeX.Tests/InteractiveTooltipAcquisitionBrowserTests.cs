@@ -25,6 +25,41 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     }
 
     [Theory]
+    [InlineData("rect", false)]
+    [InlineData("rect", true)]
+    [InlineData("foreignObject", false)]
+    [InlineData("foreignObject", true)]
+    public async Task HostSvgSurfaceCannotAcquireAnOccludedObservation(string element, bool nearest) {
+        if (!Enabled) return;
+        await using var session = await OpenAsync(Observation(false, graphite: true).ToInteractiveHtmlPage(options => {
+            options.Tooltip.Range = nearest ? HtmlChartTooltipRange.Nearest : HtmlChartTooltipRange.WithinDistance(60);
+        }), 950, 720);
+        var page = session.Page;
+        await page.EvaluateAsync("""
+            element => {
+                const svg=document.querySelector('.cfx-stage svg'), veil=document.createElementNS('http://www.w3.org/2000/svg',element);
+                veil.id='host-svg-veil';
+                for(const [key,value] of Object.entries({x:0,y:0,width:800,height:540,fill:'#eee','pointer-events':'all'})) veil.setAttribute(key,String(value));
+                svg.append(veil);
+                document.addEventListener('pointermove',event=>window.nativePointer=[event.clientX,event.clientY]);
+            }
+            """, element);
+        await MoveToAsync(page, Point(0, 0));
+        var hit = await page.EvaluateAsync<JsonElement>("()=>{const node=document.elementFromPoint(...window.nativePointer);return {tag:node.localName,id:node.id};}");
+        await CaptureAsync(page, "acquisition-svg-veil-" + element + "-" + nearest, hit);
+        Assert.Equal(element, hit.GetProperty("tag").GetString());
+        Assert.Equal("host-svg-veil", hit.GetProperty("id").GetString());
+        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+        Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
+        Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-key"));
+        // Removing the host's occluding surface restores the normal native pointer contract.
+        await page.Locator("#host-svg-veil").EvaluateAsync("node=>node.remove()");
+        await MoveAwayAsync(page); await MoveToAsync(page, Point(0, 0), offsetY: 25);
+        Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
     [InlineData(HtmlChartResponsiveLayout.Fit, 340, true, true, true)]
     [InlineData(HtmlChartResponsiveLayout.Fit, 950, false, false, true)]
     [InlineData(HtmlChartResponsiveLayout.Readable, 340, false, false, false)]
