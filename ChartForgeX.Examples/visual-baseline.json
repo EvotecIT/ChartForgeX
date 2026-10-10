@@ -4634,6 +4634,30 @@
       }
     },
     {
+      "name": "mermaid-class-direction",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1002,
+      "height": 560,
+      "logicalWidth": 1002.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 12,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 280560,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 412,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-class-notation",
       "layout": {
         "heightMode": "fixed",
@@ -4678,6 +4702,30 @@
         "minVisiblePixels": 298080,
         "minTransparentPixels": 0,
         "minDistinctColors": 463,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-er-direction",
+      "layout": {
+        "heightMode": "natural",
+        "frameFontRequest": "Inter, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nInter, Segoe UI, system-ui, sans-serif|700|normal|17|",
+        "frameFontFingerprint": "4C7E4A16049E62C0AE212313F7A996355DD17E35DCB7E9FB0B1E5CCCF7C684D7"
+      },
+      "width": 960,
+      "height": 645,
+      "logicalWidth": 960.0,
+      "logicalHeight": 644.567,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 309600,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 471,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4822,6 +4870,30 @@
         "minVisiblePixels": 102400,
         "minTransparentPixels": 0,
         "minDistinctColors": 446,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-state-direction",
+      "layout": {
+        "heightMode": "natural",
+        "frameFontRequest": "Inter, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nInter, Segoe UI, system-ui, sans-serif|700|normal|17|",
+        "frameFontFingerprint": "4C7E4A16049E62C0AE212313F7A996355DD17E35DCB7E9FB0B1E5CCCF7C684D7"
+      },
+      "width": 960,
+      "height": 645,
+      "logicalWidth": 960.0,
+      "logicalHeight": 644.567,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 309600,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 479,
         "maxEdgeInkPixels": 0
       }
     },

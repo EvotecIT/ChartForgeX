@@ -13,7 +13,7 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidClassDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var chart = CreateTopology(options, "mermaid-class", ResolveTitle(options, "Mermaid class diagram"), document.Header, document.Classes.Exists(item => item.Namespace != null) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight);
+        var chart = CreateTopology(options, "mermaid-class", ResolveTitle(options, "Mermaid class diagram"), document.Header, document.Classes.Exists(item => item.Namespace != null) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
         var namespaces = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
         foreach (var item in document.Classes) if (item.Namespace != null && namespaces.Add(item.Namespace)) chart.AddAutoGroup(item.Namespace, item.Namespace);
         foreach (var item in document.Classes) {
@@ -51,7 +51,7 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidStateDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var direction = string.Equals(document.Direction, "LR", StringComparison.OrdinalIgnoreCase) ? TopologyLayoutDirection.LeftToRight : TopologyLayoutDirection.TopToBottom;
+        var direction = DiagramDirection(document.Direction, TopologyLayoutDirection.TopToBottom);
         var chart = CreateTopology(options, "mermaid-state", ResolveTitle(options, "Mermaid state diagram"), document.Header, TopologyLayoutMode.Layered, direction);
         foreach (var composite in document.States) {
             if (document.States.Exists(state => state.ParentId == composite.Id)) {
@@ -70,6 +70,7 @@ public static partial class MermaidTopologyRendering {
         for (var index = 0; index < document.Transitions.Count; index++) {
             var item = document.Transitions[index];
             chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
+            chart.Edges[chart.Edges.Count - 1].MinimumRankSpan = 2;
         }
 
         return MermaidPresentation.Apply(chart, document);
@@ -79,7 +80,7 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidEntityRelationshipDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var chart = CreateTopology(options, "mermaid-er", ResolveTitle(options, "Mermaid ER diagram"), document.Header, TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight);
+        var chart = CreateTopology(options, "mermaid-er", ResolveTitle(options, "Mermaid ER diagram"), document.Header, TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
         foreach (var item in document.Entities) {
             chart.AddAutoNode(item.Id, item.Id, TopologyNodeKind.Database, TopologyHealthStatus.Unknown, width: EntityWidth(item), height: 82 + item.Attributes.Count * 18, symbol: "ER", cssClass: "cfx-mermaid-er-entity");
             var node = chart.Nodes[chart.Nodes.Count - 1];
@@ -216,6 +217,11 @@ public static partial class MermaidTopologyRendering {
 
     /// <summary>Renders a Mermaid kanban board to PNG.</summary>
     public static byte[] ToPng(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();
+
+    private static TopologyLayoutDirection DiagramDirection(string? direction, TopologyLayoutDirection fallback) => direction?.ToUpperInvariant() switch {
+        "LR" => TopologyLayoutDirection.LeftToRight, "RL" => TopologyLayoutDirection.RightToLeft,
+        "TB" => TopologyLayoutDirection.TopToBottom, "BT" => TopologyLayoutDirection.BottomToTop, _ => fallback
+    };
 
     private static TopologyChart CreateTopology(MermaidTopologyRenderOptions options, string defaultId, string title, string subtitle, TopologyLayoutMode layout, TopologyLayoutDirection direction) {
         var id = string.IsNullOrWhiteSpace(options.Id) ? defaultId : options.Id!.Trim();

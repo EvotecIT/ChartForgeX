@@ -115,7 +115,7 @@ public class MermaidDocument {
     /// <summary>Gets parsed Mermaid directives.</summary>
     public List<MermaidDirective> Directives { get; } = new();
 
-    /// <summary>Gets unclassified body statements retained for recognized families that do not have a semantic parser yet.</summary>
+    /// <summary>Gets unclassified or unsupported body statements retained independently from rendered semantic facts.</summary>
     public List<MermaidRawStatement> RawStatements { get; } = new();
 }
 

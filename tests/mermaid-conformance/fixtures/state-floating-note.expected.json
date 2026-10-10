@@ -1,0 +1,5 @@
+{
+  "states": ["A", "B", "C", "direction"],
+  "direction": "LR",
+  "nativeRetainedStatements": ["note \"Remember: A --> Phantom\" as N"]
+}

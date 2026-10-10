@@ -24,6 +24,8 @@ public static partial class GalleryWriter {
         "label-placement-scorecards-light",
         "map-viewport-showcase-grid",
         "mermaid-cynefin-basic",
+        "mermaid-er-direction",
+        "mermaid-state-direction",
         "mermaid-swimlane-basic",
         "mermaid-usecase-basic",
         "paged-facets-1",

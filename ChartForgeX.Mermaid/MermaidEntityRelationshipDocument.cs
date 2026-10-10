@@ -7,6 +7,9 @@ namespace ChartForgeX.Mermaid;
 /// Describes a parsed Mermaid entity relationship diagram.
 /// </summary>
 public sealed class MermaidEntityRelationshipDocument : MermaidDocument {
+    /// <summary>Gets or sets the authored whole-diagram direction.</summary>
+    public string? Direction { get; set; }
+
     /// <summary>Gets entities in source order.</summary>
     public List<MermaidEntityNode> Entities { get; } = new();
 

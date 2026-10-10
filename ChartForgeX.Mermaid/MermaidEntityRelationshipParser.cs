@@ -14,6 +14,8 @@ internal static class MermaidEntityRelationshipParser {
     public static void ParseStatements(MermaidEntityRelationshipDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var entities = new Dictionary<string, MermaidEntityNode>(StringComparer.Ordinal);
         MermaidEntityNode? activeEntity = null;
+        var activeEntityOpening = default(MermaidSourceSpan);
+        var subgraphs = new Stack<MermaidSourceSpan>();
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
@@ -30,9 +32,36 @@ internal static class MermaidEntityRelationshipParser {
                 continue;
             }
 
+            if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction, ignoreCase: true)) {
+                if (subgraphs.Count == 0) document.Direction = direction;
+                else MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "ER subgraph direction");
+                continue;
+            }
+            if (MermaidParserUtilities.StartsStatement(trimmed, "subgraph")) {
+                subgraphs.Push(span);
+                MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "ER subgraph boundary");
+                continue;
+            }
+            if (trimmed == "end") {
+                if (subgraphs.Count > 0) {
+                    subgraphs.Pop();
+                    document.RawStatements.Add(new MermaidRawStatement(trimmed, span));
+                } else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "ER subgraph closing statement has no open subgraph.", MermaidDiagnosticCodes.InvalidStatement);
+                continue;
+            }
+            if (trimmed == "}") {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "ER closing brace has no open entity definition.", MermaidDiagnosticCodes.InvalidStatement);
+                continue;
+            }
+            if (MermaidParserUtilities.StartsStatement(trimmed, "style") || MermaidParserUtilities.StartsStatement(trimmed, "class") || MermaidParserUtilities.StartsStatement(trimmed, "classDef")) {
+                MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "ER style");
+                continue;
+            }
+
             if (trimmed.EndsWith("{", StringComparison.Ordinal)) {
                 var id = MermaidParserUtilities.Unquote(trimmed.Substring(0, trimmed.Length - 1).Trim());
                 activeEntity = EnsureEntity(document, entities, id, span);
+                activeEntityOpening = span;
                 continue;
             }
 
@@ -44,6 +73,11 @@ internal static class MermaidEntityRelationshipParser {
                 EnsureEntity(document, entities, MermaidParserUtilities.Unquote(trimmed), span);
             }
         }
+
+        if (activeEntity != null) MermaidParserUtilities.Add(result, activeEntityOpening, MermaidDiagnosticSeverity.Error,
+            "ER entity definitions must close with '}'.", MermaidDiagnosticCodes.InvalidStatement);
+        foreach (var opening in subgraphs) MermaidParserUtilities.Add(result, opening, MermaidDiagnosticSeverity.Error,
+            "ER subgraphs must close with 'end'.", MermaidDiagnosticCodes.InvalidStatement);
 
         if (document.Entities.Count == 0 && document.Relationships.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid ER diagrams require at least one entity or relationship.");
     }

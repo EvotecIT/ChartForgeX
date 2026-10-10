@@ -36,7 +36,7 @@ Flowchart, sequence, class, state, entity relationship, requirement, architectur
 
 ZenUML (`zenuml`), Agentflow (`agentflow-beta`) and Railroad (`railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta`) produce an inspectable `MermaidDocument` with retained raw body statements and `IsDiagnosticOnly` set to `true`. They return warning `CFXM002` and no visual artifact while their semantic parser and native renderer are unavailable. Recognition does not validate the retained body grammar.
 
-Diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for an authored layout that uses the native static fallback, `CFXM004` for native conversion failure, `CFXM005` for configuration retained without native application, and `CFXM006` for invalid or over-limit configuration. The Markdown bridge preserves these codes and maps source lines into the host document. Other parser diagnostics keep their located messages with an empty code until they are classified.
+Diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for an authored layout that uses the native static fallback, `CFXM004` for native conversion failure, `CFXM005` for configuration retained without native application, `CFXM006` for invalid or over-limit configuration, `CFXM007` for a retained statement without native notation, and `CFXM008` for an invalid direction or unmatched state/ER boundary. The Markdown bridge preserves these codes and maps source lines into the host document. Other parser diagnostics keep their located messages with an empty code until they are classified.
 
 Unknown diagram families produce a parser error.
 
@@ -162,13 +162,14 @@ Class diagrams are parsed into `MermaidClassDocument` and converted to topology 
 Supported class parsing includes:
 
 - `classDiagram` headers.
+- Global `direction LR`, `RL`, `TB` and `BT`, retained in `MermaidClassDocument.Direction` and applied to the native layout.
 - `class Name` declarations.
 - `class Name { ... }` member blocks.
 - Class labels in `class id["Label"]` form.
 - Class members added through blocks or `Class : member` statements.
 - Annotations such as `<<interface>> ClassName`.
 - Common relationship connectors such as inheritance, dependency, aggregation, composition, solid links, dotted links, and labels after `:`.
-- `classDef`, `class`, `style`, `linkStyle`, and `cssClass` statements retained for future richer style mapping.
+- Style assignments, notes, links and callback declarations retained in `StyleStatements` and `RawStatements`, with `CFXM007`. They do not add classes or relationships, apply source styling, or execute callbacks.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -199,12 +200,12 @@ State diagrams are parsed into `MermaidStateDocument` and converted to topology 
 Supported state parsing includes:
 
 - `stateDiagram` and `stateDiagram-v2` headers.
-- `direction` statements.
+- Global `direction LR`, `RL`, `TB` and `BT`, applied to native node ordering. State direction values are case-insensitive and retained in canonical uppercase form.
 - State declarations including `state "Label" as id`, `state id as "Label"`, and `state id <<choice>>`.
 - Composite state blocks in `state id { ... }` form.
 - Transitions using `-->` with optional labels after `:`.
 - Start and end markers using `[*]`.
-- Notes, classes, separators, and other non-transition statements retained as source statements.
+- Inline, floating (`note "text" as ID`) and multiline notes, classes, styles and concurrency separators retained as source statements with `CFXM007`. Floating notes retain one line. Multiline note text is preserved through `end note`; arrows, colons and accessibility keywords inside the note stay literal text.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -226,7 +227,7 @@ var document = result.Document;
 var svg = document!.ToSvg();
 ```
 
-The conversion target for state diagrams is `TopologyChart`. Composite states become topology groups, states become topology nodes, and transitions become directed topology edges.
+The conversion target for state diagrams is `TopologyChart`. Composite states become topology groups, states become topology nodes, and transitions become directed topology edges. Notes and concurrent-region separators are retained without dedicated geometry. Composite-local direction is retained with `CFXM007` and does not replace the global direction. Unclosed notes or composites and stray terminators report `CFXM008` and prevent shared rendering.
 
 ## Entity Relationship Diagrams
 
@@ -235,11 +236,13 @@ Entity relationship diagrams are parsed into `MermaidEntityRelationshipDocument`
 Supported ER parsing includes:
 
 - `erDiagram` headers.
+- Global `direction LR`, `RL`, `TB` and `BT`, retained in `MermaidEntityRelationshipDocument.Direction` and applied to the native layout.
 - Entity declarations discovered from relationship rows.
 - Entity blocks in `ENTITY { ... }` form.
 - Attribute rows with type, name, optional key markers, and optional comments.
 - Crow's-foot connectors such as `||--o{`, `}|..||`, and related solid/dotted combinations.
 - Relationship labels after `:`.
+- `classDef`, `class` and `style` statements retained with `CFXM007`; presentation statements do not become entity identifiers.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -259,6 +262,10 @@ var artifact = document!.ToVisualArtifact();
 ```
 
 The conversion target for ER diagrams is `TopologyChart`. Entities become database-like topology nodes. Relationships use identifying or dashed non-identifying lines with visible crow's-foot endpoint cardinality. Entity attributes, keys, and comments appear inside the entity boxes.
+
+ER `subgraph` boundaries and local directions are retained with `CFXM007`. Entities and their relationships remain in the global layout; nested group geometry and group endpoints are not implemented. Unclosed entity/subgraph blocks and stray closing statements report `CFXM008`. The pinned Mermaid 10 reference interprets ER direction and subgraph words as entity names, while the 11/12 references recognize their newer notation. Shared expectations record that semantic difference; ChartForgeX follows the documented current notation.
+
+ER direction values are case-insensitive and retained in canonical uppercase form. A bare `direction` identifier remains an entity or state. ChartForgeX also preserves its existing bare style/note keyword identifiers; some upstream grammars reserve those words, depending on family and source ending. Class source direction values use the documented uppercase forms.
 
 ## Requirement Diagrams
 

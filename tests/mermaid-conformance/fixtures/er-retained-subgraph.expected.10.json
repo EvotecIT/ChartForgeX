@@ -1,0 +1,4 @@
+{
+  "entities": ["direction", "LR", "subgraph", "Domain", "BT", "A", "B", "end", "C"],
+  "direction": null
+}

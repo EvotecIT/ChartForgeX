@@ -32,7 +32,7 @@ public sealed partial class MermaidParser {
         }
 
         ResolveConfiguration(configuration, descriptor.Kind, result);
-        var presentation = ReadPresentation(lines, header.Value.Line + 1, result);
+        var presentation = ReadPresentation(lines, header.Value.Line + 1, descriptor.Kind, result);
         MermaidDocument document;
         if (descriptor.Kind == MermaidDiagramKind.Flowchart || descriptor.Kind == MermaidDiagramKind.Swimlane) {
             document = ParseFlowchart(source, lines, frontMatter, header.Value, descriptor, result);

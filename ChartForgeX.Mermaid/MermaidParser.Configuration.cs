@@ -14,7 +14,7 @@ public sealed partial class MermaidParser {
         MermaidParseResult<MermaidDocument> result, out List<MermaidDirective> declarations) {
         var configuration = new MermaidSourceConfiguration();
         declarations = new List<MermaidDirective>();
-        var originalLineStarts = ConfigurationLineStarts(source);
+        var originalLineStarts = MermaidParserUtilities.OriginalLineStarts(source);
         var length = frontMatter == null ? 0 : ConfigurationYamlLength(frontMatter);
         if (length > MaximumConfigurationLength) {
             ConfigurationError(result, new MermaidSourceSpan(1, 1, 3), "Mermaid source configuration exceeds 65536 characters.");
@@ -80,17 +80,6 @@ public sealed partial class MermaidParser {
     private static bool IsConfigurationStringPath(string path) {
         var key = path.Substring(path.LastIndexOf('.') + 1);
         return key == "theme" || key == "fontFamily" || key == "layout" || key == "look";
-    }
-
-    private static List<int> ConfigurationLineStarts(string source) {
-        var starts = new List<int> { 0 };
-        for (var index = 0; index < source.Length; index++) {
-            if (source[index] == '\r') {
-                if (index + 1 < source.Length && source[index + 1] == '\n') index++;
-                starts.Add(index + 1);
-            } else if (source[index] == '\n') starts.Add(index + 1);
-        }
-        return starts;
     }
 
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,

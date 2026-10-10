@@ -15,6 +15,35 @@
     }
   },
   "fixtures": {
+    "fixtures/state-floating-note.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored regression for the pinned state grammar's floating-note production, case-insensitive direction and bare direction identifier."
+    },
+    "fixtures/er-lowercase-direction.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored regression for the pinned ER grammar's lowercase direction and bare direction identifier.",
+      "expectedByReference": { "10": "er-lowercase-direction.expected.10.json" },
+      "notes": { "10": "The pinned Mermaid 10 ER grammar treats direction and bt as entities; ChartForgeX follows the current 11/12 direction semantics." }
+    },
+    "fixtures/class-retained-interactions.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored class direction, note and interaction case from the official Mermaid syntax reference."
+    },
+    "fixtures/er-retained-styles.mmd": {
+      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored ER direction, class and style case from the official Mermaid syntax reference.",
+      "notes": { "10": "The pinned Mermaid 10 ER grammar rejects these style declarations." }
+    },
+    "fixtures/state-retained-note.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored multiline state-note regression from the official Mermaid note syntax."
+    },
+    "fixtures/er-retained-subgraph.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored ER subgraph and local-direction case from the official Mermaid syntax reference.",
+      "expectedByReference": { "10": "er-retained-subgraph.expected.10.json" },
+      "notes": { "10": "The pinned Mermaid 10 grammar treats direction, subgraph and end words as entity names; ChartForgeX follows the current 11/12 notation semantics." }
+    },
     "fixtures/configuration-precedence.mmd": {
       "syntax": {
         "10": "accepted",
