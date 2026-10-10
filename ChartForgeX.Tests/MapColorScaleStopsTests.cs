@@ -3,6 +3,8 @@ using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -88,6 +90,48 @@ public sealed class MapColorScaleStopsTests {
             var box = swatches[index].Bounds;
             var pixel = ((int)(box.Top + box.Height / 2) * image.Width + (int)(box.Left + box.Width / 2)) * 4;
             Assert.Equal(scale.ColorFor(values[index], min, max), ChartColor.FromRgba(image.Pixels[pixel], image.Pixels[pixel + 1], image.Pixels[pixel + 2], image.Pixels[pixel + 3]));
+        }
+    }
+
+    [Theory]
+    [InlineData(0, 0, false)]
+    [InlineData(10, 4, false)]
+    [InlineData(0, 0, true)]
+    [InlineData(10, 4, true)]
+    public void CompactEndpointCaption_ElidesWithinTheKeyWithoutMovingItsSwatchAnchor(double midpoint, int midpointStep, bool multiStop) {
+        const string family = "CFX Map Edge Carlito";
+        FontRegistry.Register(family, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var scale = (multiStop ? ChartColorScale.Diverging(new[] { Low[0] }, Neutral, High, midpoint)
+            : ChartColorScale.Diverging(Low[0], Neutral, High[2], midpoint)).WithValueRange(0, 10).WithLabels(null, "Target temperature", null);
+        var chart = Map("tile-map", scale).WithSize(360, 360).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Bottom);
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)),
+            VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame(), FontSpec.FromFamily(family)));
+        var document = XDocument.Parse(prepared.ToSvg());
+        var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "map-scale-step").ToArray();
+        var target = swatches[midpointStep].Bounds;
+        var center = target.Left + target.Width / 2;
+        var caption = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Id == "map-scale-midpoint");
+        var region = prepared.Regions.Single(item => item.Id == caption.Id);
+        var svgCaption = document.Descendants().Single(element => (string?)element.Attribute("data-cfx-source-id") == caption.Id)
+            .Descendants().Single(element => element.Name.LocalName == "text");
+        var full = "Target temperature " + midpoint.ToString(CultureInfo.InvariantCulture);
+        Assert.Equal(full, region.Label);
+        Assert.NotEmpty(svgCaption.Value);
+        Assert.NotEqual(full, svgCaption.Value);
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
+        Assert.Equal(center, caption.X, 6);
+        Assert.InRange(Math.Abs(Number(svgCaption, "x") + caption.Text.Metrics.Width / 2 - center), 0, .001);
+        Assert.True(region.Bounds.Left >= swatches[0].Bounds.Left - .000001);
+        Assert.True(region.Bounds.Right <= swatches[swatches.Length - 1].Bounds.Right + .000001);
+        Assert.True(caption.Text.Metrics.Width <= region.Bounds.Width);
+        Assert.True(Number(svgCaption, "x") >= region.Bounds.Left - .001);
+        Assert.True(Number(svgCaption, "x") + caption.Text.Metrics.Width <= region.Bounds.Right + .001);
+        var values = ByRole(document, "map-scale-step-source").Select(step => Number(step, "data-cfx-value")).ToArray();
+        var image = ChartForgeX.Raster.RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        for (var index = 0; index < swatches.Length; index++) {
+            var box = swatches[index].Bounds;
+            var pixel = ((int)(box.Top + box.Height / 2) * image.Width + (int)(box.Left + box.Width / 2)) * 4;
+            Assert.Equal(scale.ColorFor(values[index], 0, 10), ChartColor.FromRgba(image.Pixels[pixel], image.Pixels[pixel + 1], image.Pixels[pixel + 2], image.Pixels[pixel + 3]));
         }
     }
 
