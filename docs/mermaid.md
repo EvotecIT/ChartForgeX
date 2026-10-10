@@ -732,7 +732,7 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes/includes, weekend selection, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Duration-based ends advance over excluded dates, with includes overriding exclusions; explicit end dates remain authored dates. `until` dependencies, month/year durations and broader date/configuration coverage remain open in the [support matrix](mermaid-support-matrix.md). Use the supported minute/hour/day/week units explicitly: month token `M` currently follows the minute path and does not represent a month.
+The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes/includes, weekend selection, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Duration-based ends advance over excluded dates, with includes overriding exclusions; explicit end dates remain authored dates. `until` dependencies and broader date/configuration coverage remain open in the [support matrix](mermaid-support-matrix.md).
 
 ## XY Charts
 
