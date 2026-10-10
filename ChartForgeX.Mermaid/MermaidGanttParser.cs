@@ -9,8 +9,8 @@ internal static partial class MermaidGanttParser {
 
     public static void ParseStatements(MermaidGanttDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         string? currentSection = null;
-        DateTime? previousEnd = null;
-        var taskIds = new Dictionary<string, MermaidGanttTask>(StringComparer.Ordinal);
+        var tasks = new List<TaskDefinition>();
+        var taskIds = new Dictionary<string, TaskDefinition>(StringComparer.Ordinal);
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
             var raw = lines[index];
             var trimmed = raw.Trim();
@@ -23,8 +23,8 @@ internal static partial class MermaidGanttParser {
             else if (StartsWithKeyword(trimmed, "dateFormat")) document.DateFormat = trimmed.Substring(10).Trim();
             else if (StartsWithKeyword(trimmed, "axisFormat")) document.AxisFormat = trimmed.Substring(10).Trim();
             else if (StartsWithKeyword(trimmed, "tickInterval")) document.TickInterval = trimmed.Substring(12).Trim();
-            else if (StartsWithKeyword(trimmed, "excludes")) document.Excludes = trimmed.Substring(8).Trim();
-            else if (StartsWithKeyword(trimmed, "includes")) document.Includes = trimmed.Substring(8).Trim();
+            else if (StartsWithKeyword(trimmed, "excludes")) document.Excludes = MergeCalendarTokens(document.Excludes, trimmed.Substring(8));
+            else if (StartsWithKeyword(trimmed, "includes")) document.Includes = MergeCalendarTokens(document.Includes, trimmed.Substring(8));
             else if (StartsWithKeyword(trimmed, "weekend")) {
                 document.Weekend = trimmed.Substring(7).Trim().ToLowerInvariant();
                 if (document.Weekend != "friday" && document.Weekend != "saturday") Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt weekend must start on friday or saturday.");
@@ -35,10 +35,9 @@ internal static partial class MermaidGanttParser {
                 if (currentSection.Length == 0) Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt section names must not be empty.");
                 else document.Sections.Add(new MermaidGanttSection(currentSection, span));
             } else {
-                var task = ParseTask(trimmed, span, currentSection, previousEnd, document.Tasks, taskIds, document, result);
+                var task = ParseTaskDefinition(trimmed, span, currentSection, tasks.Count, result);
                 if (task == null) continue;
-                document.Tasks.Add(task);
-                previousEnd = task.End;
+                tasks.Add(task);
                 if (!string.IsNullOrWhiteSpace(task.Id)) {
                     if (taskIds.ContainsKey(task.Id!)) Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt task id '" + task.Id + "' is already declared.");
                     else taskIds.Add(task.Id!, task);
@@ -46,11 +45,11 @@ internal static partial class MermaidGanttParser {
             }
         }
 
+        ResolveSchedule(document, tasks, taskIds, result);
         if (document.Tasks.Count == 0) Add(result, document.HeaderSpan.Line, document.HeaderSpan.Column, document.HeaderSpan.Length, MermaidDiagnosticSeverity.Error, "Mermaid Gantt diagrams require at least one task.");
     }
 
-    private static MermaidGanttTask? ParseTask(string text, MermaidSourceSpan span, string? section, DateTime? previousEnd, IReadOnlyList<MermaidGanttTask> previousTasks, Dictionary<string, MermaidGanttTask> taskIds, MermaidGanttDocument document, MermaidParseResult<MermaidDocument> result) {
-        var dateFormat = document.DateFormat;
+    private static TaskDefinition? ParseTaskDefinition(string text, MermaidSourceSpan span, string? section, int index, MermaidParseResult<MermaidDocument> result) {
         var colon = text.IndexOf(':');
         if (colon <= 0) {
             Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt tasks must use 'title : metadata' syntax.");
@@ -92,80 +91,7 @@ internal static partial class MermaidGanttParser {
             return null;
         }
 
-        var dependencies = new List<string>();
-        var dependencyIndex = -1;
-        DateTime start;
-        if (string.IsNullOrWhiteSpace(startSpec)) {
-            if (!previousEnd.HasValue) {
-                Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "The first Gantt task must declare an explicit start date.");
-                return null;
-            }
-
-            start = previousEnd.Value;
-        } else {
-            var concreteStartSpec = startSpec!;
-            if (StartsWithKeyword(concreteStartSpec, "after")) {
-                if (!ResolveAfter(concreteStartSpec, previousTasks, taskIds, dependencies, out start, out dependencyIndex)) {
-                    Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt after clauses must reference earlier task ids.");
-                    return null;
-                }
-            } else if (!TryParseDate(concreteStartSpec, dateFormat, out start)) {
-                Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt task start dates must match dateFormat '" + dateFormat + "'.");
-                return null;
-            }
-        }
-
-        DateTime end;
-        if (TryParseDuration(endSpec, out var amount, out var unit)) {
-            if (!TryResolveDurationEnd(start, amount, unit, document, out end)) {
-                Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt duration exceeds the supported date range or exclusion calendar has no reachable working day.");
-                return null;
-            }
-        }
-        else if (!TryParseDate(endSpec, dateFormat, out end)) {
-            Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt task end values must be dates or durations.");
-            return null;
-        }
-
-        if (end < start) {
-            Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt task end must be greater than or equal to start.");
-            return null;
-        }
-
-        var milestone = ContainsTag(tags, "milestone");
-        var progress = milestone || ContainsTag(tags, "done") ? 1.0 : 0.0;
-        if (milestone) { start = start.AddTicks((end.Ticks - start.Ticks) / 2); end = start; }
-        var task = new MermaidGanttTask(title, id, section, start, end, progress, milestone, tags, dependencies, rawMetadata, span) {
-            DependencyIndex = dependencyIndex
-        };
-        return task;
-    }
-
-    private static bool ResolveAfter(string text, IReadOnlyList<MermaidGanttTask> previousTasks, Dictionary<string, MermaidGanttTask> taskIds, List<string> dependencies, out DateTime start, out int dependencyIndex) {
-        start = default;
-        dependencyIndex = -1;
-        var ids = text.Substring(5).Trim().Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-        if (ids.Length == 0) return false;
-        DateTime? latestEnd = null;
-        var latestTaskIndex = -1;
-        foreach (var id in ids) {
-            if (!taskIds.TryGetValue(id, out var task)) return false;
-            dependencies.Add(id);
-            if (!latestEnd.HasValue || task.End > latestEnd.Value) {
-                latestEnd = task.End;
-                latestTaskIndex = IndexOf(previousTasks, task);
-            }
-        }
-
-        if (latestTaskIndex < 0) return false;
-        start = latestEnd!.Value;
-        dependencyIndex = latestTaskIndex;
-        return true;
-    }
-
-    private static int IndexOf(IReadOnlyList<MermaidGanttTask> tasks, MermaidGanttTask task) {
-        for (var i = 0; i < tasks.Count; i++) if (ReferenceEquals(tasks[i], task)) return i;
-        return -1;
+        return new TaskDefinition(title, id, section, startSpec, endSpec!, tags, rawMetadata, span, index);
     }
 
     private static List<string> SplitMetadata(string text) {
