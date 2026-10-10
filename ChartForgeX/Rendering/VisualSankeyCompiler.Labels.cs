@@ -43,11 +43,14 @@ internal static partial class VisualSankeyCompiler {
             var side = columns[requestedNodes[i].Layer].Side;
             style.TextCase = TextCaseTransform.None;
             style.Alignment = side == ChartSankeyLabelPlacement.Left ? TextAlignment.Right : side == ChartSankeyLabelPlacement.Center ? TextAlignment.Center : TextAlignment.Left;
+            var id = ChartRelationshipMetadata.SourceId("node-label", requestedNodes[i].Id);
+            using var caption = builder.PushGroup(id + "-source", "sankey-node-label-source",
+                VisualMarkLabel.Metadata(labels[requestedNodes[i].Index], ChartRelationshipMetadata.SourceId("node", requestedNodes[i].Id)));
             builder.Rect(result.Bounds, ChartColorMath.WithOpacity(colors.Surface, .92), radius: 2, role: "sankey-label-backdrop",
                 paint: VisualChartPaint.Fill(SvgPaint.Of(colors.Surface, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Surface, .92), .92)));
             double x = side == ChartSankeyLabelPlacement.Left ? result.Bounds.Right : side == ChartSankeyLabelPlacement.Center ? result.Bounds.X + result.Bounds.Width / 2 : result.Bounds.Left;
             builder.Text(result.Text, x, result.Bounds.Y + builder.TextAscent(style), style,
-                "sankey-node-label", ChartRelationshipMetadata.SourceId("node-label", requestedNodes[i].Id), paint: VisualChartPaint.Text(style));
+                "sankey-node-label", id, paint: VisualChartPaint.Text(style));
         }
     }
 }

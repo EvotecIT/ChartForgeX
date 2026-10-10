@@ -39,7 +39,8 @@ public sealed class SankeyOptionsBrowserTests {
         await page.EvaluateAsync("() => { window.selections = []; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.selections.push(event.detail)); }");
 
         var support = Target(page, "node", "south-support");
-        await support.ClickAsync();
+        var box = (await support.BoundingBoxAsync())!;
+        await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
         Assert.Equal("true", await support.GetAttributeAsync("aria-selected"));
         await AssertSelected(page, "node", "south-support", "28");
         Assert.Contains("Support", await TooltipTextAsync(page)); Assert.Contains("28", await TooltipTextAsync(page));
