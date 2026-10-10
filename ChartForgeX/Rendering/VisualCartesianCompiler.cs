@@ -17,7 +17,7 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
             && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].RenderedPointCount > 1) {
             var series = chart.Series[0];
-            if (series.Kind == ChartSeriesKind.Waterfall) return WaterfallLegendEntries(chart, series, colors);
+            if (series.Kind == ChartSeriesKind.Waterfall) return WaterfallLegendEntries(chart, series, colors, axisLabels ?? new ChartAxisValueFormatter.Cache());
             var stride = ObservationStride(series.Kind);
             var numericRadial = series.Kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
             if (numericRadial) axisLabels ??= new ChartAxisValueFormatter.Cache();
@@ -50,14 +50,15 @@ internal static partial class VisualCartesianCompiler {
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect? viewport = null) {
-        BuildCore(chart, context, builder, plot, viewport ?? new ChartRect(0, 0, builder.Size.Width, builder.Size.Height), false, null);
+        BuildCore(chart, context, builder, plot, viewport ?? new ChartRect(0, 0, builder.Size.Width, builder.Size.Height), false, null, null);
     }
 
     internal static void BuildInViewport(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
-        ChartBubbleSizeScale? bubbleScale = null) => BuildCore(chart, context, builder, viewport, viewport, true, bubbleScale);
+        ChartBubbleSizeScale? bubbleScale = null, ChartAxisValueFormatter.Cache? categoryLabels = null)
+        => BuildCore(chart, context, builder, viewport, viewport, true, bubbleScale, categoryLabels);
 
     private static void BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport,
-        bool measureAxes, ChartBubbleSizeScale? bubbleScale) {
+        bool measureAxes, ChartBubbleSizeScale? bubbleScale, ChartAxisValueFormatter.Cache? categoryLabels) {
         Validate(chart);
         if (bubbleScale == null && chart.Series.Any(series => series.Kind == ChartSeriesKind.Bubble)) bubbleScale = ChartBubbleSizeScale.Create(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
@@ -76,18 +77,19 @@ internal static partial class VisualCartesianCompiler {
         var range = ChartRange.FromChart(chart, coordinates, stacks);
         var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range, stacks) : null;
-        var axisLabels = new AxisLabelCache();
-        var horizontal = Horizontal(chart);
+        categoryLabels ??= new ChartAxisValueFormatter.Cache();
+        var axisLabels = new AxisLabelCache(categoryLabels);
+        var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
         if (!horizontal) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
         }
+        IReadOnlyDictionary<double, string>? waterfallCategories = null;
         if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall) {
-            var steps = ChartWaterfallSteps.Create(chart.Series[0]);
-            axisLabels.SetTicks(chart.Options.XAxis, steps.Select(step => step.X).Distinct().OrderBy(value => value).ToArray());
-            foreach (var step in steps.Where(step => step.IsCheckpoint))
-                if (chart.Options.XAxis.LabelFormatter == null && ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, step.X) == null)
-                    axisLabels.Set(chart.Options.XAxis, step.X, WaterfallValueName(chart, step));
+            waterfallCategories = ChartWaterfallCategoryLabels.Resolve(chart, categoryLabels);
+            var categoryAxis = horizontal ? HorizontalAxes(chart, axisLabels).Category : chart.Options.XAxis;
+            axisLabels.SetTicks(categoryAxis, waterfallCategories.Keys.OrderBy(value => value).ToArray());
+            foreach (var category in waterfallCategories) axisLabels.Set(categoryAxis, category.Key, category.Value);
         }
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
@@ -147,7 +149,7 @@ internal static partial class VisualCartesianCompiler {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
                         DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles);
-                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale);
+                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, waterfallCategories);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
@@ -166,8 +168,9 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void Validate(Chart chart) {
-        if (Horizontal(chart) && chart.Series.Any(series => series.Kind != ChartSeriesKind.HorizontalBar || series.YAxis != ChartAxisSide.Primary))
-            throw new NotSupportedException("Horizontal bars require a homogeneous chart on the primary horizontal value axis.");
+        if (ChartCartesianOrientation.IsHorizontal(chart) && chart.Series.Any(series => !ChartCartesianOrientation.IsHorizontal(chart, series)
+            || series.YAxis != ChartAxisSide.Primary))
+            throw new NotSupportedException("Horizontal Cartesian charts require homogeneous series on the primary horizontal value axis.");
         foreach (var series in chart.Series) {
             if (!Supports(series.Kind)) throw Unsupported("series kind " + series.Kind);
             if (series.Points.Count % ObservationStride(series.Kind) != 0)

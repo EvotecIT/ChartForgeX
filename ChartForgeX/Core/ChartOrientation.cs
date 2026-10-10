@@ -1,9 +1,9 @@
 namespace ChartForgeX.Core;
 
-/// <summary>Chooses whether a chart progresses down the page or across it.</summary>
+/// <summary>Chooses a chart family's vertical or horizontal layout.</summary>
 public enum ChartOrientation {
-    /// <summary>Places successive categories from top to bottom.</summary>
+    /// <summary>Uses the family's vertical layout.</summary>
     Vertical,
-    /// <summary>Places successive categories from left to right.</summary>
+    /// <summary>Uses the family's horizontal layout.</summary>
     Horizontal
 }

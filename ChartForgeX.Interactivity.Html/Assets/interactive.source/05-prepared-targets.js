@@ -78,7 +78,8 @@
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
       }
-      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = xLabels.get(Number(data.cfxX)) || '';
+      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = data.cfxCategoryLabel !== undefined
+        ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX)) || '';
       if (data.cfxRole === 'legend-item') return;
       const region = regions.get(data.cfxSourceId || '');
       // A scalar series already has a native value and semantic label; it is not a range endpoint observation.

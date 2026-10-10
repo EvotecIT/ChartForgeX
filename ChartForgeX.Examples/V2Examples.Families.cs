@@ -25,6 +25,7 @@ public static partial class V2Examples {
             var variants = new List<string> { "wide", "compact" };
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
             if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
+            if (kind == ChartSeriesKind.Waterfall) { variants.Add("horizontal"); variants.Add("compact-horizontal"); }
             if (RelationshipOptionFamilies.Contains(kind)) {
                 variants.Add("options");
                 if (kind is ChartSeriesKind.Sankey or ChartSeriesKind.Sunburst) variants.Add("compact-options");
@@ -49,6 +50,7 @@ public static partial class V2Examples {
                 var subtitle = precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
                     : variant == "stage-bars-horizontal" ? "Horizontal stage bars; extents remain proportional"
+                    : kind == ChartSeriesKind.Waterfall && variant is "horizontal" or "compact-horizontal" ? "Horizontal changes and checkpoints share a cumulative value axis"
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"
                     : kind == ChartSeriesKind.Sunburst && variant is "options" or "compact-options" ? "Leaf totals size sectors; measured color stays independent"
                     : kind == ChartSeriesKind.Sankey && variant is "options" or "compact-options" ? "Aligned and ordered weighted flows"
@@ -78,7 +80,7 @@ public static partial class V2Examples {
         ChartSeriesKind.StackedArea => "A normalized stack with middle-step boundaries",
         ChartSeriesKind.RangeArea => "Lower, middle and upper bounds share middle-step transitions",
         ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
-        ChartSeriesKind.Waterfall => "Explicit subtotals and a total retain the running balance on reversed axes",
+        ChartSeriesKind.Waterfall => "An opening balance, changes and checkpoints retain the running balance on reversed axes",
         ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
         ChartSeriesKind.Bubble => "Equal request volumes share a radius; values above 100 retain their facts",
         ChartSeriesKind.Candlestick => "Hollow rising bodies, filled falling bodies and independent wick strokes",

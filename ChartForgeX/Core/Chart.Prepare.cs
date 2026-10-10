@@ -16,7 +16,7 @@ public sealed partial class Chart : IVisualRenderable {
         var bubbleScale = Series.Any(series => series.Kind == ChartSeriesKind.Bubble) ? ChartBubbleSizeScale.Create(this) : null;
         var sourceFrame = context.Frame;
         var frameColors = context.Theme.Resolve(context.ThemeMode);
-        var axisLabels = family == VisualChartFamily.NumericRadial ? new ChartAxisValueFormatter.Cache() : null;
+        var axisLabels = family is VisualChartFamily.NumericRadial or VisualChartFamily.Cartesian ? new ChartAxisValueFormatter.Cache() : null;
         var entries = VisualChartCompiler.LegendEntries(family, this, frameColors, axisLabels, bubbleScale);
         TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) {
             var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };

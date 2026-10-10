@@ -228,7 +228,7 @@
   const waterfallTooltipRows = (node) => {
     const data = node.dataset || {};
     if (!data.cfxWaterfallKind) return [];
-    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : 'Change';
+    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
     return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
       { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
       .filter((row) => row.value !== undefined && row.value !== '');
@@ -240,7 +240,8 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
-    push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
+    if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
+    else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
     else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));

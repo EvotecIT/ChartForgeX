@@ -28,11 +28,20 @@ internal sealed class ChartRange {
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
             if (series.Kind == ChartSeriesKind.Waterfall) {
+                var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
+                if (horizontal) hasHorizontalBars = true;
+                var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
                 foreach (var step in ChartWaterfallSteps.Create(series)) {
+                    if (horizontal) {
+                        range.IncludeY(step.X); horizontalBarYValues.Add(step.X);
+                        if (step.Start != 0 || UsesZeroBaseline(valueAxis)) range.IncludeX(step.Start);
+                        if (step.End != 0 || UsesZeroBaseline(valueAxis)) range.IncludeX(step.End);
+                        continue;
+                    }
                     range.IncludeX(step.X); barXValues.Add(step.X);
                     if (series.YAxis != ChartAxisSide.Secondary) {
-                        if (step.Start != 0 || UsesZeroBaseline(chart.Options.YAxis)) range.IncludeY(step.Start);
-                        if (step.End != 0 || UsesZeroBaseline(chart.Options.YAxis)) range.IncludeY(step.End);
+                        if (step.Start != 0 || UsesZeroBaseline(valueAxis)) range.IncludeY(step.Start);
+                        if (step.End != 0 || UsesZeroBaseline(valueAxis)) range.IncludeY(step.End);
                     }
                 }
                 continue;

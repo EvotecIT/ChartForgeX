@@ -5,6 +5,14 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
+    /// <summary>Configures the waterfall value direction without changing ordered source items.</summary>
+    /// <remarks>Horizontal waterfalls use the primary X value axis and Y category axis. Configure before or after adding the series.</remarks>
+    public Chart ConfigureWaterfall(Action<ChartWaterfallOptions> configure) {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        configure(Options.Waterfall);
+        return this;
+    }
+
     /// <summary>Adds signed changes and one automatically appended final total.</summary>
     /// <param name="name">The series name.</param>
     /// <param name="points">Changes in input order. X supplies the category coordinate and Y supplies the raw change.</param>
@@ -13,9 +21,9 @@ public sealed partial class Chart {
     public Chart AddWaterfall(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) =>
         Add(name, ChartSeriesKind.Waterfall, points, color);
 
-    /// <summary>Adds immutable changes and explicit calculated checkpoints. No extra final total is appended.</summary>
+    /// <summary>Adds an optional opening balance, immutable changes and explicit calculated checkpoints. No extra final total is appended.</summary>
     /// <param name="name">The series name.</param>
-    /// <param name="items">Items in accumulation order, each with a distinct display coordinate.</param>
+    /// <param name="items">Items in accumulation order, each with a distinct display coordinate. An opening balance must be first and may occur only once.</param>
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     /// <remarks>Use existing axis labels and point overrides; point overrides index every authored item, including checkpoints.</remarks>

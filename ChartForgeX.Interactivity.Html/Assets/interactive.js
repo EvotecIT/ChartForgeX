@@ -228,7 +228,7 @@
   const waterfallTooltipRows = (node) => {
     const data = node.dataset || {};
     if (!data.cfxWaterfallKind) return [];
-    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : 'Change';
+    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
     return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
       { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
       .filter((row) => row.value !== undefined && row.value !== '');
@@ -240,7 +240,8 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
-    push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
+    if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
+    else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
     else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
@@ -1016,7 +1017,8 @@
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
       }
-      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = xLabels.get(Number(data.cfxX)) || '';
+      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = data.cfxCategoryLabel !== undefined
+        ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX)) || '';
       if (data.cfxRole === 'legend-item') return;
       const region = regions.get(data.cfxSourceId || '');
       // A scalar series already has a native value and semantic label; it is not a range endpoint observation.

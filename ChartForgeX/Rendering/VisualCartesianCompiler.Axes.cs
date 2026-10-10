@@ -12,12 +12,13 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     // One formatter result per axis/value serves gutter measurement, placement and detached semantics.
     private sealed class AxisLabelCache {
-        private readonly ChartAxisValueFormatter.Cache _labels = new();
+        private readonly ChartAxisValueFormatter.Cache _labels;
         private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _ticks = new();
         private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _captionTicks = new();
         private readonly Dictionary<ChartAxis, Func<double, string>> _formatters = new();
         internal ChartAxis? HorizontalValueAxis { get; set; }
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
+        internal AxisLabelCache(ChartAxisValueFormatter.Cache labels) => _labels = labels;
         internal void Set(ChartAxis axis, double value, string text) => _labels.Set(axis, value, text);
         internal void SetTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _ticks[axis] = ticks;
         internal void IncludeValueTicks(ChartAxis axis, double minimum, double maximum) {
