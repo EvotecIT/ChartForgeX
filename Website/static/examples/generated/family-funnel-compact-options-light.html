@@ -180,7 +180,8 @@ public static partial class V2GalleryModels {
             ChartSeriesKind.Lollipop =&gt; chart.AddLollipop(&quot;Orders&quot;, values),
             ChartSeriesKind.HorizontalBar =&gt; chart.AddHorizontalBar(&quot;Orders&quot;, values),
             ChartSeriesKind.StackedArea =&gt; chart.AddStackedArea(&quot;Requests&quot;, values).AddStackedArea(&quot;Follow-ups&quot;, Observations(variant, -10)),
-            ChartSeriesKind.Waterfall =&gt; chart.AddWaterfall(&quot;Changes&quot;, new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
+            ChartSeriesKind.Waterfall =&gt; chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Total&quot;)
+                .AddWaterfall(&quot;Changes&quot;, new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
             ChartSeriesKind.Slope =&gt; Chart.Create().AddSlope(&quot;Team A&quot;, 28, 64, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team B&quot;, 52, 43, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team C&quot;, 38, 57, &quot;Before&quot;, &quot;After&quot;),
             ChartSeriesKind.TrendLine =&gt; chart.AddScatter(&quot;Observations&quot;, values).AddTrendLine(&quot;Least-squares trend&quot;, values),
             _ =&gt; null
@@ -251,6 +252,41 @@ public static partial class V2GalleryModels {
         if (variant == &quot;options&quot; &amp;&amp; kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar) {
             chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, &quot;20 &#183; Target&quot;));
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Compares request counts and resolution rates on independent radial value scales from a rightward start ray.&lt;/summary&gt;
+    public static Chart CreateRadialBarScales() {
+        var chart = Chart.Create().WithXLabels(&quot;Overall&quot;).WithDataLabels(false)
+            .WithRadialGeometry(new ChartRadialGeometryOptions(0, 270, .2, .25, .1))
+            .AddRadialBar(&quot;Requests&quot;, new[] { new ChartPoint(1, 800) })
+            .AddRadialBar(&quot;Resolved (%)&quot;, new[] { new ChartPoint(1, 85) })
+            .WithYAxisBounds(0, 1000).WithSecondaryYAxisBounds(0, 100)
+            .WithSecondaryYAxis(&quot;Resolved (%)&quot;, value =&gt; value.ToString(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture) + &quot;%&quot;);
+        chart.Series[1].UseSecondaryYAxis();
+        chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
+        return chart;
+    }
+
+    private static Chart NumericRadial(ChartSeriesKind kind, string variant) {
+        var bars = kind == ChartSeriesKind.RadialBar;
+        var chart = Chart.Create().WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;)
+            .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15));
+        ChartPoint[] Points(params double[] values) =&gt; values.Select((value, index) =&gt; new ChartPoint(index + 1, value)).ToArray();
+        void Add(string name, params double[] values) {
+            if (bars) chart.AddRadialBar(name, Points(values)); else chart.AddRadialColumn(name, Points(values));
+        }
+        Add(&quot;Requests&quot;, 1200, 950, 680, 1050); Add(&quot;Follow-ups&quot;, 320, 410, 260, 360);
+        if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
+            foreach (var series in chart.Series) series.WithStackGroup(&quot;work&quot;).WithNormalization(100);
+            chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+        } else {
+            chart.WithYAxisBounds(0, 1500).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
         }
         return chart;
     }
@@ -447,7 +483,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Waterfall) {
             var chart = Basic(kind, variant)!;
             chart.Options.XAxis.WithReversal();
-            return chart;
+            chart.Options.YAxis.WithReversal();
+            return chart.WithDataLabels();
         }
         if (kind == ChartSeriesKind.StackedArea) {
             var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Share (%)&quot;)
@@ -576,7 +613,8 @@ public static partial class V2GalleryModels {
             ChartSeriesKind.Lollipop =&gt; chart.AddLollipop(&quot;Orders&quot;, values),
             ChartSeriesKind.HorizontalBar =&gt; chart.AddHorizontalBar(&quot;Orders&quot;, values),
             ChartSeriesKind.StackedArea =&gt; chart.AddStackedArea(&quot;Requests&quot;, values).AddStackedArea(&quot;Follow-ups&quot;, Observations(variant, -10)),
-            ChartSeriesKind.Waterfall =&gt; chart.AddWaterfall(&quot;Changes&quot;, new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
+            ChartSeriesKind.Waterfall =&gt; chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Total&quot;)
+                .AddWaterfall(&quot;Changes&quot;, new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
             ChartSeriesKind.Slope =&gt; Chart.Create().AddSlope(&quot;Team A&quot;, 28, 64, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team B&quot;, 52, 43, &quot;Before&quot;, &quot;After&quot;).AddSlope(&quot;Team C&quot;, 38, 57, &quot;Before&quot;, &quot;After&quot;),
             ChartSeriesKind.TrendLine =&gt; chart.AddScatter(&quot;Observations&quot;, values).AddTrendLine(&quot;Least-squares trend&quot;, values),
             _ =&gt; null
@@ -647,6 +685,41 @@ public static partial class V2GalleryModels {
         if (variant == &quot;options&quot; &amp;&amp; kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar) {
             chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, &quot;20 &#183; Target&quot;));
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    /// &lt;summary&gt;Compares request counts and resolution rates on independent radial value scales from a rightward start ray.&lt;/summary&gt;
+    public static Chart CreateRadialBarScales() {
+        var chart = Chart.Create().WithXLabels(&quot;Overall&quot;).WithDataLabels(false)
+            .WithRadialGeometry(new ChartRadialGeometryOptions(0, 270, .2, .25, .1))
+            .AddRadialBar(&quot;Requests&quot;, new[] { new ChartPoint(1, 800) })
+            .AddRadialBar(&quot;Resolved (%)&quot;, new[] { new ChartPoint(1, 85) })
+            .WithYAxisBounds(0, 1000).WithSecondaryYAxisBounds(0, 100)
+            .WithSecondaryYAxis(&quot;Resolved (%)&quot;, value =&gt; value.ToString(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture) + &quot;%&quot;);
+        chart.Series[1].UseSecondaryYAxis();
+        chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
+        return chart;
+    }
+
+    private static Chart NumericRadial(ChartSeriesKind kind, string variant) {
+        var bars = kind == ChartSeriesKind.RadialBar;
+        var chart = Chart.Create().WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;)
+            .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15));
+        ChartPoint[] Points(params double[] values) =&gt; values.Select((value, index) =&gt; new ChartPoint(index + 1, value)).ToArray();
+        void Add(string name, params double[] values) {
+            if (bars) chart.AddRadialBar(name, Points(values)); else chart.AddRadialColumn(name, Points(values));
+        }
+        Add(&quot;Requests&quot;, 1200, 950, 680, 1050); Add(&quot;Follow-ups&quot;, 320, 410, 260, 360);
+        if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
+            foreach (var series in chart.Series) series.WithStackGroup(&quot;work&quot;).WithNormalization(100);
+            chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            chart.Series[1].WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+        } else {
+            chart.WithYAxisBounds(0, 1500).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
         }
         return chart;
     }
@@ -843,7 +916,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Waterfall) {
             var chart = Basic(kind, variant)!;
             chart.Options.XAxis.WithReversal();
-            return chart;
+            chart.Options.YAxis.WithReversal();
+            return chart.WithDataLabels();
         }
         if (kind == ChartSeriesKind.StackedArea) {
             var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Share (%)&quot;)
