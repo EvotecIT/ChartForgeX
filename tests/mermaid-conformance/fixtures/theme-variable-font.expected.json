@@ -1,0 +1,5 @@
+{
+  "nodes": ["A", "B"],
+  "edges": [["A", "B"]],
+  "configuration": { "fontFamily": "Arial", "themeVariables.fontFamily": "Georgia, serif" }
+}
