@@ -13,9 +13,10 @@ namespace ChartForgeX.Stories;
 internal static partial class NativeVisualStoryRenderer {
     private static void DrawReplay(VisualSceneBuilder parent, VisualStory story, VisualStoryReplaySurface surface, ChartRect bounds, double? elapsed) {
         var state = surface.Replay.At(elapsed, surface.Options.HistoryLines);
-        DrawTerminalBackground(parent, story, surface.Theme, bounds);
+        var theme = surface.Theme ?? story.Theme.TerminalPalette();
+        DrawTerminalBackground(parent, story, theme, bounds);
         DrawTerminalContents(parent, story, state.Active.Tab, state.Tabs.Select(tab => tab.Tab).ToArray(), state.Active.Lines,
-            surface.Theme, surface.Options, bounds, state.Marker, state.Active.Discarded);
+            theme, surface.Options, bounds, state.Marker, state.Active.Discarded);
     }
     private static void DrawTerminalViewport(VisualSceneBuilder parent, VisualStory story, VisualStoryTerminalSurface surface, ChartRect bounds, double? elapsed) {
         var layout = TerminalStoryLayout.BuildLogical(surface.Terminal);
@@ -31,6 +32,8 @@ internal static partial class NativeVisualStoryRenderer {
                 background.Background = ChartColorMath.BlendPremultiplied(background.Background, tab.Tab.Theme.Background, amount);
                 background.HeaderBackground = ChartColorMath.BlendPremultiplied(background.HeaderBackground, tab.Tab.Theme.HeaderBackground, amount);
                 background.Border = ChartColorMath.BlendPremultiplied(background.Border, tab.Tab.Theme.Border, amount);
+                background.Text = ChartColorMath.BlendPremultiplied(background.Text, tab.Tab.Theme.Text, amount);
+                background.Accent = ChartColorMath.BlendPremultiplied(background.Accent, tab.Tab.Theme.Accent, amount);
             }
             weight += opacity;
         }
@@ -54,8 +57,11 @@ internal static partial class NativeVisualStoryRenderer {
     private static void DrawTerminalBackground(VisualSceneBuilder parent, VisualStory story, TerminalTheme theme, ChartRect bounds) {
         var builder = new VisualSceneBuilder(new VisualSize(story.Width, story.Height), FontSpec.FromFamily(theme.FontFamily));
         builder.Rect(bounds, theme.Background, theme.Border, radius: 10, role: "terminal-viewport");
-        builder.Rect(new ChartRect(bounds.X, bounds.Y, bounds.Width, 35), theme.HeaderBackground, radius: 10);
-        builder.Line(bounds.X, bounds.Y + 35, bounds.X + bounds.Width, bounds.Y + 35, theme.Border);
+        if (story.Theme.WindowStyle == TerminalWindowStyle.Minimal) {
+            builder.Rect(new ChartRect(bounds.X, bounds.Y, bounds.Width, 35), theme.HeaderBackground, radius: 10);
+            builder.Line(bounds.X, bounds.Y + 35, bounds.X + bounds.Width, bounds.Y + 35, theme.Border);
+        } else if (story.Theme.WindowStyle != TerminalWindowStyle.None)
+            DrawStoryWindowFrame(builder, bounds, story.Theme.WindowStyle, theme);
         parent.Append(builder.Build());
     }
 
@@ -63,12 +69,15 @@ internal static partial class NativeVisualStoryRenderer {
         IReadOnlyList<TerminalViewportLine> lines, TerminalTheme theme, VisualStoryTerminalOptions options, ChartRect bounds, string marker, int discarded, double opacity = 1) {
         var builder = new VisualSceneBuilder(new VisualSize(story.Width, story.Height), FontSpec.FromFamily(theme.FontFamily));
         var size = options.FontSize; var lineHeight = size * 1.5;
-        var content = new ChartRect(bounds.X + 12, bounds.Y + 48, bounds.Width - 24, bounds.Height - 78);
+        var header = story.Theme.WindowStyle == TerminalWindowStyle.Minimal ? 35 : TerminalWindowChrome.HeaderHeight(story.Theme.WindowStyle);
+        var content = new ChartRect(bounds.X + 12, bounds.Y + header + 13, bounds.Width - 24, bounds.Height - header - 43);
         if (content.Width < builder.MeasureText("M", size).Width || content.Height < lineHeight)
             throw new InvalidOperationException("The terminal viewport cannot fit a readable line. Enlarge the panel or rebalance its weight.");
         var capacity = Math.Max(1, (int)(content.Height / lineHeight));
         var title = active.Title + (tabs.Count > 1 ? " · " + (Array.FindIndex(tabs.ToArray(), tab => tab.Id == active.Id) + 1).ToString(CultureInfo.InvariantCulture) + "/" + tabs.Count.ToString(CultureInfo.InvariantCulture) : "");
-        FitText(builder, title, bounds.X + 14, bounds.Y + 23, bounds.Width - 28, 13, ChartColorMath.WithOpacity(theme.Text, opacity), 700);
+        if (story.Theme.WindowStyle == TerminalWindowStyle.Minimal)
+            FitText(builder, title, bounds.X + 14, bounds.Y + 23, bounds.Width - 28, 13, ChartColorMath.WithOpacity(theme.Text, opacity), 700);
+        else if (header > 0) DrawStoryWindowTitle(builder, bounds, story.Theme.WindowStyle, theme, title, opacity);
         var columns = Math.Max(1, (int)(content.Width / builder.MeasureText("M", size).Width));
         var rows = new Queue<TerminalViewportLine>(); var removed = discarded;
         foreach (var line in lines) {

@@ -17,6 +17,7 @@
     stage.style.setProperty('--cfx-zoom', state.zoom);
     stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
+    refreshTooltipPosition(root);
   };
   // The reset control is contextual: it exists only while the reader has changed the view.
   const viewChanged = (root) => {
@@ -34,9 +35,6 @@
       if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
       try { root.focus({ preventScroll: true }); } catch { root.focus(); }
     }
-    const stage = root.querySelector('.cfx-stage');
-    // Align with the visible stage edge, excluding its right border and any reserved scrollbar gutter.
-    if (changed && stage) reset.style.right = (8 + Math.max(0, stage.offsetWidth - stage.clientWidth - stage.clientLeft)) + 'px';
     reset.hidden = !changed;
   };
   const sameGroup = (root, peer) => root !== peer && root.dataset.cfxInteractionGroup && root.dataset.cfxInteractionGroup === peer.dataset.cfxInteractionGroup;
