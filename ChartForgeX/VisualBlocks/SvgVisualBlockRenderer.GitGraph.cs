@@ -97,7 +97,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var width = VisualBlockRendering.BodyFontSize(theme, System.Math.Min(96, System.Math.Max(38, tag.Length * 6.2 + 18)));
         var x = centerX - width / 2;
         writer.StartElement("rect").Attribute("data-cfx-role", "git-tag").Attribute("x", F(x)).Attribute("y", F(y)).Attribute("width", F(width)).Attribute("height", F(VisualBlockRendering.BodyFontSize(theme, 18))).Attribute("rx", 7).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
-        WriteText(writer, tag, x + VisualBlockRendering.BodyFontSize(theme, 5), y + VisualBlockRendering.BodyFontSize(theme, 12.5), width - VisualBlockRendering.BodyFontSize(theme, 10), TextAlignment.Center, theme.MutedText, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 9.5), "700");
+        WriteText(writer, tag, x + VisualBlockRendering.BodyFontSize(theme, 5), y + VisualBlockRendering.BodyFontSize(theme, 12.5), width - VisualBlockRendering.BodyFontSize(theme, 10), TextAlignment.Center, theme.MutedText, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 9.5), "700", "git-tag-label");
     }
 
     private static int BranchIndex(VisualBlockRendering.GitGraphLayout layout, string branchName) {

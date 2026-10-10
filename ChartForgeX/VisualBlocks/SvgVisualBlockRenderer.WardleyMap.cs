@@ -122,7 +122,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var y = VisualBlockRendering.ProjectWardleyY(layout.Plot, annotation.Visibility);
         var radius = VisualBlockRendering.BodyFontSize(theme, 10);
         writer.StartElement("circle").Attribute("data-cfx-role", "wardley-annotation").Attribute("cx", F(x)).Attribute("cy", F(y)).Attribute("r", F(radius)).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.Axis.ToCss()).EndEmptyElement().Line();
-        WriteText(writer, annotation.Number.ToString(System.Globalization.CultureInfo.InvariantCulture), x - radius * 0.8, y + radius * 0.4, radius * 1.6, TextAlignment.Center, theme.Text, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 9), "800");
+        WriteText(writer, annotation.Number.ToString(System.Globalization.CultureInfo.InvariantCulture), x - radius * 0.8, y + radius * 0.4, radius * 1.6, TextAlignment.Center, theme.Text, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 9), "800", "wardley-annotation-number");
         if (annotation.Text.Length > 0) WriteText(writer, annotation.Text, x + radius + 3, y - 4, 150, TextAlignment.Left, theme.MutedText, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 9), "600");
     }
 

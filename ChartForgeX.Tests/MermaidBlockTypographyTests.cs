@@ -9,6 +9,22 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidBlockTypographyTests {
+    [Fact]
+    public void EnlargedWardleyAnnotationKeepsItsNumberInsideTheBadge() {
+        var body = File.ReadAllText(Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "wardley-basic.mmd"));
+        var svg = XDocument.Parse(Render(body, 21).ToSvg());
+        var circle = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "wardley-annotation");
+        var number = Assert.Single(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "1");
+        Assert.Equal((string?)circle.Attribute("transform"), (string?)number.Attribute("transform"));
+        var x = double.Parse(number.Attribute("x")!.Value, CultureInfo.InvariantCulture);
+        var y = double.Parse(number.Attribute("y")!.Value, CultureInfo.InvariantCulture);
+        var cx = double.Parse(circle.Attribute("cx")!.Value, CultureInfo.InvariantCulture);
+        var cy = double.Parse(circle.Attribute("cy")!.Value, CultureInfo.InvariantCulture);
+        var radius = double.Parse(circle.Attribute("r")!.Value, CultureInfo.InvariantCulture);
+        Assert.InRange(x, cx - radius, cx + radius);
+        Assert.InRange(y, cy - radius, cy + radius);
+    }
+
     [Theory]
     [InlineData("packet-basic.mmd")]
     [InlineData("block-basic.mmd")]

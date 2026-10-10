@@ -122,13 +122,13 @@ public sealed partial class SvgVisualBlockRenderer {
         }
     }
 
-    internal static void WriteText(SvgMarkupWriter writer, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, string fontFamily, double fontSize, string weight) {
+    internal static void WriteText(SvgMarkupWriter writer, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, string fontFamily, double fontSize, string weight, string role = "visual-text") {
         var fitted = VisualBlockRendering.FitText(text, fontSize, Math.Max(1, width));
         var anchor = "start";
         var textX = x;
         if (alignment == TextAlignment.Center) { anchor = "middle"; textX = x + width / 2; }
         else if (alignment == TextAlignment.Right) { anchor = "end"; textX = x + width; }
-        writer.StartElement("text").Attribute("data-cfx-role", "visual-text").Attribute("x", textX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", color.ToCss()).Attribute("font-family", fontFamily).Attribute("font-size", fontSize).Attribute("font-weight", weight).Text(fitted).EndElement().Line();
+        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", textX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", color.ToCss()).Attribute("font-family", fontFamily).Attribute("font-size", fontSize).Attribute("font-weight", weight).Text(fitted).EndElement().Line();
     }
 
     internal static string FormatPoint(double x, double y) => x.ToString("0.###", CultureInfo.InvariantCulture) + "," + y.ToString("0.###", CultureInfo.InvariantCulture);
