@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 /// Generates calendar-aligned ticks and default labels for <see cref="ChartScaleKind.Time"/> axes.
 /// Axis values are OLE Automation dates holding UTC instants; alignment and labels use the axis display zone.
 /// </summary>
-internal static class ChartTimeScale {
+internal static partial class ChartTimeScale {
     private const int MaximumTicks = 2_000;
     private const int MaximumSteps = 100_000;
     private const double MinimumOaDate = -657434.0;
@@ -81,10 +81,11 @@ internal static class ChartTimeScale {
         }
     }
 
-    /// <summary>Formats a time-axis value: dates at midnight, otherwise wall-clock time in the display zone.</summary>
-    public static string Format(ChartAxis axis, double value) {
+    /// <summary>Formats a time-axis value, preserving milliseconds when the tick interval requires them.</summary>
+    public static string Format(ChartAxis axis, double value, bool milliseconds = false) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
-        if (ToDisplayTime(axis, value) is not { } rounded) return ChartNumericFormatter.FormatCompact(value);
+        if (ToDisplayTime(axis, value, roundToSeconds: !milliseconds) is not { } rounded) return ChartNumericFormatter.FormatCompact(value);
+        if (milliseconds) return rounded.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
         if (rounded.TimeOfDay == TimeSpan.Zero) return rounded.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         return rounded.ToString(rounded.Second == 0 ? "HH:mm" : "HH:mm:ss", CultureInfo.InvariantCulture);
     }
