@@ -31,6 +31,8 @@ internal static partial class VisualHierarchyCompiler {
             metadata["data-cfx-depth"] = N(node.Depth); metadata["data-cfx-value"] = N(node.Value);
             metadata["data-cfx-formatted-value"] = formatted; metadata["data-cfx-leaf"] = node.Children.Count == 0 ? "true" : "false";
             if (item.ParentId != null) metadata["data-cfx-parent"] = item.ParentId;
+            var branchRoot = series.Relationships!.HierarchyBranchRoot(node.Index);
+            if (branchRoot != null) metadata["data-cfx-branch-root"] = branchRoot;
             if (item.Value.HasValue) metadata["data-cfx-authored-value"] = N(item.Value.Value);
             if (item.ColorValue.HasValue) metadata["data-cfx-color-value"] = N(item.ColorValue.Value);
             else if (surface.Scale != null) metadata["data-cfx-color-missing"] = "true";

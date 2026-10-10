@@ -25,6 +25,8 @@ Chart and topology `ConfigureTheme` callbacks edit their stored theme in place. 
 
 Immutable render requests use constructors and read-only properties. They do not expose `Add*` or `Configure*` mutation. The reviewed `VisualTheme.WithTypography(VisualTypography)` exception returns an independent paired theme with a replacement typography scale, preserving both palettes, geometry and effects without editing the source. Other immutable `With*` APIs need the same explicit copy-return contract and review. Existing mutable `FontSpec`, `VisualDesignTokens`, status-token and accessibility objects enter this boundary through snapshots or leave it through independent copies.
 
+HTML interaction presentation stays in the optional adapter. `HtmlChartInteractionOptions.Highlight` and `HtmlInteractiveDashboardOptions.Highlight` are getter-owned mutable `HtmlChartHighlightOptions`; their four getter-owned `HtmlChartHighlightStyle` groups contain nullable `ChartColor`/numeric overrides. Dashboard rendering copies values into independent child groups. The explicit `RootBranch` mode uses immutable Core hierarchy membership only for Sunburst node targets; it does not add transient paint settings to Core or introduce a second interaction model. See [HTML Sunburst branch emphasis](migration.md#html-sunburst-branch-emphasis) for composition, defaults and native-export boundaries.
+
 ## Shared requests and ownership
 
 | Contract | Ownership and behavior |

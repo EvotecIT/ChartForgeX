@@ -140,8 +140,11 @@
     }
     return null;
   };
-  const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
-    ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  const observationPaint = (node, styles) => withNativeHighlightPaint(node, () => {
+    // A probe suspends adapter opacity only; use fresh live style values after the suspension.
+    if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
+    return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  });
   // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
   // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
   const pointerTargetPaint = (node, styles = new Map()) => {

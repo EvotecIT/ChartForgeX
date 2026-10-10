@@ -5,6 +5,15 @@
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
     applyRenderedTargetContract(root);
+    prepareRootBranchHighlights(root);
+    if (root._cfxBranchHighlights) root.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      clearHover(root, true, true);
+      hideCrosshair(root, crosshair);
+      hideTip(root, tip, true);
+    });
     applyViewport(root, getState(root));
     renderCompare(root);
     if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());
@@ -270,6 +279,7 @@
       if (brush) brush.hidden = true;
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
+      if (root._cfxBranchHighlights) clearHover(root, true, true);
       publishCompare(root, true);
       syncResetControl(root);
     });
