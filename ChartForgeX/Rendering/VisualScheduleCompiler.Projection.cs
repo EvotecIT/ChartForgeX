@@ -28,18 +28,24 @@ internal static partial class VisualScheduleCompiler {
         var initial = MarkProjection(axis, plot, minimumExtent, maximumExtent);
         var left = initial.Left - plot.Left; var right = plot.Right - initial.Right;
         var largest = 0d;
-        foreach (var guide in guides) largest = Math.Max(largest, guide.Y);
-        var worstLeft = axis.Minimum.HasValue ? 0 : Math.Min(plot.Width / 2, Math.Max(left, largest));
-        var worstRight = axis.Maximum.HasValue ? 0 : Math.Min(plot.Width / 2, Math.Max(right, largest));
-        // Test each guide against the largest possible opposite reservation. This one
-        // pass remains valid after both sides move, without shrinking dates or iterating.
+        var fits = true;
+        var bounds = new VisualAxisPaintBounds();
+        bounds.Include(0, left); bounds.Include(1, right);
         foreach (var guide in guides) {
-            if (left + guide.X * (plot.Width - left - worstRight) < guide.Y)
-                minimumExtent = Math.Max(minimumExtent, guide.Y);
-            if (right + (1 - guide.X) * (plot.Width - worstLeft - right) < guide.Y)
-                maximumExtent = Math.Max(maximumExtent, guide.Y);
+            // Preserve task and containable-guide geometry when a wider stroke must clip.
+            if (guide.Y * 2 >= plot.Width) continue;
+            largest = Math.Max(largest, guide.Y);
+            var coordinate = left + guide.X * initial.Width;
+            if (!axis.Minimum.HasValue && coordinate < guide.Y || !axis.Maximum.HasValue && plot.Width - coordinate < guide.Y) fits = false;
+            bounds.Include(guide.X, guide.Y);
         }
-        return MarkProjection(axis, plot, minimumExtent, maximumExtent);
+        if (fits) return initial;
+        if (bounds.TryExpand(0, 1, plot.Width, axis.Minimum.HasValue, axis.Maximum.HasValue, out var first, out var last)) {
+            var width = plot.Width / (last - first);
+            return new ChartRect(plot.Left - first * width, plot.Top, width, plot.Height);
+        }
+        // Conflicting containable extents still use the bounded clipping reservation.
+        return MarkProjection(axis, plot, Math.Max(minimumExtent, largest), Math.Max(maximumExtent, largest));
     }
 
     /// <summary>Reserves painted mark extents at automatic axis sides without changing dates or authored clipping windows.</summary>

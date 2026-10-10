@@ -58,6 +58,8 @@ internal static partial class VisualCartesianCompiler {
                 if (series.Kind == ChartSeriesKind.Dumbbell) Include(point.X, series.Points[raw + 1].Y, markerRadius, series.YAxis);
             }
         }
+        // References and markers share one fit: extending one side must preserve the other's pixel gutter.
+        IncludeReferenceExtents(chart, context, x, primaryY, chart.Options.YAxis);
         var changed = ExpandMarkerAxis(chart.Options.XAxis, x, plot.Width, range.MinX, range.MaxX, out var minX, out var maxX);
         range.SetXBounds(minX, maxX);
         changed |= ExpandMarkerAxis(chart.Options.YAxis, primaryY, plot.Height, range.MinY, range.MaxY, out var minY, out var maxY);
@@ -78,30 +80,17 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private sealed class MarkerExtents {
-        internal double Minimum { get; private set; } = double.PositiveInfinity;
-        internal double Maximum { get; private set; } = double.NegativeInfinity;
-        internal double Radius { get; private set; }
+        internal VisualAxisPaintBounds Bounds { get; } = new VisualAxisPaintBounds();
         internal void Include(double value, double radius, ChartAxis axis) {
-            value = ChartScaleTransform.Forward(value, axis);
-            Minimum = Math.Min(Minimum, value); Maximum = Math.Max(Maximum, value); Radius = Math.Max(Radius, radius);
+            Bounds.Include(ChartScaleTransform.Forward(value, axis), radius);
         }
     }
 
     private static bool ExpandMarkerAxis(ChartAxis axis, MarkerExtents markers, double pixels,
         double originalMinimum, double originalMaximum, out double minimum, out double maximum) {
         minimum = originalMinimum; maximum = originalMaximum;
-        if (markers.Radius <= 0 || pixels <= markers.Radius * 2 || axis.Minimum.HasValue && axis.Maximum.HasValue) return false;
         var min = ChartScaleTransform.Forward(minimum, axis); var max = ChartScaleTransform.Forward(maximum, axis);
-        var fraction = markers.Radius / pixels;
-        if (axis.Minimum.HasValue) max = Math.Max(max, (markers.Maximum - fraction * min) / (1 - fraction));
-        else if (axis.Maximum.HasValue) min = Math.Min(min, (markers.Minimum - fraction * max) / (1 - fraction));
-        else {
-            // Solve for one domain whose innermost pixel gutters contain the largest marker.
-            // Existing baseline/padding stays part of the domain instead of being replaced.
-            var span = Math.Max(max - min, Math.Max((markers.Maximum - min) / (1 - fraction),
-                Math.Max((max - markers.Minimum) / (1 - fraction), (markers.Maximum - markers.Minimum) / (1 - 2 * fraction))));
-            min = Math.Min(min, markers.Minimum - fraction * span); max = min + span;
-        }
+        if (!markers.Bounds.TryExpand(min, max, pixels, axis.Minimum.HasValue, axis.Maximum.HasValue, out min, out max)) return false;
         var paddedMinimum = ChartScaleTransform.Inverse(min, axis); var paddedMaximum = ChartScaleTransform.Inverse(max, axis);
         if (!ChartMath.IsFinite(paddedMinimum) || !ChartMath.IsFinite(paddedMaximum)
             || axis.Scale == ChartScaleKind.Logarithmic && paddedMinimum <= 0) return false;
