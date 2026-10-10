@@ -43,6 +43,48 @@ public sealed class MermaidGanttCalendarDateTests {
     }
 
     [Theory]
+    [InlineData("YYYY-MM-DD", "2026-01-02T13:02", "2026-01-03T14:02")]
+    [InlineData("YYYY-MM-DD HH:mm", "2026-01-02 13:02", "2026-01-03 13:02:03")]
+    public void TaskFallbackTimestampsDoNotLoseFieldsWhenUsedAsCalendarRules(string format, string start, string calendar) {
+        var parser = new MermaidParser();
+        var source = "gantt\ndateFormat " + format + "\nexcludes " + calendar + "\nTask :task," + start + ",2d";
+        var excluded = parser.ParseGantt(source);
+        Assert.Empty(excluded.Diagnostics);
+        var task = Assert.Single(excluded.Document!.Tasks);
+        Assert.Equal(task.Start.AddDays(2), task.End);
+        var included = parser.ParseGantt("gantt\ndateFormat " + format + "\nexcludes 2026-01-03\nincludes " + calendar + "\nTask :task," + start + ",2d");
+        Assert.Empty(included.Diagnostics);
+        task = Assert.Single(included.Document!.Tasks);
+        Assert.Equal(task.Start.AddDays(3), task.End);
+    }
+
+    [Theory]
+    [InlineData("YYYY-D-M", "2026-2-1", "2026-03-01", 3)]
+    [InlineData("YYYY-DD-MM", "2026-02-01", "2026-03-01", 3)]
+    [InlineData("YYYY-D-M", "2026-28-2", "2026-03-01", 2)]
+    [InlineData("YYYY-DD-MM", "2026-28-02", "2026-03-01", 2)]
+    public void ConfiguredCalendarFieldsAndIsoDayKeysCannotCollide(string format, string start, string excluded, int days) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat " + format + "\nexcludes " + excluded + "\nTask :task," + start + ",2d");
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal(task.Start.AddDays(days), task.End);
+    }
+
+    [Fact]
+    public void ConfiguredInclusionCannotOverrideAnUnrelatedIsoDayWithTheSameText() {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-DD-MM\nexcludes sunday\nincludes 2026-03-01\nTask :task,2026-28-02,2d");
+        Assert.Empty(parsed.Diagnostics);
+        Assert.Equal(new DateTime(2026, 3, 3), Assert.Single(parsed.Document!.Tasks).End);
+    }
+
+    [Fact]
+    public void MixedLegacyCalendarShorthandRetainsRecurringWeekdays() {
+        var parsed = new MermaidParser().ParseGantt("gantt\nexcludes 2026-01-03 saturday\nTask :task,2026-01-02,10d");
+        Assert.Empty(parsed.Diagnostics);
+        Assert.Equal(new DateTime(2026, 1, 14), Assert.Single(parsed.Document!.Tasks).End);
+    }
+
+    [Theory]
     [InlineData("YYYY-MM-DD HH:mm", "2026-01-02 1:00")]
     [InlineData("YYYY-MM-DD", "January 2 2026")]
     [InlineData("YYYY-MM-DD", "2026-1-2")]

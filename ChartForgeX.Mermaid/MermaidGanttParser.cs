@@ -119,9 +119,7 @@ internal static partial class MermaidGanttParser {
         value = default;
         if (dateFormat.Length > 256) return false;
         try {
-            if (MermaidGanttInputDateFormat.TryParse(text, dateFormat, out value)) return true;
-            var format = ToDotNetDateFormat(dateFormat);
-            if (DateTime.TryParseExact(text.Trim(), format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value)) return true;
+            if (MermaidGanttInputDateFormat.TryParseConfigured(text, dateFormat, out value)) return true;
             var fallbackFormats = new[] { "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss" };
             if (DateTime.TryParseExact(text.Trim(), fallbackFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value)) return true;
             return DateTime.TryParse(text.Trim(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value);
