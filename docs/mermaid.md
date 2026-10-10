@@ -200,12 +200,12 @@ State diagrams are parsed into `MermaidStateDocument` and converted to topology 
 Supported state parsing includes:
 
 - `stateDiagram` and `stateDiagram-v2` headers.
-- Global `direction LR`, `RL`, `TB` and `BT`, applied to native node ordering.
+- Global `direction LR`, `RL`, `TB` and `BT`, applied to native node ordering. State direction values are case-insensitive and retained in canonical uppercase form.
 - State declarations including `state "Label" as id`, `state id as "Label"`, and `state id <<choice>>`.
 - Composite state blocks in `state id { ... }` form.
 - Transitions using `-->` with optional labels after `:`.
 - Start and end markers using `[*]`.
-- Inline and multiline notes, classes, styles and concurrency separators retained as source statements with `CFXM007`. Multiline note text is preserved through `end note`; arrows, colons and accessibility keywords inside the note stay literal text.
+- Inline, floating (`note "text" as ID`) and multiline notes, classes, styles and concurrency separators retained as source statements with `CFXM007`. Floating notes retain one line. Multiline note text is preserved through `end note`; arrows, colons and accessibility keywords inside the note stay literal text.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -264,6 +264,8 @@ var artifact = document!.ToVisualArtifact();
 The conversion target for ER diagrams is `TopologyChart`. Entities become database-like topology nodes. Relationships use identifying or dashed non-identifying lines with visible crow's-foot endpoint cardinality. Entity attributes, keys, and comments appear inside the entity boxes.
 
 ER `subgraph` boundaries and local directions are retained with `CFXM007`. Entities and their relationships remain in the global layout; nested group geometry and group endpoints are not implemented. Unclosed entity/subgraph blocks and stray closing statements report `CFXM008`. The pinned Mermaid 10 reference interprets ER direction and subgraph words as entity names, while the 11/12 references recognize their newer notation. Shared expectations record that semantic difference; ChartForgeX follows the documented current notation.
+
+ER direction values are case-insensitive and retained in canonical uppercase form. A bare `direction` identifier remains an entity or state. ChartForgeX also preserves its existing bare style/note keyword identifiers; some upstream grammars reserve those words, depending on family and source ending. Class source direction values use the documented uppercase forms.
 
 ## Requirement Diagrams
 

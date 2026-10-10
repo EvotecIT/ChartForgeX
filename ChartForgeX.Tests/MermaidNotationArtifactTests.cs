@@ -13,6 +13,8 @@ public sealed class MermaidNotationArtifactTests {
     [InlineData("er-retained-styles", "entities")]
     [InlineData("state-retained-note", "states")]
     [InlineData("er-retained-subgraph", "entities")]
+    [InlineData("state-floating-note", "states")]
+    [InlineData("er-lowercase-direction", "entities")]
     public void SharedReferenceFixturesPreserveNativeFactsAndRetainedNotation(string name, string key) {
         var root = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures");
         using var expected = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, name + ".expected.json")));
