@@ -49,7 +49,9 @@ internal static partial class MermaidGanttParser {
             if (!indexes.ContainsKey(task.Index)) continue;
             var milestone = ContainsTag(task.Tags, "milestone");
             var parsed = new MermaidGanttTask(task.Title, task.Id, task.Section, task.Start.Value!.Value, task.End.Value!.Value,
-                milestone || ContainsTag(task.Tags, "done") ? 1 : 0, milestone, task.Tags, task.AfterIds, task.RawMetadata, task.Span);
+                milestone || ContainsTag(task.Tags, "done") ? 1 : 0, milestone, task.Tags, task.AfterIds, task.RawMetadata, task.Span) {
+                RenderEnd = task.RenderEnd ?? task.End.Value.Value
+            };
             parsed.UntilTaskIds.AddRange(task.UntilIds);
             if (indexes.TryGetValue(task.DependencyIndex, out var dependencyIndex)) parsed.DependencyIndex = dependencyIndex;
             document.Tasks.Add(parsed);
@@ -101,15 +103,17 @@ internal static partial class MermaidGanttParser {
             for (var index = 2; index < slot.Dependencies.Count; index++) {
                 if (slot.Dependencies[index].Value!.Value < earliest) earliest = slot.Dependencies[index].Value!.Value;
             }
-            if (!TryResolveCalendarEnd(taskStart, earliest, document, out end)) {
+            if (!TryResolveCalendarEnd(taskStart, earliest, document, out end, out var renderEnd)) {
                 Fail(slot, result, "Gantt exclusion calendar has no reachable working end date.");
                 return;
             }
+            task.RenderEnd = renderEnd;
         } else if (TryParseDuration(task.EndSpec, out var amount, out var unit)) {
-            if (!TryResolveDurationEnd(taskStart, amount, unit, document, out end)) {
+            if (!TryResolveDurationEnd(taskStart, amount, unit, document, out end, out var renderEnd)) {
                 Fail(slot, result, "Gantt duration exceeds the supported date range or exclusion calendar has no reachable working day.");
                 return;
             }
+            task.RenderEnd = renderEnd;
         } else if (!TryParseDate(task.EndSpec, document.DateFormat, out end)) {
             Fail(slot, result, "Gantt task end values must be dates, durations or until clauses.");
             return;
@@ -154,6 +158,7 @@ internal static partial class MermaidGanttParser {
         public int Index { get; }
         public DateSlot Start { get; }
         public DateSlot End { get; }
+        public DateTime? RenderEnd { get; set; }
         public List<string> AfterIds { get; } = new();
         public List<string> UntilIds { get; } = new();
         public int DependencyIndex { get; set; } = -1;
