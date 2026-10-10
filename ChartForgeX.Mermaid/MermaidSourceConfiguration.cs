@@ -31,6 +31,10 @@ public sealed class MermaidSourceConfiguration {
 
 /// <summary>A retained source setting, including the original declaration location.</summary>
 public sealed class MermaidConfigurationSetting {
+    internal bool TryGetNumber(out double number) {
+        number = 0;
+        return !IsString && MermaidConfigurationNumber.TryParse(Value, out number);
+    }
     internal MermaidConfigurationSetting(string path, string? value, bool isString, MermaidSourceSpan span) {
         Path = path; Value = value; IsString = isString; Span = span;
     }
