@@ -648,7 +648,17 @@ The conversion target for sequence diagrams is `SequenceArtifact`. Participants,
 
 Source `dark`/`default` themes and font stacks become authored `SequenceArtifact.Theme` and `ThemeMode` defaults for SVG, PNG and HTML exports. The native sequence owner accepts the shared immutable `VisualTheme`, including its typography scale. A host that calls `Prepare(VisualRenderContext)` supplies the complete presentation for that prepared scene; its theme, mode and font take precedence over authored defaults. The portable envelope records the resolved colors and font used by the prepared scene. Authored envelopes record the model defaults. Source theme variables and broader sequence configuration retain diagnostics until they have native mappings.
 
-Static HTML scales the natural SVG to the page width. Wide sequence diagrams can therefore have very small labels on compact pages. Hosts can supply an explicit viewport and typography when preparing their scene; source presentation alone does not provide responsive reflow.
+Sequence HTML preserves its completed scene size so labels keep their logical font size on compact pages. A keyboard-accessible region scrolls horizontally when the scene is wider than its host. Prepared sequence artifacts use the same policy. This preserves scene geometry; it does not reflow messages or participant columns.
+
+A host can choose page-width scaling explicitly, or request preserved size for another artifact family:
+
+```csharp
+var html = result.Artifact!.ToHtmlPage(new VisualArtifactRenderOptions {
+    HtmlSizing = VisualArtifactHtmlSizing.FitToWidth
+});
+```
+
+`Automatic` preserves sequence size and retains other families' existing standalone HTML sizing. `PreserveSize` uses the common scroll region for any supported artifact. These options affect HTML hosting; SVG and PNG exports keep their prepared geometry. Print output fits the scene to the available page width. To change layout or typography, supply those values when preparing the scene.
 
 ## Pie Charts
 
