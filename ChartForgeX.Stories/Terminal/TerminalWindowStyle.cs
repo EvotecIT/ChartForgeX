@@ -13,7 +13,9 @@ public enum TerminalWindowStyle {
     /// <summary>Restrained title bar without platform-specific controls.</summary>
     Minimal,
     /// <summary>Terminal surface without a visible title bar.</summary>
-    None
+    None,
+    /// <summary>Linux desktop-style title bar with right-hand window controls.</summary>
+    Linux
 }
 
 internal static class TerminalWindowChrome {
@@ -29,6 +31,7 @@ internal static class TerminalWindowChrome {
         Validate(style);
         switch (style) {
             case TerminalWindowStyle.MacOS: return 42;
+            case TerminalWindowStyle.Linux: return 42;
             case TerminalWindowStyle.WindowsTerminal: return 50;
             case TerminalWindowStyle.Minimal: return 38;
             case TerminalWindowStyle.None: return 0;
@@ -50,7 +53,7 @@ internal static class TerminalWindowChrome {
             return TerminalTextWidth.Fit(value, maximumWindowsColumns);
         }
 
-        var reservedWidth = style == TerminalWindowStyle.MacOS ? 180 : 72;
+        var reservedWidth = style == TerminalWindowStyle.MacOS || style == TerminalWindowStyle.Linux ? 180 : 72;
         var available = Math.Max(12, width - reservedWidth);
         var maximum = Math.Max(1, available / 12);
         return TerminalTextWidth.Fit(value, maximum);

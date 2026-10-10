@@ -27,6 +27,10 @@ internal static class PngTerminalStoryChromeRenderer {
             case TerminalWindowStyle.WindowsTerminal:
                 DrawWindowsTerminal(canvas, story, layout, fonts, elapsedSeconds);
                 break;
+            case TerminalWindowStyle.Linux:
+                DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, layout.Width / 2d, 19, true);
+                DrawWindowControls(canvas, story, layout);
+                break;
             case TerminalWindowStyle.Minimal:
                 DrawActiveTitles(canvas, story, layout, fonts, elapsedSeconds, 28, 19, false);
                 break;
@@ -63,6 +67,11 @@ internal static class PngTerminalStoryChromeRenderer {
         DrawPlus(canvas, tabRight + 25, 31, theme.Muted);
         canvas.DrawLine(tabRight + 52, 28, tabRight + 56, 32, theme.Muted, 1.5);
         canvas.DrawLine(tabRight + 56, 32, tabRight + 60, 28, theme.Muted, 1.5);
+        DrawWindowControls(canvas, story, layout);
+    }
+
+    private static void DrawWindowControls(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout) {
+        var theme = story.Theme;
         canvas.DrawLine(layout.Width - 106, 31, layout.Width - 94, 31, theme.Text, 1.3);
         canvas.StrokeRect(layout.Width - 66, 25, 12, 12, theme.Text, 1.3);
         DrawCross(canvas, layout.Width - 25, 31, 6, theme.Text);
