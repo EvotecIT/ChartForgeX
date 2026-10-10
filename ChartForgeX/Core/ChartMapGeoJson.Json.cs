@@ -63,6 +63,13 @@ internal sealed class GeoJsonValue {
     public Dictionary<string, GeoJsonValue> AsObject(string context) =>
         _value as Dictionary<string, GeoJsonValue> ?? throw new ArgumentException("Expected JSON object for " + context + ".");
 
+    public bool TryAsObject(out Dictionary<string, GeoJsonValue> values) {
+        values = _value as Dictionary<string, GeoJsonValue> ?? null!;
+        return values != null;
+    }
+
+    public bool IsString => _value is string;
+
     public List<GeoJsonValue> AsArray(string context) =>
         _value as List<GeoJsonValue> ?? throw new ArgumentException("Expected JSON array for " + context + ".");
 
