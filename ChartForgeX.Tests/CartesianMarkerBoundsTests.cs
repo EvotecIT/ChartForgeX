@@ -9,6 +9,31 @@ namespace ChartForgeX.Tests;
 
 public sealed class CartesianMarkerBoundsTests {
     [Theory]
+    [InlineData(ChartScaleKind.Linear, false)]
+    [InlineData(ChartScaleKind.Linear, true)]
+    [InlineData(ChartScaleKind.Logarithmic, false)]
+    public void AuthoredBubbleRadiusRangeUsesTheSameScaleForMarksAndAutomaticPaintBounds(ChartScaleKind scale, bool secondary) {
+        var chart = Create(ChartSeriesKind.Bubble, secondary, 360, 260);
+        chart.ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 40); bubble.MinimumRadius = 1; bubble.MaximumRadius = 28; });
+        chart.Series[0].ConfigureMarkers(marker => { marker.StrokeWidth = 4; marker.Shape = ChartMarkerShape.Circle; });
+        chart.Options.XAxis.Scale = scale;
+        (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).Scale = scale;
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var plot = Plot(prepared.Scene);
+        var marks = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(mark => mark.Role == "bubble").ToArray();
+        Assert.Equal(3, marks.Length); Assert.Equal(28, marks[2].Rx);
+        foreach (var mark in marks) {
+            Assert.True(mark.Cx - mark.Rx - 2 >= plot.Left - 1e-7);
+            Assert.True(mark.Cx + mark.Rx + 2 <= plot.Right + 1e-7);
+            Assert.True(mark.Cy - mark.Ry - 2 >= plot.Top - 1e-7);
+            Assert.True(mark.Cy + mark.Ry + 2 <= plot.Bottom + 1e-7);
+            var region = prepared.Regions.Single(item => item.Role == "point" && Math.Abs(item.Bounds.Left + item.Bounds.Width / 2 - mark.Cx) < 1e-7);
+            Assert.Equal(2 * mark.Rx + 4, region.Bounds.Width, 8);
+        }
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
     [InlineData(ChartSeriesKind.Bubble, ChartScaleKind.Linear, false, 320, 220)]
     [InlineData(ChartSeriesKind.Bubble, ChartScaleKind.Linear, true, 640, 360)]
     [InlineData(ChartSeriesKind.Bubble, ChartScaleKind.Logarithmic, false, 320, 220)]

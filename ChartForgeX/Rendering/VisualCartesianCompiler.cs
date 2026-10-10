@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Compiles Cartesian geometry, styles and semantic alternatives into shared immutable scene commands.</summary>
 internal static partial class VisualCartesianCompiler {
-    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
+    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors, ChartBubbleSizeScale? bubbleScale = null) {
         var entries = new List<VisualLegendEntry>();
         if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
             && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].Points.Count > 1) {
@@ -28,7 +28,7 @@ internal static partial class VisualCartesianCompiler {
                     color = series.Points[point].Y >= 0 ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
                 var paint = VisualChartPaint.Series(series, color, point);
                 entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
-                    marker: VisualMarkerScene.Legend(chart, series, color, paint, point, pattern), paint: paint));
+                    marker: VisualMarkerScene.Legend(chart, series, color, paint, point, pattern, bubbleScale), paint: paint));
             }
             return entries;
         }
@@ -37,21 +37,23 @@ internal static partial class VisualCartesianCompiler {
             if (series.ShowInLegend) {
                 var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
                 entries.Add(new VisualLegendEntry(series.Name, color, SeriesId(index), series.Kind, series.FillPattern, series.StateRole,
-                    series.InteractionIdentityKey, marker: VisualMarkerScene.Legend(chart, series, color, paint, pattern: series.FillPattern), paint: paint));
+                    series.InteractionIdentityKey, marker: VisualMarkerScene.Legend(chart, series, color, paint, pattern: series.FillPattern, bubbleScale: bubbleScale), paint: paint));
             }
         }
         return entries;
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect? viewport = null) {
-        BuildCore(chart, context, builder, plot, viewport ?? new ChartRect(0, 0, builder.Size.Width, builder.Size.Height), false);
+        BuildCore(chart, context, builder, plot, viewport ?? new ChartRect(0, 0, builder.Size.Width, builder.Size.Height), false, null);
     }
 
-    internal static void BuildInViewport(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport) =>
-        BuildCore(chart, context, builder, viewport, viewport, true);
+    internal static void BuildInViewport(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
+        ChartBubbleSizeScale? bubbleScale = null) => BuildCore(chart, context, builder, viewport, viewport, true, bubbleScale);
 
-    private static void BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport, bool measureAxes) {
+    private static void BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport,
+        bool measureAxes, ChartBubbleSizeScale? bubbleScale) {
         Validate(chart);
+        if (bubbleScale == null && chart.Series.Any(series => series.Kind == ChartSeriesKind.Bubble)) bubbleScale = ChartBubbleSizeScale.Create(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var coordinates = ChartBarCoordinateMap.Create(chart);
         var stacks = ChartStackLayout.Create(chart, coordinates);
@@ -82,7 +84,7 @@ internal static partial class VisualCartesianCompiler {
         }
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
-        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks)) {
+        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
             if (measureAxes) plot = MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
@@ -99,7 +101,7 @@ internal static partial class VisualCartesianCompiler {
         if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(chart, plot, horizontalTotals, context.Theme.Spacing);
         if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(chart, plot, verticalTotals, context.Theme.Spacing);
         // Axis measurement and total lanes can change the final radius-to-plot ratio.
-        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks)) {
+        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
         }
@@ -137,7 +139,7 @@ internal static partial class VisualCartesianCompiler {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
                         DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles);
-                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles);
+                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {

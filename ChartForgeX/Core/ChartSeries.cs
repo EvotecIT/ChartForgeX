@@ -230,6 +230,7 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets or sets the canonical marker-radius override through <see cref="Markers"/>.
     /// Null preserves the family and theme default; zero hides point glyphs.
+    /// Bubble series require null and use <see cref="ChartOptions.Bubble"/> for radius bounds.
     /// </summary>
     public double? MarkerRadius {
         get => Markers.Radius;
@@ -391,12 +392,13 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>Overrides the canonical marker radius for this series. Use zero to hide point glyphs.</summary>
+    /// <remarks>Bubble series use <see cref="ChartOptions.Bubble"/> instead and reject this override during preparation.</remarks>
     public ChartSeries WithMarkerRadius(double radius) {
         MarkerRadius = radius;
         return this;
     }
 
-    /// <summary>Clears the series marker override and uses the chart theme marker radius.</summary>
+    /// <summary>Clears the series marker override and uses the family default, including the shared bubble size scale.</summary>
     public ChartSeries UseThemeMarkerRadius() {
         MarkerRadius = null;
         return this;
