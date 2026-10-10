@@ -104,8 +104,10 @@ public sealed class MarkerGeometryTests {
     [InlineData(ChartSeriesKind.Polar, "polar-point")]
     public void EverySupportedProducerUsesAuthoredGeometryAndIndependentMarkerPaint(ChartSeriesKind kind, string role) {
         var chart = Family(kind);
+        if (kind == ChartSeriesKind.Bubble) chart.ConfigureBubble(bubble => { bubble.MinimumRadius = 7; bubble.MaximumRadius = 7; });
         chart.Series[0].ConfigureMarkers(marker => {
-            marker.Shape = ChartMarkerShape.Diamond; marker.Radius = 7; marker.Enabled = true;
+            marker.Shape = ChartMarkerShape.Diamond; marker.Enabled = true;
+            if (kind != ChartSeriesKind.Bubble) marker.Radius = 7;
             marker.Fill = Blue; marker.Stroke = Ink; marker.StrokeWidth = 2;
         });
         var prepared = Prepare(chart);
@@ -173,10 +175,6 @@ public sealed class MarkerGeometryTests {
             Assert.Equal(samples[index].Size.ToString("R", CultureInfo.InvariantCulture), source.Metadata["data-cfx-size"]);
         }
         Assert.True(circles[0].Rx < circles[1].Rx && circles[1].Rx < circles[2].Rx);
-        var themeRadius = VisualExportRequest.ForChart(chart).Context.Theme.MarkerRadius;
-        chart.Series[0].Markers.Radius = themeRadius * 1.5;
-        var scaled = Prepare(chart).Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "bubble").ToArray();
-        for (var index = 0; index < circles.Length; index++) Assert.Equal(circles[index].Rx * 1.5, scaled[index].Rx, 7);
     }
 
     [Theory]

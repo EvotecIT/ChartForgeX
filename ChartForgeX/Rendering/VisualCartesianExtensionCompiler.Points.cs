@@ -9,7 +9,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawExtensionPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
+        ChartBubbleSizeScale? bubbleScale) {
         var series = chart.Series[index];
         if (series.Kind == ChartSeriesKind.Slope || series.Kind == ChartSeriesKind.TrendLine) {
             DrawEndpointLine(chart, context, builder, plot, map, index, colors, labels, obstacles);
@@ -17,8 +18,6 @@ internal static partial class VisualCartesianCompiler {
         }
         var stride = ObservationStride(series.Kind);
         var count = series.Points.Count / stride;
-        var minSize = series.Kind == ChartSeriesKind.Bubble && count > 0 ? Enumerable.Range(0, count).Min(i => series.Points[i * 2 + 1].Y) : 0;
-        var maxSize = series.Kind == ChartSeriesKind.Bubble && count > 0 ? Enumerable.Range(0, count).Max(i => series.Points[i * 2 + 1].Y) : 0;
         for (var item = 0; item < count; item++) {
             var raw = item * stride;
             var point = series.Points[raw];
@@ -28,7 +27,7 @@ internal static partial class VisualCartesianCompiler {
             var radius = ResolveMarkerRadius(series, context);
             if (series.Kind == ChartSeriesKind.Bubble) {
                 var size = series.Points[raw + 1].Y;
-                radius = ResolveBubbleRadius(series, context, plot, minSize, maxSize, size);
+                radius = VisualMarkerScene.Enabled(series) ? bubbleScale!.Radius(size, plot) : 0;
                 var bounds = Extents(x, y, x, y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, size));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("y", point.Y), ("size", size))) {

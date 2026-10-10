@@ -20,7 +20,8 @@ public enum ChartLabelDensity {
     Relaxed,
 
     /// <summary>
-    /// Renders every explicit label.
+    /// Keeps eligible axis labels without collision thinning. Individual labels still fit their viewport and avoid marks;
+    /// text may be shortened or omitted when it cannot fit. Coincident full-turn ticks remain a single seam caption.
     /// </summary>
     All
 }

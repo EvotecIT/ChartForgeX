@@ -10,8 +10,9 @@ public sealed class ChartRadialGeometryOptions {
     /// <param name="innerRadiusRatio">The unpainted center as a proportion of the outer radius, from zero to less than one.</param>
     /// <param name="categorySpacing">The unused fraction of each category band, from zero to less than one.</param>
     /// <param name="seriesSpacing">The unused fraction of each grouped series slot, from zero to less than one. Stacks share a slot.</param>
+    /// <param name="cornerRadius">The maximum inward corner radius in pixels, finite and nonnegative. Each painted stack segment is rounded separately.</param>
     public ChartRadialGeometryOptions(double startAngleDegrees = -90, double endAngleDegrees = 270,
-        double innerRadiusRatio = .2, double categorySpacing = .25, double seriesSpacing = .12) {
+        double innerRadiusRatio = .2, double categorySpacing = .25, double seriesSpacing = .12, double cornerRadius = 0) {
         ChartGuards.Finite(startAngleDegrees, nameof(startAngleDegrees));
         ChartGuards.Finite(endAngleDegrees, nameof(endAngleDegrees));
         var sweep = endAngleDegrees - startAngleDegrees;
@@ -19,8 +20,11 @@ public sealed class ChartRadialGeometryOptions {
         ValidateRatio(innerRadiusRatio, nameof(innerRadiusRatio));
         ValidateRatio(categorySpacing, nameof(categorySpacing));
         ValidateRatio(seriesSpacing, nameof(seriesSpacing));
+        ChartGuards.Finite(cornerRadius, nameof(cornerRadius));
+        if (cornerRadius < 0) throw new ArgumentOutOfRangeException(nameof(cornerRadius));
         StartAngleDegrees = startAngleDegrees; EndAngleDegrees = endAngleDegrees;
         InnerRadiusRatio = innerRadiusRatio; CategorySpacing = categorySpacing; SeriesSpacing = seriesSpacing;
+        CornerRadius = cornerRadius;
     }
 
     /// <summary>Gets the first angle in degrees.</summary>
@@ -33,6 +37,9 @@ public sealed class ChartRadialGeometryOptions {
     public double CategorySpacing { get; }
     /// <summary>Gets the unused fraction of each series slot within a category.</summary>
     public double SeriesSpacing { get; }
+    /// <summary>Gets the maximum inward corner radius in pixels for numeric radial bars and columns. Default: zero.</summary>
+    /// <remarks>Clamped to each segment's thickness and angular space. A central apex stays sharp; full rings have no corners.</remarks>
+    public double CornerRadius { get; }
 
     private static void ValidateRatio(double value, string parameter) {
         ChartGuards.UnitInterval(value, parameter);

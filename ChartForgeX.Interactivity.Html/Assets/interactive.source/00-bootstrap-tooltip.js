@@ -225,6 +225,14 @@
       return value !== undefined && value !== null && value !== '';
     }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: String(data['cfx' + part]) }));
   };
+  const waterfallTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if (!data.cfxWaterfallKind) return [];
+    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
+    return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
+      { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
+      .filter((row) => row.value !== undefined && row.value !== '');
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -232,11 +240,15 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
-    push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
+    if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
+    else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
-    else push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
-    push('End', data.cfxEnd);
+    else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
+    else {
+      push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+      push('End', data.cfxEnd);
+    }
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
@@ -246,7 +258,7 @@
     if (Number(data.cfxRemainderValue) > 0)
       push(rowName(node, 'remainder', 'Remainder'), data.cfxRemainderValue);
     push('Percent', percentText(data.cfxPercent));
-    push('Delta', data.cfxDelta);
+    if (!data.cfxWaterfallKind) push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
     metadataRows(node).forEach((row) => push(row.name, row.value));
     return rows;
@@ -269,6 +281,13 @@
       title.classList.add('cfx-tooltip__title--series');
     }
     tip.appendChild(title);
+    const secondary = (node.dataset || {}).cfxSecondaryLabel;
+    if (secondary) {
+      const caption = document.createElement('div');
+      caption.className = 'cfx-tooltip__secondary';
+      caption.textContent = secondary;
+      tip.appendChild(caption);
+    }
     const rows = tooltipRows(node);
     if (rows.length) {
       const list = document.createElement('dl');
@@ -286,34 +305,21 @@
     return true;
   };
   const showTip = (root, tip, node, event) => {
-    if (!hasFeature(root, 'Tooltips')) return;
-    if (root.dataset.cfxTooltipPinned === 'true') return;
+    if (!hasFeature(root, 'Tooltips') || root.dataset.cfxTooltipPinned === 'true') { cancelTooltipRequest(root); return; }
     if (!tooltipReadoutAvailable(node, event)) { hideTip(root, tip, false); return; }
-    if (!renderTip(tip, node)) return;
+    if (event instanceof PointerEvent && tooltipDelay(root) > 0) { requestPointerTip(root, tip, node, event); return; }
+    cancelTooltipRequest(root);
+    if (displayTip(tip, node, event)) rememberImmediateTooltip(root, tip, node, event);
+  };
+  const displayTip = (tip, node, event) => {
+    if (!renderTip(tip, node)) return false;
     tip.hidden = false;
     moveTip(tip, event, node);
+    return true;
   };
   const moveTip = (tip, event, node) => {
-    if (tip.hidden) return;
-    let clientX = event && event.clientX;
-    let clientY = event && event.clientY;
-    if ((!Number.isFinite(clientX) || !Number.isFinite(clientY)) && node && node.getBoundingClientRect) {
-      const rect = node.getBoundingClientRect();
-      clientX = rect.left + rect.width / 2;
-      clientY = rect.top + rect.height / 2;
-    }
-    if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
-      clientX = 24;
-      clientY = 24;
-    }
-    const tipWidth = tip.offsetWidth || 0;
-    const tipHeight = tip.offsetHeight || 0;
-    const maxX = Math.max(8, window.innerWidth - tipWidth - 8);
-    const maxY = Math.max(8, window.innerHeight - tipHeight - 8);
-    const x = Math.max(8, Math.min(maxX, clientX + 14));
-    const y = Math.max(8, Math.min(maxY, clientY + 14));
-    tip.style.left = x + 'px';
-    tip.style.top = y + 'px';
+    updateTooltipPointer(tip, node, event);
+    positionTooltip(tip, event, node);
   };
   const targetKey = (target) => target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
   const compareItems = (root) => {
@@ -393,6 +399,7 @@
     return items;
   };
   const hideTip = (root, tip, force) => {
+    cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
     // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
     const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
@@ -402,12 +409,14 @@
       showTip(root, tip, focused);
       return;
     }
+    forgetTooltipPosition(tip);
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');
     root.removeAttribute('data-cfx-tooltip-pinned');
     root.removeAttribute('data-cfx-pinned-target');
   };
   const pinTip = (root, tip, node, event) => {
+    cancelTooltipRequest(root);
     if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);

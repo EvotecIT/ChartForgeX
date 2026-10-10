@@ -146,6 +146,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         // Let layout dispatch its real pointer exit while keyboard focus stays on the legend.
         await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
         Assert.Contains("Measured", await TooltipTextAsync(page), StringComparison.Ordinal);
+        Assert.Equal("0", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-delay"));
         Assert.Equal(await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-target-id"),
             await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
         await CaptureContractAsync(page, "paint-caption-only-legend-" + layout + "-compact-dark", new { Layout = layout.ToString(), Muted = true,

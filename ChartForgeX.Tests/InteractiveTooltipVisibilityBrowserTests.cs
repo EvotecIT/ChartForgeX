@@ -21,7 +21,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         if (!Enabled) return;
         var chart = Frame(dark, "Visible bar observations").WithBarStyle(ChartBarStyle.Solid)
             .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Baseline", ChartPoints.FromValues(1, 2, 1));
-        chart.Series[1].WithPointColor(1, "#7b61e8").WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+        chart.Series[1].WithPointColor(1, "#7b61e8");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
         var page = session.Page;
         var hidden = hidePoint ? Point(1, 1) : Point(1, 1) + " [data-cfx-role='bar']";
@@ -46,6 +46,37 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         Assert.Equal(restoredPaint, await page.Locator("dt[data-cfx-tooltip-series='1'] .cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.True(await page.Locator(Point(0, 2)).EvaluateAsync<bool>("node => node === document.activeElement"));
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
+    [InlineData(false, 700)]
+    [InlineData(true, 340)]
+    public async Task AuthoredBarHatchRetainsSharedObservationUntilWholePointIsHidden(bool dark, int width) {
+        if (!Enabled) return;
+        var chart = Frame(dark, "Pattern-only bar observations").WithBarStyle(ChartBarStyle.Solid)
+            .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Baseline", ChartPoints.FromValues(1, 2, 1));
+        chart.Series[1].WithPointColor(1, "#7b61e8").WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)), width, 560);
+        var page = session.Page;
+        var point = Point(1, 1);
+        await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = point + " [data-cfx-role='bar'] { display:none !important; }" });
+        await page.Locator(Point(0, 1)).FocusAsync();
+        var hatchRows = await RowsAsync(page);
+        await RecordAsync(page, "tooltip-pattern-only-bar-" + (dark ? "dark" : "light"), new { hatchRows });
+        Assert.Equal(new[] { "Current", "Baseline" }, hatchRows.Select(row => row[0]).ToArray());
+        Assert.Equal(new[] { "7", "2" }, hatchRows.Select(row => row[1]).ToArray());
+        // The hatch is native observation paint; hiding its containing point removes all of that paint.
+        await page.Locator(point).EvaluateAsync("node => node.style.setProperty('display', 'none', 'important')");
+        await page.Locator(Point(0, 1)).BlurAsync();
+        await page.Locator(Point(0, 1)).FocusAsync();
+        var hiddenRows = await RowsAsync(page);
+        await RecordAsync(page, "tooltip-hidden-pattern-bar-" + (dark ? "dark" : "light"), new { hiddenRows });
+        Assert.Equal(new[] { "Current" }, hiddenRows.Select(row => row[0]).ToArray());
+        await page.Locator(point).EvaluateAsync("node => node.style.setProperty('display', 'inline', 'important')");
+        await page.Locator(Point(0, 1)).BlurAsync();
+        await page.Locator(Point(0, 1)).FocusAsync();
+        Assert.Equal(new[] { "Current", "Baseline" }, (await RowsAsync(page)).Select(row => row[0]).ToArray());
         AssertNoConsoleErrors(session);
     }
 

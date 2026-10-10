@@ -338,6 +338,13 @@ body {
 
 .cfx-tooltip__title {
   font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.cfx-tooltip__secondary {
+  margin-top: 4px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 .cfx-tooltip__title--series {
@@ -373,6 +380,10 @@ body {
   font-weight: 700;
 }
 
+.cfx-tooltip__meta dd {
+  overflow-wrap: anywhere;
+}
+
 .cfx-tooltip[hidden] {
   display: none;
 }
@@ -391,7 +402,7 @@ body {
 
 .cfx-crosshair {
   position: absolute;
-  inset: 0;
+  overflow: hidden;
   z-index: 9;
   pointer-events: none;
 }
@@ -568,61 +579,73 @@ body {
 .cfx-interactive-chart .cfx-interactive-region {
   cursor: pointer;
 }
-
-.cfx-interactive-chart .cfx-selected {
+.cfx-interactive-chart .cfx-selected:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-selected[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   filter: drop-shadow(0 0 8px rgba(56, 189, 248, .75));
   opacity: 1 !important;
   stroke-width: var(--cfx-interactive-focus-stroke-width, 2.4) !important;
 }
 
-.cfx-interactive-chart .cfx-hovered {
+.cfx-interactive-chart .cfx-hovered:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])) .cfx-hovered[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 10px rgba(125, 211, 252, .72));
   stroke-width: var(--cfx-interactive-hover-stroke-width, 2.5) !important;
 }
 
-.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related {
+.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"]) .cfx-hover-related[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .82 !important;
   filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
 }
 
-.cfx-interactive-chart:not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected) {
+.cfx-interactive-chart:not([data-cfx-look="graphite"]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected)[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .38;
 }
 
-.cfx-interactive-chart .cfx-trail {
+.cfx-interactive-chart .cfx-trail:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 9px rgba(34, 211, 238, .44));
 }
 
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="1"] {
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="1"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="1"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   filter: drop-shadow(0 0 12px rgba(250, 204, 21, .72));
   stroke-width: var(--cfx-interactive-trail-stroke-width, 2.6) !important;
 }
 
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="2"] {
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="2"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="2"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .86 !important;
 }
 
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="3"] {
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="3"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="3"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .72 !important;
 }
 
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="4"],
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="5"] {
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="4"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="5"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="4"][data-cfx-highlight-managed] > [data-cfx-highlight-paint],
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="5"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .58 !important;
 }
 
-.cfx-interactive-chart .cfx-series-muted {
+.cfx-interactive-chart .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .18 !important;
 }
 
-.cfx-interactive-chart .cfx-series-isolated-in {
+.cfx-interactive-chart .cfx-series-isolated-in:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-isolated-in[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 10px rgba(250, 204, 21, .34));
 }
 
-.cfx-interactive-chart .cfx-series-isolated-out {
+.cfx-interactive-chart .cfx-series-isolated-out:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-isolated-out[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .10 !important;
   filter: saturate(.35);
 }
@@ -631,22 +654,26 @@ body {
   filter: drop-shadow(0 0 8px rgba(250, 204, 21, .55));
 }
 
-.cfx-interactive-chart .cfx-scenario-muted {
+.cfx-interactive-chart .cfx-scenario-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .46 !important;
   filter: saturate(.72);
 }
 
-.cfx-interactive-chart .cfx-scenario-active {
+.cfx-interactive-chart .cfx-scenario-active:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-active[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 8px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 70%, transparent));
 }
 
-.cfx-interactive-chart .cfx-scenario-step-active {
+.cfx-interactive-chart .cfx-scenario-step-active:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-step-active[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 10px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 80%, transparent));
 }
 
-.cfx-interactive-chart .cfx-scenario-step-muted {
+.cfx-interactive-chart .cfx-scenario-step-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-step-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .56 !important;
   filter: saturate(.8);
 }
@@ -736,26 +763,49 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--x { border-top: 1px dashed var(--cfx-crosshair-axis); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--y { border-left: 1px dashed var(--cfx-crosshair-axis); }
 .cfx-interactive-chart[data-cfx-crosshair-label="false"] .cfx-crosshair__label { display: none; }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered { filter: none; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-look="graphite"] .cfx-hovered[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { filter: none; }
 /* Series hover keeps the pointed series at full strength and dims the others to 30 %; the shared crosshair dims nothing. */
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-point-interaction-target) { opacity: .3; }
 .cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hovered,
 .cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hover-column { r: 4px; opacity: 1 !important; stroke: var(--cfx-tooltip-surface); stroke-width: 2px !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered) { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column) { opacity: 0 !important; }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted { opacity: .3 !important; }
-.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-in { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-look="graphite"] .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-in:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-isolated-in[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"] { text-decoration: line-through; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }
 /* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
-.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series],
-.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series] { opacity: 1 !important; }
-.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted,
-.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series]:not(:where([data-cfx-highlight-managed])) { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint],
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1 !important; }
 .cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; }
 .cfx-interactive-chart [data-cfx-point].cfx-hovered > .cfx-prepared-point-marker,
 .cfx-interactive-chart [data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker {
   opacity: 1; stroke: var(--cfx-tooltip-surface); stroke-width: 2px;
 }
+
+/* Zero-specificity exclusions above preserve the default cascade. Opt-in paint leaves native ink and authored opacity intact. */
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) [data-cfx-highlight-paint] {
+  opacity: var(--cfx-highlight-opacity, 1);
+}
+.cfx-interactive-chart [data-cfx-highlight-outline] {
+  fill: none; stroke: var(--cfx-highlight-stroke, none); stroke-width: var(--cfx-highlight-stroke-width, 0);
+  pointer-events: none;
+}
+.cfx-interactive-chart[data-cfx-highlight-probe] [data-cfx-highlight-outline] { display: none; }
+.cfx-interactive-chart [data-cfx-highlight-unavailable] [data-cfx-highlight-outline] { display: none; }
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed].cfx-hovered:not(.cfx-selected) > [data-cfx-highlight-paint] {
+  filter: drop-shadow(0 0 10px rgba(125, 211, 252, .72));
+}
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not([data-cfx-look="graphite"])[data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed].cfx-hover-related:not(.cfx-selected) > [data-cfx-highlight-paint] {
+  filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
+}
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed]:not(.cfx-selected) > [data-cfx-highlight-paint] { filter: none; }

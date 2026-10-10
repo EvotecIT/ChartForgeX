@@ -6,10 +6,10 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartPathBuilder {
-    /// <summary>Appends clockwise circular cubic segments, bounded to a quarter turn for native path parity.</summary>
-    internal static void AddCircularArc(List<ChartPathCommand> commands, double cx, double cy, double radius, double start, double sweep) {
-        if (sweep <= 0) return;
-        var segments = Math.Max(1, (int)Math.Ceiling(sweep / (Math.PI / 2)));
+    /// <summary>Appends signed circular cubic segments, bounded to a quarter turn by default for native path parity.</summary>
+    internal static void AddCircularArc(List<ChartPathCommand> commands, double cx, double cy, double radius, double start, double sweep, double maximumSweep = Math.PI / 2) {
+        if (sweep == 0) return;
+        var segments = Math.Max(1, (int)Math.Ceiling(Math.Abs(sweep) / maximumSweep));
         var step = sweep / segments;
         var tangent = 4d / 3 * Math.Tan(step / 4);
         for (var index = 0; index < segments; index++) {

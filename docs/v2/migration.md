@@ -28,11 +28,40 @@ For example, use `chart.ConfigureLabels(labels => labels.NoData = "Brak danych")
 
 Object ownership is unchanged. Getter-owned options, accessibility, labels and text styles are edited in place. Bar, line and grid-style callbacks configure a working clone and install a separate copy after success. Chart and topology theme callbacks edit the stored theme; chart-grid and visual-grid callbacks reuse an existing theme or install a newly created light theme after success. Mutations to existing objects can remain after a callback throws. See the [API conventions](api-conventions.md#operation-names) for point-label ownership and the complete naming boundary.
 
+## Bubble size mapping
+
+Bubble series share one chart-wide size domain. Previously, each series inferred its own domain, so equal source sizes could render at different radii. Single-series defaults retain their existing square-root radius mapping and responsive endpoints. A constant automatic domain retains the radius midpoint.
+
+Replace bubble `Markers.Radius`, `MarkerRadius` or `WithMarkerRadius(...)` overrides with `ChartOptions.Bubble` endpoints. Any non-null series radius now throws during preparation, including zero. Clear an existing override with `UseThemeMarkerRadius()` and configure the shared range:
+
+```csharp
+chart.Series[0].UseThemeMarkerRadius();
+chart.ConfigureBubble(bubble => {
+    bubble.WithSizeDomain(0, 100);
+    bubble.MinimumRadius = 3;
+    bubble.MaximumRadius = 24;
+});
+```
+
+Use `series.ConfigureMarkers(markers => markers.Enabled = false)` to hide one series' glyphs. Marker shape, fill, outline and point-label overrides remain available. Explicit domains clamp geometry while retaining raw source sizes; `Reversed = true` maps larger values to smaller radii. Pin the domain and both radius endpoints for stable sizing across data and layout changes. Source sizes remain finite and positive, and the mapping does not promise equal painted areas across shapes. See [bubble sizing](api-conventions.md#bubble-size-scale) for validation and automatic defaults.
+
 ## HTML tooltip options
 
 Configure tooltip content through `HtmlChartInteractionOptions.Tooltip.Mode` and `HtmlInteractiveDashboardOptions.Tooltip.Mode`; these replace the flat `TooltipMode` property. The existing `HtmlChartTooltipMode.Single` and `.SharedX` values are unchanged. Getter-owned `Tooltip` options also expose `Range`: `Exact`, `Nearest`, or `HtmlChartTooltipRange.WithinDistance(cssPixels)`.
 
 The default range remains 120 CSS pixels. Enabling only `ChartInteractionFeatures.Tooltips` now also acquires nearby observations without requiring `Crosshair`. Choose `Exact` for direct pointer hits only. Crosshair labels default to visible for every palette; set `Crosshair.ShowLabel = false` to retain a compact label-free presentation. Keyboard and pinned readouts keep explicit target semantics.
+
+## Waterfall opening balances and checkpoints
+
+Keep `AddWaterfall(name, IEnumerable<ChartPoint>)` for signed deltas with an automatically appended final total. For an explicit opening balance or intermediate checkpoints, pass `ChartWaterfallItem.OpeningBalance(x, value)`, `.Delta(x, value)`, `.Subtotal(x)` and `.Total(x)` to the typed overload. Include every desired display position explicitly; typed input appends no extra total. Items accumulate in input order with distinct X coordinates. An opening balance must be first and may occur only once; positive, negative, zero and opening-only input are valid. Subtotals sum changes since the opening balance or preceding checkpoint without resetting the running balance; totals include the opening balance and all changes. Input without an opening item still starts at zero. Use existing axis labels, point labels, point colors, fill patterns and label styles.
+
+Replace `ChartWaterfallItem.DeltaValue` with nullable `Value`; the old member has no compatibility alias. `Value` holds an authored opening balance or delta and is null for calculated checkpoints. Default object serialization therefore writes `Value` instead of `DeltaValue`; update consumers of that member. Existing numeric enum values remain `Delta = 0`, `Subtotal = 1` and `Total = 2`; `OpeningBalance = 3` is appended.
+
+For typed input, read the immutable `ChartSeries.WaterfallItems` snapshot instead of `Points`. `SourcePointCount` counts numeric observations, including the opening balance. Point overrides and point legends index every authored item, including checkpoints. A delta after a checkpoint therefore has different item and numeric-source ordinals. `ChartOptions.Labels.OpeningBalance` localizes the default opening caption and readout row.
+
+Checkpoint metadata, including the legacy appended total, exposes a derived identity and contributor ordinals in `data-cfx-source-points`. It omits `data-cfx-source-point` and `data-cfx-delta`; replace selectors that expected the appended total's former point/source index `-1` with a checkpoint-kind selector. `data-cfx-waterfall-kind` distinguishes `opening-balance`, `delta`, `subtotal` and `total`; `data-cfx-value`, `data-cfx-start` and `data-cfx-end` describe the displayed calculation. Opening balances retain a numeric `data-cfx-source-point` and omit `data-cfx-delta` and `data-cfx-derived`. Total contributors include the opening observation; subtotal contributors exclude it. The HTML adapter uses these facts for pointer, keyboard, caption and point-legend readouts.
+
+Vertical orientation remains the default. Set `ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)` to use the physical X value axis and Y category axis. Item `X` coordinates and source order retain their meaning. Move value bounds, scales and tick formatters to `XAxis`, and category bounds, reversal and formatters to `YAxis`. Explicit Y labels win; existing `WithXLabels` remains a category-caption fallback. Horizontal waterfalls support the primary axis only. Native `data-cfx-category-label` supplies the resolved axis caption to marks, point legends and HTML readouts.
 
 ## Hierarchy and flow identities
 
@@ -58,6 +87,8 @@ Sankey node totals must remain finite and are validated before adding a series. 
 
 `ConfigureSankey` edits the getter-owned `ChartOptions.Sankey`. Its defaults preserve the existing geometry and paint. Alignment and node order affect layout only; input collections, IDs, source ordinals and point-style assignments retain their authored order. Explicit widths/gaps that cannot fit the viewport fail during preparation. See [Sankey layout](api-conventions.md#sankey-layout) for defaults and the exact `Center` policy.
 
+Sankey label placement defaults to `LabelPlacement = Right` and `EdgeLabelPlacement = Outside`, preserving the existing caption policy. Choose `Left`, `Right` or `Center`, then set the nullable edge override to `Inside`, `Outside` or `null` to use the same placement at both edges. These settings affect measured captions without moving nodes, changing flow thickness or replacing authored facts.
+
 `ChartFlowLink` accepts finite non-negative raw facts. Sankey still requires positive weights and an acyclic graph with distinct endpoints. `AddChord(name, nodes, links, color)` accepts cycles, reciprocal/parallel flows, self flows, and zero values. Chord's combined incoming plus outgoing endpoint total must remain finite for each node; independent flows do not need a finite global raw sum. Zero or collapsed geometry retains authored identities without an inflated mark. Chord is explicitly appended as enum value 52; existing kind values remain unchanged. See [weighted chord charts](../chord.md) for options and native metadata.
 
 Node and link groups retain authored IDs, labels, owning series, and actual `data-cfx-source-node-index` / `data-cfx-source-link-index` ordinals. SVG `data-cfx-target-kind` and `data-cfx-target-id` supply normalized node/link identities; HTML selection events expose those same IDs without invented `point` or `sourcePoint` ordinals. Parent, child, source, and target attributes now contain authored node IDs. Update selectors that assumed numeric node ordinals or labels as identities.
@@ -70,9 +101,15 @@ Replace former percent-ring `AddRadialBar` calls with `AddProgressRing`. The rin
 
 Set start/end angles, inner radius and category/series spacing through immutable `ChartRadialGeometryOptions` and `WithRadialGeometry`. Default numeric series are grouped. Named `StackGroup` values or stacked bar mode share slots; normalization uses the existing positive/negative stack owner. `NormalizedTo` targets partition by kind, axis and group and must agree within each stack. Raw labels and `data-cfx-y` retain counts; rendered contribution, baseline, endpoint and source total remain separate metadata. An all-zero normalized stack reports `numeric-radial.stack-zero-total`.
 
+Set the optional trailing `cornerRadius` constructor argument to round numeric radial bars and columns. It defaults to zero, preserving existing output. Rebuild compiled consumers because the constructor signature now includes this argument; existing source calls remain valid. The finite, nonnegative pixel radius is a maximum, clamped inside each painted segment. Stacked segments round separately. Full rings remain seamless, and sectors without an inner radius keep their central apex. Source values, projected extents and clipping facts are unchanged.
+
 Numeric domains may start above or below zero. A baseline outside explicit bounds clips to the visible edge, while raw values stay intact and `data-cfx-clipped` records the clipped extent. Linear, positive logarithmic and symmetric logarithmic numeric axes are supported. Time value axes, explicit category bounds and logarithmic category spacing reject clearly. Empty series preserve their legend/slot alongside populated series; an entirely empty chart reports no data.
 
-`ChartAxis.Reversed` and `WithReversal()` also apply to ordinary Cartesian numeric/time projections and horizontal category axes. Marks, grids and tick positions use the same transform; logarithmic bars retain their positive domain baseline. Radar and polar numeric radii use that transform. Schedule reversal, radar/polar angular reversal and polar-area reversal reject because those layouts have separate span or area contracts. Numeric radial axis titles, rotated labels, rounded sectors and mixed radial families remain future work.
+`ChartAxis.Reversed` and `WithReversal()` also apply to ordinary Cartesian numeric/time projections and horizontal category axes. Marks, grids and tick positions use the same transform; logarithmic bars retain their positive domain baseline. Radar and polar numeric radii use that transform. Schedule reversal, radar/polar angular reversal and polar-area reversal reject because those layouts have separate span or area contracts.
+
+Numeric radial series honor existing `XAxisTitle`, `YAxisTitle` and `SecondaryYAxisTitle` values, including the `WithXAxis` / `WithYAxis` / `WithSecondaryYAxis` builders. Horizontal titles reserve measured space inside the frame, so callers that already authored titles receive a smaller plot with visible titles. `ChartAxis.LabelOrientation` defaults to `Fixed`, preserving existing `LabelAngle` screen rotation. Choose `Parallel` or `Perpendicular` to follow the physical axis track, with `LabelAngle` as an offset and the resulting baseline kept upright. Relative orientation currently requires numeric radial bars or columns; other families reject it. Hidden and unused axes reserve no text space; `ShowLine = false` leaves text visible.
+
+Numeric radial axes honor each axis's existing `LabelDensity`. `Auto` preserves its previous output, `Dense` permits tighter spacing, and `Relaxed` keeps more space around captions. `All` now accepts caption overlaps instead of applying automatic collision thinning. It still fits individual text within the viewport, avoids painted marks, and preserves one caption at a full-turn seam. Shortened or omitted captions retain their full descriptions; fitted captions still block later data labels and stack totals. Mixed radial families remain future work.
 
 Native compact exports prepare the chart at compact dimensions. Text that cannot fit may be shortened or omitted with `numeric-radial.label-overflow`; descriptive regions retain the full observation. The HTML adapter's `Readable` layout preserves a minimum width in a contained horizontal viewport. `Fit` scales a fixed design, including its text, and may require a larger host viewport for legibility.
 ## Hierarchical Treemap
@@ -103,9 +140,34 @@ Both policies require one root, unique IDs, existing parents, acyclic relationsh
 
 Read copied `ChartSeries.HierarchyItems` and `Nodes`; `Points` and `TreeLinks` are empty. Replace `data-cfx-authored-weight` with `data-cfx-authored-value`. Groups and leaves retain the provided size when present, while `data-cfx-value` is the resolved geometry value. Groups retain `data-cfx-remainder-value` including zero. The owning series exposes `data-cfx-parent-value-policy`; targets retain item IDs, parents, depths, source item ordinals and geometry status. There is no authored incoming link or `data-cfx-source-link-index` on a Sunburst node.
 
-`ConfigureSunburst` configures `ColorScale`, `ShowColorScaleLegend`, `ColorLegendTitle` and the parent policy. Every group's and leaf's nullable `ColorValue` is an independent observation, with no inheritance or aggregation. The generic scale honors fixed ranges, discrete bands and missing colors. Ordinal explicit colors override the scale; semantic states preserve numeric fill and add an outline. Prepared SVG/PNG and option values remain detached from later model changes.
+`ConfigureSunburst` configures `CornerRadius`, `ColorScale`, `ShowColorScaleLegend`, `ColorLegendTitle` and the parent policy. `CornerRadius` uses the same finite, nonnegative maximum pixel radius and inward clamping as numeric radial sectors, with a zero default. Every group's and leaf's nullable `ColorValue` is an independent observation, with no inheritance or aggregation. The generic scale honors fixed ranges, discrete bands and missing colors. Ordinal explicit colors override the scale; semantic states preserve numeric fill and add an outline. Prepared SVG/PNG and option values remain detached from later model changes.
 
-HTML tooltips show size and numeric color separately, including color zero and localized missing values. A differing supplied group value uses `ChartLabels.AuthoredValue` (default `Provided value`), and a positive remainder uses `ChartLabels.Remainder`. Equal supplied values and leaf values retain raw metadata without duplicate tooltip rows. Rounded sectors, secondary labels and branch highlighting remain future work.
+HTML tooltips show size and numeric color separately, including color zero and localized missing values. A differing supplied group value uses `ChartLabels.AuthoredValue` (default `Provided value`), and a positive remainder uses `ChartLabels.Remainder`. Equal supplied values and leaf values retain raw metadata without duplicate tooltip rows.
+
+Optional secondary text uses `ConfigureSunburst(options => options.SecondaryLabelFormatter = context => captions.TryGetValue(context.Item.Id, out var text) ? text : null)`. `ChartSunburstLabelContext` provides the copied `Item`, its resolved `Value` and the shared `FormattedValue`. This additive API does not change the hierarchy item constructor or Treemap behavior. Null, empty or whitespace results preserve existing primary-only output. `SecondaryLabelStyle` inherits node typography at 80% of the primary size before applying its overrides; `SecondaryLabelSpacing` defaults to two finite, nonnegative logical pixels. Captions keep fixed font sizes and fit the native sector with primary content taking priority. Full secondary text stays separate from numeric facts in node metadata, descriptive regions and plain-text HTML pointer/keyboard tooltips. See [secondary captions](api-conventions.md#sunburst-secondary-captions).
+
+A positive radius on an incompatible populated family fails preparation. Numeric `RadialGeometry.CornerRadius` supports only RadialBar and RadialColumn; `Sunburst.CornerRadius` supports only Sunburst. Pie, Donut, PolarArea, Chord and progress-ring geometry keep their own contracts.
+
+### HTML Sunburst branch emphasis
+
+Use the adapter-owned `Highlight` group on chart or dashboard options to emphasize the hovered or focused item and its root branch:
+
+```csharp
+chart.SaveInteractiveHtml("allocation.html", options => {
+    options.Highlight.Mode = HtmlChartHighlightMode.RootBranch;
+    options.Highlight.HighlightedItem.Stroke = ChartColor.FromHex("#38bdf8");
+    options.Highlight.HighlightedItem.StrokeWidth = 2;
+    options.Highlight.UnhighlightedBranch.Opacity = .22;
+});
+```
+
+`RootBranch` applies to Sunburst node targets. Other families and legend targets keep their existing emphasis, including mixed dashboards. `Default` preserves existing presentation and ignores the style overrides. Pointer, keyboard and synchronized hover share the same local target identity. A branch is the first ancestor below the authored central root; repeated labels and reordered items do not change membership. The central root belongs to no branch. Focusing it leaves surrounding branches at native strength. Zero and collapsed items retain membership and keyboard facts without gaining painted sectors.
+
+The active item composes `HighlightedBranch` then `HighlightedItem`; other items in that branch compose `HighlightedBranch` then `UnhighlightedItem`. Other branches use `UnhighlightedBranch`. Null properties retain the preceding style. Default opacity is one for the active item, .82 for its other branch members and .38 for other branches; Graphite uses one and .3 for those last two groups. The neutral central root stays at native strength. Explicit styles replace these transient values rather than multiplying group opacity.
+
+`Stroke` adds a separate outline behind the native primitive. Native fill, hatch and semantic stroke remain intact. `StrokeWidth` is its outward width in SVG units; a color without a width uses 2.5. Null retains the preceding color/width; a transparent color or zero width explicitly hides the added outline. `Opacity` accepts finite values from zero through one, and `StrokeWidth` accepts finite non-negative values. Transient opacity zero still permits another branch to be acquired; current authored or host-hidden paint and clipping remain unavailable. Selection keeps its existing full-strength emphasis and glow. Pinning retains its readout while hover follows another item. Escape dismisses the pin and branch emphasis; Reset view also clears selections.
+
+These options affect browser presentation only. Native PNG bytes and native SVG geometry/paint are unchanged; Sunburst targets additionally expose `data-cfx-branch-root` when they belong to a branch. Pages, fragments, externally registered assets and dashboard children share the same runtime and options.
 
 ## Numeric color scales
 

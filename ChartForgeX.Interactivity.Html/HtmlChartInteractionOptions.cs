@@ -68,12 +68,15 @@ public sealed class HtmlChartInteractionOptions {
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
     /// <summary>
-    /// Gets the tooltip content and pointer acquisition options.
+    /// Gets the tooltip content, acquisition, timing and position options.
     /// </summary>
     public HtmlChartTooltipOptions Tooltip { get; } = new HtmlChartTooltipOptions();
 
     /// <summary>Gets the crosshair presentation options.</summary>
     public HtmlChartCrosshairOptions Crosshair { get; } = new HtmlChartCrosshairOptions();
+
+    /// <summary>Gets the transient mark and branch emphasis options.</summary>
+    public HtmlChartHighlightOptions Highlight { get; } = new HtmlChartHighlightOptions();
 
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;

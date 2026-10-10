@@ -24,7 +24,12 @@ public static partial class V2Examples {
         foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var variants = new List<string> { "wide", "compact" };
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
+            if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
+                variants.Add("axis-labels"); variants.Add("compact-axis-labels");
+                variants.Add("all-labels"); variants.Add("compact-all-labels");
+            }
             if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
+            if (kind == ChartSeriesKind.Waterfall) { variants.Add("horizontal"); variants.Add("compact-horizontal"); }
             if (RelationshipOptionFamilies.Contains(kind)) {
                 variants.Add("options");
                 if (kind is ChartSeriesKind.Sankey or ChartSeriesKind.Sunburst) variants.Add("compact-options");
@@ -47,8 +52,11 @@ public static partial class V2Examples {
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
                 var subtitle = precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
+                    : variant is "axis-labels" or "compact-axis-labels" ? "Upright axis-relative labels with independent density"
+                    : variant is "all-labels" or "compact-all-labels" ? "All captions fit individually; caption overlaps are intentional"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
                     : variant == "stage-bars-horizontal" ? "Horizontal stage bars; extents remain proportional"
+                    : kind == ChartSeriesKind.Waterfall && variant is "horizontal" or "compact-horizontal" ? "Horizontal changes and checkpoints share a cumulative value axis"
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"
                     : kind == ChartSeriesKind.Sunburst && variant is "options" or "compact-options" ? "Leaf totals size sectors; measured color stays independent"
                     : kind == ChartSeriesKind.Sankey && variant is "options" or "compact-options" ? "Aligned and ordered weighted flows"
@@ -78,9 +86,9 @@ public static partial class V2Examples {
         ChartSeriesKind.StackedArea => "A normalized stack with middle-step boundaries",
         ChartSeriesKind.RangeArea => "Lower, middle and upper bounds share middle-step transitions",
         ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
-        ChartSeriesKind.Waterfall => "Reversed axes retain signed changes and the derived total",
+        ChartSeriesKind.Waterfall => "An opening balance, changes and checkpoints retain the running balance on reversed axes",
         ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
-        ChartSeriesKind.Bubble => "Marker shape changes; source size still controls each series' scale",
+        ChartSeriesKind.Bubble => "Equal request volumes share a radius; values above 100 retain their facts",
         ChartSeriesKind.Candlestick => "Hollow rising bodies, filled falling bodies and independent wick strokes",
         ChartSeriesKind.Ohlc => "Rising and falling stroke colors, alpha and width retain source prices",
         ChartSeriesKind.Radar => "A filled area and an unfilled target line share one radial scale",

@@ -7,7 +7,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 /// <summary>The closed slice outlines shared by SVG paths and raster separator strokes.</summary>
-internal static class ChartSlicePathGeometry {
+internal static partial class ChartSlicePathGeometry {
     /// <summary>Whether the serialized outline retains fill area, independent of colour or raster pixel coverage.</summary>
     internal static bool HasEncodedFillArea(double cx, double cy, double outer, double inner, double start, double sweep) {
         if (outer <= inner || sweep <= 0 || F(outer) == "0") return false;

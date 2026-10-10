@@ -33,6 +33,7 @@ public sealed class ChartAxis {
     private int _tickCount = 6;
     private ChartLabelDensity _labelDensity = ChartLabelDensity.Auto;
     private double _labelAngle;
+    private ChartAxisLabelOrientation _labelOrientation;
 
     /// <summary>Gets or sets an explicit minimum. Null enables automatic bounds.</summary>
     public double? Minimum {
@@ -102,12 +103,23 @@ public sealed class ChartAxis {
         }
     }
 
-    /// <summary>Gets or sets label rotation in degrees.</summary>
+    /// <summary>Gets or sets label rotation in degrees, or an offset from the selected relative orientation.</summary>
+    /// <remarks>Fixed orientation uses screen degrees without an upright adjustment. Relative numeric radial labels add this offset to their local axis direction and keep the resulting baseline upright.</remarks>
     public double LabelAngle {
         get => _labelAngle;
         set {
             if (!IsFinite(value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Axis label angle must be finite.");
             _labelAngle = value;
+        }
+    }
+
+    /// <summary>Gets or sets how labels follow the axis. The default is a fixed screen orientation.</summary>
+    /// <remarks>Relative orientations are supported by numeric radial bars and columns. Parallel follows the tangent of an angular axis or the spoke of a radius axis; perpendicular uses the other direction. The label angle is added before keeping the text upright. Other chart families reject a nonfixed orientation during preparation.</remarks>
+    public ChartAxisLabelOrientation LabelOrientation {
+        get => _labelOrientation;
+        set {
+            if (!Enum.IsDefined(typeof(ChartAxisLabelOrientation), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown axis label orientation.");
+            _labelOrientation = value;
         }
     }
 

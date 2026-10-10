@@ -18,17 +18,19 @@ internal sealed partial class ChartRelationshipIndex {
     internal IReadOnlyList<int> Roots { get; }
     internal int Root { get; }
     private readonly Dictionary<string, int> _nodeIndexes;
+    private readonly HashSet<string> _flowIds;
     private readonly int[] _sources;
     private readonly int[] _targets;
     private readonly int[] _incomingLinks;
     private readonly int[] _parents;
     private readonly IReadOnlyList<int>[] _children;
     private readonly int[] _hierarchyOrder;
+    private readonly string?[] _hierarchyBranchRoots;
 
     private ChartRelationshipIndex(ChartNode[] nodes, ChartFlowLink[] flowLinks, ChartTreeLink[] treeLinks,
         Dictionary<string, int> nodeIndexes, int[] sources, int[] targets, int root, double[] hierarchyValues,
         double[]? flowIncomingValues = null, double[]? flowOutgoingValues = null, double[]? flowEndpointValues = null,
-        ChartHierarchyItem[]? hierarchyItems = null, int[]? depths = null, int[]? hierarchyOrder = null) {
+        ChartHierarchyItem[]? hierarchyItems = null, int[]? depths = null, int[]? hierarchyOrder = null, HashSet<string>? flowIds = null) {
         Nodes = Array.AsReadOnly(nodes);
         FlowLinks = Array.AsReadOnly(flowLinks);
         FlowIncomingValues = Array.AsReadOnly(flowIncomingValues ?? Array.Empty<double>());
@@ -40,6 +42,7 @@ internal sealed partial class ChartRelationshipIndex {
         HierarchyValues = Array.AsReadOnly(hierarchyValues);
         Depths = Array.AsReadOnly(depths ?? Array.Empty<int>());
         _nodeIndexes = nodeIndexes;
+        _flowIds = flowIds ?? new HashSet<string>(StringComparer.Ordinal);
         _sources = sources;
         _targets = targets;
         Root = root;
@@ -50,12 +53,14 @@ internal sealed partial class ChartRelationshipIndex {
         _children = children.Select(items => (IReadOnlyList<int>)items.AsReadOnly()).ToArray();
         for (var i = 0; i < targets.Length; i++) _parents[targets[i]] = sources[i];
         Roots = Array.AsReadOnly(Enumerable.Range(0, nodes.Length).Where(index => _parents[index] < 0).ToArray());
+        _hierarchyBranchRoots = HierarchyBranchRoots();
     }
 
     internal int Source(int linkIndex) => _sources[linkIndex];
     internal int Target(int linkIndex) => _targets[linkIndex];
     internal int IncomingLink(int nodeIndex) => _incomingLinks[nodeIndex];
     internal bool ContainsNode(string id) => _nodeIndexes.ContainsKey(id);
+    internal bool ContainsFlow(string id) => _flowIds.Contains(id);
     internal int Parent(int nodeIndex) => _parents[nodeIndex];
     internal IReadOnlyList<int> Children(int nodeIndex) => _children[nodeIndex];
 
@@ -99,7 +104,7 @@ internal sealed partial class ChartRelationshipIndex {
             TopologicalOrder(snapshot.Length, sources, targets, false, out _, out depths);
         }
         return new ChartRelationshipIndex(snapshot, flows, Array.Empty<ChartTreeLink>(), indexes, sources, targets, -1, Array.Empty<double>(),
-            flowIncomingValues: incoming, flowOutgoingValues: outgoing, flowEndpointValues: endpoints, depths: depths);
+            flowIncomingValues: incoming, flowOutgoingValues: outgoing, flowEndpointValues: endpoints, depths: depths, flowIds: ids);
     }
 
     internal static ChartRelationshipIndex Hierarchy(IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links) {

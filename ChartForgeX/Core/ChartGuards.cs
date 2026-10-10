@@ -45,6 +45,17 @@ internal static class ChartGuards {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.ValidateHourWeekdayHeatmapOwnership();
         ValidateRenderableChart(chart, preparing);
+        if (chart.Options.RadialGeometry.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn))
+            throw new InvalidOperationException("Radial geometry corner radius requires numeric radial bars or columns.");
+        if (chart.Options.Sunburst.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
+            throw new InvalidOperationException("Sunburst corner radius requires a Sunburst chart.");
+        if (chart.Options.Sunburst.SecondaryLabelFormatter != null && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
+            throw new InvalidOperationException("Sunburst secondary labels require a Sunburst chart.");
+        if ((chart.Options.XAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
+            || chart.Options.YAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
+            || chart.Options.SecondaryYAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed)
+            && (chart.Series.Count == 0 || chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn)))
+            throw new NotSupportedException("Relative axis label orientation requires numeric radial bars or columns.");
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
@@ -59,7 +70,7 @@ internal static class ChartGuards {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts require at least one positive value.");
         }
 
-        if (!preparing && exclusiveKinds[0] == ChartSeriesKind.Waterfall && chart.Series[0].Points.Count == 0) {
+        if (!preparing && exclusiveKinds[0] == ChartSeriesKind.Waterfall && !chart.Series[0].HasSourceData) {
             throw new InvalidOperationException("Waterfall charts require at least one value.");
         }
 
@@ -116,6 +127,7 @@ internal static class ChartGuards {
     }
 
     private static void ValidateSeriesShape(ChartSeries series, bool preparing) {
+        series.ValidateWaterfall();
         series.ValidateInterpolation();
         series.ValidateMarkerAndRadarOptions();
         series.ValidateFinancialOptions();

@@ -34,10 +34,10 @@ internal static partial class VisualNumericRadialCompiler {
                 pair.Key == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxisValueFormatter : chart.Options.ValueFormatter);
             return pair.Value.Ticks.Select(format).ToArray();
         });
-        var geometry = Layout(chart, context, builder, plot, categoryLabels, tickLabels, bars);
+        plot = AxisTitles(chart, context, builder, plot, scales);
+        var geometry = Layout(chart, context, builder, plot, categoryLabels, tickLabels, scales, bars);
         if (geometry.Outer <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.insufficient-space", "The frame leaves no space for numeric radial marks."));
-            return;
         }
         var labels = new List<RadialSeriesLabel>();
         // Axis captions and totals also need mark avoidance when point captions are off.
@@ -46,7 +46,7 @@ internal static partial class VisualNumericRadialCompiler {
         foreach (var total in stacks.Totals.Where(total => total.NormalizedTo.HasValue && total.SourceValue == 0))
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.stack-zero-total", "A normalized zero-only stack remains at its baseline; its source observations are retained."));
         using (builder.PushClip(plot)) {
-            Grid(chart, context, builder, plot, geometry, categoryLabels, categories, scales, tickLabels, bars, labels);
+            if (geometry.Outer > 0) Grid(chart, context, builder, plot, geometry, categoryLabels, categories, scales, tickLabels, bars, labels);
             var participants = Enumerable.Range(0, chart.Series.Count).ToArray();
             for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
                 var series = chart.Series[seriesIndex];
@@ -70,7 +70,7 @@ internal static partial class VisualNumericRadialCompiler {
                     }
                 }
             }
-            if (chart.Options.ShowStackTotals) StackTotals(chart, context, builder, plot, geometry, categories, coordinates, stacks, scales, bars, labels);
+            if (geometry.Outer > 0 && chart.Options.ShowStackTotals) StackTotals(chart, context, builder, plot, geometry, categories, coordinates, stacks, scales, bars, labels);
             DrawLabels(builder, plot, labels, obstacles, context.Theme.Spacing);
         }
     }
@@ -132,8 +132,8 @@ internal static partial class VisualNumericRadialCompiler {
             ["data-cfx-clipped"] = mark.Clipped ? "true" : "false",
             ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false"
         };
-        if (!mark.Painted && !mark.Clipped)
-            metadata["data-cfx-geometry-status"] = point.Y == 0 ? "zero" : "precision-collapse";
+        if (geometry.Outer <= 0) metadata["data-cfx-geometry-status"] = "layout-collapse";
+        else if (!mark.Painted && !mark.Clipped) metadata["data-cfx-geometry-status"] = point.Y == 0 ? "zero" : "precision-collapse";
         ChartStackLayout.AddMetadata(metadata, stack);
         var bounds = mark.Painted ? ChartSlicePathGeometry.Bounds(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep)
             : new ChartRect(mark.End.X, mark.End.Y, 0, 0);
@@ -142,20 +142,21 @@ internal static partial class VisualNumericRadialCompiler {
         var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
             ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
         metadata["data-cfx-fill-pattern"] = pattern.ToString();
+        var cornerRadius = chart.Options.RadialGeometry.CornerRadius;
         if (mark.Painted && obstacles != null) {
-            var outline = new VisualSceneSlice(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep, color, null, 0, null, null);
-            obstacles.Add(new LabelObstacle(id, new LabelMarkShape(VisualSceneGeometry.Flatten(outline, 8), true, 0, plot)));
+            var contours = ChartSlicePathGeometry.Contours(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep, cornerRadius, 8);
+            obstacles.Add(new LabelObstacle(id, new LabelMarkShape(contours, true, 0, plot)));
         }
         using (builder.PushGroup(id, "point", metadata)) {
             if (mark.Painted) {
                 builder.Slice(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep, color,
                     role: series.Kind == ChartSeriesKind.RadialBar ? "radial-bar" : "radial-column", id: id + "-mark",
-                    paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, pointIndex)));
+                    paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, pointIndex)), cornerRadius: cornerRadius);
                 if (pattern != ChartFillPattern.None) builder.PatternSlice(geometry.Cx, geometry.Cy, mark.Outer, mark.Inner, mark.Start, mark.Sweep,
-                    pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(110), role: "radial-fill-pattern");
+                    pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(110), role: "radial-fill-pattern", cornerRadius: cornerRadius);
             }
         }
-        if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
+        if (geometry.Outer > 0 && (series.ShowDataLabels ?? chart.Options.ShowDataLabels)) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
     }
 
     private static ChartAxis Axis(Chart chart, ChartAxisSide side) => side == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
