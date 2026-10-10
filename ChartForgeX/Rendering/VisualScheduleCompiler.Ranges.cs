@@ -35,13 +35,15 @@ internal static partial class VisualScheduleCompiler {
         if (now.HasValue) { min = Math.Min(min, now.Value); max = Math.Max(max, now.Value); }
         min = axis.Minimum ?? min; max = axis.Maximum ?? max;
         (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
+        var fixedTicks = axis.Labels.Count == 0 && gantt && axis.Scale == ChartScaleKind.Time && chart.Options.GanttTickInterval != null
+            ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null;
         var ticks = axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= min && value <= max).Distinct().OrderBy(value => value).ToArray()
-            : (gantt && axis.Scale == ChartScaleKind.Time && chart.Options.GanttTickInterval != null
-                ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null) ?? ChartTicks.GenerateInside(axis, min, max);
+            : fixedTicks ?? ChartTicks.GenerateInside(axis, min, max);
+        var milliseconds = fixedTicks != null && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
         var tickLabels = ticks.ToDictionary(value => value, value => ChartAxisValueFormatter.Format(axis, value,
-            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks));
+            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick, milliseconds) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks));
         string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : ChartAxisValueFormatter.Format(axis, value,
-            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks);
+            tick => axis.Scale == ChartScaleKind.Time ? ChartTimeScale.Format(axis, tick, milliseconds) : ChartNumericFormatter.FormatValue(chart.Options, tick), ticks);
         var layout = LaneLayout(chart, context, builder, viewport, items.Where(item => !item.Marker).Select(item => chart.Series[item.Index].Name), Array.Empty<string>(), false,
             now.HasValue && now.Value >= min && now.Value <= max, ticks, Format);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);
@@ -65,7 +67,6 @@ internal static partial class VisualScheduleCompiler {
                 var center = plot.Top + (item.Row + .5) * slot;
                 LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index);
             }
-            if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             foreach (var item in items) {
                 if (item.Marker) continue;
                 var series = chart.Series[item.Index]; var center = plot.Top + (item.Row + .5) * slot;
@@ -123,6 +124,7 @@ internal static partial class VisualScheduleCompiler {
                 }
             }
             Markers(chart, context, builder, plot, items, Project, min, max, colors, obstacles);
+            if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             // Links are foreground annotations: successor fills must not cover their arrowheads.
             if (gantt) Dependencies(chart, context, builder, plot, items, renderedLinks, Project, slot, height);
         }
