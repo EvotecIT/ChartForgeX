@@ -11,14 +11,19 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Compiles Cartesian geometry, styles and semantic alternatives into shared immutable scene commands.</summary>
 internal static partial class VisualCartesianCompiler {
-    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
+    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors, ChartAxisValueFormatter.Cache? axisLabels = null) {
         var entries = new List<VisualLegendEntry>();
         if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
             && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].Points.Count > 1) {
             var series = chart.Series[0];
             var stride = ObservationStride(series.Kind);
+            var numericRadial = series.Kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
+            if (numericRadial) axisLabels ??= new ChartAxisValueFormatter.Cache();
+            var categoryFormatter = numericRadial ? ChartAxisValueFormatter.Create(chart.Options.XAxis,
+                series.Points.Select(point => point.X).Distinct().OrderBy(value => value).ToArray()) : null;
             for (var point = 0; point < series.Points.Count / stride; point++) {
-                var label = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.Points[point * stride].X) ?? "Item " + Number(point + 1);
+                var label = numericRadial ? axisLabels!.Format(chart.Options.XAxis, series.Points[point].X, categoryFormatter!)
+                    : ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.Points[point * stride].X) ?? "Item " + Number(point + 1);
                 var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
                 var color = PointColor(series, 0, point, colors);
                 if (series.Kind == ChartSeriesKind.Candlestick || series.Kind == ChartSeriesKind.Ohlc)

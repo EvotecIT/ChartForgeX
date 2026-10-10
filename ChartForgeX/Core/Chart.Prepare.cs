@@ -14,7 +14,8 @@ public sealed partial class Chart : IVisualRenderable {
         var family = VisualChartCompiler.Family(this);
         var sourceFrame = context.Frame;
         var frameColors = context.Theme.Resolve(context.ThemeMode);
-        var entries = VisualChartCompiler.LegendEntries(family, this, frameColors);
+        var axisLabels = family == VisualChartFamily.NumericRadial ? new ChartAxisValueFormatter.Cache() : null;
+        var entries = VisualChartCompiler.LegendEntries(family, this, frameColors, axisLabels);
         TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) {
             var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };
             if (configured == null) fallback.Font.Weight = weight;
@@ -32,7 +33,7 @@ public sealed partial class Chart : IVisualRenderable {
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var content = VisualFrameLayout.Build(builder, context, entries);
-        VisualChartCompiler.Build(family, this, context, builder, content);
+        VisualChartCompiler.Build(family, this, context, builder, content, axisLabels);
         var accessibility = Accessibility.Clone();
         accessibility.Name ??= !string.IsNullOrWhiteSpace(frame.Title) ? frame.Title
             : !string.IsNullOrWhiteSpace(Title) ? Title : Options.Labels.UntitledChart;
