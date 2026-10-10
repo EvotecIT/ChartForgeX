@@ -126,6 +126,7 @@ internal static partial class VisualCartesianCompiler {
                 var pointSeries = IsPointSeries(series.Kind);
                 using (chart.Options.ClipMarksToPlot && !pointSeries ? seriesBuilder.PushClip(plot) : null)
                 using (seriesBuilder.PushGroup(SeriesId(index), "series", new Dictionary<string, string> {
+                    ["data-cfx-coordinate-system"] = "cartesian",
                     ["data-cfx-series"] = Number(index), ["data-cfx-series-key"] = series.InteractionIdentityKey,
                     ["data-cfx-series-name"] = series.Name, ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(),
                     ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false",

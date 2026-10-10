@@ -140,7 +140,11 @@
     const scrollAxis = (overflow, extent, available, offset, start, end, itemStart, itemEnd) => {
       if (!['auto', 'scroll'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
-      if (itemEnd - itemStart > end - start) return offset + center - (start + end) / 2;
+      if (itemEnd - itemStart > end - start) {
+        // Keep the visible portion of a wide mark: pointer focus must not move it between down and up.
+        if (itemEnd > start && itemStart < end) return offset;
+        return offset + center - (start + end) / 2;
+      }
       if (itemStart < start) return offset + itemStart - start;
       if (itemEnd > end) return offset + itemEnd - end;
       return offset;

@@ -454,31 +454,76 @@
     }
     return null;
   };
-  const shapePaint = (node, styles) => {
+  // Native producers use rectangular user-space clips. A retained fact or path box can lie outside them.
+  const paintWithinNativeClips = (node, subject = node) => {
+    let box;
+    for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
+      const reference = /^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path') || '');
+      if (!reference) continue;
+      const clip = parent.ownerSVGElement.getElementById(reference[1]);
+      if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
+        || !clip.firstElementChild.matches('rect')) continue;
+      const matrix = parent.getScreenCTM();
+      if (!matrix) return false;
+      const rect = clip.firstElementChild.getBBox();
+      if (!(rect.width > 0 && rect.height > 0)) return false;
+      const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
+        .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+      const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
+      const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
+      // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
+      const precision = .001 * Math.max(Math.abs(matrix.a) + Math.abs(matrix.c), Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001;
+      box ||= subject.getBoundingClientRect();
+      if (subject !== node) {
+        // A marker-free observation uses its source location, not another visible part of the series path.
+        const x = box.left + box.width / 2, y = box.top + box.height / 2;
+        if (x < left - precision || x > right + precision || y < top - precision || y > bottom + precision) return false;
+      } else if (box.right < left - precision || box.left > right + precision || box.bottom < top - precision || box.top > bottom + precision) return false;
+    }
+    return true;
+  };
+  const shapePaint = (node, styles, subject = node) => {
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
-    if (/-(highlight|pattern|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '') || !paintNodeVisible(node, styles)) return null;
+    if (/-(highlight|pattern|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
+      || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)
+      || subject !== node && !paintWithinNativeClips(node, subject)) return null;
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
     // Open line marks never paint their inherited default black fill.
     if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
     return paintValue(node, paint.fill, paint.fillOpacity, styles) || stroke;
   };
-  const childPaint = (node, decoration, styles) => {
+  const primaryTextPaint = (node, decoration, styles) => {
+    const role = (node.dataset || {}).cfxRole;
+    // Text is the mark for a word-cloud term or annotation caption; ordinary point labels are decoration.
+    if (role !== 'word-cloud-term' && role !== 'annotation' && !(decoration && role === 'legend-item')) return null;
+    for (const text of node.querySelectorAll('text')) {
+      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text)
+        || !decoration && text.closest('[data-cfx-label-decoration]')) continue;
+      const style = paintStyle(text, styles);
+      if (!(parseFloat(style.fontSize) > 0)) continue;
+      const stroke = parseFloat(style.strokeWidth) > 0 ? paintValue(text, style.stroke, style.strokeOpacity, styles) : null;
+      const paint = paintValue(text, style.fill, style.fillOpacity, styles) || stroke;
+      if (paint) return paint;
+    }
+    return null;
+  };
+  const childPaint = (node, decoration, styles, subject) => {
     if (!node) return null;
     const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
     const primary = shapes.filter((shape) => shape.matches('[data-cfx-role^="circle-value"],[data-cfx-role^="gauge-value"],[data-cfx-role="gauge-needle"],[data-cfx-role="bullet-value"]'));
     for (const shape of primary.concat(shapes)) {
       if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
-      const paint = shapePaint(shape, styles);
+      const paint = shapePaint(shape, styles, subject || shape);
       if (paint) return paint;
     }
-    return null;
+    return primaryTextPaint(node, decoration, styles);
   };
   const seriesPaint = (node, styles) => {
     const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
     if (!owner) return null;
     for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
-      const paint = childPaint(layer, false, styles);
+      const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
     }
     return null;
@@ -492,14 +537,7 @@
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
     if (legend) return childPaint(node, true, styles);
     if (node.closest('.cfx-series-muted') || ['zero', 'precision-collapse'].includes(node.dataset.cfxGeometryStatus)) return null;
-    const paint = observationPaint(node, styles);
-    if (paint) return paint;
-    // Text annotations are painted text rather than data geometry, and retain their native readout.
-    if ((node.dataset.cfxRole || '').startsWith('annotation') && paintNodeVisible(node, styles)) {
-      const box = node.getBoundingClientRect();
-      if (box.width || box.height) return { colour: '' };
-    }
-    return null;
+    return observationPaint(node, styles);
   };
   const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
     if (pointerTargetPaint(node, styles)) return true;
@@ -1065,7 +1103,11 @@
     const scrollAxis = (overflow, extent, available, offset, start, end, itemStart, itemEnd) => {
       if (!['auto', 'scroll'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
-      if (itemEnd - itemStart > end - start) return offset + center - (start + end) / 2;
+      if (itemEnd - itemStart > end - start) {
+        // Keep the visible portion of a wide mark: pointer focus must not move it between down and up.
+        if (itemEnd > start && itemStart < end) return offset;
+        return offset + center - (start + end) / 2;
+      }
       if (itemStart < start) return offset + itemStart - start;
       if (itemEnd > end) return offset + itemEnd - end;
       return offset;
@@ -1473,31 +1515,34 @@
   };
   // A producer's coordinate contract controls inferred geometry; native painted targets always retain their identity.
   const usesPolarCoordinates = (node) => !!node.closest('[data-cfx-coordinate-system="polar"]');
-  // Resolve one candidate in screen coordinates. Tooltip range and crosshair range consume it independently.
-  const nearestPoint = (root, event, searchNearest) => {
+  const usesCartesianCoordinates = (node) => node.closest('[data-cfx-coordinate-system]')?.dataset.cfxCoordinateSystem === 'cartesian';
+  // Retain native summaries separately: an Exact line hit is not an inferred observation or crosshair.
+  const pointerCandidates = (root, event, searchNearest) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
     const styles = new Map();
     const hit = event.target instanceof Element ? event.target.closest(targetSelector) : null;
-    if (hit && root.contains(hit) && (hit.hasAttribute('data-cfx-point') || renderedTargetKind(hit) !== 'series' || hit.hasAttribute('data-cfx-value'))
-      && pointerTargetPaint(hit, styles)) {
+    let native = null;
+    if (hit && root.contains(hit) && pointerTargetPaint(hit, styles)) {
       const box = hit.getBoundingClientRect();
-      return { node: hit, x: usesPolarCoordinates(hit) ? event.clientX : box.left + box.width / 2,
-        y: usesPolarCoordinates(hit) ? event.clientY : box.top + box.height / 2, distance: 0, exact: true };
+      const summary = renderedTargetKind(hit) === 'series' && !hit.hasAttribute('data-cfx-point') && !hit.hasAttribute('data-cfx-value');
+      native = { node: hit, x: usesPolarCoordinates(hit) || summary ? event.clientX : box.left + box.width / 2,
+        y: usesPolarCoordinates(hit) || summary ? event.clientY : box.top + box.height / 2, distance: 0, exact: true, summary };
+      if (!summary) return { native, observation: hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit) ? native : null };
     }
-    if (!searchNearest) return null;
+    if (!searchNearest) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (usesPolarCoordinates(node) || !pointerTargetPaint(node, styles)) return;
+      if (!usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
       const x = box.left + box.width / 2, y = box.top + box.height / 2;
       const distance = Math.hypot(x - event.clientX, y - event.clientY);
       if (!best || distance < best.distance) best = { node, x, y, distance, exact: false };
     });
-    return best;
+    return { native, observation: best };
   };
   const tooltipAcquiresPoint = (root, point) => {
     if (!point || !hasFeature(root, 'Tooltips')) return false;
@@ -1537,25 +1582,28 @@
       return;
     }
     const searchNearest = guideEnabled || root.dataset.cfxTooltipRange !== 'exact';
-    const point = nearestPoint(root, event, searchNearest);
-    const tooltipPoint = tooltipAcquiresPoint(root, point);
-    const guidePoint = guideEnabled && point && (point.exact || point.distance <= 120)
-      && !usesPolarCoordinates(point.node) && point.node.hasAttribute('data-cfx-point');
+    const candidates = pointerCandidates(root, event, searchNearest);
+    const observation = candidates && candidates.observation;
+    const native = candidates && candidates.native;
+    // Nearest/bounded acquisition can refine a line summary to a real observation; Exact retains the summary.
+    const tooltipPoint = tooltipAcquiresPoint(root, observation) ? observation : tooltipAcquiresPoint(root, native) ? native : null;
+    const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
     if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
       hideTip(root, tip, false);
       clearHover(root, true, true);
       return;
     }
+    const point = tooltipPoint || guidePoint;
     const key = targetKey(targetIdentity(point.node));
-    const mode = point.node.hasAttribute('data-cfx-point') && !usesPolarCoordinates(point.node)
+    const mode = point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
       ? crosshairHoverMode(event, point.node) : 'series';
     const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
     if (changed) setHover(root, point.node, true, true, mode);
-    if (guidePoint) showCrosshair(root, crosshair, point, event, changed);
+    if (guidePoint) showCrosshair(root, crosshair, guidePoint, event, changed);
     else hideCrosshair(root, crosshair);
     // Recheck paint on each event: host CSS may change while the semantic target remains the same.
-    if (tooltipPoint) showTip(root, tip, point.node, event);
+    if (tooltipPoint) showTip(root, tip, tooltipPoint.node, event);
     else hideTip(root, tip, false);
   };
   const applySelectionByLabel = (root, label, selected) => {
