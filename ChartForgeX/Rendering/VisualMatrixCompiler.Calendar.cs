@@ -19,8 +19,10 @@ internal static partial class VisualMatrixCompiler {
         var axes = chart.Options.ShowAxes;
         var left = axes && chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .22, Enumerable.Range(0, 7).Select(row => builder.MeasureText(model.DayName(row), style).Width).Max() + gap) : 0;
         var top = axes && chart.Options.XAxis.Visible ? Math.Min(viewport.Height * .15, lineHeight + gap) : 0;
-        var scaleHeight = ScaleVisible(chart, context) ? Math.Min(viewport.Height * .25,
-            CalendarScaleCaptionHeight(chart, builder, model, style) + 12 + gap + gap / 3) : 0;
+        var scale = chart.Options.HeatmapColorScale;
+        var scaleHeight = ScaleVisible(chart, context) ? scale != null
+            ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height * .35 - gap), model.EmptyDays > 0) + gap
+            : Math.Min(viewport.Height * .25, CalendarScaleCaptionHeight(chart, builder, model, style) + 12 + gap + gap / 3) : 0;
         var scaleGap = Math.Min(gap, scaleHeight / 3);
         var area = new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height - top - scaleHeight));
         var grid = model.Layout(area);
@@ -40,9 +42,10 @@ internal static partial class VisualMatrixCompiler {
                 var id = "calendar-day-" + model.DateText(date);
                 var bounds = new ChartRect(grid.X(model.Column(date)), grid.Y(model.Row(date)), grid.Cell, grid.Cell);
                 var blend = present ? day.Color.HasValue ? ChartColorBlend.Solid(day.Color.Value, SvgColorRole.Series)
+                    : scale != null ? scale.BlendFor(day.Value, model.Min, model.Max)
                     : model.IsZero(day.Value) ? ChartHeatmapSurface.ZeroBlend(colors)
                     : ChartHeatmapSurface.CalendarBlend(colors, model.Series.Color, day.Value, model.RampMin, model.Max, VisualChartPaint.SeriesRole(model.Series))
-                    : ChartHeatmapSurface.CalendarEmptyBlend(colors);
+                    : CalendarMissingBlend(chart, colors);
                 var metadata = new Dictionary<string, string> {
                     ["data-cfx-date"] = model.DateText(date), ["data-cfx-empty"] = present ? "false" : "true",
                     ["data-cfx-row"] = model.Row(date).ToString(CultureInfo.InvariantCulture),
@@ -51,7 +54,7 @@ internal static partial class VisualMatrixCompiler {
                 };
                 if (present) {
                     metadata["data-cfx-value"] = VisualStateSceneTools.Number(day.Value);
-                    metadata["data-cfx-level"] = model.Level(day.Value).ToString();
+                    if (scale == null) metadata["data-cfx-level"] = model.Level(day.Value).ToString();
                     metadata["data-cfx-source-points"] = string.Join(",", sourceIndices[date]);
                 }
                 using (VisualStateSceneTools.Mark(builder, id, "calendar-cell", bounds, label, metadata))
@@ -69,8 +72,12 @@ internal static partial class VisualMatrixCompiler {
                 foreach (var month in model.MonthLabels(grid, text => builder.MeasureText(text, style).Width))
                     VisualStateSceneTools.Text(builder, model.MonthName(month.Month), new ChartRect(month.X, viewport.Top, Math.Max(0, area.Right - month.X), top),
                         style, "calendar-month", "calendar-month-" + month.Month.ToString("yyyy-MM", CultureInfo.InvariantCulture));
-            if (ScaleVisible(chart, context)) CalendarScale(chart, context, builder, model,
-                new ChartRect(area.Left, viewport.Bottom - scaleHeight + scaleGap, area.Width, Math.Max(0, scaleHeight - scaleGap)));
+            if (ScaleVisible(chart, context)) {
+                var scaleBounds = new ChartRect(area.Left, viewport.Bottom - scaleHeight + scaleGap, area.Width, Math.Max(0, scaleHeight - scaleGap));
+                if (scale != null) ColorScale(chart, context, builder, scaleBounds, model.Min, model.Max, "calendar-scale", model.EmptyDays > 0,
+                    CalendarMissingBlend(chart, colors));
+                else CalendarScale(chart, context, builder, model, scaleBounds);
+            }
         }
     }
 }

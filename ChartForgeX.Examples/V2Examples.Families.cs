@@ -23,6 +23,9 @@ public static partial class V2Examples {
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
         foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var variants = new List<string> { "wide", "compact" };
+            if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap) {
+                variants.Add("color-scale"); variants.Add("compact-color-scale");
+            }
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
             if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
                 variants.Add("axis-labels"); variants.Add("compact-axis-labels");
@@ -60,6 +63,8 @@ public static partial class V2Examples {
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"
                     : kind == ChartSeriesKind.Sunburst && variant is "options" or "compact-options" ? "Leaf totals size sectors; measured color stays independent"
                     : kind == ChartSeriesKind.Sankey && variant is "options" or "compact-options" ? "Aligned and ordered weighted flows"
+                    : variant is "color-scale" or "compact-color-scale" ? kind == ChartSeriesKind.Heatmap ? "Signed measurements share a fixed color domain"
+                        : kind == ChartSeriesKind.HexbinHeatmap ? "Named numeric intervals keep their exact boundaries" : "Every observed value shares one scale; missing days stay distinct"
                     : variant is "options" or "compact-options" && GeometryOptionFamilies.Contains(kind) ? GeometrySubtitle(kind)
                     : variant switch { "sparse" => "Missing observations remain visible as gaps", "options" => "Explore configured marks, scales and labels", "compact" => "The same data in a compact view", _ => "Explore the data, then download the chart" };
                 WriteModel(output, artifacts, chart, id, family, title, variant, subtitle, mode, width, height, legend,

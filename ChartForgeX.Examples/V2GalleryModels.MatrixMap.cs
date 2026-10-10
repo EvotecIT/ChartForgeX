@@ -7,6 +7,7 @@ using ChartForgeX.Themes;
 public static partial class V2GalleryModels {
     private static Chart? MatrixMap(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
         var chart = Categories(kind); var colors = VisualTheme.Graphite().Resolve(mode);
+        if (variant is "color-scale" or "compact-color-scale") return MatrixColorScale(kind, mode);
         switch (kind) {
             case ChartSeriesKind.Heatmap:
                 if (variant == "options") return States(mode).WithXLabels("Identity", "Network", "Storage", "Backup")
@@ -37,6 +38,28 @@ public static partial class V2GalleryModels {
         if (kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap)
             chart.WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
         return chart;
+    }
+    private static Chart MatrixColorScale(ChartSeriesKind kind, VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        if (kind == ChartSeriesKind.CalendarHeatmap)
+            return Chart.Create().AddCalendarHeatmap("Daily observations", Enumerable.Range(0, 120)
+                .Where(index => index % 7 != 0 && index % 9 != 0)
+                .Select(index => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 7 % 13)), firstDayOfWeek: DayOfWeek.Monday)
+                .WithHeatmapColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
+                    .WithLabels("Quiet", null, "Busy").WithNoDataColor(colors.Border));
+        var chart = Categories(kind).WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").WithDataLabels();
+        if (kind == ChartSeriesKind.Heatmap)
+            return chart.AddHeatmapRow("Primary", new double?[] { -20, -10, 0, null, 10, 20 })
+                .AddHeatmapRow("Secondary", new double?[] { -15, 0, 5, 15, null, 25 })
+                .WithHeatmapColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Palette[0], 0)
+                    .WithValueRange(-20, 20).WithLabels("Below target", "Target", "Above target"));
+        return chart.AddHexbinHeatmapRow("Primary", new double?[] { 0, 30, 40, null, 80, 100 })
+            .AddHexbinHeatmapRow("Secondary", new double?[] { 15, 40, 60, 80, null, 120 })
+            .WithHeatmapColorScale(ChartColorScale.Discrete(new[] {
+                new ChartColorBand(40, colors.SequentialRamp[0], "Low"),
+                new ChartColorBand(80, colors.SequentialRamp[colors.SequentialRamp.Count / 2], "Medium"),
+                new ChartColorBand(null, colors.SequentialRamp[colors.SequentialRamp.Count - 1], "High")
+            }));
     }
     private static ChartRegionMapItem[] RegionValues() => new[] {
         new ChartRegionMapItem("CA", 82), new ChartRegionMapItem("TX", 64), new ChartRegionMapItem("NY", 91), new ChartRegionMapItem("FL", 47),

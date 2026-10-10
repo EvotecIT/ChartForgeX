@@ -26,7 +26,6 @@ internal static partial class VisualMatrixCompiler {
         var top = y && chart.YAxisTitle.Length > 0 ? builder.MeasureText(chart.YAxisTitle, titleStyle).Height + gap : 0;
         var xTitle = x ? ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle) : string.Empty;
         var titleHeight = xTitle.Length > 0 ? builder.MeasureText(xTitle, titleStyle).Height + gap : 0;
-        var scaleHeight = !categorical && ScaleVisible(chart, context) ? Math.Min(viewport.Height * .22, lineHeight * 2 + gap) : 0;
         // Only left-slanting captions can use the row-label gutter. The right side has no
         // equivalent gutter inside the common viewport, so reserve its complete reach there.
         var side = 0d;
@@ -56,6 +55,10 @@ internal static partial class VisualMatrixCompiler {
             }
         }
         var plotLeft = viewport.Left + left + (ChartHeatmapColumnLabels.EndsAtColumn(chart) ? side : 0);
+        var scaleHeight = !categorical && ScaleVisible(chart, context)
+            ? chart.Options.HeatmapColorScale != null
+                ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left - side), viewport.Height * .35)
+                : Math.Min(viewport.Height * .22, lineHeight * 2 + gap) : 0;
         var plot = new ChartRect(plotLeft, viewport.Top + top, Math.Max(0, viewport.Width - left - side), Math.Max(0, viewport.Height - top - labels - titleHeight - scaleHeight));
         return new MatrixLayout(plot, new ChartRect(plot.Left, viewport.Bottom - scaleHeight, plot.Width, scaleHeight), labels, titleHeight, xTitle, titleStyle);
     }
@@ -144,6 +147,7 @@ internal static partial class VisualMatrixCompiler {
     }
 
     private static void NumericScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds, double min, double max, ChartColor? high) {
+        if (chart.Options.HeatmapColorScale != null) { ColorScale(chart, context, builder, bounds, min, max, "heatmap-scale"); return; }
         if (bounds.Height <= 0 || bounds.Width <= 0) return;
         var colors = context.Theme.Resolve(context.ThemeMode); var style = VisualStateSceneTools.TickStyle(chart, context);
         var textHeight = builder.MeasureText("Mg", style).Height; var swatch = Math.Min(12, Math.Max(0, bounds.Height - textHeight));

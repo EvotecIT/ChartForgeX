@@ -45,6 +45,9 @@ internal static class ChartGuards {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.ValidateHourWeekdayHeatmapOwnership();
         ValidateRenderableChart(chart, preparing);
+        if (chart.Options.HeatmapColorScale != null && chart.Series.Any(series => series.IsCategoricalHeatmapRow
+            || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
+            throw new InvalidOperationException("Heatmap color scales require numeric rectangular, hexagonal or calendar heatmaps.");
         if (chart.Options.RadialGeometry.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn))
             throw new InvalidOperationException("Radial geometry corner radius requires numeric radial bars or columns.");
         if (chart.Options.Sunburst.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
@@ -225,7 +228,7 @@ internal static class ChartGuards {
             // A categorical matrix may list entities nothing is known about, so it can be empty; a numeric one cannot.
             if (!preparing && !chart.Series.Any(series => series.Points.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
             if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
-            if (chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
+            if (chart.Options.HeatmapColorScale == null && chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
                 throw new InvalidOperationException("Relative (count) heatmaps use a neutral sequential scale; the semantic status scale is reserved for status data.");
             }
         }
