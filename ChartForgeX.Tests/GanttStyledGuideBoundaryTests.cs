@@ -10,6 +10,32 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GanttStyledGuideBoundaryTests {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CenteredGuideThatAlreadyFitsDoesNotCompressTasks(bool lanes) {
+        var start = new DateTime(2026, 1, 2);
+        var chart = Chart.Create().WithSize(640, 360).WithLegend(false).WithGanttToday(start.AddDays(1.5));
+        if (lanes) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
+            .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, start.AddDays(3), "work") });
+        else chart.AddGanttTask("Task", start, start.AddDays(3));
+        chart.Options.GanttTodayStyle = new ChartStrokeStyle(width: 2);
+        var control = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var axis = Assert.Single(control.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "schedule-axis");
+        chart.Options.GanttTodayStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), (axis.End.X - axis.Start.X) * .8, .15);
+        var actual = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Equal(control.Regions.Select(region => region.Bounds), actual.Regions.Select(region => region.Bounds));
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + actual.ToSvg() + "</body></html>", 640, 380);
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        var name = "schedule-centered-wide-" + (lanes ? "lane" : "classic");
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
+        File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), actual.ToPng());
+    }
+
     [Fact]
     public void OppositeReferenceReservationsKeepEachGuidesOwnWidthInsideThePlot() {
         var chart = Chart.Create().WithSize(320, 360).WithLegend(false).AddGanttTask("Task", 1, 4)

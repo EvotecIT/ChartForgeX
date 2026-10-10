@@ -7,6 +7,40 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class CartesianStyledAnnotationTests {
+    [Fact]
+    public void MinimumAcceptedReferenceDashesRenderThroughBothPublicRasterPathsOnAWideCanvas() {
+        var chart = Chart.Create().WithSize(30000, 100).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
+            .WithDataLabels(false).AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }).AddHorizontalLine(5, "");
+        chart.Series[0].WithMarkerRadius(0);
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 1, dash: new[] { .25, .25 });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.NotEmpty(prepared.ToPng());
+        var image = ChartForgeX.SvgRaster.SvgRasterizer.ToImage(prepared.ToSvg());
+        Assert.Equal(30000, image.Width);
+        Assert.Equal(100, image.Height);
+        Assert.Contains(image.Pixels, value => value > 0);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CenteredWideGuideDoesNotAssignItsWidthToTheNarrowEdgeGuide(bool horizontal) {
+        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
+            .WithDataLabels(false).AddLine("Observed", new[] { new ChartPoint(0, 0), new ChartPoint(10, 10) });
+        chart.Series[0].WithMarkerRadius(0);
+        if (horizontal) { chart.AddHorizontalLine(0, ""); chart.AddHorizontalLine(5, ""); }
+        else { chart.AddVerticalLine(0, ""); chart.AddVerticalLine(5, ""); }
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 2);
+        chart.Annotations[1].StrokeStyle = new ChartStrokeStyle(width: 0);
+        var control = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var plot = Plot(control);
+        var before = control.Scene.Nodes.OfType<VisualScenePath>().First(node => node.Role == "annotation-line");
+        chart.Annotations[1].StrokeStyle = new ChartStrokeStyle(width: (horizontal ? plot.Height : plot.Width) * .8);
+        var actual = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var after = actual.Scene.Nodes.OfType<VisualScenePath>().First(node => node.Role == "annotation-line");
+        Assert.Equal(horizontal ? before.Commands[0].Y : before.Commands[0].X, horizontal ? after.Commands[0].Y : after.Commands[0].X, 6);
+    }
+
     [Theory]
     [InlineData(false, false, ChartScaleKind.Linear)]
     [InlineData(false, true, ChartScaleKind.Linear)]
