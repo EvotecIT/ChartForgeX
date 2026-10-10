@@ -1,11 +1,42 @@
 using System.Globalization;
 using System.Text.Json;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using Microsoft.Playwright;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttReferenceTests {
+    [Theory]
+    [InlineData(false, 960)]
+    [InlineData(true, 320)]
+    public async Task AuthoredMilestoneRangeProducesOrderedStaticMarks(bool dark, int width) {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var fixture = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "gantt-milestone-dependencies.mmd");
+        var result = new MermaidParser().ParseGantt(File.ReadAllText(fixture));
+        Assert.False(result.HasErrors);
+        var chart = result.Document!.ToChart().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style=\"margin:0\">" + chart.ToHtmlFragment() + "</body></html>", width, 600);
+        var marks = session.Page.Locator("[data-cfx-role=\"gantt-task-shape\"], [data-cfx-role=\"gantt-milestone-shape\"]");
+        Assert.Equal(3, await marks.CountAsync());
+        var window = (await marks.Nth(0).BoundingBoxAsync())!;
+        var gate = (await marks.Nth(1).BoundingBoxAsync())!;
+        var tail = (await marks.Nth(2).BoundingBoxAsync())!;
+        Assert.True(window.X + window.Width < gate.X && gate.X + gate.Width < tail.X,
+            "The until window ends before the milestone midpoint, and the dependent starts after its authored end.");
+        Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
+        Assert.Equal(0, await session.Page.Locator("script").CountAsync());
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            Directory.CreateDirectory(captures);
+            await session.Page.ScreenshotAsync(new PageScreenshotOptions {
+                Path = Path.Combine(captures, "gantt-references-" + (dark ? "dark-" : "light-") + width + ".png"), FullPage = true
+            });
+        }
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
     [Theory]
     [InlineData("gantt-until")]
     [InlineData("gantt-repeated-calendar")]
