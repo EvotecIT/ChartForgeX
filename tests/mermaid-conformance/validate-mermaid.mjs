@@ -115,6 +115,12 @@ for (const { folder, file, hasExpected } of files) {
     if (hasExpected || variant) {
       const expected = JSON.parse(await readFile(join(fixtures, expectedFile), 'utf8'));
       const diagram = await mermaid.mermaidAPI.getDiagramFromText(source);
+      if (expected.configuration) {
+        const configuration = mermaid.mermaidAPI.getConfig();
+        for (const [path, value] of Object.entries(expected.configuration)) {
+          assert.deepEqual(path.split('.').reduce((current, key) => current?.[key], configuration), value, `Configuration ${path}`);
+        }
+      }
       if (expected.nodes) {
         const vertices = diagram.db.getVertices();
         assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);

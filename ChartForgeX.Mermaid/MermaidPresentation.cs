@@ -13,6 +13,10 @@ internal static class MermaidPresentation {
         if (model is VisualArtifact artifact) {
             artifact.Accessibility.Name = document.Accessibility.Name;
             artifact.Accessibility.Description = document.Accessibility.Description;
+            if (document.Configuration.Theme != null) artifact.Metadata["mermaid.config.theme"] = document.Configuration.Theme;
+            if (document.Configuration.Layout != null) artifact.Metadata["mermaid.config.layout"] = document.Configuration.Layout;
+            if (document.Configuration.Look != null) artifact.Metadata["mermaid.config.look"] = document.Configuration.Look;
+            if (document.Configuration.FontFamily != null) artifact.Metadata["mermaid.config.fontFamily"] = document.Configuration.FontFamily;
             if (artifact.Model != null) Apply(artifact.Model, document);
         } else if (model is SequenceArtifact sequence) {
             sequence.Accessibility.Name = document.Accessibility.Name;
@@ -21,14 +25,20 @@ internal static class MermaidPresentation {
             topology.Accessibility.Name = document.Accessibility.Name;
             topology.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) topology.Theme = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? TopologyTheme.Dark() : TopologyTheme.Light();
+            if (document.Configuration.FontFamily != null) {
+                topology.Theme ??= TopologyTheme.Light();
+                topology.Theme.FontFamily = document.Configuration.FontFamily;
+            }
         } else if (model is Chart chart) {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) chart.WithTheme(string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light());
+            if (document.Configuration.FontFamily != null) chart.WithFontFamily(document.Configuration.FontFamily);
         } else if (model is IVisualBlock block) {
             block.Options.Accessibility.Name = document.Accessibility.Name;
             block.Options.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) block.Options.Theme = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light();
+            if (document.Configuration.FontFamily != null) block.Options.Theme.FontFamily = document.Configuration.FontFamily;
         }
         return model;
     }
