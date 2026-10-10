@@ -60,9 +60,9 @@ internal static class MermaidGanttInputDateFormat {
     internal static string FormatCalendarDate(DateTime value, string format) {
         format = format.Trim();
         if (format == "X" || format == "x") {
-            var milliseconds = (value.Ticks - new DateTime(1970, 1, 1).Ticks) / TimeSpan.TicksPerMillisecond;
-            return format == "x" ? milliseconds.ToString(CultureInfo.InvariantCulture)
-                : (milliseconds / 1000m).ToString("0.###", CultureInfo.InvariantCulture);
+            var ticks = value.Ticks - new DateTime(1970, 1, 1).Ticks;
+            return format == "x" ? (ticks / (decimal)TimeSpan.TicksPerMillisecond).ToString("0.####", CultureInfo.InvariantCulture)
+                : (ticks / (decimal)TimeSpan.TicksPerSecond).ToString("0.#######", CultureInfo.InvariantCulture);
         }
         var fields = Parts(format);
         if (!UsesMermaidFields(fields))
