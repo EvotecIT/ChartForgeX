@@ -24,7 +24,7 @@ public static class MermaidGanttRendering {
         foreach (var task in document.Tasks) {
             var name = string.IsNullOrWhiteSpace(task.Section) ? task.Title : task.Section + " / " + task.Title;
             if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2), task.DependencyIndex);
-            else chart.AddGanttTask(name, task.Start, task.End, task.Progress, task.DependencyIndex);
+            else chart.AddGanttTask(name, task.Start, task.RenderEnd, task.Progress, task.DependencyIndex);
         }
 
         return MermaidPresentation.Apply(chart, document);
