@@ -99,37 +99,12 @@
     }
     return state;
   };
-  const bindKeyboardNavigationResize = (root) => {
-    const stage = root.querySelector('.cfx-stage');
-    if (!stage) return;
-    let frame = 0;
-    let observer;
-    const queueRefresh = () => {
-      if (frame) cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        if (!root.isConnected) {
-          if (observer) observer.disconnect();
-          window.removeEventListener('resize', queueRefresh);
-          return;
-        }
-        refreshKeyboardNavigation(root);
-      });
-    };
-    window.addEventListener('resize', queueRefresh);
-    if (typeof ResizeObserver !== 'undefined') {
-      // Tabs and other initially hidden hosts acquire layout without a window resize.
-      observer = new ResizeObserver(queueRefresh);
-      observer.observe(stage);
-    }
-  };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) return;
     root._cfxKeyboardNavigation = { owned: new Set() };
     // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
     refreshKeyboardNavigation(root);
-    bindKeyboardNavigationResize(root);
   };
   const scrollKeyboardTargetIntoView = (root, node) => {
     const stage = root.querySelector('.cfx-stage');

@@ -396,10 +396,11 @@
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
-    const rect = stage.getBoundingClientRect();
+    const local = stagePoint(stage, point);
+    positionStageViewport(stage, crosshair);
     crosshair.hidden = false;
-    crosshair.style.setProperty('--cfx-crosshair-x', (point.x - rect.left) + 'px');
-    crosshair.style.setProperty('--cfx-crosshair-y', (point.y - rect.top) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-x', (local.x - stage.scrollLeft) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', (local.y - stage.scrollTop) + 'px');
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
     if (label) label.textContent = text(point.node);
     const target = targetIdentity(point.node);
