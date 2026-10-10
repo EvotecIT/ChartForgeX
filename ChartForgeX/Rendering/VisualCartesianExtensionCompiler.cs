@@ -37,7 +37,8 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawExtensionSeries(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
+        ChartBubbleSizeScale? bubbleScale) {
         var series = chart.Series[index];
         switch (series.Kind) {
             case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
@@ -50,7 +51,7 @@ internal static partial class VisualCartesianCompiler {
                 DrawPreparedHorizontalBars(chart, context, builder, plot, map, stacks, index, colors, labels, obstacles); break;
             case ChartSeriesKind.Waterfall:
                 DrawPreparedWaterfall(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
-            default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+            default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles, bubbleScale); break;
         }
     }
 

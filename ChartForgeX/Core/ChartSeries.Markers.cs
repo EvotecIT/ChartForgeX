@@ -26,6 +26,8 @@ public sealed partial class ChartSeries {
     }
 
     internal void ValidateMarkerAndRadarOptions() {
+        if (Kind == ChartSeriesKind.Bubble && Markers.Radius.HasValue)
+            throw new InvalidOperationException("Bubble series use ChartOptions.Bubble radius bounds; use Markers.Enabled to hide glyphs.");
         if (Markers.IsConfigured && !ChartSeriesKindTraits.SupportsMarkers(Kind)
             && (Kind != ChartSeriesKind.DottedMap || Markers.HasNonRadiusConfiguration))
             throw new InvalidOperationException("Series '" + Name + "' of kind " + Kind + " does not support marker options.");

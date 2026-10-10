@@ -11,18 +11,9 @@ internal static partial class VisualCartesianCompiler {
 
     private static double ResolveMarkerRadius(ChartSeries series, VisualRenderContext context) => VisualMarkerScene.Radius(series, context);
 
-    private static double ResolveBubbleRadius(ChartSeries series, VisualRenderContext context, ChartRect plot,
-        double minimumSize, double maximumSize, double size) {
-        var maximumRadius = Math.Max(14, Math.Min(32, Math.Min(plot.Width, plot.Height) * .075));
-        var radius = maximumSize == minimumSize ? (6 + maximumRadius) / 2
-            : 6 + Math.Sqrt((size - minimumSize) / (maximumSize - minimumSize)) * (maximumRadius - 6);
-        // An explicit radius scales the source-size radius mapping in both layout and drawing.
-        return series.MarkerRadius.HasValue ? radius * series.MarkerRadius.Value / Math.Max(.1, context.Theme.MarkerRadius) : radius;
-    }
-
     /// <summary>Contains finite-size marks by extending only automatic ends of the final pixel-space axes.</summary>
     private static bool ExpandMarkerRanges(Chart chart, VisualRenderContext context, ChartRect plot,
-        ChartRange range, ChartRange? secondaryRange, ChartStackLayout stacks) {
+        ChartRange range, ChartRange? secondaryRange, ChartStackLayout stacks, ChartBubbleSizeScale? bubbleScale) {
         var x = new MarkerExtents(); var primaryY = new MarkerExtents(); var secondaryY = new MarkerExtents();
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
@@ -33,8 +24,6 @@ internal static partial class VisualCartesianCompiler {
             if (series.Markers.Enabled == false) continue;
             var radius = ResolveMarkerRadius(series, context);
             var count = series.Points.Count / ObservationStride(series.Kind);
-            var minSize = series.Kind == ChartSeriesKind.Bubble && count > 0 ? Enumerable.Range(0, count).Min(item => series.Points[item * 2 + 1].Y) : 0;
-            var maxSize = series.Kind == ChartSeriesKind.Bubble && count > 0 ? Enumerable.Range(0, count).Max(item => series.Points[item * 2 + 1].Y) : 0;
             for (var item = 0; item < count; item++) {
                 if (pointSeries && !ShowMarker(chart, series, item)) continue;
                 if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea) {
@@ -45,7 +34,7 @@ internal static partial class VisualCartesianCompiler {
                 var raw = item * ObservationStride(series.Kind);
                 var point = series.Points[raw];
                 var markerRadius = series.Kind == ChartSeriesKind.Bubble
-                    ? ResolveBubbleRadius(series, context, plot, minSize, maxSize, series.Points[raw + 1].Y) : radius;
+                    ? bubbleScale!.Radius(series.Points[raw + 1].Y, plot) : radius;
                 markerRadius = VisualMarkerScene.Extent(series, markerRadius);
                 if (markerRadius <= 0) continue;
                 var value = series.Kind == ChartSeriesKind.StackedArea ? stacks.Point(index, raw).End : point.Y;

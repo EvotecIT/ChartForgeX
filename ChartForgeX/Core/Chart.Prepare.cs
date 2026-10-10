@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
@@ -12,10 +13,11 @@ public sealed partial class Chart : IVisualRenderable {
         if (context == null) throw new ArgumentNullException(nameof(context));
         ChartGuards.RenderCompatibility(this, preparing: true);
         var family = VisualChartCompiler.Family(this);
+        var bubbleScale = Series.Any(series => series.Kind == ChartSeriesKind.Bubble) ? ChartBubbleSizeScale.Create(this) : null;
         var sourceFrame = context.Frame;
         var frameColors = context.Theme.Resolve(context.ThemeMode);
         var axisLabels = family == VisualChartFamily.NumericRadial ? new ChartAxisValueFormatter.Cache() : null;
-        var entries = VisualChartCompiler.LegendEntries(family, this, frameColors, axisLabels);
+        var entries = VisualChartCompiler.LegendEntries(family, this, frameColors, axisLabels, bubbleScale);
         TextStyle RoleStyle(TextStyle? configured, TextStyleOverride model, double size, ChartColor color, int weight) {
             var fallback = configured ?? new TextStyle { Font = context.Font, FontSize = size, Color = color, LineHeight = 1 };
             if (configured == null) fallback.Font.Weight = weight;
@@ -33,7 +35,7 @@ public sealed partial class Chart : IVisualRenderable {
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var content = VisualFrameLayout.Build(builder, context, entries);
-        VisualChartCompiler.Build(family, this, context, builder, content, axisLabels);
+        VisualChartCompiler.Build(family, this, context, builder, content, axisLabels, bubbleScale);
         var accessibility = Accessibility.Clone();
         accessibility.Name ??= !string.IsNullOrWhiteSpace(frame.Title) ? frame.Title
             : !string.IsNullOrWhiteSpace(Title) ? Title : Options.Labels.UntitledChart;

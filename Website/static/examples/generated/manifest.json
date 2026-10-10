@@ -3748,7 +3748,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-bubble-compact-options-light",
@@ -3884,7 +3884,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-bubble-compact-options-dark",

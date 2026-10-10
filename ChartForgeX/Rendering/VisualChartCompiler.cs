@@ -31,8 +31,9 @@ internal static class VisualChartCompiler {
         };
     }
 
-    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(VisualChartFamily family, Chart chart, VisualThemeColors colors, ChartAxisValueFormatter.Cache? axisLabels = null) => family switch {
-        VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors),
+    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(VisualChartFamily family, Chart chart, VisualThemeColors colors,
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null) => family switch {
+        VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors, bubbleScale: bubbleScale),
         VisualChartFamily.Radial => VisualRadialCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Gauge => VisualGaugeCompiler.LegendEntries(chart, colors),
         VisualChartFamily.RadialProgress => VisualRadialProgressCompiler.LegendEntries(chart, colors),
@@ -48,13 +49,14 @@ internal static class VisualChartCompiler {
         _ => VisualSpecialtyCompiler.LegendEntries(chart, colors)
     };
 
-    internal static void Build(VisualChartFamily family, Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content, ChartAxisValueFormatter.Cache? axisLabels = null) {
+    internal static void Build(VisualChartFamily family, Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content,
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null) {
         using var coordinateScope = family is VisualChartFamily.Radial or VisualChartFamily.RadialProgress or VisualChartFamily.Polar or VisualChartFamily.NumericRadial
             || family == VisualChartFamily.Gauge && chart.Options.Gauge.Form != ChartGaugeForm.Linear
             || family == VisualChartFamily.Hierarchy && chart.Series[0].Kind == ChartSeriesKind.Sunburst
             ? builder.PushGroup(null, "coordinate-system", new Dictionary<string, string> { ["data-cfx-coordinate-system"] = "polar" }) : null;
         switch (family) {
-            case VisualChartFamily.Cartesian: VisualCartesianCompiler.BuildInViewport(chart, context, builder, content); break;
+            case VisualChartFamily.Cartesian: VisualCartesianCompiler.BuildInViewport(chart, context, builder, content, bubbleScale); break;
             case VisualChartFamily.Radial: VisualRadialCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Gauge: VisualGaugeCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.RadialProgress: VisualRadialProgressCompiler.Build(chart, context, builder, content); break;

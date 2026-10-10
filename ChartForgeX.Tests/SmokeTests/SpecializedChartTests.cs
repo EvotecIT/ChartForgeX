@@ -68,7 +68,8 @@ internal static partial class SmokeTests {
                 new ChartBubble(1, 24, 8),
                 new ChartBubble(2, 42, 18),
                 new ChartBubble(3, 31, 42)
-            }, ChartColor.FromRgb(37, 99, 235));
+            }, ChartColor.FromRgb(37, 99, 235))
+            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 2; bubble.MaximumRadius = 14; });
         var svg = chart.ToSvg();
         Assert(CountOccurrences(svg, "data-cfx-role=\"bubble\"") == 3, "Bubble charts should render one scaled marker per bubble.");
         Assert(CartesianMarkAttribute(svg, 0, 2, "bubble", "rx") > CartesianMarkAttribute(svg, 0, 0, "bubble", "rx"), "Larger bubble sizes must produce larger native marks.");
