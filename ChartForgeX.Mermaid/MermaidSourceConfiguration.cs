@@ -6,6 +6,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>Retains bounded source configuration and the effective settings for the parsed diagram family.</summary>
 public sealed class MermaidSourceConfiguration {
     private readonly List<MermaidConfigurationSetting> _settings = new();
+    internal MermaidSankeySettings? Sankey { get; set; }
 
     /// <summary>Gets the effective source theme; MermaidDocument.Theme can also set this value for direct conversion.</summary>
     public string? Theme { get; internal set; }
