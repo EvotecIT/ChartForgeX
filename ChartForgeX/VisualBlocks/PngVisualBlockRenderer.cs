@@ -57,12 +57,14 @@ public sealed partial class PngVisualBlockRenderer {
         var headings = VisualBlockRendering.Headings(block);
         var titleSize = headings.TitleFontSize; var subtitleSize = headings.SubtitleFontSize;
         if (block.Title.Length > 0) {
-            DrawAlignedTextAtBaseline(canvas, block.Title, x, y + headings.TitleAscent, width, TextAlignment.Left, theme.Text, titleSize, true);
+            var title = VisualBlockRendering.FitMeasuredText(block.Title, titleSize, width, theme.FontFamily, theme.UseGraphiteLayout ? 700 : 800);
+            DrawAlignedTextAtBaseline(canvas, title, x, y + headings.TitleAscent, width, TextAlignment.Left, theme.Text, titleSize, true);
             y += headings.TitleAdvance;
         }
 
         if (block.Subtitle.Length > 0) {
-            DrawAlignedTextAtBaseline(canvas, block.Subtitle, x, y + headings.SubtitleAscent, width, TextAlignment.Left, theme.MutedText, subtitleSize, false);
+            var subtitle = VisualBlockRendering.FitMeasuredText(block.Subtitle, subtitleSize, width, theme.FontFamily, 400);
+            DrawAlignedTextAtBaseline(canvas, subtitle, x, y + headings.SubtitleAscent, width, TextAlignment.Left, theme.MutedText, subtitleSize, false);
             y += headings.SubtitleAdvance;
         }
     }

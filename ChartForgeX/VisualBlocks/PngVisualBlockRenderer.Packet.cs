@@ -16,7 +16,7 @@ public sealed partial class PngVisualBlockRenderer {
         var slices = VisualBlockRendering.PacketSlices(packet);
         var rowCount = slices.Count == 0 ? 0 : slices[slices.Count - 1].Row + 1;
         if (rowCount == 0) return;
-        var metrics = VisualBlockRendering.PacketRows(packet, content, y, rowCount);
+        var metrics = VisualBlockRendering.PacketRows(packet, content, y, rowCount, slices);
         var labelTop = metrics.LabelTop; var rowGap = metrics.Gap; var rowHeight = metrics.Height;
         var bitWidth = content.Width / packet.BitsPerRow;
         for (var index = 0; index < slices.Count; index++) {
@@ -29,7 +29,7 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.StrokeRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color, 1);
             if (packet.ShowBitNumbers) DrawPacketBitLabels(canvas, slice, x, rowY - metrics.BitBaselineOffset - canvas.TextAscent(metrics.BitFontSize, true), width, theme.MutedText, metrics.BitFontSize);
             var fontSize = metrics.FieldFontSize;
-            DrawCenteredTextMiddle(canvas, slice.Field.Label, x + width / 2, rowY + rowHeight / 2, fontSize, theme.Text, true, Math.Max(1, width - 10));
+            DrawAlignedTextAtBaseline(canvas, slice.Field.Label, x + 5, rowY + rowHeight * .58, Math.Max(1, width - 10), TextAlignment.Center, theme.Text, fontSize, true);
         }
     }
 

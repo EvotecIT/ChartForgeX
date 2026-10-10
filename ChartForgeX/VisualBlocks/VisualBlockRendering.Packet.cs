@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -9,13 +11,20 @@ internal static partial class VisualBlockRendering {
     public const int MaximumPacketFields = 10000;
     public const int MaximumPacketBits = 10000;
 
-    public static PacketRowMetrics PacketRows(PacketLayoutBlock packet, ChartRect content, double top, int rows) {
+    public static PacketRowMetrics PacketRows(PacketLayoutBlock packet, ChartRect content, double top, int rows, IReadOnlyList<PacketLayoutSlice> slices) {
         var remaining = Math.Max(0, content.Bottom - top);
         var gap = Math.Min(Math.Min(12, Math.Max(5, content.Height * .025)), remaining / (rows * 2));
         var slot = Math.Max(0, (remaining - gap * Math.Max(0, rows - 1)) / rows);
         var labelTop = packet.ShowBitNumbers ? Math.Min(BodyFontSize(packet.Options.Theme, 16), slot * .4) : 0;
         var height = Math.Min(52, slot - labelTop);
         var bits = Math.Min(BodyFontSize(packet.Options.Theme, 9.5), labelTop * .75);
+        var bitStyle = new TextStyle { Font = new FontSpec { Family = packet.Options.Theme.FontFamily, Weight = 700 }, FontSize = 1, LineHeight = 1 };
+        foreach (var slice in slices) {
+            var width = Math.Max(1, slice.BitLength * content.Width / packet.BitsPerRow - 1);
+            var numbers = ChartLabelScene.MeasureText(slice.StartBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
+            if (slice.EndBit != slice.StartBit) numbers += ChartLabelScene.MeasureText(slice.EndBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
+            if (numbers > 0) bits = Math.Min(bits, width * .9 / numbers);
+        }
         var label = Math.Min(BodyFontSize(packet.Options.Theme, Math.Max(9, Math.Min(13.5, height * .31))), height * .6);
         return new PacketRowMetrics(labelTop, gap, height, bits, label);
     }

@@ -148,6 +148,11 @@ internal static partial class VisualBlockRendering {
         return value.Substring(0, Typography.TextElementBoundary.Snap(value, low)) + suffix;
     }
 
+    public static string FitMeasuredText(string value, double fontSize, double maxWidth, string fontFamily, int weight) {
+        var style = new TextStyle { Font = new FontSpec { Family = fontFamily, Weight = weight }, FontSize = fontSize, LineHeight = 1 };
+        return ChartTextFitting.FitEnd(value, maxWidth, text => ChartLabelScene.MeasureText(text, style).Width, "...");
+    }
+
     public static double FitFontSize(string value, double maxWidth, double preferredFontSize, double minimumFontSize) {
         var fontSize = Math.Max(minimumFontSize, preferredFontSize);
         while (fontSize > minimumFontSize && EstimateTextWidth(value, fontSize) > maxWidth) fontSize -= 0.5;

@@ -112,12 +112,13 @@ public sealed partial class SvgVisualBlockRenderer {
         var headings = VisualBlockRendering.Headings(block);
         var titleSize = headings.TitleFontSize; var subtitleSize = headings.SubtitleFontSize;
         if (block.Title.Length > 0) {
-            writer.StartElement("text").Attribute("data-cfx-role", "visual-title").Attribute("x", contentX).Attribute("y", y + headings.TitleAscent).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", titleSize).Attribute("font-weight", "800").Text(VisualBlockRendering.FitText(block.Title, titleSize, contentWidth)).EndElement().Line();
+            var weight = theme.UseGraphiteLayout ? 700 : 800;
+            writer.StartElement("text").Attribute("data-cfx-role", "visual-title").Attribute("x", contentX).Attribute("y", y + headings.TitleAscent).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", titleSize).Attribute("font-weight", weight).Text(VisualBlockRendering.FitMeasuredText(block.Title, titleSize, contentWidth, theme.FontFamily, weight)).EndElement().Line();
             y += headings.TitleAdvance;
         }
 
         if (block.Subtitle.Length > 0) {
-            writer.StartElement("text").Attribute("data-cfx-role", "visual-subtitle").Attribute("x", contentX).Attribute("y", y + headings.SubtitleAscent).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", subtitleSize).Text(VisualBlockRendering.FitText(block.Subtitle, subtitleSize, contentWidth)).EndElement().Line();
+            writer.StartElement("text").Attribute("data-cfx-role", "visual-subtitle").Attribute("x", contentX).Attribute("y", y + headings.SubtitleAscent).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", subtitleSize).Text(VisualBlockRendering.FitMeasuredText(block.Subtitle, subtitleSize, contentWidth, theme.FontFamily, 400)).EndElement().Line();
             y += headings.SubtitleAdvance;
         }
     }

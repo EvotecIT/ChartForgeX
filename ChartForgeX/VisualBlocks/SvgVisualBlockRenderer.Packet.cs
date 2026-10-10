@@ -16,7 +16,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var slices = VisualBlockRendering.PacketSlices(packet);
         var rowCount = slices.Count == 0 ? 0 : slices[slices.Count - 1].Row + 1;
         if (rowCount == 0) return;
-        var metrics = VisualBlockRendering.PacketRows(packet, content, y, rowCount);
+        var metrics = VisualBlockRendering.PacketRows(packet, content, y, rowCount, slices);
         var labelTop = metrics.LabelTop; var rowGap = metrics.Gap; var rowHeight = metrics.Height;
         var bitWidth = content.Width / packet.BitsPerRow;
         for (var index = 0; index < slices.Count; index++) {
@@ -47,10 +47,10 @@ public sealed partial class SvgVisualBlockRenderer {
 
     private static void WritePacketBitLabels(SvgMarkupWriter writer, PacketLayoutBlock packet, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartForgeX.Themes.ChartTheme theme, double fontSize) {
         var start = slice.StartBit.ToString(CultureInfo.InvariantCulture);
-        writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-start").Attribute("x", F(x)).Attribute("y", F(y)).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "650").Text(start).EndElement().Line();
+        writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-start").Attribute("x", F(x)).Attribute("y", F(y)).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "700").Text(start).EndElement().Line();
         if (slice.EndBit != slice.StartBit) {
             var end = slice.EndBit.ToString(CultureInfo.InvariantCulture);
-            writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-end").Attribute("x", F(x + width)).Attribute("y", F(y)).Attribute("text-anchor", "end").Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "650").Text(end).EndElement().Line();
+            writer.StartElement("text").Attribute("data-cfx-role", "packet-bit-end").Attribute("x", F(x + width)).Attribute("y", F(y)).Attribute("text-anchor", "end").Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(fontSize)).Attribute("font-weight", "700").Text(end).EndElement().Line();
         }
     }
 }
