@@ -18,7 +18,7 @@ public sealed partial class MermaidParser {
         var result = new MermaidParseResult<MermaidDocument>();
         var lines = source.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var frontMatter = ReadFrontMatter(lines, result);
-        var configuration = ReadConfiguration(lines, frontMatter.EndLine, frontMatter.Text, result, out var declarations);
+        var configuration = ReadConfiguration(source, lines, frontMatter.EndLine, frontMatter.Text, result, out var declarations);
         var header = FindHeader(lines, frontMatter.EndLine + 1, result);
         if (!header.HasValue) {
             Add(result, 1, 1, 0, MermaidDiagnosticSeverity.Error, "Mermaid source must declare a diagram type.");

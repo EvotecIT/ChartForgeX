@@ -335,6 +335,7 @@ internal sealed class GeoJsonReader {
             var c = _json[_position++];
             if (c == '"') return buffer.ToString();
             if (c != '\\') {
+                if (c < '\u0020') throw Error("Unescaped control character in JSON string.");
                 buffer.Append(c);
                 continue;
             }

@@ -48,7 +48,7 @@ public sealed partial class MermaidParser {
             if (declared.Count > 256) { ConfigurationError(result, span, "Mermaid frontmatter configuration exceeds 256 keys."); break; }
             if (valueText.Length == 0) {
                 if (parents.Count >= 8) { ConfigurationError(result, span, "Mermaid frontmatter configuration exceeds eight mapping levels."); break; }
-                if (path == "theme" || path.EndsWith(".theme", StringComparison.Ordinal) || path == "fontFamily" || path.EndsWith(".fontFamily", StringComparison.Ordinal))
+                if (IsConfigurationStringPath(path))
                     configuration.Add(new MermaidConfigurationSetting(path, null, false, span));
                 parents.Add((indent, path, -1));
                 continue;
