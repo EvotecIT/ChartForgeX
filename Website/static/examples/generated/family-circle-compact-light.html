@@ -213,6 +213,38 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart FinancialOptions(ChartSeriesKind kind) {
+        var source = new[] {
+            new ChartCandlestick(1, 44, 58, 38, 53), new ChartCandlestick(2, 53, 60, 42, 45),
+            new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
+            new ChartCandlestick(5, 47, 63, 44, 58)
+        };
+        var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Price&quot;)
+            .WithPointLegend().WithDataLabels(false);
+        if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick(&quot;Daily prices&quot;, source);
+        else chart.AddOhlc(&quot;Daily prices&quot;, source);
+        chart.Series[0].ConfigureFinancial(financial =&gt; {
+            financial.Rising.Stroke = ChartColor.FromHex(&quot;#2A967B&quot;);
+            financial.Rising.StrokeWidth = 2.4;
+            financial.Falling.Stroke = ChartColor.FromHex(&quot;#DB825B&quot;);
+            financial.Falling.StrokeWidth = 2.8;
+            financial.Falling.StrokeOpacity = .85;
+            if (kind == ChartSeriesKind.Candlestick) {
+                financial.Rising.FillOpacity = 0;
+                financial.Rising.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
+                financial.Rising.Wick.StrokeWidth = 1.2;
+                financial.Falling.Fill = ChartColor.FromHex(&quot;#EBA85B&quot;);
+                financial.Falling.FillOpacity = .65;
+                financial.Falling.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
+                financial.Falling.Wick.StrokeWidth = 1.4;
+            }
+        }).WithPointColor(4, &quot;#729BB7&quot;);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates count, density, sum and mean examples over the same unequal measurement intervals.&lt;/summary&gt;
     public static Chart CreateHistogram(string variant) {
         var mode = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
@@ -407,6 +439,8 @@ public static partial class V2GalleryModels {
         }
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
             return MarkerOptions(kind);
+        if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)
+            return FinancialOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
@@ -896,6 +930,38 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart FinancialOptions(ChartSeriesKind kind) {
+        var source = new[] {
+            new ChartCandlestick(1, 44, 58, 38, 53), new ChartCandlestick(2, 53, 60, 42, 45),
+            new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
+            new ChartCandlestick(5, 47, 63, 44, 58)
+        };
+        var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Price&quot;)
+            .WithPointLegend().WithDataLabels(false);
+        if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick(&quot;Daily prices&quot;, source);
+        else chart.AddOhlc(&quot;Daily prices&quot;, source);
+        chart.Series[0].ConfigureFinancial(financial =&gt; {
+            financial.Rising.Stroke = ChartColor.FromHex(&quot;#2A967B&quot;);
+            financial.Rising.StrokeWidth = 2.4;
+            financial.Falling.Stroke = ChartColor.FromHex(&quot;#DB825B&quot;);
+            financial.Falling.StrokeWidth = 2.8;
+            financial.Falling.StrokeOpacity = .85;
+            if (kind == ChartSeriesKind.Candlestick) {
+                financial.Rising.FillOpacity = 0;
+                financial.Rising.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
+                financial.Rising.Wick.StrokeWidth = 1.2;
+                financial.Falling.Fill = ChartColor.FromHex(&quot;#EBA85B&quot;);
+                financial.Falling.FillOpacity = .65;
+                financial.Falling.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
+                financial.Falling.Wick.StrokeWidth = 1.4;
+            }
+        }).WithPointColor(4, &quot;#729BB7&quot;);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates count, density, sum and mean examples over the same unequal measurement intervals.&lt;/summary&gt;
     public static Chart CreateHistogram(string variant) {
         var mode = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
@@ -1090,6 +1156,8 @@ public static partial class V2GalleryModels {
         }
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
             return MarkerOptions(kind);
+        if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)
+            return FinancialOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
