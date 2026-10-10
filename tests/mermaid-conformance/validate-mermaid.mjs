@@ -15,9 +15,15 @@ Object.defineProperty(globalThis, 'navigator', {
 const { default: mermaid } = await import('mermaid');
 
 const root = fileURLToPath(new URL('.', import.meta.url));
-const fixtures = join(root, process.argv[2] ?? 'fixtures');
-const files = (await readdir(fixtures)).filter((file) => file.endsWith('.mmd')).sort();
-const fixtureFiles = new Set(await readdir(fixtures));
+const folders = process.argv[2] ? [process.argv[2]] : ['fixtures', 'recognition'];
+const files = [];
+for (const folder of folders) {
+  const fixtures = join(root, folder);
+  const fixtureFiles = new Set(await readdir(fixtures));
+  for (const file of [...fixtureFiles].filter(file => file.endsWith('.mmd')).sort()) {
+    files.push({ folder, file, hasExpected: fixtureFiles.has(file.replace(/\.mmd$/, '.expected.json')) });
+  }
+}
 
 if (files.length === 0) {
   throw new Error('No Mermaid conformance fixtures found.');
@@ -30,12 +36,13 @@ mermaid.initialize({
 });
 
 const failures = [];
-for (const file of files) {
+for (const { folder, file, hasExpected } of files) {
+  const fixtures = join(root, folder);
   const source = await readFile(join(fixtures, file), 'utf8');
   try {
     await mermaid.parse(source, { suppressErrors: false });
     const expectedFile = file.replace(/\.mmd$/, '.expected.json');
-    if (fixtureFiles.has(expectedFile)) {
+    if (hasExpected) {
       const expected = JSON.parse(await readFile(join(fixtures, expectedFile), 'utf8'));
       const diagram = await mermaid.mermaidAPI.getDiagramFromText(source);
       if (expected.nodes) {
@@ -54,7 +61,7 @@ for (const file of files) {
       }
     }
   } catch (error) {
-    failures.push(`${file}: ${error?.message ?? error}`);
+    failures.push(`${folder}/${file}: ${error?.message ?? error}`);
   }
 }
 
