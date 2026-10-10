@@ -112,6 +112,22 @@ Numeric radial series honor existing `XAxisTitle`, `YAxisTitle` and `SecondaryYA
 Numeric radial axes honor each axis's existing `LabelDensity`. `Auto` preserves its previous output, `Dense` permits tighter spacing, and `Relaxed` keeps more space around captions. `All` now accepts caption overlaps instead of applying automatic collision thinning. It still fits individual text within the viewport, avoids painted marks, and preserves one caption at a full-turn seam. Shortened or omitted captions retain their full descriptions; fitted captions still block later data labels and stack totals. Mixed radial families remain future work.
 
 Native compact exports prepare the chart at compact dimensions. Text that cannot fit may be shortened or omitted with `numeric-radial.label-overflow`; descriptive regions retain the full observation. The HTML adapter's `Readable` layout preserves a minimum width in a contained horizontal viewport. `Fit` scales a fixed design, including its text, and may require a larger host viewport for legibility.
+## Numeric color presentation
+
+Treemap and Sunburst replace `ColorLegendTitle` with `ColorDimension.Name`:
+
+```csharp
+chart.ConfigureTreemap(options => {
+    options.ColorDimension.Name = "Temperature";
+    options.ColorDimension.ValueFormat = ChartValueFormat.Number("0.0 '°C'",
+        System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
+});
+```
+
+The owned `ChartColorDimensionOptions` instance keeps naming and formatting together. Scatter and Bubble configure it with `series.ConfigureColorDimension(...)`; maps use `chart.ConfigureMapColorDimension(...)`, and numeric matrices and calendars use `chart.ConfigureHeatmapColorDimension(...)`. `ChartOptions.MapColorDimension` and `HeatmapColorDimension` expose the same owned instances. Categorical heatmaps reject this configuration.
+
+Null name and format values restore their defaults independently. A supplied name must contain non-whitespace text. Independent color formatting leaves Cartesian Y, Bubble size, hierarchy size and authored secondary captions unchanged. Map and heatmap values encode color directly, so their default numeric labels and single Value row use the color format; explicit point labels remain authoritative. Missing data retains the localized no-data text and never calls a numeric formatter. A custom formatter's empty string remains empty in native semantics and browser readouts; it does not fall back to the raw number. An explicit format runs once per distinct finite measurement during preparation; exports reuse the captured text. Raw numeric metadata, scale mapping and selection identities remain unchanged.
+
 ## Hierarchical Treemap
 
 Replace `ChartTreemapItem` with the shared `ChartHierarchyItem(id, label, parentId, value, colorValue)` without changing those facts. For the earlier label-only constructor, supply an explicit ID and `parentId: null`. There is no label-derived identity overload. Flat items remain roots when `ParentId` is null. Preserve input order to retain ordinal point-color, pattern, and label-style overrides.
@@ -120,7 +136,7 @@ Add group items with null `Value` and reference their IDs from child items. A le
 
 Replace `ChartSeries.TreemapItems` with `ChartSeries.HierarchyItems`; read that collection and `Nodes` rather than `Points` or `XAxisLabels`. `SourcePointCount` is zero and `TreeLinks` is empty: parent references are item facts, not authored weight-one links. Treemap groups and leaves expose normalized `node` targets, owning series, authored item IDs/labels, `data-cfx-source-node-index`, parent IDs, depth, and rendered aggregate or raw leaf `data-cfx-value`. Leaves also retain `data-cfx-authored-value`. Replace selectors based on `data-cfx-point` with `data-cfx-target-id`; HTML selection emits the same node IDs without fake point ordinals.
 
-Supply optional finite `ColorValue` independently of size. `ConfigureTreemap` or `ChartOptions.Treemap` configures `GroupPadding`, `Gap`, `ShowGroupLabels`, `ColorScale`, `ShowColorScaleLegend`, and `ColorLegendTitle`. The scale uses supplied color observations, honors fixed bounds, and retains missing values as missing rather than zero. Default independent color uses the theme's sequential ramp. A custom no-data color and discrete named bands use the generic scale owner. Native SVG/PNG share geometry and scale swatches; prepared exports are detached from later option or source changes.
+Supply optional finite `ColorValue` independently of size. `ConfigureTreemap` or `ChartOptions.Treemap` configures `GroupPadding`, `Gap`, `ShowGroupLabels`, `ColorScale`, `ShowColorScaleLegend`, and `ColorDimension`. The scale uses supplied color observations, honors fixed bounds, and retains missing values as missing rather than zero. Default independent color uses the theme's sequential ramp. A custom no-data color and discrete named bands use the generic scale owner. Native SVG/PNG share geometry and scale swatches; prepared exports are detached from later option or source changes.
 
 `WithPointLegend()` uses leaf keys when no numeric color legend is active; set `ShowColorScaleLegend = false` to use leaf keys with an independent color scale. Native keys retain `data-cfx-legend-target-kind="node"` and the authored ID in `data-cfx-legend-target-id`. HTML legend controls read the raw leaf value, toggle or isolate that item, and emit its `targetKind` / `targetId` alongside the owning series key. Synchronized charts resolve the ID rather than labels or input ordinals; a peer without that ID remains unchanged. Leaf keys retain their own distinct normalized `legend` identity and do not acquire Cartesian point facts.
 
@@ -140,7 +156,7 @@ Both policies require one root, unique IDs, existing parents, acyclic relationsh
 
 Read copied `ChartSeries.HierarchyItems` and `Nodes`; `Points` and `TreeLinks` are empty. Replace `data-cfx-authored-weight` with `data-cfx-authored-value`. Groups and leaves retain the provided size when present, while `data-cfx-value` is the resolved geometry value. Groups retain `data-cfx-remainder-value` including zero. The owning series exposes `data-cfx-parent-value-policy`; targets retain item IDs, parents, depths, source item ordinals and geometry status. There is no authored incoming link or `data-cfx-source-link-index` on a Sunburst node.
 
-`ConfigureSunburst` configures `CornerRadius`, `ColorScale`, `ShowColorScaleLegend`, `ColorLegendTitle` and the parent policy. `CornerRadius` uses the same finite, nonnegative maximum pixel radius and inward clamping as numeric radial sectors, with a zero default. Every group's and leaf's nullable `ColorValue` is an independent observation, with no inheritance or aggregation. The generic scale honors fixed ranges, discrete bands and missing colors. Ordinal explicit colors override the scale; semantic states preserve numeric fill and add an outline. Prepared SVG/PNG and option values remain detached from later model changes.
+`ConfigureSunburst` configures `CornerRadius`, `ColorScale`, `ShowColorScaleLegend`, `ColorDimension` and the parent policy. `CornerRadius` uses the same finite, nonnegative maximum pixel radius and inward clamping as numeric radial sectors, with a zero default. Every group's and leaf's nullable `ColorValue` is an independent observation, with no inheritance or aggregation. The generic scale honors fixed ranges, discrete bands and missing colors. Ordinal explicit colors override the scale; semantic states preserve numeric fill and add an outline. Prepared SVG/PNG and option values remain detached from later model changes.
 
 HTML tooltips show size and numeric color separately, including color zero and localized missing values. A differing supplied group value uses `ChartLabels.AuthoredValue` (default `Provided value`), and a positive remainder uses `ChartLabels.Remainder`. Equal supplied values and leaf values retain raw metadata without duplicate tooltip rows.
 

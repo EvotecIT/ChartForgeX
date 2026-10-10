@@ -161,6 +161,8 @@
       node.setAttribute('data-cfx-target-id', id);
     });
   };
+  // Captured display text may deliberately be empty; only an absent attribute falls back to raw facts.
+  const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     const aria = node.getAttribute('aria-label');
@@ -171,8 +173,8 @@
     else if (data.cfxRole) parts.push(data.cfxRole.replace(/-/g, ' '));
     if (data.cfxSeries !== undefined && !label) parts.push(seriesLabel(node));
     if (data.cfxPoint !== undefined && (!tooltipTitle || !label)) parts.push('Point ' + data.cfxPoint);
-    const value = data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '';
-    if (value) parts.push('Value ' + value);
+    const value = capturedText(data, 'cfxFormattedValue', data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '');
+    if (value) parts.push(rowName(node, 'value', 'Value') + ' ' + value);
     return parts.join(' / ');
   };
   const targetIdentity = (node) => {
@@ -212,8 +214,8 @@
   const percentText = (value) => value === undefined || value === '' ? value : percentFormat.format(Number(value));
   const colorTooltipRows = (node) => {
     const data = node.dataset || {};
-    const value = data.cfxColorValue !== undefined ? data.cfxColorValue
-      : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
+    const value = data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data')
+      : capturedText(data, 'cfxFormattedColorValue', data.cfxColorValue);
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
   const sizeTooltipRows = (node) => {
@@ -251,15 +253,18 @@
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
     else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
-    else {
-      push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+    else if (data.cfxEmpty !== 'true') {
+      const name = data.cfxValue !== undefined ? rowName(node, 'value', 'Value') : 'Y';
+      const value = capturedText(data, 'cfxFormattedValue', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+      if (data.cfxFormattedValue !== undefined) rows.push({ name, value });
+      else push(name, value);
       push('End', data.cfxEnd);
     }
     sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
-    colorTooltipRows(node).forEach((row) => push(row.name, row.value));
+    rows.push(...colorTooltipRows(node));
     if (data.cfxLeaf === 'false' && data.cfxAuthoredValue !== undefined && Number(data.cfxAuthoredValue) !== Number(data.cfxValue))
       push(rowName(node, 'authored-value', 'Provided value'), data.cfxAuthoredValue);
     if (Number(data.cfxRemainderValue) > 0)
@@ -1007,6 +1012,8 @@
         if (mark) {
           data.cfxLabel = mark.dataset.cfxLabel || data.cfxLabel;
           if (mark.dataset.cfxValue !== undefined) data.cfxValue = mark.dataset.cfxValue;
+          if (mark.dataset.cfxFormattedValue !== undefined) data.cfxFormattedValue = mark.dataset.cfxFormattedValue;
+          if (mark.dataset.cfxLabelValue !== undefined) data.cfxLabelValue = mark.dataset.cfxLabelValue;
         }
       }
       if (match && match[2] !== undefined) {
@@ -1213,10 +1220,11 @@
     const values = new Map();
     svg.querySelectorAll('[data-cfx-series][data-cfx-point]').forEach((mark) => {
       const markData = mark.dataset || {};
-      if (markData.cfxSeries !== data.cfxSeries || values.has(markData.cfxPoint) || mark.closest('[data-cfx-role="legend-item"]')) return;
+      if (markData.cfxEmpty === 'true' || markData.cfxSeries !== data.cfxSeries || values.has(markData.cfxPoint) || mark.closest('[data-cfx-role="legend-item"]')) return;
       const value = Number(markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue);
       if (!Number.isFinite(value)) return;
-      values.set(markData.cfxPoint, { point: Number(markData.cfxPoint), value, label: markData.cfxXLabel || markData.cfxCategory || '' });
+      values.set(markData.cfxPoint, { point: Number(markData.cfxPoint), value, label: markData.cfxXLabel || markData.cfxCategory || '',
+        formatted: markData.cfxFormattedValue, valueLabel: rowName(mark, 'value', 'Value') });
     });
     return Array.from(values.values()).sort((a, b) => a.point - b.point);
   };
@@ -1231,20 +1239,24 @@
     const financialRows = mark && financialTooltipRows(mark);
     if (financialRows) return financialRows.concat(dimensionTooltipRows(mark));
     if (reference) {
-      const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
+      const source = mark || item, facts = source.dataset || {};
+      const value = capturedText(facts, 'cfxFormattedValue', facts.cfxValue);
+      const rows = facts.cfxEmpty === 'true' || value === undefined ? [] : [{ name: rowName(source, 'value', 'Value'), value }];
       return rows.concat(mark ? dimensionTooltipRows(mark) : []);
     }
     const values = legendSeriesValues(item);
     if (!values.length) return [];
     if (data.cfxPoint !== undefined) {
       const entry = values.find((candidate) => String(candidate.point) === data.cfxPoint);
-      return entry ? [{ name: 'Value', value: summaryValue(entry.value) }].concat(mark ? dimensionTooltipRows(mark) : []) : [];
+      return entry ? [{ name: entry.valueLabel, value: entry.formatted !== undefined ? entry.formatted : summaryValue(entry.value) }]
+        .concat(mark ? dimensionTooltipRows(mark) : []) : [];
     }
     const kind = (data.cfxKind || '').toLowerCase();
     if (totalSeriesKinds.has(kind)) return [{ name: 'Total', value: summaryValue(values.reduce((sum, entry) => sum + entry.value, 0)) }];
     if (!trendSeriesKinds.has(kind)) return [];
     const latest = values[values.length - 1];
-    return [{ name: latest.label ? 'Latest (' + latest.label + ')' : 'Latest', value: summaryValue(latest.value) }];
+    return [{ name: latest.label ? 'Latest (' + latest.label + ')' : 'Latest',
+      value: latest.formatted !== undefined ? latest.formatted : summaryValue(latest.value) }];
   };
   const renderLegendTip = (tip, item) => {
     const data = item.dataset || {};

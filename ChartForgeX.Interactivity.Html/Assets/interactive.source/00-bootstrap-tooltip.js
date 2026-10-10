@@ -161,6 +161,8 @@
       node.setAttribute('data-cfx-target-id', id);
     });
   };
+  // Captured display text may deliberately be empty; only an absent attribute falls back to raw facts.
+  const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     const aria = node.getAttribute('aria-label');
@@ -171,8 +173,8 @@
     else if (data.cfxRole) parts.push(data.cfxRole.replace(/-/g, ' '));
     if (data.cfxSeries !== undefined && !label) parts.push(seriesLabel(node));
     if (data.cfxPoint !== undefined && (!tooltipTitle || !label)) parts.push('Point ' + data.cfxPoint);
-    const value = data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '';
-    if (value) parts.push('Value ' + value);
+    const value = capturedText(data, 'cfxFormattedValue', data.cfxValue || data.cfxY || data.cfxEnd || data.cfxTarget || '');
+    if (value) parts.push(rowName(node, 'value', 'Value') + ' ' + value);
     return parts.join(' / ');
   };
   const targetIdentity = (node) => {
@@ -212,8 +214,8 @@
   const percentText = (value) => value === undefined || value === '' ? value : percentFormat.format(Number(value));
   const colorTooltipRows = (node) => {
     const data = node.dataset || {};
-    const value = data.cfxColorValue !== undefined ? data.cfxColorValue
-      : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
+    const value = data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data')
+      : capturedText(data, 'cfxFormattedColorValue', data.cfxColorValue);
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
   const sizeTooltipRows = (node) => {
@@ -251,15 +253,18 @@
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
     else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
-    else {
-      push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+    else if (data.cfxEmpty !== 'true') {
+      const name = data.cfxValue !== undefined ? rowName(node, 'value', 'Value') : 'Y';
+      const value = capturedText(data, 'cfxFormattedValue', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+      if (data.cfxFormattedValue !== undefined) rows.push({ name, value });
+      else push(name, value);
       push('End', data.cfxEnd);
     }
     sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
-    colorTooltipRows(node).forEach((row) => push(row.name, row.value));
+    rows.push(...colorTooltipRows(node));
     if (data.cfxLeaf === 'false' && data.cfxAuthoredValue !== undefined && Number(data.cfxAuthoredValue) !== Number(data.cfxValue))
       push(rowName(node, 'authored-value', 'Provided value'), data.cfxAuthoredValue);
     if (Number(data.cfxRemainderValue) > 0)

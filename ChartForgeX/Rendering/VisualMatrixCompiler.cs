@@ -15,11 +15,12 @@ internal static partial class VisualMatrixCompiler {
             ? chart.Options.StateCategories.Select((state, i) => new VisualLegendEntry(state.Label, state.Color, "state-" + i, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray()
             : Array.Empty<VisualLegendEntry>();
 
-    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport) {
+    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ChartColorPresentation? presentation = null) {
         if (viewport.Width <= 0 || viewport.Height <= 0 || chart.Series.Count == 0) return;
+        presentation ??= new ChartColorPresentation(chart.Options.HeatmapColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("Matrix families cannot mix different layout kinds.");
-        if (kind == ChartSeriesKind.CalendarHeatmap) { Calendar(chart, context, builder, viewport); return; }
+        if (kind == ChartSeriesKind.CalendarHeatmap) { Calendar(chart, context, builder, viewport, presentation); return; }
         var rows = chart.Series.ToArray();
         var columns = rows.SelectMany(row => row.Points.Select(point => point.X)
             .Concat(Enumerable.Range(1, row.HeatmapColumnCount ?? 0).Select(index => (double)index))).Distinct().OrderBy(value => value).ToArray();
@@ -34,7 +35,7 @@ internal static partial class VisualMatrixCompiler {
         if (rows.Any(row => row.IsCategoricalHeatmapRow != categorical)) throw new InvalidOperationException("Numeric and categorical matrix rows cannot be mixed.");
         var categories = new ChartStateCategoryLegend(chart, colors.MutedForeground);
         var formatColumn = ChartAxisValueFormatter.Create(chart.Options.XAxis, columns);
-        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn);
+        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation);
         var plot = layout.Plot;
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
         var gap = Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2,
@@ -83,13 +84,17 @@ internal static partial class VisualMatrixCompiler {
                             : ChartHeatmapSurface.CellBlend(chart, colors, series.Color, point.Y, min, max, VisualChartPaint.SeriesRole(series));
                         var fill = stateMark?.Surface ?? blend.Color;
                         var column = formatColumn(point.X);
-                        var label = series.Name + ", " + column + ": " + (state?.Label ?? ChartNumericFormatter.FormatValue(chart.Options, point.Y));
+                        var label = series.Name + ", " + column + ": " + (state?.Label ?? presentation.Value(point.Y));
                         if (!string.IsNullOrWhiteSpace(cell?.Tooltip)) label += ". " + cell!.Value.Tooltip;
                         var metadata = state == null ? new Dictionary<string, string>() : VisualStateSceneTools.StateMetadata(chart, state);
                         metadata["data-cfx-series"] = rowIndex.ToString(); metadata["data-cfx-point"] = pointIndex.ToString(); metadata["data-cfx-row"] = rowIndex.ToString();
                         metadata["data-cfx-source-point"] = (pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex).ToString();
                         metadata["data-cfx-column"] = columnIndex.ToString(); metadata["data-cfx-x"] = VisualStateSceneTools.Number(point.X);
                         metadata["data-cfx-y"] = VisualStateSceneTools.Number(point.Y); metadata["data-cfx-value"] = VisualStateSceneTools.Number(point.Y);
+                        if (state == null && presentation.HasOverrides) {
+                            metadata["data-cfx-formatted-value"] = presentation.Value(point.Y);
+                            metadata["data-cfx-label-value"] = presentation.Name;
+                        }
                         if (state == null && chart.Options.HeatmapColorScale == null) {
                             var ratio = ChartHeatmapSurface.Ratio(chart, point.Y, min, max);
                             var status = ChartHeatmapSurface.CellStatus(chart, ratio);
@@ -112,13 +117,13 @@ internal static partial class VisualMatrixCompiler {
                           CellLabel(chart, context, builder, series, pointIndex, bounds, viewport,
                               stateMark.HasValue ? ChartMarkText.OnStateMark(chart, colors, context.Frame, stateMark.Value)
                                   : ChartMarkText.OnHeatmapCell(chart, colors, context.Frame, fill, series.Color, point.Y, min, max,
-                                      blend.FromRole ?? SvgColorRole.Ramp, blend), cell, id);
+                                      blend.FromRole ?? SvgColorRole.Ramp, blend), cell, id, presentation);
                         }
                     }
                 }
             }
             MatrixAxes(chart, context, builder, viewport, plot, columns, cellWidth, gap, layout, formatColumn);
-            if (!categorical && ScaleVisible(chart, context)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color);
+            if (!categorical && ScaleVisible(chart, context)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color, presentation);
         }
     }
 

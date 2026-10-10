@@ -57,7 +57,19 @@ chart.Series[0].WithColorScale(ChartColorScale.Sequential(
     .WithNoDataColor(ChartColor.FromHex("#9CA3AF")));
 ```
 
-Color domains use each series' retained observations unless fixed bounds are supplied; use fixed bounds to compare series or preserve colors across decimation. Missing color keeps the observation's Y and size and uses the configured no-data color. Explicit point colors and marker fills take precedence. `series.WithColorScale(null)` restores ordinary paint and hides its numeric key while retaining authored color facts for readouts. Numeric keys share the legend budget and visibility policy; color captions use neutral numbers with the dimension/unit in `ChartLabels.Color`, independently of Y formatting. The optional nullable color member increases `ChartPoint` and `ChartBubble` storage and participates in value equality; existing constructor signatures are unchanged.
+Color domains use each series' retained observations unless fixed bounds are supplied; use fixed bounds to compare series or preserve colors across decimation. Missing color keeps the observation's Y and size and uses the configured no-data color. Explicit point colors and marker fills take precedence. `series.WithColorScale(null)` restores ordinary paint and hides its numeric key while retaining authored color facts for readouts. Numeric keys share the legend budget and visibility policy. Each series can name and format its color measurement independently of Y and bubble size:
+
+```csharp
+chart.Series[0].ConfigureColorDimension(options => {
+    options.Name = "Temperature";
+    options.ValueFormat = ChartValueFormat.Number("0.0 '°C'",
+        System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
+});
+```
+
+The same `ChartColorDimensionOptions` configures numeric maps through `ConfigureMapColorDimension`, matrices and calendars through `ConfigureHeatmapColorDimension`, and hierarchies through `ConfigureTreemap` / `ConfigureSunburst` with `options.ColorDimension`. Map and heatmap values are their color measurement, so their numeric labels and readouts use that format without a duplicate color row. Hierarchy size and Cartesian Y keep their own formatting. Null `Name` or `ValueFormat` restores that family's default independently. Custom empty display text is preserved; raw numeric values and selection identities stay unchanged. A prepared visual captures the presentation for reuse by SVG, native PNG and HTML readouts.
+
+The optional nullable color member increases `ChartPoint` and `ChartBubble` storage and participates in value equality; existing constructor signatures are unchanged.
 
 ## Shared prepared rendering
 
@@ -742,7 +754,7 @@ var chart = Chart.Create().WithDataLabels().AddSunburst("Allocation", new[] {
     new ChartHierarchyItem("south-support", "Support", "all", value: 4)
 }).ConfigureSunburst(options => {
     options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal;
-    options.ColorLegendTitle = "Change (%)";
+    options.ColorDimension.Name = "Change (%)";
     options.ColorScale = ChartColorScale.Sequential(
         ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(204, 104, 52));
 });
@@ -769,7 +781,7 @@ var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
 }).ConfigureTreemap(options => {
     options.GroupPadding = 6;
     options.Gap = 3;
-    options.ColorLegendTitle = "Change (%)";
+    options.ColorDimension.Name = "Change (%)";
     options.ColorScale = ChartColorScale.Diverging(
         ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(229, 229, 233), ChartColor.FromRgb(204, 104, 52), 0);
 });
@@ -780,7 +792,7 @@ Leaves require finite non-negative `Value`; groups require null `Value`, and the
 
 `ChartOptions.Treemap` controls group padding, sibling gaps, group labels, and the color legend. `ChartSeries.HierarchyItems` is an immutable snapshot; `Points` remains empty. Point styling overrides use item input ordinals, while SVG and HTML targets retain item IDs through input reordering or label renaming. See the [migration guide](docs/v2/migration.md#hierarchical-treemap) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Treemap.cs).
 
-Interactive tooltips show area and color as separate values, including missing color data. `ColorLegendTitle` names the color tooltip row; otherwise it uses `ChartLabels.Color`. `WithLabels` localizes that name, `NoData`, and the discrete legend's `AllValues` and `Value` words.
+Interactive tooltips show area and color as separate values, including missing color data. `ColorDimension.Name` names the color key and tooltip row; otherwise the row uses `ChartLabels.Color`. `ColorDimension.ValueFormat` formats color independently of area. `WithLabels` localizes `NoData` and the discrete legend's `AllValues` and `Value` words.
 
 `WithNodeState(id, state)` applies semantic styling by item ID. With a numeric color scale, the state appears as an outline and preserves the quantitative fill. Without a scale, shared state colors supply the fill unless an explicit color overrides them.
 

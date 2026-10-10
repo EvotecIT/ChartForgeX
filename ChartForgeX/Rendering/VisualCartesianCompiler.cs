@@ -12,8 +12,8 @@ namespace ChartForgeX.Rendering;
 /// <summary>Compiles Cartesian geometry, styles and semantic alternatives into shared immutable scene commands.</summary>
 internal static partial class VisualCartesianCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors,
-        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartSeriesColorScaleSet? colorScales = null) {
-        colorScales ??= new ChartSeriesColorScaleSet(chart);
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartColorPresentationSet? colorScales = null) {
+        colorScales ??= new ChartColorPresentationSet(chart);
         var entries = new List<VisualLegendEntry>();
         if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
             && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].RenderedPointCount > 1) {
@@ -56,15 +56,15 @@ internal static partial class VisualCartesianCompiler {
     }
 
     internal static void BuildInViewport(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
-        ChartBubbleSizeScale? bubbleScale = null, ChartAxisValueFormatter.Cache? categoryLabels = null, ChartSeriesColorScaleSet? colorScales = null, double legendHeight = 0)
+        ChartBubbleSizeScale? bubbleScale = null, ChartAxisValueFormatter.Cache? categoryLabels = null, ChartColorPresentationSet? colorScales = null, double legendHeight = 0)
         => BuildCore(chart, context, builder, viewport, viewport, true, bubbleScale, categoryLabels, colorScales, legendHeight);
 
     private static void BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport,
-        bool measureAxes, ChartBubbleSizeScale? bubbleScale, ChartAxisValueFormatter.Cache? categoryLabels, ChartSeriesColorScaleSet? colorScales, double legendHeight) {
+        bool measureAxes, ChartBubbleSizeScale? bubbleScale, ChartAxisValueFormatter.Cache? categoryLabels, ChartColorPresentationSet? colorScales, double legendHeight) {
         Validate(chart);
         if (bubbleScale == null && chart.Series.Any(series => series.Kind == ChartSeriesKind.Bubble)) bubbleScale = ChartBubbleSizeScale.Create(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
-        colorScales ??= new ChartSeriesColorScaleSet(chart);
+        colorScales ??= new ChartColorPresentationSet(chart);
         viewport = ColorScaleViewport(chart, context, builder, viewport, colorScales, legendHeight);
         if (!measureAxes) plot = new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, Math.Min(plot.Height, viewport.Bottom - plot.Top)));
         var coordinates = ChartBarCoordinateMap.Create(chart);

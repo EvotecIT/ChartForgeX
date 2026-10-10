@@ -31,6 +31,8 @@ public sealed partial class ChartSeries {
     /// <summary>Rejects color facts that have no logical observation in the selected family.</summary>
     internal void ValidateColorValues() {
         var supported = SupportsNumericColor;
+        if (ColorDimension.HasOverrides && !supported)
+            throw new InvalidOperationException("Series '" + Name + "' requires the Scatter or Bubble kind for color presentation.");
         for (var index = 0; index < Points.Count; index++) {
             if (!Points[index].ColorValue.HasValue) continue;
             if (!supported)
