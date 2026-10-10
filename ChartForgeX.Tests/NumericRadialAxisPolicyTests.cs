@@ -45,7 +45,8 @@ public sealed class NumericRadialAxisPolicyTests {
         Assert.NotEmpty(marks);
         if (rounded) Assert.All(marks, mark => Assert.IsType<VisualScenePath>(mark));
         Assert.All(captions, caption => Assert.All(marks, mark =>
-            Assert.False(new LabelMarkShape(VisualSceneGeometry.Flatten(mark, 8), true, 0).Intersects(caption.Bounds))));
+            Assert.False(new LabelMarkShape(mark is VisualScenePath path ? VisualSceneGeometry.Flatten(path, 8)
+                : VisualSceneGeometry.Flatten((VisualSceneSlice)mark, 8), true, 0).Intersects(caption.Bounds))));
     }
 
     [Theory]
