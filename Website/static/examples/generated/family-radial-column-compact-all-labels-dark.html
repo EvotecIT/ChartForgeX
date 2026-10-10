@@ -137,6 +137,10 @@ public static partial class V2GalleryModels {
                 options.LabelContent = ChartChordLabelContent.LabelAndTotals;
             });
             chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
+            chart.Series[0].WithFlowStyle(&quot;north-priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#AF6B24&quot;), fillOpacity: .7,
+                fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex(&quot;#764415&quot;), strokeWidth: 1))
+                .WithFlowState(&quot;north-priority&quot;, ChartSeriesState.Warning)
+                .WithFlowStyle(&quot;support-internal&quot;, new ChartFlowStyle(strokeWidth: 1));
         }
         return chart;
     }
@@ -213,6 +217,38 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart FinancialOptions(ChartSeriesKind kind) {
+        var source = new[] {
+            new ChartCandlestick(1, 44, 58, 38, 53), new ChartCandlestick(2, 53, 60, 42, 45),
+            new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
+            new ChartCandlestick(5, 47, 63, 44, 58)
+        };
+        var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Price&quot;)
+            .WithPointLegend().WithDataLabels(false);
+        if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick(&quot;Daily prices&quot;, source);
+        else chart.AddOhlc(&quot;Daily prices&quot;, source);
+        chart.Series[0].ConfigureFinancial(financial =&gt; {
+            financial.Rising.Stroke = ChartColor.FromHex(&quot;#2A967B&quot;);
+            financial.Rising.StrokeWidth = 2.4;
+            financial.Falling.Stroke = ChartColor.FromHex(&quot;#DB825B&quot;);
+            financial.Falling.StrokeWidth = 2.8;
+            financial.Falling.StrokeOpacity = .85;
+            if (kind == ChartSeriesKind.Candlestick) {
+                financial.Rising.FillOpacity = 0;
+                financial.Rising.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
+                financial.Rising.Wick.StrokeWidth = 1.2;
+                financial.Falling.Fill = ChartColor.FromHex(&quot;#EBA85B&quot;);
+                financial.Falling.FillOpacity = .65;
+                financial.Falling.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
+                financial.Falling.Wick.StrokeWidth = 1.4;
+            }
+        }).WithPointColor(4, &quot;#729BB7&quot;);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates count, density, sum and mean examples over the same unequal measurement intervals.&lt;/summary&gt;
     public static Chart CreateHistogram(string variant) {
         var mode = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
@@ -255,7 +291,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Bubble) {
             var chart = Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
                 .AddBubble(&quot;Standard&quot;, new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
-                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200) })
+                .ConfigureBubble(bubble =&gt; { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
             chart.Series[0].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
             chart.Series[1].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
             return chart;
@@ -351,6 +388,7 @@ public static partial class V2GalleryModels {
         }
         Add(&quot;Requests&quot;, 1200, 950, 680, 1050); Add(&quot;Follow-ups&quot;, 320, 410, 260, 360);
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
+            chart.WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15, cornerRadius: 6));
             foreach (var series in chart.Series) series.WithStackGroup(&quot;work&quot;).WithNormalization(100);
             chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
             chart.WithXAxis(&quot;Region&quot;).WithYAxis(&quot;Share of regional workload (%)&quot;)
@@ -402,8 +440,18 @@ public static partial class V2GalleryModels {
             return chart;
         }
         if (kind == ChartSeriesKind.Waterfall) {
-            var chart = Basic(kind, variant)!;
-            chart.Options.XAxis.WithReversal();
+            var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
+            var chart = Chart.Create().WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;)
+                .AddWaterfall(&quot;Movement&quot;, new[] {
+                    ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                    ChartWaterfallItem.Total(7)
+                });
+            chart.Series[0].WithPointColor(4, &quot;#A5358A&quot;);
+            chart.ConfigureWaterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            if (horizontal) chart.WithXAxis(&quot;Running balance&quot;).WithYAxis(&quot;Stage&quot;).WithBarStyle(ChartBarStyle.SegmentedCapsule);
+            else chart.WithYAxis(&quot;Running balance&quot;);
+            chart.Options.XAxis.WithReversal(!horizontal || variant == &quot;compact-horizontal&quot;);
             chart.Options.YAxis.WithReversal();
             return chart.WithDataLabels();
         }
@@ -424,6 +472,8 @@ public static partial class V2GalleryModels {
         }
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
             return MarkerOptions(kind);
+        if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)
+            return FinancialOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
@@ -566,6 +616,8 @@ public static partial class V2GalleryModels {
             options.Alignment = ChartSankeyAlignment.Center;
             options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
             options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
+            options.LabelPlacement = ChartSankeyLabelPlacement.Center;
+            options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Outside;
             options.NodeWidth = 16;
             options.NodeGap = 12;
             options.NodeCornerRadius = 1;
@@ -574,6 +626,9 @@ public static partial class V2GalleryModels {
         });
         chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
         chart.Series[0].WithPointColor(0, ChartColor.FromHex(&quot;#7356BD&quot;));
+        chart.Series[0].WithFlowStyle(&quot;north-priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#AF6B24&quot;), fillOpacity: .7,
+            fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex(&quot;#764415&quot;), strokeWidth: 1))
+            .WithFlowState(&quot;north-priority&quot;, ChartSeriesState.Warning);
         return chart;
     }
 }
@@ -641,6 +696,9 @@ public static partial class V2GalleryModels {
             var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
             var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options =&gt; {
+                options.CornerRadius = 6;
+                options.SecondaryLabelFormatter = context =&gt; context.Item.Id == &quot;all&quot; ? &quot;Allocation&quot; : context.Item.Id == &quot;engineering&quot; ? &quot;Delivery teams&quot;
+                    : context.Item.Id == &quot;operations-support&quot; ? &quot;Shared service&quot; : null;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
                 options.ColorLegendTitle = &quot;Change (%)&quot;;
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
@@ -699,10 +757,11 @@ public static partial class V2GalleryModels {
         var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
         var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
+        var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !radialLabelVariant)
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant ? GeometryOptions(kind, variant) : null)
+        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
             ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
@@ -838,6 +897,10 @@ public static partial class V2GalleryModels {
                 options.LabelContent = ChartChordLabelContent.LabelAndTotals;
             });
             chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
+            chart.Series[0].WithFlowStyle(&quot;north-priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#AF6B24&quot;), fillOpacity: .7,
+                fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex(&quot;#764415&quot;), strokeWidth: 1))
+                .WithFlowState(&quot;north-priority&quot;, ChartSeriesState.Warning)
+                .WithFlowStyle(&quot;support-internal&quot;, new ChartFlowStyle(strokeWidth: 1));
         }
         return chart;
     }
@@ -914,6 +977,38 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart FinancialOptions(ChartSeriesKind kind) {
+        var source = new[] {
+            new ChartCandlestick(1, 44, 58, 38, 53), new ChartCandlestick(2, 53, 60, 42, 45),
+            new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
+            new ChartCandlestick(5, 47, 63, 44, 58)
+        };
+        var chart = Chart.Create().WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;).WithYAxis(&quot;Price&quot;)
+            .WithPointLegend().WithDataLabels(false);
+        if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick(&quot;Daily prices&quot;, source);
+        else chart.AddOhlc(&quot;Daily prices&quot;, source);
+        chart.Series[0].ConfigureFinancial(financial =&gt; {
+            financial.Rising.Stroke = ChartColor.FromHex(&quot;#2A967B&quot;);
+            financial.Rising.StrokeWidth = 2.4;
+            financial.Falling.Stroke = ChartColor.FromHex(&quot;#DB825B&quot;);
+            financial.Falling.StrokeWidth = 2.8;
+            financial.Falling.StrokeOpacity = .85;
+            if (kind == ChartSeriesKind.Candlestick) {
+                financial.Rising.FillOpacity = 0;
+                financial.Rising.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
+                financial.Rising.Wick.StrokeWidth = 1.2;
+                financial.Falling.Fill = ChartColor.FromHex(&quot;#EBA85B&quot;);
+                financial.Falling.FillOpacity = .65;
+                financial.Falling.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
+                financial.Falling.Wick.StrokeWidth = 1.4;
+            }
+        }).WithPointColor(4, &quot;#729BB7&quot;);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates count, density, sum and mean examples over the same unequal measurement intervals.&lt;/summary&gt;
     public static Chart CreateHistogram(string variant) {
         var mode = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
@@ -956,7 +1051,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Bubble) {
             var chart = Chart.Create().WithXAxis(&quot;Workload batches&quot;).WithYAxis(&quot;Time (minutes)&quot;)
                 .AddBubble(&quot;Standard&quot;, new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
-                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+                .AddBubble(&quot;Priority&quot;, new[] { new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200) })
+                .ConfigureBubble(bubble =&gt; { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
             chart.Series[0].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Circle);
             chart.Series[1].ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
             return chart;
@@ -1052,6 +1148,7 @@ public static partial class V2GalleryModels {
         }
         Add(&quot;Requests&quot;, 1200, 950, 680, 1050); Add(&quot;Follow-ups&quot;, 320, 410, 260, 360);
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
+            chart.WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15, cornerRadius: 6));
             foreach (var series in chart.Series) series.WithStackGroup(&quot;work&quot;).WithNormalization(100);
             chart.WithYAxisBounds(0, 100).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
             chart.WithXAxis(&quot;Region&quot;).WithYAxis(&quot;Share of regional workload (%)&quot;)
@@ -1103,8 +1200,18 @@ public static partial class V2GalleryModels {
             return chart;
         }
         if (kind == ChartSeriesKind.Waterfall) {
-            var chart = Basic(kind, variant)!;
-            chart.Options.XAxis.WithReversal();
+            var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
+            var chart = Chart.Create().WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;)
+                .AddWaterfall(&quot;Movement&quot;, new[] {
+                    ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                    ChartWaterfallItem.Total(7)
+                });
+            chart.Series[0].WithPointColor(4, &quot;#A5358A&quot;);
+            chart.ConfigureWaterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            if (horizontal) chart.WithXAxis(&quot;Running balance&quot;).WithYAxis(&quot;Stage&quot;).WithBarStyle(ChartBarStyle.SegmentedCapsule);
+            else chart.WithYAxis(&quot;Running balance&quot;);
+            chart.Options.XAxis.WithReversal(!horizontal || variant == &quot;compact-horizontal&quot;);
             chart.Options.YAxis.WithReversal();
             return chart.WithDataLabels();
         }
@@ -1125,6 +1232,8 @@ public static partial class V2GalleryModels {
         }
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
             return MarkerOptions(kind);
+        if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)
+            return FinancialOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).WithDataLabels()
                 .AddFunnel(&quot;Requests&quot;, new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })
@@ -1267,6 +1376,8 @@ public static partial class V2GalleryModels {
             options.Alignment = ChartSankeyAlignment.Center;
             options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
             options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
+            options.LabelPlacement = ChartSankeyLabelPlacement.Center;
+            options.EdgeLabelPlacement = ChartSankeyEdgeLabelPlacement.Outside;
             options.NodeWidth = 16;
             options.NodeGap = 12;
             options.NodeCornerRadius = 1;
@@ -1275,6 +1386,9 @@ public static partial class V2GalleryModels {
         });
         chart.Series[0].WithNodeState(&quot;north-support&quot;, ChartSeriesState.Warning);
         chart.Series[0].WithPointColor(0, ChartColor.FromHex(&quot;#7356BD&quot;));
+        chart.Series[0].WithFlowStyle(&quot;north-priority&quot;, new ChartFlowStyle(fill: ChartColor.FromHex(&quot;#AF6B24&quot;), fillOpacity: .7,
+            fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex(&quot;#764415&quot;), strokeWidth: 1))
+            .WithFlowState(&quot;north-priority&quot;, ChartSeriesState.Warning);
         return chart;
     }
 }
@@ -1342,6 +1456,9 @@ public static partial class V2GalleryModels {
             var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
             var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options =&gt; {
+                options.CornerRadius = 6;
+                options.SecondaryLabelFormatter = context =&gt; context.Item.Id == &quot;all&quot; ? &quot;Allocation&quot; : context.Item.Id == &quot;engineering&quot; ? &quot;Delivery teams&quot;
+                    : context.Item.Id == &quot;operations-support&quot; ? &quot;Shared service&quot; : null;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
                 options.ColorLegendTitle = &quot;Change (%)&quot;;
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
@@ -1400,10 +1517,11 @@ public static partial class V2GalleryModels {
         var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
         var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
+        var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !radialLabelVariant)
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant ? GeometryOptions(kind, variant) : null)
+        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
             ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));

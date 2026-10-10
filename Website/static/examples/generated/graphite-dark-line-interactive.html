@@ -585,61 +585,73 @@ body {
 .cfx-interactive-chart .cfx-interactive-region {
   cursor: pointer;
 }
-
-.cfx-interactive-chart .cfx-selected {
+.cfx-interactive-chart .cfx-selected:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-selected[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   filter: drop-shadow(0 0 8px rgba(56, 189, 248, .75));
   opacity: 1 !important;
   stroke-width: var(--cfx-interactive-focus-stroke-width, 2.4) !important;
 }
 
-.cfx-interactive-chart .cfx-hovered {
+.cfx-interactive-chart .cfx-hovered:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])) .cfx-hovered[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 10px rgba(125, 211, 252, .72));
   stroke-width: var(--cfx-interactive-hover-stroke-width, 2.5) !important;
 }
 
-.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related {
+.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"]) .cfx-hover-related[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .82 !important;
   filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
 }
 
-.cfx-interactive-chart:not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected) {
+.cfx-interactive-chart:not([data-cfx-look="graphite"]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected)[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .38;
 }
 
-.cfx-interactive-chart .cfx-trail {
+.cfx-interactive-chart .cfx-trail:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 9px rgba(34, 211, 238, .44));
 }
 
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="1"] {
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="1"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="1"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   filter: drop-shadow(0 0 12px rgba(250, 204, 21, .72));
   stroke-width: var(--cfx-interactive-trail-stroke-width, 2.6) !important;
 }
 
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="2"] {
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="2"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="2"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .86 !important;
 }
 
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="3"] {
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="3"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="3"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .72 !important;
 }
 
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="4"],
-.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="5"] {
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="4"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="5"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="4"][data-cfx-highlight-managed] > [data-cfx-highlight-paint],
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="5"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .58 !important;
 }
 
-.cfx-interactive-chart .cfx-series-muted {
+.cfx-interactive-chart .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .18 !important;
 }
 
-.cfx-interactive-chart .cfx-series-isolated-in {
+.cfx-interactive-chart .cfx-series-isolated-in:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-isolated-in[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 10px rgba(250, 204, 21, .34));
 }
 
-.cfx-interactive-chart .cfx-series-isolated-out {
+.cfx-interactive-chart .cfx-series-isolated-out:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-isolated-out[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .10 !important;
   filter: saturate(.35);
 }
@@ -648,22 +660,26 @@ body {
   filter: drop-shadow(0 0 8px rgba(250, 204, 21, .55));
 }
 
-.cfx-interactive-chart .cfx-scenario-muted {
+.cfx-interactive-chart .cfx-scenario-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .46 !important;
   filter: saturate(.72);
 }
 
-.cfx-interactive-chart .cfx-scenario-active {
+.cfx-interactive-chart .cfx-scenario-active:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-active[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 8px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 70%, transparent));
 }
 
-.cfx-interactive-chart .cfx-scenario-step-active {
+.cfx-interactive-chart .cfx-scenario-step-active:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-step-active[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: 1 !important;
   filter: drop-shadow(0 0 10px color-mix(in srgb, var(--cfx-scenario-color, #38bdf8) 80%, transparent));
 }
 
-.cfx-interactive-chart .cfx-scenario-step-muted {
+.cfx-interactive-chart .cfx-scenario-step-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-step-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .56 !important;
   filter: saturate(.8);
 }
@@ -753,29 +769,52 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--x { border-top: 1px dashed var(--cfx-crosshair-axis); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--y { border-left: 1px dashed var(--cfx-crosshair-axis); }
 .cfx-interactive-chart[data-cfx-crosshair-label="false"] .cfx-crosshair__label { display: none; }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered { filter: none; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-look="graphite"] .cfx-hovered[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { filter: none; }
 /* Series hover keeps the pointed series at full strength and dims the others to 30 %; the shared crosshair dims nothing. */
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-point-interaction-target) { opacity: .3; }
 .cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hovered,
 .cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hover-column { r: 4px; opacity: 1 !important; stroke: var(--cfx-tooltip-surface); stroke-width: 2px !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered) { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column) { opacity: 0 !important; }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted { opacity: .3 !important; }
-.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-in { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-look="graphite"] .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-in:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-isolated-in[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"] { text-decoration: line-through; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }
 /* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
-.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series],
-.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series] { opacity: 1 !important; }
-.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted,
-.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series]:not(:where([data-cfx-highlight-managed])) { opacity: 1 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint],
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1 !important; }
 .cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; }
 .cfx-interactive-chart [data-cfx-point].cfx-hovered > .cfx-prepared-point-marker,
 .cfx-interactive-chart [data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker {
   opacity: 1; stroke: var(--cfx-tooltip-surface); stroke-width: 2px;
 }
+
+/* Zero-specificity exclusions above preserve the default cascade. Opt-in paint leaves native ink and authored opacity intact. */
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) [data-cfx-highlight-paint] {
+  opacity: var(--cfx-highlight-opacity, 1);
+}
+.cfx-interactive-chart [data-cfx-highlight-outline] {
+  fill: none; stroke: var(--cfx-highlight-stroke, none); stroke-width: var(--cfx-highlight-stroke-width, 0);
+  pointer-events: none;
+}
+.cfx-interactive-chart[data-cfx-highlight-probe] [data-cfx-highlight-outline] { display: none; }
+.cfx-interactive-chart [data-cfx-highlight-unavailable] [data-cfx-highlight-outline] { display: none; }
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed].cfx-hovered:not(.cfx-selected) > [data-cfx-highlight-paint] {
+  filter: drop-shadow(0 0 10px rgba(125, 211, 252, .72));
+}
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not([data-cfx-look="graphite"])[data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed].cfx-hover-related:not(.cfx-selected) > [data-cfx-highlight-paint] {
+  filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
+}
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed]:not(.cfx-selected) > [data-cfx-highlight-paint] { filter: none; }
 </style>
 </head>
 <body>
@@ -1024,7 +1063,7 @@ body {
   const waterfallTooltipRows = (node) => {
     const data = node.dataset || {};
     if (!data.cfxWaterfallKind) return [];
-    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : 'Change';
+    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
     return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
       { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
       .filter((row) => row.value !== undefined && row.value !== '');
@@ -1036,7 +1075,8 @@ body {
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
-    push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
+    if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
+    else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
     else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
@@ -1230,6 +1270,12 @@ body {
   };
   // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
+  // Both readout lifetime and keyboard availability follow the same native paint inputs.
+  // Adapter state and paint-probe attributes are excluded so observing paint cannot observe itself.
+  const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
+    'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
+    'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
+    'stop-color', 'stop-opacity', 'font-size'];
   // Cache only for this render: host CSS can change between successive focus and pointer events.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
@@ -1370,8 +1416,11 @@ body {
     }
     return null;
   };
-  const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
-    ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  const observationPaint = (node, styles) => withNativeHighlightPaint(node, () => {
+    // A probe suspends adapter opacity only; use fresh live style values after the suspension.
+    if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
+    return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  });
   const retainedGeometryFact = (node) => ['zero', 'precision-collapse', 'layout-collapse'].includes((node.dataset || {}).cfxGeometryStatus);
   // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
   // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
@@ -1505,6 +1554,10 @@ body {
     return point && point.node;
   };
   const checkPendingTooltipMutations = (records) => {
+    // Native paint probes are synchronous reads, not host changes. Observing their own suspension
+    // would queue another availability probe indefinitely while a pointer request is pending.
+    records = records.filter(record => record.type !== 'attributes' || record.attributeName !== 'data-cfx-highlight-probe');
+    if (!records.length) return;
     for (const pending of Array.from(pendingTooltips)) {
       const removed = records.some(record => record.type === 'childList'
         && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)
@@ -1647,7 +1700,7 @@ body {
     for (const tree of state.trees) {
       if (tooltipPositionTrees.has(tree)) continue;
       tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
-        attributeFilter: ['hidden', 'class', 'style', 'data-cfx-interaction-features'], subtree: true });
+        attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
       tooltipPositionTrees.add(tree);
     }
   };
@@ -1655,7 +1708,7 @@ body {
     if (activeTooltipPositions.has(state)) return;
     activeTooltipPositions.add(state);
     if (!tooltipPositionObserver) {
-      // Shared listeners exist only while a node/chart readout is visible, including pinned readouts.
+      // Shared listeners exist only while a readout is visible, including pointer and pinned readouts.
       window.addEventListener('resize', queueTooltipPositionRefresh);
       document.addEventListener('scroll', queueTooltipPositionRefresh, true);
       document.addEventListener('transitionend', queueTooltipPositionRefresh, true);
@@ -1730,7 +1783,7 @@ body {
     if (!tooltipPositionAvailable(state)) { hideTip(root, tip, true); return; }
     state.paintChanged = false;
     placeTooltip(state);
-    if (state.anchor !== 'pointer') watchTooltipPosition(state);
+    watchTooltipPosition(state);
   };
   // Separately painted captions are pointer surfaces of their declared native target, never new observations.
   const pointLabelTarget = (root, target) => {
@@ -1812,7 +1865,8 @@ body {
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
       }
-      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = xLabels.get(Number(data.cfxX)) || '';
+      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = data.cfxCategoryLabel !== undefined
+        ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX)) || '';
       if (data.cfxRole === 'legend-item') return;
       const region = regions.get(data.cfxSourceId || '');
       // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
@@ -1856,6 +1910,116 @@ body {
       label._cfxLabelTarget = point;
       (point._cfxPointLabels ||= []).push(label);
     });
+  };
+  // Transient HTML paint is separate from native primitives and their current host CSS.
+  // The probe attribute is deliberately outside the scoped availability observer's attribute filter.
+  const withNativeHighlightPaint = (node, read) => {
+    const root = node && node.closest('.cfx-interactive-chart');
+    if (!root || !root._cfxBranchHighlights || root.hasAttribute('data-cfx-highlight-probe')) return read();
+    root.setAttribute('data-cfx-highlight-probe', '');
+    try { return read(); } finally { root.removeAttribute('data-cfx-highlight-probe'); }
+  };
+  const prepareRootBranchHighlights = (root) => {
+    if (root.dataset.cfxHighlightMode !== 'root-branch') return;
+    // Prepared targets normalize family names; native metadata also accepts the enum spelling.
+    const nodes = Array.from(root.querySelectorAll('[data-cfx-kind="sunburst" i][data-cfx-target-kind="node"]'));
+    if (!nodes.length) return;
+    root._cfxBranchHighlights = nodes;
+    nodes.forEach((node) => {
+      node.dataset.cfxHighlightManaged = 'true';
+      const paint = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      paint.setAttribute('data-cfx-highlight-paint', '');
+      // Keep accessible names on the identity owner. Captions and hatches stay with their native mark.
+      Array.from(node.children).filter(child => !child.matches('title,desc')).forEach(child => paint.appendChild(child));
+      node.appendChild(paint);
+    });
+  };
+  const highlightStyle = (root, group) => {
+    const prefix = 'data-cfx-highlight-' + group + '-';
+    const result = {};
+    ['stroke', 'stroke-width', 'opacity'].forEach(key => {
+      const value = root.getAttribute(prefix + key);
+      if (value !== null) result[key] = value;
+    });
+    return result;
+  };
+  const highlightOutline = (paint, style) => {
+    const primary = paint.querySelector('[data-cfx-role="sunburst-segment-mark"]');
+    let outline = paint.querySelector('[data-cfx-highlight-outline]');
+    if (!primary || style.stroke === undefined && style['stroke-width'] === undefined) {
+      if (outline) outline.remove();
+      return;
+    }
+    // Copy only the primary geometry: no hatch, IDs, targets, tab stops or native paint attributes.
+    if (!outline) {
+      outline = document.createElementNS('http://www.w3.org/2000/svg', primary.localName);
+      outline.setAttribute('data-cfx-role', 'interaction-highlight');
+      outline.setAttribute('data-cfx-highlight-outline', '');
+      outline.setAttribute('aria-hidden', 'true');
+      outline.setAttribute('focusable', 'false');
+      paint.insertBefore(outline, paint.firstChild);
+    }
+    ['d', 'transform', 'fill-rule'].forEach(key => {
+      const value = primary.getAttribute(key);
+      if (value === null) outline.removeAttribute(key); else outline.setAttribute(key, value);
+    });
+    const native = getComputedStyle(primary);
+    const width = Number(style['stroke-width'] ?? 2.5);
+    // Native stroke stays on top. The extra width exposes the requested outline outside it.
+    paint.style.setProperty('--cfx-highlight-stroke', style.stroke ?? native.stroke);
+    paint.style.setProperty('--cfx-highlight-stroke-width', width > 0 ? String(Math.min(Number.MAX_VALUE, (parseFloat(native.strokeWidth) || 0) + width * 2)) : '0');
+  };
+  const clearRootBranchHighlight = (root) => {
+    (root._cfxBranchHighlights || []).forEach(node => {
+      delete node.dataset.cfxHighlightState;
+      const paint = node.querySelector('[data-cfx-highlight-paint]');
+      paint.style.removeProperty('--cfx-highlight-opacity');
+      paint.style.removeProperty('--cfx-highlight-stroke');
+      paint.style.removeProperty('--cfx-highlight-stroke-width');
+      const outline = paint.querySelector('[data-cfx-highlight-outline]');
+      if (outline) outline.remove();
+    });
+  };
+  const refreshRootBranchHighlightAvailability = (root) => {
+    let hiddenActive = false;
+    withNativeHighlightPaint(root, () => (root._cfxBranchHighlights || []).forEach(node => {
+      const available = !!pointerTargetPaint(node);
+      node.toggleAttribute('data-cfx-highlight-unavailable', !available);
+      // Zero/collapsed facts deliberately have no pointer paint, but keep keyboard readouts.
+      if (!available && node.dataset.cfxHighlightState === 'item' && node.dataset.cfxGeometryStatus === 'visible') hiddenActive = true;
+    }));
+    // Host paint is local to this chart; losing it must not clear an available peer's hover.
+    if (hiddenActive) clearHover(root, true, false);
+  };
+  const applyRootBranchHighlight = (root, active) => {
+    const nodes = root._cfxBranchHighlights;
+    if (!nodes || !nodes.includes(active)) return false;
+    if (!tooltipReadoutAvailable(active, null)) return false;
+    const branch = active.dataset.cfxBranchRoot;
+    const graphite = root.dataset.cfxLook === 'graphite';
+    const branchStyle = highlightStyle(root, 'branch'), itemStyle = highlightStyle(root, 'item');
+    const otherItemStyle = highlightStyle(root, 'other-item'), otherBranchStyle = highlightStyle(root, 'other-branch');
+    withNativeHighlightPaint(root, () => nodes.forEach(node => {
+      const ownBranch = node.dataset.cfxBranchRoot;
+      const highlighted = node === active;
+      const related = branch && ownBranch === branch;
+      // The central root has no branch. Focusing it leaves the surrounding branches at native strength.
+      let style = {}, state = 'neutral';
+      if (highlighted) { style = { opacity: '1', ...(branch ? branchStyle : {}), ...itemStyle }; state = 'item'; }
+      else if (related) { style = { opacity: graphite ? '1' : '.82', ...branchStyle, ...otherItemStyle }; state = 'branch'; }
+      else if (branch && ownBranch) { style = { opacity: graphite ? '.3' : '.38', ...otherBranchStyle }; state = 'other-branch'; }
+      node.dataset.cfxHighlightState = state;
+      setNodeHovered(node, highlighted, !!related && !highlighted);
+      const paint = node.querySelector('[data-cfx-highlight-paint]');
+      paint.style.setProperty('--cfx-highlight-opacity', style.opacity ?? '1');
+      highlightOutline(paint, style);
+    }));
+    root.dataset.cfxHovering = 'true';
+    root.dataset.cfxHoverMode = 'root-branch';
+    root.dataset.cfxHoverUnit = 'branch';
+    root.dataset.cfxHoverLabel = text(active);
+    refreshRootBranchHighlightAvailability(root);
+    return true;
   };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
@@ -2189,7 +2353,7 @@ body {
     const viewport = svg.getBoundingClientRect();
     return viewport.width > 0 && viewport.height > 0;
   };
-  const keyboardTargets = (root) => {
+  const keyboardTargets = (root) => withNativeHighlightPaint(root, () => {
     const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
     const candidateSet = new Set(candidates);
     const containers = new Set();
@@ -2207,7 +2371,7 @@ body {
       seen.add(focusNode);
       return true;
     });
-  };
+  });
   const keyboardDataGroups = (nodes) => {
     const groups = new Map();
     nodes.forEach((node) => {
@@ -2238,6 +2402,7 @@ body {
     branches.forEach((branch) => svg.appendChild(branch));
   };
   const refreshKeyboardNavigation = (root, focused) => {
+    refreshRootBranchHighlightAvailability(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
     const activeElement = root.getRootNode().activeElement;
@@ -2300,10 +2465,13 @@ body {
       refreshKeyboardNavigation(root);
     });
     paintObserver.observe(root, { subtree: true, attributes: true,
-      attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'clip-path'] });
+      attributeFilter: paintAvailabilityAttributes });
   };
   const prepareKeyboardNavigation = (root) => {
-    if (!hasFeature(root, 'KeyboardNavigation')) return;
+    if (!hasFeature(root, 'KeyboardNavigation')) {
+      if (root._cfxBranchHighlights) bindKeyboardNavigationAvailability(root);
+      return;
+    }
     root._cfxKeyboardNavigation = { owned: new Set() };
     // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
@@ -2513,6 +2681,7 @@ body {
     return false;
   };
   const clearHover = (root, emit, sync) => {
+    clearRootBranchHighlight(root);
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
@@ -2548,6 +2717,8 @@ body {
     if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
+  const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
+    : root._cfxBranchHighlights?.includes(node) ? 'root-branch' : 'series';
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
@@ -2557,7 +2728,8 @@ body {
     if (!localNode && target.targetKind && target.targetId) return false;
     // A peer's equivalent mark may have a different local point ordinal or series position.
     const localTarget = localNode ? targetIdentity(localNode) : target;
-    const hoverMode = mode === 'shared' ? 'shared' : 'series';
+    const hoverMode = hoverModeForTarget(root, localNode, mode);
+    if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
     const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
     let matched = false;
@@ -2831,8 +3003,8 @@ body {
     }
     const point = tooltipPoint || guidePoint;
     const key = targetKey(targetIdentity(point.node));
-    const mode = point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
-      ? crosshairHoverMode(event, point.node) : 'series';
+    const mode = hoverModeForTarget(root, point.node, point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
+      ? crosshairHoverMode(event, point.node) : 'series');
     const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
     if (changed) setHover(root, point.node, true, true, mode);
     if (guidePoint) showCrosshair(root, crosshair, guidePoint, event);
@@ -3267,6 +3439,15 @@ body {
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
     applyRenderedTargetContract(root);
+    prepareRootBranchHighlights(root);
+    if (root._cfxBranchHighlights) root.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      clearHover(root, true, true);
+      hideCrosshair(root, crosshair);
+      hideTip(root, tip, true);
+    });
     applyViewport(root, getState(root));
     renderCompare(root);
     if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());
@@ -3530,6 +3711,7 @@ body {
       if (brush) brush.hidden = true;
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
+      if (root._cfxBranchHighlights) clearHover(root, true, true);
       publishCompare(root, true);
       syncResetControl(root);
     });
