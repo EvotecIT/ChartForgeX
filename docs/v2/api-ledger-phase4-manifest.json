@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "baselineSha": "9cd02a52af97426eab4bf64b9775ce93057e5986",
-  "candidateSha": "1ca668b3c7bbd1166aa64c2a78904074af710ee3",
+  "candidateSha": "aeeb93978a7350ae0442cdadb819702dcf1baad9",
   "assemblies": {
     "ChartForgeX": 864,
     "ChartForgeX.Visuals": 81,
