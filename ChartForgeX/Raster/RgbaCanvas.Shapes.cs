@@ -52,9 +52,9 @@ internal sealed partial class RgbaCanvas {
             foreach (var point in polyline) device.Add(new ChartPoint(point.X * _scale, point.Y * _scale));
             paths.Add(device);
         }
-        PaintStrokeTiles(pattern != null, bounds => {
+        PaintStrokeTiles(pattern != null, (bounds, budget) => {
             var outline = RasterStroker.CreateOutline(paths, width, lineCap, lineJoin, miterLimit, pattern, 0, 1,
-                bounds.Left * _scale, bounds.Top * _scale, bounds.Right * _scale, bounds.Bottom * _scale);
+                bounds.Left * _scale, bounds.Top * _scale, bounds.Right * _scale, bounds.Bottom * _scale, budget);
             FillContoursPixels(outline, color, RasterFillRule.NonZero, StrokeSubScanlines);
         });
     }

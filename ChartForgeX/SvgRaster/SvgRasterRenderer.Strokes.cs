@@ -19,13 +19,13 @@ internal static partial class SvgRasterRenderer {
         var fill = style.Inherit();
         fill.Fill = style.Stroke; fill.FillOpacity = style.StrokeOpacity; fill.Opacity = style.Opacity; fill.FillRule = "nonzero";
         var objectPaint = new SvgRasterObjectPaint(SvgRasterGradientValues.Bounds(objectContours),matrix);
-        canvas.PaintStrokeTiles(style.StrokeDashArray != null && style.StrokeDashArray.Count > 0, bounds => {
+        canvas.PaintStrokeTiles(style.StrokeDashArray != null && style.StrokeDashArray.Count > 0, (bounds, budget) => {
             var corners = new List<List<ChartPoint>> { new List<ChartPoint> {
                 inverse.Transform(new ChartPoint(bounds.Left,bounds.Top)),inverse.Transform(new ChartPoint(bounds.Right,bounds.Top)),
                 inverse.Transform(new ChartPoint(bounds.Left,bounds.Bottom)),inverse.Transform(new ChartPoint(bounds.Right,bounds.Bottom)) } };
             var clip = SvgRasterGradientValues.Bounds(corners);
             var outlines = RasterStroker.CreateOutline(local, style.StrokeWidth, LineCap(style.StrokeLineCap), LineJoin(style.StrokeLineJoin),
-                style.StrokeMiterLimit, style.StrokeDashArray, style.StrokeDashOffset, scale, clip.Left, clip.Top, clip.Left+clip.Width, clip.Top+clip.Height);
+                style.StrokeMiterLimit, style.StrokeDashArray, style.StrokeDashOffset, scale, clip.Left, clip.Top, clip.Left+clip.Width, clip.Top+clip.Height, budget);
             for (int i=0;i<outlines.Count;i++) outlines[i] = TransformRing(outlines[i],matrix);
             Fill(canvas,outlines,fill,matrix,definitions,viewport,objectPaint);
         });
