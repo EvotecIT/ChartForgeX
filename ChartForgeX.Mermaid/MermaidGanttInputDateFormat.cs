@@ -81,8 +81,16 @@ internal static partial class MermaidGanttInputDateFormat {
                 : (ticks / (decimal)TimeSpan.TicksPerSecond).ToString("0.#######", CultureInfo.InvariantCulture);
         }
         var fields = Parts(format);
-        if (!UsesMermaidFields(fields))
-            return value.ToString(MermaidGanttParser.ToDotNetDateFormat(format), CultureInfo.InvariantCulture);
+        if (!UsesMermaidFields(fields)) {
+            var nativeFormat = MermaidGanttParser.ToDotNetDateFormat(format);
+            DateFields(ExpandNativeFormat(nativeFormat), out _, out _, out _, out var offset);
+            // Schedule dates already represent UTC when an offset was authored. A zero-offset
+            // value also avoids the .NET Framework local-zone behavior of DateTime's z fields.
+            if (offset) return new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Unspecified), TimeSpan.Zero)
+                .ToString(nativeFormat, CultureInfo.InvariantCulture);
+            // Standard U converts to UTC; the schedule must never acquire the host timezone.
+            return DateTime.SpecifyKind(value, DateTimeKind.Utc).ToString(nativeFormat, CultureInfo.InvariantCulture);
+        }
         var result = new StringBuilder();
         foreach (var part in fields) {
             if (part.Token == null) result.Append(part.Text);

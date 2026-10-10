@@ -37,7 +37,11 @@ internal static partial class MermaidGanttInputDateFormat {
     }
 
     // Scan only calendar fields: escaped and quoted literals never supply a year.
-    private static bool IsNativeStandardFormat(string format) => format.Length == 1 && "dDfFgGmMoOrRsStTuUyY".IndexOf(format[0]) >= 0;
+    private static bool IsNativeStandardFormat(string format) => format.Length == 1 && "dDfFgGmMoOrRstTuUyY".IndexOf(format[0]) >= 0;
+
+    internal static bool CalendarDateContainsWhitespace(string format) =>
+        format.IndexOfAny(new[] { ' ', '\t' }) >= 0 || IsNativeStandardFormat(format)
+            && ExpandNativeFormat(format).IndexOfAny(new[] { ' ', '\t' }) >= 0;
 
     private static void DateFields(string format, out bool year, out bool month, out bool day, out bool offset) {
         year = month = day = offset = false;

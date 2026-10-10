@@ -75,16 +75,29 @@ internal static partial class MermaidGanttParser {
             // An unrecognized timestamp must not lose its time through partial splitting.
             if (TryNormalizeCalendarDate(trimmed, format, out var date, dateAnchor)) tokens.Add(date);
             else {
-                var list = new List<string>(); var standalone = true; var tokenOffset = 0; var unknownOffset = 0;
+                var list = new List<string>(); var standalone = true; var tokenOffset = 0;
+                var unknownStart = -1; var unknownEnd = 0;
+                var dateHasSpaces = MermaidGanttInputDateFormat.CalendarDateContainsWhitespace(format);
+                void ReportUnknown() {
+                    if (unknownStart < 0) return;
+                    unrecognized?.Invoke(trimmed.Substring(unknownStart, unknownEnd - unknownStart), sourceOffset + unknownStart);
+                    unknownStart = -1;
+                }
                 foreach (var token in trimmed.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)) {
                     tokenOffset = trimmed.IndexOf(token, tokenOffset, StringComparison.Ordinal);
-                    if (TryNormalizeCalendarDate(token, format, out date, dateAnchor)) list.Add(date);
-                    else if (IsCalendarKeyword(token)) list.Add(token);
-                    else { standalone = false; unknownOffset = tokenOffset; break; }
+                    if (TryNormalizeCalendarDate(token, format, out date, dateAnchor)) { ReportUnknown(); list.Add(date); }
+                    else if (IsCalendarKeyword(token)) { ReportUnknown(); list.Add(token); }
+                    else {
+                        standalone = false;
+                        if (unknownStart < 0) unknownStart = tokenOffset;
+                        unknownEnd = tokenOffset + token.Length;
+                        if (!dateHasSpaces) ReportUnknown();
+                    }
                     tokenOffset += token.Length;
                 }
+                ReportUnknown();
                 if (standalone) tokens.UnionWith(list);
-                else { tokens.Add(trimmed); unrecognized?.Invoke(trimmed.Substring(unknownOffset), sourceOffset + unknownOffset); }
+                else tokens.Add(trimmed);
             }
         }
         return tokens;
