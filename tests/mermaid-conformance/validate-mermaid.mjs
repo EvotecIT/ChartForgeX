@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { isSyntaxRejection } from './reference-errors.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const manifest = JSON.parse(await readFile(join(root, 'compatibility.json'), 'utf8'));
@@ -32,6 +33,9 @@ for (const [path, fixture] of Object.entries(manifest.fixtures)) {
   }
 }
 if (!referenceId) {
+  const contracts = spawnSync(process.execPath, ['--test', fileURLToPath(new URL('reference-errors.test.mjs', import.meta.url))], {encoding: 'utf8'});
+  if (contracts.error) throw contracts.error;
+  if (contracts.status !== 0) throw new Error(contracts.stderr || contracts.stdout || 'Reference-error contract tests failed.');
   for (const id of references) {
     const child = spawnSync(process.execPath, [fileURLToPath(import.meta.url), ...args, '--reference', id], {encoding: 'utf8', maxBuffer: 8 * 1024 * 1024});
     if (child.error) throw child.error;
@@ -87,17 +91,19 @@ for (const { folder, file, hasExpected } of files) {
   const source = await readFile(join(fixtures, file), 'utf8');
   const contract = manifest.fixtures[`${folder}/${file}`];
   let syntaxError;
+  let syntaxFailed = false;
   try {
     const parsed = await mermaid.parse(source, { suppressErrors: false });
     if (parsed === false) throw new Error('The reference parser returned false.');
   }
-  catch (error) { syntaxError = error; }
+  catch (error) { syntaxFailed = true; syntaxError = error; }
   if (contract.syntax[referenceId] === 'rejected') {
-    if (!syntaxError) failures.push(`${folder}/${file}: reference ${reference.version} unexpectedly accepts syntax marked unavailable.`);
-    else rejected++;
+    if (!syntaxFailed) failures.push(`${folder}/${file}: reference ${reference.version} unexpectedly accepts syntax marked unavailable.`);
+    else if (isSyntaxRejection(syntaxError, reference.version)) rejected++;
+    else failures.push(`${folder}/${file}: unexpected engine failure, not a qualified syntax rejection: ${syntaxError?.message ?? syntaxError}`);
     continue;
   }
-  if (syntaxError) {
+  if (syntaxFailed) {
     failures.push(`${folder}/${file}: ${syntaxError?.message ?? syntaxError}`);
     continue;
   }
