@@ -45,12 +45,40 @@ public sealed class MermaidGanttRetainedDateFormatTests {
     [InlineData("2026-01-02T00:30:00+14:00", "2026-01-01T10:30:00")]
     [InlineData("2026-01-02T00:30:00Z", "2026-01-02T00:30:00")]
     [InlineData("2026-01-02T00:30:00", "2026-01-02T00:30:00")]
+    [InlineData("2026-01-02T00:30+14:00", "2026-01-01T10:30:00")]
+    [InlineData("2026-01-02T0:30+14:00", "2026-01-01T10:30:00")]
+    [InlineData("2026-01-02T00:30Z", "2026-01-02T00:30:00")]
+    [InlineData("2026-01-02 00:30-12:00", "2026-01-02T12:30:00")]
     public void CompleteIsoFallbacksUseTheSameUtcAndUnspecifiedContract(string input, string expected) {
         var result = new MermaidParser().ParseGantt("gantt\ndateFormat MM-DD\nTask :" + input + ",1d");
         Assert.Empty(result.Diagnostics);
         var task = Assert.Single(result.Document!.Tasks);
         Assert.Equal(expected, task.Start.ToString("yyyy-MM-dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
         Assert.Equal(DateTimeKind.Unspecified, task.Start.Kind);
+    }
+
+    [Theory]
+    [InlineData("m", "February 29", 3)]
+    [InlineData("s", "2028-02-29T13:25:30", 3)]
+    [InlineData("s", "2028-02-29T14:35:30", 2)]
+    public void AmbiguousStandardCalendarDatesRetainTheInterpretationSelectedWhileParsing(string format, string excluded, int days) {
+        var result = new MermaidParser().ParseGantt("gantt\ndateFormat " + format + "\nexcludes " + excluded
+            + "\nTask :2028-02-28T13:25:30,2d", new MermaidParseOptions { GanttDateAnchor = new DateTime(2028, 2, 20) });
+        Assert.Empty(result.Diagnostics);
+        var task = Assert.Single(result.Document!.Tasks);
+        Assert.Equal(task.Start.AddDays(days), task.End);
+    }
+
+    [Theory]
+    [InlineData("m", "February 29", 2)]
+    [InlineData("s", "2028-02-29T13:25:30", 2)]
+    [InlineData("s", "2028-02-29T14:35:30", 3)]
+    public void AmbiguousStandardInclusionsKeepTheSelectedDateAndTimeSemantics(string format, string included, int days) {
+        var result = new MermaidParser().ParseGantt("gantt\ndateFormat " + format + "\nexcludes 2028-02-29\nincludes " + included
+            + "\nTask :2028-02-28T13:25:30,2d", new MermaidParseOptions { GanttDateAnchor = new DateTime(2028, 2, 20) });
+        Assert.Empty(result.Diagnostics);
+        var task = Assert.Single(result.Document!.Tasks);
+        Assert.Equal(task.Start.AddDays(days), task.End);
     }
 
     [Theory]

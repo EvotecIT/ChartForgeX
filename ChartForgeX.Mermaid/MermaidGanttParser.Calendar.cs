@@ -45,12 +45,15 @@ internal static partial class MermaidGanttParser {
                 if (!previousExcluded) renderEnd = end;
                 var date = "iso:" + cursor.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 var formatted = MermaidGanttInputDateFormat.CalendarKey(cursor, document.DateFormat);
+                var nativeFormatted = MermaidGanttInputDateFormat.NativeCalendarKey(cursor, document.DateFormat);
                 var weekday = cursor.DayOfWeek.ToString().ToLowerInvariant();
                 var weekend = document.Weekend == "friday"
                     ? cursor.DayOfWeek == DayOfWeek.Friday || cursor.DayOfWeek == DayOfWeek.Saturday
                     : cursor.DayOfWeek == DayOfWeek.Saturday || cursor.DayOfWeek == DayOfWeek.Sunday;
-                previousExcluded = !included.Contains(date) && !included.Contains(formatted) &&
-                    (excluded.Contains(date) || excluded.Contains(formatted) || excluded.Contains(weekday) || (weekend && excluded.Contains("weekends")));
+                previousExcluded = !ContainsDate(included) &&
+                    (ContainsDate(excluded) || excluded.Contains(weekday) || (weekend && excluded.Contains("weekends")));
+                bool ContainsDate(HashSet<string> tokens) => tokens.Contains(date) || tokens.Contains(formatted)
+                    || nativeFormatted != null && tokens.Contains(nativeFormatted);
                 if (previousExcluded) {
                     if (++extension > 10000) return false;
                     end = end.AddDays(1);
@@ -105,8 +108,8 @@ internal static partial class MermaidGanttParser {
     private static bool TryNormalizeCalendarDate(string token, string format, out string date, DateTime? dateAnchor) {
         date = string.Empty;
         if (token.Length == 0) return false;
-        if (MermaidGanttInputDateFormat.TryParseConfigured(token, format, out var value, dateAnchor)) {
-            date = MermaidGanttInputDateFormat.CalendarKey(value, format);
+        if (MermaidGanttInputDateFormat.TryParseConfigured(token, format, out var value, out var nativeFormat, dateAnchor)) {
+            date = MermaidGanttInputDateFormat.CalendarKey(value, format, nativeFormat);
             return true;
         }
         if (!DateTime.TryParseExact(token, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out value)) return false;

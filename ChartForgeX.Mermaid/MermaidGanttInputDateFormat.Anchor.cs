@@ -14,8 +14,11 @@ internal static partial class MermaidGanttInputDateFormat {
         return !year;
     }
 
-    internal static string CalendarKey(DateTime value, string format) => "format:" +
-        value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "|" + FormatCalendarDate(value, format);
+    internal static string CalendarKey(DateTime value, string format, bool nativeFormat = false) => "format:" +
+        value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "|" + FormatCalendarDate(value, format, nativeFormat);
+
+    internal static string? NativeCalendarKey(DateTime value, string format) => IsNativeStandardFormat(format.Trim())
+        && UsesMermaidFields(Parts(format.Trim())) ? CalendarKey(value, format, nativeFormat: true) : null;
 
     private static bool ApplyDateDefaults(StringBuilder input, StringBuilder format, DateTime? anchor) {
         DateFields(format.ToString(), out var year, out var month, out var day, out _);

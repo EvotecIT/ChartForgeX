@@ -11,8 +11,11 @@ internal static partial class MermaidGanttInputDateFormat {
     private static readonly CultureInfo English = CreateEnglishCalendar();
     private static readonly string[] Tokens = { "YYYY", "MMMM", "DDDD", "MMM", "DDD", "SSS", "YY", "MM", "DD", "Do", "HH", "hh", "mm", "ss", "SS", "ZZ", "Q", "M", "D", "H", "h", "m", "s", "S", "A", "a", "Z" };
 
-    internal static bool TryParseConfigured(string input, string format, out DateTime value, DateTime? dateAnchor = null) {
-        value = default;
+    internal static bool TryParseConfigured(string input, string format, out DateTime value, DateTime? dateAnchor = null) =>
+        TryParseConfigured(input, format, out value, out _, dateAnchor);
+
+    internal static bool TryParseConfigured(string input, string format, out DateTime value, out bool nativeFormat, DateTime? dateAnchor = null) {
+        value = default; nativeFormat = false;
         if (format.Length > 256) return false;
         try {
             format = format.Trim();
@@ -21,6 +24,7 @@ internal static partial class MermaidGanttInputDateFormat {
                 if (TryParseFields(input, format, out value, dateAnchor)) return true;
                 if (!IsNativeStandardFormat(format)) return false;
             }
+            nativeFormat = true;
             return TryParseNative(input, MermaidGanttParser.ToDotNetDateFormat(format), out value, dateAnchor);
         } catch (FormatException) { return false; }
         catch (RegexMatchTimeoutException) { return false; }
@@ -73,7 +77,7 @@ internal static partial class MermaidGanttInputDateFormat {
         return DateTime.TryParseExact(normalized.ToString(), nativeFormat.ToString(), English, DateTimeStyles.NoCurrentDateDefault, out value);
     }
 
-    internal static string FormatCalendarDate(DateTime value, string format) {
+    internal static string FormatCalendarDate(DateTime value, string format, bool nativeFormat = false) {
         format = format.Trim();
         if (format == "X" || format == "x") {
             var ticks = value.Ticks - new DateTime(1970, 1, 1).Ticks;
@@ -81,15 +85,15 @@ internal static partial class MermaidGanttInputDateFormat {
                 : (ticks / (decimal)TimeSpan.TicksPerSecond).ToString("0.#######", CultureInfo.InvariantCulture);
         }
         var fields = Parts(format);
-        if (!UsesMermaidFields(fields)) {
-            var nativeFormat = MermaidGanttParser.ToDotNetDateFormat(format);
-            DateFields(ExpandNativeFormat(nativeFormat), out _, out _, out _, out var offset);
+        if (nativeFormat || !UsesMermaidFields(fields)) {
+            var platformFormat = MermaidGanttParser.ToDotNetDateFormat(format);
+            DateFields(ExpandNativeFormat(platformFormat), out _, out _, out _, out var offset);
             // Schedule dates already represent UTC when an offset was authored. A zero-offset
             // value also avoids the .NET Framework local-zone behavior of DateTime's z fields.
             if (offset) return new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Unspecified), TimeSpan.Zero)
-                .ToString(nativeFormat, CultureInfo.InvariantCulture);
+                .ToString(platformFormat, CultureInfo.InvariantCulture);
             // Standard U converts to UTC; the schedule must never acquire the host timezone.
-            return DateTime.SpecifyKind(value, DateTimeKind.Utc).ToString(nativeFormat, CultureInfo.InvariantCulture);
+            return DateTime.SpecifyKind(value, DateTimeKind.Utc).ToString(platformFormat, CultureInfo.InvariantCulture);
         }
         var result = new StringBuilder();
         foreach (var part in fields) {
