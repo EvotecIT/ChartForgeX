@@ -10,6 +10,9 @@ internal static class ChartNumericFormatter {
     public static string FormatValue(ChartOptions options, double value) =>
         (options ?? throw new ArgumentNullException(nameof(options))).ValueFormat.Format(value);
 
+    /// <summary>Formats human-facing coordinates with a short round-trip caption; raw metadata retains its own serialization.</summary>
+    internal static string FormatCoordinate(double value) => value.ToString("R", CultureInfo.InvariantCulture);
+
     public static string FormatCompact(double value) {
         return ChartValueFormat.InvariantCompact.Format(value);
     }

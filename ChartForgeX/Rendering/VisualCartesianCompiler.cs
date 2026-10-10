@@ -183,7 +183,7 @@ internal static partial class VisualCartesianCompiler {
     private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null) {
         var point = series.Points[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
-        var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + Number(point.X) + ", " + Number(point.Y) + ")";
+        var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + ChartNumericFormatter.FormatCoordinate(point.X) + ", " + ChartNumericFormatter.FormatCoordinate(point.Y) + ")";
         if (series.HistogramBinLayout != null) label = HistogramPointDescription(series, pointIndex, resolvedLabel.DisplayedText);
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));
         var metadata = new Dictionary<string, string> {
