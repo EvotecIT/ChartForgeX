@@ -47,37 +47,98 @@
     }
     return null;
   };
-  const shapePaint = (node, styles) => {
+  // Native producers use rectangular user-space clips. A retained fact or path box can lie outside them.
+  const paintWithinNativeClips = (node, subject = node) => {
+    let box;
+    for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
+      const reference = /^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path') || '');
+      if (!reference) continue;
+      const clip = parent.ownerSVGElement.getElementById(reference[1]);
+      if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
+        || !clip.firstElementChild.matches('rect')) continue;
+      const matrix = parent.getScreenCTM();
+      if (!matrix) return false;
+      const rect = clip.firstElementChild.getBBox();
+      if (!(rect.width > 0 && rect.height > 0)) return false;
+      const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
+        .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+      const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
+      const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
+      // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
+      const precision = .001 * Math.max(Math.abs(matrix.a) + Math.abs(matrix.c), Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001;
+      box ||= subject.getBoundingClientRect();
+      if (subject !== node) {
+        // A marker-free observation uses its source location, not another visible part of the series path.
+        const x = box.left + box.width / 2, y = box.top + box.height / 2;
+        if (x < left - precision || x > right + precision || y < top - precision || y > bottom + precision) return false;
+      } else if (box.right < left - precision || box.left > right + precision || box.bottom < top - precision || box.top > bottom + precision) return false;
+    }
+    return true;
+  };
+  const shapePaint = (node, styles, subject = node) => {
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
-    if (/-(highlight|pattern|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '') || !paintNodeVisible(node, styles)) return null;
+    if (/-(highlight|pattern|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
+      || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)
+      || subject !== node && !paintWithinNativeClips(node, subject)) return null;
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
     // Open line marks never paint their inherited default black fill.
     if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
     return paintValue(node, paint.fill, paint.fillOpacity, styles) || stroke;
   };
-  const childPaint = (node, decoration, styles) => {
+  const primaryTextPaint = (node, decoration, styles) => {
+    const role = (node.dataset || {}).cfxRole;
+    // Text is the mark for a word-cloud term or annotation caption; ordinary point labels are decoration.
+    if (role !== 'word-cloud-term' && role !== 'annotation' && !(decoration && role === 'legend-item')) return null;
+    for (const text of node.querySelectorAll('text')) {
+      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text)
+        || !decoration && text.closest('[data-cfx-label-decoration]')) continue;
+      const style = paintStyle(text, styles);
+      if (!(parseFloat(style.fontSize) > 0)) continue;
+      const stroke = parseFloat(style.strokeWidth) > 0 ? paintValue(text, style.stroke, style.strokeOpacity, styles) : null;
+      const paint = paintValue(text, style.fill, style.fillOpacity, styles) || stroke;
+      if (paint) return paint;
+    }
+    return null;
+  };
+  const childPaint = (node, decoration, styles, subject) => {
     if (!node) return null;
     const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
     const primary = shapes.filter((shape) => shape.matches('[data-cfx-role^="circle-value"],[data-cfx-role^="gauge-value"],[data-cfx-role="gauge-needle"],[data-cfx-role="bullet-value"]'));
     for (const shape of primary.concat(shapes)) {
       if (!decoration && shape.closest('[data-cfx-label-decoration]')) continue;
-      const paint = shapePaint(shape, styles);
+      const paint = shapePaint(shape, styles, subject || shape);
       if (paint) return paint;
     }
-    return null;
+    return primaryTextPaint(node, decoration, styles);
   };
   const seriesPaint = (node, styles) => {
-    const owner = node.closest('[data-cfx-role="series"]');
+    const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
     if (!owner) return null;
-    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"]')) {
-      const paint = childPaint(layer, false, styles);
+    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
+      const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
     }
     return null;
   };
   const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
     ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
+  // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
+  const pointerTargetPaint = (node, styles = new Map()) => {
+    if (!node || !isInteractiveTarget(node)) return null;
+    const legend = (node.dataset || {}).cfxRole === 'legend-item';
+    if (legend) return childPaint(node, true, styles);
+    if (node.closest('.cfx-series-muted') || ['zero', 'precision-collapse'].includes(node.dataset.cfxGeometryStatus)) return null;
+    return observationPaint(node, styles);
+  };
+  const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
+    if (pointerTargetPaint(node, styles)) return true;
+    // Authored zero/precision-collapse facts remain a keyboard readout, without becoming pointer targets.
+    const pointer = event instanceof PointerEvent || event instanceof MouseEvent && event.detail > 0;
+    return !pointer && ['zero', 'precision-collapse'].includes((node.dataset || {}).cfxGeometryStatus)
+      && paintAncestorsVisible(node, styles) && keyboardTargetAvailable(node);
+  };
   const paintColour = (node, styles = new Map()) => {
     if (!node) return '';
     const legend = (node.dataset || {}).cfxRole === 'legend-item';

@@ -19,7 +19,6 @@ public sealed class HtmlInteractiveDashboardOptions {
         Interaction = ChartInteractionOptions.ReportReview();
         IncludeResetButton = true;
         ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
-        TooltipMode = HtmlChartTooltipMode.SharedX;
     }
 
     /// <summary>
@@ -78,11 +77,12 @@ public sealed class HtmlInteractiveDashboardOptions {
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
     /// <summary>
-    /// Gets or sets the tooltip mode shared by every dashboard chart. Shared-x tooltips fall back to one target
-    /// when comparable numeric x/y observations are unavailable. The <see cref="ChartInteractionFeatures.Tooltips"/>
-    /// feature controls whether tooltips are enabled.
+    /// Gets the tooltip content and pointer acquisition options shared by every dashboard chart.
     /// </summary>
-    public HtmlChartTooltipMode TooltipMode { get; set; }
+    public HtmlChartTooltipOptions Tooltip { get; } = new HtmlChartTooltipOptions();
+
+    /// <summary>Gets the crosshair presentation options shared by every dashboard chart.</summary>
+    public HtmlChartCrosshairOptions Crosshair { get; } = new HtmlChartCrosshairOptions();
 
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;

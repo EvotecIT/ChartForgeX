@@ -46,7 +46,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
             .WithTheme((dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithPalette("#176eaf", "#df4263"))
             .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Previous", ChartPoints.FromValues(1, 2, 1));
         chart.Series[0].WithPointColor(1, "#7b61e8").WithPointFillPattern(1, ChartFillPattern.Crosshatch);
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.TooltipMode = mode), width, 560);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode), width, 560);
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
         var swatch = mode == HtmlChartTooltipMode.SharedX ? "dt[data-cfx-tooltip-series='0'] .cfx-tooltip__swatch" : ".cfx-tooltip__title .cfx-tooltip__swatch";
@@ -73,7 +73,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         if (range) chart.AddRangeBar("Expected", new[] { new ChartInterval(1, 2, 8), new ChartInterval(2, 3, 9) });
         else chart.AddHorizontalBar("Expected", ChartPoints.FromValues(3, 7, 5));
         chart.Series[0].WithPointColor(0, "#7b61e8").WithPointFillPattern(0, ChartFillPattern.DiagonalForward);
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.TooltipMode = HtmlChartTooltipMode.Single));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single));
         var page = session.Page;
         var mark = Point(0, 0) + " [data-cfx-role='" + (range ? "range-bar" : "horizontal-bar") + "']";
         await page.Locator(mark).EvaluateAsync("node => document.getElementById(node.getAttribute('fill').slice(5, -1)).querySelector('stop').setAttribute('stop-opacity', '0')");

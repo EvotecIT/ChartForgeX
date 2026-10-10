@@ -20,7 +20,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         if (!Enabled) return;
         var chart = Lines(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Dark());
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
-            options.TooltipMode = mode;
+            options.Tooltip.Mode = mode;
             options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
         }));
         var page = session.Page;
@@ -68,7 +68,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         var chart = Chart.Create().WithSize(596, 338).WithTheme(ChartTheme.GraphiteLight().WithPalette("#176eaf", "#df4263"))
             .AddBar("Requests", ChartPoints.FromValues(3, 7, 5)).AddBar("Previous", ChartPoints.FromValues(1, 2, 1));
         chart.Series[0].WithPointColor(1, "#7b61e8");
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.TooltipMode = mode));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode));
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
         var swatch = mode == HtmlChartTooltipMode.SharedX ? ".cfx-tooltip dt[data-cfx-tooltip-series='0'] .cfx-tooltip__swatch" : ".cfx-tooltip__title .cfx-tooltip__swatch";
@@ -89,7 +89,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         var ranges = new[] { new ChartRangeBand(1, 2, 8), new ChartRangeBand(2, 3, 9) };
         if (area) chart.AddRangeArea("Expected", ranges, ChartColor.FromHex("#176eaf"));
         else chart.AddRangeBand("Expected", ranges, ChartColor.FromHex("#176eaf"));
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.TooltipMode = HtmlChartTooltipMode.Single));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single));
         var page = session.Page;
         await page.Locator(Point(0, 0)).FocusAsync();
         Assert.Contains("Range", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
@@ -175,7 +175,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         Assert.Equal("7", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd").InnerTextAsync());
         foreach (var mode in new[] { HtmlChartTooltipMode.Single, HtmlChartTooltipMode.SharedX }) {
             await page.SetContentAsync(Lines(ChartTheme.Light()).ToInteractiveHtmlPage(options => {
-                options.TooltipMode = mode;
+                options.Tooltip.Mode = mode;
                 options.Interaction.Disable(ChartInteractionFeatures.Tooltips);
             }));
             await page.Locator(Point(0, 1)).FocusAsync();
@@ -209,7 +209,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         if (!Enabled) return;
         var chart = Lines(ChartTheme.Light());
         await using var session = await OpenAsync(new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options => {
-            options.Columns = 1; options.TooltipMode = mode;
+            options.Columns = 1; options.Tooltip.Mode = mode;
         }), 700, 1000);
         var page = session.Page;
         var children = page.Locator(".cfx-interactive-chart");

@@ -59,7 +59,10 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Legend(1)).GetAttributeAsync("data-cfx-muted"));
         await page.Keyboard.PressAsync("Shift+Space");
-        Assert.Equal("1:", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-isolated-series"));
+        Assert.Equal("true", await page.Locator(Legend(1)).GetAttributeAsync("data-cfx-isolated"));
+        var chosenSeries = await page.Locator(Legend(1)).GetAttributeAsync("data-cfx-series");
+        var chosenKey = await page.Locator(Legend(1)).GetAttributeAsync("data-cfx-series-key");
+        Assert.Equal(chosenSeries + ":series:" + chosenKey, await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-isolated-series"));
         await page.Keyboard.PressAsync("i");
         Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-isolated-series"));
         AssertNoConsoleErrors(session);
