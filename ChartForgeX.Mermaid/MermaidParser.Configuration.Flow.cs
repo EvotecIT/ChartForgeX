@@ -32,9 +32,9 @@ public sealed partial class MermaidParser {
                 else if (character == '}') depth--;
             }
             if (depth <= 0 || index + 1 == lines.Length) break;
-            while (index + 1 < lines.Length && lines[index + 1].TrimStart(' ', '\t').StartsWith("#", System.StringComparison.Ordinal)) index++;
+            while (quote == '\0' && index + 1 < lines.Length && lines[index + 1].TrimStart(' ', '\t').StartsWith("#", System.StringComparison.Ordinal)) index++;
             if (index + 1 == lines.Length) break;
-            value = TrimConfigurationYaml(TrimYamlComment(lines[++index], true));
+            value = TrimConfigurationYaml(TrimYamlComment(lines[++index], true, quote));
             column = ConfigurationYamlIndent(lines[index]) + 1;
         }
         return collected.ToString();
