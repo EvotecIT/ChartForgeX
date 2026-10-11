@@ -16,9 +16,21 @@ internal static partial class MermaidGanttInputDateFormat {
         "M/d/yyyy", "M-d-yyyy", "yyyy/M/d", "o", "r"
     };
 
+    private static readonly string[] CompleteNonIsoDates = {
+        "MMMM d yyyy", "MMM d yyyy", "MMMM d, yyyy", "MMM d, yyyy", "d MMMM yyyy", "d MMM yyyy",
+        "M/d/yyyy", "M-d-yyyy", "yyyy/M/d"
+    };
+    private static readonly string[] CompleteTimeSuffixes = {
+        " H:mm", " H:mm:ss", " H:mm:ss.FFFFFFF", " h:mm tt", " h:mm:ss tt", " h:mm:ss.FFFFFFF tt",
+        " H:mmK", " H:mm:ss.FFFFFFFK", " H:mm zzz", " H:mm:ss.FFFFFFF zzz"
+    };
+
     internal static bool TryParseCompleteFallback(string input, out DateTime value) {
         foreach (var format in CompleteDateFallbacks)
             if (TryParseNative(input, format, out value, null, allowWhiteSpaces: true)) return true;
+        foreach (var date in CompleteNonIsoDates)
+            foreach (var time in CompleteTimeSuffixes)
+                if (TryParseNative(input, date + time, out value, null, allowWhiteSpaces: true)) return true;
         value = default;
         return false;
     }
