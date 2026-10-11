@@ -19,13 +19,14 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets an exact number of equally spaced concentric radar/polar guides from one through one hundred.
-    /// Null uses the radial axis's generated ticks. This does not change the value domain or series coordinates.
+    /// Gets or sets an exact number of equally spaced concentric radar/polar guides from zero through one hundred.
+    /// Zero hides concentric guides; spokes and observations remain visible. Null uses the radial axis's generated ticks.
+    /// This does not change the value domain or series coordinates.
     /// </summary>
     public int? PolarGridRingCount {
         get => _polarGridRingCount;
         set {
-            if (value.HasValue && (value.Value < 1 || value.Value > 100)) throw new ArgumentOutOfRangeException(nameof(value));
+            if (value.HasValue && (value.Value < 0 || value.Value > 100)) throw new ArgumentOutOfRangeException(nameof(value));
             _polarGridRingCount = value;
         }
     }

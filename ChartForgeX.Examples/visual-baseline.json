@@ -4802,6 +4802,30 @@
       }
     },
     {
+      "name": "mermaid-radar-zero-guides",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 975,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-swimlane-basic",
       "layout": {
         "heightMode": "natural",

@@ -118,6 +118,7 @@ public sealed class PolarGridShapeTests {
     [InlineData(ChartScaleKind.SymmetricLogarithmic, false, 3)]
     [InlineData(ChartScaleKind.SymmetricLogarithmic, true, 3)]
     [InlineData(ChartScaleKind.Linear, false, 1)]
+    [InlineData(ChartScaleKind.Linear, false, 0)]
     public void ExactGuideCountsPreserveScaleAndSourceCoordinates(ChartScaleKind kind, bool reversed, int count) {
         var chart = Chart.Create().WithSize(520, 380).WithHeader(false).WithLegend(false).WithDataLabels(false)
             .WithYAxisBounds(10, 1000).WithPolarGridShape(ChartPolarGridShape.Circle)
@@ -132,12 +133,13 @@ public sealed class PolarGridShapeTests {
         for (var index = 0; index < count; index++) Assert.Equal(rings[count - 1].Rx * (index + 1d) / count, rings[index].Rx, 7);
         Assert.Equal(original.Regions.Where(region => region.Role == "radar-point").Select(region => region.Bounds),
             prepared.Regions.Where(region => region.Role == "radar-point").Select(region => region.Bounds));
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridRingCount = 0);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridRingCount = -1);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridRingCount = 101);
     }
 
     [Theory]
     [InlineData(1)]
+    [InlineData(0)]
     [InlineData(3)]
     [InlineData(5)]
     [InlineData(32)]
@@ -166,7 +168,6 @@ public sealed class PolarGridShapeTests {
     }
 
     [Theory]
-    [InlineData(0)]
     [InlineData(-1)]
     public void UnboundedTickCountsProduceLocatedErrors(int count) {
         var result = MermaidRenderer.Render("radar-beta\naxis A, B, C\ncurve c{1, 2, 3}\nticks " + count);
