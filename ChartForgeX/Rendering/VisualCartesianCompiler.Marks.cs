@@ -20,7 +20,8 @@ internal static partial class VisualCartesianCompiler {
             var stack = stacks.Point(index, pointIndex);
             points.Add(horizontal ? new ChartPoint(map.X(point.Y), map.Y(point.X), point.BreakBefore)
                 : new ChartPoint(map.X(point.X), map.Y(stack.End), point.BreakBefore));
-            lower.Add(new ChartPoint(map.X(point.X), series.Kind == ChartSeriesKind.StackedArea ? map.YOrBaseline(stack.Base) : map.YBaseline(), point.BreakBefore));
+            if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea)
+                lower.Add(new ChartPoint(map.X(point.X), series.Kind == ChartSeriesKind.StackedArea ? map.YOrBaseline(stack.Base) : map.YBaseline(), point.BreakBefore));
         }
         var color = Color(series, index, colors);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;

@@ -59,6 +59,23 @@ public sealed class HorizontalLineTests {
         Assert.True(prepared.ToPng().Length > 64);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LogarithmicValuesAcceptZeroAndNegativeLinearCategories(bool step) {
+        var chart = Chart.Create().WithSize(540, 340).WithLegend(false);
+        var points = new[] { new ChartPoint(-1, 20), new ChartPoint(0, 200), new ChartPoint(1, 2000) };
+        if (step) chart.AddStepLine("Readings", points);
+        else chart.AddLine("Readings", points);
+        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "line");
+        Assert.Contains("data-cfx-x=\"0\"", prepared.ToSvg());
+        Assert.Contains("data-cfx-y=\"200\"", prepared.ToSvg());
+        Assert.True(prepared.ToPng().Length > 64);
+    }
+
     [Fact]
     public void AddingALineDoesNotReserveASecondBarSlot() {
         Chart Model(bool mixed) {
