@@ -59,7 +59,7 @@ internal static partial class VisualCartesianCompiler {
             var axis = total.Axis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
             var positive = BarValueDirection(axis, value) > 0;
             var mapper = total.Axis == ChartAxisSide.Secondary ? secondary! : primary;
-            var layout = ResolveBarLayout(chart, context, plot, mapper, stacks, total.SeriesIndex);
+            var layout = ResolveBarLayout(chart, context, plot, coordinates, mapper, stacks, total.SeriesIndex);
             var center = mapper.X(total.Coordinate) + layout.Offset;
             var left = center - layout.Width / 2; var right = center + layout.Width / 2;
             if (ChartHistogramBarSlot.TryResolve(chart, coordinates, stacks, total.SeriesIndex, total.PointIndex, mapper, out var histogramLeft, out var width)) {

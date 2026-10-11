@@ -88,7 +88,7 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawBars(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartBarCoordinateMap coordinates,
         ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
         var series = chart.Series[index];
-        var layout = ResolveBarLayout(chart, context, plot, map, stacks, index);
+        var layout = ResolveBarLayout(chart, context, plot, coordinates, map, stacks, index);
         var width = layout.Width;
         var offset = layout.Offset;
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
@@ -117,12 +117,12 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static (double Width, double Offset) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, ChartStackLayout stacks, int index) {
+    private static (double Width, double Offset) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartBarCoordinateMap coordinates, ChartMapper map, ChartStackLayout stacks, int index) {
         var barIndices = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.Bar
             && (chart.Series[i].HistogramBinLayout == null || chart.Series[i].HistogramBinLayout!.Minimum == chart.Series[i].HistogramBinLayout!.Maximum)).ToArray();
         var slot = stacks.Slot(barIndices, index);
         var sampleSlots = chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0;
-        var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].Points.Select(point => map.X(point.X))),
+        var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].Points.Select((point, pointIndex) => map.X(coordinates.Resolve(i, pointIndex).Value))),
             plot.Width, context.Theme.Spacing, slot.Count, slot.Position, minimumThickness: sampleSlots > 0 ? 0 : .1, sampleSlots: sampleSlots);
         return (layout.Thickness, layout.Offset);
     }
