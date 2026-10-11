@@ -1,3 +1,4 @@
+using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
 
@@ -8,6 +9,7 @@ internal static class MermaidExamples {
             ["mermaid-radar-polygon"] = "radar-beta\naxis Reliability, Performance, Security, Usability, Operations\ncurve current[\"Current\"]{75, 60, 85, 65, 80}\ncurve target[\"Target\"]{90, 85, 90, 80, 90}\nmax 100\ngraticule polygon\n",
             ["mermaid-radar-zero-guides"] = "radar-beta\naxis Reliability, Performance, Security, Usability, Operations\ncurve current[\"Current\"]{75, 60, 85, 65, 80}\ncurve target[\"Target\"]{90, 85, 90, 80, 90}\nmax 100\nticks 0\n",
             ["mermaid-radar-fractional-guides"] = "radar-beta\naxis Reliability, Performance, Security, Usability, Operations\ncurve current[\"Current\"]{75, 60, 85, 65, 80}\ncurve target[\"Target\"]{90, 85, 90, 80, 90}\nmax 100\nticks 2.5\ngraticule polygon\n",
+            ["mermaid-radar-hidden-fractional-guides"] = "radar-beta\naxis Reliability, Performance, Security, Usability, Operations\ncurve current[\"Current\"]{75, 60, 85, 65, 80}\ncurve target[\"Target\"]{90, 85, 90, 80, 90}\nmax 100\nticks 2.5\ngraticule polygon\n",
             ["mermaid-flowchart-modern"] = "flowchart LR\nA@{ shape: cloud, label: \"API, cloud\" } & B --> C & D --> E\n",
             ["mermaid-accessibility-dark"] = "---\nconfig:\n  theme: dark\n---\nflowchart LR\naccTitle: Service path\naccDescr {\n API to storage\n}\nA --> B\n",
             ["mermaid-class-notation"] = "classDiagram\nnamespace Services {\nclass User {\n+string name\n+save() void\n}\nclass Admin\n}\n<<interface>> User\nUser <|-- Admin\nUser \"1\" o-- \"0..*\" Session : opens\n",
@@ -22,6 +24,7 @@ internal static class MermaidExamples {
         foreach (var item in examples) {
             var result = MermaidRenderer.Render(item.Value);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
+            if (item.Key == "mermaid-radar-hidden-fractional-guides" && result.Artifact.Model is Chart chart) chart.Options.ShowGrid = false;
             result.Artifact.SaveSvg(Path.Combine(output, item.Key + ".svg"));
             result.Artifact.SavePng(Path.Combine(output, item.Key + ".png"));
             result.Artifact.SaveHtml(Path.Combine(output, item.Key + ".html"));

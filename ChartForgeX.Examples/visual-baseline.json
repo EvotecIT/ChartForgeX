@@ -4802,6 +4802,30 @@
       }
     },
     {
+      "name": "mermaid-radar-hidden-fractional-guides",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 951,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-radar-polygon",
       "layout": {
         "heightMode": "fixed",
