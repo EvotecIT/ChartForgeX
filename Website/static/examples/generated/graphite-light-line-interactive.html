@@ -768,6 +768,18 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line { background: none; box-shadow: none; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--x { border-top: 1px dashed var(--cfx-crosshair-axis); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair__line--y { border-left: 1px dashed var(--cfx-crosshair-axis); }
+/* Explicit paint is crisp; sparse overrides retain the look's existing color and line pattern. */
+.cfx-crosshair { --cfx-crosshair-default-stroke: rgba(14, 165, 233, .58); --cfx-crosshair-default-line-style: solid; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-crosshair { --cfx-crosshair-default-stroke: var(--cfx-crosshair-axis); --cfx-crosshair-default-line-style: dashed; }
+.cfx-interactive-chart[data-cfx-crosshair-styled="true"] .cfx-crosshair__line { background: none; box-shadow: none; }
+.cfx-interactive-chart[data-cfx-crosshair-styled="true"] .cfx-crosshair__line--x {
+  height: 0;
+  border-top: var(--cfx-crosshair-stroke-width, 1px) var(--cfx-crosshair-line-style, var(--cfx-crosshair-default-line-style)) var(--cfx-crosshair-stroke, var(--cfx-crosshair-default-stroke));
+}
+.cfx-interactive-chart[data-cfx-crosshair-styled="true"] .cfx-crosshair__line--y {
+  width: 0;
+  border-left: var(--cfx-crosshair-stroke-width, 1px) var(--cfx-crosshair-line-style, var(--cfx-crosshair-default-line-style)) var(--cfx-crosshair-stroke, var(--cfx-crosshair-default-stroke));
+}
 .cfx-interactive-chart[data-cfx-crosshair-label="false"] .cfx-crosshair__label { display: none; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-look="graphite"] .cfx-hovered[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { filter: none; }
