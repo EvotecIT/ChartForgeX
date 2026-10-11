@@ -60,8 +60,9 @@ public sealed class V2CartesianTests {
         Assert.Equal("formatted value 8, call 1", points[1].Metadata["data-cfx-label"]);
         Assert.Equal("2", points[1].Metadata["data-cfx-x"]);
         Assert.Equal("8", points[1].Metadata["data-cfx-y"]);
-        Assert.Contains(explicitLabel, scene.Regions[0].Label!);
-        Assert.Contains("formatted value 8, call 1", scene.Regions[1].Label!);
+        var regions = scene.Regions.Where(region => region.Role == "point").ToArray();
+        Assert.Contains(explicitLabel, regions[0].Label!);
+        Assert.Contains("formatted value 8, call 1", regions[1].Label!);
         var svg = VisualSceneSvgRenderer.Render(scene);
         chart.Series[0].PointLabels[0] = "Changed after preparation";
         chart.Options.ValueFormatter = _ => throw new InvalidOperationException("Prepared export must not format again.");
@@ -79,7 +80,7 @@ public sealed class V2CartesianTests {
         var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "data-label");
         Assert.EndsWith("…", label.Text.Lines[0].Text);
         Assert.Equal(full, Assert.Single(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "point").Metadata["data-cfx-label"]);
-        Assert.Contains(full, Assert.Single(scene.Regions).Label!);
+        Assert.Contains(full, Assert.Single(scene.Regions, region => region.Role == "point").Label!);
     }
 
     [Theory]

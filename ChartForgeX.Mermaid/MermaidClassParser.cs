@@ -39,12 +39,28 @@ internal static class MermaidClassParser {
                 continue;
             }
 
+            if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction)) {
+                if (namespaces.Count == 0) document.Direction = direction;
+                else MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "namespace direction");
+                continue;
+            }
+
+            if (MermaidParserUtilities.StartsStatement(trimmed, "note") || MermaidParserUtilities.StartsStatement(trimmed, "click") ||
+                MermaidParserUtilities.StartsStatement(trimmed, "link") || MermaidParserUtilities.StartsStatement(trimmed, "callback")) {
+                document.StyleStatements.Add(new MermaidClassStyleStatement(trimmed, span));
+                MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class note or interaction");
+                continue;
+            }
+
             if (trimmed.StartsWith("classDef ", StringComparison.Ordinal) || trimmed.StartsWith("class ", StringComparison.Ordinal)) {
                 if (trimmed.Substring(6).TrimStart().StartsWith("{", StringComparison.Ordinal)) {
                     MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Class declarations require an identifier.");
                     continue;
                 }
+                var previousStyleCount = document.StyleStatements.Count;
                 ParseClassOrStyle(document, classes, trimmed, span, ref activeClass);
+                if (document.StyleStatements.Count > previousStyleCount)
+                    MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class style");
                 if (namespaces.Count > 0 && trimmed.StartsWith("class ", StringComparison.Ordinal)) {
                     var ids = trimmed.Substring(6).Split(new[] { ' ', '{', '[' }, StringSplitOptions.RemoveEmptyEntries);
                     if (ids.Length > 0 && classes.TryGetValue(ids[0], out var declared)) declared.Namespace = namespaces.Peek();
@@ -54,6 +70,7 @@ internal static class MermaidClassParser {
 
             if (trimmed.StartsWith("style ", StringComparison.Ordinal) || trimmed.StartsWith("linkStyle ", StringComparison.Ordinal) || trimmed.StartsWith("cssClass ", StringComparison.Ordinal)) {
                 document.StyleStatements.Add(new MermaidClassStyleStatement(trimmed, span));
+                MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class style");
                 continue;
             }
 
@@ -77,7 +94,7 @@ internal static class MermaidClassParser {
                 continue;
             }
 
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unrecognized class diagram statement was retained but not rendered exactly: " + trimmed);
+            MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "unrecognized class statement");
             document.StyleStatements.Add(new MermaidClassStyleStatement(trimmed, span));
         }
 
