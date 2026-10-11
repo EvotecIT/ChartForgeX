@@ -19,13 +19,12 @@ public sealed class MermaidAxisTypographyBoundsTests {
     [InlineData(true, false, 320)]
     [InlineData(true, true, 900)]
     [InlineData(true, true, 320)]
-    public async Task MaximumFontsRetainAuthoredCategoriesAndNumericScale(bool horizontal, bool graphite, int width) {
-        var chart = horizontal ? Chart.Create().WithTheme(ChartTheme.Light().WithTypography(480, 320, 256, 256, 256, 256))
+    public async Task MaximumFontsRetainAuthoredCategoriesAndNumericScale(bool horizontal, bool dark, int width) {
+        var chart = horizontal ? Chart.Create().WithTheme((dark ? ChartTheme.Dark() : ChartTheme.Light()).WithTypography(480, 320, 256, 256, 256, 256))
             .WithTitle("Horizontal bars").WithSize(width, 520).WithXLabels("Jan", "Feb", "Mar")
             .WithXAxis("Count").WithYAxis("Month").WithXAxisBounds(0, 100)
             .AddHorizontalBar("Values", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50), new ChartPoint(3, 80) })
-            : MermaidVerticalChart(width);
-        chart.Options.Theme.UseGraphiteLayout = graphite;
+            : MermaidVerticalChart(width, dark);
         var svg = chart.ToSvg();
         var document = XDocument.Parse(svg);
         var png = chart.ToPng();
@@ -33,7 +32,7 @@ public sealed class MermaidAxisTypographyBoundsTests {
         var evidence = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(evidence)) {
             Directory.CreateDirectory(evidence);
-            var key = "axis-font-ceiling-" + (horizontal ? "horizontal-" : "vertical-") + graphite + "-" + width.ToString(CultureInfo.InvariantCulture);
+            var key = "axis-font-ceiling-" + (horizontal ? "horizontal-" : "vertical-") + dark + "-" + width.ToString(CultureInfo.InvariantCulture);
             File.WriteAllText(Path.Combine(evidence, key + ".svg"), svg);
             File.WriteAllBytes(Path.Combine(evidence, key + "-native.png"), png);
         }
@@ -47,15 +46,15 @@ public sealed class MermaidAxisTypographyBoundsTests {
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(captures)) {
             Directory.CreateDirectory(captures);
-            var name = "axis-font-ceiling-" + (horizontal ? "horizontal-" : "vertical-") + graphite + "-" + width.ToString(CultureInfo.InvariantCulture);
+            var name = "axis-font-ceiling-" + (horizontal ? "horizontal-" : "vertical-") + dark + "-" + width.ToString(CultureInfo.InvariantCulture);
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
         }
         Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('[data-cfx-role^=axis-] text')].every(t=>{const b=t.getBoundingClientRect();return b.width>0&&b.height>0&&b.left>=-0.1&&b.right<=innerWidth+0.1&&b.top>=-0.1&&b.bottom<=520.1})"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    private static Chart MermaidVerticalChart(int width) {
-        const string source = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nxychart-beta"
+    private static Chart MermaidVerticalChart(int width, bool dark) {
+        var source = "%%{init: {'fontFamily':'Arial','theme':'" + (dark ? "dark" : "default") + "','themeVariables':{'fontSize':256}}}%%\nxychart-beta"
             + "\nx-axis Month [Jan,Feb,Mar]\ny-axis Count 0 --> 100\nbar [20,50,80]";
         var rendered = MermaidRenderer.Render(source);
         Assert.False(rendered.HasErrors);
