@@ -18,24 +18,36 @@ public sealed class MermaidChartCaptionTypographyTests {
     [InlineData("treemap", 900, false)]
     [InlineData("treemap", 320, true)]
     [InlineData("treemap", 900, true)]
-    public async Task MaximumSourceFontKeepsCaptionsInTheirNativeLayout(string family, int width, bool graphite) {
-        var body = family == "sankey" ? "sankey-beta\nSource,Target,10\n" : "treemap-beta\n\"Storage\"\n  \"Documents\": 5\n  \"Media\": 5\n";
+    public Task MaximumSourceFontKeepsCaptionsInTheirNativeLayout(string family, int width, bool graphite) =>
+        VerifyCaptions(family, width, 460, graphite, false);
+
+    [Theory]
+    [InlineData("sankey", false)]
+    [InlineData("sankey", true)]
+    [InlineData("treemap", false)]
+    [InlineData("treemap", true)]
+    public Task TallNarrowMarksFitOversizedCaptionsInBothDimensions(string family, bool graphite) =>
+        VerifyCaptions(family, 320, 1200, graphite, true);
+
+    private static async Task VerifyCaptions(string family, int width, int height, bool graphite, bool flat) {
+        var body = family == "sankey" ? "sankey-beta\nSource,Target,10\n" : flat ? "treemap-beta\n\"Documents\": 5\n\"Media\": 5\n"
+            : "treemap-beta\n\"Storage\"\n  \"Documents\": 5\n  \"Media\": 5\n";
         var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\n" + body);
         Assert.False(rendered.HasErrors);
         var chart = Assert.IsType<Chart>(rendered.Artifact!.Model);
-        chart.WithSize(width, 460); chart.Options.Theme.UseGraphiteLayout = graphite;
+        chart.WithSize(width, height); chart.Options.Theme.UseGraphiteLayout = graphite;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
-        var expected = family == "sankey" ? new[] { "Source", "Target" } : new[] { "Storage", "Documents", "Media" };
+        var expected = family == "sankey" ? new[] { "Source", "Target" } : flat ? new[] { "Documents", "Media" } : new[] { "Storage", "Documents", "Media" };
         foreach (var label in expected) Assert.Contains(labels, text => text.Replace("\n", "").Contains(label, StringComparison.Ordinal));
         Assert.True(prepared.ToPng().Length > 64);
         if (!InteractiveChartBrowser.Enabled) return;
-        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + prepared.ToSvg() + "</body></html>", width, 460);
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + prepared.ToSvg() + "</body></html>", width, height);
         Assert.True(await session.Page.EvaluateAsync<bool>("labels => labels.every(label => [...document.querySelectorAll('svg text')].some(text => {const b=text.getBoundingClientRect();return text.textContent.includes(label) && b.width>0 && b.height>0 && b.left>=-.01 && b.right<=innerWidth+.01 && b.top>=-.01 && b.bottom<=innerHeight+.01;}))", expected));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(capture)) {
-            Directory.CreateDirectory(capture); var name = family + "-font-ceiling-" + width + "-" + graphite;
+            Directory.CreateDirectory(capture); var name = family + "-font-ceiling-" + width + "-" + graphite + "-" + height;
             File.WriteAllBytes(Path.Combine(capture, name + ".native.png"), prepared.ToPng());
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, name + ".png") });
         }
