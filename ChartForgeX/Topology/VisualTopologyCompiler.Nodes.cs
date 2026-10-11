@@ -84,6 +84,7 @@ internal sealed partial class VisualTopologyCompiler {
     private void BuildNodeText(TopologyNode node, ChartRect bounds, ChartColor accent, bool active, bool caption) {
         var size = _context.Theme.Typography.DataLabelSize;
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
+        if (node.Details.Count > 0) size = FitNodeTextSize(node, label, bounds, size, caption);
         var titleLines = TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
         var height = Math.Min(bounds.Height, _builder.MeasureText("Ag", size * _scale, 600).LineHeight * titleLines);
         var fitSingleLine = _builder.MeasureText("Ag", size * _scale, 600).LineHeight > height;
@@ -132,6 +133,21 @@ internal sealed partial class VisualTopologyCompiler {
                 paint: SourcePaint(detail.Color ?? _svgTheme?.Foreground, Highlight(Color(detail.Color, _colors.Foreground), active), string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
             y += row.Height;
         }
+    }
+
+    private double FitNodeTextSize(TopologyNode node, string label, ChartRect bounds, double preferred, bool caption) {
+        return ChartTextFitting.FitFontSize(Math.Min(8, preferred), preferred, size => {
+            var height = _builder.MeasureText("Ag", size * _scale, 600).LineHeight
+                * TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
+            if (!string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
+                height += _builder.MeasureText("Ag", size * .85 * _scale, 400).LineHeight
+                    * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
+            var firstBaseline = Point(new ChartPoint(node.X, node.Y + NodeDetailStartOffset(node, _options))).Y;
+            var detailTop = Math.Max(bounds.Top + height + 12 * _scale,
+                firstBaseline - _builder.TextAscent(size * .8 * _scale, 400));
+            var rowHeight = Math.Max(size * _scale * 1.4, _builder.MeasureText("Ag", size * .8 * _scale, 400).LineHeight);
+            return detailTop + node.Details.Count * rowHeight <= bounds.Bottom;
+        });
     }
 
     private int TextLineCount(string value, double width, double size, int weight, int maximum) {
