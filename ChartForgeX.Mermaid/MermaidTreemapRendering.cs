@@ -20,6 +20,7 @@ public static class MermaidTreemapRendering {
             .WithTitle(ResolveTitle(options))
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height)
+            .WithDataLabels()
             .AddTreemap(string.IsNullOrWhiteSpace(options.SeriesName) ? "Treemap" : options.SeriesName!, ToItems(document));
         return MermaidPresentation.Apply(chart, document);
     }
