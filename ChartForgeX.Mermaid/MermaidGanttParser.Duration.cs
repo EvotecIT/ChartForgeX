@@ -61,13 +61,17 @@ internal static partial class MermaidGanttParser {
     }
 
     private static DateTime AddClockDuration(DateTime start, double milliseconds) {
-        // Preserve every accepted DateTime exactly when no time is added, including
-        // submillisecond inputs at the ceiling that cannot round through a double.
+        // Preserve accepted DateTime precision for legacy submillisecond dates and
+        // milestone midpoints. Converting the whole timestamp to double can move a
+        // valid positive result beyond DateTime.MaxValue or shorten a calendar day.
         if (milliseconds == 0) return start;
-        // Day.js adds before JavaScript Date truncates the complete timestamp to milliseconds.
-        // Truncating a scaled duration first loses precision (for example, 1.001 seconds).
+        var addition = (decimal)milliseconds;
+        if (start.Ticks % TimeSpan.TicksPerMillisecond != 0)
+            return start.AddTicks(checked((long)decimal.Truncate(addition * TimeSpan.TicksPerMillisecond)));
+        // Ordinary Mermaid timestamps retain millisecond clock precision. Add before
+        // truncating the complete timestamp, including dates before the Unix epoch.
         var epochTicks = new DateTime(1970, 1, 1).Ticks;
-        var endMilliseconds = Math.Truncate((start.Ticks - epochTicks) / (double)TimeSpan.TicksPerMillisecond + milliseconds);
+        var endMilliseconds = decimal.Truncate((start.Ticks - epochTicks) / (decimal)TimeSpan.TicksPerMillisecond + addition);
         var endTicks = checked((long)endMilliseconds * TimeSpan.TicksPerMillisecond + epochTicks);
         // ChartForgeX also accepts legacy DateTime inputs and milestone midpoints finer
         // than one millisecond. A nonnegative duration must never move those backwards.
