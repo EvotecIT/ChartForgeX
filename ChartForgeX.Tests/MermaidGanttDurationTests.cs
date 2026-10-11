@@ -9,6 +9,28 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttDurationTests {
     [Theory]
+    [InlineData("0.5ms")]
+    [InlineData("0.0005s")]
+    public void PositiveSubmillisecondDurationsCanReachTheExactTimestampCeiling(string duration) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DDTHH:mm:ss.fffffff\nTask :task, 9999-12-31T23:59:59.9994999, " + duration);
+        Assert.False(parsed.HasErrors);
+        Assert.Equal(DateTime.MaxValue, Assert.Single(parsed.Document!.Tasks).End);
+    }
+
+    [Theory]
+    [InlineData("1d")]
+    [InlineData("24h")]
+    [InlineData("1440m")]
+    [InlineData("86400s")]
+    [InlineData("86400000ms")]
+    public void WholeDayDurationsApplyExclusionsFromSubmillisecondStarts(string duration) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DDTHH:mm:ss.fffffff\nexcludes weekends\nTask :task, 2026-01-03T00:00:00.0005000, " + duration);
+        Assert.False(parsed.HasErrors);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal(new DateTime(2026, 1, 5).AddTicks(5000), task.End);
+    }
+
+    [Theory]
     [InlineData(false, 960)]
     [InlineData(true, 960)]
     [InlineData(false, 320)]
