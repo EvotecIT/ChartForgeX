@@ -64,7 +64,7 @@ public sealed partial class MermaidParser {
                     continue;
                 }
             }
-            if (!match.Success || raw.IndexOf('\t') >= 0) {
+            if (!match.Success || raw.Substring(0, indent).IndexOf('\t') >= 0) {
                 Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Warning,
                     "Mermaid frontmatter configuration supports space-indented mappings with scalar values; this declaration is retained without application.", MermaidDiagnosticCodes.UnsupportedConfiguration);
                 continue;
@@ -91,7 +91,7 @@ public sealed partial class MermaidParser {
                     var isString = true;
                     string? value = valueText;
                     if (valueText.StartsWith("\"", StringComparison.Ordinal)) {
-                        value = GeoJsonValue.Parse(valueText, StringComparer.Ordinal, ConfigurationJsonLimits).AsString("Mermaid YAML scalar");
+                        value = GeoJsonValue.Parse(valueText.Replace("\t", "\\t"), StringComparer.Ordinal, ConfigurationJsonLimits).AsString("Mermaid YAML scalar");
                     } else if (valueText.StartsWith("'", StringComparison.Ordinal)) {
                         value = ReadSingleQuotedConfigurationYaml(valueText);
                     } else if (valueText.StartsWith("{", StringComparison.Ordinal) || valueText.StartsWith("[", StringComparison.Ordinal) ||
