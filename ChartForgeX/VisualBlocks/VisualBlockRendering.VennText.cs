@@ -24,7 +24,7 @@ internal static partial class VisualBlockRendering {
             AddRegion(text.SetIds, text.Label, 11.5, 600, text.TextColor ?? theme.MutedText);
 
         var result = new List<VennCaption>();
-        var placed = VennTextPlacement.Place(requests, body, gap: 3);
+        var placed = VennTextPlacement.Place(requests, body, obstacles: null, gap: 3, measureText: TextLayoutEngine.Measure);
         for (var index = 0; index < placed.Count; index++) {
             var label = placed[index];
             if (label.IsDropped) continue;
@@ -49,8 +49,8 @@ internal static partial class VisualBlockRendering {
             }
             var style = FitBodyTextStyle(theme, text, defaultSize, width, lineBudget, weight);
             var displayed = FitMeasuredText(text, style.FontSize, width, theme.FontFamily, weight);
-            var metrics = ChartLabelScene.MeasureText(displayed, style);
-            var ascent = TypographyFontResolver.ResolveFace(style.Font).Font?.Ascent(style.FontSize) ?? style.FontSize * .82;
+            var metrics = TextLayoutEngine.Measure(displayed, style);
+            var ascent = VisualBlockRendering.TextAscent(style);
             var candidates = new List<LabelCandidate> { new(0, 0, .5) };
             // Keep authored region anchors when clear. Nearby vertical lanes reserve the
             // complete measured line box rather than relying on a fixed baseline offset.
@@ -89,6 +89,6 @@ internal static partial class VisualBlockRendering {
         public ChartRect Bounds { get; }
         public TextStyle Style { get; }
         public ChartColor Color { get; }
-        public double Baseline => Bounds.Top + (TypographyFontResolver.ResolveFace(Style.Font).Font?.Ascent(Style.FontSize) ?? Style.FontSize * .82);
+        public double Baseline => Bounds.Top + VisualBlockRendering.TextAscent(Style);
     }
 }

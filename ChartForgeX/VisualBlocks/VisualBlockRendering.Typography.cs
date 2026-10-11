@@ -6,14 +6,45 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.VisualBlocks;
 
 internal static partial class VisualBlockRendering {
+    // Bitmap text uses discrete raster scales. Use its native ascent rather than a
+    // proportional outline-font estimate when positioning the measured line box.
+    public static double TextAscent(TextStyle style) =>
+        TypographyFontResolver.ResolveFace(style.Font).Font?.Ascent(style.FontSize) ?? TextLayoutEngine.Measure("Mg", style).LineHeight;
+
+    // The native fallback has discrete advances, so evaluate candidates instead
+    // of extrapolating from a one-pixel probe.
+    public static double FitFontSize(double minimum, double preferred, Func<double, bool> fits) {
+        if (fits(preferred)) return preferred;
+        var upper = preferred;
+        for (var iteration = 0; iteration < 18; iteration++) {
+            var candidate = (minimum + upper) / 2;
+            if (fits(candidate)) minimum = candidate;
+            else upper = candidate;
+        }
+        return Math.Floor(minimum * 1000) / 1000;
+    }
+
     // Ordinary long captions retain truncation at their default size. Larger requested
     // sizes fit the measured width and height of their semantic cell first.
     public static TextStyle FitBodyTextStyle(ChartTheme theme, string text, double defaultSize, double width, double height, int weight) {
-        var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = weight }, FontSize = 1, LineHeight = 1 };
-        var measured = ChartLabelScene.MeasureText(SingleLineText(text), style);
-        var lineHeight = ChartLabelScene.MeasureText("Mg", style).Height;
-        var widthLimit = measured.Width > 0 ? Math.Max(defaultSize, Math.Max(1, width) / measured.Width) : defaultSize;
-        style.FontSize = Math.Min(BodyFontSize(theme, defaultSize), Math.Min(widthLimit, Math.Max(1, height) / lineHeight));
+        var preferred = BodyFontSize(theme, defaultSize);
+        var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = weight }, FontSize = preferred, LineHeight = 1 };
+        var normalized = SingleLineText(text);
+        width = Math.Max(1, width); height = Math.Max(1, height);
+        // Bitmap fallbacks and synthetic emphasis have fixed-size components. Measure
+        // the actual candidate instead of assuming font metrics scale from one pixel.
+        if (Fits(preferred, true)) return style;
+        var minimum = Math.Min(defaultSize, preferred);
+        var preserveWidth = preferred > defaultSize || Fits(minimum, true);
+        var lower = Fits(minimum, preserveWidth) ? minimum : 0;
+        var upper = preserveWidth ? preferred : minimum;
+        style.FontSize = Math.Max(.001, FitFontSize(lower, upper, size => Fits(size, preserveWidth)));
         return style;
+
+        bool Fits(double size, bool includeWidth) {
+            style.FontSize = size;
+            return TextLayoutEngine.Measure("Mg", style).Height <= height &&
+                (!includeWidth || TextLayoutEngine.Measure(normalized, style).Width <= width);
+        }
     }
 }
