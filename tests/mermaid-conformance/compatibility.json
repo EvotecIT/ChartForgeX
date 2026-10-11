@@ -15,14 +15,6 @@
     }
   },
   "fixtures": {
-    "fixtures/gantt-today-style.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "https://mermaid.js.org/syntax/gantt.html#today-marker: authored stroke declarations and deterministic native caller time"
-    },
     "fixtures/gantt-unix-seconds.mmd": {
       "syntax": {
         "10": "accepted",
@@ -643,22 +635,13 @@
       },
       "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
     },
-    "fixtures/gantt-offset-fallback.mmd": {
+    "fixtures/gantt-today-style.mmd": {
       "syntax": {
         "10": "accepted",
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored complete ISO-date fallback examples with space-separated offsets, seconds and millisecond fractions; qualified with pinned official Mermaid parsers in UTC."
-    },
-    "fixtures/gantt-date-anchor.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "referenceClockUtc": "2028-02-20T00:00:00.000Z",
-      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: partial fields qualified with a fixture-scoped upstream clock; native parsing receives the equivalent explicit caller anchor"
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#today-marker: authored stroke declarations and deterministic native caller time"
     },
     "fixtures/radar-capped-circle.mmd": {
       "syntax": {
@@ -707,6 +690,31 @@
         "12": "accepted"
       },
       "provenance": "https://mermaid.js.org/syntax/radar.html: zero hides concentric guides while preserving axes, observations and source configuration; pinned Mermaid 11 and 12 accept the case."
+    },
+    "fixtures/gantt-offset-fallback.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored complete ISO-date fallback examples with space-separated offsets, seconds and millisecond fractions; qualified with pinned official Mermaid parsers in UTC."
+    },
+    "fixtures/gantt-date-anchor.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "referenceClockUtc": "2028-02-20T00:00:00.000Z",
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: partial fields qualified with a fixture-scoped upstream clock; native parsing receives the equivalent explicit caller anchor"
+    },
+    "fixtures/treemap-grouped-values.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored comma-separated treemap values, qualified against pinned official Mermaid parsers. The reference removes comma separators, including nonstandard grouping. Typed node magnitudes and parent indices are compared without relying on native hierarchy layout."
     }
   }
 }
