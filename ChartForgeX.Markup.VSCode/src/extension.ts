@@ -52,6 +52,15 @@ export function activate(context: vscode.ExtensionContext): void {
   }));
   context.subscriptions.push(vscode.workspace.onDidSaveTextDocument((document) => schedulePreviewRefresh(context, document, 0)));
 
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((event) => {
+    for (const document of vscode.workspace.textDocuments) {
+      if (event.affectsConfiguration('chartforgexMarkup.ganttDateAnchor', document.uri)) {
+        scheduleValidation(context, document, 0);
+        schedulePreviewRefresh(context, document, 0);
+      }
+    }
+  }));
+
   for (const document of vscode.workspace.textDocuments) {
     scheduleValidation(context, document, 0);
   }
@@ -297,11 +306,13 @@ async function runCli(context: vscode.ExtensionContext, document: vscode.TextDoc
   const tempFile = path.join(tempRoot, tempDocumentName(document));
   fs.writeFileSync(tempFile, document.getText(), 'utf8');
   try {
-    const args = [...cli.args, command, tempFile, ...extraArgs];
+    const anchor = vscode.workspace.getConfiguration('chartforgexMarkup', document.uri).get<string>('ganttDateAnchor', '').trim();
+    const renderArgs = command !== 'emit' && anchor ? ['--gantt-date-anchor', anchor, ...extraArgs] : extraArgs;
+    const args = [...cli.args, command, tempFile, ...renderArgs];
     let result = await spawnProcess(cli.command, args, documentWorkingDirectory(document, tempRoot));
     for (const fallback of cli.fallbacks ?? []) {
       if (!result.spawnError) break;
-      const fallbackArgs = [...fallback.args, command, tempFile, ...extraArgs];
+      const fallbackArgs = [...fallback.args, command, tempFile, ...renderArgs];
       result = await spawnProcess(fallback.command, fallbackArgs, documentWorkingDirectory(document, tempRoot));
     }
 

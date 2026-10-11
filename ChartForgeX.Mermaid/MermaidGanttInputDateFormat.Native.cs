@@ -10,6 +10,8 @@ internal static partial class MermaidGanttInputDateFormat {
         "yyyy-MM-dd HH:mmK", "yyyy-MM-dd H:mmK", "yyyy-MM-ddTHH:mmK", "yyyy-MM-ddTH:mmK",
         "yyyy-MM-dd HH:mm:ss.FFFFFFFK", "yyyy-MM-dd H:mm:ss.FFFFFFFK",
         "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", "yyyy-MM-ddTH:mm:ss.FFFFFFFK", "yyyy-M-d", "yyyy-M-d H:mm", "yyyy-M-d H:mm:ss",
+        "yyyy-M-dTH:mm", "yyyy-M-dTH:mmK", "yyyy-M-dTH:mm:ss", "yyyy-M-dTH:mm:ss.FFFFFFFK",
+        "yyyy-M-d H:mmK", "yyyy-M-d H:mm:ss.FFFFFFFK",
         "MMMM d yyyy", "MMM d yyyy", "MMMM d, yyyy", "MMM d, yyyy", "d MMMM yyyy", "d MMM yyyy",
         "M/d/yyyy", "M-d-yyyy", "yyyy/M/d", "o", "r"
     };

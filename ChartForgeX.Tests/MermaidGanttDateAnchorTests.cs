@@ -175,6 +175,21 @@ public sealed class MermaidGanttDateAnchorTests {
     }
 
     [Theory]
+    [InlineData("2026-1-2T1:30", "2026-01-02T01:30:00")]
+    [InlineData("2026-1-2T01:30", "2026-01-02T01:30:00")]
+    [InlineData("2026-1-2T1:30:45", "2026-01-02T01:30:45")]
+    [InlineData("2026-1-2T1:30:45.125", "2026-01-02T01:30:45.125")]
+    [InlineData("2026-1-2T1:30:45+02:00", "2026-01-01T23:30:45")]
+    [InlineData("2026-1-2 1:30:45+02:00", "2026-01-01T23:30:45")]
+    public void CompleteUnpaddedFallbackTimestampsRetainTheirAuthoredTime(string input, string expected) {
+        var rendered = MermaidRenderer.Render("gantt\ndateFormat MM-DD\nTask :" + input + ",1h");
+        Assert.Empty(rendered.Diagnostics);
+        var task = Assert.Single(Assert.IsType<MermaidGanttDocument>(rendered.Document).Tasks);
+        Assert.Equal(DateTime.Parse(expected, CultureInfo.InvariantCulture), task.Start);
+        Assert.Equal(task.Start.AddHours(1), task.End);
+    }
+
+    [Theory]
     [InlineData("January 2")]
     [InlineData("13:25")]
     [InlineData("13:25:00.2026")]
