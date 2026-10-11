@@ -890,7 +890,22 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for radar diagrams is `Chart`. Axis labels, curve values, legend visibility, explicit min/max scale, tick count, graticule text, and source spans are retained in the AST or artifact metadata. Static rendering uses ChartForgeX's dependency-free radar SVG/PNG renderers; graticule is preserved as metadata until ChartForgeX grows alternate radar grid shapes.
+The conversion target for radar diagrams is `Chart`. Axis labels, curve values, legend visibility, explicit min/max scale, tick count, graticule text, and source spans are retained in the AST or artifact metadata. Static SVG and PNG share the same radar path geometry. Circular graticules, including the default, select closed cubic curves with tension `0.17`; polygonal graticules select straight edges. Alternate grid geometry is a separate renderer capability.
+
+Set `config.radar.curveTension` to a finite number from zero through one in frontmatter or an init directive. Zero draws straight edges; larger values increase the tangent length between observations. Polygonal source graticules keep straight edges regardless of this source setting. Invalid values produce a located configuration error. Direct native radar series keep straight edges by default.
+
+```yaml
+---
+config:
+  radar:
+    curveTension: 0.25
+---
+radar-beta
+axis a["Coverage"], b["Policy"], c["Response"]
+curve current["Current"]{90, 45, 80}
+```
+
+An explicit `MermaidRadarRenderOptions.CurveTension` overrides the source policy, including a polygonal graticule. After conversion, `chart.Series[index].ConfigureRadar(radar => radar.CurveTension = 0.25)` configures individual native series. Curves pass through the observations and close with cyclic tangents. When a high tension extends beyond the ordinary radial frame, layout fits the complete curve while retaining the shared scale and original observation values. Source diagrams that previously rendered straight edges can set tension to zero to retain that appearance.
 
 ## Treemap Diagrams
 

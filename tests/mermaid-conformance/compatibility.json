@@ -309,6 +309,14 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/radar-curve-tension.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX closed-curve configuration example; qualified against the pinned official Mermaid parsers and radar renderer."
+    },
     "fixtures/requirement-basic.mmd": {
       "syntax": {
         "10": "rejected",

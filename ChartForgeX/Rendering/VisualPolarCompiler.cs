@@ -49,6 +49,7 @@ internal static partial class VisualPolarCompiler {
         }
         var axes = categories.Select(CategoryText).ToArray();
         var geometry = Layout(chart, context, builder, plot, axes);
+        if (radar) geometry = FitRadarCurves(chart, geometry, categories, scale);
         if (geometry.Radius <= 0) { builder.AddDiagnostic(new VisualDiagnostic("polar.insufficient-space", "No radius remains after fitting polar axis labels.")); return; }
         var labels = new List<PolarLabel>();
         using (builder.PushClip(plot)) {
@@ -64,7 +65,8 @@ internal static partial class VisualPolarCompiler {
                     var angle = radar ? RadarAngle(index, categories.Length) : -series.Points[raw[index]].X;
                     mapped[index] = On(geometry, angle, geometry.Radius * scale.Normalize(value));
                 }
-                var path = ChartPathBuilder.FromPoints(mapped, ChartInterpolation.Linear);
+                var path = radar ? ChartPathBuilder.ClosedCurve(mapped, series.Radar.CurveTension ?? 0)
+                    : ChartPathBuilder.FromPoints(mapped, ChartInterpolation.Linear);
                 using (builder.PushGroup(Id(seriesIndex), radar ? "radar-series" : "polar-series", new Dictionary<string, string> {
                     ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name,
                     ["data-cfx-form"] = radar && series.Radar.Form == ChartLineAreaForm.Area ? "area" : "line",
