@@ -72,7 +72,7 @@ The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roa
 - Improve TileMap code-label fitting at compact and wide sizes. Fixed-size trimming currently shortens most two-letter codes at wide sizes and omits them in compact views; preserve complete region identities and shared SVG/PNG geometry while adding a readable fitting policy.
 - Extend the shared numeric color owner with partly inferred continuous endpoints, arbitrary interior captions and independent gradient/discrete legend controls. Absolute positioned stops, Scatter/Bubble color values, automatic/fixed domains, missing-value paint, measured keys, typed dimension names/formats and raw readouts use the existing shared scale; Bubble size remains independent.
 - Extend weighted Chord with deliberate ordering strategies and an independent quantitative color dimension. Its native scene retains directed reciprocal, parallel, self, and raw zero flows in source order; circular span, node gaps/thickness, flow paint/state, target cues, and measured labels are configurable.
-- [ ] Extend typed adapter crosshair styles, legend visibility and data-domain zoom policies; palette choice must not decide interaction behavior.
+- [ ] Add data-domain zoom policies to the HTML adapter; current zoom transforms the complete SVG. Typed crosshair line paint and label visibility are implemented without enabling features. Static legend display and browser muting/isolation have separate controls. Any future hide-versus-mute policy must be explicit and independent of palette choice.
 - [ ] Qualify each increment with compact/wide light/dark SVG and native PNG, then maintain the ledger's remaining gaps and evidence limits.
 
 ## Topology
