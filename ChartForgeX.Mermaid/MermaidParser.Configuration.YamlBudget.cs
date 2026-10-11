@@ -73,7 +73,7 @@ public sealed partial class MermaidParser {
                 var value = entry.Success ? entry.Groups[2].Value : separator >= 0 ? node.Substring(separator + 1) : node;
                 value = TrimConfigurationYaml(TrimYamlComment(value, true));
                 value = ConfigurationYamlNodeWithoutProperties(value);
-                if (Regex.IsMatch(value, @"^[|>](?:[1-9][+-]?|[+-][1-9]?)?$", RegexOptions.CultureInvariant))
+                if (IsConfigurationYamlBlockScalar(value))
                     scalarIndent = entry.Success || separator >= 0 ? ownerIndent : indent;
                 else if (value.StartsWith("{", StringComparison.Ordinal) || value.StartsWith("[", StringComparison.Ordinal)) {
                     rootFlow = indent == rootIndent && ConfigurationYamlKey(mapping) == "config";
@@ -89,4 +89,7 @@ public sealed partial class MermaidParser {
 
     private static string ConfigurationYamlNodeWithoutProperties(string value) =>
         Regex.Replace(value, @"^(?:(?:&[^\s]+|![^\s]+)[ \t]+)+", string.Empty, RegexOptions.CultureInvariant);
+
+    private static bool IsConfigurationYamlBlockScalar(string value) =>
+        Regex.IsMatch(value, @"^[|>](?:[1-9][+-]?|[+-][1-9]?)?$", RegexOptions.CultureInvariant);
 }

@@ -36,4 +36,18 @@ public sealed class MermaidConfigurationOpaqueFlowTests {
         Assert.Null(result.Document!.Configuration.Theme);
         Assert.Equal("classic", result.Document.Configuration.Look);
     }
+
+    [Theory]
+    [InlineData("  other: |\n    {unmatched literal text")]
+    [InlineData("  other: >\n    [unmatched folded text")]
+    [InlineData("  other:\n    nested: |\n      {unmatched literal text")]
+    [InlineData("  foo.bar: |\n    [unmatched literal text")]
+    [InlineData("  other:\n  - |\n      {unmatched sequence scalar")]
+    public void BlockScalarBodiesCannotConsumeFollowingSupportedSiblings(string yaml) {
+        var result = MermaidRenderer.Render("---\nconfig:\n" + yaml + "\n  theme: dark\n---\nflowchart LR\nA --> B");
+        Assert.False(result.HasErrors);
+        Assert.NotNull(result.Artifact);
+        Assert.Equal("dark", result.Document!.Configuration.Theme);
+        Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
+    }
 }
