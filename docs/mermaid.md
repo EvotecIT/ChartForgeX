@@ -978,7 +978,7 @@ var artifact = document!.ToVisualArtifact(new MermaidBlockRenderOptions {
 });
 ```
 
-The conversion target for block diagrams is `BlockLayoutBlock`. Mermaid block items become deterministic grid cells, spaces occupy grid columns without drawing, and edges render as static connectors. Nested/composite blocks, full Mermaid shape fidelity, and style/class application are preserved for future support but are not silently rendered as if complete.
+The conversion target for block diagrams is `BlockLayoutBlock`. Mermaid block items become deterministic grid cells, spaces occupy grid columns without drawing, and edges render as static connectors. Circle connectors attach to the painted circle boundary in SVG and PNG, including mixed shapes and wide grid cells. Nested/composite blocks, full Mermaid shape fidelity, and style/class application are preserved for future support but are not silently rendered as if complete.
 
 ## Packet Diagrams
 
