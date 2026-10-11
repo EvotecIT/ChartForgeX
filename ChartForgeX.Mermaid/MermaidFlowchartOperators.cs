@@ -25,6 +25,12 @@ internal static class MermaidFlowchartOperators {
     public static TopologyMarkerKind Marker(string edgeOperator, bool source) {
         if (edgeOperator.Length == 0) return TopologyMarkerKind.None;
         var marker = edgeOperator[source ? 0 : edgeOperator.Length - 1];
+        if (source) {
+            var target = edgeOperator[edgeOperator.Length - 1];
+            // Circle/cross sources are meaningful only in matching double-ended links.
+            if ((marker == 'o' || marker == 'x') && marker != target) return TopologyMarkerKind.None;
+            if (marker == '<' && (target == 'o' || target == 'x')) return TopologyMarkerKind.None;
+        }
         if (marker == (source ? '<' : '>')) return TopologyMarkerKind.Arrow;
         return marker == 'o' ? TopologyMarkerKind.Circle : marker == 'x' ? TopologyMarkerKind.Cross : TopologyMarkerKind.None;
     }

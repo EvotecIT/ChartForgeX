@@ -105,7 +105,7 @@ Configuration is limited to 65,536 characters across the YAML `config` declarati
 
 Modern flowchart metadata (`A@{ shape: cloud, label: "API" }`) preserves node identity and label text. Fan-out groups (`A & B --> C & D`) emit every connection. Supported legacy shapes and the cloud, actor, and ellipse surfaces share SVG/PNG geometry; unsupported metadata has explicit warnings.
 
-Flowchart links preserve circle (`A ---o B`), cross (`A ---x B`) and bidirectional endpoints (`A o--o B`, `A x--x B`, `A <--> B`) in native SVG/PNG and interchange JSON. A compact link consumes one endpoint marker: `A---oxTarget` connects to `xTarget` with a circle, while `A--- xTarget` connects without a marker. Text inside an inline or pipe label does not introduce endpoint markers.
+Flowchart links preserve circle (`A ---o B`), cross (`A ---x B`) and bidirectional endpoints (`A o--o B`, `A x--x B`, `A <--> B`) in native SVG/PNG and interchange JSON. A leading `o` or `x` adds a source marker only when the target endpoint matches; mixed links such as `A o--x B` retain only the target cross. A compact link consumes one endpoint marker: `A---oxTarget` connects to `xTarget` with a circle, while `A--- xTarget` connects without a marker. Text inside an inline or pipe label does not introduce endpoint markers or reverse the inferred layers. The existing native backward-arrow interpretation of `A <-- B` is retained.
 
 Gantt duration calculations apply `excludes`, `includes`, and Friday/Saturday weekend definitions. Explicit end dates stay explicit. Milestones use the midpoint of their authored duration, and `active` does not invent a percentage complete.
 

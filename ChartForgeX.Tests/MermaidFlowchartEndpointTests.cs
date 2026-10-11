@@ -11,6 +11,27 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidFlowchartEndpointTests {
     [Theory]
+    [InlineData("o---", "None", VisualLinkDirection.None)]
+    [InlineData("x---", "None", VisualLinkDirection.None)]
+    [InlineData("o-->", "Arrow", VisualLinkDirection.Forward)]
+    [InlineData("x-->", "Arrow", VisualLinkDirection.Forward)]
+    [InlineData("o--x", "Cross", VisualLinkDirection.Forward)]
+    [InlineData("x--o", "Circle", VisualLinkDirection.Forward)]
+    [InlineData("<--o", "Circle", VisualLinkDirection.Forward)]
+    [InlineData("<--x", "Cross", VisualLinkDirection.Forward)]
+    public void UnmatchedLeadingMarkersKeepReferenceEndpointSemantics(string op, string targetMarker, VisualLinkDirection direction) {
+        var parsed = new MermaidParser().ParseFlowchart("flowchart LR\nA " + op + " B");
+        Assert.Empty(parsed.Diagnostics);
+        var chart = parsed.Document!.ToTopologyChart();
+        var edge = Assert.Single(chart.Edges);
+        Assert.Equal(TopologyMarkerKind.None, edge.SourceMarker);
+        Assert.Equal(targetMarker, edge.TargetMarker.ToString());
+        Assert.Equal(direction, edge.Direction);
+        Assert.Equal("0", chart.Nodes.Single(node => node.Id == "A").Metadata["mermaid.layer"]);
+        Assert.Equal("1", chart.Nodes.Single(node => node.Id == "B").Metadata["mermaid.layer"]);
+    }
+
+    [Theory]
     [InlineData("A---ox-->|after|B", "x", "---o")]
     [InlineData("A---xo-->|after|B", "o", "---x")]
     [InlineData("A---ox --o|after|B", "x", "---o")]
