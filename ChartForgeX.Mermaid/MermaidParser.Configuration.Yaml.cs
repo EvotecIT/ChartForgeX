@@ -63,7 +63,7 @@ public sealed partial class MermaidParser {
             }
             if (sequenceItem && parents.Count > 0 && parents[parents.Count - 1].ChildIndent < 0) {
                 var parent = parents[parents.Count - 1];
-                if (!IsConfigurationStringPath(parent.Path))
+                if (!IsConfigurationScalarPath(parent.Path))
                     configuration.Add(new MermaidConfigurationSetting(parent.Path.Length == 0 ? "config" : parent.Path, null, false, parent.Span));
                 parents.RemoveAt(parents.Count - 1);
                 opaqueIndent = parent.Indent;
