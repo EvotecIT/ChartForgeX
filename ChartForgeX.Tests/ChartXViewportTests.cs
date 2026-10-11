@@ -148,6 +148,54 @@ public sealed class ChartXViewportTests {
         Assert.Equal(originalSvg, full.ToSvg()); Assert.Equal(originalPng, full.ToPng());
     }
 
+    [Theory]
+    [InlineData(false, 1, null)]
+    [InlineData(false, 9, null)]
+    [InlineData(true, 1, null)]
+    [InlineData(true, 9, null)]
+    [InlineData(false, 1, 2d)]
+    [InlineData(false, 8, 9d)]
+    [InlineData(true, 1, 2d)]
+    [InlineData(true, 8, 9d)]
+    public void OffWindowReferencesRetainSourceFactsWithoutGuideOrCaptionPaint(bool reversed, double value, double? end) {
+        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+            .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }, Blue);
+        chart.Options.XAxis.Reversed = reversed; chart.Series[0].Markers.Enabled = false;
+        var window = new ChartXViewport(3, 7);
+        var withoutReference = chart.Prepare(Context(), window).ToPng();
+        if (end.HasValue) chart.AddVerticalBand(value, end.Value, "Reference");
+        else chart.AddVerticalLine(value, "Reference");
+        Assert.Contains(chart.Prepare(Context()).Scene.Nodes, node => node.Role == "annotation-label");
+        var prepared = chart.Prepare(Context(), window);
+        Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role is "annotation-line" or "annotation-band" or "annotation-label" or "annotation-label-backplate");
+        Assert.Equal(withoutReference, prepared.ToPng());
+        Assert.Single(prepared.Regions, region => region.Role == "annotation");
+        var facts = XDocument.Parse(prepared.ToSvg()).Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "annotation");
+        Assert.Equal(value.ToString(System.Globalization.CultureInfo.InvariantCulture), (string?)facts.Attribute("data-cfx-value"));
+        Assert.Equal(end?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "", (string?)facts.Attribute("data-cfx-end-value"));
+        Assert.Equal("Reference", (string?)facts.Attribute("data-cfx-label"));
+    }
+
+    [Theory]
+    [InlineData(false, 1, 5)]
+    [InlineData(false, 5, 9)]
+    [InlineData(true, 1, 5)]
+    [InlineData(true, 5, 9)]
+    public void PartiallyVisibleReferenceBandsUseTheirVisibleIntersection(bool reversed, double start, double end) {
+        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+            .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }, Blue)
+            .AddVerticalBand(start, end, "Reference");
+        chart.Options.XAxis.Reversed = reversed; chart.Series[0].Markers.Enabled = false;
+        var prepared = chart.Prepare(Context(), new ChartXViewport(3, 7));
+        var projection = prepared.XProjection!;
+        var band = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "annotation-band");
+        var first = projection.Project(Math.Max(3, start)); var last = projection.Project(Math.Min(7, end));
+        Assert.Equal(Math.Min(first, last), band.Bounds.Left, 9);
+        Assert.Equal(Math.Abs(last - first), band.Bounds.Width, 9);
+        Assert.Contains(prepared.Scene.Nodes, node => node.Role == "annotation-label");
+        Assert.Equal(band.Bounds, Assert.Single(prepared.Regions, region => region.Role == "annotation").Bounds);
+    }
+
     [Fact]
     public void StatefulAxisFormatterResultsAreSharedByFullLayoutVisibleTicksAndPaint() {
         var chart = Chart.Create().WithLegend(false).AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
