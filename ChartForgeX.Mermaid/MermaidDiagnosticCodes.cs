@@ -19,4 +19,10 @@ public static class MermaidDiagnosticCodes {
 
     /// <summary>Source configuration is malformed, has an invalid supported value or exceeds a resource limit.</summary>
     public const string InvalidConfiguration = "CFXM006";
+
+    /// <summary>A notation statement is retained without an exact native rendering.</summary>
+    public const string UnsupportedStatement = "CFXM007";
+
+    /// <summary>A recognized notation statement or block boundary is invalid.</summary>
+    public const string InvalidStatement = "CFXM008";
 }

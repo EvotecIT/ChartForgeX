@@ -36,6 +36,10 @@ public sealed class VisualSemanticRegion {
     /// <summary>Gets the stable source identity.</summary>
     public string Id { get; }
     /// <summary>Gets the semantic role.</summary>
+    /// <remarks>A prepared Cartesian chart with usable layout exposes one <c>cartesian-plot</c> region:
+    /// the final mapping rectangle in logical SVG units, independent of mark clipping. It describes
+    /// layout for host guides, not a data domain or exact hit shape. Composed panels retain this role
+    /// with translated bounds and panel-prefixed IDs; empty and non-Cartesian charts omit it.</remarks>
     public string Role { get; }
     /// <summary>Gets the descriptive bounds in logical units.</summary>
     public ChartRect Bounds { get; }

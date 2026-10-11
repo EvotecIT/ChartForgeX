@@ -14,6 +14,7 @@
     syncResetControl(root);
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
+    hideCrosshair(root, root.querySelector('.cfx-crosshair'));
     stage.style.setProperty('--cfx-zoom', state.zoom);
     stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');

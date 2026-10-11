@@ -66,10 +66,10 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawSegmentedCap(VisualSceneBuilder builder, ChartSegmentedBarGeometry geometry, ChartBarVisualStyle style, ChartColor color, string role, SvgPaint? source = null) {
         var sourcePaint = source ?? SvgPaint.Literal(color);
-        DrawCap(geometry.SoftShadow, color, geometry.CapThickness + style.CapShadowSpread * 2, style.CapShadowOpacity * .36, role + "-cap-shadow-soft");
+        DrawCap(geometry.SoftShadow, color, geometry.SoftShadowStrokeWidth(style), style.CapShadowOpacity * .36, role + "-cap-shadow-soft");
         DrawCap(geometry.Shadow, color, geometry.CapThickness, style.CapShadowOpacity, role + "-cap-shadow");
         DrawCap(geometry.Cap, color, geometry.CapThickness, style.CapOpacity, role + "-cap");
-        DrawCap(geometry.Highlight, ChartColor.White.WithAlpha(color.A), Math.Max(1, geometry.CapThickness * ChartVisualPrimitives.SegmentedCapHighlightStrokeRatio), style.CapHighlightOpacity, role + "-cap-highlight");
+        DrawCap(geometry.Highlight, ChartColor.White.WithAlpha(color.A), geometry.HighlightStrokeWidth, style.CapHighlightOpacity, role + "-cap-highlight");
 
         void DrawCap(ChartSegmentedLine line, ChartColor paint, double width, double opacity, string role) {
             if (opacity > 0 && width > 0) builder.Line(line.X1, line.Y1, line.X2, line.Y2, ChartColorMath.WithOpacity(paint, opacity), width, role: role,
