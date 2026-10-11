@@ -103,14 +103,30 @@ public sealed partial class MermaidParser {
                         valueText.StartsWith("&", StringComparison.Ordinal) || valueText.StartsWith("*", StringComparison.Ordinal) || valueText.StartsWith("!", StringComparison.Ordinal)) {
                         value = null; isString = false;
                         opaqueIndent = indent;
-                    } else if (Regex.IsMatch(valueText, @":(?:\s|$)", RegexOptions.CultureInvariant)) {
-                        throw new ArgumentException("Mermaid YAML plain scalars cannot contain a mapping separator; quote strings containing a colon followed by whitespace or an ending colon.");
-                    } else if (IsTypedConfigurationYamlScalar(valueText)) isString = false;
+                    } else {
+                        ValidateConfigurationYamlPlainScalar(valueText);
+                        if (Regex.IsMatch(valueText, @":(?:\s|$)", RegexOptions.CultureInvariant))
+                            throw new ArgumentException("Mermaid YAML plain scalars cannot contain a mapping separator; quote strings containing a colon followed by whitespace or an ending colon.");
+                        if (IsTypedConfigurationYamlScalar(valueText)) isString = false;
+                    }
                     configuration.Add(new MermaidConfigurationSetting(path, value, isString, span));
                 }
             } catch (ArgumentException exception) { ConfigurationError(result, span, exception.Message); }
         }
         while (parents.Count > 0) CompleteConfigurationYamlParent(parents, configuration);
+    }
+
+    private static void ValidateConfigurationYamlPlainScalar(string value) {
+        // YAML 1.2 allows all non-C0 characters inside quoted scalars for JSON compatibility.
+        // Its printable stream ranges still apply to the plain scalars validated here.
+        for (var index = 0; index < value.Length; index++) {
+            var character = value[index];
+            if (character >= '\u007f' && character <= '\u009f' && character != '\u0085' || character >= '\ufffe')
+                throw new ArgumentException("Mermaid YAML plain scalars must contain printable Unicode characters.");
+            if (char.IsHighSurrogate(character) && index + 1 < value.Length && char.IsLowSurrogate(value[index + 1])) index++;
+            else if (char.IsSurrogate(character))
+                throw new ArgumentException("Mermaid YAML plain scalars must contain complete Unicode characters.");
+        }
     }
 
     private static void CompleteConfigurationYamlParent(List<(int Indent, string Path, int ChildIndent, MermaidSourceSpan Span)> parents,
