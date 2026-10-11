@@ -45,9 +45,15 @@ public sealed partial class MermaidParser {
                 continue;
             }
             var match = ConfigurationYamlMapping(trimmed);
-            var key = ConfigurationYamlKey(match);
-            if (parents.Count == 0 && (indent != rootIndent || !match.Success || key != "config")) continue;
+            var key = ConfigurationYamlKey(match, out var keyError);
             var span = new MermaidSourceSpan(index + 2, indent + 1, trimmed.Length);
+            if (keyError != null && (parents.Count > 0 || indent == rootIndent)) {
+                ConfigurationError(result, span, keyError);
+                opaqueIndent = indent;
+                if (SkipOpaqueConfigurationYamlNode(lines, ref index, trimmed)) opaqueScalarIndent = indent;
+                continue;
+            }
+            if (parents.Count == 0 && (indent != rootIndent || !match.Success || key != "config")) continue;
             if (parents.Count > 0) {
                 var parent = parents[parents.Count - 1];
                 if (parent.ChildIndent < 0) parents[parents.Count - 1] = (parent.Indent, parent.Path, indent, parent.Span);
