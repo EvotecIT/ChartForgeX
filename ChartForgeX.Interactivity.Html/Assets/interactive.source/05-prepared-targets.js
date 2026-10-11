@@ -14,6 +14,11 @@
     const series = metadata.series || [];
     const xLabels = new Map((metadata.xLabels || []).map((item) => [item.value, item.text]));
     const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
+    // Only the renderer's unambiguous final Cartesian map can bound a guide.
+    const plots = (metadata.regions || []).filter(region => region.role === 'cartesian-plot');
+    const plot = plots.length === 1 ? plots[0] : null;
+    root._cfxCartesianPlot = plot && [plot.x, plot.y, plot.width, plot.height, plot.x + plot.width, plot.y + plot.height].every(Number.isFinite)
+      && plot.width > 0 && plot.height > 0 ? plot : null;
     series.forEach((item, index) => {
       svg.setAttribute('data-cfx-series-name-' + index, item.name);
       svg.setAttribute('data-cfx-series-key-' + index, item.key);

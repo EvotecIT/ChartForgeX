@@ -421,13 +421,27 @@
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
-    const local = stagePoint(stage, point);
-    positionStageViewport(stage, crosshair);
+    const bounds = visibleCartesianPlot(root, stage), local = stagePoint(stage, point);
+    if (!bounds || local.x < bounds.left || local.x > bounds.left + bounds.width
+      || local.y < bounds.top || local.y > bounds.top + bounds.height) {
+      hideCrosshair(root, crosshair);
+      return;
+    }
+    crosshair.style.left = bounds.left + 'px';
+    crosshair.style.top = bounds.top + 'px';
+    crosshair.style.width = bounds.width + 'px';
+    crosshair.style.height = bounds.height + 'px';
+    const x = local.x - bounds.left, y = local.y - bounds.top;
+    crosshair.style.setProperty('--cfx-crosshair-x', x + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', y + 'px');
     crosshair.hidden = false;
-    crosshair.style.setProperty('--cfx-crosshair-x', (local.x - stage.scrollLeft) + 'px');
-    crosshair.style.setProperty('--cfx-crosshair-y', (local.y - stage.scrollTop) + 'px');
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
-    if (label) label.textContent = text(point.node);
+    if (label) {
+      label.textContent = text(point.node);
+      // Measure the constrained label, including its border/padding, before placing it in a narrow plot.
+      label.style.left = clamp(x + 10, 0, Math.max(0, bounds.width - label.offsetWidth)) + 'px';
+      label.style.top = clamp(y - label.offsetHeight - 6, 0, Math.max(0, bounds.height - label.offsetHeight)) + 'px';
+    }
     const target = targetIdentity(point.node);
     const key = targetKey(target), mode = crosshairHoverMode(event, point.node);
     // A native summary can stay unchanged while its independently inferred guide advances.

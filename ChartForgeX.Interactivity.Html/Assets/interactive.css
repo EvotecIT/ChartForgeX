@@ -433,9 +433,12 @@ body {
 
 .cfx-crosshair__label {
   position: absolute;
-  left: min(calc(var(--cfx-crosshair-x, 0px) + 10px), calc(100% - 220px));
-  top: max(8px, calc(var(--cfx-crosshair-y, 0px) - 28px));
-  max-width: 210px;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(210px, 100%);
+  max-height: 100%;
   overflow: hidden;
   border: 1px solid rgba(14, 165, 233, .42);
   border-radius: 999px;

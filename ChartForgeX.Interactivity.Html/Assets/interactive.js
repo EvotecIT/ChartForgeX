@@ -1007,6 +1007,11 @@
     const series = metadata.series || [];
     const xLabels = new Map((metadata.xLabels || []).map((item) => [item.value, item.text]));
     const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
+    // Only the renderer's unambiguous final Cartesian map can bound a guide.
+    const plots = (metadata.regions || []).filter(region => region.role === 'cartesian-plot');
+    const plot = plots.length === 1 ? plots[0] : null;
+    root._cfxCartesianPlot = plot && [plot.x, plot.y, plot.width, plot.height, plot.x + plot.width, plot.y + plot.height].every(Number.isFinite)
+      && plot.width > 0 && plot.height > 0 ? plot : null;
     series.forEach((item, index) => {
       svg.setAttribute('data-cfx-series-name-' + index, item.name);
       svg.setAttribute('data-cfx-series-key-' + index, item.key);
@@ -1321,12 +1326,23 @@
     } : { x, y };
   };
   const stagePointer = (stage, event, bounded = false) => stagePoint(stage, { x: event.clientX, y: event.clientY }, bounded);
-  // The guide spans only the visible viewport, so a Readable overlay cannot add scrollable content.
-  const positionStageViewport = (stage, overlay) => {
-    overlay.style.left = stage.scrollLeft + 'px';
-    overlay.style.top = stage.scrollTop + 'px';
-    overlay.style.width = stage.clientWidth + 'px';
-    overlay.style.height = stage.clientHeight + 'px';
+  // The core owns layout. Project its captured plot through the live SVG transform, including pan/zoom.
+  // Intersect with the visible scroller so the overlay cannot create new scrollable content.
+  const visibleCartesianPlot = (root, stage) => {
+    const plot = root._cfxCartesianPlot, svg = stage.querySelector('svg');
+    if (!plot || !svg || stage.clientWidth <= 0 || stage.clientHeight <= 0) return null;
+    const matrix = svg.getScreenCTM();
+    // stagePoint supports positive axis-aligned host scaling, not rotated/skewed/perspective hosts.
+    if (!matrix || matrix.is2D === false || matrix.b !== 0 || matrix.c !== 0 || matrix.a <= 0 || matrix.d <= 0) return null;
+    const corners = [[plot.x, plot.y], [plot.x + plot.width, plot.y],
+      [plot.x, plot.y + plot.height], [plot.x + plot.width, plot.y + plot.height]]
+      .map(([x, y]) => stagePoint(stage, new DOMPoint(x, y).matrixTransform(matrix)));
+    if (!corners.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) return null;
+    const left = Math.max(stage.scrollLeft, Math.min(...corners.map(point => point.x)));
+    const top = Math.max(stage.scrollTop, Math.min(...corners.map(point => point.y)));
+    const right = Math.min(stage.scrollLeft + stage.clientWidth, Math.max(...corners.map(point => point.x)));
+    const bottom = Math.min(stage.scrollTop + stage.clientHeight, Math.max(...corners.map(point => point.y)));
+    return right > left && bottom > top ? { left, top, width: right - left, height: bottom - top } : null;
   };
   // A guide belongs to the current viewport. Discard stale dimensions before they can enlarge a resized scroller.
   // Share the existing resize lifecycle with keyboard availability, including initially hidden fragment hosts.
@@ -1336,6 +1352,10 @@
     let frame = 0;
     let observer;
     const hideGuide = () => hideCrosshair(root, crosshair);
+    // A pointer can acquire a guide during a CSS pan/zoom transition; discard that intermediate projection.
+    const finishViewport = event => {
+      if (event.target === stage.querySelector('svg') && event.propertyName === 'transform') hideGuide();
+    };
     const queueRefresh = () => {
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
@@ -1344,6 +1364,8 @@
           if (observer) observer.disconnect();
           window.removeEventListener('resize', queueRefresh);
           stage.removeEventListener('scroll', hideGuide);
+          stage.removeEventListener('transitionend', finishViewport);
+          stage.removeEventListener('transitioncancel', finishViewport);
           return;
         }
         if (width !== stage.clientWidth || height !== stage.clientHeight) hideGuide();
@@ -1353,6 +1375,8 @@
       });
     };
     stage.addEventListener('scroll', hideGuide, { passive: true });
+    stage.addEventListener('transitionend', finishViewport);
+    stage.addEventListener('transitioncancel', finishViewport);
     window.addEventListener('resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
       observer = new ResizeObserver(queueRefresh);
@@ -1375,6 +1399,7 @@
     syncResetControl(root);
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
+    hideCrosshair(root, root.querySelector('.cfx-crosshair'));
     stage.style.setProperty('--cfx-zoom', state.zoom);
     stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
@@ -2183,13 +2208,27 @@
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
-    const local = stagePoint(stage, point);
-    positionStageViewport(stage, crosshair);
+    const bounds = visibleCartesianPlot(root, stage), local = stagePoint(stage, point);
+    if (!bounds || local.x < bounds.left || local.x > bounds.left + bounds.width
+      || local.y < bounds.top || local.y > bounds.top + bounds.height) {
+      hideCrosshair(root, crosshair);
+      return;
+    }
+    crosshair.style.left = bounds.left + 'px';
+    crosshair.style.top = bounds.top + 'px';
+    crosshair.style.width = bounds.width + 'px';
+    crosshair.style.height = bounds.height + 'px';
+    const x = local.x - bounds.left, y = local.y - bounds.top;
+    crosshair.style.setProperty('--cfx-crosshair-x', x + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', y + 'px');
     crosshair.hidden = false;
-    crosshair.style.setProperty('--cfx-crosshair-x', (local.x - stage.scrollLeft) + 'px');
-    crosshair.style.setProperty('--cfx-crosshair-y', (local.y - stage.scrollTop) + 'px');
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
-    if (label) label.textContent = text(point.node);
+    if (label) {
+      label.textContent = text(point.node);
+      // Measure the constrained label, including its border/padding, before placing it in a narrow plot.
+      label.style.left = clamp(x + 10, 0, Math.max(0, bounds.width - label.offsetWidth)) + 'px';
+      label.style.top = clamp(y - label.offsetHeight - 6, 0, Math.max(0, bounds.height - label.offsetHeight)) + 'px';
+    }
     const target = targetIdentity(point.node);
     const key = targetKey(target), mode = crosshairHoverMode(event, point.node);
     // A native summary can stay unchanged while its independently inferred guide advances.
