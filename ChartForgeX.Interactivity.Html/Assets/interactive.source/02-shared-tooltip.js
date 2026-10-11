@@ -41,6 +41,16 @@
       swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);
       if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
       list.append(name, value);
+      dimensionTooltipRows(row.point).forEach((dimension) => {
+        const term = document.createElement('dt'), measurement = document.createElement('dd');
+        term.dataset.cfxTooltipDimension = dimension.dimension;
+        term.dataset.cfxTooltipObservation = row.key;
+        term.dataset.cfxTooltipPoint = row.point.dataset.cfxPoint;
+        term.dataset.cfxTooltipSourcePoint = row.source;
+        term.textContent = row.name + ' · ' + dimension.name; measurement.textContent = dimension.value;
+        if (row.state === 'quiet' || row.state === 'success') { term.className = 'cfx-tooltip__quiet'; measurement.className = 'cfx-tooltip__quiet'; }
+        list.append(term, measurement);
+      });
     });
     tip.appendChild(list);
     return true;
