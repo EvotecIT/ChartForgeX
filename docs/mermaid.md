@@ -1252,7 +1252,7 @@ Fence attributes such as `id`, `title`, `subtitle`, `width`, `height`, and famil
 
 ## Mermaid.js Conformance Fixtures
 
-The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.1.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. Shared expectations cover selected flowchart nodes/edges and Gantt scheduling and visible-end dates. The harness does not render upstream reference images.
+The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.1.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. Shared expectations cover selected flowchart nodes/edges and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. The harness does not render upstream reference images.
 
 ```powershell
 Set-Location .\tests\mermaid-conformance
