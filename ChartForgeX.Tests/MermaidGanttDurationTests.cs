@@ -9,6 +9,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttDurationTests {
     [Theory]
+    [InlineData("1970-01-01T00:00:00.000", "1970-01-01T00:00:01.000")]
+    [InlineData("1969-12-31T23:59:59.000", "1970-01-01T00:00:00.000")]
+    public void OrdinaryClockDatesRetainBinaryAdditionAtTheUnixEpoch(string start, string expected) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DDTHH:mm:ss.SSS\nTask :task, " + start + ", 1.001s\nTail :tail, after task, 0ms");
+        Assert.False(parsed.HasErrors);
+        Assert.Equal(expected, parsed.Document!.Tasks[0].End.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture));
+        Assert.Equal(parsed.Document.Tasks[0].End, parsed.Document.Tasks[1].Start);
+    }
+    [Theory]
     [InlineData("0.5ms")]
     [InlineData("0.0005s")]
     public void PositiveSubmillisecondDurationsCanReachTheExactTimestampCeiling(string duration) {

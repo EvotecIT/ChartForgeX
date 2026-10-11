@@ -65,13 +65,12 @@ internal static partial class MermaidGanttParser {
         // milestone midpoints. Converting the whole timestamp to double can move a
         // valid positive result beyond DateTime.MaxValue or shorten a calendar day.
         if (milliseconds == 0) return start;
-        var addition = (decimal)milliseconds;
         if (start.Ticks % TimeSpan.TicksPerMillisecond != 0)
-            return start.AddTicks(checked((long)decimal.Truncate(addition * TimeSpan.TicksPerMillisecond)));
+            return start.AddTicks(checked((long)decimal.Truncate((decimal)milliseconds * TimeSpan.TicksPerMillisecond)));
         // Ordinary Mermaid timestamps retain millisecond clock precision. Add before
         // truncating the complete timestamp, including dates before the Unix epoch.
         var epochTicks = new DateTime(1970, 1, 1).Ticks;
-        var endMilliseconds = decimal.Truncate((start.Ticks - epochTicks) / (decimal)TimeSpan.TicksPerMillisecond + addition);
+        var endMilliseconds = Math.Truncate((start.Ticks - epochTicks) / (double)TimeSpan.TicksPerMillisecond + milliseconds);
         var endTicks = checked((long)endMilliseconds * TimeSpan.TicksPerMillisecond + epochTicks);
         // ChartForgeX also accepts legacy DateTime inputs and milestone midpoints finer
         // than one millisecond. A nonnegative duration must never move those backwards.
