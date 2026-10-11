@@ -20,7 +20,7 @@ public sealed class RangeBarBrowserTests {
             .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         chart.Options.XAxis.WithBounds(0, 60);
         chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
-        chart.Series[0].WithInteractionKey("expected"); chart.Series[1].WithInteractionKey("observed");
+        chart.Series[0].WithInteractionKey("expected").WithPointLabel(1, "Promised delivery"); chart.Series[1].WithInteractionKey("observed");
         chart.Options.YAxis.Labels.AddRange(chart.Options.XAxis.Labels.Select(label => new ChartAxisLabel(label.Value,
             label.Value == 2 ? "Express delivery" : label.Text)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
@@ -38,13 +38,20 @@ public sealed class RangeBarBrowserTests {
         var first = Point(0, 1); var neighbor = Point(1, 1);
         await MoveToAsync(page, first + " [data-cfx-role='range-bar']");
         Assert.Equal(new[] { "Series", "Expected", "Kategoria", "Express delivery", "Początek", "10", "Koniec", "30" }, await RowsAsync(page));
+        var customHeading = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
+        Assert.Equal("Expected: Promised delivery", customHeading);
         await MoveToAsync(page, neighbor + " [data-cfx-role='range-bar']");
         var rawRows = await RowsAsync(page);
         Assert.Equal(new[] { "Series", "Observed", "Kategoria", "Express delivery", "Początek", "32", "Koniec", "12" }, rawRows);
+        var defaultHeading = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
+        Assert.Equal("Observed: 12–32", defaultHeading);
+        var rawAria = await page.Locator(neighbor).GetAttributeAsync("aria-label");
+        Assert.Contains("x=2 start=32 end=12", rawAria);
         if (!string.IsNullOrWhiteSpace(directory))
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "range-bar-descending-hover.png") });
         await page.Locator(neighbor).FocusAsync();
         Assert.Equal(rawRows, await RowsAsync(page));
+        Assert.Equal(defaultHeading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal("32", await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-0-y"));
         Assert.Equal("12", await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-1-y"));
         Assert.Equal("2", await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-0-index"));
@@ -64,7 +71,7 @@ public sealed class RangeBarBrowserTests {
         if (!string.IsNullOrWhiteSpace(directory)) {
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "range-bar-neighbors.png") });
             await File.WriteAllTextAsync(Path.Combine(directory, "range-bar-neighbors.json"), JsonSerializer.Serialize(new {
-                rawRows, firstSelected = await page.Locator(first).GetAttributeAsync("aria-selected"),
+                rawRows, defaultHeading, customHeading, rawAria, firstSelected = await page.Locator(first).GetAttributeAsync("aria-selected"),
                 neighborSelected = await page.Locator(neighbor).GetAttributeAsync("aria-selected"),
                 consoleErrors = session.ConsoleLog.Where(entry => entry.Type == HtmlTinkerX.HtmlConsoleMessageType.Error).ToArray(), pageErrors = errors
             }));

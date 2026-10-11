@@ -165,6 +165,8 @@
   const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
+    if (tooltipTitle && (data.cfxKind || '').toLowerCase() === 'rangebar')
+      return [seriesLabel(node), data.cfxLabel].filter(Boolean).join(': ');
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
     const label = data.cfxLabel || data.cfxText || '';
