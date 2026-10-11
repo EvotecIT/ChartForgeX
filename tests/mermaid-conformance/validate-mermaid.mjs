@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { isSyntaxRejection } from './reference-errors.mjs';
 
+// Keep local calendar dates and epoch arithmetic identical on every reference host.
+process.env.TZ = 'UTC';
+
 const root = fileURLToPath(new URL('.', import.meta.url));
 const manifest = JSON.parse(await readFile(join(root, 'compatibility.json'), 'utf8'));
 assert.equal(manifest.schemaVersion, 1, 'Unsupported compatibility manifest schema.');
