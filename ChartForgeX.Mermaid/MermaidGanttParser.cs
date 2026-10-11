@@ -143,8 +143,10 @@ internal static partial class MermaidGanttParser {
             if (!string.IsNullOrWhiteSpace(chunks[first])) prefix.Add(chunks[first].Trim());
             first++;
         }
-        // A valid three-field arrangement preserves an optional ID, including numeric IDs.
-        // Validate both date roles before committing a join: a fallback prefix is not a whole task.
+        // Prefer complete configured dates over fallback suffixes that look like an optional ID.
+        // Equal matches preserve the explicit-ID arrangement, including numeric IDs.
+        List<string>? selected = null;
+        var configuredMatches = -1;
         foreach (var hasId in new[] { true, false }) {
             var startIndex = first + (hasId ? 1 : 0);
             if (startIndex + 1 >= chunks.Length || hasId && string.IsNullOrWhiteSpace(chunks[first])) continue;
@@ -155,13 +157,18 @@ internal static partial class MermaidGanttParser {
                 if (endCount > maximumCommas + 1) continue;
                 var end = string.Join(",", chunks, boundary + 1, endCount).Trim();
                 if (!IsStart(start.Trim()) || !IsEnd(end)) continue;
+                var matches = (MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _) ? 1 : 0)
+                    + (MermaidGanttInputDateFormat.TryParseConfigured(end, document.DateFormat, out _) ? 1 : 0);
+                if (matches <= configuredMatches) continue;
                 var parts = new List<string>(prefix);
                 if (hasId) parts.Add(chunks[first].Trim());
                 parts.Add(start.Trim());
                 parts.Add(end);
-                return parts;
+                selected = parts;
+                configuredMatches = matches;
             }
         }
+        if (selected != null) return selected;
         if (first < chunks.Length && chunks.Length - first <= maximumCommas + 1) {
             var end = string.Join(",", chunks, first, chunks.Length - first).Trim();
             if (IsEnd(end)) { prefix.Add(end); return prefix; }
