@@ -559,20 +559,28 @@
     return { left: Math.min(...corners.map(p => p.x)), right: Math.max(...corners.map(p => p.x)),
       top: Math.min(...corners.map(p => p.y)), bottom: Math.max(...corners.map(p => p.y)) };
   };
-  // Native producers use rectangular user-space clips. A retained fact or path box can lie outside them.
-  const paintWithinNativeClips = (node, subject = node) => {
-    const paired = subject !== node && pairedExtentObservation(subject);
-    let box;
+  // Native producers use rectangular user-space clips, in the live transform of their owning group.
+  const nativePaintClips = (node) => {
+    const clips = [];
     for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
       const reference = /^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path') || '');
       if (!reference) continue;
       const clip = parent.ownerSVGElement.getElementById(reference[1]);
       if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
         || !clip.firstElementChild.matches('rect')) continue;
-      const matrix = parent.getScreenCTM();
-      if (!matrix) return false;
-      const rect = clip.firstElementChild.getBBox();
-      if (!(rect.width > 0 && rect.height > 0)) return false;
+      const matrix = parent.getScreenCTM(), rect = clip.firstElementChild.getBBox();
+      if (!matrix || !(rect.width > 0 && rect.height > 0)) return null;
+      clips.push({ rect, matrix });
+    }
+    return clips;
+  };
+  // A retained fact or a path's box can lie outside the native clips.
+  const paintWithinNativeClips = (node, subject = node) => {
+    const paired = subject !== node && pairedExtentObservation(subject);
+    const clips = nativePaintClips(node);
+    if (!clips) return false;
+    let box;
+    for (const { rect, matrix } of clips) {
       const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
         .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
       const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
@@ -582,8 +590,7 @@
       box ||= paired ? pairedExtentScreenBox(subject) : subject.getBoundingClientRect();
       if (!box) return false;
       if (subject !== node) {
-        // Keep the source X location; a paired observation remains usable when its own Y extent is visible.
-        // Single-point line/radar observations still require their source location inside the native clip.
+        // Connected paired fills use their own extent. Single-point line/radar paint keeps its source-location contract.
         const x = (box.left + box.right) / 2, y = (box.top + box.bottom) / 2;
         if (x < left - precision || x > right + precision
           || (paired ? box.bottom < top - precision || box.top > bottom + precision : y < top - precision || y > bottom + precision)) return false;
@@ -591,10 +598,46 @@
     }
     return true;
   };
+  const pairedBoundaryRole = (node) => /^(difference-(first|second)|range-(upper|lower|midline))$/.test(node.dataset.cfxRole || '');
+  const pairedBoundaryInk = (node, subject, paint) => {
+    const region = subject._cfxPairedRegion, sourceMatrix = subject.getScreenCTM(), shapeMatrix = node.getScreenCTM();
+    const clips = nativePaintClips(node);
+    if (!region || !sourceMatrix || !shapeMatrix || !clips || typeof node.isPointInStroke !== 'function') return false;
+    // Captured paired extents include equal marker inflation on each side. Remove it to locate the actual boundaries.
+    const x = region.x + region.width / 2;
+    const ys = node.dataset.cfxRole === 'range-midline' ? [Number(subject.dataset.cfxMidlineY)]
+      : [region.y + region.width / 2, region.y + region.height - region.width / 2];
+    for (const y of ys) {
+      if (!Number.isFinite(y)) continue;
+      // Query the exported three-decimal geometry as well as the full-precision captured location.
+      for (const [px, py] of [[x, y], [Number(x.toFixed(3)), Number(y.toFixed(3))]]) {
+        let point = new DOMPoint(px, py).matrixTransform(sourceMatrix);
+        const source = point.matrixTransform(shapeMatrix.inverse());
+        // The nearest point inside the clip can still be real cap ink when its source centre lies just outside.
+        for (const { rect, matrix } of clips) {
+          const local = point.matrixTransform(matrix.inverse());
+          point = new DOMPoint(Math.max(rect.x, Math.min(rect.x + rect.width, local.x)),
+            Math.max(rect.y, Math.min(rect.y + rect.height, local.y))).matrixTransform(matrix);
+        }
+        if (clips.some(({ rect, matrix }) => {
+          const local = point.matrixTransform(matrix.inverse());
+          // Use the same native three-decimal coordinate precision as the clip availability check.
+          return local.x < rect.x - .001 || local.x > rect.x + rect.width + .001
+            || local.y < rect.y - .001 || local.y > rect.y + rect.height + .001;
+        })) continue;
+        const sample = point.matrixTransform(shapeMatrix.inverse());
+        const radius = parseFloat(paint.strokeWidth) / 2 * (paint.strokeLinecap === 'square' ? Math.SQRT2 : 1);
+        // Clamping must stay within this source endpoint's stroke footprint, not follow a remote connected span.
+        if (Math.hypot(sample.x - source.x, sample.y - source.y) <= radius + .001 && node.isPointInStroke(sample)) return true;
+      }
+    }
+    return false;
+  };
   const shapePaint = (node, styles, subject = node) => {
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
+    const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
-      || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)) return null;
+      || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node)) return null;
     // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
     if (node.matches('circle,ellipse')) {
       const box = node.getBBox();
@@ -602,6 +645,8 @@
     }
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
+    // A series-wide boundary box cannot establish paint at this observation, connected or isolated.
+    if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
     // Open line marks never paint their inherited default black fill.
     const resolved = /^(line|polyline)$/i.test(node.tagName) ? stroke
       : (node.dataset.cfxFillArea !== 'false' && paintValue(node, paint.fill, paint.fillOpacity, styles)) || stroke;

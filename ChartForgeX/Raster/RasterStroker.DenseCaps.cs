@@ -20,7 +20,7 @@ internal static partial class RasterStroker {
         if (gap == 0) { AppendOutline(source, width, cap, join, miter, pixelsPerUnit, output); return true; }
         if (gap > width / 16 || gap * pixelsPerUnit > 1d / 255) return false;
         var points = Distinct(source);
-        if (points.Count <= 1) { AppendOutline(points, width, cap, join, miter, pixelsPerUnit, output); return true; }
+        if (points.Count <= 1) return false; // The shared dash splitter owns zero-length cap phase.
         double phase = double.IsNaN(offset) || double.IsInfinity(offset) ? 0 : offset % total;
         if (phase < 0) phase += total;
         bool seam = Same(points[0], points[points.Count - 1]) && DashContinuesAt(lengths, phase);
