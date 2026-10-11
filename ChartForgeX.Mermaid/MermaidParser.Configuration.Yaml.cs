@@ -90,7 +90,7 @@ public sealed partial class MermaidParser {
                     if (valueText.StartsWith("{", StringComparison.Ordinal))
                         valueText = ReadConfigurationFlowMapping(lines, ref index, valueText, sourceLines, indent + match.Groups[2].Index + 1);
                     var offsets = new List<int>();
-                    var normalized = NormalizeConfigurationJson(valueText, offsets);
+                    var normalized = NormalizeConfigurationJson(valueText, offsets, yamlFlowMapping: true);
                     AddConfigurationJson(GeoJsonValue.Parse(normalized, StringComparer.Ordinal, ConfigurationJsonLimits).AsObject("Mermaid frontmatter config"),
                         string.Empty, span, configuration, value => ConfigurationJsonPropertySpan(value, offsets, sourceLines, sourceLineStarts, span));
                 } else {
