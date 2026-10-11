@@ -49,4 +49,20 @@ public sealed class MermaidConfigurationOwnerClosureTests {
         Assert.True(rendered.HasErrors);
         Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
     }
+
+    [Theory]
+    [InlineData("}")]
+    [InlineData("\"")]
+    public void OpeningLineCommentsCannotHideFlowContinuationFromTheBudget(string comment) {
+        var rendered = MermaidRenderer.Render("---\nconfig: { # " + comment + "\n" + new string(' ', 65536) + "\n\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B");
+        Assert.True(rendered.HasErrors);
+        Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
+    }
+
+    [Fact]
+    public void ClosingLineCommentsCannotChargeUnrelatedFrontmatterToConfiguration() {
+        var rendered = MermaidRenderer.Render("---\nconfig: {\"theme\":\"dark\"} # {\ndescription: " + new string('x', 70000) + "\n---\nflowchart LR\nA --> B");
+        Assert.False(rendered.HasErrors);
+        Assert.Equal("dark", rendered.Document!.Configuration.Theme);
+    }
 }
