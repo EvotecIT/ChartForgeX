@@ -136,10 +136,10 @@ internal static partial class VisualColorScaleLegendScene {
         }
 
         void Midpoint(double top) {
-            // Preserve the canonical stop anchor even when a compact key shares its caption row.
-            var width = 2 * Math.Min(midpointX - bounds.Left, bounds.Right - midpointX);
-            Caption(scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0],
-                new ChartRect(midpointX - width / 2, top, width, row), "midpoint", TextAlignment.Center);
+            var text = scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0];
+            var lane = MidpointCaptionLane(builder, text, style, new ChartRect(bounds.Left, top, bounds.Width, row), midpointX,
+                inwardEdges: legendStyle == ChartColorLegendStyle.Gradient);
+            Caption(text, lane.Bounds, "midpoint", lane.Alignment);
         }
 
         void Missing(double top, ChartRect? target = null) {
@@ -164,6 +164,18 @@ internal static partial class VisualColorScaleLegendScene {
             var captionStyle = captions != null || id == "midpoint" ? FitCaptionStyle(builder, text, style, box.Width) : style;
             VisualStateSceneTools.Text(builder, text, box, captionStyle, prefix + "-label", prefix + "-label-" + id, alignment);
         }
+    }
+
+    /// <summary>Keeps the numeric anchor centered when readable; edge captions face inward within the measured key.</summary>
+    internal static (ChartRect Bounds, TextAlignment Alignment) MidpointCaptionLane(VisualSceneBuilder builder,
+        string text, TextStyle style, ChartRect lane, double anchor, bool inwardEdges = true) {
+        anchor = Math.Max(lane.Left, Math.Min(lane.Right, anchor));
+        var symmetric = Math.Max(0, 2 * Math.Min(anchor - lane.Left, lane.Right - anchor));
+        if (!inwardEdges || symmetric > 0 && builder.MeasureText(text, FitCaptionStyle(builder, text, style, symmetric)).Width <= symmetric)
+            return (new ChartRect(anchor - symmetric / 2, lane.Top, symmetric, lane.Height), TextAlignment.Center);
+        return anchor <= lane.Left + lane.Width / 2
+            ? (new ChartRect(anchor, lane.Top, Math.Max(0, lane.Right - anchor), lane.Height), TextAlignment.Left)
+            : (new ChartRect(lane.Left, lane.Top, Math.Max(0, anchor - lane.Left), lane.Height), TextAlignment.Right);
     }
 
     /// <summary>Fits bounded key captions using the same measured, readable size policy for every consumer.</summary>

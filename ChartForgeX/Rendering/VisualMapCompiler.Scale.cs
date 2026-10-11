@@ -103,10 +103,18 @@ internal static partial class VisualMapCompiler {
                 if (ChartHeatmapSurface.MapMidpointLabel(chart) != null) {
                     var center = gradient ? area.Left + area.Width * ChartColorScaleLegend.MidpointRatio(scale!, min, max)
                         : area.Left + (ChartHeatmapSurface.MapScaleMidpointStep(chart, min, max, steps.Length) + .5) * swatchWidth;
-                    // Fit symmetrically around the stop so clipping at either key edge cannot move the text anchor.
-                    var width = Math.Min(2 * Math.Min(center - area.Left, area.Right - center),
-                        Math.Max(swatchWidth, builder.MeasureText(layout.Texts[1], style).Width));
-                    VisualRadialPrimitives.Text(builder, layout.Texts[1], Intersect(new ChartRect(center - width / 2, next, width, row), area), style, "map-scale-midpoint-label", "map-scale-midpoint");
+                    if (gradient) {
+                        var lane = VisualColorScaleLegendScene.MidpointCaptionLane(builder, layout.Texts[1], style,
+                            Intersect(new ChartRect(area.Left, next, area.Width, row), area), center);
+                        var captionStyle = VisualColorScaleLegendScene.FitCaptionStyle(builder, layout.Texts[1], style, lane.Bounds.Width);
+                        VisualRadialPrimitives.Text(builder, layout.Texts[1], lane.Bounds, captionStyle,
+                            "map-scale-midpoint-label", "map-scale-midpoint", alignment: lane.Alignment);
+                    } else {
+                        var width = Math.Min(2 * Math.Min(center - area.Left, area.Right - center),
+                            Math.Max(swatchWidth, builder.MeasureText(layout.Texts[1], style).Width));
+                        VisualRadialPrimitives.Text(builder, layout.Texts[1], Intersect(new ChartRect(center - width / 2, next, width, row), area), style,
+                            "map-scale-midpoint-label", "map-scale-midpoint");
+                    }
                     next += row;
                 }
                 if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, next, area.Width, row), area), style, row, presentation.NoData);

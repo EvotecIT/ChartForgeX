@@ -95,8 +95,9 @@ internal static partial class VisualHierarchyCompiler {
                     if ((scale.HasPositionedStops || gradient) && scale.Mode == ChartColorScaleMode.Diverging) {
                         var center = gradient ? area.X + area.Width * ChartColorScaleLegend.MidpointRatio(scale, surface.Minimum, surface.Maximum)
                             : area.X + (ChartColorScaleLegend.MidpointStep(scale, surface.Minimum, surface.Maximum, steps.Length) + .5) * width;
-                        var captionWidth = 2 * Math.Min(center - area.Left, area.Right - center);
-                        ScaleCaption(text, center - captionWidth / 2, labelY + row, captionWidth, TextAlignment.Center, "midpoint", fit: true);
+                        var lane = VisualColorScaleLegendScene.MidpointCaptionLane(builder, text, style,
+                            new ChartRect(area.Left, labelY + row, area.Width, Math.Min(row, Math.Max(0, area.Bottom - labelY - row))), center, inwardEdges: gradient);
+                        ScaleCaption(text, lane.Bounds.Left, lane.Bounds.Top, lane.Bounds.Width, lane.Alignment, "midpoint", fit: true);
                     } else ScaleCaption(text, area.X, labelY + row, area.Width, TextAlignment.Center, "midpoint");
                 }
             }
