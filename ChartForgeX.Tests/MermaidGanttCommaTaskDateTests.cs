@@ -7,6 +7,34 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttCommaTaskDateTests {
     [Theory]
+    [InlineData("active")]
+    [InlineData("done")]
+    [InlineData("crit")]
+    [InlineData("milestone")]
+    [InlineData("vert")]
+    [InlineData("")]
+    public void ConfiguredLiteralPrefixesAreDatesRatherThanStatusTags(string literal) {
+        var source = "gantt\ndateFormat [" + literal + ",]YYYY-MM-DD\nTask :" + literal + ",2026-01-02,1d";
+        var parsed = new MermaidParser().ParseGantt(source);
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Null(task.Id); Assert.Empty(task.Tags);
+        Assert.Equal(0, task.Progress); Assert.False(task.IsMilestone); Assert.False(task.IsVerticalMarker);
+        Assert.Equal(new DateTime(2026, 1, 2), task.Start);
+        Assert.Equal(new DateTime(2026, 1, 3), task.End);
+    }
+
+    [Fact]
+    public void StatusTagsBeforeConfiguredLiteralDatesKeepTheirMeaning() {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat [done,]YYYY-MM-DD\nTask :active,done,2026-01-02,1d");
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal(new[] { "active" }, task.Tags);
+        Assert.Equal(0, task.Progress); Assert.False(task.IsMilestone);
+        Assert.Equal(new DateTime(2026, 1, 2), task.Start);
+    }
+
+    [Theory]
     [InlineData("", null)]
     [InlineData("active,", null)]
     [InlineData("task,", "task")]
