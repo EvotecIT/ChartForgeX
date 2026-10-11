@@ -51,9 +51,11 @@ internal static partial class VisualPolarCompiler {
                         stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: ringRole, close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                     else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, ringRole, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                 }
-                if (chart.Options.ShowAxes && axis.Visible && index < ticks.Count && r < geometry.Radius) {
+                if (chart.Options.ShowAxes && axis.Visible && index < ticks.Count) {
+                    var labelRadius = geometry.Radius * scale.Normalize(ticks[index]);
+                    if (labelRadius >= geometry.Radius) continue;
                     var text = formatTick(ticks[index]);
-                    var anchor = new ChartPoint(geometry.Cx + (secondary ? -1 : 1) * context.Theme.Spacing / 2, geometry.Cy - r);
+                    var anchor = new ChartPoint(geometry.Cx + (secondary ? -1 : 1) * context.Theme.Spacing / 2, geometry.Cy - labelRadius);
                     AddLabel(builder, labels, text, anchor, style, (radar ? "radar" : "polar") + "-radius-label-" + (secondary ? "secondary-" : "") + index,
                         radar ? "radar-ring-label" : "polar-radius-label", plot,
                         new[] { new LabelCandidate(0, 0, secondary ? 1 : 0, 0), new LabelCandidate(0, 0, secondary ? 1 : 0, 1) }, 20);
