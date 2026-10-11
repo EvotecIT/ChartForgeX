@@ -19,6 +19,9 @@ public readonly struct ChartPoint {
     /// <summary>Gets whether a new disconnected line or area segment starts at this point.</summary>
     public bool BreakBefore { get; }
 
+    /// <summary>Gets the independent numeric color measurement, or null when no measurement is supplied.</summary>
+    public double? ColorValue { get; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartPoint"/> struct.
     /// </summary>
@@ -27,12 +30,16 @@ public readonly struct ChartPoint {
     public ChartPoint(double x, double y) : this(x, y, false) { }
 
     /// <summary>Creates a finite point and optionally starts a disconnected line or area segment.</summary>
-    public ChartPoint(double x, double y, bool breakBefore) {
+    public ChartPoint(double x, double y, bool breakBefore) : this(x, y, breakBefore, null) { }
+
+    private ChartPoint(double x, double y, bool breakBefore, double? colorValue) {
         ChartPrimitiveGuards.Finite(x, nameof(x));
         ChartPrimitiveGuards.Finite(y, nameof(y));
+        if (colorValue.HasValue) ChartPrimitiveGuards.Finite(colorValue.Value, nameof(colorValue));
         X = x;
         Y = y;
         BreakBefore = breakBefore;
+        ColorValue = colorValue;
     }
 
     /// <summary>
@@ -54,4 +61,9 @@ public readonly struct ChartPoint {
     /// <param name="y">The vertical coordinate.</param>
     /// <returns>A chart point using the date/time as the x value.</returns>
     public static ChartPoint FromDateTime(DateTime x, double y) => new(x, y);
+
+    /// <summary>Returns an independent point with the same coordinates and segment boundary and a replacement color measurement.</summary>
+    /// <param name="value">The finite numeric color measurement, or null to clear it.</param>
+    /// <returns>A new point. The current point is unchanged.</returns>
+    public ChartPoint WithColorValue(double? value) => new(X, Y, BreakBefore, value);
 }
