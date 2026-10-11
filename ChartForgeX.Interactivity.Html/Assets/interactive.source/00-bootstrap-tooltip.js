@@ -251,6 +251,14 @@
         name: rowName(node, key, ''), value: data['cfx' + key.charAt(0).toUpperCase() + key.slice(1)]
       }))).filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
   };
+  const differenceTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'differencearea') return null;
+    return ['First', 'Second'].map((part) => ({
+      name: rowName(node, part.toLowerCase(), part),
+      value: capturedText(data, 'cfxFormatted' + part, data['cfx' + part])
+    }));
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -264,6 +272,13 @@
       push(rowName(node, 'category', ''), data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX);
       push(rowName(node, 'start', ''), data.cfxStart);
       push(rowName(node, 'end', ''), data.cfxEnd);
+      metadataRows(node).forEach((row) => push(row.name, row.value));
+      return rows;
+    }
+    const differenceRows = differenceTooltipRows(node);
+    if (differenceRows) {
+      push('X', data.cfxX);
+      differenceRows.forEach((row) => push(row.name, row.value));
       metadataRows(node).forEach((row) => push(row.name, row.value));
       return rows;
     }

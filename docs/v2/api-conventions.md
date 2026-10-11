@@ -159,6 +159,31 @@ Pyramid values and their aggregate must be finite and non-negative. Zero values 
 
 `ChartOrientation` is the shared core orientation type, including `MermaidXYChartDocument.Orientation`. Replace `MermaidXYChartOrientation` references with `ChartForgeX.Core.ChartOrientation` when migrating parsed XY chart code.
 
+## Difference areas
+
+`AddDifferenceArea` retains two authored values at every X, using `ChartDifferencePoint(X, First, Second, BreakBefore)`. The first value can be above or below the second; it is never renamed or swapped into a lower/upper bound. Positive fill means `First > Second`; negative fill means `First < Second`. Ties have no filled area and remain source observations. `RangeBand` and `RangeArea` keep their ordered lower/upper interval contract and existing output.
+
+```csharp
+var chart = Chart.Create().AddDifferenceArea("Actual and forecast", new[] {
+    new ChartDifferencePoint(1, 42, 56),
+    new ChartDifferencePoint(2, 68, 54),
+    new ChartDifferencePoint(4, 48, 60, breakBefore: true),
+    new ChartDifferencePoint(5, 64, 52)
+});
+chart.Series[0].ConfigureDifferenceArea(options => {
+    options.FirstName = "Actual";
+    options.SecondName = "Forecast";
+    options.PositiveFill = ChartColor.FromHex("#267EAB");
+    options.NegativeFill = ChartColor.FromHex("#D47A34");
+    options.PositiveFillOpacity = .48;
+    options.NegativeFillOpacity = .48;
+});
+```
+
+Names default to First/Second. Null fill overrides inherit explicit series color or semantic-state paint; otherwise positive uses the series palette color and negative the next palette color. Null opacity inherits the area theme; opacity multiplies color alpha once. The series pattern applies to both fills, and a zero-opacity fill has no pattern. Point color/pattern overrides apply to boundary markers. The split legend swatch remains one series target. Both named values, authored source indices and breaks are retained in SVG facts, accessible labels and single/shared-X HTML readouts. Derived crossing vertices are paint geometry and never become source observations.
+
+Difference areas support Linear interpolation with numeric/time X and a linear primary or secondary Y axis. The DateTime constructor uses the existing UTC conversion policy. X must increase within each connected segment; explicit `BreakBefore` starts a new segment and cuts both boundaries and fill. A break on either raw encoded tuple member has the same effect. Either axis can be reversed without changing fill polarity. Bounds and clipping use both values and the selected value axis. Smooth/Step interpolation, nonlinear axes, duplicate/backtracking X within a segment, stacking and normalization are rejected. Nullable paired ingestion and automatic alignment of separately supplied series remain separate work; use finite pairs and explicit breaks for missing sections.
+
 ## Waterfall opening balances and checkpoints
 
 `AddWaterfall(name, IEnumerable<ChartWaterfallItem>)` accepts immutable `OpeningBalance(x, value)`, `Delta(x, value)`, `Subtotal(x)` and `Total(x)` items, with `double` or `DateTime` coordinates. Items accumulate in input order and each has a distinct display coordinate. An optional opening balance must be first and may occur only once. Its finite positive, negative or zero value is drawn from zero and seeds the running balance. Opening-only input is valid. Without an opening item, accumulation starts at zero.

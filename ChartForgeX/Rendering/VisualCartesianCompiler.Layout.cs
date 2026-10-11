@@ -33,13 +33,13 @@ internal static partial class VisualCartesianCompiler {
             var pointSeries = IsPointSeries(series.Kind);
             if (!pointSeries && series.Kind is not (ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar
                 or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop or ChartSeriesKind.Slope
-                or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea)) continue;
+                or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea)) continue;
             if (series.Markers.Enabled == false) continue;
             var radius = ResolveMarkerRadius(series, context);
             var count = series.Points.Count / ObservationStride(series.Kind);
             for (var item = 0; item < count; item++) {
                 if (pointSeries && !ShowMarker(chart, series, item)) continue;
-                if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea) {
+                if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea) {
                     var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue
                         || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
                     if (!VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue)) continue;
@@ -52,7 +52,7 @@ internal static partial class VisualCartesianCompiler {
                 if (markerRadius <= 0) continue;
                 var value = series.Kind == ChartSeriesKind.StackedArea ? stacks.Point(index, raw).End : point.Y;
                 Include(point.X, value, markerRadius, series.YAxis);
-                if (series.Kind is ChartSeriesKind.Dumbbell or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea)
+                if (series.Kind is ChartSeriesKind.Dumbbell or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea)
                     Include(point.X, series.Points[raw + 1].Y, markerRadius, series.YAxis);
             }
         }

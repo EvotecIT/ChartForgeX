@@ -94,6 +94,7 @@
         && !node.hasAttribute('aria-label') && !node.hasAttribute('data-cfx-label'))
         node.setAttribute('aria-label', region.label || item.name);
       if (!region || (data.cfxPoint === undefined && data.cfxRegion === undefined)) return;
+      if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');

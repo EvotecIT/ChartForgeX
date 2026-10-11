@@ -53,8 +53,22 @@
     }
     return null;
   };
+  // These Cartesian observations describe both boundaries, rather than one source Y location.
+  const pairedExtentObservation = (node) => node.hasAttribute('data-cfx-point')
+    && ['differencearea', 'rangearea', 'rangeband'].includes((node.dataset.cfxKind || '').toLowerCase());
+  const pairedExtentScreenBox = (node) => {
+    const region = node._cfxPairedRegion, matrix = node.getScreenCTM();
+    if (!region || !matrix) return null;
+    // Use the captured native extent, excluding the minimum-size transparent browser hit area.
+    const corners = [[region.x, region.y], [region.x + region.width, region.y],
+      [region.x, region.y + region.height], [region.x + region.width, region.y + region.height]]
+      .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+    return { left: Math.min(...corners.map(p => p.x)), right: Math.max(...corners.map(p => p.x)),
+      top: Math.min(...corners.map(p => p.y)), bottom: Math.max(...corners.map(p => p.y)) };
+  };
   // Native producers use rectangular user-space clips. A retained fact or path box can lie outside them.
   const paintWithinNativeClips = (node, subject = node) => {
+    const paired = subject !== node && pairedExtentObservation(subject);
     let box;
     for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
       const reference = /^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path') || '');
@@ -72,11 +86,14 @@
       const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
       // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
       const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
-      box ||= subject.getBoundingClientRect();
+      box ||= paired ? pairedExtentScreenBox(subject) : subject.getBoundingClientRect();
+      if (!box) return false;
       if (subject !== node) {
-        // A marker-free observation uses its source location, not another visible part of the series path.
-        const x = box.left + box.width / 2, y = box.top + box.height / 2;
-        if (x < left - precision || x > right + precision || y < top - precision || y > bottom + precision) return false;
+        // Keep the source X location; a paired observation remains usable when its own Y extent is visible.
+        // Single-point line/radar observations still require their source location inside the native clip.
+        const x = (box.left + box.right) / 2, y = (box.top + box.bottom) / 2;
+        if (x < left - precision || x > right + precision
+          || (paired ? box.bottom < top - precision || box.top > bottom + precision : y < top - precision || y > bottom + precision)) return false;
       } else if (box.right < left - precision || box.left > right + precision || box.bottom < top - precision || box.top > bottom + precision) return false;
     }
     return true;
@@ -84,8 +101,7 @@
   const shapePaint = (node, styles, subject = node) => {
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
-      || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)
-      || subject !== node && !paintWithinNativeClips(node, subject)) return null;
+      || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)) return null;
     // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
     if (node.matches('circle,ellipse')) {
       const box = node.getBBox();
@@ -94,8 +110,9 @@
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
     // Open line marks never paint their inherited default black fill.
-    if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
-    return (node.dataset.cfxFillArea !== 'false' && paintValue(node, paint.fill, paint.fillOpacity, styles)) || stroke;
+    const resolved = /^(line|polyline)$/i.test(node.tagName) ? stroke
+      : (node.dataset.cfxFillArea !== 'false' && paintValue(node, paint.fill, paint.fillOpacity, styles)) || stroke;
+    return resolved && (subject === node || paintWithinNativeClips(node, subject)) ? resolved : null;
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
@@ -136,11 +153,22 @@
   const seriesPaint = (node, styles) => {
     const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
     if (!owner) return null;
-    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
+    const data = node.dataset || {};
+    const paired = (data.cfxKind || '').toLowerCase() === 'differencearea' && data.cfxPoint !== undefined;
+    const relevant = (layer) => {
+      if (!paired) return true;
+      const role = layer.dataset.cfxRole || '';
+      if (role === 'difference-positive' || role === 'difference-positive-pattern') return Number(data.cfxFirst) > Number(data.cfxSecond);
+      if (role === 'difference-negative' || role === 'difference-negative-pattern') return Number(data.cfxFirst) < Number(data.cfxSecond);
+      return true;
+    };
+    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="difference-positive"],[data-cfx-role="difference-negative"],[data-cfx-role="difference-first"],[data-cfx-role="difference-second"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
+      if (!relevant(layer)) continue;
       const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
     }
-    for (const layer of owner.querySelectorAll('[data-cfx-role="area-pattern"],[data-cfx-role="range-area-pattern"],[data-cfx-role="range-band-pattern"],[data-cfx-role="radar-pattern"]')) {
+    for (const layer of owner.querySelectorAll('[data-cfx-role="area-pattern"],[data-cfx-role="range-area-pattern"],[data-cfx-role="range-band-pattern"],[data-cfx-role="difference-positive-pattern"],[data-cfx-role="difference-negative-pattern"],[data-cfx-role="radar-pattern"]')) {
+      if (!relevant(layer)) continue;
       const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
     }
