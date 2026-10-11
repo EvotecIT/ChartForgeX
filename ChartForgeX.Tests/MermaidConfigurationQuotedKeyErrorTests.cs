@@ -32,4 +32,16 @@ public sealed class MermaidConfigurationQuotedKeyErrorTests {
         Assert.Equal(expectedTheme, result.Document!.Configuration.Theme);
         if (warning != null) Assert.Contains(result.Diagnostics, item => item.Code == warning);
     }
+
+    [Theory]
+    [InlineData("{\n  theme: dark\n  }")]
+    [InlineData("|\n    {\n    theme: dark")]
+    public void RejectedQuotedKeysKeepTheirFlowAndScalarContentsOpaque(string value) {
+        var result = MermaidRenderer.Render("---\nconfig:\n  \"unknown\\q\": " + value +
+            "\n  look: classic\n---\nflowchart LR\nA --> B");
+        Assert.True(result.HasErrors);
+        Assert.Null(result.Artifact);
+        Assert.Null(result.Document!.Configuration.Theme);
+        Assert.Equal("classic", result.Document.Configuration.Look);
+    }
 }
