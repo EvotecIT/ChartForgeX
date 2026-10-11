@@ -561,7 +561,7 @@ ticks 5";
         Assert(chart.Series.Count == 2 && chart.Series[0].Kind == ChartSeriesKind.Radar, "Mermaid radar conversion should produce ChartForgeX radar series.");
         Assert(chart.Title == "Capability Radar", "Mermaid radar conversion should use Mermaid titles by default.");
         Assert(chart.Options.XAxisLabels.Count == 3, "Mermaid radar conversion should preserve axis labels.");
-        Assert(chart.Options.YAxisMinimum == 0 && chart.Options.YAxisMaximum == 100 && chart.Options.TickCount == 5, "Mermaid radar conversion should preserve explicit scale options.");
+        Assert(chart.Options.YAxisMinimum == 0 && chart.Options.YAxisMaximum == 100 && chart.Options.PolarGridRingCount == 5, "Mermaid radar conversion should preserve explicit scale and concentric guide options.");
 
         var artifact = document.ToVisualArtifact(new MermaidRadarRenderOptions { Id = "capability-radar" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid radar visual artifact should report Mermaid artifact kind.");
