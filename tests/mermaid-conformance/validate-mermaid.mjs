@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Keep local calendar dates and epoch arithmetic identical on every reference host.
+process.env.TZ = 'UTC';
+
 const { JSDOM } = await import('jsdom');
 const dom = new JSDOM('<!doctype html><html><body></body></html>');
 globalThis.window = dom.window;
