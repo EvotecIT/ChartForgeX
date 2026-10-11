@@ -81,7 +81,7 @@ public sealed partial class MermaidParser {
     private static void AddConfigurationJson(Dictionary<string, GeoJsonValue> values, string prefix,
         MermaidSourceSpan span, MermaidSourceConfiguration configuration, Func<GeoJsonValue, MermaidSourceSpan>? propertySpan = null) {
         foreach (var pair in values) {
-            var key = Regex.IsMatch(pair.Key, @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant) ? pair.Key : "[" + pair.Key + "]";
+            var key = ConfigurationPathKey(pair.Key);
             var path = prefix + key;
             var declarationSpan = propertySpan?.Invoke(pair.Value) ?? span;
             if (pair.Value.TryAsObject(out var nested) && nested.Count > 0) {
@@ -91,6 +91,9 @@ public sealed partial class MermaidParser {
             else configuration.Add(new MermaidConfigurationSetting(path, pair.Value.AsOptionalString(), pair.Value.IsString, declarationSpan));
         }
     }
+
+    private static string ConfigurationPathKey(string key) =>
+        Regex.IsMatch(key, @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant) ? key : "[" + key + "]";
 
     private static bool IsConfigurationScalarPath(string path) {
         var key = path.Substring(path.LastIndexOf('.') + 1);

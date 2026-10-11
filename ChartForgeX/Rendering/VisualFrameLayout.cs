@@ -287,13 +287,13 @@ internal static class VisualFrameLayout {
                 var anchor = style.Alignment == TextAlignment.Center ? (left + right) / 2 : style.Alignment == TextAlignment.Right ? right : left;
                 builder.Text(line, anchor, top + builder.TextAscent(style), style, role: count == 0 ? "frame-heading" : "frame-heading-continuation", paint: paint ?? VisualChartPaint.Text(style));
                 top += lineHeight; count++;
-                if (line.EndsWith("â€¦", StringComparison.Ordinal)) { remainder = ""; break; }
+                if (line.EndsWith("…", StringComparison.Ordinal)) { remainder = ""; break; }
                 remainder = remainder.Substring(Math.Min(remainder.Length, line.Length)).TrimStart();
             }
             if (remainder.Length > 0 || paragraphs.Count > 0) builder.AddDiagnostic(new VisualDiagnostic("frame.heading-overflow", "The heading exceeds the available frame space."));
         }
         string Fit(string text, double width, TextStyle style, bool ellipsis = true) {
-            var fitted = ChartTextFitting.FitEnd(text, width, value => builder.MeasureText(value, style).Width, ellipsis ? "â€¦" : "");
+            var fitted = ChartTextFitting.FitEnd(text, width, value => builder.MeasureText(value, style).Width, ellipsis ? "…" : "");
             if (fitted == text) return text;
             if (ellipsis) {
                 builder.AddDiagnostic(new VisualDiagnostic("frame.text-truncated", "Frame text was shortened; its complete value remains in semantic metadata."));
