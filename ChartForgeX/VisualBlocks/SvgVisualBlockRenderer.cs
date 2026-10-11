@@ -124,7 +124,7 @@ public sealed partial class SvgVisualBlockRenderer {
     }
 
     internal static void WriteText(SvgMarkupWriter writer, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, string fontFamily, double fontSize, string weight, string role = "visual-text") {
-        var fitted = VisualBlockRendering.FitText(text, fontSize, Math.Max(1, width));
+        var fitted = VisualBlockRendering.FitMeasuredText(text, fontSize, Math.Max(1, width), fontFamily, int.TryParse(weight, out var fontWeight) ? fontWeight : 400);
         var anchor = "start";
         var textX = x;
         if (alignment == TextAlignment.Center) { anchor = "middle"; textX = x + width / 2; }

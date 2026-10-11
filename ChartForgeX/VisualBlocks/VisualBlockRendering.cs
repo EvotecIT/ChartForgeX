@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -149,8 +150,25 @@ internal static partial class VisualBlockRendering {
     }
 
     public static string FitMeasuredText(string value, double fontSize, double maxWidth, string fontFamily, int weight) {
+        value = SingleLineText(value);
         var style = new TextStyle { Font = new FontSpec { Family = fontFamily, Weight = weight }, FontSize = fontSize, LineHeight = 1 };
         return ChartTextFitting.FitEnd(value, maxWidth, text => ChartLabelScene.MeasureText(text, style).Width, "...");
+    }
+
+    // These block captions are emitted as a single SVG text run. Match its default XML whitespace rules in both backends.
+    public static string SingleLineText(string value) {
+        var result = new StringBuilder(value.Length);
+        var pendingSpace = false;
+        foreach (var character in value) {
+            if (character == ' ' || character == '\t' || character == '\r' || character == '\n') {
+                pendingSpace = result.Length > 0;
+                continue;
+            }
+            if (pendingSpace) result.Append(' ');
+            result.Append(character);
+            pendingSpace = false;
+        }
+        return result.ToString();
     }
 
     public static double FitFontSize(string value, double maxWidth, double preferredFontSize, double minimumFontSize) {

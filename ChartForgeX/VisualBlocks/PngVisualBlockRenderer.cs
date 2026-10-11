@@ -73,7 +73,7 @@ public sealed partial class PngVisualBlockRenderer {
         DrawAlignedText(canvas, text, x, baseline - canvas.TextAscent(fontSize, emphasized), width, alignment, color, fontSize, emphasized);
 
     internal static void DrawAlignedText(RgbaCanvas canvas, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, double fontSize, bool emphasized) {
-        var fitted = FitText(canvas, text, fontSize, Math.Max(1, width));
+        var fitted = FitText(canvas, text, fontSize, Math.Max(1, width), emphasized);
         var textWidth = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, fontSize) : canvas.MeasureTextWidth(fitted, fontSize);
         var textX = alignment == TextAlignment.Center ? x + (width - textWidth) / 2 : alignment == TextAlignment.Right ? x + width - textWidth : x;
         if (emphasized) canvas.DrawTextEmphasized(textX, y, fitted, color, fontSize);
@@ -81,14 +81,14 @@ public sealed partial class PngVisualBlockRenderer {
     }
 
     internal static void DrawCenteredText(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized, double? maxWidth = null) {
-        var fitted = FitText(canvas, text, size, Math.Max(1, maxWidth ?? x * 2));
+        var fitted = FitText(canvas, text, size, Math.Max(1, maxWidth ?? x * 2), emphasized);
         var width = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, size) : canvas.MeasureTextWidth(fitted, size);
         if (emphasized) canvas.DrawTextEmphasized(x - width / 2, y, fitted, color, size);
         else canvas.DrawText(x - width / 2, y, fitted, color, size);
     }
 
     internal static void DrawCenteredTextMiddle(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized, double? maxWidth = null) {
-        var fitted = FitText(canvas, text, size, Math.Max(1, maxWidth ?? x * 2));
+        var fitted = FitText(canvas, text, size, Math.Max(1, maxWidth ?? x * 2), emphasized);
         var width = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, size) : canvas.MeasureTextWidth(fitted, size);
         var height = canvas.MeasureTextHeight(size);
         if (emphasized) canvas.DrawTextEmphasized(x - width / 2, y - height / 2, fitted, color, size);
@@ -102,15 +102,17 @@ public sealed partial class PngVisualBlockRenderer {
 
     internal static double DegreesToRadians(double degrees) => degrees * Math.PI / 180.0;
 
-    internal static string FitText(RgbaCanvas canvas, string value, double fontSize, double maxWidth) {
-        if (string.IsNullOrEmpty(value) || canvas.MeasureTextWidth(value, fontSize) <= maxWidth) return value;
+    internal static string FitText(RgbaCanvas canvas, string value, double fontSize, double maxWidth, bool emphasized = false) {
+        value = VisualBlockRendering.SingleLineText(value);
+        double Measure(string text) => emphasized ? canvas.MeasureTextEmphasizedWidth(text, fontSize) : canvas.MeasureTextWidth(text, fontSize);
+        if (string.IsNullOrEmpty(value) || Measure(value) <= maxWidth) return value;
         const string suffix = "...";
-        if (canvas.MeasureTextWidth(suffix, fontSize) > maxWidth) return string.Empty;
+        if (Measure(suffix) > maxWidth) return string.Empty;
         var low = 0;
         var high = value.Length;
         while (low < high) {
             var mid = (low + high + 1) / 2;
-            if (canvas.MeasureTextWidth(value.Substring(0, mid) + suffix, fontSize) <= maxWidth) low = mid;
+            if (Measure(value.Substring(0, mid) + suffix) <= maxWidth) low = mid;
             else high = mid - 1;
         }
 

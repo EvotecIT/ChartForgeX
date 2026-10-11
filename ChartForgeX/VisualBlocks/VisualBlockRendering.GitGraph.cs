@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -41,10 +44,14 @@ internal static partial class VisualBlockRendering {
         var orderedBranches = OrderedGitGraphBranches(graph);
         var laneYs = new Dictionary<string, double>(StringComparer.Ordinal);
         var labelWidth = graph.ShowBranchLabels ? Math.Min(130, Math.Max(72, content.Width * 0.18)) : 18;
+        var rightReserve = graph.ShowCommitLabels ? 38d : 0;
+        foreach (var commit in graph.Commits) if (commit.Tag.Length > 0) rightReserve = Math.Max(rightReserve, 48);
+        if (!graph.ShowBranchLabels) labelWidth = Math.Max(labelWidth, rightReserve);
         var plotX = content.X + labelWidth;
-        var plotWidth = Math.Max(40, content.Width - labelWidth);
+        var plotWidth = Math.Max(1, content.Width - labelWidth - rightReserve);
         var availableHeight = Math.Max(32, totalHeight - bottomPadding - y);
-        var laneGap = orderedBranches.Count <= 1 ? 0 : Math.Min(68, Math.Max(34, availableHeight / Math.Max(1, orderedBranches.Count - 1)));
+        var fontScale = Math.Min(graph.Options.Theme.DataLabelFontSize / ChartTheme.DefaultDataLabelFontSize, availableHeight / (orderedBranches.Count * 80));
+        var laneGap = orderedBranches.Count <= 1 ? 0 : Math.Min(68 * Math.Max(1, fontScale), Math.Max(34, availableHeight / orderedBranches.Count));
         var startY = y + Math.Max(18, (availableHeight - laneGap * Math.Max(0, orderedBranches.Count - 1)) / 2);
         for (var index = 0; index < orderedBranches.Count; index++) laneYs[orderedBranches[index].Name] = startY + index * laneGap;
 
@@ -59,7 +66,32 @@ internal static partial class VisualBlockRendering {
             byId[commit.Id] = placement;
         }
 
-        return new GitGraphLayout(orderedBranches, laneYs, placements, byId, plotX, plotX + plotWidth);
+        return new GitGraphLayout(orderedBranches, laneYs, placements, byId, plotX, plotX + plotWidth, fontScale);
+    }
+
+    public static double GitFontSize(GitGraphLayout layout, ChartTheme theme, string text, double defaultSize, double width) {
+        var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = 1, LineHeight = 1 };
+        var measured = ChartLabelScene.MeasureText(SingleLineText(text), style).Width;
+        var fitted = measured > 0 ? Math.Max(defaultSize, Math.Max(1, width) / measured) : defaultSize;
+        return Math.Min(defaultSize * layout.FontScale, fitted);
+    }
+
+    public static GitTagMetrics GitTag(GitGraphLayout layout, ChartTheme theme, string tag, double x, double y, double radius) {
+        var font = GitFontSize(layout, theme, tag, 9.5, 86);
+        var scale = font / 9.5;
+        var inset = Math.Min(5, 5 * scale);
+        var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = font, LineHeight = 1 };
+        var width = Math.Min(96, Math.Max(38, ChartLabelScene.MeasureText(SingleLineText(tag), style).Width + inset * 2));
+        var top = y - radius - 24 * scale;
+        return new GitTagMetrics(new ChartRect(x - width / 2, top, width, 18 * scale), font, inset, top + 12.5 * scale);
+    }
+
+    public readonly struct GitTagMetrics {
+        public GitTagMetrics(ChartRect bounds, double fontSize, double inset, double baseline) { Bounds = bounds; FontSize = fontSize; Inset = inset; Baseline = baseline; }
+        public ChartRect Bounds { get; }
+        public double FontSize { get; }
+        public double Inset { get; }
+        public double Baseline { get; }
     }
 
     private static IReadOnlyList<GitGraphBranch> OrderedGitGraphBranches(GitGraphBlock graph) {
@@ -88,13 +120,14 @@ internal static partial class VisualBlockRendering {
     }
 
     public sealed class GitGraphLayout {
-        public GitGraphLayout(IReadOnlyList<GitGraphBranch> branches, IReadOnlyDictionary<string, double> laneYs, IReadOnlyList<GitGraphCommitPlacement> placements, IReadOnlyDictionary<string, GitGraphCommitPlacement> placementsById, double plotX, double plotRight) {
+        public GitGraphLayout(IReadOnlyList<GitGraphBranch> branches, IReadOnlyDictionary<string, double> laneYs, IReadOnlyList<GitGraphCommitPlacement> placements, IReadOnlyDictionary<string, GitGraphCommitPlacement> placementsById, double plotX, double plotRight, double fontScale) {
             Branches = branches;
             LaneYs = laneYs;
             Placements = placements;
             PlacementsById = placementsById;
             PlotX = plotX;
             PlotRight = plotRight;
+            FontScale = fontScale;
         }
 
         public IReadOnlyList<GitGraphBranch> Branches { get; }
@@ -103,6 +136,7 @@ internal static partial class VisualBlockRendering {
         public IReadOnlyDictionary<string, GitGraphCommitPlacement> PlacementsById { get; }
         public double PlotX { get; }
         public double PlotRight { get; }
+        public double FontScale { get; }
     }
 
     public readonly struct GitGraphCommitPlacement {
