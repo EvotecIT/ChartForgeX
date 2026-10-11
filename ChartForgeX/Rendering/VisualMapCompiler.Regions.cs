@@ -8,7 +8,7 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
-    private static void Regions(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, double min, double max) {
+    private static void Regions(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
         var definition = chart.Options.RegionMapDefinition ?? throw new InvalidOperationException("A region map requires a geometry definition.");
         var source = chart.Options.RegionMapBounds ?? definition.Bounds;
         if (!Finite(source.Left) || !Finite(source.Top) || !Finite(source.Width) || !Finite(source.Height) || source.Width <= 0 || source.Height <= 0)
@@ -29,10 +29,10 @@ internal static partial class VisualMapCompiler {
                 var projected = paths.Select(path => (IReadOnlyList<ChartPoint>)path.Points.Select(point => Project(point, source, map)).ToArray()).ToArray();
                 var geometry = Path(projected); var bounds = Intersect(Bounds(projected.SelectMany(path => path)), map);
                 int? index = values.TryGetValue(region.Code, out var found) ? found : (int?)null;
-                var full = Formatted(chart, index); var id = index.HasValue ? "series-0-point-" + index.Value : "region-map-empty-" + region.Code;
+                var full = Formatted(chart, index, presentation); var id = index.HasValue ? "series-0-point-" + index.Value : "region-map-empty-" + region.Code;
                 var blend = Fill(chart, colors, index, min, max); var fill = blend.Color;
                 builder.AddRegion(new VisualSemanticRegion(id, "region-map-region", bounds, region.Name + ": " + full));
-                using (builder.PushGroup(id, "region-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].Points[index.Value].Y : (double?)null, full, min, max))) {
+                using (builder.PushGroup(id, "region-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].Points[index.Value].Y : (double?)null, full, min, max, presentation))) {
                     builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "region-map-region", close: true,
                         paint: new VisualScenePaintBinding(blend.Paint, SvgPaint.Of(chart.Options.MapRegionStrokeColor ?? colors.Surface, SvgColorRole.Surface)));
                     var pattern = Pattern(chart.Series[0], index);
@@ -69,7 +69,7 @@ internal static partial class VisualMapCompiler {
         }
     }
 
-    private static void Tiles(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, double min, double max) {
+    private static void Tiles(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
         var definition = chart.Options.TileMapDefinition ?? throw new InvalidOperationException("A tile map requires a tile definition.");
         var values = Values(chart, key => definition.TryResolveRegion(key, out var code) ? code : null);
         var width = chart.Options.MapRegionStrokeWidth;
@@ -89,10 +89,10 @@ internal static partial class VisualMapCompiler {
                 var geometry = Path(new[] { (IReadOnlyList<ChartPoint>)new[] { new ChartPoint(x + inset, y), new ChartPoint(x + size - inset, y),
                     new ChartPoint(x + size, y + size / 2), new ChartPoint(x + size - inset, y + size), new ChartPoint(x + inset, y + size), new ChartPoint(x, y + size / 2) } });
                 int? index = values.TryGetValue(region.Code, out var found) ? found : (int?)null;
-                var full = Formatted(chart, index); var id = index.HasValue ? "series-0-point-" + index.Value : "tile-map-empty-" + region.Code;
+                var full = Formatted(chart, index, presentation); var id = index.HasValue ? "series-0-point-" + index.Value : "tile-map-empty-" + region.Code;
                 var blend = Fill(chart, colors, index, min, max); var fill = blend.Color;
                 builder.AddRegion(new VisualSemanticRegion(id, "tile-map-region", bounds, region.Name + ": " + full));
-                using (builder.PushGroup(id, "tile-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].Points[index.Value].Y : (double?)null, full, min, max))) {
+                using (builder.PushGroup(id, "tile-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].Points[index.Value].Y : (double?)null, full, min, max, presentation))) {
                     builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "tile-map-region", close: true,
                         paint: new VisualScenePaintBinding(blend.Paint, SvgPaint.Of(chart.Options.MapRegionStrokeColor ?? colors.Surface, SvgColorRole.Surface)));
                     var pattern = Pattern(chart.Series[0], index);
