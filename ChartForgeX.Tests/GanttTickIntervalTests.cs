@@ -14,17 +14,17 @@ namespace ChartForgeX.Tests;
 
 public sealed class GanttTickIntervalTests {
     [Theory]
-    [InlineData("100millisecond", "2026-01-01 13:05:06.007")]
-    [InlineData("1second", "2026-01-01 13:05:06")]
-    [InlineData("1minute", "2026-01-01 13:05")]
-    [InlineData("1hour", "2026-01-01 13:05")]
-    [InlineData("1day", "2026-01-01")]
-    [InlineData("2week", "2026-01-01")]
-    [InlineData("invalid", "2026-01-01")]
-    public void MermaidFixedClockIntervalsChooseDistinctDefaultsAndPreserveAuthoredFormatting(string interval, string expected) {
-        var document = new MermaidParser().ParseGantt("gantt\ntickInterval " + interval + "\nTask :2026-01-01, 1d").Document!;
+    [InlineData("100millisecond", "300ms", "2026-01-01 00:00:00.100")]
+    [InlineData("1second", "3s", "2026-01-01 00:00:01")]
+    [InlineData("1minute", "3m", "2026-01-01 00:01")]
+    [InlineData("1hour", "3h", "2026-01-01 01:00")]
+    [InlineData("1day", "3d", "2026-01-01")]
+    [InlineData("2week", "31d", "2026-01-11")]
+    [InlineData("invalid", "3d", "2026-01-01")]
+    public void MermaidFixedClockIntervalsChooseDistinctDefaultsAndPreserveAuthoredFormatting(string interval, string duration, string expected) {
+        var document = new MermaidParser().ParseGantt("gantt\ntickInterval " + interval + "\nTask :2026-01-01, " + duration).Document!;
         var value = new DateTime(2026, 1, 1, 13, 5, 6, 7).ToOADate();
-        Assert.Equal(expected, document.ToChart().Options.XAxisValueFormatter!(value));
+        Assert.Contains(">" + expected + "</text>", document.ToSvg());
         document.AxisFormat = "%Y/%m/%d";
         Assert.Equal("2026/01/01", document.ToChart().Options.XAxisValueFormatter!(value));
     }
