@@ -17,6 +17,7 @@ internal sealed partial class RgbaCanvas {
         for (var y = top; y < bottom; y += tileHeight) for (var x = left; x < right; x += tileWidth) {
             var bounds = new ChartRect(x / (double)_scale, y / (double)_scale,
                 Math.Min(tileWidth, right - x) / (double)_scale, Math.Min(tileHeight, bottom - y) / (double)_scale);
+            budget?.BeginTile();
             using (PushClipBounds(bounds)) paint(bounds, budget);
         }
     }
