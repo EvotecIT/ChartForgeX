@@ -90,6 +90,20 @@ internal sealed class RadialValueScale {
 
     public bool IsMaximum(double value) => ChartTicks.IsNumericTimeFallback(Ticks) ? value == Maximum : Math.Abs(value - Maximum) <= Math.Max(0.000001, Math.Abs(Maximum) * 0.000001);
 
+    /// <summary>Returns in-domain labels for equal radial intervals, including logarithmic and reversed axes.</summary>
+    internal IReadOnlyList<double> EqualIntervalTicks(double count) {
+        var minimum = ChartScaleTransform.Forward(Minimum, _axis);
+        var maximum = ChartScaleTransform.Forward(Maximum, _axis);
+        var ticks = new double[(int)Math.Floor(count)];
+        for (var index = 0; index < ticks.Length; index++) {
+            var ratio = (index + 1d) / count;
+            if (_axis.Reversed) ratio = 1 - ratio;
+            ticks[index] = ratio == 0 ? Minimum : ratio == 1 ? Maximum
+                : ChartScaleTransform.Inverse(minimum * (1 - ratio) + maximum * ratio, _axis);
+        }
+        return ChartTicks.PreserveFormatting(Ticks, ticks);
+    }
+
     private static double AutomaticMinimum(ChartAxis axis, IReadOnlyList<double> values) {
         if (axis.Scale == ChartScaleKind.Logarithmic) {
             var smallest = values.Min();

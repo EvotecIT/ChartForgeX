@@ -19,7 +19,7 @@ internal static partial class VisualMatrixCompiler {
 
     private static double ColorScaleHeight(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double width, double maximum, ChartColorPresentation presentation, bool missing = false) =>
         VisualColorScaleLegendScene.Height(builder, chart.Options.HeatmapColorScale!, presentation.Labels, ColorScaleStyle(chart, context),
-            context.Theme.Spacing / 2, width, maximum, missing, presentation.ScaleValues, heading: presentation.HasName ? presentation.Name : null);
+            context.Theme.Spacing / 2, width, maximum, missing, presentation.ScaleValues, heading: presentation.HasName ? presentation.Name : null, legendStyle: presentation.LegendStyle);
 
     private static void ColorScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds,
         double min, double max, string prefix, ChartColorPresentation presentation, bool missing = false, ChartColorBlend? missingBlend = null) {
@@ -27,6 +27,6 @@ internal static partial class VisualMatrixCompiler {
         var scale = chart.Options.HeatmapColorScale!;
         VisualColorScaleLegendScene.Draw(builder, scale, presentation.Labels, ColorScaleStyle(chart, context), context.Theme.Spacing / 2,
             bounds, min, max, prefix, missing, missingBlend ?? ChartColorScaleSurface.NoData(scale, context.Theme.Resolve(context.ThemeMode)),
-            presentation.ScaleValues, heading: presentation.HasName ? presentation.Name : null, valueName: presentation.HasOverrides ? presentation.Name : null);
+            presentation.ScaleValues, heading: presentation.HasName ? presentation.Name : null, valueName: presentation.HasOverrides ? presentation.Name : null, legendStyle: presentation.LegendStyle);
     }
 }
