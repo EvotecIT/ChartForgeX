@@ -57,7 +57,19 @@ chart.Series[0].WithColorScale(ChartColorScale.Sequential(
     .WithNoDataColor(ChartColor.FromHex("#9CA3AF")));
 ```
 
-Color domains use each series' retained observations unless fixed bounds are supplied; use fixed bounds to compare series or preserve colors across decimation. Missing color keeps the observation's Y and size and uses the configured no-data color. Explicit point colors and marker fills take precedence. `series.WithColorScale(null)` restores ordinary paint and hides its numeric key while retaining authored color facts for readouts. Numeric keys share the legend budget and visibility policy; color captions use neutral numbers with the dimension/unit in `ChartLabels.Color`, independently of Y formatting. The optional nullable color member increases `ChartPoint` and `ChartBubble` storage and participates in value equality; existing constructor signatures are unchanged.
+Color domains use each series' retained observations unless fixed bounds are supplied; use fixed bounds to compare series or preserve colors across decimation. Missing color keeps the observation's Y and size and uses the configured no-data color. Explicit point colors and marker fills take precedence. `series.WithColorScale(null)` restores ordinary paint and hides its numeric key while retaining authored color facts for readouts. Numeric keys share the legend budget and visibility policy. Each series can name and format its color measurement independently of Y and bubble size:
+
+```csharp
+chart.Series[0].ConfigureColorDimension(options => {
+    options.Name = "Temperature";
+    options.ValueFormat = ChartValueFormat.Number("0.0 '°C'",
+        System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
+});
+```
+
+The same `ChartColorDimensionOptions` configures numeric maps through `ConfigureMapColorDimension`, matrices and calendars through `ConfigureHeatmapColorDimension`, and hierarchies through `ConfigureTreemap` / `ConfigureSunburst` with `options.ColorDimension`. Map and heatmap values are their color measurement, so their numeric labels and readouts use that format without a duplicate color row. Hierarchy size and Cartesian Y keep their own formatting. Null `Name` or `ValueFormat` restores that family's default independently. Custom empty display text is preserved; raw numeric values and selection identities stay unchanged. A prepared visual captures the presentation for reuse by SVG, native PNG and HTML readouts.
+
+The optional nullable color member increases `ChartPoint` and `ChartBubble` storage and participates in value equality; existing constructor signatures are unchanged.
 
 ## Shared prepared rendering
 
@@ -192,7 +204,7 @@ Optional visual artifact, markup, Mermaid, and interaction support is split into
 | `ChartForgeX` | Charts, genuine diagrams, prepared scenes, semantic artifacts and still-image codecs. |
 | `ChartForgeX.Visuals` | Static canvas, image composition, metric tiles, tables, lists and ordered watermark decoration. |
 | `ChartForgeX.Stories` | Visual and terminal stories, transcripts, motion, animated topology and GIF/APNG output. |
-| `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with first-class flowchart, sequence, class, state, ER, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap rendering. |
+| `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with native flowchart, sequence, class, state, ER, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, treemap, swimlane, use case and Cynefin rendering. See the [support matrix](docs/mermaid-support-matrix.md) for syntax and fidelity limits. |
 | `ChartForgeX.Markup` | Markdown-friendly v1 ChartForgeX visual fences for chart, timeline, topology, flow, sequence, and table artifacts. |
 | `ChartForgeX.Markup.Mermaid` | Thin optional bridge that lets `ChartForgeX.Markup` parse Mermaid fences through `ChartForgeX.Mermaid`. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
@@ -742,7 +754,7 @@ var chart = Chart.Create().WithDataLabels().AddSunburst("Allocation", new[] {
     new ChartHierarchyItem("south-support", "Support", "all", value: 4)
 }).ConfigureSunburst(options => {
     options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal;
-    options.ColorLegendTitle = "Change (%)";
+    options.ColorDimension.Name = "Change (%)";
     options.ColorScale = ChartColorScale.Sequential(
         ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(204, 104, 52));
 });
@@ -769,7 +781,7 @@ var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
 }).ConfigureTreemap(options => {
     options.GroupPadding = 6;
     options.Gap = 3;
-    options.ColorLegendTitle = "Change (%)";
+    options.ColorDimension.Name = "Change (%)";
     options.ColorScale = ChartColorScale.Diverging(
         ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(229, 229, 233), ChartColor.FromRgb(204, 104, 52), 0);
 });
@@ -780,7 +792,7 @@ Leaves require finite non-negative `Value`; groups require null `Value`, and the
 
 `ChartOptions.Treemap` controls group padding, sibling gaps, group labels, and the color legend. `ChartSeries.HierarchyItems` is an immutable snapshot; `Points` remains empty. Point styling overrides use item input ordinals, while SVG and HTML targets retain item IDs through input reordering or label renaming. See the [migration guide](docs/v2/migration.md#hierarchical-treemap) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Treemap.cs).
 
-Interactive tooltips show area and color as separate values, including missing color data. `ColorLegendTitle` names the color tooltip row; otherwise it uses `ChartLabels.Color`. `WithLabels` localizes that name, `NoData`, and the discrete legend's `AllValues` and `Value` words.
+Interactive tooltips show area and color as separate values, including missing color data. `ColorDimension.Name` names the color key and tooltip row; otherwise the row uses `ChartLabels.Color`. `ColorDimension.ValueFormat` formats color independently of area. `WithLabels` localizes `NoData` and the discrete legend's `AllValues` and `Value` words.
 
 `WithNodeState(id, state)` applies semantic styling by item ID. With a numeric color scale, the state appears as an outline and preserves the quantitative fill. Without a scale, shared state colors supply the fill unless an explicit color overrides them.
 
@@ -894,6 +906,31 @@ var high = scale.ColorFor(100);
 ```
 
 Continuous scales infer their finite domain from source values or use `WithValueRange(minimum, maximum)` for a fixed domain. `ColorFor(value)` requires that fixed domain; `ColorFor(value, sourceMinimum, sourceMaximum)` uses the supplied source bounds when no domain is fixed. An inferred constant domain keeps its one observed value and uses the low color. `WithNoDataColor` sets the missing-data paint; otherwise each renderer uses its theme fallback. [Numeric color-scale migration](docs/v2/migration.md#numeric-color-scales) describes the type and converter renames.
+
+Use `ChartColorStop` when colors belong at specific values rather than equal intervals. Stops use finite, strictly ascending absolute values; their first and last values fix the domain. Values between two stops interpolate between those colors, exact stops retain their colors, and values outside the endpoints clamp. The same scale works with every numeric-color family:
+
+```csharp
+var cold = ChartColor.FromHex("#2166AC");
+var cool = ChartColor.FromHex("#67A9CF");
+var neutral = ChartColor.FromHex("#D1D5DB");
+var warm = ChartColor.FromHex("#D9A441");
+var hot = ChartColor.FromHex("#B2182B");
+var sequential = ChartColorScale.Sequential(new[] {
+    new ChartColorStop(-20, cold), new ChartColorStop(0, neutral),
+    new ChartColorStop(5, warm), new ChartColorStop(40, hot)
+});
+var diverging = ChartColorScale.Diverging(
+    new[] { new ChartColorStop(-20, cold), new ChartColorStop(-3, cool) },
+    new ChartColorStop(0, neutral),
+    new[] { new ChartColorStop(5, warm), new ChartColorStop(40, hot) }
+).WithLabels("Cold", "Freezing", "Warm");
+chart.WithMapColorScale(diverging);
+var colorAtTwo = sequential.ColorFor(2);
+```
+
+`Stops` exposes the detached authored anchors; existing color-only ramps and discrete scales have an empty stop list. `WithValueRange` moves only the endpoint anchors and rejects a range that crosses an interior stop. On a positioned diverging scale, `WithMidpoint` moves the pivot between its neighboring stops. Numeric keys sample the domain in at most 11 swatches and retain every authored value/color pair in their descriptive metadata; they do not promise a separate visible caption for each stop.
+
+The new sequential overload makes the invalid calls `ChartColorScale.Sequential(null)` and `Sequential(default)` ambiguous at compile time. Null-validation callers can select an overload with `(IEnumerable<ChartColor>)null!` or `(IEnumerable<ChartColorStop>)null!`; valid color-only calls keep their existing behavior.
 
 Numeric heatmaps share one color domain across all rows. An explicit scale maps every observed value, including zero, and overrides the legacy `HeatmapScale` and `HeatmapRelativeScale` coloring without changing those settings. Cell or day colors still take precedence. The measured key uses the same stops or named intervals, and `WithHeatmapScaleLegend(false)` hides it. Values remain in their original units in labels and tooltips; explicit scales do not attach legacy intensity levels or status meanings.
 

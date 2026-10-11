@@ -7,26 +7,40 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Captures retained logical color facts and each series' independent domain once per preparation.</summary>
-internal sealed class ChartSeriesColorScaleSet {
+internal sealed class ChartColorPresentationSet {
+    private readonly Chart _chart;
     private readonly ChartSeriesColorSurface?[] _series;
-    internal ChartSeriesColorScaleSet(Chart chart) {
+    private readonly Dictionary<ChartValueFormat, Dictionary<double, string>> _values = new();
+    private ChartHierarchySurface? _hierarchy;
+    internal ChartColorPresentationSet(Chart chart) {
+        _chart = chart;
         var labels = chart.Options.Labels;
-        Labels = new ChartLabels { Color = labels.Color, Size = labels.Size, NoData = labels.NoData,
-            Less = labels.Less, More = labels.More, AllValues = labels.AllValues, Value = labels.Value };
+        Map = new ChartColorPresentation(chart.Options.MapColorDimension, labels, labels.Value, chart.Options.ValueFormat, preparation: this);
+        Heatmap = new ChartColorPresentation(chart.Options.HeatmapColorDimension, labels, labels.Value, chart.Options.ValueFormat, preparation: this);
+        var hierarchy = chart.Series.FirstOrDefault()?.Kind == ChartSeriesKind.Sunburst ? chart.Options.Sunburst.ColorDimension : chart.Options.Treemap.ColorDimension;
+        Hierarchy = new ChartColorPresentation(hierarchy, labels, labels.Color, chart.Options.ValueFormat, preparation: this);
         _series = chart.Series.Select(series => series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble
-            ? new ChartSeriesColorSurface(series, Labels) : null).ToArray();
+            ? new ChartSeriesColorSurface(series, new ChartColorPresentation(series.ColorDimension, labels, labels.Color, ChartValueFormat.InvariantCompact, compactDefault: true, preparation: this)) : null).ToArray();
     }
-    internal ChartLabels Labels { get; }
     internal ChartSeriesColorSurface? this[int index] => _series[index];
+    internal ChartColorPresentation Map { get; }
+    internal ChartColorPresentation Heatmap { get; }
+    internal ChartColorPresentation Hierarchy { get; }
+    internal ChartHierarchySurface HierarchySurface(VisualThemeColors colors) =>
+        _hierarchy ??= new ChartHierarchySurface(_chart, colors, Hierarchy);
+    internal Dictionary<double, string> Values(ChartValueFormat format) {
+        if (!_values.TryGetValue(format, out var values)) _values.Add(format, values = new Dictionary<double, string>());
+        return values;
+    }
 }
 
 /// <summary>A detached color dimension; manual paint and marker visibility do not alter its inferred extent.</summary>
 internal sealed class ChartSeriesColorSurface {
     private readonly double?[] _values;
-    private readonly string _colorLabel, _noDataLabel, _sizeLabel;
     private readonly bool _bubble;
-    internal ChartSeriesColorSurface(ChartSeries series, ChartLabels labels) {
-        Scale = series.ColorScale; _colorLabel = labels.Color; _noDataLabel = labels.NoData; _sizeLabel = labels.Size;
+
+    internal ChartSeriesColorSurface(ChartSeries series, ChartColorPresentation presentation) {
+        Scale = series.ColorScale; Presentation = presentation; SeriesName = series.Name;
         _bubble = series.Kind == ChartSeriesKind.Bubble;
         var stride = _bubble ? 2 : 1;
         _values = Enumerable.Range(0, series.Points.Count / stride).Select(index => series.Points[index * stride].ColorValue).ToArray();
@@ -35,6 +49,8 @@ internal sealed class ChartSeriesColorSurface {
         Minimum = HasValues ? values.Min() : 0; Maximum = HasValues ? values.Max() : 0;
     }
     internal ChartColorScale? Scale { get; }
+    internal ChartColorPresentation Presentation { get; }
+    internal string SeriesName { get; }
     internal int Count => _values.Length;
     internal bool HasValues { get; }
     internal bool Missing { get; }
@@ -52,16 +68,17 @@ internal sealed class ChartSeriesColorSurface {
     }
 
     internal string AddFacts(Dictionary<string, string> metadata, int point, string description) {
-        if (_bubble) metadata["data-cfx-label-size"] = _sizeLabel;
+        if (_bubble) metadata["data-cfx-label-size"] = Presentation.Labels.Size;
         if (Scale == null && !_values[point].HasValue) return description;
-        metadata["data-cfx-label-color"] = _colorLabel;
-        metadata["data-cfx-label-no-data"] = _noDataLabel;
+        metadata["data-cfx-label-color"] = Presentation.Name;
+        metadata["data-cfx-label-no-data"] = Presentation.NoData;
         if (_values[point] is double value) {
             metadata["data-cfx-color-value"] = VisualStateSceneTools.Number(value);
-            description += "; " + _colorLabel + ": " + ChartNumericFormatter.FormatCompactAxisValue(value);
+            if (Presentation.HasOverrides) metadata["data-cfx-formatted-color-value"] = Presentation.Value(value);
+            description += "; " + Presentation.Name + ": " + Presentation.Value(value);
         } else if (Scale != null) {
             metadata["data-cfx-color-missing"] = "true";
-            description += "; " + _colorLabel + ": " + _noDataLabel;
+            description += "; " + Presentation.Name + ": " + Presentation.NoData;
         }
         return description;
     }

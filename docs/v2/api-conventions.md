@@ -53,6 +53,14 @@ Keep the numeric scene and painter implementation internal. Public signatures us
 
 `ChartColor` is the color value type. Palette collections contain that type; do not introduce another RGB wrapper for the prepared pipeline. Diagnostic severity reuses the existing enum. Finding severity, test outcome and operational state remain distinct domain vocabularies even where their presentation uses the same colors.
 
+## Numeric color presentation
+
+`ChartColorDimensionOptions` has nullable `Name` and `ValueFormat` properties. Each supported owner exposes one getter-owned instance: `ChartSeries.ColorDimension` for Scatter/Bubble, `ChartOptions.MapColorDimension` for RegionMap/TileMap, `ChartOptions.HeatmapColorDimension` for numeric matrices/calendars, and the Treemap/Sunburst options' `ColorDimension`. Configure those instances with the corresponding `ConfigureColorDimension`, `ConfigureMapColorDimension`, `ConfigureHeatmapColorDimension` or existing hierarchy callback. Unsupported family combinations fail preparation.
+
+Null restores each property's family default independently. A supplied name must contain non-whitespace text. Scatter/Bubble color uses `ChartLabels.Color` and neutral numeric formatting by default. Map, heatmap and hierarchy color retain their existing value-format defaults, including the chart's `ValueFormat`. Explicit color formatting changes their numeric labels, keys and readouts. It leaves Cartesian Y, Bubble size, hierarchy size, explicit point labels and authored secondary captions unchanged. A map or heatmap observation has one numeric value, so its readout does not add a duplicate Color row.
+
+The shared prepared presentation captures names and display strings. An explicit format runs once per distinct finite measurement during preparation; measurement, SVG/PNG export and HTML readouts reuse the result. Missing measurements retain localized no-data text without invoking a numeric formatter. Custom empty output remains authoritative, and formatter exceptions propagate. Raw observations, numeric scale mapping and selection identities remain separate from display text.
+
 ## Configuration precedence
 
 The prepared context owns size, theme, font and frame behavior. `Chart.WithSize`, `Chart.WithTheme` and other model presentation options supply the request for convenience exports such as `chart.ToSvg()` and `chart.ToPng()`. They do not silently override an explicit `Prepare(context)` request. Hosts that supply a context set these values in `VisualRenderContext`.

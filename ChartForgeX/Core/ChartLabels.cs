@@ -124,6 +124,8 @@ public sealed class ChartLabels {
         return string.IsNullOrWhiteSpace(text) ? description.EnglishText : text!;
     }
 
+    internal ChartLabels Capture() => (ChartLabels)MemberwiseClone();
+
     private static string Required(string value, string parameterName) =>
         string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Label text must not be empty.", parameterName) : value;
 }

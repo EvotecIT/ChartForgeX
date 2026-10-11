@@ -26,6 +26,12 @@ public static partial class V2Examples {
             if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap) {
                 variants.Add("color-scale"); variants.Add("compact-color-scale");
             }
+            if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter) {
+                variants.Add("positioned-color-scale"); variants.Add("compact-positioned-color-scale");
+            }
+            if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble) {
+                variants.Add("color-dimension"); variants.Add("compact-color-dimension");
+            }
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
             if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
                 variants.Add("axis-labels"); variants.Add("compact-axis-labels");
@@ -45,7 +51,14 @@ public static partial class V2Examples {
             }
             foreach (var variant in variants) {
                 var precision = variant is "precision" or "compact-precision";
-                var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift" : V2GalleryModels.Title(kind);
+                var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift"
+                    : variant is "positioned-color-scale" or "compact-positioned-color-scale" && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap
+                        ? kind == ChartSeriesKind.TileMap ? "Temperature by state" : "Temperature across service areas"
+                    : variant is "color-dimension" or "compact-color-dimension" ? kind switch {
+                        ChartSeriesKind.TileMap => "Temperature by state", ChartSeriesKind.Heatmap => "Temperature by grid position",
+                        ChartSeriesKind.CalendarHeatmap => "Daily average temperature", ChartSeriesKind.Treemap => "Team workload and temperature",
+                        ChartSeriesKind.Scatter => "Temperature by workload", _ => "Workload, requests and temperature"
+                    } : V2GalleryModels.Title(kind);
                 if (!chart.Series.Any(series => series.Kind == kind)) throw new InvalidOperationException("The gallery factory did not create its declared chart kind: " + kind);
                 var family = FamilyName(kind); var id = "family-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 var compact = IsCompactVariant(variant);
@@ -63,6 +76,8 @@ public static partial class V2Examples {
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"
                     : kind == ChartSeriesKind.Sunburst && variant is "options" or "compact-options" ? "Leaf totals size sectors; measured color stays independent"
                     : kind == ChartSeriesKind.Sankey && variant is "options" or "compact-options" ? "Aligned and ordered weighted flows"
+                    : variant is "color-dimension" or "compact-color-dimension" ? "Temperature captions use their own format and culture"
+                    : variant is "positioned-color-scale" or "compact-positioned-color-scale" ? "Absolute color anchors use uneven numeric intervals"
                     : variant is "color-scale" or "compact-color-scale" ? kind == ChartSeriesKind.Scatter ? "Temperature has its own fixed color domain; processing time stays independent"
                         : kind == ChartSeriesKind.Bubble ? "Size shows requests; named color bands show temperature"
                         : kind == ChartSeriesKind.Heatmap ? "Signed measurements share a fixed color domain"

@@ -15,9 +15,10 @@ internal static partial class VisualMapCompiler {
         chart.Series.Where(series => series.ShowInLegend).Select(series => new VisualLegendEntry(series.Name,
             ChartSeriesColours.Resolve(series, 0, colors), "series-0", series.Kind, series.FillPattern, series.StateRole, series.InteractionIdentityKey)).ToArray();
 
-    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
+    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartColorPresentation? presentation = null) {
         if (chart.Series.Count != 1) throw new InvalidOperationException("Prepared map charts require one map series.");
         var series = chart.Series[0];
+        presentation ??= new ChartColorPresentation(chart.Options.MapColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
         if (!Finite(chart.Options.MapRegionStrokeWidth) || chart.Options.MapRegionStrokeWidth < 0)
             throw new InvalidOperationException("Map region stroke width must be non-negative and finite.");
         var colors = context.Theme.Resolve(context.ThemeMode);
@@ -26,15 +27,15 @@ internal static partial class VisualMapCompiler {
             throw new InvalidOperationException("Map values must be finite and non-negative.");
         var minimum = series.Points.Count == 0 ? 0 : series.Points.Min(point => point.Y);
         var maximum = series.Points.Count == 0 ? 0 : series.Points.Max(point => point.Y);
-        var layout = ScaleLayout(chart, context, builder, plot, minimum, maximum);
+        var layout = ScaleLayout(chart, context, builder, plot, minimum, maximum, presentation);
         using (builder.PushGroup("series-0", "map-series", new Dictionary<string, string> {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey,
             ["data-cfx-label"] = series.Name, ["data-cfx-min-value"] = N(minimum), ["data-cfx-max-value"] = N(maximum)
         })) {
-            if (series.Kind == ChartSeriesKind.RegionMap) Regions(chart, context, builder, layout.Map, colors, minimum, maximum);
-            else if (series.Kind == ChartSeriesKind.TileMap) Tiles(chart, context, builder, layout.Map, colors, minimum, maximum);
+            if (series.Kind == ChartSeriesKind.RegionMap) Regions(chart, context, builder, layout.Map, colors, minimum, maximum, presentation);
+            else if (series.Kind == ChartSeriesKind.TileMap) Tiles(chart, context, builder, layout.Map, colors, minimum, maximum, presentation);
             else throw new InvalidOperationException("The series is not a map family.");
-            DrawScale(chart, context, builder, layout, colors, minimum, maximum);
+            DrawScale(chart, context, builder, layout, colors, minimum, maximum, presentation);
         }
     }
 
@@ -63,7 +64,7 @@ internal static partial class VisualMapCompiler {
     private static TextStyle TickStyle(Chart chart, VisualRenderContext context, ChartColor? color = null) => chart.Options.TickLabelStyle.Resolve(new TextStyle {
         Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = color ?? context.Theme.Resolve(context.ThemeMode).MutedForeground
     });
-    private static string Formatted(Chart chart, int? source) => source.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, chart.Series[0].Points[source.Value].Y) : chart.Options.Labels.NoData;
+    private static string Formatted(Chart chart, int? source, ChartColorPresentation presentation) => source.HasValue ? presentation.Value(chart.Series[0].Points[source.Value].Y) : presentation.NoData;
     private static void Surface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds, VisualThemeColors colors, string role) {
         if (!chart.Options.ShowMapSurface) return;
         builder.Rect(bounds, ChartColorMath.WithOpacity(ChartColorMath.Blend(colors.Surface, colors.Border, .12), .16),
@@ -72,12 +73,13 @@ internal static partial class VisualMapCompiler {
                 .WithOpacity(ChartColorMath.WithOpacity(ChartColorMath.Blend(colors.Surface, colors.Border, .12), .16), .16),
                 SvgPaint.Of(colors.Border, SvgColorRole.Surface).WithOpacity(ChartColorMath.WithOpacity(colors.Border, .16), .16)));
     }
-    private static Dictionary<string, string> Source(Chart chart, string code, string name, int? source, double? value, string full, double min, double max) {
+    private static Dictionary<string, string> Source(Chart chart, string code, string name, int? source, double? value, string full, double min, double max, ChartColorPresentation presentation) {
         var metadata = new Dictionary<string, string> {
             ["data-cfx-region"] = code, ["data-cfx-region-name"] = name, ["data-cfx-label"] = name, ["data-cfx-point"] = source.HasValue ? N(source.Value) : "-1",
             ["data-cfx-empty"] = source.HasValue ? "false" : "true", ["data-cfx-value"] = value.HasValue ? N(value.Value) : "",
             ["data-cfx-formatted-value"] = full, ["aria-label"] = name + " (" + code + "): " + full
         };
+        if (presentation.HasOverrides) metadata["data-cfx-label-value"] = presentation.Name;
         if (!value.HasValue) metadata["data-cfx-status"] = "empty";
         else {
             var ratio = ChartHeatmapSurface.MapRatio(chart, value.Value, min, max);

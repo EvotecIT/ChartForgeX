@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Keep local calendar dates and epoch arithmetic identical on every reference host.
+process.env.TZ = 'UTC';
+
 const { JSDOM } = await import('jsdom');
 const dom = new JSDOM('<!doctype html><html><body></body></html>');
 globalThis.window = dom.window;
@@ -51,6 +54,11 @@ for (const file of files) {
         assert.deepEqual(diagram.db.getAxes().map(axis => [axis.name, axis.label]), expected.radar.axes);
         assert.deepEqual(diagram.db.getCurves().map(curve => [curve.name, curve.label, curve.entries]), expected.radar.curves);
         assert.deepEqual(diagram.db.getOptions(), expected.radar.options);
+      }
+      if (expected.taskTimestamps) {
+        const pad = (value, length = 2) => String(value).padStart(length, '0');
+        const timestamp = value => `${pad(value.getFullYear(), 4)}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}.${pad(value.getMilliseconds(), 3)}`;
+        assert.deepEqual(diagram.db.getTasks().map(task => [task.id, timestamp(task.startTime), timestamp(task.endTime)]), expected.taskTimestamps);
       }
     }
   } catch (error) {

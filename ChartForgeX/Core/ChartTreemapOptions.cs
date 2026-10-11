@@ -23,8 +23,8 @@ public sealed class ChartTreemapOptions {
     public ChartColorScale? ColorScale { get; set; }
     /// <summary>Gets or sets whether the independent color legend is drawn when the chart legend is enabled. Default: true.</summary>
     public bool ShowColorScaleLegend { get; set; } = true;
-    /// <summary>Gets or sets the color legend title, for example "Change (%)". Null uses the localized Color label.</summary>
-    public string? ColorLegendTitle { get; set; }
+    /// <summary>Gets the independent color measurement's name and number display policy.</summary>
+    public ChartColorDimensionOptions ColorDimension { get; } = new();
 
     private static void NonNegative(double value, string parameter) {
         ChartGuards.Finite(value, parameter);

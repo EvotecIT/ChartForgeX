@@ -4634,6 +4634,30 @@
       }
     },
     {
+      "name": "mermaid-block-circle-routes",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 420,
+      "logicalWidth": 900,
+      "logicalHeight": 420,
+      "svg": {
+        "minVisualNodes": 9,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 189000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 847,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-class-notation",
       "layout": {
         "heightMode": "fixed",
@@ -4750,6 +4774,30 @@
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
         "minDistinctColors": 511,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-gantt-months",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 546,
         "maxEdgeInkPixels": 0
       }
     },
