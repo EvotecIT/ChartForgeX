@@ -964,7 +964,9 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for treemap diagrams is `Chart`. Section nodes retain nested parent rectangles and measured headers, and their areas aggregate leaf sizes. Distinct source-order IDs keep repeated labels independent; display labels remain unchanged. The typed AST retains class suffixes, and artifact metadata retains node, leaf, root, and class counts. Class-to-paint styling remains a host policy.
+Comma-separated treemap values retain the magnitude used by the pinned Mermaid parsers: `1,234.5` represents `1234.5`. Commas are separators rather than decimal marks, independently of the host culture. Nonstandard groupings such as `1,23.5` and repeated separators follow that same reference behavior. Zero-valued nodes remain available in the hierarchy and descriptive metadata.
+
+The conversion target for treemap diagrams is `Chart`. Section nodes retain nested parent rectangles and measured headers, and their areas aggregate leaf sizes. Native group and leaf captions display the authored labels and formatted magnitudes when space permits. Distinct source-order IDs keep repeated labels independent; display labels remain unchanged. The typed AST retains class suffixes, and artifact metadata retains node, leaf, root, and class counts. Class-to-paint styling remains a host policy.
 
 ## Git Graph Diagrams
 
