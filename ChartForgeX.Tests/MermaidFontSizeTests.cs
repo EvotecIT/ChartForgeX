@@ -15,6 +15,17 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidFontSizeTests {
     [Theory]
+    [InlineData("0x12")]
+    [InlineData("0o22")]
+    [InlineData("0b10010")]
+    public void TypedYamlFontNumbersUseTheSharedNumericConfigurationOwner(string value) {
+        var rendered = MermaidRenderer.Render("---\nconfig:\n  themeVariables:\n    fontSize: " + value + "\n---\npacket-beta\n0-31: \"Header\"");
+        Assert.Empty(rendered.Diagnostics);
+        Assert.Equal(18, rendered.Document!.Configuration.FontSize);
+        Assert.Equal("18", rendered.Artifact!.Metadata["mermaid.config.fontSize"]);
+    }
+
+    [Theory]
     [InlineData("participant A\nparticipant B\nparticipant C\nparticipant D\nD->>D: WWW")]
     [InlineData("participant A as i\nparticipant B as i\nparticipant C as i\nparticipant D as i\nparticipant E as i\nparticipant F as i\nparticipant G as i\nparticipant H as i\nautonumber\nA->>B: i")]
     public async Task LargestAcceptedSizeFitsLastLaneSelfMessagesAndGeneratedNumberText(string body) {
