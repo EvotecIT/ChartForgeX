@@ -91,7 +91,7 @@ public sealed partial class MermaidParser {
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
         MermaidParseResult<MermaidDocument> result) {
         var scope = ConfigurationScope(kind);
-        MermaidConfigurationSetting? Selected(string key) => configuration.Last(scope + "." + key) ?? configuration.Last(key);
+        MermaidConfigurationSetting? Selected(string key) => key == "fontFamily" ? configuration.Last(key) : configuration.Last(scope + "." + key) ?? configuration.Last(key);
         string? ReadString(string key) {
             var setting = Selected(key);
             if (setting == null) return null;
@@ -112,7 +112,7 @@ public sealed partial class MermaidParser {
                 if (kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             } else if (ReferenceEquals(setting, font) && setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) &&
                 kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
-            else if ((setting.Path == "theme" || setting.Path == scope + ".theme" || setting.Path == "fontFamily" || setting.Path == scope + ".fontFamily") &&
+            else if ((setting.Path == "theme" || setting.Path == scope + ".theme" || setting.Path == "fontFamily") &&
                 !ReferenceEquals(setting, theme) && !ReferenceEquals(setting, font)) continue;
 
             var message = ReferenceEquals(setting, theme) && setting.IsString && !IsNativeTheme(setting.Value)
