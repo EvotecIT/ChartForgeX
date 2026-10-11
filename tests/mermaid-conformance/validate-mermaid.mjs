@@ -127,6 +127,14 @@ for (const { folder, file, hasExpected } of files) {
         const day = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
         assert.deepEqual(diagram.db.getTasks().map((task, index) => [expected.tasks[index][0] === null ? null : task.id, day(task.startTime), day(task.endTime)]), expected.tasks);
       }
+      if (expected.treemap) {
+        const nodes = diagram.db.getNodes();
+        const indexes = new Map(nodes.map((node, index) => [node, index]));
+        const parents = new Map();
+        for (const [index, node] of nodes.entries()) for (const child of node.children ?? []) parents.set(child, index);
+        assert.deepEqual(nodes.map(node => [node.name, node.value ?? null, parents.get(node) ?? null]), expected.treemap.nodes);
+        assert.equal(indexes.size, nodes.length, 'Treemap source nodes retain distinct identities.');
+      }
       if (expected.taskTimestamps) {
         const pad = (value, length = 2) => String(value).padStart(length, '0');
         const timestamp = value => `${pad(value.getFullYear(), 4)}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}.${pad(value.getMilliseconds(), 3)}`;
