@@ -5,7 +5,7 @@ namespace ChartForgeX.Mermaid;
 
 public sealed partial class MermaidParser {
     private static Match ConfigurationYamlMapping(string text) => Regex.Match(text,
-        @"^(""(?:[^""\\]|\\.)*""|'(?:[^']|'')*'|[A-Za-z_][A-Za-z0-9_-]*)[ \t]*:[ \t]*(.*)$", RegexOptions.CultureInvariant);
+        @"^(""(?:[^""\\]|\\.)*""|'(?:[^']|'')*'|[A-Za-z_][A-Za-z0-9_-]*(?=[ \t]*:(?:[ \t]|$)))[ \t]*:[ \t]*(.*)$", RegexOptions.CultureInvariant);
 
     private static string? ConfigurationYamlKey(Match match) {
         if (!match.Success) return null;
@@ -14,6 +14,35 @@ public sealed partial class MermaidParser {
             return key[0] == '"' ? ReadDoubleQuotedConfigurationYaml(key)
                 : key[0] == '\'' ? ReadSingleQuotedConfigurationYaml(key) : key;
         } catch (ArgumentException) { return null; }
+    }
+
+    // Unsupported keys can contain flow collections and nonseparating colons.
+    // Locate their value without interpreting or applying the key itself.
+    private static int ConfigurationYamlValueSeparator(string text) {
+        var start = Regex.Match(text, @"^(?:(?:&[^\s]+|![^\s]+)[ \t]+)*", RegexOptions.CultureInvariant).Length;
+        var flowKey = start < text.Length && (text[start] == '[' || text[start] == '{');
+        var quotedKey = start < text.Length && (text[start] == '\'' || text[start] == '"');
+        var depth = 0;
+        var quote = '\0';
+        var nodeStart = true;
+        for (var index = start; index < text.Length; index++) {
+            var character = text[index];
+            if (quote != '\0') {
+                if (character == '\\' && quote == '"') index++;
+                else if (character == quote) {
+                    if (quote == '\'' && index + 1 < text.Length && text[index + 1] == '\'') index++;
+                    else quote = '\0';
+                }
+                continue;
+            }
+            if (nodeStart && (character == '\'' || character == '"')) { quote = character; nodeStart = false; continue; }
+            if (flowKey && (character == '[' || character == '{')) { depth++; nodeStart = true; continue; }
+            if (flowKey && (character == ']' || character == '}')) { depth--; nodeStart = false; continue; }
+            if (character == ':' && depth == 0 && (quotedKey || index + 1 == text.Length || text[index + 1] == ' ' || text[index + 1] == '\t')) return index;
+            if (depth > 0 && (character == ',' || character == ':' && index + 1 < text.Length && (text[index + 1] == ' ' || text[index + 1] == '\t'))) nodeStart = true;
+            else if (character != ' ' && character != '\t') nodeStart = false;
+        }
+        return -1;
     }
 
     // Count physical scalar content before discarding presentation comments or whitespace.
@@ -60,12 +89,12 @@ public sealed partial class MermaidParser {
                 }
                 var entry = ConfigurationYamlMapping(node);
                 // Opaque keys are not interpreted, but their value still has physical YAML structure.
-                var separator = entry.Success ? entry : Regex.Match(node, @":(?:[ \t]+|$)(.*)$", RegexOptions.CultureInvariant);
-                var value = separator.Success ? separator.Groups[entry.Success ? 2 : 1].Value : node;
+                var separator = entry.Success ? -1 : ConfigurationYamlValueSeparator(node);
+                var value = entry.Success ? entry.Groups[2].Value : separator >= 0 ? node.Substring(separator + 1) : node;
                 value = TrimConfigurationYaml(TrimYamlComment(value, true));
                 value = Regex.Replace(value, @"^(?:(?:&[^\s]+|![^\s]+)[ \t]+)+", string.Empty, RegexOptions.CultureInvariant);
                 if (Regex.IsMatch(value, @"^[|>](?:[1-9][+-]?|[+-][1-9]?)?$", RegexOptions.CultureInvariant))
-                    scalarIndent = separator.Success ? ownerIndent : indent;
+                    scalarIndent = entry.Success || separator >= 0 ? ownerIndent : indent;
                 else if (value.StartsWith("{", StringComparison.Ordinal) || value.StartsWith("[", StringComparison.Ordinal)) {
                     rootFlow = indent == rootIndent && ConfigurationYamlKey(mapping) == "config";
                     flowQuote = '\0'; scalarState = ConfigurationFlowScalar.Node;

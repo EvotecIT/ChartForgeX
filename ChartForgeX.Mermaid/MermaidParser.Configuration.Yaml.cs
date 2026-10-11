@@ -115,7 +115,7 @@ public sealed partial class MermaidParser {
         (text.Length == 1 || text[1] == ' ' || text[1] == '\t');
 
     private static bool IsConfigurationYamlMappingEntry(string text) => !IsConfigurationYamlSequenceItem(text) &&
-        Regex.IsMatch(text, @"^(?:[A-Za-z_][A-Za-z0-9_-]*[ \t]*:|""(?:[^""\\]|\\.)*""[ \t]*:|'(?:[^']|'')*'[ \t]*:|[^'""#\[\]{},][^:]*:(?:[ \t]|$))", RegexOptions.CultureInvariant);
+        ConfigurationYamlValueSeparator(text) >= 0;
 
     private static bool IsOpaqueConfigurationYamlValue(string value) => value.Length > 0 && "[|>&*!".IndexOf(value[0]) >= 0;
 
