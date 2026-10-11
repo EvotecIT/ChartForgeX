@@ -21,10 +21,12 @@ internal sealed class ChartRange {
     internal static ChartRange FromChart(Chart chart, ChartBarCoordinateMap coordinateMap, ChartStackLayout stacks, bool applyOptionBounds = true) {
         var range = new ChartRange();
         var barXValues = new List<double>();
+        var scalarBarXValues = new List<double>();
         var bubbleXValues = new List<double>();
         // Padding and mark thickness must use the same category identities.
         // Raw observations remain the range/metadata facts, including numeric equivalents.
-        var horizontalBarYValues = stacks.HorizontalCategories.ToList();
+        var horizontalBarYValues = new List<double>();
+        var horizontalScalarCategories = stacks.HorizontalCategories.ToList();
         var hasHorizontalSeries = ChartCartesianOrientation.IsHorizontal(chart);
         var usesHorizontalBaseline = false;
         var usesVerticalBaseline = false;
@@ -60,9 +62,11 @@ internal sealed class ChartRange {
             }
             if (series.YAxis == ChartAxisSide.Secondary && !ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
                 IncludeSeriesX(range, series);
-                if (RequiresMarkWidth(series.Kind) && series.HistogramBinLayout == null)
-                    barXValues.AddRange(series.Points.Select((point, pointIndex) => series.Kind == ChartSeriesKind.Bar
+                if (RequiresMarkWidth(series.Kind) && series.HistogramBinLayout == null) {
+                    var categories = series.Kind == ChartSeriesKind.Bar ? scalarBarXValues : barXValues;
+                    categories.AddRange(series.Points.Select((point, pointIndex) => series.Kind == ChartSeriesKind.Bar
                         ? coordinateMap.Resolve(seriesIndex, pointIndex).Value : point.X));
+                }
                 continue;
             }
 
@@ -148,7 +152,8 @@ internal sealed class ChartRange {
                     range.IncludeY(p.X);
                     if (UsesZeroBaseline(chart.Options.XAxis)) range.IncludeX(0);
                 } else if (series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop || series.Kind == ChartSeriesKind.RangeBar || series.Kind == ChartSeriesKind.BoxPlot || series.Kind == ChartSeriesKind.Slope) {
-                    barXValues.Add(series.Kind == ChartSeriesKind.Bar ? coordinateMap.Resolve(seriesIndex, pointIndex).Value : p.X);
+                    if (series.Kind == ChartSeriesKind.Bar) scalarBarXValues.Add(coordinateMap.Resolve(seriesIndex, pointIndex).Value);
+                    else barXValues.Add(p.X);
                     range.IncludeX(p.X);
                     range.IncludeY(series.Kind == ChartSeriesKind.Bar ? stacks.Point(seriesIndex, pointIndex).End : p.Y);
                 } else if (series.Kind == ChartSeriesKind.StackedArea) {
@@ -170,10 +175,10 @@ internal sealed class ChartRange {
         range.InitializeEmptyY(chart.Options.YAxis);
         // Category padding supplies a centered nonzero interval for a single category.
         // Expanding first would shift that category and make a full-slot bar exceed the plot.
-        if (Math.Abs(range.MaxX - range.MinX) < double.Epsilon && barXValues.Count == 0) range.MaxX = range.MinX + 1;
-        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon && horizontalBarYValues.Count == 0) range.MaxY = range.MinY + 1;
-        range.ApplyBarPadding(barXValues, chart.Options.XAxis);
-        range.ApplyHorizontalBarPadding(horizontalBarYValues);
+        if (Math.Abs(range.MaxX - range.MinX) < double.Epsilon && barXValues.Count == 0 && scalarBarXValues.Count == 0) range.MaxX = range.MinX + 1;
+        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon && horizontalBarYValues.Count == 0 && horizontalScalarCategories.Count == 0) range.MaxY = range.MinY + 1;
+        range.ApplyBarPadding(barXValues, chart.Options.XAxis, scalarBarXValues);
+        range.ApplyHorizontalBarPadding(horizontalBarYValues, horizontalScalarCategories);
         if (!hasHorizontalSeries) {
             if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(chart.Options.YAxis);
             range.ApplyVerticalPadding(chart.Options.YAxis);
@@ -359,19 +364,26 @@ internal sealed class ChartRange {
         return baseline > 0 && ChartMath.IsFinite(baseline) ? baseline : minimum;
     }
 
-    private void ApplyBarPadding(List<double> xValues, ChartAxis axis) {
-        if (xValues.Count == 0) return;
-        xValues.Sort();
+    private static double CategoryPadding(List<double> values) {
+        if (values.Count == 0) return 0;
+        values.Sort();
         var spacing = double.PositiveInfinity;
-        for (var i = 1; i < xValues.Count; i++) {
-            var delta = xValues[i] - xValues[i - 1];
+        for (var i = 1; i < values.Count; i++) {
+            var delta = values[i] - values[i - 1];
             if (delta > 0 && delta < spacing) spacing = delta;
         }
-
         if (double.IsInfinity(spacing)) spacing = 1;
-        var padding = spacing * 0.5;
+        return spacing * .5;
+    }
+
+    private void ApplyBarPadding(List<double> xValues, ChartAxis axis, List<double>? scalarCategories = null) {
+        // Scalar bars size their slots independently of interval and reference marks.
+        // Preserve each padding requirement when the supported families are mixed.
+        var padding = Math.Max(CategoryPadding(xValues), scalarCategories == null ? 0 : CategoryPadding(scalarCategories));
+        if (padding == 0) return;
         if (axis.Scale == ChartScaleKind.Logarithmic) {
-            var smallestPositive = xValues.FirstOrDefault(value => value > 0);
+            IEnumerable<double> categories = scalarCategories == null ? xValues : xValues.Concat(scalarCategories);
+            var smallestPositive = categories.Where(value => value > 0).DefaultIfEmpty().Min();
             if (smallestPositive > 0) MinX = Math.Min(MinX, Math.Max(smallestPositive * 0.5, MinX - padding));
         } else {
             MinX -= padding;
@@ -379,17 +391,8 @@ internal sealed class ChartRange {
         MaxX += padding;
     }
 
-    private void ApplyHorizontalBarPadding(List<double> yValues) {
-        if (yValues.Count == 0) return;
-        yValues.Sort();
-        var spacing = double.PositiveInfinity;
-        for (var i = 1; i < yValues.Count; i++) {
-            var delta = yValues[i] - yValues[i - 1];
-            if (delta > 0 && delta < spacing) spacing = delta;
-        }
-
-        if (double.IsInfinity(spacing)) spacing = 1;
-        var padding = spacing * 0.5;
+    private void ApplyHorizontalBarPadding(List<double> yValues, List<double> scalarCategories) {
+        var padding = Math.Max(CategoryPadding(yValues), CategoryPadding(scalarCategories));
         MinY -= padding;
         MaxY += padding;
     }

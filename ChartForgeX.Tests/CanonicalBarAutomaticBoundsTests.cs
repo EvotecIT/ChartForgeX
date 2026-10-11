@@ -75,4 +75,35 @@ public sealed class CanonicalBarAutomaticBoundsTests {
         Assert.True(separation > 100);
         Assert.All(bars, bar => Assert.True((horizontal ? bar.Bounds.Height : bar.Bounds.Width) >= 10));
     }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void MixedMarkFamiliesDoNotReduceScalarBarCategoryMargins(bool interval, bool equivalent) {
+        var peer = equivalent ? BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(1.5) + 3) : 2.5;
+        var chart = Chart.Create().WithHeader(false).WithAxes(false).WithLegend(false).WithDataLabels(false)
+            .WithBarStyle(ChartBarStyle.Flat).AddBar("Bars", new[] { new ChartPoint(1.5, 2), new ChartPoint(3.5, 3) });
+        if (interval) chart.AddRangeBar("Reference", new[] { new ChartInterval(peer, 1, 4) });
+        else chart.AddLollipop("Reference", new[] { new ChartPoint(peer, 4) });
+        var color = ChartColor.FromHex("#235AD7"); chart.Series[0].Color = color;
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 400), 0)));
+        var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
+        var bars = prepared.Regions.Where(region => region.Role == "point" && region.Id.StartsWith("series-0-", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(2, bars.Length);
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture);
+            File.WriteAllBytes(Path.Combine(capture, $"mixed-category-{interval}-{equivalent}.native.png"), prepared.ToPng());
+        }
+        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        foreach (var bar in bars) {
+            Assert.True(bar.Bounds.Left >= plot.Left && bar.Bounds.Right <= plot.Right);
+            foreach (var fraction in new[] { .1, .9 }) {
+                var offset = ((int)(bar.Bounds.Top + bar.Bounds.Height / 2) * image.Width + (int)(bar.Bounds.Left + bar.Bounds.Width * fraction)) * 4;
+                Assert.Equal(color.R, image.Pixels[offset]); Assert.Equal(color.G, image.Pixels[offset + 1]); Assert.Equal(color.B, image.Pixels[offset + 2]);
+            }
+        }
+    }
 }
