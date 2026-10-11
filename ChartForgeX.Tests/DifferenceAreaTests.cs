@@ -74,7 +74,7 @@ public sealed partial class DifferenceAreaTests {
         var options = new ChartDifferenceAreaOptions();
         Assert.Throws<ArgumentException>(() => options.FirstName = " ");
         Assert.Throws<ArgumentOutOfRangeException>(() => options.NegativeFillOpacity = 1.1);
-        var difference = Model(new(0, 8, 2));
+        var difference = Model(new ChartDifferencePoint(0, 8, 2));
         Assert.Throws<InvalidOperationException>(() => difference.Series[0].WithStackGroup("Pair"));
         Assert.Throws<InvalidOperationException>(() => difference.Series[0].WithNormalization());
         var date = new DateTime(2026, 3, 1, 12, 0, 0, DateTimeKind.Utc);
