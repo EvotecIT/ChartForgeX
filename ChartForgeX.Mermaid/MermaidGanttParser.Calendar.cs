@@ -29,7 +29,8 @@ internal static partial class MermaidGanttParser {
                 // ends before that trailing run. Interior exclusions still extend it.
                 if (!previousExcluded) renderEnd = end;
                 var date = "iso:" + cursor.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-                var formatted = "format:" + MermaidGanttInputDateFormat.FormatCalendarDate(cursor, document.DateFormat);
+                var formatted = "format:" + cursor.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "|"
+                    + MermaidGanttInputDateFormat.FormatCalendarDate(cursor, document.DateFormat);
                 var weekday = cursor.DayOfWeek.ToString().ToLowerInvariant();
                 var weekend = document.Weekend == "friday"
                     ? cursor.DayOfWeek == DayOfWeek.Friday || cursor.DayOfWeek == DayOfWeek.Saturday
@@ -73,7 +74,8 @@ internal static partial class MermaidGanttParser {
         date = string.Empty;
         if (token.Length == 0) return false;
         if (MermaidGanttInputDateFormat.TryParseConfigured(token, format, out var value)) {
-            date = "format:" + MermaidGanttInputDateFormat.FormatCalendarDate(value, format);
+            date = "format:" + value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "|"
+                + MermaidGanttInputDateFormat.FormatCalendarDate(value, format);
             return true;
         }
         if (!DateTime.TryParseExact(token, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out value)) return false;
