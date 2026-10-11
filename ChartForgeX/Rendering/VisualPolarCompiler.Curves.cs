@@ -17,7 +17,7 @@ internal static partial class VisualPolarCompiler {
             var points = categories.Select((category, index) => {
                 var source = Find(series, category);
                 var radius = scale.Normalize(source < 0 ? 0 : series.Points[source].Y);
-                var angle = RadarAngle(index, categories.Length);
+                var angle = CategoryAngle(chart.Options.XAxis, index, categories.Length);
                 return new ChartPoint(Math.Cos(angle) * radius, Math.Sin(angle) * radius);
             }).ToArray();
             var bounds = ChartPathBuilder.ClosedCurve(points, tension).Bounds();
