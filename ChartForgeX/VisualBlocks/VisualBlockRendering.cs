@@ -22,8 +22,8 @@ internal static partial class VisualBlockRendering {
         var subtitleGap = block.Subtitle.Length > 0 ? 13 : 0;
         var titleStyle = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = theme.UseGraphiteLayout ? 700 : 800 }, FontSize = theme.TitleFontSize, LineHeight = 1 };
         var subtitleStyle = new TextStyle { Font = new FontSpec { Family = theme.FontFamily }, FontSize = theme.SubtitleFontSize, LineHeight = 1 };
-        var titleHeight = block.Title.Length > 0 ? ChartLabelScene.MeasureText(block.Title, titleStyle).Height : 0;
-        var subtitleHeight = block.Subtitle.Length > 0 ? ChartLabelScene.MeasureText(block.Subtitle, subtitleStyle).Height : 0;
+        var titleHeight = block.Title.Length > 0 ? ChartLabelScene.MeasureText(SingleLineText(block.Title), titleStyle).Height : 0;
+        var subtitleHeight = block.Subtitle.Length > 0 ? ChartLabelScene.MeasureText(SingleLineText(block.Subtitle), subtitleStyle).Height : 0;
         var fonts = titleHeight + subtitleHeight;
         var available = ContentRect(block.Options).Height * .4;
         var gaps = titleGap + subtitleGap;

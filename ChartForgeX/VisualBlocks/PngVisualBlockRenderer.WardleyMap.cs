@@ -19,7 +19,7 @@ public sealed partial class PngVisualBlockRenderer {
         foreach (var pipeline in map.Pipelines) DrawWardleyPipeline(canvas, pipeline, layout, theme);
         foreach (var link in map.Links) DrawWardleyLink(canvas, link, layout, theme);
         foreach (var evolution in map.Evolutions) DrawWardleyEvolution(canvas, evolution, layout, theme);
-        foreach (var note in map.Notes) DrawAlignedTextAtBaseline(canvas, note.Text, VisualBlockRendering.ProjectWardleyX(layout.Plot, note.Evolution), VisualBlockRendering.ProjectWardleyY(layout.Plot, note.Visibility), 150, TextAlignment.Left, theme.MutedText, VisualBlockRendering.BodyFontSize(theme, 10.5), true);
+        foreach (var note in map.Notes) DrawFittedBodyText(canvas, note.Text, VisualBlockRendering.ProjectWardleyX(layout.Plot, note.Evolution), VisualBlockRendering.ProjectWardleyY(layout.Plot, note.Visibility), 150, 24, TextAlignment.Left, theme.MutedText, theme, 10.5, 700);
         foreach (var marker in map.Markers) DrawWardleyMarker(canvas, marker, layout, theme);
         foreach (var node in layout.Nodes) DrawWardleyNode(canvas, node, map);
         foreach (var annotation in map.Annotations) DrawWardleyAnnotation(canvas, annotation, layout, theme);
@@ -37,12 +37,12 @@ public sealed partial class PngVisualBlockRenderer {
 
         canvas.DrawLine(plot.X, plot.Bottom, plot.Right, plot.Bottom, theme.Axis, 1.4, RasterLineCap.Butt);
         canvas.DrawLine(plot.X, plot.Y, plot.X, plot.Bottom, theme.Axis, 1.4, RasterLineCap.Butt);
-        DrawAlignedTextAtBaseline(canvas, "Visibility", Math.Max(0, plot.X - 54), plot.Y + plot.Height * 0.50, 48, TextAlignment.Center, theme.MutedText, VisualBlockRendering.BodyFontSize(theme, 11.5), true);
-        DrawAlignedTextAtBaseline(canvas, "Evolution", plot.X + plot.Width * 0.38, plot.Bottom + 38, plot.Width * 0.24, TextAlignment.Center, theme.MutedText, VisualBlockRendering.BodyFontSize(theme, 11.5), true);
+        DrawFittedBodyText(canvas, "Visibility", Math.Max(0, plot.X - 54), plot.Y + plot.Height * 0.50, 48, 20, TextAlignment.Center, theme.MutedText, theme, 11.5, 700);
+        DrawFittedBodyText(canvas, "Evolution", plot.X + plot.Width * 0.38, plot.Bottom + 38, plot.Width * 0.24, 20, TextAlignment.Center, theme.MutedText, theme, 11.5, 700);
         var stages = map.Stages.Count == 0 ? new[] { "Genesis", "Custom", "Product", "Commodity" } : map.Stages;
         for (var index = 0; index < stages.Count; index++) {
             var x = plot.X + plot.Width * (index + 0.5) / stages.Count;
-            DrawAlignedTextAtBaseline(canvas, stages[index], x - plot.Width / stages.Count * 0.5 + 4, plot.Bottom + 18, plot.Width / stages.Count - 8, TextAlignment.Center, theme.MutedText, VisualBlockRendering.BodyFontSize(theme, 10.5), true);
+            DrawFittedBodyText(canvas, stages[index], x - plot.Width / stages.Count * 0.5 + 4, plot.Bottom + 18, plot.Width / stages.Count - 8, 16, TextAlignment.Center, theme.MutedText, theme, 10.5, 600);
         }
     }
 
@@ -52,7 +52,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (link.Dashed) canvas.DrawDashedLine(from.X, from.Y, to.X, to.Y, color, 1.2, 5, 5);
         else canvas.DrawLine(from.X, from.Y, to.X, to.Y, color, 1.2, RasterLineCap.Butt);
         DrawWardleyFlowHint(canvas, link, from.X, from.Y, to.X, to.Y, color);
-        if (link.Label.Length > 0) DrawAlignedTextAtBaseline(canvas, link.Label, (from.X + to.X) / 2 - 50, (from.Y + to.Y) / 2 - 5, 100, TextAlignment.Center, theme.MutedText, VisualBlockRendering.BodyFontSize(theme, 9.5), false);
+        if (link.Label.Length > 0) DrawFittedBodyText(canvas, link.Label, (from.X + to.X) / 2 - 50, (from.Y + to.Y) / 2 - 5, 100, 16, TextAlignment.Center, theme.MutedText, theme, 9.5, 600);
     }
 
     private static void DrawWardleyFlowHint(RgbaCanvas canvas, WardleyMapLink link, double fromX, double fromY, double toX, double toY, ChartColor color) {
@@ -97,7 +97,7 @@ public sealed partial class PngVisualBlockRenderer {
             maxX = Math.Max(maxX, x);
             canvas.DrawCircle(x, parent.Y, 4.5, theme.PlotBackground);
             canvas.DrawCircleOutline(x, parent.Y, 4.5, theme.Axis, 1);
-            DrawAlignedTextAtBaseline(canvas, child.Label, x + 6, parent.Y + 14, 82, TextAlignment.Left, theme.MutedText, VisualBlockRendering.BodyFontSize(theme, 9.5), false);
+            DrawFittedBodyText(canvas, child.Label, x + 6, parent.Y + 14, 82, 16, TextAlignment.Left, theme.MutedText, theme, 9.5, 600);
         }
 
         var border = ChartCurveFlattening.RoundedRectangleFromTopEdge(minX - 14, parent.Y - 22, maxX - minX + 28, 44, 7, 7, canvas.DeviceScale);
@@ -119,17 +119,17 @@ public sealed partial class PngVisualBlockRenderer {
         if (node.Inertia) canvas.DrawLine(placement.X + 16, placement.Y - 9, placement.X + 16, placement.Y + 9, theme.Text, 4, RasterLineCap.Butt);
         var labelX = placement.X + (node.LabelOffsetX ?? (node.Kind == WardleyMapNodeKind.Anchor ? -45 : 10));
         var labelY = placement.Y + (node.LabelOffsetY ?? -10);
-        DrawAlignedTextAtBaseline(canvas, node.Label, labelX, labelY, 120, node.Kind == WardleyMapNodeKind.Anchor ? TextAlignment.Center : TextAlignment.Left, theme.Text, VisualBlockRendering.BodyFontSize(theme, 10.5), true);
+        DrawFittedBodyText(canvas, node.Label, labelX, labelY, 120, 20, node.Kind == WardleyMapNodeKind.Anchor ? TextAlignment.Center : TextAlignment.Left, theme.Text, theme, 10.5, node.Kind == WardleyMapNodeKind.Anchor ? 800 : 600);
     }
 
     private static void DrawWardleyAnnotation(RgbaCanvas canvas, WardleyMapAnnotation annotation, VisualBlockRendering.WardleyMapLayout layout, ChartTheme theme) {
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, annotation.Evolution);
         var y = VisualBlockRendering.ProjectWardleyY(layout.Plot, annotation.Visibility);
-        var radius = VisualBlockRendering.BodyFontSize(theme, 10);
+        var radius = Math.Min(24, VisualBlockRendering.BodyFontSize(theme, 10));
         canvas.DrawCircle(x, y, radius, theme.PlotBackground);
         canvas.DrawCircleOutline(x, y, radius, theme.Axis, 1);
-        DrawAlignedTextAtBaseline(canvas, annotation.Number.ToString(System.Globalization.CultureInfo.InvariantCulture), x - radius * 0.8, y + radius * 0.4, radius * 1.6, TextAlignment.Center, theme.Text, VisualBlockRendering.BodyFontSize(theme, 9), true);
-        if (annotation.Text.Length > 0) DrawAlignedTextAtBaseline(canvas, annotation.Text, x + radius + 3, y - 4, 150, TextAlignment.Left, theme.MutedText, VisualBlockRendering.BodyFontSize(theme, 9), false);
+        DrawFittedBodyText(canvas, annotation.Number.ToString(System.Globalization.CultureInfo.InvariantCulture), x - radius * 0.8, y + radius * 0.4, radius * 1.6, radius * 1.6, TextAlignment.Center, theme.Text, theme, 9, 800);
+        if (annotation.Text.Length > 0) DrawFittedBodyText(canvas, annotation.Text, x + radius + 3, y - 4, 150, 20, TextAlignment.Left, theme.MutedText, theme, 9, 600);
     }
 
     private static void DrawWardleyMarker(RgbaCanvas canvas, WardleyMapMarker marker, VisualBlockRendering.WardleyMapLayout layout, ChartTheme theme) {
@@ -139,6 +139,6 @@ public sealed partial class PngVisualBlockRenderer {
         var path = VisualBlockRendering.WardleyMarkerPath(x, y, marker.Kind);
         canvas.FillPathData(path, theme.PlotBackground);
         canvas.StrokePathData(path, color, 1, RasterLineCap.Butt, RasterLineJoin.Miter);
-        DrawAlignedTextAtBaseline(canvas, marker.Label, x - 24, y + 25, 98, TextAlignment.Center, theme.Text, VisualBlockRendering.BodyFontSize(theme, 9), true);
+        DrawFittedBodyText(canvas, marker.Label, x - 24, y + 25, 98, 20, TextAlignment.Center, theme.Text, theme, 9, 700);
     }
 }

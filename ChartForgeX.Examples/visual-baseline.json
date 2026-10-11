@@ -4994,6 +4994,30 @@
       }
     },
     {
+      "name": "mermaid-source-font-size-fishbone-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 520,
+      "logicalWidth": 900,
+      "logicalHeight": 520,
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 234000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 675,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-source-font-size-gitgraph",
       "layout": {
         "heightMode": "fixed",
@@ -5206,6 +5230,30 @@
         "minVisiblePixels": 270000,
         "minTransparentPixels": 0,
         "minDistinctColors": 733,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-wardley-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 600,
+      "logicalWidth": 900,
+      "logicalHeight": 600,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 270000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 610,
         "maxEdgeInkPixels": 0
       }
     },
