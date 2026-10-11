@@ -8,15 +8,17 @@ internal static partial class RasterStroker {
     private const int MaximumDashPieces = 100000;
 
     internal sealed class DashBudget {
-        private int _pieces;
-        internal void Consume() {
-            if (++_pieces > MaximumDashPieces) throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");
+        private readonly HashSet<(int Path, int Segment, double Cycle, int Entry)> _pieces = new();
+        internal void Consume(int path, int segment, double cycle, int entry) {
+            // Tile bleed may revisit a dash. Its contour, segment and pattern identity remain unchanged.
+            if (_pieces.Add((path, segment, cycle, entry)) && _pieces.Count > MaximumDashPieces)
+                throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");
         }
     }
 
     /// <summary>Clips invisible lengths before splitting dashes, retaining their phase and joins.</summary>
     internal static List<List<ChartPoint>> Dash(IReadOnlyList<ChartPoint> points, IReadOnlyList<double> pattern,
-        double left, double top, double right, double bottom, double dashOffset, DashBudget budget) {
+        double left, double top, double right, double bottom, double dashOffset, DashBudget budget, int pathIndex) {
         var lengths = new List<double>(pattern.Count * 2);
         double total = 0;
         foreach (double value in pattern) {
@@ -39,6 +41,9 @@ internal static partial class RasterStroker {
                 phase = (phase + length % total) % total; run = null; continue;
             }
             if (first > 0) run = null;
+            var segmentPhase = phase;
+            var firstPosition = length * first;
+            var cycle = Math.Floor(firstPosition / total) + Math.Floor((segmentPhase + firstPosition % total) / total);
             phase = (phase + (length * first) % total) % total;
             int index = 0;
             double offset = phase;
@@ -47,18 +52,18 @@ internal static partial class RasterStroker {
             while (position < end) {
                 // Count painted pieces, including zero-length dots. Gap steps alternate with
                 // these bounded entries and do not consume outline memory.
-                if ((index & 1) == 0) budget.Consume();
+                if ((index & 1) == 0) budget.Consume(pathIndex, i, cycle, index);
                 double remaining = lengths[index] - offset;
                 if (remaining <= 0) {
                     if (lengths[index] == 0 && (index & 1) == 0) runs.Add(new List<ChartPoint> { DashPoint(a, b, position / length) });
-                    index = (index + 1) % lengths.Count; offset = 0; continue;
+                    index = (index + 1) % lengths.Count; if (index == 0) cycle++; offset = 0; continue;
                 }
                 bool reachedBoundary = remaining <= end - position;
                 double next = Math.Min(end, position + remaining);
                 if (next <= position) {
                     // A modulo/subtraction residue can be smaller than the coordinate's ULP.
                     // Finish that already consumed entry without losing the following dash.
-                    if (offset > 0) { index = (index + 1) % lengths.Count; offset = 0; continue; }
+                    if (offset > 0) { index = (index + 1) % lengths.Count; if (index == 0) cycle++; offset = 0; continue; }
                     throw new InvalidOperationException("The stroke dash pattern is too fine for its coordinates.");
                 }
                 if ((index & 1) == 0) {
@@ -67,7 +72,7 @@ internal static partial class RasterStroker {
                     run.Add(stop);
                 } else run = null;
                 phase = (phase + (next - position) % total) % total;
-                if (reachedBoundary) { index = (index + 1) % lengths.Count; offset = 0; }
+                if (reachedBoundary) { index = (index + 1) % lengths.Count; if (index == 0) cycle++; offset = 0; }
                 else offset += next - position;
                 position = next;
             }

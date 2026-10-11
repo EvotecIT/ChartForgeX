@@ -8,6 +8,24 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class RasterDashBoundsTests {
+    [Theory]
+    [InlineData(64)]
+    [InlineData(256)]
+    [InlineData(1024)]
+    public void ThickAcceptedDashesDoNotSpendTheBudgetAgainForAdjacentTileBleed(double width) {
+        var canvas = new RgbaCanvas(30000, 4, 1);
+        canvas.StrokePolylines(new[] { new[] { new ChartPoint(0, 2), new ChartPoint(30000, 2) } },
+            ChartColors.Black, width, RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .25, .25 });
+        Assert.Contains(canvas.Pixels, value => value > 0);
+    }
+
+    [Fact]
+    public void SvgThickDashTilesShareTheSameUniquePieceBudget() {
+        var result = SvgRasterizer.Rasterize("<svg xmlns='http://www.w3.org/2000/svg' width='30000' height='4'><path d='M0 2 H30000' fill='none' stroke='#000' stroke-width='1024' stroke-dasharray='.25 .25'/></svg>");
+        Assert.Empty(result.Diagnostics);
+        Assert.Contains(result.Image.Pixels, value => value > 0);
+    }
+
     [Fact]
     public void OneStrokeSharesTheDashBudgetAcrossTilesAndContours() {
         var canvas = new RgbaCanvas(12000, 4, 1);
