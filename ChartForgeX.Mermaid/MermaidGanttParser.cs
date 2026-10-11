@@ -11,6 +11,7 @@ internal static partial class MermaidGanttParser {
     public static void ParseStatements(MermaidGanttDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         string? currentSection = null;
         var tasks = new List<TaskDefinition>();
+        var taskStatements = new List<(MermaidRawStatement Statement, string? Section)>();
         var taskIds = new Dictionary<string, TaskDefinition>(StringComparer.Ordinal);
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
             var raw = lines[index];
@@ -18,7 +19,8 @@ internal static partial class MermaidGanttParser {
             if (trimmed.Length == 0 || trimmed.StartsWith("%%", StringComparison.Ordinal)) continue;
 
             var span = new MermaidSourceSpan(index + 1, LeadingWhitespace(raw) + 1, trimmed.Length);
-            document.Statements.Add(new MermaidRawStatement(trimmed, span));
+            var statement = new MermaidRawStatement(trimmed, span);
+            document.Statements.Add(statement);
 
             if (StartsWithKeyword(trimmed, "title")) document.Title = trimmed.Substring(5).Trim();
             else if (StartsWithKeyword(trimmed, "dateFormat")) document.DateFormat = trimmed.Substring(10).Trim();
@@ -46,14 +48,15 @@ internal static partial class MermaidGanttParser {
                 currentSection = trimmed.Substring(7).Trim();
                 if (currentSection.Length == 0) Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt section names must not be empty.");
                 else document.Sections.Add(new MermaidGanttSection(currentSection, span));
-            } else {
-                var task = ParseTaskDefinition(trimmed, span, currentSection, tasks.Count, result);
-                if (task == null) continue;
-                tasks.Add(task);
-                if (!string.IsNullOrWhiteSpace(task.Id)) {
-                    if (taskIds.ContainsKey(task.Id!)) Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt task id '" + task.Id + "' is already declared.");
-                    else taskIds.Add(task.Id!, task);
-                }
+            } else taskStatements.Add((statement, currentSection));
+        }
+        foreach (var declaration in taskStatements) {
+            var task = ParseTaskDefinition(declaration.Statement.Text, declaration.Statement.Span, declaration.Section, tasks.Count, document, result);
+            if (task == null) continue;
+            tasks.Add(task);
+            if (!string.IsNullOrWhiteSpace(task.Id)) {
+                if (taskIds.ContainsKey(task.Id!)) Add(result, task.Span.Line, task.Span.Column, task.Span.Length, MermaidDiagnosticSeverity.Error, "Gantt task id '" + task.Id + "' is already declared.");
+                else taskIds.Add(task.Id!, task);
             }
         }
 
@@ -81,7 +84,7 @@ internal static partial class MermaidGanttParser {
         return false;
     }
 
-    private static TaskDefinition? ParseTaskDefinition(string text, MermaidSourceSpan span, string? section, int index, MermaidParseResult<MermaidDocument> result) {
+    private static TaskDefinition? ParseTaskDefinition(string text, MermaidSourceSpan span, string? section, int index, MermaidGanttDocument document, MermaidParseResult<MermaidDocument> result) {
         var colon = text.IndexOf(':');
         if (colon <= 0) {
             Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt tasks must use 'title : metadata' syntax.");
@@ -95,7 +98,7 @@ internal static partial class MermaidGanttParser {
             return null;
         }
 
-        var parts = SplitMetadata(rawMetadata);
+        var parts = SplitMetadata(rawMetadata, document);
         var tags = new List<string>();
         while (parts.Count > 0 && KnownTags.Contains(parts[0])) {
             tags.Add(parts[0]);
@@ -126,10 +129,25 @@ internal static partial class MermaidGanttParser {
         return new TaskDefinition(title, id, section, startSpec, endSpec!, tags, rawMetadata, span, index);
     }
 
-    private static List<string> SplitMetadata(string text) {
+    private static List<string> SplitMetadata(string text, MermaidGanttDocument document) {
         var parts = new List<string>();
-        foreach (var raw in text.Split(',')) {
-            var part = raw.Trim();
+        var chunks = text.Split(',');
+        // Complete English month-name and RFC date fallbacks contain at most one comma.
+        var maximumCommas = 1;
+        if (document.DateFormat.Length <= 256) {
+            try { maximumCommas = Math.Max(maximumCommas, MermaidGanttInputDateFormat.CalendarCommaCount(document.DateFormat)); }
+            catch (FormatException) { /* Complete-date fallbacks can still parse an unused invalid format. */ }
+        }
+        for (var index = 0; index < chunks.Length; index++) {
+            var part = chunks[index].Trim();
+            var candidate = chunks[index];
+            for (var end = index + 1; end < chunks.Length && end <= index + maximumCommas; end++) {
+                candidate += "," + chunks[end];
+                if (!TryParseDate(candidate.Trim(), document.DateFormat, out _, document.DateAnchor)) continue;
+                part = candidate.Trim();
+                index = end;
+                break;
+            }
             if (part.Length > 0) parts.Add(part);
         }
 
