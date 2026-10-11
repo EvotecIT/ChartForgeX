@@ -56,7 +56,7 @@ internal static partial class VisualColorScaleLegendScene {
         if (heading != null) bounds = new ChartRect(bounds.Left, bounds.Top + headingHeight, bounds.Width, Math.Max(0, bounds.Height - headingHeight));
         var columns = Columns(builder, scale, labels, style, bounds.Width, gap, formatValues);
         var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues) : null;
-        var inlineMidpoint = compact && InlineMidpoint(builder, scale, labels, style, gap, bounds.Width, min, max, formatValues, legendStyle);
+        var inlineMidpoint = hasDomain && compact && InlineMidpoint(builder, scale, labels, style, gap, bounds.Width, min, max, formatValues, legendStyle);
         var extra = (scale.MidpointLabel != null && !inlineMidpoint ? row + gap : 0) + (missing && !missingBounds.HasValue ? row + gap : 0);
         var available = Math.Max(0, bounds.Height - gap - extra);
         var rows = captions != null ? (int)Math.Ceiling(captions.Length / (double)columns) : 1;

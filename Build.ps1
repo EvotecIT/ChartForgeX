@@ -811,6 +811,7 @@ try {
             & (Join-Path $root 'Build/Test-PackageQualification.ps1') -PackageRoot $packageRoot
         } else {
             $consumerRoot = Join-Path ([System.IO.Path]::GetTempPath()) "ChartForgeX-package-consumer-$([Guid]::NewGuid().ToString('N'))"
+            $consumerPackageCache = Join-Path $consumerRoot '.nuget-packages'
             $consumerSucceeded = $false
             try {
                 New-Item -ItemType Directory -Path $consumerRoot | Out-Null
@@ -832,7 +833,7 @@ try {
                     @"
     <configuration>
       <config>
-        <add key="globalPackagesFolder" value="$consumerRoot\.nuget-packages" />
+        <add key="globalPackagesFolder" value="$consumerPackageCache" />
       </config>
       <packageSources>
         <clear />
@@ -855,9 +856,9 @@ try {
       </packageSourceMapping>
     </configuration>
 "@ | Set-Content -Path (Join-Path $consumerRoot 'NuGet.config') -Encoding UTF8
-                    Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Html', '--version', $htmlPackageVersion) -Description 'Package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
-                    Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Mermaid', '--version', $mermaidPackageVersion) -Description 'Mermaid package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
-                    Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Markup.Mermaid', '--version', $markupMermaidPackageVersion) -Description 'Mermaid markup package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                    Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Interactivity.Html', '--version', $htmlPackageVersion, '--package-directory', $consumerPackageCache) -Description 'Package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                    Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Mermaid', '--version', $mermaidPackageVersion, '--package-directory', $consumerPackageCache) -Description 'Mermaid package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
+                    Invoke-DotNetCommand -Arguments @('add', 'package', 'ChartForgeX.Markup.Mermaid', '--version', $markupMermaidPackageVersion, '--package-directory', $consumerPackageCache) -Description 'Mermaid markup package consumer dependency restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet
                     Copy-Item -LiteralPath (Join-Path $root 'Build/PackageConsumers/Adapters/Program.cs') -Destination (Join-Path $consumerRoot 'Program.cs')
                     Copy-Item -LiteralPath (Join-Path $root 'Build/PackageConsumers/PackageAssertions.cs') -Destination $consumerRoot
                     Invoke-DotNetCommand -Arguments @('run', '-c', 'Release', '--no-restore') -Description 'Package consumer validation' -TimeoutSeconds $PackageConsumerTimeoutSeconds -Quiet

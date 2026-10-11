@@ -19,7 +19,7 @@ internal static partial class SvgRasterRenderer {
             inverse.Transform(new ChartPoint(0,0)),inverse.Transform(new ChartPoint(canvas.Width,0)),
             inverse.Transform(new ChartPoint(0,canvas.Height)),inverse.Transform(new ChartPoint(canvas.Width,canvas.Height)) } };
         var clip = SvgRasterGradientValues.Bounds(corners);
-        double scale = canvas.PixelsPerUnit * Math.Sqrt(matrix.A*matrix.A + matrix.B*matrix.B + matrix.C*matrix.C + matrix.D*matrix.D);
+        double scale = canvas.PixelsPerUnit * matrix.MaximumScale;
         var outlines = RasterStroker.CreateOutline(local, style.StrokeWidth, LineCap(style.StrokeLineCap), LineJoin(style.StrokeLineJoin),
             style.StrokeMiterLimit, style.StrokeDashArray, style.StrokeDashOffset, scale, clip.Left, clip.Top, clip.Left+clip.Width, clip.Top+clip.Height);
         for (int i=0;i<outlines.Count;i++) outlines[i] = TransformRing(outlines[i],matrix);
