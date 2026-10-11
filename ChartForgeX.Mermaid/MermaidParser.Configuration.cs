@@ -163,7 +163,7 @@ public sealed partial class MermaidParser {
 
     private static void ReportRadarCurvePolicy(MermaidDocument document, MermaidParseResult<MermaidDocument> result) {
         if (!(document is MermaidRadarDocument radar) || !string.Equals(radar.Graticule, "polygon", StringComparison.OrdinalIgnoreCase)
-            || !document.Configuration.RadarCurveTension.HasValue) return;
+            || document.Configuration.Radar?.CurveTension == null) return;
         var setting = document.Configuration.Last("radar.curveTension")!;
         Add(result, setting.Span.Line, setting.Span.Column, setting.Span.Length, MermaidDiagnosticSeverity.Warning,
             "Mermaid source configuration 'radar.curveTension' is retained but polygon graticules use straight curves unless a host override is supplied.",
