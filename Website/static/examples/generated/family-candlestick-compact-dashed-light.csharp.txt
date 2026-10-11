@@ -23,6 +23,33 @@ System.IO.File.WriteAllText("visual.html", prepared.ToArtifact("example", Visual
 
 
 public static partial class V2GalleryModels {
+    private static Chart AngularReversal(ChartSeriesKind kind) {
+        ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+        Chart chart;
+        if (kind == ChartSeriesKind.Radar) {
+            chart = Chart.Create().WithXLabels("North", "East", "South", "West").WithYAxisBounds(0, 100).WithDataLabels(false)
+                .AddRadarArea("Observed", Points(58, 76, 69, 84)).AddRadarLine("Target", Points(75, 85, 80, 90));
+            chart.Series[0].Radar.FillOpacity = .2;
+            chart.Series[0].ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 5; });
+            chart.Series[1].ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Radius = 4; });
+        } else if (kind == ChartSeriesKind.Polar) {
+            var angles = new[] { 0d, .55, 1.35, 2.8, 3.65, 5.4 };
+            var observed = new[] { 84d, 62, 96, 58, 78, 69 }; var expected = new[] { 72d, 76, 82, 70, 74, 80 };
+            chart = Chart.Create().WithYAxisBounds(0, 100).WithDataLabels(false)
+                .ConfigureXAxis(axis => axis.LabelFormatter = angle => (angle * 180 / Math.PI).ToString("0", CultureInfo.InvariantCulture) + "°")
+                .AddPolar("Observed", angles.Select((angle, index) => new ChartPoint(angle, observed[index])))
+                .AddPolar("Expected", angles.Select((angle, index) => new ChartPoint(angle, expected[index])));
+        } else {
+            chart = Chart.Create().WithXLabels("North", "East", "South", "West").WithDataLabels()
+                .AddPolarArea("Revenue", Points(92, 0, 58, 74));
+            chart.Series[0].WithPointColor(0, ChartColor.FromHex("#2563EB")).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
+        }
+        return chart.ConfigureXAxis(axis => axis.WithReversal());
+    }
+}
+
+
+public static partial class V2GalleryModels {
     private static Chart AxisPrecision() => Chart.Create().WithXAxis("Measurement").WithYAxis("Fitted drift")
         .AddTrendLine("Least-squares drift", Enumerable.Range(0, 4096)
             .Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)));
@@ -525,6 +552,31 @@ public static partial class V2GalleryModels {
             chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
             return chart;
         }
+        if (kind == ChartSeriesKind.RangeBar) {
+            var horizontal = variant is "horizontal" or "compact-horizontal";
+            var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk")
+                .AddRangeBar("Expected", new[] { new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30), new ChartInterval(3, 15, 35), new ChartInterval(4, 25, 50) })
+                .AddRangeBar("Observed", new[] { new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55) })
+                .ConfigureRangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithDataLabels();
+            if (horizontal) chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+            else chart.WithYAxis("Delivery time (minutes)");
+            return chart;
+        }
+        if (kind == ChartSeriesKind.BoxPlot) {
+            var horizontal = variant is "horizontal" or "compact-horizontal";
+            var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk")
+                .AddBoxPlot("Expected", new[] { new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35),
+                    new ChartBoxPlot(3, 12, 20, 28, 35, 45), new ChartBoxPlot(4, 20, 30, 35, 45, 55) })
+                .AddBoxPlot("Observed", new[] { new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
+                    new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58) })
+                .ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .WithDataLabels();
+            chart.Series[1].WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
+            if (horizontal) chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+            else chart.WithYAxis("Delivery time (minutes)");
+            return chart;
+        }
         if (kind == ChartSeriesKind.Waterfall) {
             var horizontal = variant is "horizontal" or "compact-horizontal";
             var chart = Chart.Create().WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance")
@@ -584,6 +636,41 @@ public static partial class V2GalleryModels {
     }
 
     private static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart? PartialColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        if (kind is not (ChartSeriesKind.TileMap or ChartSeriesKind.Scatter)
+            || variant is not ("partial-color-range" or "compact-partial-color-range")) return null;
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var chart = Chart.Create().ConfigureLabels(labels => labels.NoData = "Not reported");
+        if (kind == ChartSeriesKind.TileMap) {
+            var codes = new[] { "CA", "TX", "NY", "FL", "WA", "IL" };
+            var counts = new[] { 0d, 18, 42, 76, 29, 51 };
+            return chart.AddTileMap("Requests", ChartTileMapCatalog.Get("us-states"),
+                codes.Select((code, index) => new ChartRegionMapItem(code, counts[index])))
+                .WithMapLabels().WithMapColorScale(ChartColorScale.Sequential(colors.SequentialRamp)
+                    .WithValueRange(0, null).WithLabels("None", null, "Observed peak").WithNoDataColor(colors.Border))
+                .ConfigureMapColorDimension(options => {
+                    options.Name = "Requests"; options.ValueFormat = ChartValueFormat.Number("0", CultureInfo.InvariantCulture);
+                    options.LegendStyle = ChartColorLegendStyle.Gradient;
+                });
+        }
+        var duration = new[] { 18d, 30, 24, 44, 32 };
+        var completion = new double?[] { 55, 82, null, 68, 95 };
+        chart.WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
+            .AddScatter("Recorded batches", completion.Select((value, index) =>
+                new ChartPoint((index + 1) * 16, duration[index]).WithColorValue(value)));
+        chart.Series[0].WithColorScale(ChartColorScale.Sequential(colors.Palette[0], colors.Status.Pass.Fill)
+                .WithValueRange(null, 100).WithLabels("Observed minimum", null, "Goal").WithNoDataColor(colors.Border))
+            .ConfigureColorDimension(options => {
+                options.Name = "Completion"; options.ValueFormat = ChartValueFormat.Number("0'%'", CultureInfo.InvariantCulture);
+                options.LegendStyle = ChartColorLegendStyle.Swatches;
+            }).WithInteractionKey("recorded-batches");
+        return chart;
+    }
 }
 
 
@@ -673,6 +760,29 @@ public static partial class V2GalleryModels {
             chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, "20 · Target"));
         }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
+    private static Chart RangeBarEndpointLabels(string variant) {
+        var horizontal = variant.Contains("horizontal");
+        var chart = Chart.Create().WithXLabels("Standard", "Express", "Bulk")
+            .AddRangeBar("Expected", new[] { new ChartInterval(1, 15, 35), new ChartInterval(2, 10, 30), new ChartInterval(3, 25, 50) })
+            .AddRangeBar("Observed", new[] { new ChartInterval(1, 20, 42), new ChartInterval(2, 32, 12), new ChartInterval(3, 30, 55) })
+            .ConfigureRangeBar(options => {
+                options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+                options.LabelContent = ChartRangeBarLabelContent.Endpoints;
+                options.EndpointLabelFormatter = label => label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
+            }).WithBarStyle(ChartBarStyle.Flat).WithDataLabels();
+        chart.Series[1].WithPointLabel(1, "Recorded express delivery");
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 70);
+        if (horizontal) {
+            chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+            chart.ConfigureDataLabelStyle(style => style.WithFontSize(10));
+        }
+        else chart.WithYAxis("Delivery time (minutes)");
         return chart;
     }
 }
@@ -887,17 +997,20 @@ public static partial class V2GalleryModels {
         var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
         var precisionVariant = (variant is "precision" or "compact-precision") && kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is "authored-total" or "compact-authored-total") && kind == ChartSeriesKind.Sunburst;
-        var horizontalWaterfall = (variant is "horizontal" or "compact-horizontal") && kind == ChartSeriesKind.Waterfall;
+        var horizontalCartesian = (variant is "horizontal" or "compact-horizontal") && kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot;
+        var endpointLabels = kind == ChartSeriesKind.RangeBar && variant is "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels";
+        var angularReversalVariant = (variant is "angular-reversal" or "compact-angular-reversal") && kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar or ChartSeriesKind.PolarArea;
         var financialDashVariant = (variant is "dashed" or "compact-dashed") && kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc;
         var radialLabelVariant = (variant is "axis-labels" or "compact-axis-labels" or "all-labels" or "compact-all-labels") && kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
         var colorScaleVariant = (variant is "color-scale" or "compact-color-scale") && kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
         var positionedColorVariant = (variant is "positioned-color-scale" or "compact-positioned-color-scale") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
         var colorDimensionVariant = (variant is "color-dimension" or "compact-color-dimension") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
         var colorLegendVariant = (variant is "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalWaterfall && !financialDashVariant && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant && !colorLegendVariant)
+        var partialColorVariant = (variant is "partial-color-range" or "compact-partial-color-range") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter;
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalCartesian && !angularReversalVariant && !financialDashVariant && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant && !colorLegendVariant && !endpointLabels && !partialColorVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (financialDashVariant ? FinancialDashes(kind) : null) ?? (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
-            ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+        var chart = (endpointLabels ? RangeBarEndpointLabels(variant) : null) ?? (angularReversalVariant ? AngularReversal(kind) : null) ?? (financialDashVariant ? FinancialDashes(kind) : null) ?? (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant || horizontalCartesian ? GeometryOptions(kind, variant) : null)
+            ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant && !colorDimensionVariant && !colorLegendVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
         if (variant == "options" && kind == ChartSeriesKind.Area) {
