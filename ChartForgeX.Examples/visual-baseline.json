@@ -2,54 +2,6 @@
   "version": 1,
   "charts": [
     {
-      "name": "mermaid-packet-descending",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 900,
-      "height": 420,
-      "logicalWidth": 900.0,
-      "logicalHeight": 420.0,
-      "svg": {
-        "minVisualNodes": 11,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 189000,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 734,
-        "maxEdgeInkPixels": 2640
-      }
-    },
-    {
-      "name": "mermaid-packet-source-options",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 900,
-      "height": 420,
-      "logicalWidth": 900.0,
-      "logicalHeight": 420.0,
-      "svg": {
-        "minVisualNodes": 7,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 189000,
-        "minTransparentPixels": 0,
-        "minDistinctColors": 588,
-        "maxEdgeInkPixels": 2640
-      }
-    },
-    {
       "name": "advanced-topology",
       "layout": {
         "heightMode": "natural",
@@ -4894,6 +4846,54 @@
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
         "minDistinctColors": 493,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-packet-descending",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 420,
+      "logicalWidth": 900.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 189000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 755,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-packet-source-options",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 420,
+      "logicalWidth": 900.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 189000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 619,
         "maxEdgeInkPixels": 0
       }
     },

@@ -8,6 +8,7 @@ using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
 
 
 internal static class Program {
@@ -66,6 +67,23 @@ internal static class Program {
         if (!useCase.Artifact.ToSvg().Contains("data-node-shape=\"Actor\"", StringComparison.Ordinal) || useCase.Artifact.ToPng().Length <= 64) throw new InvalidOperationException("Mermaid source package SVG/PNG output failed.");
         var useCaseJson = useCase.Artifact.ToInterchangeJson();
         if (VisualArtifactInterchangeEnvelope.FromJson(useCaseJson).ToJson() != useCaseJson) throw new InvalidOperationException("Mermaid source package interchange failed.");
+
+        const string packetSource = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    showBits: false\n    bitOrder: descending\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"";
+        var packet = new MermaidParser().ParsePacket(packetSource);
+        if (packet.HasErrors || packet.Document is null) throw new InvalidOperationException("Packet package parser failed.");
+        var packetBlock = packet.Document.ToPacketLayoutBlock();
+        PackageAssertions.Require(packetBlock.BitsPerRow == 16 && !packetBlock.ShowBitNumbers && packetBlock.BitOrder == PacketBitOrder.Descending,
+            "Packet source configuration did not reach the native package model.");
+        PackageAssertions.Png(packetBlock.ToPng());
+        var packetMarkup = new MermaidVisualMarkupParser(new MermaidRenderOptions {
+            Packet = new MermaidPacketRenderOptions { ShowBitNumbers = true }
+        }).Parse("```mermaid\n" + packetSource + "\n```");
+        PackageAssertions.Require(!packetMarkup.HasErrors && packetMarkup.Artifacts.Count == 1 &&
+            packetMarkup.Artifacts[0].Model is PacketLayoutBlock fencedPacket && fencedPacket.BitsPerRow == 16 &&
+            fencedPacket.ShowBitNumbers && fencedPacket.BitOrder == PacketBitOrder.Descending,
+            "Packet package Markdown host overrides did not preserve independent source settings.");
+        var packetJson = packetMarkup.Artifacts[0].ToInterchangeJson();
+        PackageAssertions.Require(VisualArtifactInterchangeEnvelope.FromJson(packetJson).ToJson() == packetJson, "Packet package interchange failed.");
 
         var tableMarkup = new VisualMarkupParser().Parse("~~~chartforgex table v1 {#package-table}\n| State |\n| --- |\n| Ready |\n~~~");
         if (tableMarkup.HasErrors || tableMarkup.Artifacts.Count != 1)

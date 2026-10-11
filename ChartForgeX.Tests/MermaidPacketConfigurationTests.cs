@@ -142,6 +142,7 @@ public sealed class MermaidPacketConfigurationTests {
         block.BitOrder = PacketBitOrder.Descending;
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + block.ToSvg() + "</body></html>", width, 300);
+        Assert.All(await session.Page.Locator("[data-cfx-role='visual-text']").AllTextContentsAsync(), caption => Assert.False(string.IsNullOrWhiteSpace(caption)));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(captures)) return;

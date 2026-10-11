@@ -37,7 +37,7 @@ internal static class MermaidExamples {
         foreach (var item in examples) {
             var result = MermaidRenderer.Render(item.Value);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
-            if (item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
+            if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
                 block.Options.ShowCard = false;
             result.Artifact.SaveSvg(Path.Combine(output, item.Key + ".svg"));
             result.Artifact.SavePng(Path.Combine(output, item.Key + ".png"));
