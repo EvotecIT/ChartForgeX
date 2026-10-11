@@ -48,8 +48,6 @@ public sealed class ChartSunburstOptions {
     }
     /// <summary>Gets or sets the numeric color scale. When omitted, supplied color observations use the theme's sequential ramp.</summary>
     public ChartColorScale? ColorScale { get; set; }
-    /// <summary>Gets or sets whether the independent color legend is drawn when the chart legend is enabled. Default: true.</summary>
-    public bool ShowColorScaleLegend { get; set; } = true;
     /// <summary>Gets the independent color measurement's name and number display policy.</summary>
     public ChartColorDimensionOptions ColorDimension { get; } = new();
 }
