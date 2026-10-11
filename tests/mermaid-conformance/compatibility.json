@@ -15,14 +15,6 @@
     }
   },
   "fixtures": {
-    "fixtures/configuration-precedence.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored ChartForgeX configuration merge example; verified with the pinned official Mermaid parsers."
-    },
     "fixtures/accessibility-dark.mmd": {
       "syntax": {
         "10": "accepted",
@@ -309,14 +301,6 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
-    "fixtures/radar-curve-tension.mmd": {
-      "syntax": {
-        "10": "rejected",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored ChartForgeX closed-curve configuration example; qualified against the pinned official Mermaid parsers and radar renderer."
-    },
     "fixtures/requirement-basic.mmd": {
       "syntax": {
         "10": "rejected",
@@ -493,6 +477,22 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/configuration-precedence.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX configuration merge example; verified with the pinned official Mermaid parsers."
+    },
+    "fixtures/radar-curve-tension.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX closed-curve configuration example; qualified against the pinned official Mermaid parsers and radar renderer."
+    },
     "fixtures/radar-capped-circle.mmd": {
       "syntax": {
         "10": "rejected",
@@ -548,6 +548,14 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX radar layout example; numeric source configuration and radar observations are checked against the pinned official Mermaid parsers."
+    },
+    "fixtures/treemap-grouped-values.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored comma-separated treemap values, qualified against pinned official Mermaid parsers. The reference removes comma separators, including nonstandard grouping. Typed node magnitudes and parent indices are compared without relying on native hierarchy layout."
     }
   }
 }
