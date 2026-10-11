@@ -375,7 +375,7 @@ internal sealed class GeoJsonReader {
     }
 
     private void SkipWhiteSpace() {
-        while (_position < _json.Length && char.IsWhiteSpace(_json[_position])) _position++;
+        while (_position < _json.Length && (_json[_position] == ' ' || _json[_position] == '\t' || _json[_position] == '\n' || _json[_position] == '\r')) _position++;
     }
 
     private bool TryRead(char c) {
