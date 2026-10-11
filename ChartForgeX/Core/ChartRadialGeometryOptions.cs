@@ -2,7 +2,7 @@ using System;
 
 namespace ChartForgeX.Core;
 
-/// <summary>Immutable geometry shared by numeric radial bars and columns. Angles advance clockwise from the positive horizontal direction.</summary>
+/// <summary>Immutable geometry for numeric radial bars and columns, including column/radar compositions. Angles advance clockwise from the positive horizontal direction.</summary>
 public sealed class ChartRadialGeometryOptions {
     /// <summary>Creates a radial viewport with a finite positive sweep of at most one turn.</summary>
     /// <param name="startAngleDegrees">The first angle in degrees; -90 starts at the top.</param>

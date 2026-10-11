@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -7,11 +8,12 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualPolarCompiler {
     /// <summary>Reserves curve overshoot while keeping every series and its guides on one radial scale.</summary>
-    private static PolarLayout FitRadarCurves(Chart chart, PolarLayout geometry, double[] categories, RadialValueScale scale) {
+    private static PolarLayout FitRadarCurves(Chart chart, PolarLayout geometry, double[] categories, IReadOnlyDictionary<ChartAxisSide, RadialValueScale> scales) {
         var extent = 1d;
         foreach (var series in chart.Series) {
             var tension = series.Radar.CurveTension ?? 0;
             if (tension == 0 || series.Points.Count == 0) continue;
+            var scale = scales[series.YAxis];
             var points = categories.Select((category, index) => {
                 var source = Find(series, category);
                 var radius = scale.Normalize(source < 0 ? 0 : series.Points[source].Y);

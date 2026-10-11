@@ -41,7 +41,7 @@ internal static partial class VisualPolarCompiler {
         var categories = radar ? chart.Series.SelectMany(series => series.Points).Select(point => point.X).Distinct().OrderBy(value => value).ToArray()
             : Enumerable.Range(0, Math.Max(4, Math.Min(12, chart.Options.XAxis.TickCount))).Select(index => Math.PI * 2 * index / Math.Max(4, Math.Min(12, chart.Options.XAxis.TickCount))).ToArray();
         if (radar && categories.Length < 3) { builder.AddDiagnostic(new VisualDiagnostic("radar.insufficient-categories", "Radar polygons need at least three distinct categories.")); return; }
-        var scale = RadialValueScale.Create(chart.Options.YAxis, chart.Series, radar ? "Radar" : "Polar");
+        var scales = RadialValueScale.ForAxes(chart, index => chart.Series[index].Points.Select(point => point.Y), radar ? "Radar" : "Polar");
         var categoryCache = new Dictionary<double, string>();
         string CategoryText(double value) {
             if (!categoryCache.TryGetValue(value, out var text)) categoryCache.Add(value, text = Category(chart, value));
@@ -49,14 +49,15 @@ internal static partial class VisualPolarCompiler {
         }
         var axes = categories.Select(CategoryText).ToArray();
         var geometry = Layout(chart, context, builder, plot, axes);
-        if (radar) geometry = FitRadarCurves(chart, geometry, categories, scale);
+        if (radar) geometry = FitRadarCurves(chart, geometry, categories, scales);
         if (geometry.Radius <= 0) { builder.AddDiagnostic(new VisualDiagnostic("polar.insufficient-space", "No radius remains after fitting polar axis labels.")); return; }
         var labels = new List<PolarLabel>();
         using (builder.PushClip(plot)) {
-            Grid(chart, context, builder, plot, geometry, categories, axes, scale, radar, labels);
+            Grid(chart, context, builder, plot, geometry, categories, axes, scales, radar, labels);
             foreach (var seriesIndex in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[seriesIndex];
                 if (series.Points.Count == 0) continue;
+                var scale = scales[series.YAxis];
                 var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
                 var raw = radar ? categories.Select(value => Find(series, value)).ToArray() : Enumerable.Range(0, series.Points.Count).ToArray();
                 var mapped = new ChartPoint[raw.Length];
@@ -72,20 +73,7 @@ internal static partial class VisualPolarCompiler {
                     ["data-cfx-form"] = radar && series.Radar.Form == ChartLineAreaForm.Area ? "area" : "line",
                     ["data-cfx-missing-policy"] = radar ? "zero" : "source"
                 })) {
-                    if (radar && series.Radar.Form == ChartLineAreaForm.Area) {
-                        var opacity = series.Radar.FillOpacity ?? context.Theme.AreaOpacity;
-                        var fill = ChartColorMath.WithOpacity(color, opacity);
-                        builder.Path(path, fill, role: "radar-area", close: true,
-                            paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, opacity)));
-                        if (series.FillPattern != ChartFillPattern.None && opacity > 0) {
-                            var hatchOpacity = Math.Min(1, opacity / Math.Max(.000001, context.Theme.AreaOpacity));
-                            builder.Pattern(path, series.FillPattern, ChartColorMath.WithOpacity(ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(80), hatchOpacity), role: "radar-pattern");
-                        }
-                    }
-                    var width = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
-                    foreach (var layer in ChartLineVisualLayers.Build(color, width, chart.Options.LineVisualStyle))
-                        if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: (radar ? "radar-outline" : "polar-line") + layer.RoleSuffix, close: radar,
-                            paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
+                    VisualPolarSeriesScene.Draw(chart, context, builder, series, path, color, radar);
                     for (var index = 0; index < mapped.Length; index++) {
                         var source = raw[index]; var value = source >= 0 ? series.Points[source].Y : 0;
                         var angle = radar ? RadarAngle(index, categories.Length) : -series.Points[source].X;
@@ -101,6 +89,8 @@ internal static partial class VisualPolarCompiler {
                             ["data-cfx-point"] = N(source), ["data-cfx-category"] = N(category), ["data-cfx-angle"] = N(radar ? angle : -angle),
                             ["data-cfx-value"] = N(value), ["data-cfx-full-label"] = formatted, ["data-cfx-missing"] = source < 0 ? "true" : "false"
                         };
+                        VisualPolarSeriesScene.DescribePoint(pointMetadata, series, source, CategoryText(category), formatted);
+                        if (series.YAxis == ChartAxisSide.Secondary) pointMetadata["data-cfx-axis"] = "secondary";
                         if (source < 0) {
                             pointMetadata["data-cfx-derived"] = "missing-category-zero";
                             pointMetadata["data-cfx-source-count"] = "0";

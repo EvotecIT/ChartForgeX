@@ -4634,6 +4634,30 @@
       }
     },
     {
+      "name": "mermaid-block-circle-routes",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 420,
+      "logicalWidth": 900,
+      "logicalHeight": 420,
+      "svg": {
+        "minVisualNodes": 9,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 189000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 847,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-class-notation",
       "layout": {
         "heightMode": "fixed",
@@ -4802,6 +4826,30 @@
       }
     },
     {
+      "name": "mermaid-radar-circle",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760.0,
+      "logicalHeight": 620.0,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 1165,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-radar-curves",
       "layout": {
         "heightMode": "fixed",
@@ -4822,6 +4870,54 @@
         "minVisiblePixels": 235598,
         "minTransparentPixels": 2,
         "minDistinctColors": 1060,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-radar-fractional-guides",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 1107,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-radar-hidden-fractional-guides",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 951,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4850,6 +4946,30 @@
       }
     },
     {
+      "name": "mermaid-radar-polygon",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760.0,
+      "logicalHeight": 620.0,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 1141,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-radar-polygon-curves",
       "layout": {
         "heightMode": "fixed",
@@ -4870,6 +4990,30 @@
         "minVisiblePixels": 235598,
         "minTransparentPixels": 2,
         "minDistinctColors": 662,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-radar-zero-guides",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 975,
         "maxEdgeInkPixels": 0
       }
     },
