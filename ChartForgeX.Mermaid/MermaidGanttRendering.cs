@@ -20,9 +20,9 @@ public static class MermaidGanttRendering {
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height);
-        chart.Options.GanttTickLabelFormatter = (value, effectiveInterval) => FormatAxisValue(value, document, effectiveInterval);
+        chart.Options.GanttTickLabelFormatter = (value, effectiveInterval) => FormatAxisValue(value, document, effectiveInterval, chart.Options.XAxis.TimeZone);
         if (!string.IsNullOrWhiteSpace(document.AxisFormat))
-            chart.WithXAxisValueFormatter(value => FormatAxisValue(value, document, null));
+            chart.WithXAxisValueFormatter(value => FormatAxisValue(value, document, null, chart.Options.XAxis.TimeZone));
         if (options.Today.HasValue && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase)) chart.WithGanttToday(options.Today.Value);
         chart.Options.GanttTodayStyle = options.TodayStyle ?? MermaidGanttTodayStyle.Parse(document.TodayMarker, out _);
         chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
@@ -103,10 +103,10 @@ public static class MermaidGanttRendering {
         return document.Header;
     }
 
-    private static string FormatAxisValue(double value, MermaidGanttDocument document, ChartTimeTickUnit? effectiveInterval) {
+    private static string FormatAxisValue(double value, MermaidGanttDocument document, ChartTimeTickUnit? effectiveInterval, TimeZoneInfo? displayZone) {
         try {
             var format = string.IsNullOrWhiteSpace(document.AxisFormat) ? DefaultAxisFormat(effectiveInterval) : document.AxisFormat!;
-            return MermaidGanttAxisFormat.Format(DateTime.FromOADate(value), format);
+            return MermaidGanttAxisFormat.Format(DateTime.FromOADate(value), format, displayZone);
         } catch (ArgumentException) {
             return value.ToString("0.##", CultureInfo.InvariantCulture);
         }
