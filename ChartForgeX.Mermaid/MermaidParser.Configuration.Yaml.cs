@@ -11,24 +11,24 @@ public sealed partial class MermaidParser {
         var lines = text.Split('\n');
         var rootIndent = int.MaxValue;
         foreach (var line in lines) {
-            if (line.Trim().Length > 0 && !line.TrimStart().StartsWith("#", StringComparison.Ordinal)) rootIndent = Math.Min(rootIndent, LeadingWhitespace(line));
+            if (TrimConfigurationYaml(line).Length > 0 && !line.TrimStart(' ', '\t').StartsWith("#", StringComparison.Ordinal)) rootIndent = Math.Min(rootIndent, ConfigurationYamlIndent(line));
         }
         var length = 0;
         var inConfiguration = false;
         for (var index = 0; index < lines.Length; index++) {
             var line = lines[index];
-            var trimmed = line.Trim();
+            var trimmed = TrimConfigurationYaml(line);
             if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
-            if (LeadingWhitespace(line) <= rootIndent)
-                inConfiguration = LeadingWhitespace(line) == rootIndent && Regex.IsMatch(trimmed, @"^config\s*:", RegexOptions.CultureInvariant);
+            if (ConfigurationYamlIndent(line) <= rootIndent)
+                inConfiguration = ConfigurationYamlIndent(line) == rootIndent && Regex.IsMatch(trimmed, @"^config[ \t]*:", RegexOptions.CultureInvariant);
             if (inConfiguration) {
                 length += line.Length + (length > 0 ? 1 : 0);
-                var flow = Regex.Match(trimmed, @"^config\s*:\s*(\{.*)$", RegexOptions.CultureInvariant);
-                if (LeadingWhitespace(line) == rootIndent && flow.Success) {
+                var flow = Regex.Match(trimmed, @"^config[ \t]*:[ \t]*(\{.*)$", RegexOptions.CultureInvariant);
+                if (ConfigurationYamlIndent(line) == rootIndent && flow.Success) {
                     var first = index;
-                    ReadConfigurationFlowMapping(lines, ref index, TrimYamlComment(flow.Groups[1].Value).Trim());
+                    ReadConfigurationFlowMapping(lines, ref index, TrimConfigurationYaml(TrimYamlComment(flow.Groups[1].Value, true)));
                     for (var extra = first + 1; extra <= index; extra++) {
-                        var continued = lines[extra].Trim();
+                        var continued = TrimConfigurationYaml(lines[extra]);
                         if (continued.Length > 0 && !continued.StartsWith("#", StringComparison.Ordinal)) length += lines[extra].Length + 1;
                     }
                     inConfiguration = false;
@@ -45,17 +45,17 @@ public sealed partial class MermaidParser {
         var lines = text.Split('\n');
         var rootIndent = int.MaxValue;
         foreach (var line in lines) {
-            if (line.Trim().Length > 0 && !line.TrimStart().StartsWith("#", StringComparison.Ordinal)) rootIndent = Math.Min(rootIndent, LeadingWhitespace(line));
+            if (TrimConfigurationYaml(line).Length > 0 && !line.TrimStart(' ', '\t').StartsWith("#", StringComparison.Ordinal)) rootIndent = Math.Min(rootIndent, ConfigurationYamlIndent(line));
         }
         for (var index = 0; index < lines.Length; index++) {
             var raw = lines[index];
-            var trimmed = raw.Trim();
+            var trimmed = TrimConfigurationYaml(raw);
             if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
-            var indent = LeadingWhitespace(raw);
+            var indent = ConfigurationYamlIndent(raw);
             if (opaqueIndent >= 0 && indent > opaqueIndent) continue;
             opaqueIndent = -1;
             while (parents.Count > 0 && indent <= parents[parents.Count - 1].Indent) CompleteConfigurationYamlParent(parents, configuration);
-            var match = Regex.Match(trimmed, @"^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*)$", RegexOptions.CultureInvariant);
+            var match = Regex.Match(trimmed, @"^([A-Za-z_][A-Za-z0-9_-]*)[ \t]*:[ \t]*(.*)$", RegexOptions.CultureInvariant);
             if (parents.Count == 0 && (indent != rootIndent || !match.Success || match.Groups[1].Value != "config")) continue;
             var span = new MermaidSourceSpan(index + 2, indent + 1, trimmed.Length);
             if (parents.Count > 0) {
@@ -74,7 +74,7 @@ public sealed partial class MermaidParser {
             var path = parents.Count == 0 ? string.Empty : parents[parents.Count - 1].Path;
             var key = match.Groups[1].Value;
             if (parents.Count > 0) path = path.Length == 0 ? key : path + "." + key;
-            var valueText = TrimYamlComment(match.Groups[2].Value).Trim();
+            var valueText = TrimConfigurationYaml(TrimYamlComment(match.Groups[2].Value, parents.Count == 0));
             if (!declared.Add(path)) { ConfigurationError(result, span, "Mermaid frontmatter configuration repeats '" + (path.Length == 0 ? "config" : path) + "'."); continue; }
             if (declared.Count > 256) { ConfigurationError(result, span, "Mermaid frontmatter configuration exceeds 256 keys."); break; }
             if (valueText.Length == 0) {
@@ -105,7 +105,7 @@ public sealed partial class MermaidParser {
                         opaqueIndent = indent;
                     } else {
                         ValidateConfigurationYamlPlainScalar(valueText);
-                        if (Regex.IsMatch(valueText, @":(?:\s|$)", RegexOptions.CultureInvariant))
+                        if (Regex.IsMatch(valueText, @":(?:[ \t]|$)", RegexOptions.CultureInvariant))
                             throw new ArgumentException("Mermaid YAML plain scalars cannot contain a mapping separator; quote strings containing a colon followed by whitespace or an ending colon.");
                         if (IsTypedConfigurationYamlScalar(valueText)) isString = false;
                     }
@@ -166,13 +166,22 @@ public sealed partial class MermaidParser {
         return MermaidConfigurationNumber.TryParse(value, out _);
     }
 
-    private static string TrimYamlComment(string value) {
+    private static string TrimConfigurationYaml(string value) => value.Trim(' ', '\t');
+
+    private static int ConfigurationYamlIndent(string value) {
+        var index = 0;
+        while (index < value.Length && (value[index] == ' ' || value[index] == '\t')) index++;
+        return index;
+    }
+
+    private static string TrimYamlComment(string value, bool flow = false) {
         var quote = '\0';
+        var first = ConfigurationYamlIndent(value);
         for (var index = 0; index < value.Length; index++) {
             var character = value[index];
             if (quote == '\0') {
-                if (character == '\'' || character == '"') quote = character;
-                else if (character == '#' && (index == 0 || char.IsWhiteSpace(value[index - 1]))) return value.Substring(0, index);
+                if ((flow || index == first) && (character == '\'' || character == '"')) quote = character;
+                else if (character == '#' && (index == 0 || value[index - 1] == ' ' || value[index - 1] == '\t')) return value.Substring(0, index);
             } else if (character == '\\' && quote == '"') index++;
             else if (character == quote) {
                 if (quote == '\'' && index + 1 < value.Length && value[index + 1] == '\'') index++;
