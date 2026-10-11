@@ -117,6 +117,8 @@ public sealed class MermaidGanttDateAnchorTests {
     [InlineData("YYYY-[Q]Q", "excludes 2026-Q1", "2026-01-02", "2d", "2026-01-04")]
     [InlineData("YYYY HH:mm", "excludes 2026 13:00", "2026-01-02T13:00", "2d", "2026-01-04")]
     [InlineData("YYYY-MM", "excludes weekends\nincludes 2026-01", "2026-01-02", "1d", "2026-01-05")]
+    [InlineData("D", "excludes Saturday, 03 January 2026", "2026-01-09", "2d", "2026-01-11")]
+    [InlineData("D", "excludes weekends\nincludes Saturday, 03 January 2026", "2026-01-02", "1d", "2026-01-03")]
     public void CalendarDatesUseTheAnchorAndDoNotBecomeRecurringRules(string format, string calendar, string input, string duration, string expectedEnd) {
         var parsed = new MermaidParser().ParseGantt("gantt\n" + calendar + "\ndateFormat " + format + "\nTask :" + input + "," + duration,
             new MermaidParseOptions { GanttDateAnchor = new DateTime(2026, 1, 2) });

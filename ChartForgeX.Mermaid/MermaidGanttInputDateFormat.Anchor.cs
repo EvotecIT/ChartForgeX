@@ -20,6 +20,18 @@ internal static partial class MermaidGanttInputDateFormat {
     internal static string? NativeCalendarKey(DateTime value, string format) => IsNativeStandardFormat(format.Trim())
         && UsesMermaidFields(Parts(format.Trim())) ? CalendarKey(value, format, nativeFormat: true) : null;
 
+    internal static int CalendarCommaCount(string format) {
+        var sample = new DateTime(2000, 2, 29);
+        // Ambiguous standards retain both accepted interpretations. A native long date
+        // must remain one date even when the Mermaid field emits no literal comma.
+        return Math.Max(Count(FormatCalendarDate(sample, format)), Count(NativeCalendarKey(sample, format)));
+        int Count(string? value) {
+            var count = 0;
+            if (value != null) foreach (var character in value) if (character == ',') count++;
+            return count;
+        }
+    }
+
     private static bool ApplyDateDefaults(StringBuilder input, StringBuilder format, DateTime? anchor) {
         DateFields(format.ToString(), out var year, out var month, out var day, out _);
         if (!year && !anchor.HasValue) return false;

@@ -71,8 +71,7 @@ internal static partial class MermaidGanttParser {
         if (string.IsNullOrWhiteSpace(value)) return tokens;
         var chunkOffset = 0;
         var chunks = (value ?? string.Empty).Split(',');
-        var literalCommas = 0;
-        foreach (var ch in MermaidGanttInputDateFormat.FormatCalendarDate(new DateTime(2000, 2, 29), format)) if (ch == ',') literalCommas++;
+        var literalCommas = MermaidGanttInputDateFormat.CalendarCommaCount(format);
         for (var index = 0; index < chunks.Length; index++) {
             var chunk = chunks[index];
             // A configured date can itself contain commas. Join only the bounded number
