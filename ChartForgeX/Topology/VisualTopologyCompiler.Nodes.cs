@@ -60,7 +60,8 @@ internal sealed partial class VisualTopologyCompiler {
                 if (_options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)) {
                     var caption = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
                     var left = hasGlyph && !caption ? mode == TopologyNodeDisplayMode.Pill ? 34 : 44 : 10;
-                    var textBounds = caption ? Bounds(node.X - 17, node.Y + node.Height + 5, node.Width + 34, (_options.MaxNodeLabelLines + 1) * 18) : Bounds(node.X + left, node.Y + 6, Math.Max(0, node.Width - left - 12), Math.Max(0, node.Height - 12));
+                    var textInset = mode == TopologyNodeDisplayMode.Pill && !string.IsNullOrEmpty(node.Subtitle) ? 4 : 6;
+                    var textBounds = caption ? Bounds(node.X - 17, node.Y + node.Height + 5, node.Width + 34, (_options.MaxNodeLabelLines + 1) * 18) : Bounds(node.X + left, node.Y + textInset, Math.Max(0, node.Width - left - 12), Math.Max(0, node.Height - textInset * 2));
                     if (mode == TopologyNodeDisplayMode.Tile) BuildTileCaption(node, accent, active);
                     else if (mode == TopologyNodeDisplayMode.Icon) BuildIconCaption(node, accent, active);
                     else if (node.Shape == TopologyNodeShape.Actor) BuildDiagramCaption(node, active);
@@ -76,7 +77,7 @@ internal sealed partial class VisualTopologyCompiler {
                 var reserved = NodeBadgeBounds(node, mode, _options);
                 var badge = Bounds(reserved.X, reserved.Y, reserved.Width, reserved.Height);
                 _builder.Rect(badge, accent, radius: 4 * _scale, role: "topology-node-badge-surface", paint: new VisualScenePaintBinding(accentPaint));
-                Text(NodeBadge(node), badge, _context.Theme.Typography.DataLabelSize * .75, _colors.Surface, 600, "topology-node-badge", 1, centered: true, paint: CardPaint(_colors.Surface));
+                Text(NodeBadge(node), badge, _context.Theme.Typography.DataLabelSize * .75, _colors.Surface, 600, "topology-node-badge", 1, centered: true, paint: CardPaint(_colors.Surface), fitSingleLine: true);
             }
         }
         _builder.AddRegion(new VisualSemanticRegion(node.Id, "topology-node", bounds, node.Label));
@@ -85,7 +86,8 @@ internal sealed partial class VisualTopologyCompiler {
     private void BuildNodeText(TopologyNode node, ChartRect bounds, ChartColor accent, bool active, bool caption) {
         var size = _context.Theme.Typography.DataLabelSize;
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
-        if (node.Details.Count > 0) size = FitNodeTextSize(node, label, bounds, size, caption);
+        if (node.Details.Count > 0 || !string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
+            size = FitNodeTextSize(node, label, bounds, size, caption);
         var titleLines = TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
         var height = Math.Min(bounds.Height, _builder.MeasureText("Ag", size * _scale, 600).LineHeight * titleLines);
         var fitSingleLine = _builder.MeasureText("Ag", size * _scale, 600).LineHeight > height;
@@ -143,6 +145,7 @@ internal sealed partial class VisualTopologyCompiler {
             if (!string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
                 height += _builder.MeasureText("Ag", size * .85 * _scale, 400).LineHeight
                     * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
+            if (node.Details.Count == 0) return height <= bounds.Height;
             var firstBaseline = Point(new ChartPoint(node.X, node.Y + NodeDetailStartOffset(node, _options))).Y;
             var detailTop = Math.Max(bounds.Top + height + 12 * _scale,
                 firstBaseline - _builder.TextAscent(size * .8 * _scale, 400));
@@ -258,7 +261,7 @@ internal sealed partial class VisualTopologyCompiler {
             string.IsNullOrWhiteSpace(authored) ? 1 : opacity, fallback);
         if (shape == TopologyIconShape.Cloud || shape == TopologyIconShape.Database || kind == TopologyNodeKind.Database) return;
         var marks = TopologyInfrastructureGlyphs.Build(shape, kind, x, y);
-        if (marks == null) { Text(NodeGlyph(node, _options), Bounds(x - 12 * glyphScale, y - 10 * glyphScale, 24 * glyphScale, 22 * glyphScale), _context.Theme.Typography.DataLabelSize * glyphScale, color, 600, "topology-node-icon", centered: true, paint: glyphPaint); return; }
+        if (marks == null) { Text(NodeGlyph(node, _options), Bounds(x - 12 * glyphScale, y - 10 * glyphScale, 24 * glyphScale, 22 * glyphScale), _context.Theme.Typography.DataLabelSize * glyphScale, color, 600, "topology-node-icon", centered: true, paint: glyphPaint, fitSingleLine: true); return; }
         foreach (var mark in marks) {
             if (mark.PathData != null) {
                 // Decode canonical authored glyph geometry, never an exported chart or SVG document.
