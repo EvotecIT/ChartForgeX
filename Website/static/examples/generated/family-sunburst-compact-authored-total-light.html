@@ -566,6 +566,50 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static readonly double?[] PositionedColorValues = { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
+
+    private static Chart? PositionedColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        if (kind is not (ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter)
+            || variant is not (&quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;)) return null;
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var scale = PositionedTemperatureScale().WithNoDataColor(colors.Border);
+        if (kind == ChartSeriesKind.TileMap) {
+            var codes = new[] { &quot;CA&quot;, &quot;TX&quot;, &quot;NY&quot;, &quot;FL&quot;, &quot;WA&quot;, &quot;IL&quot;, &quot;CO&quot; };
+            var values = PositionedColorValues.Where(value =&gt; value &gt;= 0).Select(value =&gt; value!.Value).ToArray();
+            return Chart.Create().AddTileMap(&quot;Temperature&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;),
+                codes.Select((code, index) =&gt; new ChartRegionMapItem(code, values[index])))
+                .WithMapLabels().WithMapColorScale(scale);
+        }
+        if (kind == ChartSeriesKind.Heatmap) {
+            var matrix = Chart.Create().WithXLabels(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;, &quot;F&quot;)
+                .AddHeatmapRow(&quot;Primary&quot;, PositionedColorValues.Take(6))
+                .AddHeatmapRow(&quot;Secondary&quot;, PositionedColorValues.Skip(6))
+                .WithHeatmapColorScale(scale).WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
+                .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto).WithDataLabels();
+            matrix.Series[0].WithInteractionKey(&quot;primary-measurements&quot;);
+            matrix.Series[1].WithInteractionKey(&quot;secondary-measurements&quot;);
+            return matrix;
+        }
+        var minutes = new[] { 24d, 36, 45, 20, 32, 50, 28, 41, 18, 35, 22, 48 };
+        var chart = Chart.Create().WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
+            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
+            .ConfigureLabels(labels =&gt; { labels.Color = &quot;Temperature (&#176;C)&quot;; labels.NoData = &quot;Not sampled&quot;; })
+            .AddScatter(&quot;Recorded batches&quot;, PositionedColorValues.Select((value, index) =&gt;
+                new ChartPoint((index + 1) * 8, minutes[index]).WithColorValue(value)));
+        chart.Series[0].WithColorScale(scale).WithInteractionKey(&quot;recorded-batches&quot;)
+            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+        return chart;
+    }
+
+    private static ChartColorScale PositionedTemperatureScale() =&gt; ChartColorScale.Diverging(new[] {
+        new ChartColorStop(-20, ChartColor.FromHex(&quot;#2166AC&quot;)), new ChartColorStop(-3, ChartColor.FromHex(&quot;#67A9CF&quot;))
+    }, new ChartColorStop(0, ChartColor.FromHex(&quot;#D1D5DB&quot;)), new[] {
+        new ChartColorStop(5, ChartColor.FromHex(&quot;#D9A441&quot;)), new ChartColorStop(40, ChartColor.FromHex(&quot;#B2182B&quot;))
+    }).WithLabels(&quot;Cold&quot;, &quot;Freezing&quot;, &quot;Warm&quot;);
+}
+
+
+public static partial class V2GalleryModels {
     private static Chart? Radial(ChartSeriesKind kind, string variant) {
         var chart = Categories(kind); var values = Observations(variant);
         switch (kind) {
@@ -824,10 +868,11 @@ public static partial class V2GalleryModels {
         var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
         var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant)
+        var positionedColorVariant = (variant is &quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
-            ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
         if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.Area) {
@@ -1391,6 +1436,50 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static readonly double?[] PositionedColorValues = { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
+
+    private static Chart? PositionedColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        if (kind is not (ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter)
+            || variant is not (&quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;)) return null;
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var scale = PositionedTemperatureScale().WithNoDataColor(colors.Border);
+        if (kind == ChartSeriesKind.TileMap) {
+            var codes = new[] { &quot;CA&quot;, &quot;TX&quot;, &quot;NY&quot;, &quot;FL&quot;, &quot;WA&quot;, &quot;IL&quot;, &quot;CO&quot; };
+            var values = PositionedColorValues.Where(value =&gt; value &gt;= 0).Select(value =&gt; value!.Value).ToArray();
+            return Chart.Create().AddTileMap(&quot;Temperature&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;),
+                codes.Select((code, index) =&gt; new ChartRegionMapItem(code, values[index])))
+                .WithMapLabels().WithMapColorScale(scale);
+        }
+        if (kind == ChartSeriesKind.Heatmap) {
+            var matrix = Chart.Create().WithXLabels(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;, &quot;F&quot;)
+                .AddHeatmapRow(&quot;Primary&quot;, PositionedColorValues.Take(6))
+                .AddHeatmapRow(&quot;Secondary&quot;, PositionedColorValues.Skip(6))
+                .WithHeatmapColorScale(scale).WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
+                .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto).WithDataLabels();
+            matrix.Series[0].WithInteractionKey(&quot;primary-measurements&quot;);
+            matrix.Series[1].WithInteractionKey(&quot;secondary-measurements&quot;);
+            return matrix;
+        }
+        var minutes = new[] { 24d, 36, 45, 20, 32, 50, 28, 41, 18, 35, 22, 48 };
+        var chart = Chart.Create().WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
+            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
+            .ConfigureLabels(labels =&gt; { labels.Color = &quot;Temperature (&#176;C)&quot;; labels.NoData = &quot;Not sampled&quot;; })
+            .AddScatter(&quot;Recorded batches&quot;, PositionedColorValues.Select((value, index) =&gt;
+                new ChartPoint((index + 1) * 8, minutes[index]).WithColorValue(value)));
+        chart.Series[0].WithColorScale(scale).WithInteractionKey(&quot;recorded-batches&quot;)
+            .ConfigureMarkers(markers =&gt; { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+        return chart;
+    }
+
+    private static ChartColorScale PositionedTemperatureScale() =&gt; ChartColorScale.Diverging(new[] {
+        new ChartColorStop(-20, ChartColor.FromHex(&quot;#2166AC&quot;)), new ChartColorStop(-3, ChartColor.FromHex(&quot;#67A9CF&quot;))
+    }, new ChartColorStop(0, ChartColor.FromHex(&quot;#D1D5DB&quot;)), new[] {
+        new ChartColorStop(5, ChartColor.FromHex(&quot;#D9A441&quot;)), new ChartColorStop(40, ChartColor.FromHex(&quot;#B2182B&quot;))
+    }).WithLabels(&quot;Cold&quot;, &quot;Freezing&quot;, &quot;Warm&quot;);
+}
+
+
+public static partial class V2GalleryModels {
     private static Chart? Radial(ChartSeriesKind kind, string variant) {
         var chart = Categories(kind); var values = Observations(variant);
         switch (kind) {
@@ -1649,10 +1738,11 @@ public static partial class V2GalleryModels {
         var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
         var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant)
+        var positionedColorVariant = (variant is &quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
-            ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
         if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.Area) {
