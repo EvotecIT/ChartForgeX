@@ -1119,7 +1119,7 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for Venn diagrams is `VennDiagramBlock`. Sets render as deterministic overlapping circles with set and intersection labels. Mermaid size values are retained in the AST and artifact metadata, but current static rendering is not area-proportional Euler layout and is intentionally limited to one, two, or three sets.
+The conversion target for Venn diagrams is `VennDiagramBlock`. Sets render as deterministic overlapping circles with set and intersection labels. Set and region captions share measured placement in SVG and PNG, keeping adjacent labels separate within the body. Captions that cannot fit the available lanes are omitted from visible output; authored labels remain in the model. Mermaid size values are retained in the AST and artifact metadata, but current static rendering is not area-proportional Euler layout and is intentionally limited to one, two, or three sets.
 
 ## Ishikawa Diagrams
 

@@ -23,14 +23,9 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.DrawCircleOutline(placement.X, placement.Y, placement.Radius, accent, 2);
         }
 
-        foreach (var placement in placements) {
-            var style = VisualBlockRendering.FitBodyTextStyle(theme, placement.Set.Label, 13.5, placement.Radius * 1.16, placement.Radius * .24, 800);
-            DrawAlignedTextAtBaseline(canvas, placement.Set.Label, placement.X - placement.Radius * .58, placement.Y - placement.Radius * .52, placement.Radius * 1.16, TextAlignment.Center, placement.Set.TextColor ?? theme.Text, style.FontSize, true);
-        }
-
         foreach (var intersection in block.Intersections) DrawVennIntersectionStyle(canvas, placements, intersection);
-        foreach (var intersection in block.Intersections) DrawVennRegionText(canvas, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, theme, 12.5, 700);
-        foreach (var textNode in block.TextNodes) DrawVennRegionText(canvas, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, theme, 11.5, 600);
+        foreach (var caption in VisualBlockRendering.VennCaptions(block, placements, body))
+            DrawAlignedTextAtBaseline(canvas, caption.Text, caption.Bounds.Left, caption.Baseline, caption.Bounds.Width, TextAlignment.Left, caption.Color, caption.Style.FontSize, true);
     }
 
     private static void DrawVennIntersectionStyle(RgbaCanvas canvas, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {
@@ -41,12 +36,4 @@ public sealed partial class PngVisualBlockRenderer {
         if (intersection.Stroke.HasValue) canvas.DrawCircleOutline(center.X, center.Y, radius, intersection.Stroke.Value, 2);
     }
 
-    private static void DrawVennRegionText(RgbaCanvas canvas, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, IReadOnlyList<string> setIds, string label, ChartColor color, ChartTheme theme, double defaultSize, int weight) {
-        if (label.Length == 0) return;
-        var center = VisualBlockRendering.VennRegionCenter(placements, setIds);
-        var maxWidth = Math.Max(42, placements[0].Radius * (setIds.Count == 1 ? 0.95 : 0.72));
-        var yOffset = setIds.Count == 1 ? placements[0].Radius * 0.12 : setIds.Count == 2 ? 5 : 18;
-        var style = VisualBlockRendering.FitBodyTextStyle(theme, label, defaultSize, maxWidth, placements[0].Radius * .24, weight);
-        DrawAlignedTextAtBaseline(canvas, label, center.X - maxWidth / 2, center.Y + yOffset, maxWidth, TextAlignment.Center, color, style.FontSize, true);
-    }
 }
