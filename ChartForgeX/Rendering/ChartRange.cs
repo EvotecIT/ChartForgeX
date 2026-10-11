@@ -23,14 +23,15 @@ internal sealed class ChartRange {
         var barXValues = new List<double>();
         var bubbleXValues = new List<double>();
         var horizontalBarYValues = new List<double>();
-        var hasHorizontalSeries = false;
+        var hasHorizontalSeries = ChartCartesianOrientation.IsHorizontal(chart);
         var usesHorizontalBaseline = false;
         var usesVerticalBaseline = false;
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
+            if (ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) usesHorizontalBaseline = true;
             if (series.Kind == ChartSeriesKind.Waterfall) {
                 var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
-                if (horizontal) { hasHorizontalSeries = true; usesHorizontalBaseline = true; }
+                if (horizontal) usesHorizontalBaseline = true;
                 var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
                 foreach (var step in ChartWaterfallSteps.Create(series)) {
                     if (horizontal) {
@@ -130,12 +131,9 @@ internal sealed class ChartRange {
             for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
                 var p = series.Points[pointIndex];
                 if (ChartCartesianOrientation.IsHorizontalLine(chart, series)) {
-                    hasHorizontalSeries = true;
                     range.IncludeX(p.Y);
                     range.IncludeY(p.X);
                 } else if (ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
-                    hasHorizontalSeries = true;
-                    usesHorizontalBaseline = true;
                     horizontalBarYValues.Add(p.X);
                     range.IncludeX(stacks.Point(seriesIndex, pointIndex).End);
                     range.IncludeY(p.X);

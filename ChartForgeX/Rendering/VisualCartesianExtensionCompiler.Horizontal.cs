@@ -83,6 +83,7 @@ internal static partial class VisualCartesianCompiler {
         ChartRange range, VisualThemeColors colors, AxisLabelCache cache) {
         if (!chart.Options.ShowAxes) return viewport;
         var axes = HorizontalAxes(chart, cache); var spacing = context.Theme.Spacing;
+        cache.IncludeValueTicks(axes.Value, range.MinX, range.MaxX);
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
         var categories = HorizontalCategoryTicks(chart, range, axes.Category); var widest = 0d;
         foreach (var category in categories) widest = Math.Max(widest, VisualAxisText.RotatedMetrics(builder.MeasureText(cache.Format(axes.Category, category, null, categories), style), axes.Category.LabelAngle).Width);
@@ -99,7 +100,9 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawHorizontalAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartRange range, ChartMapper map, VisualThemeColors colors, ChartRect viewport, AxisLabelCache cache, double categoryLabelRight) {
-        var axes = HorizontalAxes(chart, cache); var xTicks = ChartTicks.ForAxis(axes.Value, range.MinX, range.MaxX); var categories = HorizontalCategoryTicks(chart, range, axes.Category);
+        var axes = HorizontalAxes(chart, cache);
+        cache.IncludeValueTicks(axes.Value, range.MinX, range.MaxX);
+        var xTicks = cache.Ticks(axes.Value, range.MinX, range.MaxX); var categories = HorizontalCategoryTicks(chart, range, axes.Category);
         var spacing = context.Theme.Spacing;
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle(); var width = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
