@@ -75,7 +75,7 @@ public sealed partial class MermaidParser {
         return configuration;
     }
 
-    private static Match ConfigurationPrefix(string text) => Regex.Match(text, @"^\s*%%\s*\{\s*(?:init|initialize)\s*:", RegexOptions.CultureInvariant);
+    private static Match ConfigurationPrefix(string text) => Regex.Match(text, @"^\s*%%\{\s*(?:init|initialize)\s*:", RegexOptions.CultureInvariant);
 
     private static void AddConfigurationJson(Dictionary<string, GeoJsonValue> values, string prefix,
         MermaidSourceSpan span, MermaidSourceConfiguration configuration, Func<GeoJsonValue, MermaidSourceSpan>? propertySpan = null) {
@@ -118,7 +118,8 @@ public sealed partial class MermaidParser {
         }
         void ValidateString(MermaidConfigurationSetting? setting) {
             if (setting != null && !IsConfigurationStringValue(setting)) {
-                ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' must be a non-empty string of at most 4096 characters containing complete Unicode characters.");
+                ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' must be a non-empty string of at most 4096 characters containing complete Unicode characters."
+                    + (setting.Path == "fontFamily" ? " Font names must also contain only characters XML allows." : string.Empty));
             }
         }
         foreach (var key in new[] { "theme", "layout", "look" }) {
@@ -167,11 +168,15 @@ public sealed partial class MermaidParser {
         string.Equals(value, "default", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsConfigurationStringValue(MermaidConfigurationSetting setting) =>
-        setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) && setting.Value!.Length <= 4096 && IsCompleteConfigurationUnicode(setting.Value);
+        setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) && setting.Value!.Length <= 4096 &&
+        IsCompleteConfigurationUnicode(setting.Value, setting.Path == "fontFamily");
 
-    private static bool IsCompleteConfigurationUnicode(string value) {
+    private static bool IsCompleteConfigurationUnicode(string value, bool requireXmlCharacters) {
         for (var index = 0; index < value.Length; index++) {
-            if (!char.IsSurrogate(value[index])) continue;
+            if (!char.IsSurrogate(value[index])) {
+                if (requireXmlCharacters && !System.Xml.XmlConvert.IsXmlChar(value[index])) return false;
+                continue;
+            }
             if (!char.IsHighSurrogate(value[index]) || index + 1 >= value.Length || !char.IsLowSurrogate(value[index + 1])) return false;
             index++;
         }
