@@ -4,7 +4,7 @@ namespace ChartForgeX.Core;
 
 public sealed partial class ChartOptions {
     private ChartPolarGridShape _polarGridShape;
-    private int? _polarGridRingCount;
+    private double? _polarGridRingCount;
 
     /// <summary>
     /// Gets or sets the concentric grid shape for radar and polar line charts.
@@ -19,14 +19,16 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets an exact number of equally spaced concentric radar/polar guides from zero through one hundred.
+    /// Gets or sets the number of equally spaced radial intervals from zero through one hundred.
+    /// Fractional values draw the ceiling number of guides with the authored interval divisor;
+    /// the outer guide can extend beyond the value axis, and the scene fits that guide inside its viewport.
     /// Zero hides concentric guides; spokes and observations remain visible. Null uses the radial axis's generated ticks.
-    /// This does not change the value domain or series coordinates.
+    /// This does not change the value domain or observed values.
     /// </summary>
-    public int? PolarGridRingCount {
+    public double? PolarGridRingCount {
         get => _polarGridRingCount;
         set {
-            if (value.HasValue && (value.Value < 0 || value.Value > 100)) throw new ArgumentOutOfRangeException(nameof(value));
+            if (value.HasValue && (double.IsNaN(value.Value) || double.IsInfinity(value.Value) || value.Value < 0 || value.Value > 100)) throw new ArgumentOutOfRangeException(nameof(value));
             _polarGridRingCount = value;
         }
     }

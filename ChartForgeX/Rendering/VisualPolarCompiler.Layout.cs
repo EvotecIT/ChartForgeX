@@ -22,28 +22,33 @@ internal static partial class VisualPolarCompiler {
             ChartLineVisualLayers.Build(context.Theme.Resolve(context.ThemeMode).Accent,
                 series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth, chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth) / 2));
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - width - gap, plot.Height / 2 - height - gap) - markExtent);
-        return new PolarLayout(plot.Left + plot.Width / 2, plot.Top + plot.Height / 2, radius);
+        var count = chart.Options.PolarGridRingCount;
+        var axisRadius = count.HasValue && count.Value > 0 ? radius * (count.Value / Math.Ceiling(count.Value)) : radius;
+        return new PolarLayout(plot.Left + plot.Width / 2, plot.Top + plot.Height / 2, axisRadius, radius);
     }
 
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, PolarLayout geometry,
         double[] categories, string[] axes, RadialValueScale scale, bool radar, List<PolarLabel> labels) {
         var colors = context.Theme.Resolve(context.ThemeMode); var style = TickStyle(chart, context);
-        var ticks = chart.Options.PolarGridRingCount.HasValue ? scale.EqualIntervalTicks(chart.Options.PolarGridRingCount.Value) : scale.Ticks;
+        var intervalCount = chart.Options.PolarGridRingCount;
+        var ticks = intervalCount.HasValue ? scale.EqualIntervalTicks(intervalCount.Value) : scale.Ticks;
+        var ringCount = intervalCount.HasValue ? (int)Math.Ceiling(intervalCount.Value) : ticks.Count;
         var formatTick = ChartAxisValueFormatter.Create(chart.Options.YAxis, ticks, chart.Options.ValueFormatter);
         var polygonGrid = chart.Options.PolarGridShape == ChartPolarGridShape.Polygon ||
             chart.Options.PolarGridShape == ChartPolarGridShape.Automatic && radar;
         var ringRole = radar ? "radar-ring" : "polar-ring";
-        for (var index = 0; index < ticks.Count; index++) {
-            var tick = ticks[index]; if (scale.Normalize(tick) <= 0) continue;
-            var r = geometry.Radius * scale.Normalize(tick);
+        for (var index = 0; index < ringCount; index++) {
+            if (!intervalCount.HasValue && scale.Normalize(ticks[index]) <= 0) continue;
+            // Fit the ceiling guide count without rounding the authored interval divisor.
+            var r = intervalCount.HasValue ? geometry.GridRadius * ((index + 1d) / ringCount) : geometry.Radius * scale.Normalize(ticks[index]);
             if (chart.Options.ShowGrid) {
                 if (polygonGrid) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length)
                     .Select(i => On(geometry, radar ? RadarAngle(i, categories.Length) : -categories[i], r)).ToArray(), ChartInterpolation.Linear),
                     stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: ringRole, close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                 else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, ringRole, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             }
-            if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && r < geometry.Radius) {
-                var text = formatTick(tick);
+            if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && index < ticks.Count && r < geometry.Radius) {
+                var text = formatTick(ticks[index]);
                 var anchor = new ChartPoint(geometry.Cx + context.Theme.Spacing / 2, geometry.Cy - r);
                 AddLabel(builder, labels, text, anchor, style, (radar ? "radar" : "polar") + "-radius-label-" + index,
                     radar ? "radar-ring-label" : "polar-radius-label", plot, new[] { new LabelCandidate(0, 0, 0, 0), new LabelCandidate(0, 0, 0, 1) }, 20);
@@ -115,8 +120,8 @@ internal static partial class VisualPolarCompiler {
     }
 
     private sealed class PolarLayout {
-        internal PolarLayout(double cx, double cy, double radius) { Cx = cx; Cy = cy; Radius = radius; }
-        internal double Cx { get; } internal double Cy { get; } internal double Radius { get; }
+        internal PolarLayout(double cx, double cy, double radius, double gridRadius) { Cx = cx; Cy = cy; Radius = radius; GridRadius = gridRadius; }
+        internal double Cx { get; } internal double Cy { get; } internal double Radius { get; } internal double GridRadius { get; }
     }
     private sealed class PolarLabel {
         internal PolarLabel(LabelPlacementRequest request, string id, string role, string? markId) { Request = request; Id = id; Role = role; MarkId = markId; }
