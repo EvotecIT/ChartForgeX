@@ -17,7 +17,7 @@ public static partial class V2GalleryModels {
             var values = new[] { 0d, 2.5, 5, 10, 22.5, 40, 55 };
             return chart.AddTileMap("Daily mean", ChartTileMapCatalog.Get("us-states"),
                 codes.Select((code, index) => new ChartRegionMapItem(code, values[index])))
-                .WithMapLabels(false).WithMapColorScale(scale).ConfigureMapColorDimension(Present);
+                .WithMapLabels().WithMapColorScale(scale).ConfigureMapColorDimension(Present);
         }
         if (kind == ChartSeriesKind.Heatmap) {
             return chart.WithXLabels("A", "B", "C", "D", "E", "F")

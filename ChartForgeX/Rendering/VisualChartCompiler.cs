@@ -11,6 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static class VisualChartCompiler {
     internal static VisualChartFamily Family(Chart chart) {
         if (chart.Series.All(series => VisualCartesianCompiler.Supports(series.Kind))) return VisualChartFamily.Cartesian;
+        if (ChartSeriesKindTraits.UsesNumericRadialCoordinates(chart)) return VisualChartFamily.NumericRadial;
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("These chart families cannot share one coordinate system.");
         return kind switch {

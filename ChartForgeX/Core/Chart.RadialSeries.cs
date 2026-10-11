@@ -21,7 +21,7 @@ public sealed partial class Chart {
     public Chart AddRadialColumn(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) =>
         Add(name, ChartSeriesKind.RadialColumn, points, color);
 
-    /// <summary>Sets shared geometry for numeric radial bars and columns. Numeric bounds and formatting belong to the value axis.</summary>
+    /// <summary>Sets geometry for numeric radial bars and columns, including column/radar compositions. Numeric bounds and formatting belong to the value axis.</summary>
     /// <param name="geometry">Immutable start/end angles, inner radius and spacing.</param>
     /// <returns>The current chart.</returns>
     public Chart WithRadialGeometry(ChartRadialGeometryOptions geometry) {
