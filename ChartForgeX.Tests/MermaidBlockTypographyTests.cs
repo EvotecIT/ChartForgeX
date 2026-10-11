@@ -64,7 +64,9 @@ public sealed class MermaidBlockTypographyTests {
             Assert.Equal(originalSizes.Length, enlargedSizes.Length);
             for (var index = 0; index < originalSizes.Length; index++) {
                 if (fixture is "wardley-basic.mmd" or "ishikawa-basic.mmd") Assert.InRange(enlargedSizes[index], 1, originalSizes[index] * 2 + .001);
-                else if (fixture == "gitgraph-basic.mmd") Assert.InRange(enlargedSizes[index], originalSizes[index], originalSizes[index] * 2 + .001);
+                // Packet captions fit their measured cell bounds. Different installed
+                // faces can reach that cap before the requested size doubles.
+                else if (fixture is "gitgraph-basic.mmd" or "packet-basic.mmd") Assert.InRange(enlargedSizes[index], originalSizes[index], originalSizes[index] * 2 + .001);
                 else Assert.Equal(originalSizes[index] * 2, enlargedSizes[index], 3);
             }
         }
