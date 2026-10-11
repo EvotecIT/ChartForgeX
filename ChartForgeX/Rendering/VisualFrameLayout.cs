@@ -87,6 +87,17 @@ internal static class VisualFrameLayout {
         var headingGaps = headingHeight > 0 ? gap * 5 / 6 + (!string.IsNullOrEmpty(context.Frame.Title) && !string.IsNullOrEmpty(context.Frame.Subtitle) ? gap / 6 : 0) : 0;
         var headingScale = headingHeight / 2 + headingGaps >= bottom - top
             ? Math.Min(1, Math.Max(1, (bottom - top) * .4 - headingGaps) / headingHeight) : 1;
+        // Normal headings retain bounded wrapping. Fit full text only when even a short
+        // font sample cannot fit the line, independently of an ordinary companion heading.
+        bool OversizedHeading(TextStyle style) => builder.MeasureText("Mg", style).Width > Math.Max(1, right - left);
+        double HeadingWidthScale(string? text, TextStyle style) {
+            if (string.IsNullOrEmpty(text) || !OversizedHeading(style)) return 1;
+            var fitted = VisualTextFitting.FitOversized(builder, style, double.MaxValue,
+                candidate => builder.MeasureText(text!, candidate).Width <= Math.Max(1, right - left));
+            return fitted.EffectiveFontSize / style.EffectiveFontSize;
+        }
+        var headingWidthScale = Math.Min(HeadingWidthScale(context.Frame.Title, titleStyle),
+            HeadingWidthScale(context.Frame.Subtitle, subtitleStyle));
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
             var headingTop = top;
             Header(context.Frame.Title, titleStyle, paints?.Foreground);
@@ -102,7 +113,7 @@ internal static class VisualFrameLayout {
             var legendWidth = side ? Math.Min((right - left) * 0.32, 180) : right - left;
             var available = Math.Max(0, Math.Min(bottom - top, size.Height * context.Frame.LegendMaximumHeightFraction));
             var requestedLineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
-            if (requestedLineHeight > available && available > 0) {
+            if (legendStyle.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize && requestedLineHeight > available && available > 0) {
                 // Keep ordinary sizes and overflow behavior. Oversized text still contributes
                 // visible entries, with an 18px line floor before the normal row budget applies.
                 var targetRows = Math.Max(1, Math.Min(entries.Count, context.Frame.LegendMaximumRows ?? entries.Count));
@@ -262,7 +273,8 @@ internal static class VisualFrameLayout {
 
         void Header(string? text, TextStyle style, SvgPaint? paint) {
             if (string.IsNullOrEmpty(text)) return;
-            if (headingScale < 1) { style = style.Clone(); style.FontSize *= headingScale; }
+            var scale = OversizedHeading(style) ? Math.Min(headingScale, headingWidthScale) : headingScale;
+            if (scale < 1) { style = style.Clone(); style.FontSize *= scale; }
             var fontSize = style.EffectiveFontSize;
             var lineHeight = Math.Max(fontSize * 1.3, builder.MeasureText("Mg", style).Height);
             // Bounded two-line wrapping leaves content space; full text remains in accessibility metadata.
