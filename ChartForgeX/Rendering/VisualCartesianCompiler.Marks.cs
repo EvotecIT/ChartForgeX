@@ -207,8 +207,15 @@ internal static partial class VisualCartesianCompiler {
         }
         else if (horizontal) {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
-            candidates.Add(new LabelCandidate(positive ? spacing : -spacing, 0, positive ? 0 : 1, .5));
-            candidates.Add(new LabelCandidate(positive ? -spacing : spacing, 0, positive ? 1 : 0, .5));
+            var left = bar ? -spacing : leftOffset; var right = bar ? spacing : rightOffset;
+            candidates.Add(new LabelCandidate(positive ? right : left, 0, positive ? 0 : 1, .5));
+            candidates.Add(new LabelCandidate(positive ? left : right, 0, positive ? 1 : 0, .5));
+            if (!bar) {
+                foreach (var alignment in new[] { .5, 0, 1 }) {
+                    candidates.Add(new LabelCandidate(0, mark.Top - anchor.Y - spacing, alignment, 1));
+                    candidates.Add(new LabelCandidate(0, mark.Bottom - anchor.Y + spacing, alignment, 0));
+                }
+            }
         }
         else {
             var positive = barDirection.GetValueOrDefault(value) >= 0;

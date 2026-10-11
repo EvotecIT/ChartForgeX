@@ -103,6 +103,41 @@ public sealed class HorizontalLineAxisContractTests {
         else Assert.True(label.X + label.Text.Metrics.Width < centerX);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void AutomaticLabelsUseOrthogonalSpaceWhenBothValueDirectionsIntersectTheLine(bool step, bool distinctCategories) {
+        var delta = distinctCategories ? .001 : 0;
+        var chart = Model(new[] { new ChartPoint(1, 20), new ChartPoint(1 + delta, 40), new ChartPoint(1 + delta * 2, 60) }, step)
+            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 2);
+        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.ShowDataLabels = true;
+        if (step) chart.Series[0].StepPosition = ChartStepPosition.Start;
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label")
+            .Select(node => string.Concat(node.Text.Lines.Select(line => line.Text)));
+        Assert.Equal(new[] { "20", "40", "60" }, labels);
+        Assert.DoesNotContain(prepared.Diagnostics, item => item.Code == "cartesian.data-label-overflow");
+    }
+
+    [Theory]
+    [InlineData(20)]
+    [InlineData(-20)]
+    public void AutomaticPointLabelsClearVisibleMarkerExtents(double value) {
+        var chart = Model(new[] { new ChartPoint(1, value) }).WithXAxisBounds(-100, 100).WithYAxisBounds(0, 2)
+            .WithLineMarkers(ChartLineMarkerMode.All);
+        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.ShowDataLabels = true;
+        chart.Series[0].MarkerRadius = 18;
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var point = Assert.Single(prepared.Regions, region => region.Role == "point").Bounds;
+        var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
+        if (value > 0) Assert.True(label.X > point.Right);
+        else Assert.True(label.X + label.Text.Metrics.Width < point.Left);
+    }
+
     private static Chart Model(ChartPoint[] points, bool step = false) {
         var chart = Chart.Create().WithSize(700, 450).WithLegend(false).WithHeader(false).WithLineMarkers(ChartLineMarkerMode.None);
         return step ? chart.AddStepLine("Readings", points) : chart.AddLine("Readings", points);
