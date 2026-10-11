@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 /// <summary>Prepares matrix, hexagonal and calendar geometry directly into one native scene.</summary>
 internal static partial class VisualMatrixCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
-        chart.Options.ShowHeatmapScale && chart.Series.Any(series => series.IsCategoricalHeatmapRow)
+        chart.Options.ShowHeatmapCategoryLegend && chart.Series.Any(series => series.IsCategoricalHeatmapRow)
             ? chart.Options.StateCategories.Select((state, i) => new VisualLegendEntry(state.Label, state.Color, "state-" + i, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray()
             : Array.Empty<VisualLegendEntry>();
 
@@ -123,11 +123,11 @@ internal static partial class VisualMatrixCompiler {
                 }
             }
             MatrixAxes(chart, context, builder, viewport, plot, columns, cellWidth, gap, layout, formatColumn);
-            if (!categorical && ScaleVisible(chart, context)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color, presentation);
+            if (!categorical && ScaleVisible(context, presentation)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color, presentation);
         }
     }
 
-    private static bool ScaleVisible(Chart chart, VisualRenderContext context) => chart.Options.ShowHeatmapScale && context.Frame.ShowLegend;
+    private static bool ScaleVisible(VisualRenderContext context, ChartColorPresentation presentation) => presentation.ShowLegend && context.Frame.ShowLegend;
     private static void NoData(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds) =>
         VisualStateSceneTools.Text(builder, chart.Options.Labels.NoData, bounds, VisualStateSceneTools.TickStyle(chart, context), "no-data", "matrix-no-data", TextAlignment.Center);
 }

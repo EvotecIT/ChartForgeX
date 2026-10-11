@@ -186,7 +186,7 @@ var appointmentVolume = Chart.Create()
     .WithHeatmapCellGap(5)
     .WithHeatmapCellRadius(7)
     .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
-    .WithHeatmapScaleLegend(false)
+    .ConfigureHeatmapColorDimension(options => options.ShowLegend = false)
     .WithXLabels("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     .AddHeatmapRows(new[] {
         ChartHeatmapRow.Create("9 AM", 9, 3, 2, 6, 4, 4, 12),

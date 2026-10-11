@@ -17,7 +17,7 @@ public sealed class V2MapTests {
             new ChartMapRegion("A", "Ring", "M0 0H100V100H0Z M30 30H70V70H30Z") });
         var color = ChartColor.FromHex("#123456");
         var chart = Chart.Create().AddRegionMap("Values", definition, new[] { new ChartRegionMapItem("A", 10, color) })
-            .WithMapLabels(false).WithMapScaleLegend(false).WithMapRegionStroke(null, 0).WithMapSurface(false);
+            .WithMapLabels(false).ConfigureMapColorDimension(options => options.ShowLegend = false).WithMapRegionStroke(null, 0).WithMapSurface(false);
         var scene = Compile(chart, 400, 240);
         var path = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "region-map-region");
         Assert.Equal(2, path.Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo)); Assert.True(path.Close); Assert.Equal(color, path.Fill);
@@ -33,7 +33,7 @@ public sealed class V2MapTests {
         var definition = Definition();
         var overlay = new ChartMapDefinition("road", "Road", 100, 100, new[] { new ChartMapRegion("R", "Route", "M0 0Q50 100 100 0") });
         var chart = Chart.Create().AddRegionMap("Crop", definition, new[] { new ChartRegionMapItem("Alpha", 40) })
-            .WithRegionMapBounds(new ChartRect(20, 10, 50, 60)).WithMapLabels(false).WithMapScaleLegend(false);
+            .WithRegionMapBounds(new ChartRect(20, 10, 50, 60)).WithMapLabels(false).ConfigureMapColorDimension(options => options.ShowLegend = false);
         chart.Options.MapBaseLayers.Add(new ChartMapLayer(definition, ChartColor.FromHex("#ABCDEF"), null, 0, "base-land"));
         chart.Options.MapOverlayLayers.Add(new ChartMapLayer(overlay, null, ChartColor.FromHex("#123456"), 2, "road"));
         var scene = Compile(chart);
@@ -173,7 +173,7 @@ public sealed class V2MapTests {
         const string geoJson = "{\"type\":\"Feature\",\"properties\":{\"code\":\"A\",\"name\":\"Area\"},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[10,0],[10,60],[0,60],[0,0]]]}}";
         var linear = ChartMapDefinition.FromGeoJson("linear", "Linear", geoJson);
         var mercator = ChartMapDefinition.FromGeoJson("mercator", "Mercator", geoJson, new ChartMapGeoJsonOptions { Projection = ChartMapGeoJsonProjection.WebMercator });
-        VisualScene CompileDefinition(ChartMapDefinition definition) => Compile(Chart.Create().AddRegionMap("Value", definition, new[] { new ChartRegionMapItem("A", 50) }).WithMapLabels(false).WithMapScaleLegend(false));
+        VisualScene CompileDefinition(ChartMapDefinition definition) => Compile(Chart.Create().AddRegionMap("Value", definition, new[] { new ChartRegionMapItem("A", 50) }).WithMapLabels(false).ConfigureMapColorDimension(options => options.ShowLegend = false));
         var linearPath = Assert.Single(CompileDefinition(linear).Nodes.OfType<VisualScenePath>(), path => path.Role == "region-map-region");
         var mercatorPath = Assert.Single(CompileDefinition(mercator).Nodes.OfType<VisualScenePath>(), path => path.Role == "region-map-region");
         var linearWidth = linearPath.Commands.Max(command => command.X) - linearPath.Commands.Min(command => command.X);
@@ -204,7 +204,7 @@ public sealed class V2MapTests {
         chart.Options.MapViewport = default; Assert.Throws<InvalidOperationException>(() => Compile(chart));
         chart.Options.MapViewport = ChartMapViewport.World(); chart.Series[0].Points[0] = new ChartPoint(200, 0);
         Assert.Throws<InvalidOperationException>(() => Compile(chart));
-        var region = Chart.Create().AddRegionMap("Area", Definition(), new[] { new ChartRegionMapItem("A", 20) }).WithMapLabels(false).WithMapScaleLegend(false);
+        var region = Chart.Create().AddRegionMap("Area", Definition(), new[] { new ChartRegionMapItem("A", 20) }).WithMapLabels(false).ConfigureMapColorDimension(options => options.ShowLegend = false);
         Assert.DoesNotContain(Compile(region).Nodes, node => node.Role is "region-map-label" or "map-scale-step");
         region.Options.XAxisLabels[0] = new ChartAxisLabel(1, "Unknown"); Assert.Throws<InvalidOperationException>(() => Compile(region));
     }
