@@ -1,0 +1,5 @@
+{
+  "entities": ["A", "B"],
+  "direction": "BT",
+  "nativeRetainedStatements": ["classDef marked fill:#ffeeaa", "class A marked", "style B fill:#eeeeee"]
+}

@@ -10,6 +10,8 @@ internal static class ChartCartesianOrientation {
 
     internal static bool IsHorizontal(Chart chart, ChartSeries series) => series.Kind == ChartSeriesKind.HorizontalBar
         || series.Kind == ChartSeriesKind.Waterfall && chart.Options.Waterfall.Orientation == ChartOrientation.Horizontal
+        || series.Kind == ChartSeriesKind.RangeBar && chart.Options.RangeBar.Orientation == ChartOrientation.Horizontal
+        || series.Kind == ChartSeriesKind.BoxPlot && chart.Options.BoxPlot.Orientation == ChartOrientation.Horizontal
         || IsHorizontalLine(chart, series);
 
     internal static bool IsHorizontalLine(Chart chart, ChartSeries series) =>

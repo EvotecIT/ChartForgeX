@@ -49,6 +49,13 @@ internal sealed class ChartRange {
                 continue;
             }
             if (ChartSeriesKindTraits.IsExclusive(series.Kind)) continue;
+            if (series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot && ChartCartesianOrientation.IsHorizontal(chart, series)) {
+                foreach (var point in series.Points) {
+                    range.IncludeY(point.X); horizontalBarYValues.Add(point.X);
+                    range.IncludeX(point.Y);
+                }
+                continue;
+            }
             if (series.YAxis == ChartAxisSide.Secondary && !ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
                 IncludeSeriesX(range, series);
                 if (RequiresMarkWidth(series.Kind) && series.HistogramBinLayout == null)
@@ -109,7 +116,7 @@ internal sealed class ChartRange {
                 continue;
             }
 
-            if (series.Kind == ChartSeriesKind.RangeBand || series.Kind == ChartSeriesKind.RangeArea) {
+            if (series.Kind == ChartSeriesKind.RangeBand || series.Kind == ChartSeriesKind.RangeArea || series.Kind == ChartSeriesKind.DifferenceArea) {
                 for (var i = 0; i + 1 < series.Points.Count; i += 2) {
                     range.Include(series.Points[i]);
                     range.Include(series.Points[i + 1]);
@@ -174,7 +181,8 @@ internal sealed class ChartRange {
         range.ApplyBarPadding(bubbleXValues, chart.Options.XAxis);
         if (hasHorizontalSeries) {
             if (usesHorizontalBaseline) range.ApplyLogarithmicXBaseline(chart.Options.XAxis);
-            else (range.MinX, range.MaxX) = PaddedValueBounds(range.MinX, range.MaxX, chart.Options.XAxis);
+            else if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalLine(chart, series)))
+                (range.MinX, range.MaxX) = PaddedValueBounds(range.MinX, range.MaxX, chart.Options.XAxis);
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
         if (applyOptionBounds) range.ApplyXAxisOptions(chart);

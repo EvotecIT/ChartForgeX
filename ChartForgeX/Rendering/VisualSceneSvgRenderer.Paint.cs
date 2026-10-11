@@ -29,10 +29,17 @@ internal static partial class VisualSceneSvgRenderer {
         writer.Write(path.Close); writer.Write(path.Commands.Count);
         writer.Write((int)path.Cap); writer.Write((int)path.Join); writer.Write(path.Dash?.Count ?? 0);
         if (path.Dash != null) foreach (var dash in path.Dash) writer.Write(dash);
+        WriteDashOffsetIdentity(writer, path.DashOffset);
         foreach (var command in path.Commands) {
             writer.Write((int)command.Kind); writer.Write(command.X); writer.Write(command.Y);
             writer.Write(command.Control1X); writer.Write(command.Control1Y); writer.Write(command.Control2X); writer.Write(command.Control2Y);
         }
+    }
+
+    private static void WriteDashOffsetIdentity(BinaryWriter writer, double offset) {
+        // Preserve existing zero-phase scene IDs and their byte-exact SVG output.
+        if (offset == 0) return;
+        writer.Write("dash-offset"); writer.Write(offset);
     }
 
     private static void WriteGradientIdentity(BinaryWriter writer, VisualSceneGradient gradient) {
