@@ -11,14 +11,25 @@ internal static partial class RasterStroker {
     internal static List<List<ChartPoint>> Dash(IReadOnlyList<ChartPoint> points, IReadOnlyList<double> pattern,
         double left, double top, double right, double bottom, double dashOffset = 0, double pixelsPerUnit = 1,
         double strokeWidth = 0, RasterLineCap cap = RasterLineCap.Butt) {
-        if (!TryDashPattern(pattern, out var lengths, out double total) || points.Count <= 1)
+        if (!TryDashPattern(pattern, out var lengths, out double total))
             return new List<List<ChartPoint>> { new List<ChartPoint>(points) };
+        double phase = double.IsNaN(dashOffset) || double.IsInfinity(dashOffset) ? 0 : dashOffset % total;
+        if (phase < 0) phase += total;
+        bool zeroLength = points.Count > 0;
+        for (int i = 1; zeroLength && i < points.Count; i++) zeroLength = Distance(points[i - 1], points[i]) <= Epsilon;
+        if (zeroLength) {
+            // A zero-length on dash still has its native cap, including a zero on entry.
+            int index = 0;
+            while (index < lengths.Count - 1 && phase >= lengths[index]) {
+                if (phase == 0 && (index & 1) == 0) break;
+                phase -= lengths[index++];
+            }
+            return (index & 1) == 0 ? new List<List<ChartPoint>> { new List<ChartPoint> { points[0] } } : new List<List<ChartPoint>>();
+        }
         double coarsePeriod = CoarsenedDashPeriod(points, total, pixelsPerUnit, strokeWidth, cap, left, top, right, bottom);
 
         var runs = new List<List<ChartPoint>>();
         List<ChartPoint>? run = null;
-        double phase = double.IsNaN(dashOffset) || double.IsInfinity(dashOffset) ? 0 : dashOffset % total;
-        if (phase < 0) phase += total;
         int pieces = 0;
         for (int i = 1; i < points.Count; i++) {
             ChartPoint a = points[i - 1], b = points[i];

@@ -258,6 +258,14 @@
       { name: rowName(node, 'start', ''), value: data.cfxStart }, { name: rowName(node, 'end', ''), value: data.cfxEnd }]
       .filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
   };
+  const differenceTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'differencearea') return null;
+    return ['First', 'Second'].map((part) => ({
+      name: rowName(node, part.toLowerCase(), part),
+      value: capturedText(data, 'cfxFormatted' + part, data['cfx' + part])
+    }));
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -269,6 +277,13 @@
     if (boxPlotRows) return rows.concat(boxPlotRows, metadataRows(node));
     const rangeBarRows = rangeBarTooltipRows(node);
     if (rangeBarRows) return rows.concat(rangeBarRows, metadataRows(node));
+    const differenceRows = differenceTooltipRows(node);
+    if (differenceRows) {
+      push('X', data.cfxX);
+      differenceRows.forEach((row) => push(row.name, row.value));
+      metadataRows(node).forEach((row) => push(row.name, row.value));
+      return rows;
+    }
     if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
     else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);

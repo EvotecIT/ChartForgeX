@@ -15,7 +15,7 @@ internal static partial class VisualCartesianCompiler {
             case ChartSeriesKind.Line: case ChartSeriesKind.StepLine: case ChartSeriesKind.Area:
             case ChartSeriesKind.StepArea: case ChartSeriesKind.StackedArea: case ChartSeriesKind.Bar:
             case ChartSeriesKind.Scatter: case ChartSeriesKind.Bubble: case ChartSeriesKind.ErrorBar:
-            case ChartSeriesKind.Candlestick: case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
+            case ChartSeriesKind.Candlestick: case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea: case ChartSeriesKind.DifferenceArea:
             case ChartSeriesKind.Lollipop: case ChartSeriesKind.Dumbbell: case ChartSeriesKind.RangeBar:
             case ChartSeriesKind.BoxPlot: case ChartSeriesKind.HorizontalBar: case ChartSeriesKind.Waterfall:
             case ChartSeriesKind.Slope: case ChartSeriesKind.Ohlc: case ChartSeriesKind.TrendLine: return true;
@@ -25,7 +25,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static int ObservationStride(ChartSeriesKind kind) {
         switch (kind) {
-            case ChartSeriesKind.Bubble: case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
+            case ChartSeriesKind.Bubble: case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea: case ChartSeriesKind.DifferenceArea:
             case ChartSeriesKind.Dumbbell: case ChartSeriesKind.RangeBar: return 2;
             case ChartSeriesKind.ErrorBar: return 3;
             case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc: return 4;
@@ -39,6 +39,8 @@ internal static partial class VisualCartesianCompiler {
         ChartBubbleSizeScale? bubbleScale, IReadOnlyDictionary<double, string>? categoryCaptions, ChartSeriesColorSurface? colorSurface = null) {
         var series = chart.Series[index];
         switch (series.Kind) {
+            case ChartSeriesKind.DifferenceArea:
+                DrawDifferenceArea(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
             case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
                 DrawRangeEnvelope(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
             case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc:

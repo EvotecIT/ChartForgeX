@@ -183,7 +183,7 @@ internal static partial class VisualCartesianCompiler {
         } else if (placement == ChartDataLabelPlacement.Left || placement == ChartDataLabelPlacement.Right) {
             var left = placement == ChartDataLabelPlacement.Left;
             candidates.Add(new LabelCandidate(left ? leftOffset : rightOffset, 0, left ? 1 : 0, .5));
-            if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea) {
+            if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea) {
                 candidates.Add(new LabelCandidate(left ? leftOffset : rightOffset, mark.Top - anchor.Y - spacing, left ? 1 : 0, 1));
                 candidates.Add(new LabelCandidate(left ? leftOffset : rightOffset, mark.Bottom - anchor.Y + spacing, left ? 1 : 0, 0));
             }
