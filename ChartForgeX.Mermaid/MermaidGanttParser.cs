@@ -56,8 +56,27 @@ internal static partial class MermaidGanttParser {
             }
         }
 
+        // Complete task-date fallbacks remain available; calendar matching also formats the declared fields.
+        if ((!string.IsNullOrWhiteSpace(document.Excludes) || !string.IsNullOrWhiteSpace(document.Includes))
+            && !ValidateDateFormat(document, result)) return;
         ResolveSchedule(document, tasks, taskIds, result);
         if (document.Tasks.Count == 0) Add(result, document.HeaderSpan.Line, document.HeaderSpan.Column, document.HeaderSpan.Length, MermaidDiagnosticSeverity.Error, "Mermaid Gantt diagrams require at least one task.");
+    }
+
+    private static bool ValidateDateFormat(MermaidGanttDocument document, MermaidParseResult<MermaidDocument> result) {
+        try {
+            if (document.DateFormat.Length <= 256) {
+                MermaidGanttInputDateFormat.FormatCalendarDate(new DateTime(2000, 2, 29, 12, 34, 56), document.DateFormat);
+                return true;
+            }
+        } catch (FormatException) { }
+        var statement = document.Statements.FindLast(item => StartsWithKeyword(item.Text, "dateFormat"));
+        var span = statement?.Span ?? document.HeaderSpan;
+        var text = statement?.Text ?? string.Empty;
+        var offset = text.Length > 10 ? 10 + LeadingWhitespace(text.Substring(10)) : text.Length;
+        Add(result, span.Line, span.Column + offset, document.DateFormat.Length, MermaidDiagnosticSeverity.Error,
+            "Gantt dateFormat must define a valid format of at most 256 characters.");
+        return false;
     }
 
     private static TaskDefinition? ParseTaskDefinition(string text, MermaidSourceSpan span, string? section, int index, MermaidParseResult<MermaidDocument> result) {
