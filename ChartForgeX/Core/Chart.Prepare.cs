@@ -14,7 +14,7 @@ public sealed partial class Chart : IVisualRenderable {
         ChartGuards.RenderCompatibility(this, preparing: true);
         var family = VisualChartCompiler.Family(this);
         var bubbleScale = Series.Any(series => series.Kind == ChartSeriesKind.Bubble) ? ChartBubbleSizeScale.Create(this) : null;
-        var colorScales = new ChartSeriesColorScaleSet(this);
+        var colorScales = new ChartColorPresentationSet(this);
         var sourceFrame = context.Frame;
         var frameColors = context.Theme.Resolve(context.ThemeMode);
         var axisLabels = family is VisualChartFamily.NumericRadial or VisualChartFamily.Cartesian ? new ChartAxisValueFormatter.Cache() : null;

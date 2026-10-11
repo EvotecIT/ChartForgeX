@@ -32,7 +32,7 @@ internal static class VisualChartCompiler {
     }
 
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(VisualChartFamily family, Chart chart, VisualThemeColors colors,
-        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartSeriesColorScaleSet? colorScales = null) => family switch {
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartColorPresentationSet? colorScales = null) => family switch {
         VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors, axisLabels, bubbleScale, colorScales),
         VisualChartFamily.Radial => VisualRadialCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Gauge => VisualGaugeCompiler.LegendEntries(chart, colors),
@@ -43,14 +43,14 @@ internal static class VisualChartCompiler {
         VisualChartFamily.Matrix => VisualMatrixCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Schedule => VisualScheduleCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Map => VisualMapCompiler.LegendEntries(chart, colors),
-        VisualChartFamily.Hierarchy => VisualHierarchyCompiler.LegendEntries(chart, colors),
+        VisualChartFamily.Hierarchy => VisualHierarchyCompiler.LegendEntries(chart, colors, colorScales),
         VisualChartFamily.Sankey => VisualSankeyCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Chord => VisualChordCompiler.LegendEntries(chart, colors),
         _ => VisualSpecialtyCompiler.LegendEntries(chart, colors)
     };
 
     internal static void Build(VisualChartFamily family, Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content,
-        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartSeriesColorScaleSet? colorScales = null, double legendHeight = 0) {
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartColorPresentationSet? colorScales = null, double legendHeight = 0) {
         using var coordinateScope = family is VisualChartFamily.Radial or VisualChartFamily.RadialProgress or VisualChartFamily.Polar or VisualChartFamily.NumericRadial
             || family == VisualChartFamily.Gauge && chart.Options.Gauge.Form != ChartGaugeForm.Linear
             || family == VisualChartFamily.Hierarchy && chart.Series[0].Kind == ChartSeriesKind.Sunburst
@@ -63,10 +63,10 @@ internal static class VisualChartCompiler {
             case VisualChartFamily.NumericRadial: VisualNumericRadialCompiler.Build(chart, context, builder, content, axisLabels); break;
             case VisualChartFamily.Polar: VisualPolarCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Scalar: VisualScalarProgressCompiler.Build(chart, context, builder, content); break;
-            case VisualChartFamily.Matrix: VisualMatrixCompiler.Build(chart, context, builder, content); break;
+            case VisualChartFamily.Matrix: VisualMatrixCompiler.Build(chart, context, builder, content, colorScales?.Heatmap); break;
             case VisualChartFamily.Schedule: VisualScheduleCompiler.Build(chart, context, builder, content); break;
-            case VisualChartFamily.Map: VisualMapCompiler.Build(chart, context, builder, content); break;
-            case VisualChartFamily.Hierarchy: VisualHierarchyCompiler.Build(chart, context, builder, content); break;
+            case VisualChartFamily.Map: VisualMapCompiler.Build(chart, context, builder, content, colorScales?.Map); break;
+            case VisualChartFamily.Hierarchy: VisualHierarchyCompiler.Build(chart, context, builder, content, colorScales); break;
             case VisualChartFamily.Sankey: VisualSankeyCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Chord: VisualChordCompiler.Build(chart, context, builder, content); break;
             default: VisualSpecialtyCompiler.Build(chart, context, builder, content); break;

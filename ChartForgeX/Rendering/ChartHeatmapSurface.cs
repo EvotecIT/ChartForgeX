@@ -136,9 +136,9 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>
     /// Returns the values of the swatches in a horizontal map scale. Two- and three-colour scales draw five evenly spaced
-    /// swatches; a scale with more stops draws one swatch per stop (up to <see cref="MaximumMapScaleSteps"/>), each at the
-    /// value where its stop is exact, so every step of a many-step ramp shows in the legend. When the midpoint of a
-    /// diverging scale sits at the minimum or maximum, one arm has no range, so the swatches are spaced evenly instead.
+    /// swatches; uniform scales with more colours draw one swatch per stop, up to <see cref="MaximumMapScaleSteps"/>.
+    /// Scales with absolute positioned stops sample equal numeric intervals across the authored domain; complete anchors
+    /// remain in descriptive metadata. A diverging scale whose midpoint is at either endpoint also samples evenly.
     /// </summary>
     public static double[] MapScaleSteps(Chart chart, double min, double max) {
         if (chart.Options.MapColorScale is ChartColorScale configured) return ChartColorScaleLegend.Steps(configured, min, max);

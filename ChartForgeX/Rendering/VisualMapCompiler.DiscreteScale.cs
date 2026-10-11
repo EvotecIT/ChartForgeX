@@ -9,13 +9,14 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
-    private static MapLayout DiscreteScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
-        var texts = BandCaptions(chart);
+    private static MapLayout DiscreteScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartColorPresentation presentation) {
+        var texts = BandCaptions(chart, presentation);
+        var title = presentation.HasName ? presentation.Name : chart.Series[0].Name;
         var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
-        var height = texts.Concat(new[] { "Mg", chart.Series[0].Name, chart.Options.Labels.NoData })
+        var height = texts.Concat(new[] { "Mg", title, presentation.NoData })
             .Max(text => builder.MeasureText(text, style).Height);
         if (chart.Options.MapScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
-            var measured = texts.Concat(new[] { chart.Series[0].Name, chart.Options.Labels.NoData })
+            var measured = texts.Concat(new[] { title, presentation.NoData })
                 .Max(text => builder.MeasureText(text, style).Width);
             var width = Math.Min(plot.Width * .5, measured + height * 2 + gap * 3);
             return new MapLayout(new ChartRect(plot.Left, plot.Top, Math.Max(0, plot.Width - width - gap), plot.Height),
@@ -26,16 +27,17 @@ internal static partial class VisualMapCompiler {
             new ChartRect(plot.Left, plot.Bottom - reserve, plot.Width, reserve), texts, false);
     }
 
-    private static void DrawDiscreteScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors) {
+    private static void DrawDiscreteScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors, ChartColorPresentation presentation) {
         var scale = chart.Options.MapColorScale!;
+        var title = presentation.HasName ? presentation.Name : chart.Series[0].Name;
         var area = layout.Scale; var gap = context.Theme.Spacing; var style = TickStyle(chart, context);
-        var row = layout.Texts.Concat(new[] { "Mg", chart.Series[0].Name, chart.Options.Labels.NoData })
+        var row = layout.Texts.Concat(new[] { "Mg", title, presentation.NoData })
             .Max(text => builder.MeasureText(text, style).Height);
         var missing = HasMissingMapValues(chart);
         using (builder.PushGroup("map-scale", "map-scale", new Dictionary<string, string> {
             ["data-cfx-scale-mode"] = "discrete", ["data-cfx-band-count"] = N(scale.Bands.Count)
         })) using (builder.PushClip(area)) {
-            VisualRadialPrimitives.Text(builder, chart.Series[0].Name, new ChartRect(area.Left, area.Top, area.Width, Math.Min(row, area.Height)),
+            VisualRadialPrimitives.Text(builder, title, new ChartRect(area.Left, area.Top, area.Width, Math.Min(row, area.Height)),
                 style, "map-scale-title", "map-scale-title");
             var top = Math.Min(area.Bottom, area.Top + row + gap / 2);
             var available = Math.Max(0, area.Bottom - top - (missing ? row + gap / 2 : 0));
@@ -62,12 +64,12 @@ internal static partial class VisualMapCompiler {
                 VisualRadialPrimitives.Text(builder, layout.Texts[index], Intersect(textBounds, area), style, "map-scale-band-label", "map-scale-band-label-" + index,
                     alignment: layout.Right ? TextAlignment.Left : TextAlignment.Center);
             }
-            if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, area.Bottom - row, area.Width, row), area), style, row);
+            if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, area.Bottom - row, area.Width, row), area), style, row, presentation.NoData);
         }
     }
 
-    private static string[] BandCaptions(Chart chart) {
-        return ChartColorScaleLegend.BandCaptions(chart.Options, chart.Options.MapColorScale!);
+    private static string[] BandCaptions(Chart chart, ChartColorPresentation presentation) {
+        return ChartColorScaleLegend.BandCaptions(presentation.Labels, chart.Options.MapColorScale!, presentation.ScaleValues);
     }
 
     private static bool HasMissingMapValues(Chart chart) =>

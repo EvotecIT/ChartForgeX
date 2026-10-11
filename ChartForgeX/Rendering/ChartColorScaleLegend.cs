@@ -24,6 +24,9 @@ internal static class ChartColorScaleLegend {
 
     /// <summary>Returns the midpoint's swatch-center index, fractional when a sampled ramp places it between values.</summary>
     internal static double MidpointStep(ChartColorScale scale, double min, double max, int stepCount) {
+        if (scale.HasPositionedStops)
+            return (stepCount - 1) * Math.Max(0, Math.Min(1, ChartMath.Normalize(scale.EffectiveMidpoint(min, max),
+                scale.EffectiveMinimum(min), scale.EffectiveMaximum(max))));
         if (SwatchPerStop(scale, min, max) && scale.MidpointIndex is int midpoint) return midpoint;
         if (scale.Colors.Count > 3 && scale.MidpointCollapses(min, max))
             return scale.EffectiveMidpoint(min, max) <= scale.EffectiveMinimum(min) ? 0 : stepCount - 1;
@@ -34,7 +37,7 @@ internal static class ChartColorScaleLegend {
     }
 
     private static bool SwatchPerStop(ChartColorScale scale, double min, double max) =>
-        scale.Colors.Count > 3 && scale.Colors.Count <= MaximumSteps && !scale.MidpointCollapses(min, max);
+        !scale.HasPositionedStops && scale.Colors.Count > 3 && scale.Colors.Count <= MaximumSteps && !scale.MidpointCollapses(min, max);
 
     internal static string[] BandCaptions(ChartOptions options, ChartColorScale scale) =>
         BandCaptions(options.Labels, scale, values => ChartNumericFormatter.FormatScaleValues(options, values));
