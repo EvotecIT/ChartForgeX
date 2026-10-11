@@ -113,7 +113,7 @@ public sealed partial class MermaidParser {
     private static void CompleteConfigurationYamlParent(List<(int Indent, string Path, int ChildIndent, MermaidSourceSpan Span)> parents,
         MermaidSourceConfiguration configuration) {
         var parent = parents[parents.Count - 1];
-        if (parent.ChildIndent < 0 && parent.Path.Length > 0 && !IsConfigurationStringPath(parent.Path))
+        if (parent.ChildIndent < 0 && parent.Path.Length > 0 && !IsConfigurationScalarPath(parent.Path))
             configuration.Add(new MermaidConfigurationSetting(parent.Path, null, false, parent.Span));
         parents.RemoveAt(parents.Count - 1);
     }
