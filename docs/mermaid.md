@@ -67,7 +67,7 @@ Topology diagram dimensions set the minimum canvas. The renderer expands the can
 
 `MermaidDocument.Configuration` exposes the effective `Theme`, `Layout`, `Look` and `FontFamily`, plus retained `Settings` with dotted paths, scalar values and original locations. `Theme` on the document addresses the same effective theme for callers that convert a model directly.
 
-Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. For the supported appearance keys `theme`, `look` and `layout`, a setting scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. This follows the tested upstream merge contract. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
+Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. A recognized theme or look scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. An unrecognized scoped theme or look retains a warning and allows the global value to apply; invalid scalar types still produce errors. Layout names retain scoped precedence because the upstream layout registry is extensible. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
 
 `themeVariables.fontFamily` selects the native default font stack for chart, topology, sequence and visual-block output. It overrides root `fontFamily`, including when a later directive changes only the root setting. Unsupported family keys such as `flowchart.fontFamily` retain a diagnostic and do not change that selection. The original declarations remain in `Settings`, and `Configuration.FontFamily` reports the effective native stack. This sets the shared native typography default; it does not reproduce every Mermaid family-specific font role or fetch remote fonts.
 
@@ -93,7 +93,7 @@ JSON configuration numbers must use JSON number syntax and fit the native reader
 
 Configuration is limited to 65,536 characters across the YAML `config` declarations and legacy declarations, 256 retained settings, eight JSON/mapping levels and 4,096 characters for an effective theme/layout/look/font string. Unrelated frontmatter metadata, whole YAML comment lines and blank lines do not consume the configuration budget. Comments do not end the active mapping; following indented settings remain subject to its limits. Over-budget declarations are omitted from the bounded directive collection; the original source remains available. YAML has an additional 256-key limit. Duplicate keys within one supported mapping, inconsistent sibling indentation, invalid supported values and over-limit input report `CFXM006` and prevent the shared renderer from producing an artifact. Repeated legacy declarations remain valid and merge in order.
 
-`layout`, `look`, `defaultRenderer`, other theme variables and other family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
+`layout`, `look`, `defaultRenderer`, theme variables and other family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
 
 ## Process diagrams
 
@@ -1033,7 +1033,7 @@ var artifact = document!.ToVisualArtifact(new MermaidBlockRenderOptions {
 });
 ```
 
-The conversion target for block diagrams is `BlockLayoutBlock`. Mermaid block items become deterministic grid cells, spaces occupy grid columns without drawing, and edges render as static connectors. Nested/composite blocks, full Mermaid shape fidelity, and style/class application are preserved for future support but are not silently rendered as if complete.
+The conversion target for block diagrams is `BlockLayoutBlock`. Mermaid block items become deterministic grid cells, spaces occupy grid columns without drawing, and edges render as static connectors. Circle connectors attach to the painted circle boundary in SVG and PNG, including mixed shapes and wide grid cells. Nested/composite blocks, full Mermaid shape fidelity, and style/class application are preserved for future support but are not silently rendered as if complete.
 
 ## Packet Diagrams
 
