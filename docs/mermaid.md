@@ -774,6 +774,8 @@ Source rendering and Markdown fences use the same parser context; the Markdown a
 
 Migration: loose date parsing no longer fills missing fields from the system date. Use an explicit `dateFormat` and anchor for partial inputs. Complete legacy spellings remain accepted, including unpadded ISO dates, single-digit hours, English named-month dates, and numeric slash dates with four-digit years. Use the configured format for other spellings. Endpoints use the same anchor; a time-only end does not infer a following day or a following year.
 
+Task dates can contain commas. With `dateFormat MMMM D[,] YYYY`, `Build :build,January 2, 2026,January 3, 2026` retains `build` as the ID and parses both complete dates. Configured timestamps can contain several commas, and numeric task IDs stay separate from numeric date fields. The final `dateFormat` applies even when declared after a task; sections and source locations retain their authored order.
+
 Supported Gantt parsing includes:
 
 - `gantt` headers.
