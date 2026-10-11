@@ -15,6 +15,7 @@ internal sealed class ChartColorPresentation {
     internal ChartColorPresentation(ChartColorDimensionOptions options, ChartLabels labels, string defaultName,
         ChartValueFormat defaultFormat, bool compactDefault = false, ChartColorPresentationSet? preparation = null) {
         HasName = options.Name != null; HasFormat = options.ValueFormat != null;
+        ShowLegend = options.ShowLegend; LegendStyle = options.LegendStyle;
         Name = options.Name ?? defaultName; Labels = labels.Capture();
         _format = options.ValueFormat ?? defaultFormat;
         _values = preparation?.Values(_format) ?? new Dictionary<double, string>();
@@ -26,6 +27,8 @@ internal sealed class ChartColorPresentation {
     internal bool HasName { get; }
     internal bool HasFormat { get; }
     internal bool HasOverrides => HasName || HasFormat;
+    internal bool ShowLegend { get; }
+    internal ChartColorLegendStyle LegendStyle { get; }
     internal ChartLabels Labels { get; }
     internal string NoData => Labels.NoData;
 
