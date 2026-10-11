@@ -28,6 +28,26 @@ internal sealed class RadialValueScale {
         return Create(axis, series.SelectMany(item => item.Points).Select(point => point.Y), chartName, false);
     }
 
+    /// <summary>Builds independent radius domains from each series' selected value axis.</summary>
+    internal static Dictionary<ChartAxisSide, RadialValueScale> ForAxes(Chart chart, Func<int, IEnumerable<double>> observations,
+        string chartName, bool includeZero = false) {
+        var result = new Dictionary<ChartAxisSide, RadialValueScale>();
+        foreach (var side in chart.Series.Select(series => series.YAxis).Distinct()) {
+            var axis = Axis(chart, side);
+            var values = Enumerable.Range(0, chart.Series.Count).Where(index => chart.Series[index].YAxis == side)
+                .SelectMany(observations).Where(value => !includeZero || axis.Scale != ChartScaleKind.Logarithmic || value != 0).ToArray();
+            // Empty series retain identity without inventing another axis's domain.
+            if (values.Length == 0) {
+                if (!axis.Minimum.HasValue || !axis.Maximum.HasValue) continue;
+                values = new[] { axis.Minimum.Value, axis.Maximum.Value };
+            }
+            result.Add(side, Create(axis, values, chartName, includeZero));
+        }
+        return result;
+    }
+
+    internal static ChartAxis Axis(Chart chart, ChartAxisSide side) => side == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+
     /// <summary>Uses compiled segment endpoints when a numeric radial family supports signed baselines and stacks.</summary>
     internal static RadialValueScale Create(ChartAxis axis, IEnumerable<double> values, string chartName, bool includeZero) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));

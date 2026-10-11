@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
     private static MapLayout ScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, double min, double max, ChartColorPresentation presentation) {
-        if (!chart.Options.ShowMapScaleLegend || !context.Frame.ShowLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
+        if (!presentation.ShowLegend || !context.Frame.ShowLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
         if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) return DiscreteScaleLayout(chart, context, builder, plot, presentation);
         var values = new[] { ChartHeatmapSurface.MapScaleValue(chart, min, max, 1), ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), ChartHeatmapSurface.MapScaleValue(chart, min, max, 0) };
         var captions = presentation.ScaleValues(values);
@@ -33,7 +33,7 @@ internal static partial class VisualMapCompiler {
     }
 
     private static void DrawScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
-        if (!chart.Options.ShowMapScaleLegend || !context.Frame.ShowLegend) return;
+        if (!presentation.ShowLegend || !context.Frame.ShowLegend) return;
         if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) {
             DrawDiscreteScale(chart, context, builder, layout, colors, presentation);
             return;
@@ -45,62 +45,102 @@ internal static partial class VisualMapCompiler {
         var missing = HasMissingMapValues(chart);
         var steps = ChartHeatmapSurface.MapScaleSteps(chart, min, max);
         var scale = chart.Options.MapColorScale; var positioned = scale?.HasPositionedStops == true;
-        using (builder.PushGroup("map-scale", "map-scale", new Dictionary<string, string> {
+        var gradient = presentation.LegendStyle == ChartColorLegendStyle.Gradient;
+        var metadata = new Dictionary<string, string> {
             ["data-cfx-scale-mode"] = chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Diverging ? "diverging" : "sequential",
             ["data-cfx-min-value"] = N(ChartHeatmapSurface.MapScaleValue(chart, min, max, 0)),
             ["data-cfx-max-value"] = N(ChartHeatmapSurface.MapScaleValue(chart, min, max, 1)),
             ["data-cfx-midpoint-value"] = N(ChartHeatmapSurface.MapScaleMidpoint(chart, min, max))
-        })) using (builder.PushClip(area)) {
+        };
+        if (presentation.LegendStyle != ChartColorLegendStyle.Auto) metadata["data-cfx-legend-style"] = presentation.LegendStyle.ToString().ToLowerInvariant();
+        using (builder.PushGroup("map-scale", "map-scale", metadata)) using (builder.PushClip(area)) {
             if (scale != null) VisualColorScaleLegendScene.PositionedStops(builder, scale, area, "map-scale",
                 presentation.ScaleValues, presentation.HasOverrides ? presentation.Name : null);
             if (layout.Right) {
                 VisualRadialPrimitives.Text(builder, title, new ChartRect(area.Left, area.Top, area.Width, Math.Min(row, area.Height)), style, "map-scale-title", "map-scale-title");
                 var top = Math.Min(area.Bottom, area.Top + row + gap); var height = Math.Max(0, area.Height - row * (missing ? 2 : 1) - gap * 2);
                 var swatchWidth = Math.Min(row, area.Width * .2);
-                var count = positioned ? steps.Length : 32;
-                for (var index = 0; index < count; index++) {
-                    var value = positioned ? steps[steps.Length - 1 - index] : ChartHeatmapSurface.MapScaleValue(chart, min, max, 1 - index / 31d);
-                    var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, High(chart.Series[0], colors), value, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
-                    using (positioned ? builder.PushGroup(null, "map-scale-step-source", new Dictionary<string, string> { ["data-cfx-value"] = N(value) }) : null)
-                    builder.Rect(new ChartRect(area.Left, top + height * index / count, swatchWidth, height / count),
-                        blend.Color, role: "map-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                var sampled = positioned || presentation.LegendStyle == ChartColorLegendStyle.Swatches;
+                var count = sampled ? steps.Length : 32;
+                if (gradient) VisualColorScaleLegendScene.Gradient(builder, scale!, new ChartRect(area.Left, top, swatchWidth, height), min, max, "map-scale-gradient", vertical: true);
+                else {
+                    for (var index = 0; index < count; index++) {
+                        var value = sampled ? steps[steps.Length - 1 - index] : ChartHeatmapSurface.MapScaleValue(chart, min, max, 1 - index / 31d);
+                        var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, High(chart.Series[0], colors), value, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
+                        using (sampled ? builder.PushGroup(null, "map-scale-step-source", new Dictionary<string, string> { ["data-cfx-value"] = N(value) }) : null)
+                        builder.Rect(new ChartRect(area.Left, top + height * index / count, swatchWidth, height / count),
+                            blend.Color, role: "map-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                    }
                 }
                 var textWidth = Math.Max(0, area.Width - swatchWidth - gap);
                 var midpoint = ChartHeatmapSurface.MapRatio(chart, ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), min, max);
                 var labelHeight = Math.Min(row, height / 3);
-                var midpointY = positioned ? top + (count - .5 - ChartColorScaleLegend.MidpointStep(scale!, min, max, count)) * height / count
+                var midpointY = !gradient && sampled ? top + (count - .5 - ChartColorScaleLegend.MidpointStep(scale!, min, max, count)) * height / count
                     : top + height * (1 - midpoint);
                 var centers = new[] { top + labelHeight / 2, VisualRadialPrimitives.Clamp(midpointY, top + labelHeight * 1.5, top + height - labelHeight * 1.5), top + height - labelHeight / 2 };
                 for (var index = 0; index < layout.Texts.Length; index++) VisualRadialPrimitives.Text(builder, layout.Texts[index],
                     Intersect(new ChartRect(area.Left + swatchWidth + gap, centers[index] - labelHeight / 2, textWidth, labelHeight), area), style, "map-scale-label", "map-scale-label-" + index);
                 if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, area.Bottom - row, area.Width, row), area), style, row, presentation.NoData);
             } else {
+                ChartRect? inlineMissing = null;
                 if (presentation.HasName) {
-                    VisualColorScaleLegendScene.Heading(builder, area, style, "map-scale", presentation.Name);
                     var heading = Math.Min(area.Height, VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.Name));
-                    area = new ChartRect(area.Left, area.Top + heading, area.Width, Math.Max(0, area.Height - heading));
+                    var keyArea = new ChartRect(area.Left, area.Top + heading, area.Width, Math.Max(0, area.Height - heading));
+                    if (missing) inlineMissing = MissingScaleHeadingBounds(builder, area, keyArea, style, row, gap,
+                        presentation.Name, presentation.NoData, ChartHeatmapSurface.MapMidpointLabel(chart) != null);
+                    var titleArea = inlineMissing.HasValue
+                        ? new ChartRect(area.Left, area.Top, Math.Max(0, inlineMissing.Value.Left - gap - area.Left), area.Height) : area;
+                    VisualColorScaleLegendScene.Heading(builder, titleArea, style, "map-scale", presentation.Name);
+                    if (inlineMissing.HasValue) MissingScale(chart, builder, colors, inlineMissing.Value, style, row, presentation.NoData);
+                    area = keyArea;
                 }
                 var swatchTop = Math.Min(area.Bottom, area.Top + row); var swatchHeight = Math.Min(row * .7, Math.Max(0, area.Bottom - swatchTop));
                 var swatchWidth = area.Width / steps.Length;
-                for (var index = 0; index < steps.Length; index++) using (builder.PushGroup(null, "map-scale-step-source", new Dictionary<string, string> { ["data-cfx-value"] = N(steps[index]) })) {
-                    var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, High(chart.Series[0], colors), steps[index], min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
-                    builder.Rect(new ChartRect(area.Left + index * swatchWidth, swatchTop, swatchWidth, swatchHeight),
-                        blend.Color, role: "map-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                if (gradient) VisualColorScaleLegendScene.Gradient(builder, scale!, new ChartRect(area.Left, swatchTop, area.Width, swatchHeight), min, max, "map-scale-gradient");
+                else {
+                    for (var index = 0; index < steps.Length; index++) using (builder.PushGroup(null, "map-scale-step-source", new Dictionary<string, string> { ["data-cfx-value"] = N(steps[index]) })) {
+                        var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, High(chart.Series[0], colors), steps[index], min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
+                        builder.Rect(new ChartRect(area.Left + index * swatchWidth, swatchTop, swatchWidth, swatchHeight),
+                            blend.Color, role: "map-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                    }
                 }
                 VisualRadialPrimitives.Text(builder, layout.Texts[2], new ChartRect(area.Left, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-low");
                 VisualRadialPrimitives.Text(builder, layout.Texts[0], new ChartRect(area.Left + area.Width / 2, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-high");
                 var next = swatchTop + swatchHeight;
                 if (ChartHeatmapSurface.MapMidpointLabel(chart) != null) {
-                    var center = area.Left + (ChartHeatmapSurface.MapScaleMidpointStep(chart, min, max, steps.Length) + .5) * swatchWidth;
-                    // Fit symmetrically around the stop so clipping at either key edge cannot move the text anchor.
-                    var width = Math.Min(2 * Math.Min(center - area.Left, area.Right - center),
-                        Math.Max(swatchWidth, builder.MeasureText(layout.Texts[1], style).Width));
-                    VisualRadialPrimitives.Text(builder, layout.Texts[1], Intersect(new ChartRect(center - width / 2, next, width, row), area), style, "map-scale-midpoint-label", "map-scale-midpoint");
+                    var center = gradient ? area.Left + area.Width * ChartColorScaleLegend.MidpointRatio(scale!, min, max)
+                        : area.Left + (ChartHeatmapSurface.MapScaleMidpointStep(chart, min, max, steps.Length) + .5) * swatchWidth;
+                    if (gradient) {
+                        var lane = VisualColorScaleLegendScene.MidpointCaptionLane(builder, layout.Texts[1], style,
+                            Intersect(new ChartRect(area.Left, next, area.Width, row), area), center);
+                        var captionStyle = VisualColorScaleLegendScene.FitCaptionStyle(builder, layout.Texts[1], style, lane.Bounds.Width);
+                        VisualRadialPrimitives.Text(builder, layout.Texts[1], lane.Bounds, captionStyle,
+                            "map-scale-midpoint-label", "map-scale-midpoint", alignment: lane.Alignment);
+                    } else {
+                        var width = Math.Min(2 * Math.Min(center - area.Left, area.Right - center),
+                            Math.Max(swatchWidth, builder.MeasureText(layout.Texts[1], style).Width));
+                        VisualRadialPrimitives.Text(builder, layout.Texts[1], Intersect(new ChartRect(center - width / 2, next, width, row), area), style,
+                            "map-scale-midpoint-label", "map-scale-midpoint");
+                    }
                     next += row;
                 }
-                if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, next, area.Width, row), area), style, row, presentation.NoData);
+                if (missing && !inlineMissing.HasValue) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, next, area.Width, row), area), style, row, presentation.NoData);
             }
         }
+    }
+
+    private static ChartRect? MissingScaleHeadingBounds(VisualSceneBuilder builder, ChartRect headingArea, ChartRect keyArea,
+        TextStyle style, double row, double gap, string heading, string noData, bool midpoint) {
+        var stripHeight = Math.Min(row * .7, Math.Max(0, keyArea.Height - row));
+        var missingTop = Math.Min(keyArea.Height, row) + stripHeight + (midpoint ? row : 0);
+        var stackedHeight = Math.Min(row, Math.Max(0, keyArea.Height - missingTop));
+        var caption = builder.MeasureText(noData, style); var title = builder.MeasureText(heading, style);
+        var height = Math.Min(builder.MeasureText("Mg", style).Height, headingArea.Height);
+        var width = row * .7 + caption.Width + gap / 2;
+        // Reuse the heading only when both complete captions fit; the numeric key keeps its original bounds.
+        if (stackedHeight + .000001 >= caption.Height || Math.Max(caption.Height, title.Height) > height + .000001
+            || title.Width + gap + width > headingArea.Width) return null;
+        return new ChartRect(headingArea.Right - width, headingArea.Top, width, height);
     }
 
     private static void MissingScale(Chart chart, VisualSceneBuilder builder, VisualThemeColors colors, ChartRect area, TextStyle style, double size, string noData) {
