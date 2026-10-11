@@ -77,6 +77,11 @@ public sealed class MermaidConfigurationExportBoundaryTests {
         yield return "---\nconfig:\n  " + key + ": \"" + value + "\"\n---\n";
         yield return "---\nconfig: {\"" + key + "\":\"" + value + "\"}\n---\n";
         yield return "%%{init: {\"" + key + "\":\"" + value + "\"}}%%\n";
+        if (key == "fontFamily") {
+            yield return "---\nconfig:\n  fontFamily: Arial\n  themeVariables:\n    fontFamily: \"" + value + "\"\n---\n";
+            yield return "---\nconfig: {\"fontFamily\":\"Arial\",\"themeVariables\":{\"fontFamily\":\"" + value + "\"}}\n---\n";
+            yield return "%%{init: {\"fontFamily\":\"Arial\",\"themeVariables\":{\"fontFamily\":\"" + value + "\"}}}%%\n";
+        }
     }
 
     private static string Fence(string source) => new string((char)96, 3) + "mermaid\n" + source + "\n" + new string((char)96, 3);
