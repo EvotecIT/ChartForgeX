@@ -66,6 +66,75 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart? ColorDimensionObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        if (variant is not ("color-dimension" or "compact-color-dimension")) return null;
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var scale = PositionedTemperatureScale().WithNoDataColor(colors.Border);
+        var format = ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
+        void Present(ChartColorDimensionOptions options) { options.Name = "Temperature"; options.ValueFormat = format; }
+        var chart = Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled");
+        if (kind == ChartSeriesKind.TileMap) {
+            var codes = new[] { "CA", "TX", "NY", "FL", "WA", "IL", "CO" };
+            var values = new[] { 0d, 2.5, 5, 10, 22.5, 40, 55 };
+            return chart.AddTileMap("Daily mean", ChartTileMapCatalog.Get("us-states"),
+                codes.Select((code, index) => new ChartRegionMapItem(code, values[index])))
+                .WithMapLabels(false).WithMapColorScale(scale).ConfigureMapColorDimension(Present);
+        }
+        if (kind == ChartSeriesKind.Heatmap) {
+            return chart.WithXLabels("A", "B", "C", "D", "E", "F")
+                .AddHeatmapRow("Primary", PositionedColorValues.Take(6))
+                .AddHeatmapRow("Secondary", PositionedColorValues.Skip(6))
+                .WithHeatmapColorScale(scale).ConfigureHeatmapColorDimension(Present)
+                .WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithDataLabels();
+        }
+        if (kind == ChartSeriesKind.CalendarHeatmap) {
+            return chart.AddCalendarHeatmap("Daily mean", Enumerable.Range(0, 120)
+                .Where(index => index % 7 != 0 && index % 9 != 0)
+                .Select(index => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 2.5 % 13)),
+                firstDayOfWeek: DayOfWeek.Monday)
+                .WithHeatmapColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
+                    .WithLabels("Cool", null, "Warm").WithNoDataColor(colors.Border))
+                .ConfigureHeatmapColorDimension(Present);
+        }
+        if (kind == ChartSeriesKind.Treemap) {
+            return chart.WithValueFormat(ChartValueFormat.Number("0 'tasks'", CultureInfo.InvariantCulture)).WithDataLabels()
+                .AddTreemap("Allocated work", new[] {
+                    new ChartHierarchyItem("north", "North"),
+                    new ChartHierarchyItem("support", "Support", parentId: "north", value: 18, colorValue: -4),
+                    new ChartHierarchyItem("research", "Research", parentId: "north", value: 12, colorValue: 11),
+                    new ChartHierarchyItem("south", "South"),
+                    new ChartHierarchyItem("field", "Field", parentId: "south", value: 22, colorValue: 8),
+                    new ChartHierarchyItem("platform", "Platform", parentId: "south", value: 15, colorValue: 1),
+                    new ChartHierarchyItem("operations", "Operations", parentId: "south", value: 15)
+                }).ConfigureTreemap(options => {
+                    options.Gap = 3; options.GroupPadding = 6; options.ColorScale = scale;
+                    Present(options.ColorDimension);
+                });
+        }
+        if (kind is not (ChartSeriesKind.Scatter or ChartSeriesKind.Bubble)) return null;
+        var minutes = new[] { 18d, 30, 24, 44, 32 };
+        var temperatures = new double?[] { -12, 0, null, 2.5, 22.5 };
+        var sizes = new[] { 9d, 36, 81, 49, 25 };
+        chart.WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
+            .WithValueFormat(ChartValueFormat.Number("0.0 'min'", CultureInfo.InvariantCulture));
+        if (kind == ChartSeriesKind.Bubble) {
+            chart.AddBubble("Recorded batches", temperatures.Select((value, index) =>
+                new ChartBubble((index + 1) * 16, minutes[index], sizes[index]).WithColorValue(value)));
+            scale = ChartColorScale.Discrete(new[] {
+                new ChartColorBand(0, colors.Palette[0], "Cold"),
+                new ChartColorBand(15, colors.Status.Medium.Fill, "Mild"),
+                new ChartColorBand(null, colors.Status.Critical.Fill, "Warm")
+            }).WithNoDataColor(colors.Border);
+        } else chart.AddScatter("Recorded batches", temperatures.Select((value, index) =>
+            new ChartPoint((index + 1) * 16, minutes[index]).WithColorValue(value)));
+        chart.Series[0].WithColorScale(scale).ConfigureColorDimension(Present).WithInteractionKey("recorded-batches");
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     private static Chart? NumericColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
         if (kind is not (ChartSeriesKind.Scatter or ChartSeriesKind.Bubble) || variant is not ("color-scale" or "compact-color-scale")) return null;
         var colors = VisualTheme.Graphite().Resolve(mode);
@@ -726,7 +795,7 @@ public static partial class V2GalleryModels {
                 options.SecondaryLabelFormatter = context => context.Item.Id == "all" ? "Allocation" : context.Item.Id == "engineering" ? "Delivery teams"
                     : context.Item.Id == "operations-support" ? "Shared service" : null;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
-                options.ColorLegendTitle = "Change (%)";
+                options.ColorDimension.Name = "Change (%)";
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
                     .WithLabels("Decrease", "No change", "Increase").WithNoDataColor(colors.Surface);
             });
@@ -767,7 +836,7 @@ public static partial class V2GalleryModels {
             options.GroupPadding = variant == "options" ? 8 : 6;
             options.Gap = 3;
             options.ShowGroupLabels = true;
-            options.ColorLegendTitle = "Change (%)";
+            options.ColorDimension.Name = "Change (%)";
             options.ColorScale = scale.WithNoDataColor(colors.Surface);
         });
         if (variant == "options") chart.Series[0].WithNodeState("south-support", ChartSeriesState.Warning);
@@ -787,12 +856,13 @@ public static partial class V2GalleryModels {
         var radialLabelVariant = (variant is "axis-labels" or "compact-axis-labels" or "all-labels" or "compact-all-labels") && kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
         var colorScaleVariant = (variant is "color-scale" or "compact-color-scale") && kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
         var positionedColorVariant = (variant is "positioned-color-scale" or "compact-positioned-color-scale") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalWaterfall && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant)
+        var colorDimensionVariant = (variant is "color-dimension" or "compact-color-dimension") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalWaterfall && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
-            ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
-        if (!precisionVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        if (!precisionVariant && !colorDimensionVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
         if (variant == "options" && kind == ChartSeriesKind.Area) {
             chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
             chart.Series[0].StateRole = ChartSeriesState.Warning;
