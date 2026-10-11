@@ -20,7 +20,7 @@ internal static partial class VisualMatrixCompiler {
         var left = axes && chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .22, Enumerable.Range(0, 7).Select(row => builder.MeasureText(model.DayName(row), style).Width).Max() + gap) : 0;
         var top = axes && chart.Options.XAxis.Visible ? Math.Min(viewport.Height * .15, lineHeight + gap) : 0;
         var scale = chart.Options.HeatmapColorScale;
-        var scaleHeight = ScaleVisible(chart, context) ? scale != null
+        var scaleHeight = ScaleVisible(context, presentation) ? scale != null
             ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height * .35 - gap), presentation, model.EmptyDays > 0) + gap
             : Math.Min(viewport.Height * .25, CalendarScaleCaptionHeight(chart, builder, model, style, presentation) + 12 + gap + gap / 3 + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null)) : 0;
         var scaleGap = Math.Min(gap, scaleHeight / 3);
@@ -77,7 +77,7 @@ internal static partial class VisualMatrixCompiler {
                 foreach (var month in model.MonthLabels(grid, text => builder.MeasureText(text, style).Width))
                     VisualStateSceneTools.Text(builder, model.MonthName(month.Month), new ChartRect(month.X, viewport.Top, Math.Max(0, area.Right - month.X), top),
                         style, "calendar-month", "calendar-month-" + month.Month.ToString("yyyy-MM", CultureInfo.InvariantCulture));
-            if (ScaleVisible(chart, context)) {
+            if (ScaleVisible(context, presentation)) {
                 var scaleBounds = new ChartRect(area.Left, viewport.Bottom - scaleHeight + scaleGap, area.Width, Math.Max(0, scaleHeight - scaleGap));
                 if (scale != null) ColorScale(chart, context, builder, scaleBounds, model.Min, model.Max, "calendar-scale", presentation, model.EmptyDays > 0,
                     CalendarMissingBlend(chart, colors));
