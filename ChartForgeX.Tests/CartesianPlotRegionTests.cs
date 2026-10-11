@@ -13,7 +13,7 @@ public sealed class CartesianPlotRegionTests {
         var chart = Chart.Create().WithSize(520, 340).WithTitle("Mapping extent");
         var values = new[] { new ChartPoint(1, 3), new ChartPoint(2, 7) };
         if (horizontal) chart.WithStackedBars().WithStackTotals().WithXAxisBounds(0, 10)
-            .AddHorizontalBar("First", values).AddHorizontalBar("Second", values.Reverse());
+            .AddHorizontalBar("First", values).AddHorizontalBar("Second", values.AsEnumerable().Reverse());
         else {
             chart.AddLine("Primary", values).AddLine("Secondary", new[] { new ChartPoint(1, 30), new ChartPoint(2, 70) });
             chart.Series[1].UseSecondaryYAxis();
