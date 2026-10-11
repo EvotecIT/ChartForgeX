@@ -109,9 +109,13 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.XAxis.Visible) {
             if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-x", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             var tickHeight = TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache).Height;
-            var bounds = new ChartRect(plot.Left, plot.Bottom + spacing, plot.Width, Math.Max(0, Math.Min(tickHeight, viewport.Bottom - plot.Bottom - spacing)));
-            DrawAxisLabels(builder, chart.Options, axes.Value, xTicks, map.X, true, false, bounds, style, spacing, chart.Options.ValueFormatter, cache);
             var title = XAxisTitle(chart);
+            var available = Math.Max(0, viewport.Bottom - plot.Bottom - spacing);
+            var titleHeight = title.Length == 0 ? 0 : builder.MeasureText(title,
+                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground })).Height + spacing;
+            titleHeight = FitAxisTitleReservation(tickHeight, titleHeight, available);
+            var bounds = new ChartRect(plot.Left, plot.Bottom + spacing, plot.Width, Math.Max(0, Math.Min(tickHeight, available - titleHeight)));
+            DrawAxisLabels(builder, chart.Options, axes.Value, xTicks, map.X, true, false, bounds, style, spacing, chart.Options.ValueFormatter, cache);
             if (title.Length > 0) DrawAxisTitle(chart, context, builder, title,
                 new ChartRect(plot.Left, bounds.Bottom + spacing, plot.Width, Math.Max(0, viewport.Bottom - bounds.Bottom - spacing)), colors, TextAlignment.Center, "axis-x-title");
         }

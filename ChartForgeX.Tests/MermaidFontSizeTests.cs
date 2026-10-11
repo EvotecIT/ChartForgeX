@@ -157,6 +157,7 @@ public sealed class MermaidFontSizeTests {
     [InlineData("1svmin")]
     [InlineData("1cqi")]
     [InlineData("var(--label-size)")]
+    [InlineData("math")]
     public void UnsupportedCssSizingRetainsItsDeclarationAndWarning(string value) {
         var result = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontSize':'" + value + "'}}}%%\nflowchart LR\nA --> B");
         Assert.False(result.HasErrors);
