@@ -32,7 +32,7 @@ internal static partial class VisualHierarchyCompiler {
         ChartHierarchySurface surface, VisualThemeColors colors) {
         if (!HasHierarchyScale(chart, context, surface) || area.Width <= 0 || area.Height <= 0) return;
         var scale = surface.Scale!; var style = HierarchyScaleStyle(context); var row = builder.MeasureText("Mg", style).Height;
-        var title = surface.Title ?? chart.Options.Labels.Color;
+        var title = surface.Title;
         var metadata = new Dictionary<string, string> { ["data-cfx-scale-mode"] = scale.Mode.ToString().ToLowerInvariant() };
         if (surface.HasDomain && scale.Mode != ChartColorScaleMode.Discrete) {
             metadata["data-cfx-min-value"] = N(scale.EffectiveMinimum(surface.Minimum));
@@ -40,6 +40,8 @@ internal static partial class VisualHierarchyCompiler {
             metadata["data-cfx-midpoint-value"] = N(scale.EffectiveMidpoint(surface.Minimum, surface.Maximum));
         }
         using (builder.PushGroup(surface.RolePrefix + "-color-scale", surface.RolePrefix + "-color-scale", metadata)) using (builder.PushClip(area)) {
+            VisualColorScaleLegendScene.PositionedStops(builder, scale, area, surface.RolePrefix + "-color-scale",
+                surface.Presentation.ScaleValues, surface.Presentation.HasOverrides ? surface.Title : null);
             VisualRadialPrimitives.Text(builder, title, new ChartRect(area.X, area.Y, area.Width, Math.Min(row, area.Height)), style,
                 surface.RolePrefix + "-color-scale-title", surface.RolePrefix + "-color-scale-title", alignment: TextAlignment.Left);
             var swatchY = Math.Min(area.Bottom, area.Y + row + 3);
@@ -47,7 +49,7 @@ internal static partial class VisualHierarchyCompiler {
             var swatchHeight = numeric ? Math.Min(row * .7, Math.Max(0, area.Bottom - swatchY - row)) : 0;
             var labelY = swatchY + swatchHeight + 3;
             if (scale.Mode == ChartColorScaleMode.Discrete) {
-                var captions = ChartColorScaleLegend.BandCaptions(chart.Options, scale);
+                var captions = ChartColorScaleLegend.BandCaptions(surface.Presentation.Labels, scale, surface.Presentation.ScaleValues);
                 for (var i = 0; i < scale.Bands.Count; i++) {
                     var band = scale.Bands[i]; var width = area.Width / scale.Bands.Count;
                     var source = new Dictionary<string, string> {
@@ -66,17 +68,28 @@ internal static partial class VisualHierarchyCompiler {
                 }
             } else if (surface.HasDomain) {
                 var steps = ChartColorScaleLegend.Steps(scale, surface.Minimum, surface.Maximum); var width = area.Width / steps.Length;
-                for (var i = 0; i < steps.Length; i++) using (builder.PushGroup(null, surface.RolePrefix + "-color-scale-step-source", new Dictionary<string, string> { ["data-cfx-value"] = N(steps[i]) })) {
-                    var blend = scale.BlendFor(steps[i], surface.Minimum, surface.Maximum);
-                    builder.Rect(new ChartRect(area.X + i * width, swatchY, width, swatchHeight), blend.Color,
-                        role: surface.RolePrefix + "-color-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                var captions = surface.Presentation.HasOverrides ? surface.Presentation.ScaleValues(steps) : null;
+                for (var i = 0; i < steps.Length; i++) {
+                    var source = new Dictionary<string, string> { ["data-cfx-value"] = N(steps[i]) };
+                    if (captions != null) {
+                        source["data-cfx-formatted-value"] = captions[i]; source["data-cfx-label-value"] = surface.Title;
+                    }
+                    using (builder.PushGroup(null, surface.RolePrefix + "-color-scale-step-source", source)) {
+                        var blend = scale.BlendFor(steps[i], surface.Minimum, surface.Maximum);
+                        builder.Rect(new ChartRect(area.X + i * width, swatchY, width, swatchHeight), blend.Color,
+                            role: surface.RolePrefix + "-color-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                    }
                 }
-                var values = ChartNumericFormatter.FormatScaleValues(chart.Options, new[] { scale.EffectiveMinimum(surface.Minimum), scale.EffectiveMaximum(surface.Maximum) });
-                ScaleCaption((scale.LowLabel ?? chart.Options.Labels.Less) + " · " + values[0], area.X, labelY, area.Width / 2, TextAlignment.Left, "low");
-                ScaleCaption((scale.HighLabel ?? chart.Options.Labels.More) + " · " + values[1], area.X + area.Width / 2, labelY, area.Width / 2, TextAlignment.Right, "high");
+                var values = surface.Presentation.ScaleValues(new[] { scale.EffectiveMinimum(surface.Minimum), scale.EffectiveMaximum(surface.Maximum) });
+                ScaleCaption((scale.LowLabel ?? surface.Presentation.Labels.Less) + " · " + values[0], area.X, labelY, area.Width / 2, TextAlignment.Left, "low");
+                ScaleCaption((scale.HighLabel ?? surface.Presentation.Labels.More) + " · " + values[1], area.X + area.Width / 2, labelY, area.Width / 2, TextAlignment.Right, "high");
                 if (scale.MidpointLabel != null) {
-                    var text = scale.MidpointLabel + " · " + ChartNumericFormatter.FormatScaleValues(chart.Options, new[] { scale.EffectiveMidpoint(surface.Minimum, surface.Maximum) })[0];
-                    ScaleCaption(text, area.X, labelY + row, area.Width, TextAlignment.Center, "midpoint");
+                    var text = scale.MidpointLabel + " · " + surface.Presentation.ScaleValues(new[] { scale.EffectiveMidpoint(surface.Minimum, surface.Maximum) })[0];
+                    if (scale.HasPositionedStops && scale.Mode == ChartColorScaleMode.Diverging) {
+                        var center = area.X + (ChartColorScaleLegend.MidpointStep(scale, surface.Minimum, surface.Maximum, steps.Length) + .5) * width;
+                        var captionWidth = 2 * Math.Min(center - area.Left, area.Right - center);
+                        ScaleCaption(text, center - captionWidth / 2, labelY + row, captionWidth, TextAlignment.Center, "midpoint", fit: true);
+                    } else ScaleCaption(text, area.X, labelY + row, area.Width, TextAlignment.Center, "midpoint");
                 }
             }
             if (surface.HasMissing) {
@@ -85,12 +98,13 @@ internal static partial class VisualHierarchyCompiler {
                 var blend = ChartColorScaleSurface.NoData(scale, colors);
                 builder.Rect(new ChartRect(area.X, missingY + height * .15, height * .7, height * .7), blend.Color,
                     role: surface.RolePrefix + "-color-scale-missing", paint: VisualChartPaint.Fill(blend.Paint));
-                ScaleCaption(chart.Options.Labels.NoData, area.X + height, missingY, Math.Max(0, area.Width - height), TextAlignment.Left, "missing");
+                ScaleCaption(surface.Presentation.NoData, area.X + height, missingY, Math.Max(0, area.Width - height), TextAlignment.Left, "missing");
             }
         }
 
-        void ScaleCaption(string full, double x, double y, double width, TextAlignment alignment, string id) {
-            VisualRadialPrimitives.Text(builder, full, new ChartRect(x, y, width, Math.Min(row, Math.Max(0, area.Bottom - y))), style,
+        void ScaleCaption(string full, double x, double y, double width, TextAlignment alignment, string id, bool fit = false) {
+            var captionStyle = fit ? VisualColorScaleLegendScene.FitCaptionStyle(builder, full, style, width) : style;
+            VisualRadialPrimitives.Text(builder, full, new ChartRect(x, y, width, Math.Min(row, Math.Max(0, area.Bottom - y))), captionStyle,
                 surface.RolePrefix + "-color-scale-label", surface.RolePrefix + "-color-scale-label-" + id, alignment: alignment);
         }
     }

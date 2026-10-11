@@ -15,6 +15,7 @@ public sealed class ChartLabels {
     private string _more = "More";
     private string _noData = "No data";
     private string _color = "Color";
+    private string _size = "Size";
     private string _authoredValue = "Provided value";
     private string _remainder = "Remainder";
     private string _allValues = "All values";
@@ -61,6 +62,9 @@ public sealed class ChartLabels {
 
     /// <summary>Gets or sets the default title and tooltip row name of an independent numeric color measurement. Default <c>Color</c>.</summary>
     public string Color { get => _color; set => _color = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the interactive tooltip row name of a Bubble size measurement. Default <c>Size</c>.</summary>
+    public string Size { get => _size; set => _size = Required(value, nameof(value)); }
 
     /// <summary>Gets or sets the tooltip row name for a supplied group size that differs from its resolved size. Default <c>Provided value</c>.</summary>
     public string AuthoredValue { get => _authoredValue; set => _authoredValue = Required(value, nameof(value)); }
@@ -119,6 +123,8 @@ public sealed class ChartLabels {
         var text = AccessibleTextFormatter?.Invoke(description);
         return string.IsNullOrWhiteSpace(text) ? description.EnglishText : text!;
     }
+
+    internal ChartLabels Capture() => (ChartLabels)MemberwiseClone();
 
     private static string Required(string value, string parameterName) =>
         string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Label text must not be empty.", parameterName) : value;

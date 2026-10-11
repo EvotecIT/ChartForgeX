@@ -101,6 +101,11 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart WithHeatmapScaleLegend(bool visible = true) { Options.ShowHeatmapScale = visible; return this; }
 
+    /// <summary>Sets the numeric color scale for rectangular, hexagonal and calendar heatmaps.</summary>
+    /// <param name="scale">The shared scale, or null to restore the family's default coloring.</param>
+    /// <returns>The current chart.</returns>
+    public Chart WithHeatmapColorScale(ChartColorScale? scale) { Options.HeatmapColorScale = scale; return this; }
+
     /// <summary>
     /// Sets whether heatmap column labels should be rendered.
     /// </summary>
