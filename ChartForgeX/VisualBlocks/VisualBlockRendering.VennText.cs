@@ -54,8 +54,8 @@ internal static partial class VisualBlockRendering {
             var candidates = new List<LabelCandidate> { new(0, 0, .5) };
             // Keep authored region anchors when clear. Nearby vertical lanes reserve the
             // complete measured line box rather than relying on a fixed baseline offset.
-            for (var lane = 1; lane <= 4; lane++) {
-                var distance = (metrics.Height + 3) * lane;
+            for (var lane = 1; lane <= 8; lane++) {
+                var distance = (metrics.Height + 3) * lane / 2;
                 candidates.Add(new LabelCandidate(0, distance, .5));
                 candidates.Add(new LabelCandidate(0, -distance, .5));
             }

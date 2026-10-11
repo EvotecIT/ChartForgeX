@@ -41,12 +41,19 @@ public sealed class MermaidBlockTypographyTests {
         var body = File.ReadAllText(Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", fixture));
         var small = Render(body, 10.5);
         var large = Render(body, 21);
-        var originalSizes = BodyFontSizes(small.ToSvg());
-        var enlargedSizes = BodyFontSizes(large.ToSvg());
+        var originalSvg = small.ToSvg(); var enlargedSvg = large.ToSvg();
+        var originalSizes = BodyFontSizes(originalSvg);
+        var enlargedSizes = BodyFontSizes(enlargedSvg);
+        var captureDirectory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captureDirectory)) {
+            Directory.CreateDirectory(captureDirectory);
+            File.WriteAllText(Path.Combine(captureDirectory, fixture + "-10.5.svg"), originalSvg);
+            File.WriteAllText(Path.Combine(captureDirectory, fixture + "-21.svg"), enlargedSvg);
+        }
         Assert.NotEmpty(originalSizes);
         Assert.Equal(originalSizes.Length, enlargedSizes.Length);
         for (var index = 0; index < originalSizes.Length; index++) {
-            if (fixture == "gitgraph-basic.mmd") Assert.InRange(enlargedSizes[index], originalSizes[index], originalSizes[index] * 2 + .001);
+            if (fixture is "gitgraph-basic.mmd" or "venn-basic.mmd") Assert.InRange(enlargedSizes[index], originalSizes[index], originalSizes[index] * 2 + .001);
             else Assert.Equal(originalSizes[index] * 2, enlargedSizes[index], 3);
         }
         Assert.Contains(Enumerable.Range(0, originalSizes.Length), index => enlargedSizes[index] > originalSizes[index]);

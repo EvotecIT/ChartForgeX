@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -24,8 +25,11 @@ public sealed partial class PngVisualBlockRenderer {
         }
 
         foreach (var intersection in block.Intersections) DrawVennIntersectionStyle(canvas, placements, intersection);
-        foreach (var caption in VisualBlockRendering.VennCaptions(block, placements, body))
-            DrawAlignedTextAtBaseline(canvas, caption.Text, caption.Bounds.Left, caption.Baseline, caption.Bounds.Width, TextAlignment.Left, caption.Color, caption.Style.FontSize, true);
+        foreach (var caption in VisualBlockRendering.VennCaptions(block, placements, body)) {
+            var style = caption.Style.Clone(); style.Color = caption.Color;
+            canvas.DrawStyledText(caption.Bounds.Left, caption.Bounds.Top, caption.Bounds.Width, caption.Text,
+                style, TextWrapMode.NoWrap, maximumLines: 1, trimming: TextTrimming.None);
+        }
     }
 
     private static void DrawVennIntersectionStyle(RgbaCanvas canvas, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {
