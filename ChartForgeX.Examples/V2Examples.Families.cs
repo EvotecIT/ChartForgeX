@@ -89,7 +89,17 @@ public static partial class V2Examples {
             }
             if (kind == ChartSeriesKind.RadialBar) WriteNumericRadialAxes(output, artifacts, mode);
         }
+        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) WriteMixedRadial(output, artifacts, mode);
         WriteExpandedDiagrams(output, artifacts, curated);
+    }
+
+    private static void WriteMixedRadial(string output, ICollection<ProofArtifact> artifacts, VisualThemeMode mode) {
+        foreach (var compact in new[] { false, true }) {
+            var variant = compact ? "compact-mixed" : "mixed";
+            WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial(), "family-radial-column-" + variant + "-" + mode.ToString().ToLowerInvariant(),
+                "radial-column", "Regional counts and targets", variant, "Columns, reference area and target line share categories and radius", mode,
+                compact ? 360 : 800, compact ? 360 : 440, true, "V2GalleryModels.CreateMixedRadial()", new[] { "RadialColumn", "Radar" }, compact: compact);
+        }
     }
 
     private static void WriteNumericRadialAxes(string output, ICollection<ProofArtifact> artifacts, VisualThemeMode mode) {
