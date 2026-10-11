@@ -16,6 +16,7 @@ public static class HtmlCrosshairExamples {
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddScatter("Processing time", new[] { new ChartPoint(2, 7), new ChartPoint(5, 5), new ChartPoint(8, 3) });
         return chart.ToInteractiveHtmlPage(options => {
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
             options.Crosshair.Stroke = dark ? ChartColor.FromRgb(125, 211, 252) : ChartColor.FromRgb(14, 116, 144);
             options.Crosshair.StrokeWidth = 2;
