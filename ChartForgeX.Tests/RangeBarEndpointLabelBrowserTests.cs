@@ -55,6 +55,12 @@ public sealed class RangeBarEndpointLabelBrowserTests {
         await page.Locator(Point(1, 0)).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Point(1, 0)).GetAttributeAsync("aria-selected"));
         await page.Locator(point).FocusAsync();
+        Assert.Equal("Observed", (await RowsAsync(page))[1]);
+        Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
+        // Focus preserves an explicitly pinned readout. Activate its owner again before inspecting another observation.
+        await page.Locator(Point(1, 0)).FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal("false", await page.Locator(Point(1, 0)).GetAttributeAsync("aria-selected"));
+        await page.Locator(point).FocusAsync();
         Assert.Equal(rows, await RowsAsync(page));
         Assert.Equal("30", await page.Locator(point).GetAttributeAsync("data-cfx-source-0-y"));
         Assert.Equal("-10", await page.Locator(point).GetAttributeAsync("data-cfx-source-1-y"));
