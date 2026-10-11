@@ -91,7 +91,12 @@ public sealed partial class MermaidParser {
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
         MermaidParseResult<MermaidDocument> result) {
         var scope = ConfigurationScope(kind);
-        MermaidConfigurationSetting? Selected(string key) => key == "fontFamily" ? configuration.Last(key) : configuration.Last(scope + "." + key) ?? configuration.Last(key);
+        MermaidConfigurationSetting? Selected(string key) {
+            if (key == "fontFamily") return configuration.Last(key);
+            var scoped = configuration.Last(scope + "." + key);
+            return scoped != null && IsUnusableAppearance(key, scoped)
+                ? configuration.Last(key) ?? scoped : scoped ?? configuration.Last(key);
+        }
         string? ReadString(string key) {
             var setting = Selected(key);
             if (setting == null) return null;
@@ -113,7 +118,8 @@ public sealed partial class MermaidParser {
             } else if (ReferenceEquals(setting, font) && setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) &&
                 kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             else if ((setting.Path == "theme" || setting.Path == scope + ".theme" || setting.Path == "fontFamily") &&
-                !ReferenceEquals(setting, theme) && !ReferenceEquals(setting, font)) continue;
+                !ReferenceEquals(setting, theme) && !ReferenceEquals(setting, font) &&
+                !(setting.Path == scope + ".theme" && IsUnusableAppearance("theme", setting))) continue;
 
             var message = ReferenceEquals(setting, theme) && setting.IsString && !IsNativeTheme(setting.Value)
                 ? "Mermaid theme '" + setting.Value + "' uses the native static light palette."
@@ -135,6 +141,12 @@ public sealed partial class MermaidParser {
 
     private static bool IsNativeTheme(string? value) => string.Equals(value, "dark", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(value, "default", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsUnusableAppearance(string key, MermaidConfigurationSetting setting) {
+        if (!setting.IsString || string.IsNullOrWhiteSpace(setting.Value) || setting.Value!.Length > 4096) return false;
+        return key == "theme" ? !IsNativeTheme(setting.Value) && setting.Value != "base" && setting.Value != "forest" && setting.Value != "neutral" && setting.Value != "null"
+            : key == "look" && setting.Value != "classic" && setting.Value != "handDrawn" && setting.Value != "neo";
+    }
 
     private static void ConfigurationError(MermaidParseResult<MermaidDocument> result, MermaidSourceSpan span, string message) =>
         Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, message, MermaidDiagnosticCodes.InvalidConfiguration);

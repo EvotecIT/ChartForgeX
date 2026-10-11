@@ -10,7 +10,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $sourceRootResolved = (Resolve-Path -LiteralPath $SourceRoot).Path
 $buildConfig = Get-Content -LiteralPath (Join-Path $sourceRootResolved 'Build/project.build.json') -Raw | ConvertFrom-Json
-$projects = @($buildConfig.ExpectedVersionMap.PSObject.Properties.Name)
+# The release family includes the net8.0 command-line tool; reflection API docs use the libraries.
+$projects = @($buildConfig.ExpectedVersionMap.PSObject.Properties.Name |
+    Where-Object { $_ -ne 'ChartForgeX.Markup.Cli' })
 if ($ReleaseArchivesRoot -or $ListProjects) {
     if ([string]::IsNullOrWhiteSpace($Version)) {
         throw 'Specify -Version when selecting released API documentation packages.'
