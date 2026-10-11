@@ -170,6 +170,30 @@
       }
     },
     {
+      "name": "cartesian-automatic-category-margins",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1108,
+      "height": 470,
+      "logicalWidth": 1108.0,
+      "logicalHeight": 469.878,
+      "svg": {
+        "minVisualNodes": 55,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 987452,
+        "minTransparentPixels": 54068,
+        "minDistinctColors": 1159,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "chart-in-five-lines-story",
       "layout": {
         "heightMode": "fixed",
