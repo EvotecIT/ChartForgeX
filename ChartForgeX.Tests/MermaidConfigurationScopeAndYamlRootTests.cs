@@ -46,4 +46,48 @@ public sealed class MermaidConfigurationScopeAndYamlRootTests {
         Assert.DoesNotContain(rendered.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.InvalidConfiguration);
         Assert.True(rendered.Artifact.ToPng().Length > 64);
     }
+
+    [Theory]
+    [InlineData("config:\n  - theme: default\n    look: classic\n", "config")]
+    [InlineData("config:\n- theme: default\n  look: classic\n- theme: forest\n", "config")]
+    [InlineData("config: &defaults\n- theme: default\n  look: classic\n", "config")]
+    [InlineData("config:\n  other:\n    - theme: forest\n      look: classic\n  theme: default\n", "other")]
+    [InlineData("config:\n  other:\n  - theme: forest\n    look: classic\n  theme: default\n", "other")]
+    public void OpaqueBlockSequencesResumeAtTheNextMappingEntry(string yaml, string retainedPath) {
+        var source = "---\n" + yaml + "title: Retained sequence\n---\n%%{init: {\"theme\":\"dark\"}}%%\nflowchart LR\nA --> B\n";
+        var rendered = MermaidRenderer.Render(source);
+        Assert.False(rendered.HasErrors);
+        Assert.NotNull(rendered.Artifact);
+        Assert.Equal("dark", rendered.Document!.Configuration.Theme);
+        Assert.Equal(source, rendered.Document.SourceText);
+        Assert.Single(rendered.Document.Configuration.Settings, setting => setting.Path == retainedPath);
+        Assert.Contains(rendered.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
+        Assert.DoesNotContain(rendered.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.InvalidConfiguration);
+        if (retainedPath == "other")
+            Assert.Contains(rendered.Document.Configuration.Settings, setting => setting.Path == "theme" && setting.Value == "default");
+        Assert.True(rendered.Artifact.ToPng().Length > 64);
+    }
+
+    [Theory]
+    [InlineData("config:\n-")]
+    [InlineData("config: &defaults\n-")]
+    public void IndentlessSequenceContentCountsTowardTheConfigurationBudget(string declaration) {
+        var source = "---\n" + declaration + " " + new string('x', 70000) + "\n---\nflowchart LR\nA --> B\n";
+        var rendered = MermaidRenderer.Render(source);
+        Assert.True(rendered.HasErrors);
+        Assert.Null(rendered.Artifact);
+        Assert.Contains(rendered.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.InvalidConfiguration && diagnostic.Message.Contains("65536"));
+    }
+
+    [Theory]
+    [InlineData("metadata")]
+    [InlineData("\"quoted metadata\"")]
+    public void UnrelatedRootMetadataDoesNotExtendAnOpaqueSequenceBudget(string key) {
+        var source = "---\nconfig:\n- theme: forest\n" + key + ": " + new string('x', 70000) + "\n---\n%%{init: {\"theme\":\"dark\"}}%%\nflowchart LR\nA --> B\n";
+        var rendered = MermaidRenderer.Render(source);
+        Assert.False(rendered.HasErrors);
+        Assert.NotNull(rendered.Artifact);
+        Assert.Equal("dark", rendered.Document!.Configuration.Theme);
+        Assert.Contains(rendered.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
+    }
 }
