@@ -75,6 +75,17 @@ Prepared Cartesian guides default to horizontal lines independently of the model
 
 Prepared Cartesian point semantics retain the complete resolved display label, even when visible placement shortens or omits it. Explicit point labels take precedence over the value formatter. Formatting runs once per point during preparation and the detached metadata reuses that result; exporting a prepared visual does not call the formatter again. Numeric coordinates and source identities remain separate metadata fields.
 
+`Chart.AddPlotRegion(new ChartPlotRegion(color, ...))` adds a passive solid background rectangle to a Cartesian chart. `Chart.PlotRegions` owns its immutable definitions in paint order. Nullable `xMinimum`, `xMaximum`, `yMinimum` and `yMaximum` extend to the corresponding final domain end; regions never expand domains. `yAxis` selects primary or secondary Y. Bounds follow physical X and Y. Horizontal charts use value coordinates for X and linear category slots for Y. Time bounds use OLE Automation dates, and logarithmic value bounds must be positive. A secondary region requires a secondary-axis series.
+
+Four regions express quadrants at any numeric pivot:
+
+```csharp
+chart.AddPlotRegion(new ChartPlotRegion(ChartColor.FromHex("#328c68"),
+    xMaximum: 4, yMinimum: 6, label: "Prioritize", opacity: .18));
+```
+
+The visible intersection follows the selected scales and axis reversal while authored bounds and captions remain in metadata, including empty intersections. Optional captions use fitted opaque backplates inside that intersection and avoid data marks; shortening or omission reports `cartesian.plot-region-label-overflow`. Prepared SVG and PNG share frozen geometry and paint. HTML regions and their captions remain descriptive backgrounds: points retain pointer, selection and keyboard actions. Other chart families reject plot regions.
+
 Visible Cartesian axes retain a descriptive region for each configured or generated tick and each axis title, including text shortened or omitted by placement. Tick regions include the complete resolved display text and numeric value. Each axis formatter runs once per tick during preparation; measurement, placement and semantics reuse the same result. These descriptive extents do not promise an exact hit-test shape.
 
 Automatic numeric axes keep compact captions when they distinguish ticks, and increase precision when small nonzero values round to zero or distinct ticks share a caption. Default mark values also retain small nonzero observations instead of displaying zero. Authored labels and axis or chart value formats remain authoritative. Precision affects display text; numeric values and prepared SVG/PNG snapshots remain unchanged by later model edits.

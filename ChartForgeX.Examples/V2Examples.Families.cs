@@ -36,6 +36,8 @@ public static partial class V2Examples {
                 variants.Add("gradient-color-legend"); variants.Add("compact-gradient-color-legend");
                 variants.Add("swatch-color-legend"); variants.Add("compact-swatch-color-legend");
             }
+            if (kind == ChartSeriesKind.Scatter) { variants.Add("quadrants"); variants.Add("compact-quadrants"); }
+            if (kind == ChartSeriesKind.Bubble) { variants.Add("plot-regions"); variants.Add("compact-plot-regions"); }
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
             if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
                 variants.Add("axis-labels"); variants.Add("compact-axis-labels");
@@ -56,6 +58,8 @@ public static partial class V2Examples {
             foreach (var variant in variants) {
                 var precision = variant is "precision" or "compact-precision";
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift"
+                    : variant is "quadrants" or "compact-quadrants" ? "Effort and impact"
+                    : variant is "plot-regions" or "compact-plot-regions" ? "Capacity and delay"
                     : variant is "positioned-color-scale" or "compact-positioned-color-scale" && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap
                         ? kind == ChartSeriesKind.TileMap ? "Temperature by state" : "Temperature across service areas"
                     : variant is "color-dimension" or "compact-color-dimension" or "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend" ? kind switch {
@@ -72,6 +76,8 @@ public static partial class V2Examples {
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
                 var subtitle = precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
+                    : variant is "quadrants" or "compact-quadrants" ? "Four background regions share an authored effort and impact pivot"
+                    : variant is "plot-regions" or "compact-plot-regions" ? "Bounded operating guidance leaves source values and bubble sizes independent"
                     : variant is "axis-labels" or "compact-axis-labels" ? "Upright axis-relative labels with independent density"
                     : variant is "all-labels" or "compact-all-labels" ? "All captions fit individually; caption overlaps are intentional"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
