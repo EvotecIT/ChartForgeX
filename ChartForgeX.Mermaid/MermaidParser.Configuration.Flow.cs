@@ -4,6 +4,19 @@ using System.Collections.Generic;
 namespace ChartForgeX.Mermaid;
 
 public sealed partial class MermaidParser {
+    // An unsupported collection remains opaque until its closing delimiter, regardless
+    // of the indentation of its members. Return true for a block scalar whose body
+    // must remain literal; actual flow collections reuse the physical root reader.
+    private static bool SkipOpaqueConfigurationYamlNode(string[] lines, ref int index, string node) {
+        while (IsConfigurationYamlSequenceItem(node)) node = TrimConfigurationYaml(node.Substring(1));
+        var separator = ConfigurationYamlValueSeparator(node);
+        if (separator >= 0) node = node.Substring(separator + 1);
+        node = ConfigurationYamlNodeWithoutProperties(TrimConfigurationYaml(TrimYamlComment(node, true)));
+        if (node.StartsWith("{", System.StringComparison.Ordinal) || node.StartsWith("[", System.StringComparison.Ordinal))
+            ReadConfigurationFlowMapping(lines, ref index, node);
+        return IsConfigurationYamlBlockScalar(node);
+    }
+
     // Root flow mappings may span physical YAML lines. Keep collection bounded;
     // the shared JSON reader still owns syntax, duplicate keys and depth limits.
     private static string ReadConfigurationFlowMapping(string[] lines, ref int index, string value,
