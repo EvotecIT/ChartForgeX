@@ -132,6 +132,9 @@ internal static partial class VisualCartesianCompiler {
                 if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
             }
         }
+        // Capture the final mapping extent after every measured axis and total lane.
+        // Hosts project this logical rectangle; mark clipping remains an independent choice.
+        builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         using (builder.PushClip(viewport)) {
