@@ -26,7 +26,7 @@ internal static partial class VisualCartesianCompiler {
             var category = (horizontal ? map.Y(first.X) : map.X(first.X)) + layout.Offset;
             var start = horizontal ? map.X(first.Y) : map.Y(first.Y);
             var end = horizontal ? map.X(second.Y) : map.Y(second.Y);
-            var minimum = Math.Min(start, end); var length = Math.Max(RangeBarMinimumLength, Math.Abs(start - end));
+            var (minimum, length) = MinimumBodySpan(start, end, RangeBarMinimumLength);
             var bounds = horizontal ? new ChartRect(minimum, category - thickness / 2, length, thickness)
                 : new ChartRect(category - thickness / 2, minimum, thickness, length);
             var color = PointColor(series, index, item, colors);

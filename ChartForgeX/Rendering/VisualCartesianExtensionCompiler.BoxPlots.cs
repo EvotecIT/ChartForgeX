@@ -35,8 +35,9 @@ internal static partial class VisualCartesianCompiler {
             ChartPoint Project(double value) => horizontal ? new ChartPoint(map.X(value), category) : new ChartPoint(category, map.Y(value));
             var first = Project(q1); var third = Project(q3); var min = Project(minimum); var max = Project(maximum);
             var thickness = layout.Thickness;
-            var box = horizontal ? new ChartRect(Math.Min(first.X, third.X), category - thickness / 2, Math.Max(BoxPlotMinimumLength, Math.Abs(third.X - first.X)), thickness)
-                : new ChartRect(category - thickness / 2, Math.Min(first.Y, third.Y), thickness, Math.Max(BoxPlotMinimumLength, Math.Abs(third.Y - first.Y)));
+            var span = MinimumBodySpan(horizontal ? first.X : first.Y, horizontal ? third.X : third.Y, BoxPlotMinimumLength);
+            var box = horizontal ? new ChartRect(span.Minimum, category - thickness / 2, span.Length, thickness)
+                : new ChartRect(category - thickness / 2, span.Minimum, thickness, span.Length);
             var bounds = horizontal ? Extents(Math.Min(Math.Min(min.X, max.X), box.Left), box.Top, Math.Max(Math.Max(min.X, max.X), box.Right), box.Bottom)
                 : Extents(box.Left, Math.Min(Math.Min(min.Y, max.Y), box.Top), box.Right, Math.Max(Math.Max(min.Y, max.Y), box.Bottom));
             var color = PointColor(series, index, item, colors); var sourcePaint = VisualChartPaint.Series(series, color, item);
