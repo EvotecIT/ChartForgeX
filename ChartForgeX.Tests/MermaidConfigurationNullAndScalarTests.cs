@@ -56,6 +56,7 @@ public sealed class MermaidConfigurationNullAndScalarTests {
     [Theory]
     [InlineData("Arial: serif")]
     [InlineData("Arial:")]
+    [InlineData("Arial:\tserif")]
     public void PlainYamlMappingSeparatorsAreLocatedConfigurationErrors(string value) {
         var rendered = MermaidRenderer.Render("---\nconfig:\n  fontFamily: " + value + "\n---\nflowchart LR\nA --> B");
         Assert.True(rendered.HasErrors);
@@ -70,6 +71,27 @@ public sealed class MermaidConfigurationNullAndScalarTests {
     [InlineData("12:30", "12:30")]
     public void QuotedMappingSeparatorsAndPlainNonSeparatorsRemainStrings(string value, string expected) {
         var parsed = new MermaidParser().Parse("---\nconfig:\n  fontFamily: " + value + "\n---\nflowchart LR\nA --> B");
+        Assert.Empty(parsed.Diagnostics);
+        Assert.Equal(expected, parsed.Document!.Configuration.FontFamily);
+    }
+
+    [Fact]
+    public void ManyFlowCommentsCannotTruncateAnOtherwiseValidConfigurationNearTheBudget() {
+        var source = "---\nconfig: {\n\"other\":\"" + new string('x', 65500) + "\"\n" +
+            string.Concat(Enumerable.Repeat("# comment\n", 26)) + "}\n---\nflowchart LR\nA --> B";
+        var rendered = MermaidRenderer.Render(source);
+        Assert.False(rendered.HasErrors);
+        Assert.NotNull(rendered.Artifact);
+        Assert.Equal(new string('x', 65500), Assert.Single(rendered.Document!.Configuration.Settings).Value);
+    }
+
+    [Theory]
+    [InlineData("\tArial", "Arial")]
+    [InlineData("Arial # comment\t", "Arial")]
+    [InlineData("'Arial\tserif'", "Arial\tserif")]
+    [InlineData("\"Arial\tserif\"", "Arial\tserif")]
+    public void YamlTabsOutsideIndentationPreserveScalarMeaning(string declaration, string expected) {
+        var parsed = new MermaidParser().Parse("---\nconfig:\n  fontFamily: " + declaration + "\n---\nflowchart LR\nA --> B");
         Assert.Empty(parsed.Diagnostics);
         Assert.Equal(expected, parsed.Document!.Configuration.FontFamily);
     }
