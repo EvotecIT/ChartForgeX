@@ -130,7 +130,6 @@ internal static partial class MermaidGanttParser {
     }
 
     private static List<string> SplitMetadata(string text, MermaidGanttDocument document) {
-        var parts = new List<string>();
         var chunks = text.Split(',');
         // Complete English month-name and RFC date fallbacks contain at most one comma.
         var maximumCommas = 1;
@@ -138,20 +137,43 @@ internal static partial class MermaidGanttParser {
             try { maximumCommas = Math.Max(maximumCommas, MermaidGanttInputDateFormat.CalendarCommaCount(document.DateFormat)); }
             catch (FormatException) { /* Complete-date fallbacks can still parse an unused invalid format. */ }
         }
-        for (var index = 0; index < chunks.Length; index++) {
-            var part = chunks[index].Trim();
-            var candidate = chunks[index];
-            for (var end = index + 1; end < chunks.Length && end <= index + maximumCommas; end++) {
-                candidate += "," + chunks[end];
-                if (!TryParseDate(candidate.Trim(), document.DateFormat, out _, document.DateAnchor)) continue;
-                part = candidate.Trim();
-                index = end;
-                break;
-            }
-            if (part.Length > 0) parts.Add(part);
+        var prefix = new List<string>();
+        var first = 0;
+        while (first < chunks.Length && (string.IsNullOrWhiteSpace(chunks[first]) || KnownTags.Contains(chunks[first].Trim()))) {
+            if (!string.IsNullOrWhiteSpace(chunks[first])) prefix.Add(chunks[first].Trim());
+            first++;
         }
+        // A valid three-field arrangement preserves an optional ID, including numeric IDs.
+        // Validate both date roles before committing a join: a fallback prefix is not a whole task.
+        foreach (var hasId in new[] { true, false }) {
+            var startIndex = first + (hasId ? 1 : 0);
+            if (startIndex + 1 >= chunks.Length || hasId && string.IsNullOrWhiteSpace(chunks[first])) continue;
+            var start = chunks[startIndex];
+            for (var boundary = startIndex; boundary < chunks.Length - 1 && boundary <= startIndex + maximumCommas; boundary++) {
+                if (boundary > startIndex) start += "," + chunks[boundary];
+                var endCount = chunks.Length - boundary - 1;
+                if (endCount > maximumCommas + 1) continue;
+                var end = string.Join(",", chunks, boundary + 1, endCount).Trim();
+                if (!IsStart(start.Trim()) || !IsEnd(end)) continue;
+                var parts = new List<string>(prefix);
+                if (hasId) parts.Add(chunks[first].Trim());
+                parts.Add(start.Trim());
+                parts.Add(end);
+                return parts;
+            }
+        }
+        if (first < chunks.Length && chunks.Length - first <= maximumCommas + 1) {
+            var end = string.Join(",", chunks, first, chunks.Length - first).Trim();
+            if (IsEnd(end)) { prefix.Add(end); return prefix; }
+        }
+        // Preserve existing error locations and diagnostics when no complete arrangement parses.
+        var original = new List<string>();
+        foreach (var chunk in chunks) if (chunk.Trim().Length > 0) original.Add(chunk.Trim());
+        return original;
 
-        return parts;
+        bool IsStart(string value) => IsClause(value, "after") || TryParseDate(value, document.DateFormat, out _, document.DateAnchor);
+        bool IsEnd(string value) => IsClause(value, "until") || TryParseDuration(value, out _, out _) || TryParseDate(value, document.DateFormat, out _, document.DateAnchor);
+        bool IsClause(string value, string keyword) => value.IndexOf(',') < 0 && StartsWithKeyword(value, keyword) && value.Substring(keyword.Length).Trim().Length > 0;
     }
 
     private static bool TryParseDate(string text, string dateFormat, out DateTime value, DateTime? dateAnchor = null) {
