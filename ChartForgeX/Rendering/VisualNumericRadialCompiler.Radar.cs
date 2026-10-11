@@ -17,15 +17,8 @@ internal static partial class VisualNumericRadialCompiler {
         var series = chart.Series[seriesIndex];
         if (series.Points.Count == 0) return;
         var scale = scales[series.YAxis]; var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
-        var raw = Enumerable.Repeat(-1, categories.Length).ToArray();
-        for (var source = 0; source < series.Points.Count; source++) {
-            var key = coordinates.Resolve(seriesIndex, source);
-            raw[Array.FindIndex(categories, category => category.Id == key.Id)] = source;
-        }
-        var mapped = raw.Select((source, category) => On(geometry,
-            CategoryAngle(chart.Options.XAxis, category, categories.Length, geometry.Start, geometry.Sweep, false),
-            geometry.Inner + scale.Normalize(source >= 0 ? series.Points[source].Y : 0) * (geometry.Outer - geometry.Inner))).ToArray();
-        var path = ChartPathBuilder.FromPoints(mapped);
+        var (mapped, raw) = RadarPoints(chart, geometry, seriesIndex, coordinates, categories, scale);
+        var path = ChartPathBuilder.ClosedCurve(mapped, series.Radar.CurveTension ?? 0);
         using (builder.PushGroup(SeriesId(seriesIndex), "radar-series", new Dictionary<string, string> {
             ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey,
             ["data-cfx-label"] = series.Name, ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
@@ -79,11 +72,24 @@ internal static partial class VisualNumericRadialCompiler {
             }
         }
         if (geometry.Outer > 0 && obstacles != null) {
-            var closed = mapped.Concat(new[] { mapped[0] }).ToList();
+            var closed = path.Flatten();
             var stroke = ChartLineVisualLayers.Build(color, series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth,
                 chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth);
             obstacles.Add(new LabelObstacle(SeriesId(seriesIndex), new LabelMarkShape(new[] { closed }, false, stroke, plot)));
         }
+    }
+
+    private static (ChartPoint[] Points, int[] Sources) RadarPoints(Chart chart, RadialSeriesGeometry geometry, int seriesIndex,
+        ChartBarCoordinateMap coordinates, ChartBarCoordinateKey[] categories, RadialValueScale scale) {
+        var series = chart.Series[seriesIndex];
+        var raw = Enumerable.Repeat(-1, categories.Length).ToArray();
+        for (var source = 0; source < series.Points.Count; source++) {
+            var key = coordinates.Resolve(seriesIndex, source);
+            raw[Array.FindIndex(categories, category => category.Id == key.Id)] = source;
+        }
+        return (raw.Select((source, category) => On(geometry,
+            CategoryAngle(chart.Options.XAxis, category, categories.Length, geometry.Start, geometry.Sweep, false),
+            geometry.Inner + scale.Normalize(source >= 0 ? series.Points[source].Y : 0) * (geometry.Outer - geometry.Inner))).ToArray(), raw);
     }
 
     private static void RadarDataLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartSeries series,

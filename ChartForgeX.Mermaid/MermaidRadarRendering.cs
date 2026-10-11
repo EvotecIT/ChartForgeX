@@ -118,6 +118,17 @@ public static class MermaidRadarRendering {
 /// Defines conversion and rendering defaults for Mermaid radar diagrams.
 /// </summary>
 public sealed class MermaidRadarRenderOptions {
+    private double? _curveTension;
+
+    /// <summary>Gets or sets host curve tension from zero through one. Null uses source configuration with circular graticules, or straight edges with polygonal graticules. An explicit value overrides either source policy.</summary>
+    public double? CurveTension {
+        get => _curveTension;
+        set {
+            if (value.HasValue && (double.IsNaN(value.Value) || value.Value < 0 || value.Value > 1)) throw new ArgumentOutOfRangeException(nameof(value));
+            _curveTension = value;
+        }
+    }
+
     /// <summary>Gets or sets the artifact id.</summary>
     public string? Id { get; set; }
 

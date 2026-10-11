@@ -896,7 +896,7 @@ Nonnegative decimal `ticks` selects equal radial intervals, with five by default
 
 Native C# radar charts keep their polygon default and can select circular guides with `WithPolarGridShape(ChartPolarGridShape.Circle)`. Set `Options.PolarGridRingCount` from 0 through 100 for integer or fractional intervals, or leave it null to use the radial axis's generated ticks. Integer counts preserve data-point coordinates; fractional intervals fit the extended outer guide without changing source values or series forms. `PolarGridRingCount` and `MermaidRadarDocument.Ticks` use `double?`; code that reads them into `int?` must use `double?` to retain fractional values. Source radar theme variables remain unmapped.
 
-The conversion target for radar diagrams is `Chart`. Axis labels, curve values, legend visibility, explicit min/max scale, tick count, graticule text, and source spans are retained in the AST or artifact metadata. Static SVG and PNG share the same radar path geometry. Circular graticules, including the default, select closed cubic curves with tension `0.17`; polygonal graticules select straight edges.
+Static SVG and PNG share the same radar path geometry. Circular graticules, including the default, select closed cubic curves with tension `0.17`; polygonal graticules select straight edges.
 
 Set `config.radar.curveTension` to a finite number from zero through one in frontmatter or an init directive. Zero draws straight edges; larger values increase the tangent length between observations. Polygonal source graticules keep straight edges regardless of this source setting. Invalid values produce a located configuration error. Direct native radar series keep straight edges by default.
 
@@ -911,7 +911,7 @@ axis a["Coverage"], b["Policy"], c["Response"]
 curve current["Current"]{90, 45, 80}
 ```
 
-An explicit `MermaidRadarRenderOptions.CurveTension` overrides the source policy, including a polygonal graticule. After conversion, `chart.Series[index].ConfigureRadar(radar => radar.CurveTension = 0.25)` configures individual native series. Curves pass through the observations and close with cyclic tangents. When a high tension extends beyond the ordinary radial frame, layout fits the complete curve while retaining the shared scale and original observation values. Source diagrams that previously rendered straight edges can set tension to zero to retain that appearance.
+An explicit `MermaidRadarRenderOptions.CurveTension` overrides the source policy, including a polygonal graticule. After conversion, `chart.Series[index].ConfigureRadar(radar => radar.CurveTension = 0.25)` configures individual native series. Curves pass through the observations and close with cyclic tangents. Native radar series also retain this setting when composed with radial columns, using each series selected radius axis and one shared fit for the marks and annular hole. When a high tension extends beyond the ordinary radial frame, layout fits the complete curve while retaining the shared scale and original observation values. Source diagrams that previously rendered straight edges can set tension to zero to retain that appearance.
 
 ## Treemap Diagrams
 

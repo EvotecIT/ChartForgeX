@@ -24,6 +24,7 @@ internal static partial class VisualPolarCompiler {
             extent = Math.Max(extent, Math.Max(Math.Max(Math.Abs(bounds.Left), Math.Abs(bounds.Right)),
                 Math.Max(Math.Abs(bounds.Top), Math.Abs(bounds.Bottom))));
         }
-        return extent <= 1 ? geometry : new PolarLayout(geometry.Cx, geometry.Cy, geometry.Radius / extent);
+        var fit = geometry.GridRadius <= 0 ? 1 : Math.Max(1, extent * geometry.Radius / geometry.GridRadius);
+        return fit <= 1 ? geometry : new PolarLayout(geometry.Cx, geometry.Cy, geometry.Radius / fit, geometry.GridRadius / fit);
     }
 }
