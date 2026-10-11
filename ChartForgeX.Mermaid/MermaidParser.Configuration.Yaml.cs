@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using ChartForgeX.Core;
 
@@ -91,7 +92,7 @@ public sealed partial class MermaidParser {
                     var isString = true;
                     string? value = valueText;
                     if (valueText.StartsWith("\"", StringComparison.Ordinal)) {
-                        value = GeoJsonValue.Parse(valueText.Replace("\t", "\\t"), StringComparer.Ordinal, ConfigurationJsonLimits).AsString("Mermaid YAML scalar");
+                        value = ReadDoubleQuotedConfigurationYaml(valueText);
                     } else if (valueText.StartsWith("'", StringComparison.Ordinal)) {
                         value = ReadSingleQuotedConfigurationYaml(valueText);
                     } else if (valueText.StartsWith("{", StringComparison.Ordinal) || valueText.StartsWith("[", StringComparison.Ordinal) ||
@@ -115,6 +116,20 @@ public sealed partial class MermaidParser {
         if (parent.ChildIndent < 0 && parent.Path.Length > 0 && !IsConfigurationStringPath(parent.Path))
             configuration.Add(new MermaidConfigurationSetting(parent.Path, null, false, parent.Span));
         parents.RemoveAt(parents.Count - 1);
+    }
+
+    private static string ReadDoubleQuotedConfigurationYaml(string value) {
+        var normalized = new StringBuilder(value.Length);
+        for (var index = 0; index < value.Length; index++) {
+            var character = value[index];
+            if (character == '\t') normalized.Append("\\t");
+            else if (character == '\\' && index + 1 < value.Length) {
+                var escaped = value[++index];
+                if (escaped == '\t') normalized.Append("\\t");
+                else normalized.Append('\\').Append(escaped);
+            } else normalized.Append(character);
+        }
+        return GeoJsonValue.Parse(normalized.ToString(), StringComparer.Ordinal, ConfigurationJsonLimits).AsString("Mermaid YAML scalar");
     }
 
     private static string ReadSingleQuotedConfigurationYaml(string value) {
