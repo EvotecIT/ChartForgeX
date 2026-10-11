@@ -892,7 +892,11 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for radar diagrams is `Chart`. Axis labels, curve values, legend visibility, explicit min/max scale, tick count, graticule text, and source spans are retained in the AST or artifact metadata. Static rendering uses ChartForgeX's dependency-free radar SVG/PNG renderers; graticule is preserved as metadata until ChartForgeX grows alternate radar grid shapes.
+The conversion target for radar diagrams is `Chart`. Axis labels, curve values, legend visibility, explicit min/max scale, tick count, graticule text, and source spans are retained in the AST or artifact metadata. `graticule circle` and `graticule polygon` select shared native guide geometry in both SVG and PNG; the Mermaid default is circular. Automatic bounds use the observed maximum rather than rounding the data domain to nice ticks.
+
+Nonnegative decimal `ticks` selects equal radial intervals, with five by default. `ticks 0` hides concentric guides while retaining spokes, labels and data points. Fractional values retain the authored spacing divisor: `ticks 2.5` draws three guides at 0.4, 0.8 and 1.2 times the value-axis radius; `ticks 0.5` draws one guide at twice that radius. The shared scene fits the outer guide inside the viewport while preserving the value domain and observations. Counts above 32 render 32 guides with a source warning and retain the authored count in the AST. Tick numerals require digits on both sides of a decimal point; negative, signed, exponent and shorthand decimal spellings produce located errors.
+
+Native C# radar charts keep their polygon default and can select circular guides with `WithPolarGridShape(ChartPolarGridShape.Circle)`. Set `Options.PolarGridRingCount` from 0 through 100 for integer or fractional intervals, or leave it null to use the radial axis's generated ticks. Integer counts preserve data-point coordinates; fractional intervals fit the extended outer guide without changing source values or series forms. `PolarGridRingCount` and `MermaidRadarDocument.Ticks` use `double?`; code that reads them into `int?` must use `double?` to retain fractional values. Source theme variables and curve tension remain unmapped.
 
 ## Treemap Diagrams
 
