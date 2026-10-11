@@ -21,6 +21,12 @@ public sealed partial class MermaidParser {
         } else if (frontMatter != null) ReadConfigurationYaml(frontMatter, configuration, result);
 
         for (var index = frontMatterEndLine; index < lines.Length; index++) {
+            var bodyLine = lines[index].Trim();
+            if (IsMultilineAccessibilityDescription(bodyLine)) {
+                var part = bodyLine.Substring(bodyLine.IndexOf('{') + 1);
+                while (part.IndexOf('}') < 0 && index + 1 < lines.Length) part = lines[++index];
+                continue;
+            }
             var prefix = ConfigurationPrefix(lines[index]);
             if (!prefix.Success) continue;
             var start = index;
@@ -134,7 +140,8 @@ public sealed partial class MermaidParser {
         MermaidDiagramKind.Class => "class", MermaidDiagramKind.State => "state", MermaidDiagramKind.EntityRelationship => "er",
         MermaidDiagramKind.Sequence => "sequence", MermaidDiagramKind.Requirement => "requirement", MermaidDiagramKind.GitGraph => "gitGraph",
         MermaidDiagramKind.XYChart => "xyChart", MermaidDiagramKind.Quadrant => "quadrantChart", MermaidDiagramKind.Gantt => "gantt", MermaidDiagramKind.Agentflow => "agentflow",
-        MermaidDiagramKind.Railroad => "railroad", MermaidDiagramKind.TreeView => "treeView", _ => kind.ToString().ToLowerInvariant()
+        MermaidDiagramKind.Railroad => "railroad", MermaidDiagramKind.TreeView => "treeView", MermaidDiagramKind.Wardley => "wardley-beta",
+        _ => kind.ToString().ToLowerInvariant()
     };
 
     private static bool IsNativeTheme(string? value) => string.Equals(value, "dark", StringComparison.OrdinalIgnoreCase) ||
