@@ -52,6 +52,8 @@ public static partial class V2Examples {
             foreach (var variant in variants) {
                 var precision = variant is "precision" or "compact-precision";
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift"
+                    : variant is "positioned-color-scale" or "compact-positioned-color-scale" && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap
+                        ? kind == ChartSeriesKind.TileMap ? "Temperature by state" : "Temperature across service areas"
                     : variant is "color-dimension" or "compact-color-dimension" ? kind switch {
                         ChartSeriesKind.TileMap => "Temperature by state", ChartSeriesKind.Heatmap => "Temperature across service areas",
                         ChartSeriesKind.CalendarHeatmap => "Daily average temperature", ChartSeriesKind.Treemap => "Team workload and temperature",
