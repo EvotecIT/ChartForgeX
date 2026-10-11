@@ -464,6 +464,12 @@
     moveTip(tip, event, node);
     emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
   };
+  // SVG coordinates have three decimals. Bound screen-space comparisons by one logical
+  // quantization step, projected through the live transform, plus a small screen rounding allowance.
+  const svgCoordinatePrecision = matrix => ({
+    x: .001 * (Math.abs(matrix.a) + Math.abs(matrix.c)) + .0001,
+    y: .001 * (Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001
+  });
   // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
   // Both readout lifetime and keyboard availability follow the same native paint inputs.
@@ -537,7 +543,7 @@
       const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
       const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
       // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
-      const precision = .001 * Math.max(Math.abs(matrix.a) + Math.abs(matrix.c), Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001;
+      const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
       box ||= subject.getBoundingClientRect();
       if (subject !== node) {
         // A marker-free observation uses its source location, not another visible part of the series path.
@@ -1314,10 +1320,12 @@
   };
   // Absolute overlays and SVG pan translations use stage CSS pixels, including its scroll origin.
   // Browser hit geometry stays in screen pixels; account for axis-aligned host scaling and the stage border.
-  const stagePoint = (stage, point, bounded = false) => {
+  const stageProjection = stage => {
     const rect = stage.getBoundingClientRect();
-    const scaleX = rect.width / stage.offsetWidth || 1;
-    const scaleY = rect.height / stage.offsetHeight || 1;
+    return { rect, scaleX: rect.width / stage.offsetWidth || 1, scaleY: rect.height / stage.offsetHeight || 1 };
+  };
+  const stagePoint = (stage, point, bounded = false) => {
+    const { rect, scaleX, scaleY } = stageProjection(stage);
     const x = (point.x - rect.left) / scaleX - stage.clientLeft + stage.scrollLeft;
     const y = (point.y - rect.top) / scaleY - stage.clientTop + stage.scrollTop;
     return bounded ? {
@@ -1342,7 +1350,9 @@
     const top = Math.max(stage.scrollTop, Math.min(...corners.map(point => point.y)));
     const right = Math.min(stage.scrollLeft + stage.clientWidth, Math.max(...corners.map(point => point.x)));
     const bottom = Math.min(stage.scrollTop + stage.clientHeight, Math.max(...corners.map(point => point.y)));
-    return right > left && bottom > top ? { left, top, width: right - left, height: bottom - top } : null;
+    const precision = svgCoordinatePrecision(matrix), { scaleX, scaleY } = stageProjection(stage);
+    return right > left && bottom > top ? { left, top, width: right - left, height: bottom - top,
+      precisionX: precision.x / scaleX, precisionY: precision.y / scaleY } : null;
   };
   // A guide belongs to the current viewport. Discard stale dimensions before they can enlarge a resized scroller.
   // Share the existing resize lifecycle with keyboard availability, including initially hidden fragment hosts.
@@ -2209,8 +2219,9 @@
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
     const bounds = visibleCartesianPlot(root, stage), local = stagePoint(stage, point);
-    if (!bounds || local.x < bounds.left || local.x > bounds.left + bounds.width
-      || local.y < bounds.top || local.y > bounds.top + bounds.height) {
+    if (!bounds || !Number.isFinite(local.x) || !Number.isFinite(local.y)
+      || local.x < bounds.left - bounds.precisionX || local.x > bounds.left + bounds.width + bounds.precisionX
+      || local.y < bounds.top - bounds.precisionY || local.y > bounds.top + bounds.height + bounds.precisionY) {
       hideCrosshair(root, crosshair);
       return;
     }
@@ -2218,7 +2229,8 @@
     crosshair.style.top = bounds.top + 'px';
     crosshair.style.width = bounds.width + 'px';
     crosshair.style.height = bounds.height + 'px';
-    const x = local.x - bounds.left, y = local.y - bounds.top;
+    // Only SVG-sized rounding excursions reach here. Keep their anchors on the actual visible plot.
+    const x = clamp(local.x - bounds.left, 0, bounds.width), y = clamp(local.y - bounds.top, 0, bounds.height);
     crosshair.style.setProperty('--cfx-crosshair-x', x + 'px');
     crosshair.style.setProperty('--cfx-crosshair-y', y + 'px');
     crosshair.hidden = false;

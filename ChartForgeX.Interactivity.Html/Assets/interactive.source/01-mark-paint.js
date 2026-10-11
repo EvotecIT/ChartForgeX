@@ -71,7 +71,7 @@
       const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
       const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
       // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
-      const precision = .001 * Math.max(Math.abs(matrix.a) + Math.abs(matrix.c), Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001;
+      const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
       box ||= subject.getBoundingClientRect();
       if (subject !== node) {
         // A marker-free observation uses its source location, not another visible part of the series path.

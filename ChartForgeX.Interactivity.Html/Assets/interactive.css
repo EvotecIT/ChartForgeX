@@ -413,15 +413,18 @@ body {
 
 .cfx-crosshair__line {
   position: absolute;
+  box-sizing: border-box;
   background: rgba(14, 165, 233, .58);
   box-shadow: 0 0 10px rgba(14, 165, 233, .18);
 }
 
+/* Center background and border strokes so clipping retains ink at either plot edge. */
 .cfx-crosshair__line--x {
   left: 0;
   right: 0;
   top: var(--cfx-crosshair-y, 0);
   height: 1px;
+  transform: translateY(-50%);
 }
 
 .cfx-crosshair__line--y {
@@ -429,6 +432,7 @@ body {
   bottom: 0;
   left: var(--cfx-crosshair-x, 0);
   width: 1px;
+  transform: translateX(-50%);
 }
 
 .cfx-crosshair__label {

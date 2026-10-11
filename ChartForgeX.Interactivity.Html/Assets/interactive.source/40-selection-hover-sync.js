@@ -422,8 +422,9 @@
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
     const bounds = visibleCartesianPlot(root, stage), local = stagePoint(stage, point);
-    if (!bounds || local.x < bounds.left || local.x > bounds.left + bounds.width
-      || local.y < bounds.top || local.y > bounds.top + bounds.height) {
+    if (!bounds || !Number.isFinite(local.x) || !Number.isFinite(local.y)
+      || local.x < bounds.left - bounds.precisionX || local.x > bounds.left + bounds.width + bounds.precisionX
+      || local.y < bounds.top - bounds.precisionY || local.y > bounds.top + bounds.height + bounds.precisionY) {
       hideCrosshair(root, crosshair);
       return;
     }
@@ -431,7 +432,8 @@
     crosshair.style.top = bounds.top + 'px';
     crosshair.style.width = bounds.width + 'px';
     crosshair.style.height = bounds.height + 'px';
-    const x = local.x - bounds.left, y = local.y - bounds.top;
+    // Only SVG-sized rounding excursions reach here. Keep their anchors on the actual visible plot.
+    const x = clamp(local.x - bounds.left, 0, bounds.width), y = clamp(local.y - bounds.top, 0, bounds.height);
     crosshair.style.setProperty('--cfx-crosshair-x', x + 'px');
     crosshair.style.setProperty('--cfx-crosshair-y', y + 'px');
     crosshair.hidden = false;

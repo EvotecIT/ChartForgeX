@@ -115,11 +115,12 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static string Host(bool graphite, HtmlChartResponsiveLayout layout, int width, double scale, bool pageScroll, ChartInteractionFeatures features, Chart? chart = null, bool includeResetButton = false) {
+    private static string Host(bool graphite, HtmlChartResponsiveLayout layout, int width, double scale, bool pageScroll, ChartInteractionFeatures features, Chart? chart = null, bool includeResetButton = false, Action<HtmlChartCrosshairOptions>? configureCrosshair = null) {
         var fragment = (chart ?? CoordinateChart(graphite)).ToInteractiveHtmlFragment(options => {
             options.ResponsiveLayout = layout;
             options.Interaction.Features = features;
             options.IncludeResetButton = includeResetButton;
+            configureCrosshair?.Invoke(options.Crosshair);
         });
         var transform = scale == 1 ? "" : "transform:translate(80px,70px) scale(" + scale.ToString(CultureInfo.InvariantCulture) + ");transform-origin:0 0;";
         var customStage = pageScroll ? "<style>#host .cfx-stage{border-width:5px;padding:18px}</style>" : "";
@@ -157,7 +158,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
             const ax=s.querySelector('[data-cfx-role="axis-x"]').getBoundingClientRect(), ay=s.querySelector('[data-cfx-role="axis-y"]').getBoundingClientRect();
             const plot={left:Math.max(ax.left,viewport.left),right:Math.min(ax.right,viewport.right),top:Math.max(ay.top,viewport.top),bottom:Math.min(ay.bottom,viewport.bottom)};
             const label=c.querySelector('[data-cfx-crosshair-label]'), lb=label.getBoundingClientRect(), heading=s.querySelector('[data-cfx-role="frame-heading"]');
-            return {visible:!c.hidden,x:x.left,y:y.top,left:y.left,right:y.right,top:x.top,bottom:x.bottom,
+            return {visible:!c.hidden,x:x.left+x.width/2,y:y.top+y.height/2,left:y.left,right:y.right,top:x.top,bottom:x.bottom,
                 viewport,plot,headingBottom:heading?heading.getBoundingClientRect().bottom:null,
                 labelBounds:{visible:getComputedStyle(label).display!=='none',left:lb.left,right:lb.right,top:lb.top,bottom:lb.bottom},
                 targetId:(r.dataset.cfxCrosshair||'').split('|')[1],label:label.textContent};
