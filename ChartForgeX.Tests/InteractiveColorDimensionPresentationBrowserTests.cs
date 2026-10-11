@@ -36,7 +36,7 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
         var format = width == 800 ? ChartValueFormat.Number("0.00 '°C'", CultureInfo.GetCultureInfo("pl-PL"))
             : ChartValueFormat.Custom(value => value == 0 ? "" : "t<" + value.ToString(CultureInfo.InvariantCulture) + "> °C");
         var options = ColorDimensionPresentationFixtures.Options(chart, kind); options.Name = name; options.ValueFormat = format;
-        if (kind == ChartSeriesKind.Treemap) chart.WithPointLegend().ConfigureTreemap(treemap => treemap.ShowColorScaleLegend = false);
+        if (kind == ChartSeriesKind.Treemap) chart.WithPointLegend().ConfigureTreemap(treemap => treemap.ColorDimension.ShowLegend = false);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = shared ? HtmlChartTooltipMode.SharedX : HtmlChartTooltipMode.Single);
         options.Name = "Changed"; options.ValueFormat = ChartValueFormat.Custom(_ => throw new InvalidOperationException("Detached HTML must not rerun source formatting."));

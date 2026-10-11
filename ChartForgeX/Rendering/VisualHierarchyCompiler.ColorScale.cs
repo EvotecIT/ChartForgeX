@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualHierarchyCompiler {
     private static bool HasHierarchyScale(Chart chart, VisualRenderContext context, ChartHierarchySurface surface) =>
-        surface.Scale != null && surface.ShowLegend && context.Frame.ShowLegend && chart.Series[0].ShowInLegend;
+        surface.Scale != null && surface.ShowLegend && context.Frame.ShowLegend;
 
     private static TextStyle HierarchyScaleStyle(VisualRenderContext context) => context.Frame.LegendStyle ?? new TextStyle {
         Font = context.Font, FontSize = context.Theme.Typography.LegendSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
@@ -34,6 +34,8 @@ internal static partial class VisualHierarchyCompiler {
         var scale = surface.Scale!; var style = HierarchyScaleStyle(context); var row = builder.MeasureText("Mg", style).Height;
         var title = surface.Title;
         var metadata = new Dictionary<string, string> { ["data-cfx-scale-mode"] = scale.Mode.ToString().ToLowerInvariant() };
+        if (surface.Presentation.LegendStyle != ChartColorLegendStyle.Auto)
+            metadata["data-cfx-legend-style"] = surface.Presentation.LegendStyle.ToString().ToLowerInvariant();
         if (surface.HasDomain && scale.Mode != ChartColorScaleMode.Discrete) {
             metadata["data-cfx-min-value"] = N(scale.EffectiveMinimum(surface.Minimum));
             metadata["data-cfx-max-value"] = N(scale.EffectiveMaximum(surface.Maximum));
@@ -68,16 +70,21 @@ internal static partial class VisualHierarchyCompiler {
                 }
             } else if (surface.HasDomain) {
                 var steps = ChartColorScaleLegend.Steps(scale, surface.Minimum, surface.Maximum); var width = area.Width / steps.Length;
-                var captions = surface.Presentation.HasOverrides ? surface.Presentation.ScaleValues(steps) : null;
-                for (var i = 0; i < steps.Length; i++) {
-                    var source = new Dictionary<string, string> { ["data-cfx-value"] = N(steps[i]) };
-                    if (captions != null) {
-                        source["data-cfx-formatted-value"] = captions[i]; source["data-cfx-label-value"] = surface.Title;
-                    }
-                    using (builder.PushGroup(null, surface.RolePrefix + "-color-scale-step-source", source)) {
-                        var blend = scale.BlendFor(steps[i], surface.Minimum, surface.Maximum);
-                        builder.Rect(new ChartRect(area.X + i * width, swatchY, width, swatchHeight), blend.Color,
-                            role: surface.RolePrefix + "-color-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                var gradient = surface.Presentation.LegendStyle == ChartColorLegendStyle.Gradient;
+                if (gradient) VisualColorScaleLegendScene.Gradient(builder, scale,
+                    new ChartRect(area.X, swatchY, area.Width, swatchHeight), surface.Minimum, surface.Maximum, surface.RolePrefix + "-color-scale-gradient");
+                else {
+                    var captions = surface.Presentation.HasOverrides ? surface.Presentation.ScaleValues(steps) : null;
+                    for (var i = 0; i < steps.Length; i++) {
+                        var source = new Dictionary<string, string> { ["data-cfx-value"] = N(steps[i]) };
+                        if (captions != null) {
+                            source["data-cfx-formatted-value"] = captions[i]; source["data-cfx-label-value"] = surface.Title;
+                        }
+                        using (builder.PushGroup(null, surface.RolePrefix + "-color-scale-step-source", source)) {
+                            var blend = scale.BlendFor(steps[i], surface.Minimum, surface.Maximum);
+                            builder.Rect(new ChartRect(area.X + i * width, swatchY, width, swatchHeight), blend.Color,
+                                role: surface.RolePrefix + "-color-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                        }
                     }
                 }
                 var values = surface.Presentation.ScaleValues(new[] { scale.EffectiveMinimum(surface.Minimum), scale.EffectiveMaximum(surface.Maximum) });
@@ -85,10 +92,12 @@ internal static partial class VisualHierarchyCompiler {
                 ScaleCaption((scale.HighLabel ?? surface.Presentation.Labels.More) + " · " + values[1], area.X + area.Width / 2, labelY, area.Width / 2, TextAlignment.Right, "high");
                 if (scale.MidpointLabel != null) {
                     var text = scale.MidpointLabel + " · " + surface.Presentation.ScaleValues(new[] { scale.EffectiveMidpoint(surface.Minimum, surface.Maximum) })[0];
-                    if (scale.HasPositionedStops && scale.Mode == ChartColorScaleMode.Diverging) {
-                        var center = area.X + (ChartColorScaleLegend.MidpointStep(scale, surface.Minimum, surface.Maximum, steps.Length) + .5) * width;
-                        var captionWidth = 2 * Math.Min(center - area.Left, area.Right - center);
-                        ScaleCaption(text, center - captionWidth / 2, labelY + row, captionWidth, TextAlignment.Center, "midpoint", fit: true);
+                    if ((scale.HasPositionedStops || gradient) && scale.Mode == ChartColorScaleMode.Diverging) {
+                        var center = gradient ? area.X + area.Width * ChartColorScaleLegend.MidpointRatio(scale, surface.Minimum, surface.Maximum)
+                            : area.X + (ChartColorScaleLegend.MidpointStep(scale, surface.Minimum, surface.Maximum, steps.Length) + .5) * width;
+                        var lane = VisualColorScaleLegendScene.MidpointCaptionLane(builder, text, style,
+                            new ChartRect(area.Left, labelY + row, area.Width, Math.Min(row, Math.Max(0, area.Bottom - labelY - row))), center, inwardEdges: gradient);
+                        ScaleCaption(text, lane.Bounds.Left, lane.Bounds.Top, lane.Bounds.Width, lane.Alignment, "midpoint", fit: true);
                     } else ScaleCaption(text, area.X, labelY + row, area.Width, TextAlignment.Center, "midpoint");
                 }
             }
