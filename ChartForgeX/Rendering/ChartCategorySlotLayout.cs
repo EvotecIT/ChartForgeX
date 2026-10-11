@@ -11,8 +11,10 @@ internal readonly struct ChartCategorySlotLayout {
     internal double Offset { get; }
     internal double Pitch { get; }
 
+    /// <summary>Resolves slots while allowing scalar bars to retain their minimum thickness at overlapping categories.</summary>
+    /// <remarks>When <paramref name="requireMinimumFootprint"/> is true, interval marks must fit their minimum caps and strokes inside the slot.</remarks>
     internal static ChartCategorySlotLayout Create(IEnumerable<double> mappedCategories, double extent, double spacing,
-        int count, int position, double maximumThickness = double.PositiveInfinity, double minimumThickness = .1,
+        int count, int position, bool requireMinimumFootprint, double maximumThickness = double.PositiveInfinity, double minimumThickness = .1,
         int sampleSlots = 0, double footprintRatio = 1, double footprintPadding = 0, Func<double, double>? measuredFootprint = null) {
         var centers = mappedCategories.Distinct().OrderBy(value => value).ToArray();
         var pitch = sampleSlots > 0 ? extent / sampleSlots : extent;
@@ -23,7 +25,7 @@ internal readonly struct ChartCategorySlotLayout {
         var gap = count > 1 ? Math.Min(spacing / 2, occupied / (count * 4)) : 0;
         var cell = (occupied - gap * (count - 1)) / count;
         var minimumFootprint = measuredFootprint?.Invoke(minimumThickness) ?? minimumThickness * footprintRatio + footprintPadding;
-        if (minimumFootprint > cell)
+        if (requireMinimumFootprint && minimumFootprint > cell)
             throw new InvalidOperationException("The category slot cannot fit the mark's minimum painted footprint. Increase category-axis space, reduce grouped series, or use a simpler mark style.");
         var thickness = Math.Max(minimumThickness, Math.Min(maximumThickness, (cell - footprintPadding) / footprintRatio));
         if (measuredFootprint != null) {
