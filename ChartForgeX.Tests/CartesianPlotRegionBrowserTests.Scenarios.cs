@@ -106,8 +106,8 @@ public sealed partial class CartesianPlotRegionBrowserTests {
         detail.SetAttributeValue("aria-label", "Observed detail");
         svg.Descendants().Single(n => (string?)n.Attribute("data-cfx-role") == "plot-region").SetAttributeValue("id", "guidance-group");
         svg.Descendants().Single(n => (string?)n.Attribute("data-cfx-role") == "plot-region-label").SetAttributeValue("id", "guidance-caption");
-        var legend = svg.Descendants().Single(n => (string?)n.Attribute("data-cfx-role") == "legend-item");
-        legend.Descendants().First(n => n.Name.LocalName is "rect" or "circle" or "path").SetAttributeValue("id", "legend-detail");
+        var legend = svg.Descendants().Single(n => (string?)n.Attribute("data-cfx-role") == "legend-entry");
+        legend.Descendants().Single(n => (string?)n.Attribute("data-cfx-role") == "legend-swatch").SetAttributeValue("id", "legend-detail");
         html = html.Substring(0, start) + svg.ToString(SaveOptions.DisableFormatting) + html.Substring(end);
         return html.Replace("<div class=\"cfx-stage\"", "<button id=\"host-control\" type=\"button\">Host control</button><div class=\"cfx-stage\"", StringComparison.Ordinal);
     }
