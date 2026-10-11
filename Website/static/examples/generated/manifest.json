@@ -1228,6 +1228,42 @@
     "family-pie-wide-light.svg",
     "family-pie-wide-light.thumbnail.png",
     "family-pie-wide-light.thumbnail.svg",
+    "family-polar-angular-reversal-dark.csharp.txt",
+    "family-polar-angular-reversal-dark.html",
+    "family-polar-angular-reversal-dark.png",
+    "family-polar-angular-reversal-dark.svg",
+    "family-polar-angular-reversal-dark.thumbnail.png",
+    "family-polar-angular-reversal-dark.thumbnail.svg",
+    "family-polar-angular-reversal-light.csharp.txt",
+    "family-polar-angular-reversal-light.html",
+    "family-polar-angular-reversal-light.png",
+    "family-polar-angular-reversal-light.svg",
+    "family-polar-angular-reversal-light.thumbnail.png",
+    "family-polar-angular-reversal-light.thumbnail.svg",
+    "family-polar-area-angular-reversal-dark.csharp.txt",
+    "family-polar-area-angular-reversal-dark.html",
+    "family-polar-area-angular-reversal-dark.png",
+    "family-polar-area-angular-reversal-dark.svg",
+    "family-polar-area-angular-reversal-dark.thumbnail.png",
+    "family-polar-area-angular-reversal-dark.thumbnail.svg",
+    "family-polar-area-angular-reversal-light.csharp.txt",
+    "family-polar-area-angular-reversal-light.html",
+    "family-polar-area-angular-reversal-light.png",
+    "family-polar-area-angular-reversal-light.svg",
+    "family-polar-area-angular-reversal-light.thumbnail.png",
+    "family-polar-area-angular-reversal-light.thumbnail.svg",
+    "family-polar-area-compact-angular-reversal-dark.csharp.txt",
+    "family-polar-area-compact-angular-reversal-dark.html",
+    "family-polar-area-compact-angular-reversal-dark.png",
+    "family-polar-area-compact-angular-reversal-dark.svg",
+    "family-polar-area-compact-angular-reversal-dark.thumbnail.png",
+    "family-polar-area-compact-angular-reversal-dark.thumbnail.svg",
+    "family-polar-area-compact-angular-reversal-light.csharp.txt",
+    "family-polar-area-compact-angular-reversal-light.html",
+    "family-polar-area-compact-angular-reversal-light.png",
+    "family-polar-area-compact-angular-reversal-light.svg",
+    "family-polar-area-compact-angular-reversal-light.thumbnail.png",
+    "family-polar-area-compact-angular-reversal-light.thumbnail.svg",
     "family-polar-area-compact-dark.csharp.txt",
     "family-polar-area-compact-dark.html",
     "family-polar-area-compact-dark.png",
@@ -1252,6 +1288,18 @@
     "family-polar-area-wide-light.svg",
     "family-polar-area-wide-light.thumbnail.png",
     "family-polar-area-wide-light.thumbnail.svg",
+    "family-polar-compact-angular-reversal-dark.csharp.txt",
+    "family-polar-compact-angular-reversal-dark.html",
+    "family-polar-compact-angular-reversal-dark.png",
+    "family-polar-compact-angular-reversal-dark.svg",
+    "family-polar-compact-angular-reversal-dark.thumbnail.png",
+    "family-polar-compact-angular-reversal-dark.thumbnail.svg",
+    "family-polar-compact-angular-reversal-light.csharp.txt",
+    "family-polar-compact-angular-reversal-light.html",
+    "family-polar-compact-angular-reversal-light.png",
+    "family-polar-compact-angular-reversal-light.svg",
+    "family-polar-compact-angular-reversal-light.thumbnail.png",
+    "family-polar-compact-angular-reversal-light.thumbnail.svg",
     "family-polar-compact-dark.csharp.txt",
     "family-polar-compact-dark.html",
     "family-polar-compact-dark.png",
@@ -1372,6 +1420,30 @@
     "family-pyramid-wide-light.svg",
     "family-pyramid-wide-light.thumbnail.png",
     "family-pyramid-wide-light.thumbnail.svg",
+    "family-radar-angular-reversal-dark.csharp.txt",
+    "family-radar-angular-reversal-dark.html",
+    "family-radar-angular-reversal-dark.png",
+    "family-radar-angular-reversal-dark.svg",
+    "family-radar-angular-reversal-dark.thumbnail.png",
+    "family-radar-angular-reversal-dark.thumbnail.svg",
+    "family-radar-angular-reversal-light.csharp.txt",
+    "family-radar-angular-reversal-light.html",
+    "family-radar-angular-reversal-light.png",
+    "family-radar-angular-reversal-light.svg",
+    "family-radar-angular-reversal-light.thumbnail.png",
+    "family-radar-angular-reversal-light.thumbnail.svg",
+    "family-radar-compact-angular-reversal-dark.csharp.txt",
+    "family-radar-compact-angular-reversal-dark.html",
+    "family-radar-compact-angular-reversal-dark.png",
+    "family-radar-compact-angular-reversal-dark.svg",
+    "family-radar-compact-angular-reversal-dark.thumbnail.png",
+    "family-radar-compact-angular-reversal-dark.thumbnail.svg",
+    "family-radar-compact-angular-reversal-light.csharp.txt",
+    "family-radar-compact-angular-reversal-light.html",
+    "family-radar-compact-angular-reversal-light.png",
+    "family-radar-compact-angular-reversal-light.svg",
+    "family-radar-compact-angular-reversal-light.thumbnail.png",
+    "family-radar-compact-angular-reversal-light.thumbnail.svg",
     "family-radar-compact-dark.csharp.txt",
     "family-radar-compact-dark.html",
     "family-radar-compact-dark.png",
@@ -1600,6 +1672,18 @@
     "family-radial-column-compact-light.svg",
     "family-radial-column-compact-light.thumbnail.png",
     "family-radial-column-compact-light.thumbnail.svg",
+    "family-radial-column-compact-mixed-angular-reversal-dark.csharp.txt",
+    "family-radial-column-compact-mixed-angular-reversal-dark.html",
+    "family-radial-column-compact-mixed-angular-reversal-dark.png",
+    "family-radial-column-compact-mixed-angular-reversal-dark.svg",
+    "family-radial-column-compact-mixed-angular-reversal-dark.thumbnail.png",
+    "family-radial-column-compact-mixed-angular-reversal-dark.thumbnail.svg",
+    "family-radial-column-compact-mixed-angular-reversal-light.csharp.txt",
+    "family-radial-column-compact-mixed-angular-reversal-light.html",
+    "family-radial-column-compact-mixed-angular-reversal-light.png",
+    "family-radial-column-compact-mixed-angular-reversal-light.svg",
+    "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.png",
+    "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.svg",
     "family-radial-column-compact-mixed-dark.csharp.txt",
     "family-radial-column-compact-mixed-dark.html",
     "family-radial-column-compact-mixed-dark.png",
@@ -1624,6 +1708,18 @@
     "family-radial-column-compact-options-light.svg",
     "family-radial-column-compact-options-light.thumbnail.png",
     "family-radial-column-compact-options-light.thumbnail.svg",
+    "family-radial-column-mixed-angular-reversal-dark.csharp.txt",
+    "family-radial-column-mixed-angular-reversal-dark.html",
+    "family-radial-column-mixed-angular-reversal-dark.png",
+    "family-radial-column-mixed-angular-reversal-dark.svg",
+    "family-radial-column-mixed-angular-reversal-dark.thumbnail.png",
+    "family-radial-column-mixed-angular-reversal-dark.thumbnail.svg",
+    "family-radial-column-mixed-angular-reversal-light.csharp.txt",
+    "family-radial-column-mixed-angular-reversal-light.html",
+    "family-radial-column-mixed-angular-reversal-light.png",
+    "family-radial-column-mixed-angular-reversal-light.svg",
+    "family-radial-column-mixed-angular-reversal-light.thumbnail.png",
+    "family-radial-column-mixed-angular-reversal-light.thumbnail.svg",
     "family-radial-column-mixed-dark.csharp.txt",
     "family-radial-column-mixed-dark.html",
     "family-radial-column-mixed-dark.png",
@@ -13122,6 +13218,76 @@
       "semanticRegions": 24
     },
     {
+      "id": "family-radar-angular-reversal-light",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radar-angular-reversal-light.csharp.txt",
+      "svg": "family-radar-angular-reversal-light.svg",
+      "png": "family-radar-angular-reversal-light.png",
+      "html": "family-radar-angular-reversal-light.html",
+      "thumbnail": "family-radar-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-radar-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-radar-compact-angular-reversal-light",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radar-compact-angular-reversal-light.csharp.txt",
+      "svg": "family-radar-compact-angular-reversal-light.svg",
+      "png": "family-radar-compact-angular-reversal-light.png",
+      "html": "family-radar-compact-angular-reversal-light.html",
+      "thumbnail": "family-radar-compact-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-radar-compact-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
       "id": "family-radar-wide-dark",
       "family": "radar",
       "familyLabel": "Radar",
@@ -13266,6 +13432,76 @@
         "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 24
+    },
+    {
+      "id": "family-radar-angular-reversal-dark",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radar-angular-reversal-dark.csharp.txt",
+      "svg": "family-radar-angular-reversal-dark.svg",
+      "png": "family-radar-angular-reversal-dark.png",
+      "html": "family-radar-angular-reversal-dark.html",
+      "thumbnail": "family-radar-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-radar-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-radar-compact-angular-reversal-dark",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radar-compact-angular-reversal-dark.csharp.txt",
+      "svg": "family-radar-compact-angular-reversal-dark.svg",
+      "png": "family-radar-compact-angular-reversal-dark.png",
+      "html": "family-radar-compact-angular-reversal-dark.html",
+      "thumbnail": "family-radar-compact-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-radar-compact-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 18
     },
     {
       "id": "family-funnel-wide-light",
@@ -16706,6 +16942,72 @@
       "semanticRegions": 12
     },
     {
+      "id": "family-polar-area-angular-reversal-light",
+      "family": "polar-area",
+      "familyLabel": "Polar Area",
+      "group": "proportion",
+      "title": "Service revenue in radial segments",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-area-angular-reversal-light.csharp.txt",
+      "svg": "family-polar-area-angular-reversal-light.svg",
+      "png": "family-polar-area-angular-reversal-light.png",
+      "html": "family-polar-area-angular-reversal-light.html",
+      "thumbnail": "family-polar-area-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-polar-area-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-polar-area-compact-angular-reversal-light",
+      "family": "polar-area",
+      "familyLabel": "Polar Area",
+      "group": "proportion",
+      "title": "Service revenue in radial segments",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-polar-area-compact-angular-reversal-light.csharp.txt",
+      "svg": "family-polar-area-compact-angular-reversal-light.svg",
+      "png": "family-polar-area-compact-angular-reversal-light.png",
+      "html": "family-polar-area-compact-angular-reversal-light.html",
+      "thumbnail": "family-polar-area-compact-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-polar-area-compact-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
       "id": "family-polar-area-wide-dark",
       "family": "polar-area",
       "familyLabel": "Polar Area",
@@ -16770,6 +17072,72 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 12
+    },
+    {
+      "id": "family-polar-area-angular-reversal-dark",
+      "family": "polar-area",
+      "familyLabel": "Polar Area",
+      "group": "proportion",
+      "title": "Service revenue in radial segments",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-area-angular-reversal-dark.csharp.txt",
+      "svg": "family-polar-area-angular-reversal-dark.svg",
+      "png": "family-polar-area-angular-reversal-dark.png",
+      "html": "family-polar-area-angular-reversal-dark.html",
+      "thumbnail": "family-polar-area-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-polar-area-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-polar-area-compact-angular-reversal-dark",
+      "family": "polar-area",
+      "familyLabel": "Polar Area",
+      "group": "proportion",
+      "title": "Service revenue in radial segments",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-polar-area-compact-angular-reversal-dark.csharp.txt",
+      "svg": "family-polar-area-compact-angular-reversal-dark.svg",
+      "png": "family-polar-area-compact-angular-reversal-dark.png",
+      "html": "family-polar-area-compact-angular-reversal-dark.html",
+      "thumbnail": "family-polar-area-compact-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-polar-area-compact-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
     },
     {
       "id": "family-trend-line-wide-light",
@@ -17112,6 +17480,76 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-polar-angular-reversal-light",
+      "family": "polar",
+      "familyLabel": "Polar",
+      "group": "distribution",
+      "title": "Directional sensor readings",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-angular-reversal-light.csharp.txt",
+      "svg": "family-polar-angular-reversal-light.svg",
+      "png": "family-polar-angular-reversal-light.png",
+      "html": "family-polar-angular-reversal-light.html",
+      "thumbnail": "family-polar-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-polar-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-polar-compact-angular-reversal-light",
+      "family": "polar",
+      "familyLabel": "Polar",
+      "group": "distribution",
+      "title": "Directional sensor readings",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-polar-compact-angular-reversal-light.csharp.txt",
+      "svg": "family-polar-compact-angular-reversal-light.svg",
+      "png": "family-polar-compact-angular-reversal-light.png",
+      "html": "family-polar-compact-angular-reversal-light.html",
+      "thumbnail": "family-polar-compact-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-polar-compact-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 24
+    },
+    {
       "id": "family-polar-wide-dark",
       "family": "polar",
       "familyLabel": "Polar",
@@ -17182,6 +17620,76 @@
         "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-polar-angular-reversal-dark",
+      "family": "polar",
+      "familyLabel": "Polar",
+      "group": "distribution",
+      "title": "Directional sensor readings",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-angular-reversal-dark.csharp.txt",
+      "svg": "family-polar-angular-reversal-dark.svg",
+      "png": "family-polar-angular-reversal-dark.png",
+      "html": "family-polar-angular-reversal-dark.html",
+      "thumbnail": "family-polar-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-polar-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-polar-compact-angular-reversal-dark",
+      "family": "polar",
+      "familyLabel": "Polar",
+      "group": "distribution",
+      "title": "Directional sensor readings",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-polar-compact-angular-reversal-dark.csharp.txt",
+      "svg": "family-polar-compact-angular-reversal-dark.svg",
+      "png": "family-polar-compact-angular-reversal-dark.png",
+      "html": "family-polar-compact-angular-reversal-dark.html",
+      "thumbnail": "family-polar-compact-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-polar-compact-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 24
     },
     {
       "id": "family-state-timeline-wide-light",
@@ -19778,6 +20286,54 @@
       "semanticRegions": 26
     },
     {
+      "id": "family-radial-column-mixed-angular-reversal-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "mixed-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-mixed-angular-reversal-light.csharp.txt",
+      "svg": "family-radial-column-mixed-angular-reversal-light.svg",
+      "png": "family-radial-column-mixed-angular-reversal-light.png",
+      "html": "family-radial-column-mixed-angular-reversal-light.html",
+      "thumbnail": "family-radial-column-mixed-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-mixed-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
       "id": "family-radial-column-compact-mixed-light",
       "family": "radial-column",
       "familyLabel": "Radial Column",
@@ -19800,6 +20356,54 @@
       "html": "family-radial-column-compact-mixed-light.html",
       "thumbnail": "family-radial-column-compact-mixed-light.thumbnail.svg",
       "thumbnailPng": "family-radial-column-compact-mixed-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
+      "id": "family-radial-column-compact-mixed-angular-reversal-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "compact-mixed-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-mixed-angular-reversal-light.csharp.txt",
+      "svg": "family-radial-column-compact-mixed-angular-reversal-light.svg",
+      "png": "family-radial-column-compact-mixed-angular-reversal-light.png",
+      "html": "family-radial-column-compact-mixed-angular-reversal-light.html",
+      "thumbnail": "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.png",
       "thumbnailWidth": 400,
       "thumbnailHeight": 280,
       "supportedOutputs": [
@@ -19874,6 +20478,54 @@
       "semanticRegions": 26
     },
     {
+      "id": "family-radial-column-mixed-angular-reversal-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "mixed-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-mixed-angular-reversal-dark.csharp.txt",
+      "svg": "family-radial-column-mixed-angular-reversal-dark.svg",
+      "png": "family-radial-column-mixed-angular-reversal-dark.png",
+      "html": "family-radial-column-mixed-angular-reversal-dark.html",
+      "thumbnail": "family-radial-column-mixed-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-mixed-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
       "id": "family-radial-column-compact-mixed-dark",
       "family": "radial-column",
       "familyLabel": "Radial Column",
@@ -19896,6 +20548,54 @@
       "html": "family-radial-column-compact-mixed-dark.html",
       "thumbnail": "family-radial-column-compact-mixed-dark.thumbnail.svg",
       "thumbnailPng": "family-radial-column-compact-mixed-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
+      "id": "family-radial-column-compact-mixed-angular-reversal-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "compact-mixed-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-mixed-angular-reversal-dark.csharp.txt",
+      "svg": "family-radial-column-compact-mixed-angular-reversal-dark.svg",
+      "png": "family-radial-column-compact-mixed-angular-reversal-dark.png",
+      "html": "family-radial-column-compact-mixed-angular-reversal-dark.html",
+      "thumbnail": "family-radial-column-compact-mixed-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-mixed-angular-reversal-dark.thumbnail.png",
       "thumbnailWidth": 400,
       "thumbnailHeight": 280,
       "supportedOutputs": [

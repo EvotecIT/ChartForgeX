@@ -37,6 +37,9 @@ public static partial class V2Examples {
                 variants.Add("swatch-color-legend"); variants.Add("compact-swatch-color-legend");
             }
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
+            if (kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar or ChartSeriesKind.PolarArea) {
+                variants.Add("angular-reversal"); variants.Add("compact-angular-reversal");
+            }
             if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
                 variants.Add("axis-labels"); variants.Add("compact-axis-labels");
                 variants.Add("all-labels"); variants.Add("compact-all-labels");
@@ -74,6 +77,8 @@ public static partial class V2Examples {
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
                 var subtitle = precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
                     : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"
+                    : variant is "angular-reversal" or "compact-angular-reversal" ? kind == ChartSeriesKind.Polar ? "Clockwise authored radians retain their source directions and values"
+                        : "Reversed category angles retain source labels, values and paint"
                     : variant is "axis-labels" or "compact-axis-labels" ? "Upright axis-relative labels with independent density"
                     : variant is "all-labels" or "compact-all-labels" ? "All captions fit individually; caption overlaps are intentional"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
@@ -109,6 +114,11 @@ public static partial class V2Examples {
             WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial(), "family-radial-column-" + variant + "-" + mode.ToString().ToLowerInvariant(),
                 "radial-column", "Regional counts and targets", variant, "Columns, reference area and target line share categories and radius", mode,
                 compact ? 360 : 800, compact ? 360 : 440, true, "V2GalleryModels.CreateMixedRadial()", new[] { "RadialColumn", "Radar" }, compact: compact);
+            var reversedVariant = compact ? "compact-mixed-angular-reversal" : "mixed-angular-reversal";
+            WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal()),
+                "family-radial-column-" + reversedVariant + "-" + mode.ToString().ToLowerInvariant(), "radial-column", "Regional counts and targets", reversedVariant,
+                "Columns, reference area and target line share reversed category angles", mode, compact ? 360 : 800, compact ? 360 : 440, true,
+                "V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal())", new[] { "RadialColumn", "Radar" }, compact: compact);
         }
     }
 

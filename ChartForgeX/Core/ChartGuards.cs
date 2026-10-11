@@ -129,8 +129,6 @@ internal static class ChartGuards {
         var geometry = chart.Options.RadialGeometry;
         if (Math.Abs(geometry.EndAngleDegrees - geometry.StartAngleDegrees - 360) > 1e-9)
             throw new NotSupportedException("Mixed radial columns and radar series require a full-turn radial viewport.");
-        if (chart.Options.XAxis.Reversed)
-            throw new NotSupportedException("Mixed radial columns and radar series do not support angular reversal.");
         var categories = new List<double>();
         foreach (var series in chart.Series) {
             var ordered = series.Points.Select(point => point.X).OrderBy(value => value).ToArray();

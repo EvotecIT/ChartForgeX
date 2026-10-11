@@ -38,7 +38,7 @@ internal static partial class VisualPolarCompiler {
                 var tick = scale.Ticks[index]; if (scale.Normalize(tick) <= 0) continue;
                 var r = geometry.Radius * scale.Normalize(tick);
                 if (chart.Options.ShowGrid && pair.Key == gridSide) {
-                    if (radar) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, RadarAngle(i, categories.Length), r)).ToArray(), ChartInterpolation.Linear),
+                    if (radar) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, CategoryAngle(chart.Options.XAxis, i, categories.Length), r)).ToArray(), ChartInterpolation.Linear),
                         stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: "radar-ring", close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                     else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, "polar-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
                 }
@@ -52,7 +52,7 @@ internal static partial class VisualPolarCompiler {
             }
         }
         for (var index = 0; index < categories.Length; index++) {
-            var angle = radar ? RadarAngle(index, categories.Length) : -categories[index];
+            var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, categories[index]);
             var end = On(geometry, angle, geometry.Radius);
             if (chart.Options.ShowGrid) builder.Line(geometry.Cx, geometry.Cy, end.X, end.Y, colors.Border, context.Theme.GridStrokeWidth, radar ? "radar-spoke" : "polar-spoke", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
