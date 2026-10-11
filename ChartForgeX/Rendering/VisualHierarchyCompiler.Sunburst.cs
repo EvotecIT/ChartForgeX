@@ -7,8 +7,8 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualHierarchyCompiler {
-    private static void Sunburst(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
-        var series = chart.Series[0]; var surface = new ChartHierarchySurface(chart, colors);
+    private static void Sunburst(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, ChartHierarchySurface surface) {
+        var series = chart.Series[0];
         var areas = HierarchyScaleLayout(chart, context, builder, plot, surface);
         var model = ChartSunburstLayout.Compute(chart, areas.Content);
         var total = model.Nodes[model.Root].Value;
@@ -39,7 +39,10 @@ internal static partial class VisualHierarchyCompiler {
             var branchRoot = series.Relationships!.HierarchyBranchRoot(node.Index);
             if (branchRoot != null) metadata["data-cfx-branch-root"] = branchRoot;
             if (item.Value.HasValue) metadata["data-cfx-authored-value"] = N(item.Value.Value);
-            if (item.ColorValue.HasValue) metadata["data-cfx-color-value"] = N(item.ColorValue.Value);
+            if (item.ColorValue.HasValue) {
+                metadata["data-cfx-color-value"] = N(item.ColorValue.Value);
+                if (surface.Presentation.HasOverrides) metadata["data-cfx-formatted-color-value"] = surface.Presentation.Value(item.ColorValue.Value);
+            }
             else if (surface.Scale != null) metadata["data-cfx-color-missing"] = "true";
             if (node.Children.Count > 0) metadata["data-cfx-remainder-value"] = N(node.RemainderValue);
             metadata["data-cfx-geometry-status"] = visible ? "visible" : node.Value == 0 ? "zero" : "precision-collapse";
@@ -63,8 +66,8 @@ internal static partial class VisualHierarchyCompiler {
             if (secondary != null) description += "; " + secondary;
             if (node.Children.Count > 0 && item.Value.HasValue && item.Value.Value != node.Value)
                 description += "; " + chart.Options.Labels.AuthoredValue + ": " + ChartNumericFormatter.FormatValue(chart.Options, item.Value.Value);
-            if (item.ColorValue.HasValue) description += "; " + (surface.Title ?? chart.Options.Labels.Color) + ": " + ChartNumericFormatter.FormatValue(chart.Options, item.ColorValue.Value);
-            else if (surface.Scale != null) description += "; " + chart.Options.Labels.NoData;
+            if (item.ColorValue.HasValue) description += "; " + surface.Title + ": " + surface.Presentation.Value(item.ColorValue.Value);
+            else if (surface.Scale != null) description += "; " + surface.Presentation.NoData;
             if (node.RemainderValue > 0) description += "; " + chart.Options.Labels.Remainder + ": " + ChartNumericFormatter.FormatValue(chart.Options, node.RemainderValue);
             builder.AddRegion(new VisualSemanticRegion(id, "sunburst-segment", bounds, description));
         }

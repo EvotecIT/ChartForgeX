@@ -14,7 +14,7 @@ public sealed class MermaidSourceConfiguration {
     public string? Layout { get; internal set; }
     /// <summary>Gets the requested appearance, retained independently from native scene styling.</summary>
     public string? Look { get; internal set; }
-    /// <summary>Gets the effective font stack from the family setting, theme variable or global setting, in that order; native font resolution does not fetch remote fonts.</summary>
+    /// <summary>Gets the effective font stack from the theme variable or root setting, in that order; native font resolution does not fetch remote fonts.</summary>
     public string? FontFamily { get; internal set; }
     /// <summary>Gets the requested theme-variable base font size in logical pixels, when supported.</summary>
     public double? FontSize { get; internal set; }

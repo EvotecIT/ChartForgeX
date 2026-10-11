@@ -16,55 +16,113 @@
   },
   "fixtures": {
     "fixtures/packet-source-options.mmd": {
-      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored row splitting and label visibility case from https://mermaid.js.org/syntax/packet.html and the packet configuration schema; pinned references qualify resolved row ranges and retained source settings."
     },
     "fixtures/packet-descending.mmd": {
-      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored descending row case from https://mermaid.js.org/syntax/packet.html#bit-numbering-order-v12-0-0. The accepting references resolve identical inclusive field ranges; auxiliary split-field bits counters are excluded because they disagree with those ranges.",
-      "expectedByReference": { "11": "packet-descending.expected.11.json" },
-      "notes": { "11": "The pinned Mermaid 11 engine removes bitOrder and paints ascending rows. The pinned Mermaid 12 engine retains descending order; source ranges remain identical." }
+      "expectedByReference": {
+        "11": "packet-descending.expected.11.json"
+      },
+      "notes": {
+        "11": "The pinned Mermaid 11 engine removes bitOrder and paints ascending rows. The pinned Mermaid 12 engine retains descending order; source ranges remain identical."
+      }
     },
     "fixtures/theme-variable-font-size.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored pixel typography case from https://mermaid.js.org/config/theming.html; the pinned reference configurations retain the decimal pixel size and family independently."
     },
     "fixtures/theme-variable-font.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored font configuration regression from https://mermaid.js.org/config/theming.html; the pinned references retain global and theme-variable font values independently."
     },
     "fixtures/sequence-presentation.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored sequence participants/messages and legacy source presentation case from the official sequence and configuration contracts."
     },
     "fixtures/state-floating-note.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored regression for the pinned state grammar's floating-note production, case-insensitive direction and bare direction identifier."
     },
     "fixtures/er-lowercase-direction.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored regression for the pinned ER grammar's lowercase direction and bare direction identifier.",
-      "expectedByReference": { "10": "er-lowercase-direction.expected.10.json" },
-      "notes": { "10": "The pinned Mermaid 10 ER grammar treats direction and bt as entities; ChartForgeX follows the current 11/12 direction semantics." }
+      "expectedByReference": {
+        "10": "er-lowercase-direction.expected.10.json"
+      },
+      "notes": {
+        "10": "The pinned Mermaid 10 ER grammar treats direction and bt as entities; ChartForgeX follows the current 11/12 direction semantics."
+      }
     },
     "fixtures/class-retained-interactions.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored class direction, note and interaction case from the official Mermaid syntax reference."
     },
     "fixtures/er-retained-styles.mmd": {
-      "syntax": { "10": "rejected", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored ER direction, class and style case from the official Mermaid syntax reference.",
-      "notes": { "10": "The pinned Mermaid 10 ER grammar rejects these style declarations." }
+      "notes": {
+        "10": "The pinned Mermaid 10 ER grammar rejects these style declarations."
+      }
     },
     "fixtures/state-retained-note.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored multiline state-note regression from the official Mermaid note syntax."
     },
     "fixtures/er-retained-subgraph.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "provenance": "Authored ER subgraph and local-direction case from the official Mermaid syntax reference.",
-      "expectedByReference": { "10": "er-retained-subgraph.expected.10.json" },
-      "notes": { "10": "The pinned Mermaid 10 grammar treats direction, subgraph and end words as entity names; ChartForgeX follows the current 11/12 notation semantics." }
+      "expectedByReference": {
+        "10": "er-retained-subgraph.expected.10.json"
+      },
+      "notes": {
+        "10": "The pinned Mermaid 10 grammar treats direction, subgraph and end words as entity names; ChartForgeX follows the current 11/12 notation semantics."
+      }
     },
     "fixtures/configuration-precedence.mmd": {
       "syntax": {
@@ -535,6 +593,14 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/theme-variable-font-layers.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
     }
   }
 }

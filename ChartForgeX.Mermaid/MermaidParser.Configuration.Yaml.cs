@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using ChartForgeX.Core;
 
@@ -26,7 +27,9 @@ public sealed partial class MermaidParser {
                 if (LeadingWhitespace(line) == rootIndent && flow.Success) {
                     var first = index;
                     ReadConfigurationFlowMapping(lines, ref index, TrimYamlComment(flow.Groups[1].Value).Trim());
-                    for (var extra = first + 1; extra <= index; extra++) length += lines[extra].Length + 1;
+                    for (var extra = first + 1; extra <= index; extra++) {
+                        if (!lines[extra].TrimStart().StartsWith("#", StringComparison.Ordinal)) length += lines[extra].Length + 1;
+                    }
                     inConfiguration = false;
                 }
             }
@@ -35,7 +38,7 @@ public sealed partial class MermaidParser {
     }
 
     private static void ReadConfigurationYaml(string text, MermaidSourceConfiguration configuration, MermaidParseResult<MermaidDocument> result) {
-        var parents = new List<(int Indent, string Path, int ChildIndent)>();
+        var parents = new List<(int Indent, string Path, int ChildIndent, MermaidSourceSpan Span)>();
         var declared = new HashSet<string>(StringComparer.Ordinal);
         var opaqueIndent = -1;
         var lines = text.Split('\n');
@@ -50,19 +53,19 @@ public sealed partial class MermaidParser {
             var indent = LeadingWhitespace(raw);
             if (opaqueIndent >= 0 && indent > opaqueIndent) continue;
             opaqueIndent = -1;
-            while (parents.Count > 0 && indent <= parents[parents.Count - 1].Indent) parents.RemoveAt(parents.Count - 1);
+            while (parents.Count > 0 && indent <= parents[parents.Count - 1].Indent) CompleteConfigurationYamlParent(parents, configuration);
             var match = Regex.Match(trimmed, @"^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*)$", RegexOptions.CultureInvariant);
             if (parents.Count == 0 && (indent != rootIndent || !match.Success || match.Groups[1].Value != "config")) continue;
             var span = new MermaidSourceSpan(index + 2, indent + 1, trimmed.Length);
             if (parents.Count > 0) {
                 var parent = parents[parents.Count - 1];
-                if (parent.ChildIndent < 0) parents[parents.Count - 1] = (parent.Indent, parent.Path, indent);
+                if (parent.ChildIndent < 0) parents[parents.Count - 1] = (parent.Indent, parent.Path, indent, parent.Span);
                 else if (parent.ChildIndent != indent) {
                     ConfigurationError(result, span, "Mermaid configuration mapping keys must use consistent sibling indentation.");
                     continue;
                 }
             }
-            if (!match.Success || raw.IndexOf('\t') >= 0) {
+            if (!match.Success || raw.Substring(0, indent).IndexOf('\t') >= 0) {
                 Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Warning,
                     "Mermaid frontmatter configuration supports space-indented mappings with scalar values; this declaration is retained without application.", MermaidDiagnosticCodes.UnsupportedConfiguration);
                 continue;
@@ -77,7 +80,7 @@ public sealed partial class MermaidParser {
                 if (parents.Count >= 8) { ConfigurationError(result, span, "Mermaid frontmatter configuration exceeds eight mapping levels."); break; }
                 if (IsConfigurationScalarPath(path))
                     configuration.Add(new MermaidConfigurationSetting(path, null, false, span));
-                parents.Add((indent, path, -1));
+                parents.Add((indent, path, -1, span));
                 continue;
             }
             try {
@@ -89,7 +92,7 @@ public sealed partial class MermaidParser {
                     var isString = true;
                     string? value = valueText;
                     if (valueText.StartsWith("\"", StringComparison.Ordinal)) {
-                        value = GeoJsonValue.Parse(valueText, StringComparer.Ordinal, ConfigurationJsonLimits).AsString("Mermaid YAML scalar");
+                        value = ReadDoubleQuotedConfigurationYaml(valueText);
                     } else if (valueText.StartsWith("'", StringComparison.Ordinal)) {
                         value = ReadSingleQuotedConfigurationYaml(valueText);
                     } else if (valueText.StartsWith("{", StringComparison.Ordinal) || valueText.StartsWith("[", StringComparison.Ordinal) ||
@@ -97,11 +100,36 @@ public sealed partial class MermaidParser {
                         valueText.StartsWith("&", StringComparison.Ordinal) || valueText.StartsWith("*", StringComparison.Ordinal) || valueText.StartsWith("!", StringComparison.Ordinal)) {
                         value = null; isString = false;
                         opaqueIndent = indent;
+                    } else if (Regex.IsMatch(valueText, @":(?:\s|$)", RegexOptions.CultureInvariant)) {
+                        throw new ArgumentException("Mermaid YAML plain scalars cannot contain a mapping separator; quote strings containing a colon followed by whitespace or an ending colon.");
                     } else if (IsTypedConfigurationYamlScalar(valueText)) isString = false;
                     configuration.Add(new MermaidConfigurationSetting(path, value, isString, span));
                 }
             } catch (ArgumentException exception) { ConfigurationError(result, span, exception.Message); }
         }
+        while (parents.Count > 0) CompleteConfigurationYamlParent(parents, configuration);
+    }
+
+    private static void CompleteConfigurationYamlParent(List<(int Indent, string Path, int ChildIndent, MermaidSourceSpan Span)> parents,
+        MermaidSourceConfiguration configuration) {
+        var parent = parents[parents.Count - 1];
+        if (parent.ChildIndent < 0 && parent.Path.Length > 0 && !IsConfigurationStringPath(parent.Path))
+            configuration.Add(new MermaidConfigurationSetting(parent.Path, null, false, parent.Span));
+        parents.RemoveAt(parents.Count - 1);
+    }
+
+    private static string ReadDoubleQuotedConfigurationYaml(string value) {
+        var normalized = new StringBuilder(value.Length);
+        for (var index = 0; index < value.Length; index++) {
+            var character = value[index];
+            if (character == '\t') normalized.Append("\\t");
+            else if (character == '\\' && index + 1 < value.Length) {
+                var escaped = value[++index];
+                if (escaped == '\t') normalized.Append("\\t");
+                else normalized.Append('\\').Append(escaped);
+            } else normalized.Append(character);
+        }
+        return GeoJsonValue.Parse(normalized.ToString(), StringComparer.Ordinal, ConfigurationJsonLimits).AsString("Mermaid YAML scalar");
     }
 
     private static string ReadSingleQuotedConfigurationYaml(string value) {
