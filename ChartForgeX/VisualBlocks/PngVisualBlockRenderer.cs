@@ -103,6 +103,7 @@ public sealed partial class PngVisualBlockRenderer {
     internal static double DegreesToRadians(double degrees) => degrees * Math.PI / 180.0;
 
     internal static string FitText(RgbaCanvas canvas, string value, double fontSize, double maxWidth, bool emphasized = false) {
+        value = VisualBlockRendering.SingleLineText(value);
         double Measure(string text) => emphasized ? canvas.MeasureTextEmphasizedWidth(text, fontSize) : canvas.MeasureTextWidth(text, fontSize);
         if (string.IsNullOrEmpty(value) || Measure(value) <= maxWidth) return value;
         const string suffix = "...";

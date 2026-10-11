@@ -13,6 +13,46 @@ namespace ChartForgeX.Tests;
 
 public sealed class BlockTypographyCeilingTests {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TallSingleBranchGitKeepsMeasuredTagInsideItsBadge(bool graphite) {
+        var theme = ChartTheme.Light(); theme.UseGraphiteLayout = graphite; theme.FontFamily = "Arial"; theme.DataLabelFontSize = 256;
+        var block = GitGraphBlock.Create().WithSize(600, 1200).WithTheme(theme).WithCard(false).AddBranch("main").AddCommit("base", "main", tag: "i");
+        var svg = block.ToSvg();
+        Assert.Equal("i", Assert.Single(XDocument.Parse(svg).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "git-tag-label").Value);
+        Assert.NotEmpty(block.ToPng());
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", 600, 1200);
+        Assert.True(await session.Page.EvaluateAsync<bool>("() => { const text=document.querySelector('[data-cfx-role=git-tag-label]').getBoundingClientRect(), badge=document.querySelector('[data-cfx-role=git-tag]').getBoundingClientRect(); return text.width>0 && text.left>=badge.left && text.right<=badge.right; }"));
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        await CaptureGit(session, block, "git-tall-tag-" + (graphite ? "graphite" : "classic"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GitCaptionsWithLineBreaksFitAsSingleTextRuns(bool graphite) {
+        var theme = ChartTheme.Light(); theme.UseGraphiteLayout = graphite; theme.FontFamily = "Courier New";
+        var block = GitGraphBlock.Create().WithSize(320, 300).WithTheme(theme).WithCard(false)
+            .AddBranch("main").AddCommit("first", "main").AddCommit("last", "main", label: "MMMMMMMMMM\nMMMMMMMMMM");
+        var svg = block.ToSvg();
+        Assert.NotEmpty(block.ToPng());
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", 320, 300);
+        Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('svg text')].every(text => { const box=text.getBoundingClientRect(); return box.left>=-1 && box.right<=321; })"));
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        await CaptureGit(session, block, "git-single-line-" + (graphite ? "graphite" : "classic"));
+    }
+
+    private static async Task CaptureGit(HtmlTinkerX.HtmlBrowserSession session, GitGraphBlock block, string name) {
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
+        File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), block.ToPng());
+    }
+
+    [Theory]
     [InlineData(false, 320)]
     [InlineData(false, 960)]
     [InlineData(true, 320)]

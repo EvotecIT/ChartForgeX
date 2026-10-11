@@ -71,7 +71,7 @@ internal static partial class VisualBlockRendering {
 
     public static double GitFontSize(GitGraphLayout layout, ChartTheme theme, string text, double defaultSize, double width) {
         var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = 1, LineHeight = 1 };
-        var measured = ChartLabelScene.MeasureText(text, style).Width;
+        var measured = ChartLabelScene.MeasureText(SingleLineText(text), style).Width;
         var fitted = measured > 0 ? Math.Max(defaultSize, Math.Max(1, width) / measured) : defaultSize;
         return Math.Min(defaultSize * layout.FontScale, fitted);
     }
@@ -79,9 +79,11 @@ internal static partial class VisualBlockRendering {
     public static GitTagMetrics GitTag(GitGraphLayout layout, ChartTheme theme, string tag, double x, double y, double radius) {
         var font = GitFontSize(layout, theme, tag, 9.5, 86);
         var scale = font / 9.5;
-        var width = Math.Min(96, Math.Max(38, tag.Length * 6.2 + 18) * scale);
+        var inset = Math.Min(5, 5 * scale);
+        var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = font, LineHeight = 1 };
+        var width = Math.Min(96, Math.Max(38, ChartLabelScene.MeasureText(SingleLineText(tag), style).Width + inset * 2));
         var top = y - radius - 24 * scale;
-        return new GitTagMetrics(new ChartRect(x - width / 2, top, width, 18 * scale), font, 5 * scale, top + 12.5 * scale);
+        return new GitTagMetrics(new ChartRect(x - width / 2, top, width, 18 * scale), font, inset, top + 12.5 * scale);
     }
 
     public readonly struct GitTagMetrics {
