@@ -7224,7 +7224,7 @@
       "family": "heatmap",
       "familyLabel": "Heatmap",
       "group": "matrices-maps",
-      "title": "Temperature across service areas",
+      "title": "Temperature by grid position",
       "variant": "color-dimension",
       "primary": false,
       "seriesKinds": [
@@ -7257,7 +7257,7 @@
       "family": "heatmap",
       "familyLabel": "Heatmap",
       "group": "matrices-maps",
-      "title": "Temperature across service areas",
+      "title": "Temperature by grid position",
       "variant": "compact-color-dimension",
       "primary": false,
       "seriesKinds": [
@@ -7494,7 +7494,7 @@
       "family": "heatmap",
       "familyLabel": "Heatmap",
       "group": "matrices-maps",
-      "title": "Temperature across service areas",
+      "title": "Temperature by grid position",
       "variant": "color-dimension",
       "primary": false,
       "seriesKinds": [
@@ -7527,7 +7527,7 @@
       "family": "heatmap",
       "familyLabel": "Heatmap",
       "group": "matrices-maps",
-      "title": "Temperature across service areas",
+      "title": "Temperature by grid position",
       "variant": "compact-color-dimension",
       "primary": false,
       "seriesKinds": [
