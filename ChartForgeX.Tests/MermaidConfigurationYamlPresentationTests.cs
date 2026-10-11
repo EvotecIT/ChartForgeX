@@ -26,6 +26,20 @@ public sealed class MermaidConfigurationYamlPresentationTests {
     }
 
     [Theory]
+    [InlineData("config:\n  other.name: |\n    #", "")]
+    [InlineData("config:\n  123: |\n    ", "")]
+    [InlineData("config:\n- other.name: |\n    #", "")]
+    [InlineData("config:\n  other: {'message':'before\n    #", "\n    after'}")]
+    [InlineData("config:\n  other: {'message':'before\n    ", "\n    after'}")]
+    [InlineData("config: ['before\n  #", "\n  after']")]
+    [InlineData("config: &defaults ['before\n  ", "\n  after']")]
+    public void OpaqueYamlNodeKindsCannotBypassPhysicalScalarAccounting(string prefix, string suffix) {
+        var result = MermaidRenderer.Render("---\n" + prefix + new string(' ', 70000) + suffix + "\n---\nflowchart LR\nA --> B");
+        Assert.True(result.HasErrors); Assert.Null(result.Artifact);
+        Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
+    }
+
+    [Theory]
     [InlineData("\"config\"", "\"theme\"")]
     [InlineData("'config'", "'theme'")]
     [InlineData("\"confi\\u0067\"", "\"the\\u006de\"")]

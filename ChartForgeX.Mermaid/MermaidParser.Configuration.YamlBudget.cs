@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace ChartForgeX.Mermaid;
@@ -29,33 +28,27 @@ public sealed partial class MermaidParser {
         long length = 0;
         var inConfiguration = false;
         var scalarIndent = -1;
+        var flowDepth = 0;
+        var flowQuote = '\0';
+        var rootFlow = false;
         void Count(string line) { length += line.Length + (length > 0 ? 1L : 0L); }
         for (var index = 0; index < lines.Length; index++) {
             var line = lines[index];
             var trimmed = TrimConfigurationYaml(line);
             var indent = ConfigurationYamlIndent(line);
-            if (scalarIndent >= 0) {
-                if (trimmed.Length == 0 || indent > scalarIndent) {
-                    Count(line);
-                    if (length > MaximumConfigurationLength) return length;
-                    continue;
-                }
+            if (flowDepth > 0) {
+                if (flowQuote != '\0' || trimmed.Length > 0 && !trimmed.StartsWith("#", StringComparison.Ordinal)) Count(line);
+                ScanConfigurationYamlFlow(line, ref flowDepth, ref flowQuote);
+                if (flowDepth <= 0 && rootFlow) inConfiguration = false;
+            } else if (scalarIndent >= 0 && (trimmed.Length == 0 || indent > scalarIndent)) Count(line);
+            else {
                 scalarIndent = -1;
-            }
-            if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
-            var mapping = ConfigurationYamlMapping(trimmed);
-            if (indent <= rootIndent && (!inConfiguration || !IsConfigurationYamlBlockContinuation(indent, rootIndent, trimmed)))
-                inConfiguration = indent == rootIndent && ConfigurationYamlKey(mapping) == "config";
-            if (!inConfiguration) continue;
-            Count(line);
-            var value = mapping.Success ? TrimConfigurationYaml(TrimYamlComment(mapping.Groups[2].Value, indent == rootIndent)) : string.Empty;
-            if (indent == rootIndent && value.StartsWith("{", StringComparison.Ordinal)) {
-                var sourceLines = new List<ConfigurationJsonLine>();
-                ReadConfigurationFlowMapping(lines, ref index, value, sourceLines);
-                // The first physical line was counted above; quoted blank and # lines are data.
-                for (var extra = 1; extra < sourceLines.Count; extra++) Count(lines[sourceLines[extra].Line - 2]);
-                inConfiguration = false;
-            } else {
+                if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
+                var mapping = ConfigurationYamlMapping(trimmed);
+                if (indent <= rootIndent && (!inConfiguration || !IsConfigurationYamlBlockContinuation(indent, rootIndent, trimmed)))
+                    inConfiguration = indent == rootIndent && ConfigurationYamlKey(mapping) == "config";
+                if (!inConfiguration) continue;
+                Count(line);
                 var node = trimmed;
                 var ownerIndent = indent;
                 while (IsConfigurationYamlSequenceItem(node)) {
@@ -65,9 +58,19 @@ public sealed partial class MermaidParser {
                     node = node.Substring(prefix);
                 }
                 var entry = ConfigurationYamlMapping(node);
-                var scalar = TrimConfigurationYaml(TrimYamlComment(entry.Success ? entry.Groups[2].Value : node));
-                if (Regex.IsMatch(scalar, @"^(?:(?:&[^\s]+|![^\s]+)[ \t]+)*[|>](?:[1-9][+-]?|[+-][1-9]?)?$", RegexOptions.CultureInvariant))
-                    scalarIndent = entry.Success ? ownerIndent : indent;
+                // Opaque keys are not interpreted, but their value still has physical YAML structure.
+                var separator = entry.Success ? entry : Regex.Match(node, @":(?:[ \t]+|$)(.*)$", RegexOptions.CultureInvariant);
+                var value = separator.Success ? separator.Groups[entry.Success ? 2 : 1].Value : node;
+                value = TrimConfigurationYaml(TrimYamlComment(value, true));
+                value = Regex.Replace(value, @"^(?:(?:&[^\s]+|![^\s]+)[ \t]+)+", string.Empty, RegexOptions.CultureInvariant);
+                if (Regex.IsMatch(value, @"^[|>](?:[1-9][+-]?|[+-][1-9]?)?$", RegexOptions.CultureInvariant))
+                    scalarIndent = separator.Success ? ownerIndent : indent;
+                else if (value.StartsWith("{", StringComparison.Ordinal) || value.StartsWith("[", StringComparison.Ordinal)) {
+                    rootFlow = indent == rootIndent && ConfigurationYamlKey(mapping) == "config";
+                    flowQuote = '\0';
+                    ScanConfigurationYamlFlow(value, ref flowDepth, ref flowQuote);
+                    if (flowDepth <= 0 && rootFlow) inConfiguration = false;
+                }
             }
             if (length > MaximumConfigurationLength) return length;
         }

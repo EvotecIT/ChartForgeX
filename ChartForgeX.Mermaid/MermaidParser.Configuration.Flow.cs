@@ -21,16 +21,7 @@ public sealed partial class MermaidParser {
                 if (available > 0) collected.Append(value, 0, System.Math.Min(value.Length, available));
             }
             if (collected.Length > MaximumConfigurationLength) break;
-            for (var position = 0; position < value.Length; position++) {
-                var character = value[position];
-                if (quote != '\0') {
-                    if (quote == '"' && character == '\\') position++;
-                    else if (quote == '\'' && character == '\'' && position + 1 < value.Length && value[position + 1] == '\'') position++;
-                    else if (character == quote) quote = '\0';
-                } else if (character == '\'' || character == '"') quote = character;
-                else if (character == '{') depth++;
-                else if (character == '}') depth--;
-            }
+            ScanConfigurationYamlFlow(value, ref depth, ref quote);
             if (depth <= 0 || index + 1 == lines.Length) break;
             while (quote == '\0' && index + 1 < lines.Length && lines[index + 1].TrimStart(' ', '\t').StartsWith("#", System.StringComparison.Ordinal)) index++;
             if (index + 1 == lines.Length) break;
@@ -39,4 +30,20 @@ public sealed partial class MermaidParser {
         }
         return collected.ToString();
     }
+
+    // Shared physical scanning keeps unsupported flow nodes bounded without interpreting them.
+    private static void ScanConfigurationYamlFlow(string text, ref int depth, ref char quote) {
+        for (var position = 0; position < text.Length; position++) {
+            var character = text[position];
+            if (quote != '\0') {
+                if (quote == '"' && character == '\\') position++;
+                else if (quote == '\'' && character == '\'' && position + 1 < text.Length && text[position + 1] == '\'') position++;
+                else if (character == quote) quote = '\0';
+            } else if (character == '#' && (position == 0 || text[position - 1] == ' ' || text[position - 1] == '\t')) break;
+            else if (character == '\'' || character == '"') quote = character;
+            else if (character == '{' || character == '[') depth++;
+            else if (character == '}' || character == ']') depth--;
+        }
+    }
+
 }
