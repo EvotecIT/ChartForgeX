@@ -4,6 +4,13 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttCalendarFormatRegressionTests {
+    [Fact]
+    public void CompleteIsoTaskFallbackDoesNotEvaluateAnUnusedCalendarFormat() {
+        var result = new MermaidParser().ParseGantt("gantt\ndateFormat q\nTask :task,2026-01-02,2d");
+        Assert.Empty(result.Diagnostics);
+        Assert.Equal(new DateTime(2026, 1, 4), Assert.Single(result.Document!.Tasks).End);
+    }
+
     [Theory]
     [InlineData("excludes Jan 3, 2026", 3)]
     [InlineData("excludes Jan 3, 2026, Jan 4, 2026", 4)]

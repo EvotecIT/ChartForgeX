@@ -51,6 +51,7 @@ internal static partial class MermaidGanttParser {
 
     private static HashSet<string> CalendarTokens(string? value, string format) {
         var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(value)) return tokens;
         var chunks = (value ?? string.Empty).Split(',');
         var literalCommas = 0;
         foreach (var ch in MermaidGanttInputDateFormat.FormatCalendarDate(new DateTime(2000, 2, 29), format)) if (ch == ',') literalCommas++;
