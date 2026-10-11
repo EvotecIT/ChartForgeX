@@ -36,7 +36,7 @@ internal static partial class VisualHierarchyCompiler {
             if (item.Value.HasValue) metadata["data-cfx-authored-value"] = N(item.Value.Value);
             if (item.ColorValue.HasValue) {
                 metadata["data-cfx-color-value"] = N(item.ColorValue.Value);
-                if (surface.Presentation.HasOverrides) metadata["data-cfx-formatted-color-value"] = surface.Presentation.Value(item.ColorValue.Value);
+                if (surface.Presentation.HasFormat) metadata["data-cfx-formatted-color-value"] = surface.Presentation.Value(item.ColorValue.Value);
             }
             else if (surface.Scale != null) metadata["data-cfx-color-missing"] = "true";
             var id = ChartRelationshipMetadata.SourceId("node", item.Id);
