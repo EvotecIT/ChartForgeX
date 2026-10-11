@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 
 namespace ChartForgeX.Tests;
 
-public sealed class CartesianPlotRegionBrowserTests {
+public sealed partial class CartesianPlotRegionBrowserTests {
     [Theory]
     [InlineData(false, 360)]
     [InlineData(true, 360)]
@@ -23,6 +23,7 @@ public sealed class CartesianPlotRegionBrowserTests {
             .AddPlotRegion(new(ChartColor.FromHex("#5c9e75"), label: "Background guidance", opacity: .2));
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
+            options.Tooltip.Range = HtmlChartTooltipRange.Exact;
             options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
         });
         await using var session = await OpenAsync(html, width + 24, 410);
