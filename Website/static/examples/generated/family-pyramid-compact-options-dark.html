@@ -655,6 +655,41 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart? PartialColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        if (kind is not (ChartSeriesKind.TileMap or ChartSeriesKind.Scatter)
+            || variant is not (&quot;partial-color-range&quot; or &quot;compact-partial-color-range&quot;)) return null;
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var chart = Chart.Create().ConfigureLabels(labels =&gt; labels.NoData = &quot;Not reported&quot;);
+        if (kind == ChartSeriesKind.TileMap) {
+            var codes = new[] { &quot;CA&quot;, &quot;TX&quot;, &quot;NY&quot;, &quot;FL&quot;, &quot;WA&quot;, &quot;IL&quot; };
+            var counts = new[] { 0d, 18, 42, 76, 29, 51 };
+            return chart.AddTileMap(&quot;Requests&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;),
+                codes.Select((code, index) =&gt; new ChartRegionMapItem(code, counts[index])))
+                .WithMapLabels().WithMapColorScale(ChartColorScale.Sequential(colors.SequentialRamp)
+                    .WithValueRange(0, null).WithLabels(&quot;None&quot;, null, &quot;Observed peak&quot;).WithNoDataColor(colors.Border))
+                .ConfigureMapColorDimension(options =&gt; {
+                    options.Name = &quot;Requests&quot;; options.ValueFormat = ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture);
+                    options.LegendStyle = ChartColorLegendStyle.Gradient;
+                });
+        }
+        var duration = new[] { 18d, 30, 24, 44, 32 };
+        var completion = new double?[] { 55, 82, null, 68, 95 };
+        chart.WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
+            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
+            .AddScatter(&quot;Recorded batches&quot;, completion.Select((value, index) =&gt;
+                new ChartPoint((index + 1) * 16, duration[index]).WithColorValue(value)));
+        chart.Series[0].WithColorScale(ChartColorScale.Sequential(colors.Palette[0], colors.Status.Pass.Fill)
+                .WithValueRange(null, 100).WithLabels(&quot;Observed minimum&quot;, null, &quot;Goal&quot;).WithNoDataColor(colors.Border))
+            .ConfigureColorDimension(options =&gt; {
+                options.Name = &quot;Completion&quot;; options.ValueFormat = ChartValueFormat.Number(&quot;0&#39;%&#39;&quot;, CultureInfo.InvariantCulture);
+                options.LegendStyle = ChartColorLegendStyle.Swatches;
+            }).WithInteractionKey(&quot;recorded-batches&quot;);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     private static readonly double?[] PositionedColorValues = { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
 
     private static Chart? PositionedColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
@@ -960,10 +995,11 @@ public static partial class V2GalleryModels {
         var positionedColorVariant = (variant is &quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
         var colorDimensionVariant = (variant is &quot;color-dimension&quot; or &quot;compact-color-dimension&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
         var colorLegendVariant = (variant is &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot; or &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant)
+        var partialColorVariant = (variant is &quot;partial-color-range&quot; or &quot;compact-partial-color-range&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter;
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant &amp;&amp; !partialColorVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
-            ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
         if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.Area) {
@@ -1616,6 +1652,41 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart? PartialColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+        if (kind is not (ChartSeriesKind.TileMap or ChartSeriesKind.Scatter)
+            || variant is not (&quot;partial-color-range&quot; or &quot;compact-partial-color-range&quot;)) return null;
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var chart = Chart.Create().ConfigureLabels(labels =&gt; labels.NoData = &quot;Not reported&quot;);
+        if (kind == ChartSeriesKind.TileMap) {
+            var codes = new[] { &quot;CA&quot;, &quot;TX&quot;, &quot;NY&quot;, &quot;FL&quot;, &quot;WA&quot;, &quot;IL&quot; };
+            var counts = new[] { 0d, 18, 42, 76, 29, 51 };
+            return chart.AddTileMap(&quot;Requests&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;),
+                codes.Select((code, index) =&gt; new ChartRegionMapItem(code, counts[index])))
+                .WithMapLabels().WithMapColorScale(ChartColorScale.Sequential(colors.SequentialRamp)
+                    .WithValueRange(0, null).WithLabels(&quot;None&quot;, null, &quot;Observed peak&quot;).WithNoDataColor(colors.Border))
+                .ConfigureMapColorDimension(options =&gt; {
+                    options.Name = &quot;Requests&quot;; options.ValueFormat = ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture);
+                    options.LegendStyle = ChartColorLegendStyle.Gradient;
+                });
+        }
+        var duration = new[] { 18d, 30, 24, 44, 32 };
+        var completion = new double?[] { 55, 82, null, 68, 95 };
+        chart.WithXAxis(&quot;Batch size (items)&quot;).WithYAxis(&quot;Processing time (minutes)&quot;)
+            .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
+            .AddScatter(&quot;Recorded batches&quot;, completion.Select((value, index) =&gt;
+                new ChartPoint((index + 1) * 16, duration[index]).WithColorValue(value)));
+        chart.Series[0].WithColorScale(ChartColorScale.Sequential(colors.Palette[0], colors.Status.Pass.Fill)
+                .WithValueRange(null, 100).WithLabels(&quot;Observed minimum&quot;, null, &quot;Goal&quot;).WithNoDataColor(colors.Border))
+            .ConfigureColorDimension(options =&gt; {
+                options.Name = &quot;Completion&quot;; options.ValueFormat = ChartValueFormat.Number(&quot;0&#39;%&#39;&quot;, CultureInfo.InvariantCulture);
+                options.LegendStyle = ChartColorLegendStyle.Swatches;
+            }).WithInteractionKey(&quot;recorded-batches&quot;);
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     private static readonly double?[] PositionedColorValues = { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
 
     private static Chart? PositionedColorObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
@@ -1921,10 +1992,11 @@ public static partial class V2GalleryModels {
         var positionedColorVariant = (variant is &quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
         var colorDimensionVariant = (variant is &quot;color-dimension&quot; or &quot;compact-color-dimension&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
         var colorLegendVariant = (variant is &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot; or &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant)
+        var partialColorVariant = (variant is &quot;partial-color-range&quot; or &quot;compact-partial-color-range&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter;
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant &amp;&amp; !partialColorVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
-            ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
         if (variant == &quot;options&quot; &amp;&amp; kind == ChartSeriesKind.Area) {
