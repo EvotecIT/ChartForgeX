@@ -25,7 +25,7 @@ public static partial class V2GalleryModels {
                 options.SecondaryLabelFormatter = context => context.Item.Id == "all" ? "Allocation" : context.Item.Id == "engineering" ? "Delivery teams"
                     : context.Item.Id == "operations-support" ? "Shared service" : null;
                 options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
-                options.ColorLegendTitle = "Change (%)";
+                options.ColorDimension.Name = "Change (%)";
                 options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
                     .WithLabels("Decrease", "No change", "Increase").WithNoDataColor(colors.Surface);
             });

@@ -8,10 +8,9 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualHierarchyCompiler {
-    private static void Treemap(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
+    private static void Treemap(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, ChartHierarchySurface surface) {
         var series = chart.Series[0]; var index = series.Relationships!; var options = chart.Options.Treemap;
         var showLabels = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
-        var surface = new ChartHierarchySurface(chart, colors);
         var areas = HierarchyScaleLayout(chart, context, builder, plot, surface);
         var layout = ChartTreemapLayout.Compute(series, areas.Content, options, item => {
             if (!showLabels) return 0;
@@ -35,7 +34,10 @@ internal static partial class VisualHierarchyCompiler {
             metadata["data-cfx-state"] = ChartRelationshipPaint.State(series, itemIndex).ToString();
             if (item.ParentId != null) metadata["data-cfx-parent"] = item.ParentId;
             if (item.Value.HasValue) metadata["data-cfx-authored-value"] = N(item.Value.Value);
-            if (item.ColorValue.HasValue) metadata["data-cfx-color-value"] = N(item.ColorValue.Value);
+            if (item.ColorValue.HasValue) {
+                metadata["data-cfx-color-value"] = N(item.ColorValue.Value);
+                if (surface.Presentation.HasOverrides) metadata["data-cfx-formatted-color-value"] = surface.Presentation.Value(item.ColorValue.Value);
+            }
             else if (surface.Scale != null) metadata["data-cfx-color-missing"] = "true";
             var id = ChartRelationshipMetadata.SourceId("node", item.Id);
             var visible = tiles.TryGetValue(itemIndex, out var tile);
@@ -63,8 +65,8 @@ internal static partial class VisualHierarchyCompiler {
                 } else foreach (var child in Ordered(children)) Draw(child);
             }
             var description = full + ": " + formatted;
-            if (item.ColorValue.HasValue) description += "; " + (options.ColorLegendTitle ?? chart.Options.Labels.Color) + ": " + ChartNumericFormatter.FormatValue(chart.Options, item.ColorValue.Value);
-            else if (surface.Scale != null) description += "; " + chart.Options.Labels.NoData;
+            if (item.ColorValue.HasValue) description += "; " + surface.Title + ": " + surface.Presentation.Value(item.ColorValue.Value);
+            else if (surface.Scale != null) description += "; " + surface.Presentation.NoData;
             builder.AddRegion(new VisualSemanticRegion(id, role, bounds, description));
         }
 

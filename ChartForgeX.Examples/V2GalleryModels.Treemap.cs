@@ -31,7 +31,7 @@ public static partial class V2GalleryModels {
             options.GroupPadding = variant == "options" ? 8 : 6;
             options.Gap = 3;
             options.ShowGroupLabels = true;
-            options.ColorLegendTitle = "Change (%)";
+            options.ColorDimension.Name = "Change (%)";
             options.ColorScale = scale.WithNoDataColor(colors.Surface);
         });
         if (variant == "options") chart.Series[0].WithNodeState("south-support", ChartSeriesState.Warning);

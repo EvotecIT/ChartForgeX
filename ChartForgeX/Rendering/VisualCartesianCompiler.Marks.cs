@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
-        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null) {
         var series = chart.Series[index];
         var points = new List<ChartPoint>(series.Points.Count);
         var lower = new List<ChartPoint>(series.Points.Count);
@@ -64,20 +64,24 @@ internal static partial class VisualCartesianCompiler {
             var visible = radius > 0 && (!chart.Options.ClipMarksToPlot || inside)
                 && ShowMarker(chart, series, pointIndex);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
-            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null)) {
+            var pointColor = PointColor(series, index, pointIndex, colors);
+            var pointPaint = VisualChartPaint.Series(series, pointColor, pointIndex);
+            if (colorSurface != null) (pointColor, pointPaint) = colorSurface.Paint(series, index, pointIndex, colors);
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null, colorSurface)) {
                 if (visible) {
                     var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                         ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
-                    var pointColor = PointColor(series, index, pointIndex, colors);
                     VisualMarkerScene.Draw(builder, series, pointIndex, point.X, point.Y, radius, pointColor,
-                        VisualChartPaint.Series(series, pointColor, pointIndex),
+                        pointPaint,
                         series.Kind == ChartSeriesKind.Scatter && !string.IsNullOrWhiteSpace(series.SemanticRole) ? series.SemanticRole! : "marker",
                         pattern: pattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "marker-pattern");
                 }
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
+            var fill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, pointIndex, pointColor, pointPaint) : ((ChartColor Color, SvgPaint Paint)?)null;
             AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
-                calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null);
+                calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null,
+                markFill: fill?.Color, markFillPaint: fill?.Paint);
         }
     }
 
@@ -167,7 +171,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
         ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null,
-        TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false, ChartColor? markFill = null, SvgColorRole? markFillRole = null) {
+        TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false, ChartColor? markFill = null, SvgColorRole? markFillRole = null, SvgPaint? markFillPaint = null) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
         if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue &&
             (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) return;
@@ -267,7 +271,7 @@ internal static partial class VisualCartesianCompiler {
             var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
             var ink = ChartMarkText.OnPreparedMark(fill, markFillRole ?? VisualChartPaint.SeriesRole(series, pointIndex), backdrop);
             insideStyle = style.Clone(); insideStyle.Color = ink.Color;
-            insidePaint = ink.Paint;
+            insidePaint = fill.A == 255 && markFillPaint.HasValue ? SvgPaint.Contrast(fill, markFillPaint.Value) : ink.Paint;
         }
         if (inside) { style = insideStyle; paint = insidePaint; }
         var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, style, candidates) {
