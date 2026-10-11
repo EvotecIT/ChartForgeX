@@ -2,6 +2,7 @@ using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using Microsoft.Playwright;
 using Xunit;
@@ -58,6 +59,83 @@ public sealed class PairedObservationClipBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [Fact]
+    public async Task LogarithmicRangeMidlineKeepsItsNativeCapReadout() {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(600, 380).WithTitle("Logarithmic paired midpoint")
+            .WithTheme(ChartTheme.GraphiteLight()).WithLegend(false).WithDataLabels(false)
+            .WithXAxisBounds(0, 1).WithYAxisBounds(10, 1000).ConfigureYAxis(axis => axis.Scale = ChartScaleKind.Logarithmic)
+            .WithLineVisualStyle(ChartLineVisualStyle.Plain());
+        chart.AddRangeArea("Pair", new[] { new ChartRangeBand(.5, 1, 1800) });
+        chart.Series[0].WithInteractionKey("paired").WithStrokeWidth(6).ConfigureMarkers(markers => markers.Enabled = false);
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        var html = chart.ToInteractiveHtmlPage();
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+            await File.WriteAllTextAsync(Path.Combine(directory, "log-midline.svg"), prepared.ToSvg());
+            await File.WriteAllBytesAsync(Path.Combine(directory, "log-midline.native.png"), prepared.ToPng());
+            await File.WriteAllTextAsync(Path.Combine(directory, "log-midline.html"), html);
+        }
+        await using var session = await OpenAsync(html, 800, 600);
+        var page = session.Page; var point = page.Locator(Point(0, 0));
+        var box = await point.BoundingBoxAsync() ?? throw new InvalidOperationException("Missing paired hit area");
+        var position = new[] { (double)(box.X + box.Width / 2), box.Y + box.Height / 2 };
+        await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
+        var pointerReadout = !await page.Locator(".cfx-tooltip").IsHiddenAsync();
+        await page.Mouse.ClickAsync((float)position[0], (float)position[1]);
+        await CaptureAsync(page, "log-midline-pointer", position);
+        await MoveAwayAsync(page); await point.FocusAsync();
+        var keyboardReadout = !await page.Locator(".cfx-tooltip").IsHiddenAsync();
+        await CaptureAsync(page, "log-midline-keyboard", position);
+        Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
+        Assert.True(pointerReadout); Assert.True(keyboardReadout);
+        Assert.Contains("1 - 1800", await page.Locator(".cfx-tooltip dd").AllTextContentsAsync());
+        Assert.Equal("paired:0", await point.GetAttributeAsync("data-cfx-target-id"));
+        Assert.Equal("2", await point.GetAttributeAsync("data-cfx-source-count"));
+        await page.Keyboard.PressAsync("Space");
+        Assert.Equal("false", await point.GetAttributeAsync("aria-selected"));
+        AssertNoConsoleErrors(session);
+    }
+
+    [Fact]
+    public async Task OffPlotEndpointCapRetainsItsOwnPairedReadout() {
+        if (!Enabled) return;
+        var chart = Create(ChartSeriesKind.DifferenceArea, 100, 1, visibleSibling: true, firstX: -.001);
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        var html = chart.ToInteractiveHtmlPage();
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+            await File.WriteAllTextAsync(Path.Combine(directory, "offplot-x-cap.svg"), prepared.ToSvg());
+            await File.WriteAllBytesAsync(Path.Combine(directory, "offplot-x-cap.native.png"), prepared.ToPng());
+            await File.WriteAllTextAsync(Path.Combine(directory, "offplot-x-cap.html"), html);
+        }
+        await using var session = await OpenAsync(html, 800, 600);
+        var page = session.Page; var point = page.Locator(Point(0, 0));
+        var position = await page.Locator("[data-cfx-role=difference-second]").EvaluateAsync<double[]>("""
+            path=>{let point=path.getPointAtLength(0).matrixTransform(path.getScreenCTM());
+              for(let p=path;p&&p.ownerSVGElement;p=p.parentElement){const match=/^url\(#([^)]*)\)$/.exec(p.getAttribute('clip-path')||'');if(!match)continue;
+                const r=p.ownerSVGElement.getElementById(match[1]).firstElementChild.getBBox(),m=p.getScreenCTM();
+                const a=new DOMPoint(r.x,r.y).matrixTransform(m),b=new DOMPoint(r.x+r.width,r.y+r.height).matrixTransform(m);
+                point=new DOMPoint(Math.max(a.x+1,Math.min(b.x-1,point.x)),Math.max(a.y+1,Math.min(b.y-1,point.y)));}
+              return [point.x,point.y];}
+            """);
+        Assert.True(await page.EvaluateAsync<bool>("p=>document.elementFromPoint(p[0],p[1])?.closest('[data-cfx-point]')?.dataset.cfxPoint==='0'", position));
+        Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
+        Assert.Equal("paired:0", await point.GetAttributeAsync("data-cfx-target-id"));
+        Assert.Equal("-0.001", await point.GetAttributeAsync("data-cfx-source-0-x"));
+        await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
+        await AssertPairedReadoutAsync(page, ChartSeriesKind.DifferenceArea, false);
+        await page.Mouse.ClickAsync((float)position[0], (float)position[1]);
+        Assert.Equal("true", await point.GetAttributeAsync("aria-selected"));
+        await CaptureAsync(page, "offplot-x-cap-pointer", position);
+        await MoveAwayAsync(page); await point.FocusAsync();
+        await AssertPairedReadoutAsync(page, ChartSeriesKind.DifferenceArea, false);
+        await page.Keyboard.PressAsync("Space");
+        Assert.Equal("false", await point.GetAttributeAsync("aria-selected"));
+        await CaptureAsync(page, "offplot-x-cap-keyboard", position);
+        AssertNoConsoleErrors(session);
+    }
+
     [Theory]
     [InlineData(ChartSeriesKind.DifferenceArea, "y-clipped")]
     [InlineData(ChartSeriesKind.RangeArea, "y-clipped")]
@@ -68,13 +146,19 @@ public sealed class PairedObservationClipBrowserTests {
     [InlineData(ChartSeriesKind.RangeBand, "transparent")]
     public async Task UnpaintedPairedExtentCannotBorrowAnotherObservationsPaint(ChartSeriesKind kind, string unavailable) {
         if (!Enabled) return;
-        var chart = unavailable == "y-clipped" ? Create(kind, 10.02, 10.01, visibleSibling: true)
-            : Create(kind, 100, 1, visibleSibling: unavailable == "x-clipped", firstX: unavailable == "x-clipped" ? -.001 : .25);
+        var chart = unavailable == "y-clipped" ? Create(kind, 10.08, 10.07, visibleSibling: true)
+            : Create(kind, 100, 1, visibleSibling: unavailable == "x-clipped", firstX: unavailable == "x-clipped" ? -.004 : .25);
         if (unavailable == "transparent") chart.Series[0].WithColor(ChartColor.Transparent);
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+            await File.WriteAllTextAsync(Path.Combine(directory, "negative-" + kind + "-" + unavailable + ".svg"), prepared.ToSvg());
+            await File.WriteAllBytesAsync(Path.Combine(directory, "negative-" + kind + "-" + unavailable + ".native.png"), prepared.ToPng());
+        }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 800, 600);
         var page = session.Page; var point = page.Locator(Point(0, 0));
         Assert.Equal("-1", await point.GetAttributeAsync("tabindex"));
-        // The browser's minimum eight-unit hit rectangle can intersect the clip even when the captured extent does not.
+        // The source is beyond its stroke footprint; the minimum eight-unit browser hit rectangle still intersects the clip.
         var position = await point.EvaluateAsync<double[]>("""
             node=>{
               const box=node.getBoundingClientRect(),svg=node.ownerSVGElement;
@@ -82,7 +166,7 @@ public sealed class PairedObservationClipBrowserTests {
                 const m=/^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path')||'');if(!m)continue;
                 const clip=svg.getElementById(m[1]).firstElementChild.getBBox(),matrix=parent.getScreenCTM();
                 const a=new DOMPoint(clip.x,clip.y).matrixTransform(matrix),b=new DOMPoint(clip.x+clip.width,clip.y+clip.height).matrixTransform(matrix);
-                return [Math.max(a.x+.1,Math.min(b.x-.1,(box.left+box.right)/2)),Math.max(a.y+.1,Math.min(b.y-.1,box.bottom-1))];
+                return [Math.max(a.x+1,Math.min(b.x-1,(box.left+box.right)/2)),Math.max(a.y+1,Math.min(b.y-1,box.bottom-1))];
               }
               throw new Error('Expected native plot clip');
             }
@@ -143,6 +227,7 @@ public sealed class PairedObservationClipBrowserTests {
             ()=>{const root=document.querySelector('.cfx-interactive-chart'),tip=root.querySelector('.cfx-tooltip');return {
               active:document.activeElement.dataset.cfxTargetId||'',tooltipVisible:!tip.hidden,readout:tip.hidden?'':tip.innerText,
               guideHidden:root.querySelector('.cfx-crosshair').hidden,crosshairTarget:root.getAttribute('data-cfx-crosshair'),
+              crosshairVisible:!!root.querySelector('.cfx-crosshair')&&!root.querySelector('.cfx-crosshair').hidden,
               points:[...root.querySelectorAll('[data-cfx-role="point"]')].map(n=>({id:n.dataset.cfxTargetId,tabindex:n.getAttribute('tabindex'),selected:n.getAttribute('aria-selected')}))};}
             """);
         await File.WriteAllTextAsync(Path.Combine(directory, "paired-clip-" + name + ".json"), JsonSerializer.Serialize(new { position, state }));

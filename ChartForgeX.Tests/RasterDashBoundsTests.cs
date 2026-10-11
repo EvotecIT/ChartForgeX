@@ -8,6 +8,40 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class RasterDashBoundsTests {
+    [Theory]
+    [InlineData("round", 5, 6, 0, true)]
+    [InlineData("square", 5, 6, 0, true)]
+    [InlineData("butt", 5, 6, 0, false)]
+    [InlineData("round", 5, 6, 4.9, true)]
+    [InlineData("round", 5, 6, 5, false)]
+    [InlineData("round", 5, 6, 6, false)]
+    [InlineData("square", 5, 6, 6, false)]
+    [InlineData("round", 5, 6, -1, false)]
+    [InlineData("round", 5, 6, 11, true)]
+    [InlineData("round", 0, 6, 0, true)]
+    [InlineData("round", 0, 6, 1, false)]
+    [InlineData("square", 0, 6, 0, true)]
+    [InlineData("butt", 0, 6, 0, false)]
+    [InlineData("round", .0001, .0002, 0, true)]
+    [InlineData("square", .0001, .0002, 0, true)]
+    [InlineData("round", .0001, .0002, .00015, false)]
+    [InlineData("square", .0001, .0002, .00015, false)]
+    [InlineData("round", .0001, 0, .00015, true)]
+    [InlineData("square", .0001, 0, .00015, true)]
+    public void ZeroLengthDashedSubpathsKeepTheirOwnCapAndInitialPhase(string cap, double dash, double gap, double phase, bool painted) {
+        foreach (var points in new[] { new[] { new ChartPoint(40, 40) }, new[] { new ChartPoint(40, 40), new ChartPoint(40, 40) } }) {
+            var canvas = new RgbaCanvas(80, 80, 1);
+            canvas.StrokePolylines(new[] { points }, ChartColors.Black, 8, (RasterLineCap)Enum.Parse(typeof(RasterLineCap), cap, true),
+                RasterLineJoin.Miter, new[] { dash, gap }, dashOffset: phase);
+            Assert.Equal(painted, canvas.Pixels[(40 * 80 + 40) * 4 + 3] > 0);
+        }
+        string Number(double value) => value.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+        var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'>"
+            + "<path d='M40 40 L40 40' fill='none' stroke='black' stroke-width='8' stroke-linecap='" + cap
+            + "' stroke-dasharray='" + Number(dash) + " " + Number(gap) + "' stroke-dashoffset='" + Number(phase) + "'/></svg>");
+        Assert.Equal(painted, image.Pixels[(40 * 80 + 40) * 4 + 3] > 0);
+    }
+
     [Fact]
     public void UnrepresentableMixedEntriesKeepZeroEntryCapContracts() {
         byte[] Render(double[] pattern) {

@@ -51,7 +51,12 @@ internal static partial class VisualCartesianCompiler {
             var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;
             var bounds = Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius));
             var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, low.Y) + "–" + Value(chart, high.Y));
-            using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, ("x", low.X), ("lower", low.Y), ("upper", high.Y))) {
+            var values = new[] { ("x", low.X), ("lower", low.Y), ("upper", high.Y) };
+            // Adapters use the captured native midpoint; averaging mapped boundaries is wrong on nonlinear axes.
+            using (area
+                ? ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label,
+                    new Dictionary<string, string> { ["data-cfx-midline-y"] = Number(middle[item].Y) }, values)
+                : ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, values)) {
                 // Per-observation colours/textures are represented by boundary markers rather than repainting the continuous envelope.
                 if (showMarkers) {
                     var pointColor = PointColor(series, index, item, colors);
