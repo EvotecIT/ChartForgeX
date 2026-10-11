@@ -27,7 +27,7 @@ public sealed class InteractiveNativeCaptionBrowserTests {
         if (!Enabled) return;
         var tile = family == "tile"; var gauge = family == "gauge";
         var chart = Chart.Create().WithSize(800, 440).WithHeader(false).WithLegend(false)
-            .WithMapLabels().WithMapScaleLegend(false).WithTheme(ChartTheme.GraphiteDark());
+            .WithMapLabels().ConfigureMapColorDimension(options => options.ShowLegend = false).WithTheme(ChartTheme.GraphiteDark());
         if (gauge) chart.AddGauge("Coverage", 55);
         else if (tile) chart.AddTileMap("Coverage", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CO", 55) });
         else chart.AddRegionMap("Coverage", new ChartMapDefinition("regions", "Regions", 100, 100, new[] {

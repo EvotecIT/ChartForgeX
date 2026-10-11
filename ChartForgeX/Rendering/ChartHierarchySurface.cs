@@ -14,7 +14,7 @@ internal sealed class ChartHierarchySurface {
     internal double Maximum { get; }
     internal bool HasDomain { get; }
     internal bool HasMissing { get; }
-    internal bool ShowLegend { get; }
+    internal bool ShowLegend => Presentation.ShowLegend;
     internal string Title => Presentation.Name;
     internal ChartColorPresentation Presentation { get; }
     internal string RolePrefix { get; }
@@ -23,7 +23,6 @@ internal sealed class ChartHierarchySurface {
         _series = chart.Series[0]; _colors = colors;
         var sunburst = _series.Kind == ChartSeriesKind.Sunburst;
         var configured = sunburst ? chart.Options.Sunburst.ColorScale : chart.Options.Treemap.ColorScale;
-        ShowLegend = sunburst ? chart.Options.Sunburst.ShowColorScaleLegend : chart.Options.Treemap.ShowColorScaleLegend;
         Presentation = presentation;
         RolePrefix = sunburst ? "sunburst" : "treemap";
         var observations = _series.HierarchyItems.Where(item => item.ColorValue.HasValue).Select(item => item.ColorValue!.Value).ToArray();
