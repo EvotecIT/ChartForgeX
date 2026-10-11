@@ -18,10 +18,14 @@ public sealed class MermaidTreemapGroupedValueTests {
         var result = MermaidRenderer.Render(source);
         Assert.Empty(result.Diagnostics);
         var artifact = result.Artifact!;
+        var svg = XDocument.Parse(artifact.ToSvg());
+        Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "treemap-group-label" && element.Value.Contains("Storage", StringComparison.Ordinal));
+        Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "treemap-label" && element.Value.Contains("Documents", StringComparison.Ordinal));
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync(artifact.ToHtmlPage(), width, 520);
         Assert.Equal("1234.5", await session.Page.Locator("[data-cfx-target-id=node-1]").GetAttributeAsync("data-cfx-value"));
         Assert.True(await session.Page.Locator("[data-cfx-target-id=node-1]").IsVisibleAsync());
+        Assert.Contains("Documents", await session.Page.Locator("[data-cfx-target-id=node-1] [data-cfx-role=treemap-label]").TextContentAsync());
         Assert.Equal(0, await session.Page.Locator("script").CountAsync());
         Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
