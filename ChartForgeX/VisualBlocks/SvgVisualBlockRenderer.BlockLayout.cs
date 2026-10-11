@@ -72,8 +72,9 @@ public sealed partial class SvgVisualBlockRenderer {
             }
         }
 
-        var fontSize = VisualBlockRendering.BodyFontSize(theme, Math.Max(10, Math.Min(14, rect.Height * 0.26)));
-        WriteText(writer, item.Label, rect.X + 8, rect.Y + rect.Height * 0.56, Math.Max(1, rect.Width - 16), TextAlignment.Center, theme.Text, theme.FontFamily, fontSize, "700");
+        var width = Math.Max(1, rect.Width - 16);
+        var style = VisualBlockRendering.BlockLayoutText(theme, item.Label, Math.Max(10, Math.Min(14, rect.Height * 0.26)), width, rect.Height - 12);
+        WriteText(writer, item.Label, rect.X + 8, VisualBlockRendering.BlockLayoutBaseline(style, rect.Y + rect.Height / 2), width, TextAlignment.Center, theme.Text, theme.FontFamily, style.FontSize, "700", "block-layout-node-label");
     }
 
     private static void WriteBlockLayoutEdge(SvgMarkupWriter writer, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ChartTheme theme) {
@@ -94,7 +95,8 @@ public sealed partial class SvgVisualBlockRenderer {
 
         if (edge.Directed) WriteBlockArrowHead(writer, route, theme.Axis);
         if (edge.Label.Length == 0) return;
-        WriteText(writer, edge.Label, (route.X1 + route.X2) / 2 - 45, (route.Y1 + route.Y2) / 2 - 5, 90, TextAlignment.Center, theme.MutedText, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 10.5), "600");
+        var style = VisualBlockRendering.BlockLayoutText(theme, edge.Label, 10.5, 90, Math.Min(16, Math.Min(source.Height, target.Height) * .4));
+        WriteText(writer, edge.Label, (route.X1 + route.X2) / 2 - 45, VisualBlockRendering.BlockLayoutBaseline(style, (route.Y1 + route.Y2) / 2 - 7), 90, TextAlignment.Center, theme.MutedText, theme.FontFamily, style.FontSize, "700", "block-layout-connector-label");
     }
 
     private static void WriteBlockArrowHead(SvgMarkupWriter writer, BlockLayoutEdgeRoute route, ChartColor color) {

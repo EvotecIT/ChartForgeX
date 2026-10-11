@@ -4,6 +4,8 @@ using ChartForgeX.VisualArtifacts;
 internal static class MermaidExamples {
     internal static void Write(string output) {
         var examples = new Dictionary<string, string> {
+            ["mermaid-source-font-size-block-fit"] = "%%{init: {\"themeVariables\":{\"fontSize\":256}}}%%\nblock-beta\ncolumns 2\nAPI Store\nAPI --> Store\n",
+            ["mermaid-source-font-size-pie-fit"] = "%%{init: {\"themeVariables\":{\"fontSize\":256}}}%%\npie\ntitle Service allocation\n\"API\": 2\n\"Store\": 1\n",
             ["mermaid-source-font-size-gitgraph-fit"] = "%%{init: {\"themeVariables\":{\"fontSize\":256}}}%%\ngitGraph\ncommit id: \"base\" tag: \"v1\"\nbranch dev\ncommit id: \"work\"\ncheckout main\nmerge dev id: \"merge\"\n",
             ["mermaid-source-font-size-packet-fit"] = "%%{init: {\"themeVariables\":{\"fontSize\":256}}}%%\npacket-beta\n0-31: \"Header\"\n32-63: \"Payload\"\n",
             ["mermaid-source-font-size-packet"] = "%%{init: {\"themeVariables\":{\"fontSize\":21}}}%%\npacket-beta\n0-15: \"Source Port\"\n16-31: \"Destination Port\"\n32-63: \"Sequence Number\"\n+32: \"Acknowledgment Number\"\n",
