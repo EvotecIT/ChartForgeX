@@ -23,7 +23,7 @@ internal static partial class VisualPolarCompiler {
                 series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth, chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth) / 2));
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - width - gap, plot.Height / 2 - height - gap) - markExtent);
         var count = chart.Options.PolarGridRingCount;
-        var axisRadius = count.HasValue && count.Value > 0 ? radius * (count.Value / Math.Ceiling(count.Value)) : radius;
+        var axisRadius = chart.Options.ShowGrid && count.HasValue && count.Value > 0 ? radius * (count.Value / Math.Ceiling(count.Value)) : radius;
         return new PolarLayout(plot.Left + plot.Width / 2, plot.Top + plot.Height / 2, axisRadius, radius);
     }
 

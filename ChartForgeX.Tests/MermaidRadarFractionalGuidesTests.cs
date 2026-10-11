@@ -3,6 +3,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
 using Microsoft.Playwright;
@@ -11,6 +12,26 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidRadarFractionalGuidesTests {
+    [Theory]
+    [InlineData(false, .5)]
+    [InlineData(false, 2.5)]
+    [InlineData(true, .5)]
+    [InlineData(true, 2.5)]
+    public void HiddenFractionalGuidesPreserveTheDataPlot(bool polar, double count) {
+        var chart = Chart.Create().WithSize(520, 380).WithHeader(false).WithLegend(false).WithDataLabels(false)
+            .WithYAxisBounds(0, 100);
+        var values = new[] { new ChartPoint(1, 17), new ChartPoint(2, 31), new ChartPoint(3, 73) };
+        if (polar) chart.AddPolar("Signal", values);
+        else chart.AddRadarLine("Signal", values);
+        chart.Options.ShowGrid = false;
+        chart.Options.ShowAxes = false;
+        var original = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        chart.Options.PolarGridRingCount = count;
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Equal(original.Regions.Select(region => region.Bounds), prepared.Regions.Select(region => region.Bounds));
+        Assert.Equal(original.ToPng(), prepared.ToPng());
+    }
+
     [Theory]
     [InlineData("circle", .5, 320)]
     [InlineData("polygon", .5, 960)]
@@ -27,6 +48,9 @@ public sealed class MermaidRadarFractionalGuidesTests {
         var artifact = document.ToVisualArtifact(options);
         Assert.Equal(countText, artifact.Metadata["mermaid.ticks"]);
         var chart = document.ToChart(options);
+        chart.Options.TransparentBackground = true;
+        chart.Options.ShowPlotBackground = false;
+        chart.Options.ShowCard = false;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var spoke = prepared.Scene.Nodes.OfType<VisualSceneLine>().First(node => node.Role == "radar-spoke");
         var radius = Distance(spoke.Start.X, spoke.Start.Y, spoke.End.X, spoke.End.Y);
@@ -48,7 +72,7 @@ public sealed class MermaidRadarFractionalGuidesTests {
         Assert.Empty(fenced.Diagnostics);
         Assert.Equal(artifact.ToSvg(), Assert.Single(fenced.Artifacts).ToSvg());
         var png = prepared.ToPng();
-        Assert.NotEmpty(png);
+        AssertGuidePixels(png, spoke.Start.X, spoke.Start.Y, radius * Math.Ceiling(count) / count, shape == "polygon");
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + prepared.ToSvg() + "</body></html>", width, 380);
         Assert.Equal(rings.Length, await session.Page.Locator("[data-cfx-role=radar-ring]").CountAsync());
@@ -75,6 +99,9 @@ public sealed class MermaidRadarFractionalGuidesTests {
             .AddRadarLine("Signal", new[] { new ChartPoint(1, 10), new ChartPoint(2, 100), new ChartPoint(3, 1000) });
         chart.Options.YAxis.Scale = scale;
         chart.Options.YAxis.Reversed = reversed;
+        chart.Options.TransparentBackground = true;
+        chart.Options.ShowPlotBackground = false;
+        chart.Options.ShowCard = false;
         var original = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         chart.Options.PolarGridRingCount = 2.5;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -92,7 +119,7 @@ public sealed class MermaidRadarFractionalGuidesTests {
             Assert.Equal((before[index].Bounds.Top + before[index].Bounds.Height / 2 - spoke.Start.Y) * 2.5 / 3,
                 after[index].Bounds.Top + after[index].Bounds.Height / 2 - spoke.Start.Y, 7);
         }
-        Assert.NotEmpty(prepared.ToPng());
+        AssertGuidePixels(prepared.ToPng(), spoke.Start.X, spoke.Start.Y, radius * 3 / 2.5, false);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridRingCount = double.NaN);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarGridRingCount = double.PositiveInfinity);
     }
@@ -125,6 +152,25 @@ public sealed class MermaidRadarFractionalGuidesTests {
         Assert.True(result.HasErrors);
         Assert.Null(result.Artifact);
         Assert.Equal(4, Assert.Single(result.Diagnostics).Span.Line);
+    }
+
+    private static void AssertGuidePixels(byte[] png, double cx, double cy, double radius, bool polygon) {
+        var image = RasterImageDecoder.Decode(png);
+        // Halfway between the first two axes, the triangular guide is at half
+        // the circular radius. Both positions are beyond the source data here.
+        var circle = new ChartPoint(cx + Math.Cos(-Math.PI / 6) * radius, cy + Math.Sin(-Math.PI / 6) * radius);
+        var edge = new ChartPoint(cx + (circle.X - cx) / 2, cy + (circle.Y - cy) / 2);
+        Assert.True(HasPaint(polygon ? edge : circle), "The authored outer guide must paint its native PNG geometry.");
+        Assert.False(HasPaint(polygon ? circle : edge), "The other guide shape must not replace the authored geometry.");
+
+        bool HasPaint(ChartPoint point) {
+            var x = (int)Math.Round(point.X); var y = (int)Math.Round(point.Y);
+            for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) {
+                var px = x + dx; var py = y + dy;
+                if (px >= 0 && px < image.Width && py >= 0 && py < image.Height && image.Pixels[(py * image.Width + px) * 4 + 3] > 0) return true;
+            }
+            return false;
+        }
     }
 
     private static double Distance(double x1, double y1, double x2, double y2) => Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
