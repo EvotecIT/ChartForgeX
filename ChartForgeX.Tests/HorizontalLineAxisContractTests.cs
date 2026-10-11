@@ -8,6 +8,39 @@ namespace ChartForgeX.Tests;
 
 public sealed class HorizontalLineAxisContractTests {
     [Theory]
+    [InlineData(20, false)]
+    [InlineData(-20, false)]
+    [InlineData(20, true)]
+    [InlineData(-20, true)]
+    public void ReversedValueAxisPlacesAutomaticLabelsInTheMappedDirection(double value, bool step) {
+        var chart = Model(new[] { new ChartPoint(1, value) }, step).WithXAxisBounds(-100, 100).WithYAxisBounds(0, 2);
+        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.XAxis.Reversed = true;
+        chart.Options.ShowDataLabels = true;
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var point = Assert.Single(prepared.Regions, region => region.Role == "point").Bounds;
+        var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
+        if (value > 0) Assert.True(label.X + label.Text.Metrics.Width < point.X + point.Width / 2);
+        else Assert.True(label.X > point.X + point.Width / 2);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Observed")]
+    public void HorizontalTimeCategoryTitlesExposeTheRequestedZone(string title) {
+        var first = new DateTime(2026, 10, 11).ToOADate();
+        var chart = Model(new[] { new ChartPoint(first, 20), new ChartPoint(first + 3, 40) });
+        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.YAxisTitle = title;
+        chart.Options.YAxis.Scale = ChartScaleKind.Time;
+        chart.Options.YAxis.ShowTimeZone = true;
+        chart.Options.YAxis.TimeZoneLabel = "UTC+02";
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "axis-y-title");
+        Assert.Equal(title.Length == 0 ? "UTC+02" : title + " (UTC+02)", string.Concat(text.Text.Lines.Select(line => line.Text)));
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]

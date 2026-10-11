@@ -89,7 +89,8 @@ internal static partial class VisualCartesianCompiler {
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground });
         var xTitle = XAxisTitle(chart);
         if (chart.Options.XAxis.Visible && xTitle.Length > 0) bottom += builder.MeasureText(xTitle, titleStyle).Height + spacing;
-        var top = chart.Options.YAxis.Visible && chart.YAxisTitle.Length > 0 ? Math.Min(viewport.Height * .25, builder.MeasureText(chart.YAxisTitle, titleStyle).Height + spacing) : 0;
+        var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
+        var top = chart.Options.YAxis.Visible && yTitle.Length > 0 ? Math.Min(viewport.Height * .25, builder.MeasureText(yTitle, titleStyle).Height + spacing) : 0;
         bottom = Math.Min(viewport.Height * .45, bottom);
         return new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height - top - bottom));
     }
@@ -123,7 +124,8 @@ internal static partial class VisualCartesianCompiler {
             if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             DrawAxisLabels(builder, chart.Options, axes.Category, categories, map.Y, false, false,
                 new ChartRect(viewport.Left, plot.Top, Math.Max(0, categoryLabelRight - viewport.Left - spacing), plot.Height), style, spacing, null, cache);
-            if (chart.YAxisTitle.Length > 0) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,
+            var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
+            if (yTitle.Length > 0) DrawAxisTitle(chart, context, builder, yTitle,
                 new ChartRect(plot.Left, viewport.Top, plot.Width, Math.Max(0, plot.Top - viewport.Top - spacing)), colors, TextAlignment.Left, "axis-y-title");
         }
     }
