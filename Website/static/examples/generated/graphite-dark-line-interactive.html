@@ -1051,6 +1051,12 @@ body {
       : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
+  const sizeTooltipRows = (node) => {
+    const value = (node.dataset || {}).cfxSize;
+    return value === undefined || value === null || value === '' ? [] : [{ name: rowName(node, 'size', 'Size'), value }];
+  };
+  const dimensionTooltipRows = (node) => sizeTooltipRows(node).map((row) => ({ ...row, dimension: 'size' }))
+    .concat(colorTooltipRows(node).map((row) => ({ ...row, dimension: 'color' })));
   // A financial Y is the tuple's opening member; all readouts use the complete prices.
   const financialTooltipRows = (node) => {
     const data = node.dataset || {};
@@ -1084,7 +1090,7 @@ body {
       push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
       push('End', data.cfxEnd);
     }
-    push(rowName(node, 'size', 'Size'), data.cfxSize);
+    sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
@@ -1490,6 +1496,16 @@ body {
       swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);
       if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
       list.append(name, value);
+      dimensionTooltipRows(row.point).forEach((dimension) => {
+        const term = document.createElement('dt'), measurement = document.createElement('dd');
+        term.dataset.cfxTooltipDimension = dimension.dimension;
+        term.dataset.cfxTooltipObservation = row.key;
+        term.dataset.cfxTooltipPoint = row.point.dataset.cfxPoint;
+        term.dataset.cfxTooltipSourcePoint = row.source;
+        term.textContent = row.name + ' · ' + dimension.name; measurement.textContent = dimension.value;
+        if (row.state === 'quiet' || row.state === 'success') { term.className = 'cfx-tooltip__quiet'; measurement.className = 'cfx-tooltip__quiet'; }
+        list.append(term, measurement);
+      });
     });
     tip.appendChild(list);
     return true;
@@ -2048,16 +2064,16 @@ body {
     const svg = item.closest('svg');
     const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
     const financialRows = mark && financialTooltipRows(mark);
-    if (financialRows) return financialRows.concat(colorTooltipRows(mark));
+    if (financialRows) return financialRows.concat(dimensionTooltipRows(mark));
     if (reference) {
       const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
-      return rows.concat(mark ? colorTooltipRows(mark) : []);
+      return rows.concat(mark ? dimensionTooltipRows(mark) : []);
     }
     const values = legendSeriesValues(item);
     if (!values.length) return [];
     if (data.cfxPoint !== undefined) {
       const entry = values.find((candidate) => String(candidate.point) === data.cfxPoint);
-      return entry ? [{ name: 'Value', value: summaryValue(entry.value) }] : [];
+      return entry ? [{ name: 'Value', value: summaryValue(entry.value) }].concat(mark ? dimensionTooltipRows(mark) : []) : [];
     }
     const kind = (data.cfxKind || '').toLowerCase();
     if (totalSeriesKinds.has(kind)) return [{ name: 'Total', value: summaryValue(values.reduce((sum, entry) => sum + entry.value, 0)) }];
