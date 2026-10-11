@@ -10,24 +10,28 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidRemainingTypographyBoundsTests {
     [Theory]
-    [InlineData(false, 320)]
-    [InlineData(false, 960)]
-    [InlineData(true, 320)]
-    [InlineData(true, 960)]
-    public async Task MaximumBodyFontKeepsBlockCellAndEdgeLabelsVisible(bool graphite, int width) {
+    [InlineData(false, 320, false)]
+    [InlineData(false, 960, false)]
+    [InlineData(true, 320, false)]
+    [InlineData(true, 960, false)]
+    [InlineData(false, 320, true)]
+    [InlineData(false, 960, true)]
+    [InlineData(true, 320, true)]
+    [InlineData(true, 960, true)]
+    public async Task MaximumBodyFontKeepsBlockCellAndEdgeLabelsVisible(bool graphite, int width, bool circle) {
         var theme = ChartTheme.Light();
         theme.UseGraphiteLayout = graphite; theme.FontFamily = "Arial"; theme.DataLabelFontSize = 256;
         var block = BlockLayoutBlock.Create().WithSize(width, 300).WithCard(false).WithTheme(theme).WithColumns(2)
-            .AddItem("a", "API").AddItem("b", "Store").AddEdge("a", "b", "link");
+            .AddItem("a", "API").AddItem("b", "Store", shape: circle ? BlockLayoutShape.Circle : BlockLayoutShape.Rectangle).AddEdge("a", "b", "link");
         var svg = block.ToSvg();
         var labels = XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
         foreach (var caption in new[] { "API", "Store", "link" }) Assert.Contains(caption, labels);
         Assert.NotEmpty(block.ToPng());
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, 300);
-        await Capture(session, block.ToPng(), "block-font-ceiling-" + graphite + "-" + width);
+        await Capture(session, block.ToPng(), "block-font-ceiling-" + graphite + "-" + width + (circle ? "-circle" : ""));
         var bounds = await session.Page.EvaluateAsync<string>("() => JSON.stringify([...document.querySelectorAll('svg text,[data-cfx-role=block-layout-node]')].map(n=>({label:n.textContent,bounds:n.getBoundingClientRect().toJSON()})))");
-        Assert.True(await session.Page.EvaluateAsync<bool>("() => { const nodes=[...document.querySelectorAll('[data-cfx-role=block-layout-node]')]; return [...document.querySelectorAll('svg text')].filter(t=>['API','Store'].includes(t.textContent)).every(t=>{ const b=t.getBoundingClientRect(); return b.width>0 && nodes.some(n=>{const r=n.getBoundingClientRect(); return b.left>=r.left && b.right<=r.right && b.top>=r.top && b.bottom<=r.bottom;}); }); }"), bounds);
+        Assert.True(await session.Page.EvaluateAsync<bool>("() => { const nodes=[...document.querySelectorAll('[data-cfx-role=block-layout-node]')]; return [...document.querySelectorAll('svg text')].filter(t=>['API','Store'].includes(t.textContent)).every(t=>{ const b=t.getBoundingClientRect(); return b.width>0 && nodes.some(n=>{const r=n.getBoundingClientRect(); if(n.localName==='circle') { const dx=Math.max(Math.abs(b.left-r.x-r.width/2),Math.abs(b.right-r.x-r.width/2)),dy=Math.max(Math.abs(b.top-r.y-r.height/2),Math.abs(b.bottom-r.y-r.height/2)); return dx*dx+dy*dy<=r.width*r.width/4; } return b.left>=r.left && b.right<=r.right && b.top>=r.top && b.bottom<=r.bottom;}); }); }"), bounds);
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 

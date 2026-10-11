@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
@@ -10,6 +11,13 @@ namespace ChartForgeX.VisualBlocks;
 internal static partial class VisualBlockRendering {
     public const int MaximumBlockLayoutItems = 10000;
     public const int MaximumBlockLayoutEdges = 20000;
+
+    public static ChartRect BlockLayoutCaptionBounds(BlockLayoutShape shape, double x, double y, double width, double height) {
+        var innerWidth = width; var innerHeight = height;
+        if (shape == BlockLayoutShape.Circle) innerWidth = innerHeight = Math.Min(width, height) / Math.Sqrt(2);
+        innerWidth = Math.Max(1, innerWidth - 16); innerHeight = Math.Max(1, innerHeight - 12);
+        return new ChartRect(x + (width - innerWidth) / 2, y + (height - innerHeight) / 2, innerWidth, innerHeight);
+    }
 
     // Cell and connector captions share measured sizing and baseline placement in both backends.
     public static TextStyle BlockLayoutText(ChartTheme theme, string text, double defaultSize, double width, double height) {

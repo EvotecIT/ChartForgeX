@@ -49,9 +49,9 @@ public sealed partial class PngVisualBlockRenderer {
             }
         }
 
-        var width = Math.Max(1, rect.Width - 16);
-        var style = VisualBlockRendering.BlockLayoutText(theme, item.Label, Math.Max(10, Math.Min(14, rect.Height * 0.26)), width, rect.Height - 12);
-        DrawAlignedTextAtBaseline(canvas, item.Label, rect.X + 8, VisualBlockRendering.BlockLayoutBaseline(style, rect.Y + rect.Height / 2), width, TextAlignment.Center, theme.Text, style.FontSize, true);
+        var caption = VisualBlockRendering.BlockLayoutCaptionBounds(item.Shape, rect.X, rect.Y, rect.Width, rect.Height);
+        var style = VisualBlockRendering.BlockLayoutText(theme, item.Label, Math.Max(10, Math.Min(14, rect.Height * 0.26)), caption.Width, caption.Height);
+        DrawAlignedTextAtBaseline(canvas, item.Label, caption.X, VisualBlockRendering.BlockLayoutBaseline(style, rect.Y + rect.Height / 2), caption.Width, TextAlignment.Center, theme.Text, style.FontSize, true);
     }
 
     private static void DrawBlockLayoutEdge(RgbaCanvas canvas, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ChartTheme theme) {

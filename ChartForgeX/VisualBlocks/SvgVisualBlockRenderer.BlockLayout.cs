@@ -72,9 +72,9 @@ public sealed partial class SvgVisualBlockRenderer {
             }
         }
 
-        var width = Math.Max(1, rect.Width - 16);
-        var style = VisualBlockRendering.BlockLayoutText(theme, item.Label, Math.Max(10, Math.Min(14, rect.Height * 0.26)), width, rect.Height - 12);
-        WriteText(writer, item.Label, rect.X + 8, VisualBlockRendering.BlockLayoutBaseline(style, rect.Y + rect.Height / 2), width, TextAlignment.Center, theme.Text, theme.FontFamily, style.FontSize, "700", "block-layout-node-label");
+        var caption = VisualBlockRendering.BlockLayoutCaptionBounds(item.Shape, rect.X, rect.Y, rect.Width, rect.Height);
+        var style = VisualBlockRendering.BlockLayoutText(theme, item.Label, Math.Max(10, Math.Min(14, rect.Height * 0.26)), caption.Width, caption.Height);
+        WriteText(writer, item.Label, caption.X, VisualBlockRendering.BlockLayoutBaseline(style, rect.Y + rect.Height / 2), caption.Width, TextAlignment.Center, theme.Text, theme.FontFamily, style.FontSize, "700", "block-layout-node-label");
     }
 
     private static void WriteBlockLayoutEdge(SvgMarkupWriter writer, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ChartTheme theme) {

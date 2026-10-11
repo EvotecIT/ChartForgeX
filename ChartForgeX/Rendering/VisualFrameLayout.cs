@@ -74,12 +74,13 @@ internal static class VisualFrameLayout {
         if (!context.Frame.TransparentBackground) builder.Rect(new ChartRect(0, 0, size.Width, size.Height), colors.Background, role: "background", paint: VisualChartPaint.Fill(paints?.Background ?? SvgPaint.Of(colors.Background, SvgColorRole.Surface)));
         if (context.Frame.ShowCard) VisualFrameSurface.Paint(builder, context, colors, paints);
         var left = pad.Left; var right = size.Width - pad.Right; var top = pad.Top; var bottom = size.Height - pad.Bottom;
-        // Reserve at most forty percent of the frame for two lines per heading.
-        // Scale cloned styles together so caller typography and the title/subtitle ratio remain intact.
+        // Preserve requested sizes when each heading can contribute a line to the frame.
+        // Otherwise fit cloned styles into a bounded share, retaining their title/subtitle ratio.
         double HeadingHeight(string? text, TextStyle style) => string.IsNullOrEmpty(text) ? 0 : 2 * Math.Max(style.EffectiveFontSize * 1.3, builder.MeasureText("Mg", style).Height);
         var headingHeight = HeadingHeight(context.Frame.Title, titleStyle) + HeadingHeight(context.Frame.Subtitle, subtitleStyle);
         var headingGaps = headingHeight > 0 ? gap * 5 / 6 + (!string.IsNullOrEmpty(context.Frame.Title) && !string.IsNullOrEmpty(context.Frame.Subtitle) ? gap / 6 : 0) : 0;
-        var headingScale = headingHeight > 0 ? Math.Min(1, Math.Max(1, (bottom - top) * .4 - headingGaps) / headingHeight) : 1;
+        var headingScale = headingHeight / 2 + headingGaps >= bottom - top
+            ? Math.Min(1, Math.Max(1, (bottom - top) * .4 - headingGaps) / headingHeight) : 1;
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
             var headingTop = top;
             Header(context.Frame.Title, titleStyle, paints?.Foreground);
