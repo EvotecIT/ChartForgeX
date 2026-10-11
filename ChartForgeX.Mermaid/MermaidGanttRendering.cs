@@ -102,10 +102,20 @@ public static class MermaidGanttRendering {
 
     private static string FormatAxisValue(double value, MermaidGanttDocument document) {
         try {
-            var format = string.IsNullOrWhiteSpace(document.AxisFormat) ? "%Y-%m-%d" : document.AxisFormat!;
+            var format = string.IsNullOrWhiteSpace(document.AxisFormat) ? DefaultAxisFormat(document) : document.AxisFormat!;
             return MermaidGanttAxisFormat.Format(DateTime.FromOADate(value), format);
         } catch (ArgumentException) {
             return value.ToString("0.##", CultureInfo.InvariantCulture);
+        }
+    }
+
+    private static string DefaultAxisFormat(MermaidGanttDocument document) {
+        switch (MermaidGanttTicks.Parse(document.TickInterval, document.Weekday)?.Unit) {
+            case ChartTimeTickUnit.Millisecond: return "%Y-%m-%d %H:%M:%S.%L";
+            case ChartTimeTickUnit.Second: return "%Y-%m-%d %H:%M:%S";
+            case ChartTimeTickUnit.Minute:
+            case ChartTimeTickUnit.Hour: return "%Y-%m-%d %H:%M";
+            default: return "%Y-%m-%d";
         }
     }
 
