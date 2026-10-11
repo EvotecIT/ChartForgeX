@@ -26,7 +26,7 @@ For each Mermaid family ChartForgeX supports, the implementation should:
 
 Reference rendering tools can be useful in tests and compatibility checks, but they are not a runtime dependency for ChartForgeX packages.
 
-The current upstream reference is Mermaid.js 12.1.0. Older spellings such as `graph`, `stateDiagram`/`stateDiagram-v2`, and `xychart`/`xychart-beta` are accepted where implemented, but the test harness currently runs one upstream version. This does not establish complete compatibility with every Mermaid 10, 11 or 12 release.
+The current semantic reference is Mermaid.js 12.1.0. The test harness also qualifies its recorded examples against pinned 10.9.8 and 11.17.2 references. Older spellings such as `graph`, `stateDiagram`/`stateDiagram-v2`, and `xychart`/`xychart-beta` are accepted where implemented. These fixture results do not establish complete compatibility with every Mermaid 10, 11 or 12 release.
 
 The [Mermaid roadmap](../TODO.md#mermaid) plans newer-syntax adoption and regression coverage for supported older syntax. The [support matrix](mermaid-support-matrix.md) separates native render paths, retained-only features, approximate mappings and missing families. CFX uses its own deterministic scene and appearance; syntax compatibility does not imply the same layout or pixels as Mermaid's browser renderer.
 
@@ -694,13 +694,13 @@ Gantt diagrams are parsed into `MermaidGanttDocument` and converted to native Ch
 Supported Gantt parsing includes:
 
 - `gantt` headers.
-- Optional `title`, `dateFormat`, `axisFormat`, `tickInterval`, `excludes`, and `todayMarker` statements.
+- Optional `title`, `dateFormat`, `axisFormat`, `tickInterval`, `excludes`, `includes`, `weekend`, and `todayMarker` statements.
 - `section` groups.
 - Task metadata with optional tags: `active`, `done`, `crit`, and `milestone`.
-- Task ids used by `after taskId` dependency clauses.
+- Task ids used by `after taskId` start dependencies and `until taskId` end references. Multiple `after` ids select the latest end; multiple `until` ids select the earliest start. `until` can reference later rows; `after` currently requires earlier rows for native dependency connectors.
 - Explicit start/end dates using the configured `dateFormat`.
 - Durations using `ms`, `s`, `m`, `h`, `d`, `w`, `M`, and `y` units. `M` means calendar months; `m` means minutes.
-- Milestones as zero-duration native ChartForgeX milestones.
+- Milestones retain their authored start/end range and render as native ChartForgeX milestone points at the range midpoint.
 
 For example, `Task :2026-01-31, 1M` ends on February 28, while `Task :2026-01-31, 1m` ends one minute after midnight on January 31. Calendar months and years clamp to the last valid day when necessary. Fractional months/years use the whole-number part; fractional days/weeks round to the nearest day. Clock durations retain millisecond precision. Excluded dates extend duration-based ends after that calculation.
 
@@ -734,7 +734,9 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes/includes, weekend selection, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Duration-based ends advance over excluded dates, with includes overriding exclusions; explicit end dates remain authored dates. `until` dependencies and broader date/configuration coverage remain open in the [support matrix](mermaid-support-matrix.md).
+The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes/includes, weekend selection, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Duration-based and `until` scheduling ends advance over excluded dates, with includes overriding exclusions; explicit end dates remain authored dates. `End` supplies dependency scheduling, while `RenderEnd` preserves Mermaid's visible bar endpoint before trailing excluded days. Interior exclusions can extend both values. Repeated `excludes` and `includes` declarations merge their tokens, and the final diagram calendar/date format applies to all tasks regardless of declaration order. Missing ids, circular date dependencies and an end before its start produce source diagnostics. `UntilTaskIds` retains end references independently of `DependencyIds`, and the artifact records their count as `mermaid.untilReferences`.
+
+For a milestone with a nonzero duration, `Start` and `End` now retain the range used by Mermaid dependency calculations. Callers that previously treated `Start` as its rendered point should compute the midpoint of that range. Zero-duration milestones and their rendering retain the same date. Broader date/axis/tick formats, forward `after` connectors and marker configuration remain open in the [support matrix](mermaid-support-matrix.md).
 
 ## XY Charts
 
@@ -1209,7 +1211,7 @@ Fence attributes such as `id`, `title`, `subtitle`, `width`, `height`, and famil
 
 ## Mermaid.js Conformance Fixtures
 
-The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It validates representative Mermaid sources with the official Mermaid parser while keeping ChartForgeX packages dependency-free at runtime. The harness uses Mermaid.js 12.1.0 and checks selected flowchart node/edge and Gantt task-date expectations in addition to syntax acceptance. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. It does not render upstream reference images or run older Mermaid versions.
+The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.1.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. Shared expectations cover selected flowchart nodes/edges and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. The harness does not render upstream reference images.
 
 ```powershell
 Set-Location .\tests\mermaid-conformance
@@ -1217,7 +1219,9 @@ npm ci --ignore-scripts --no-audit --no-fund
 npm run validate
 ```
 
-`Build.ps1` runs the same conformance validation after the .NET test suite. The default command validates both `fixtures/` and `recognition/`; pass a directory name to `node validate-mermaid.mjs` for a focused run. Add fixtures here when expanding a supported Mermaid family so syntax compatibility is checked against Mermaid.js before ChartForgeX-specific rendering expectations are added.
+`Build.ps1` runs the same three-reference validation after the .NET test suite. The default command validates both `fixtures/` and `recognition/`; use `node validate-mermaid.mjs fixtures --reference 10` for a focused folder/version run. New fixtures require version metadata. Syntax rejection is checked independently of semantic expectations, so a failed semantic comparison cannot be counted as an expected syntax rejection.
+
+These lanes qualify the checked examples rather than every syntax form in those major versions. Older sequence autonumber and requirement sources have dedicated fixtures; newer families and spellings are marked unavailable on references that reject them. Mermaid 10 also handles an excluded Gantt endpoint differently: an interval ending January 5 with January 5 excluded schedules its successor on January 5, while Mermaid 11/12 schedules it on January 6. ChartForgeX uses the current result and keeps the older expectation visible in the corpus instead of introducing a version-dependent renderer.
 
 ````markdown
 ```mermaid {#incident-flow title="Incident Flow" subtitle="Static preview" width=1180 height=720}

@@ -104,7 +104,7 @@ The stages set the default work order. Independent family fixes can proceed once
 ### 1. Compatibility evidence and honest results
 
 - [ ] Expand the conformance corpus from representative examples into feature coverage for every supported family, using upstream documentation and parser regressions with recorded version and provenance.
-- [ ] Add isolated test-time reference lanes for selected Mermaid 10 and 11 releases alongside the current 12 reference. Mark each fixture with the versions that accept it; do not require newer syntax to parse on older engines.
+- [x] Qualify isolated test-time lanes for Mermaid 10.9.8, 11.17.2 and 12.1.0. `compatibility.json` records each fixture's accepted/rejected versions. The Gantt endpoint-calendar expectation records Mermaid 10's different scheduling result explicitly; ChartForgeX follows the current 11/12 result.
 - [ ] Compare typed semantic facts in both implementations: nodes, edges, nesting, labels, styles, time calculations, attributes and values. The current upstream harness checks syntax for every fixture and semantic expectations for selected flowchart and Gantt fixtures; extend both upstream and .NET assertions deliberately.
 - [ ] Distinguish invalid source, recognized-but-unimplemented features, retained metadata, approximate rendering and exact semantic mapping in parse/render results. Give diagnostics stable identities and original source spans, including through front matter, compact statements and Markdown fences.
 - [ ] Close silent fall-through paths where unsupported statements can become ordinary class/state/ER nodes or labels. Add focused regression cases that preserve useful raw source without reporting misleading success.
@@ -141,7 +141,8 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [ ] Finish hierarchical treemap qualification through the existing owner candidate in PR #271, also integrated in #273. Revalidate after merge; then close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
 - [ ] Reuse the stable Sankey identity work in PR #261 and the shared XY orientation work in #251, also integrated in #273. Qualify Mermaid label/configuration handling and all series orientations against the settled owner APIs.
 - [ ] Map radar graticule, curve appearance and scale options into shared polar geometry. PR #257 supplies native series forms but does not apply Mermaid graticule metadata; that mapping remains separate work.
-- [ ] Complete Gantt `until`, repeated calendar declarations, date/axis/tick formats, vertical markers and explicit today-marker behavior. Preserve the existing month/year and excludes/includes/weekend duration calculation and compare resolved dates against upstream.
+- [x] Resolve Gantt `until` end references, merge repeated calendar declarations, apply the final diagram calendar/date format and preserve milestone ranges for dependencies. Shared upstream fixtures cover source order, earliest referenced starts and included/excluded dates.
+- [ ] Complete Gantt date/axis/tick formats, forward `after` connectors through the native relation owner, vertical markers and explicit today-marker behavior. Preserve month/year and excludes/includes/weekend calculations and compare resolved dates against upstream.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene, quadrant regions and their labels as chart geometry, and timeline sections/events in both directions. Keep the current score-bar/scatter/ordered-time mappings explicit until replaced.
 - [ ] Broaden pie/show-data, XY numeric/category axes and legends, Sankey CSV/configuration/colors, and packet row/label/configuration cases, including Mermaid 12 bit-numbering direction.
 
