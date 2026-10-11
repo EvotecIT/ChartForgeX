@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text.RegularExpressions;
 using ChartForgeX.Core;
 
@@ -21,7 +20,16 @@ public sealed partial class MermaidParser {
             if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
             if (LeadingWhitespace(line) <= rootIndent)
                 inConfiguration = LeadingWhitespace(line) == rootIndent && Regex.IsMatch(trimmed, @"^config\s*:", RegexOptions.CultureInvariant);
-            if (inConfiguration) length += line.Length + (length > 0 ? 1 : 0);
+            if (inConfiguration) {
+                length += line.Length + (length > 0 ? 1 : 0);
+                var flow = Regex.Match(trimmed, @"^config\s*:\s*(\{.*)$", RegexOptions.CultureInvariant);
+                if (LeadingWhitespace(line) == rootIndent && flow.Success) {
+                    var first = index;
+                    ReadConfigurationFlowMapping(lines, ref index, TrimYamlComment(flow.Groups[1].Value).Trim());
+                    for (var extra = first + 1; extra <= index; extra++) length += lines[extra].Length + 1;
+                    inConfiguration = false;
+                }
+            }
         }
         return length;
     }
@@ -74,6 +82,8 @@ public sealed partial class MermaidParser {
             }
             try {
                 if (parents.Count == 0) {
+                    if (valueText.StartsWith("{", StringComparison.Ordinal))
+                        valueText = ReadConfigurationFlowMapping(lines, ref index, valueText);
                     AddConfigurationJson(GeoJsonValue.Parse(NormalizeConfigurationJson(valueText), StringComparer.Ordinal, ConfigurationJsonLimits).AsObject("Mermaid frontmatter config"), string.Empty, span, configuration);
                 } else {
                     var isString = true;
