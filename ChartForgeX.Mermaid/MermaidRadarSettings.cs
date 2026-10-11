@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Mermaid;
 
@@ -65,5 +66,7 @@ internal sealed class MermaidRadarSettings {
             chart.Options.Padding = new ChartPadding(MarginLeft ?? padding.Left, MarginTop ?? padding.Top,
                 MarginRight ?? padding.Right, MarginBottom ?? padding.Bottom);
         }
+        if (host.Padding.HasValue || MarginLeft.HasValue || MarginTop.HasValue || MarginRight.HasValue || MarginBottom.HasValue)
+            _ = new VisualLayoutOptions(new VisualSize(chart.Options.Size.Width, chart.Options.Size.Height), chart.Options.Padding);
     }
 }

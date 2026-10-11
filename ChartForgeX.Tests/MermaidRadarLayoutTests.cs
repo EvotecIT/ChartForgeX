@@ -63,6 +63,37 @@ public sealed class MermaidRadarLayoutTests {
     }
 
     [Theory]
+    [InlineData("width: 100\n    marginLeft: 100")]
+    [InlineData("width: 100\n    marginLeft: 50\n    marginRight: 50")]
+    [InlineData("height: 100\n    marginTop: 100")]
+    [InlineData("height: 100\n    marginTop: 50\n    marginBottom: 50")]
+    [InlineData("width: 20\n    marginLeft: 0")]
+    [InlineData("marginLeft: 1e308\n    marginRight: 1e308")]
+    public void MarginsThatConsumeTheFinalViewportFailBeforeArtifactCreation(string settings) {
+        var source = "---\nconfig:\n  radar:\n    " + settings + "\n---\n" + Body;
+        var rendered = MermaidRenderer.Render(source);
+        Assert.Null(rendered.Artifact); Assert.True(rendered.HasErrors);
+        var error = Assert.Single(rendered.Diagnostics);
+        Assert.Equal(MermaidDiagnosticCodes.ConversionFailed, error.Code);
+        Assert.True(error.Span.Line > 1);
+        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        Assert.True(fenced.HasErrors); Assert.Empty(fenced.Artifacts);
+    }
+
+    [Fact]
+    public void MarginValidationUsesTheResolvedHostViewportAndPadding() {
+        var source = "---\nconfig:\n  radar:\n    width: 100\n    marginLeft: 100\n---\n" + Body;
+        var document = new MermaidParser().ParseRadar(source).Document!;
+        Assert.Throws<ArgumentOutOfRangeException>(() => document.ToChart());
+        var wider = document.ToVisualArtifact(new MermaidRadarRenderOptions { Width = 300 });
+        Assert.NotEmpty(wider.ToSvg()); Assert.NotEmpty(wider.ToPng());
+        var padded = document.ToVisualArtifact(new MermaidRadarRenderOptions { Padding = ChartPadding.All(8) });
+        Assert.NotEmpty(padded.ToSvg()); Assert.NotEmpty(padded.ToPng());
+        var shrink = MermaidRenderer.Render(Source, new MermaidRenderOptions { Radar = new MermaidRadarRenderOptions { Width = 20 } });
+        Assert.True(shrink.HasErrors); Assert.Null(shrink.Artifact);
+    }
+
+    [Theory]
     [InlineData(320, false)]
     [InlineData(960, true)]
     public async Task FencesCaptureHostLayoutAndRemainResponsive(int viewport, bool overrideSource) {
