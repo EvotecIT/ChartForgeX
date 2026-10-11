@@ -17,6 +17,17 @@
     return Array.from(values.values()).sort((a, b) => a.point - b.point);
   };
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
+  const comparisonLegendRows = (node) => {
+    const data = node.dataset || {}, kind = (data.cfxKind || '').toLowerCase();
+    if (!['dumbbell', 'errorbar'].includes(kind)) return null;
+    const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX;
+    const rows = [{ name: rowName(node, 'category', 'Category'), value: category }];
+    if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: data.cfxStart },
+      { name: rowName(node, 'end', 'End'), value: data.cfxEnd }, { name: rowName(node, 'delta', 'Delta'), value: data.cfxDelta });
+    else rows.push({ name: rowName(node, 'value', 'Value'), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
+      { name: rowName(node, 'lower', 'Lower'), value: data.cfxLower }, { name: rowName(node, 'upper', 'Upper'), value: data.cfxUpper });
+    return rows.filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
     if (data.cfxWaterfallKind) return waterfallTooltipRows(item);
@@ -24,6 +35,12 @@
     const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
     const svg = item.closest('svg');
     const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
+    const rangeBarRows = mark && rangeBarTooltipRows(mark);
+    if (rangeBarRows) return rangeBarRows.concat(dimensionTooltipRows(mark));
+    const boxPlotRows = mark && boxPlotTooltipRows(mark);
+    if (boxPlotRows) return boxPlotRows.concat(dimensionTooltipRows(mark));
+    const comparisonRows = mark && comparisonLegendRows(mark);
+    if (comparisonRows) return comparisonRows.concat(dimensionTooltipRows(mark));
     const financialRows = mark && financialTooltipRows(mark);
     if (financialRows) return financialRows.concat(dimensionTooltipRows(mark));
     if (reference) {

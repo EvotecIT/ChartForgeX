@@ -260,5 +260,8 @@ public enum ChartSeriesKind {
     RadialColumn = 51,
 
     /// <summary>Renders directed weighted flows as circular node arcs and curved ribbons.</summary>
-    Chord = 52
+    Chord = 52,
+
+    /// <summary>Renders named paired boundaries with separate fills at their linear crossings.</summary>
+    DifferenceArea = 53
 }
