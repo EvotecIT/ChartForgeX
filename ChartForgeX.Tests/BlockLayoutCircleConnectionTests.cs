@@ -28,7 +28,7 @@ public sealed class BlockLayoutCircleConnectionTests {
         theme.Palette = new[] { ChartColor.FromHex("#2563EB") };
         var block = BlockLayoutBlock.Create().WithSize(width, 300).WithCard(false).WithTheme(theme)
             .WithColumns(layout == 1 ? 1 : 2).AddItem("a", "A", shape: firstShape);
-        if (layout == 2) block.AddSpace(2);
+        if (layout == 2) block.AddSpace().AddSpace();
         block.AddItem("b", "B", shape: secondShape).AddEdge(reverse ? "b" : "a", reverse ? "a" : "b");
         var svg = block.ToSvg();
         var image = block.RenderRgba();
