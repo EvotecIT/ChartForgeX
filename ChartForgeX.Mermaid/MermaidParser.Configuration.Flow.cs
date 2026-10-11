@@ -24,7 +24,8 @@ public sealed partial class MermaidParser {
             for (var position = 0; position < value.Length; position++) {
                 var character = value[position];
                 if (quote != '\0') {
-                    if (character == '\\') position++;
+                    if (quote == '"' && character == '\\') position++;
+                    else if (quote == '\'' && character == '\'' && position + 1 < value.Length && value[position + 1] == '\'') position++;
                     else if (character == quote) quote = '\0';
                 } else if (character == '\'' || character == '"') quote = character;
                 else if (character == '{') depth++;
