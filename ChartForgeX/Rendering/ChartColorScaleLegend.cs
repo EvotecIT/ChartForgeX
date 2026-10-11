@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 
@@ -21,23 +22,33 @@ internal static class ChartColorScaleLegend {
         return values;
     }
 
-    internal static int MidpointStep(ChartColorScale scale, double min, double max, int stepCount) {
+    /// <summary>Returns the midpoint's swatch-center index, fractional when a sampled ramp places it between values.</summary>
+    internal static double MidpointStep(ChartColorScale scale, double min, double max, int stepCount) {
+        if (scale.HasPositionedStops)
+            return (stepCount - 1) * Math.Max(0, Math.Min(1, ChartMath.Normalize(scale.EffectiveMidpoint(min, max),
+                scale.EffectiveMinimum(min), scale.EffectiveMaximum(max))));
         if (SwatchPerStop(scale, min, max) && scale.MidpointIndex is int midpoint) return midpoint;
         if (scale.Colors.Count > 3 && scale.MidpointCollapses(min, max))
             return scale.EffectiveMidpoint(min, max) <= scale.EffectiveMinimum(min) ? 0 : stepCount - 1;
+        if (scale.Mode == ChartColorScaleMode.Diverging && scale.EffectiveMaximum(max) > scale.EffectiveMinimum(min))
+            return (stepCount - 1) * Math.Max(0, Math.Min(1, ChartMath.Normalize(scale.EffectiveMidpoint(min, max),
+                scale.EffectiveMinimum(min), scale.EffectiveMaximum(max))));
         return stepCount / 2;
     }
 
     private static bool SwatchPerStop(ChartColorScale scale, double min, double max) =>
-        scale.Colors.Count > 3 && scale.Colors.Count <= MaximumSteps && !scale.MidpointCollapses(min, max);
+        !scale.HasPositionedStops && scale.Colors.Count > 3 && scale.Colors.Count <= MaximumSteps && !scale.MidpointCollapses(min, max);
 
-    internal static string[] BandCaptions(ChartOptions options, ChartColorScale scale) {
+    internal static string[] BandCaptions(ChartOptions options, ChartColorScale scale) =>
+        BandCaptions(options.Labels, scale, values => ChartNumericFormatter.FormatScaleValues(options, values));
+
+    internal static string[] BandCaptions(ChartLabels labels, ChartColorScale scale, Func<IReadOnlyList<double>, string[]> formatValues) {
         var bands = scale.Bands;
-        var bounds = ChartNumericFormatter.FormatScaleValues(options, bands.Take(bands.Count - 1).Select(band => band.UpperBound!.Value).ToArray());
+        var bounds = formatValues(bands.Take(bands.Count - 1).Select(band => band.UpperBound!.Value).ToArray());
         var captions = new string[bands.Count];
         for (var index = 0; index < bands.Count; index++) {
-            var interval = bands.Count == 1 ? options.Labels.AllValues : index == 0 ? "< " + bounds[0]
-                : index == bands.Count - 1 ? "≥ " + bounds[index - 1] : bounds[index - 1] + " ≤ " + options.Labels.Value + " < " + bounds[index];
+            var interval = bands.Count == 1 ? labels.AllValues : index == 0 ? "< " + bounds[0]
+                : index == bands.Count - 1 ? "≥ " + bounds[index - 1] : bounds[index - 1] + " ≤ " + labels.Value + " < " + bounds[index];
             captions[index] = bands[index].Label == null ? interval : bands[index].Label + " · " + interval;
         }
         return captions;
