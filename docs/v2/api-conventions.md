@@ -517,6 +517,26 @@ Secondary typography inherits chart, series and ordinal node data-label styling 
 
 Full secondary text remains in `data-cfx-secondary-label` and descriptive node regions even when no caption fits. The optional HTML adapter exposes it as plain text in pointer and keyboard tooltips, separately from size, color, supplied totals and remainders. IDs, numeric metadata and target counts stay unchanged. A non-null formatter on a populated non-Sunburst chart fails preparation; style or spacing configuration without a formatter remains inactive. Treemap retains its own label and numeric-value captions.
 
+## Numeric X viewports
+
+`Chart.Prepare(context, new ChartXViewport(minimum, maximum))` prepares a numeric X window for charts containing Line and StepLine series with linear or step interpolation on a linear X axis. Bounds must be finite, increasing and inside the resolved full X domain. Other families, smooth interpolation, nonlinear X scales, sparklines, charts without observations and layouts without a usable plot reject the viewport request explicitly. Ordinary preparation remains available for every supported chart family.
+
+```csharp
+var overview = chart.Prepare(context);
+var detail = chart.Prepare(context, new ChartXViewport(2, 8));
+var projection = detail.XProjection!;
+double logicalX = projection.Project(5);
+double sourceX = projection.Unproject(logicalX);
+string svg = detail.ToSvg("detail");
+byte[] png = detail.ToPng();
+```
+
+The immutable viewport is a preparation input. It does not change authored axis bounds, series, source indices or decimation settings. Preparation resolves the full-data primary and secondary Y domains, then lays out the requested X ticks and marks through the shared Cartesian compiler. Marks, annotations and labels clip to the visible plot even when ordinary mark clipping is disabled. Crossing segments remain visible when both source endpoints lie outside the window, while authored gaps stay disconnected. Plot regions intersect the visible domain and retain their authored bounds.
+
+`ChartXProjection` captures `FullMinimum`, `FullMaximum`, `Minimum`, `Maximum`, `PlotBounds` and `Reversed` as detached values. Supported ordinary preparation exposes the full-domain projection through `PreparedVisual.XProjection`; other charts and unusable plots return null. Source or axis mutations after preparation cannot change the projection or its SVG/PNG exports. Prepare the full domain again to reset the window. The available detail is the retained source model, including any earlier decimation.
+
+These native windows repeat Core layout for each request. The HTML adapter's existing geometry zoom keeps its current behavior; standalone data-domain interaction requires its own prepared tick/layer plan and lifecycle support.
+
 ## Enforcement boundary
 
 `V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Public typed configuration callbacks on the Core and Visuals `With*`/`Configure*` builder boundary must use `Configure*` and return their receiver. Data-adding callbacks and substantive exports keep their operation names. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.
