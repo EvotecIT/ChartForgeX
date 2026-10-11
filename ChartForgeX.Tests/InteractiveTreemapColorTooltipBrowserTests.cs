@@ -27,14 +27,14 @@ public sealed class InteractiveTreemapColorTooltipBrowserTests {
             }).ConfigureTreemap(options => {
                 options.ColorScale = ChartColorScale.Sequential(ChartForgeX.Primitives.ChartColor.FromHex("#DAE8F8"), ChartForgeX.Primitives.ChartColor.FromHex("#1C5CAB"));
                 options.ShowColorScaleLegend = !leafKeys;
-                if (titleOverride) options.ColorLegendTitle = colorLabel;
+                if (titleOverride) options.ColorDimension.Name = colorLabel;
             });
         if (leafKeys) chart.WithPointLegend();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg();
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         chart.ConfigureLabels(labels => { labels.Color = "Changed"; labels.NoData = "Changed"; });
-        chart.Options.Treemap.ColorLegendTitle = "Changed";
+        chart.Options.Treemap.ColorDimension.Name = "Changed";
         Assert.Equal(svg, prepared.ToSvg());
         await using var session = await OpenAsync(html, width + 24, 500);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

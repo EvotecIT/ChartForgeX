@@ -27,7 +27,7 @@ public sealed class InteractiveSunburstBrowserTests {
             .WithSize(width, width < 500 ? 360 : 460).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithTitle("Przydział pracy").WithSubtitle(inclusive ? "Inclusive parent totals retain unallocated remainder" : "Leaf totals size sectors; measured color stays independent")
             .ConfigureLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
-        chart.Options.Sunburst.ColorLegendTitle = "Zmiana <&>";
+        chart.Options.Sunburst.ColorDimension.Name = "Zmiana <&>";
         chart.Series[0].WithInteractionKey("allocation-source");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
