@@ -48,6 +48,17 @@ public sealed class V2FramePolicyTests {
         Assert.Equal(TextPlacement(convenience), TextPlacement(prepared));
     }
 
+    [Fact]
+    public void DottedMapUsesCategoricalEntryPolicyWithoutAnAutomaticNumericKey() {
+        var chart = Chart.Create().AddDottedMap("Locations", new[] { new ChartMapPoint("Warsaw", 21, 52) });
+        Assert.False(HasLegend(XDocument.Parse(chart.ToSvg())));
+        Assert.True(HasLegend(XDocument.Parse(chart.WithLegend().ToSvg())));
+        chart.Series[0].ShowInLegend = false;
+        var hidden = XDocument.Parse(chart.ToSvg());
+        Assert.False(HasLegend(hidden));
+        Assert.DoesNotContain(hidden.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "map-scale");
+    }
+
     [Theory]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -87,8 +98,9 @@ public sealed class V2FramePolicyTests {
     [InlineData("map")]
     public void ExplicitFrameVisibilityRetainsFamilyScaleSuppression(string family) {
         var chart = KeyChart(family).WithLegend(false);
-        if (family == "map") chart.WithMapScaleLegend(false);
-        else chart.WithHeatmapScaleLegend(false);
+        if (family == "map") chart.ConfigureMapColorDimension(options => options.ShowLegend = false);
+        else if (family == "categorical") chart.WithHeatmapCategoryLegend(false);
+        else chart.ConfigureHeatmapColorDimension(options => options.ShowLegend = false);
         var prepared = chart.Prepare(Context(new VisualFrame(showLegend: true)));
         Assert.False(HasKey(XDocument.Parse(prepared.ToSvg()), family));
         Assert.Contains(prepared.Regions, region => region.Role == DataRole(family) && region.Bounds.Width > 0);

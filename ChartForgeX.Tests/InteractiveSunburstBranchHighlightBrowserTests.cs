@@ -29,7 +29,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
             RoundedRadialSeriesTests.UseFixtureFont(chart);
             chart.ConfigureSunburst(options => {
                 options.CornerRadius = 6;
-                options.ShowColorScaleLegend = false;
+                options.ColorDimension.ShowLegend = false;
                 options.SecondaryLabelFormatter = context => context.Item.Id == "engineering-support" ? "Delivery team" : context.Item.Id == "engineering" ? "Delivery" : null;
             });
         }
@@ -190,7 +190,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
     [InlineData(true)]
     public async Task DefaultBranchStylesAndLegendTargetsKeepTheirPresentation(bool graphite) {
         if (!Enabled) return;
-        var chart = SunburstBranchHighlightExamples.CreateChart(graphite: graphite).WithLegend().ConfigureSunburst(options => options.ShowColorScaleLegend = false);
+        var chart = SunburstBranchHighlightExamples.CreateChart(graphite: graphite).WithLegend().ConfigureSunburst(options => options.ColorDimension.ShowLegend = false);
         var html = chart.ToInteractiveHtmlPage(options => options.Highlight.Mode = HtmlChartHighlightMode.RootBranch);
         await using var session = await OpenAsync(html, 850, 650);
         var page = session.Page;

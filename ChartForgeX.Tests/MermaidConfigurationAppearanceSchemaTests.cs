@@ -20,12 +20,13 @@ public sealed class MermaidConfigurationAppearanceSchemaTests {
                 : "---\nconfig:\n  theme: dark\n  flowchart:\n    theme: " + theme + "\n---\n";
             var result = MermaidRenderer.Render(configuration + body);
             Assert.False(result.HasErrors);
+            var artifact = Assert.IsType<VisualArtifact>(result.Artifact);
             Assert.Equal(theme, result.Document!.Configuration.Theme);
             Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration && item.Message.Contains(theme, StringComparison.Ordinal));
-            Assert.Equal(MermaidRenderer.Render("%%{init: {'theme':'default'}}%%\n" + body).Artifact!.ToPng(), result.Artifact!.ToPng());
+            Assert.Equal(MermaidRenderer.Render("%%{init: {'theme':'default'}}%%\n" + body).Artifact!.ToPng(), artifact.ToPng());
             var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + configuration + body + "\n```");
             Assert.False(fenced.HasErrors);
-            Assert.Equal(result.Artifact.ToPng(), Assert.Single(fenced.Artifacts).ToPng());
+            Assert.Equal(artifact.ToPng(), Assert.Single(fenced.Artifacts).ToPng());
         }
     }
 

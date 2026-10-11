@@ -10,6 +10,27 @@ namespace ChartForgeX.Tests;
 /// <summary>Preparation captures explicit policies once and retains authored empty, missing and reset semantics.</summary>
 public sealed class ColorDimensionCaptureTests {
     [Fact]
+    public void FormatterMutationCannotChangeCapturedLegendVisibilityOrStyle() {
+        var chart = Create(false, 7.125, 0, null).WithLegend();
+        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High).WithValueRange(0, 20));
+        chart.Series[0].ShowInLegend = false;
+        var calls = new Dictionary<double, int>();
+        chart.Series[0].ConfigureColorDimension(options => {
+            options.LegendStyle = ChartColorLegendStyle.Gradient;
+            options.ValueFormat = ChartValueFormat.Custom(value => {
+                calls[value] = calls.GetValueOrDefault(value) + 1;
+                options.ShowLegend = false; options.LegendStyle = ChartColorLegendStyle.Swatches;
+                return value.ToString(CultureInfo.InvariantCulture);
+            });
+        });
+        var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
+        Assert.Contains("data-cfx-role=\"color-scale-0-gradient\"", svg);
+        Assert.All(calls.Values, count => Assert.Equal(1, count));
+        Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
+        Assert.DoesNotContain("data-cfx-role=\"color-scale-0\"", Prepare(chart).ToSvg());
+    }
+
+    [Fact]
     public void ReusedExplicitPolicyCapturesNamesAndFormatsEachDistinctValueOncePerPreparation() {
         var chart = Create(false, 7.125, 0, 7.125, null).WithLegend(false);
         chart.AddBubble("Other", new[] { new ChartBubble(1, 12, 9).WithColorValue(7.125), new ChartBubble(2, 18, 36).WithColorValue(0), new ChartBubble(3, 24, 81) });
