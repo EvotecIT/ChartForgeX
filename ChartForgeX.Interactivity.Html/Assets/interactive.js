@@ -542,6 +542,8 @@
     if (subjects.has(subject)) return subjects.get(subject);
     const sourceInverse = sourceMatrix.inverse(), shapeInverse = shapeMatrix.inverse();
     const paired = pairedExtentObservation(subject), x = region.x + region.width / 2;
+    // Scalar sources retain their source-location clip contract, even when their footprint overlaps paint.
+    if (!paired && !paintWithinNativeClips(node, subject)) return false;
     const low = paired ? region.y + region.width / 2 : region.y + region.height / 2;
     const high = paired ? region.y + region.height - region.width / 2 : low;
     // Native SVG uses three decimals. Interior probes below that quantum distinguish a real held
@@ -561,6 +563,11 @@
     let visible = false;
     if (!paired) {
       visible = [low, Number(low.toFixed(3))].some(y => atY(y - inset, inset / 2) || atY(y + inset, inset / 2));
+      if (!visible) visible = (subject._cfxFillInteriors || []).some(([px, py, radius]) =>
+        [px, py, radius].every(Number.isFinite) && radius >= inset / 2
+        && px - radius >= region.x && px + radius <= region.x + region.width
+        && py - radius >= region.y && py + radius <= region.y + region.height
+        && contains(px, py) && [-1, 1].every(dx => [-1, 1].every(dy => contains(px + dx * radius, py + dy * radius))));
     } else if (high > low) {
       // Most observations contain their own middle. A shifted Step hold can overlap only a different
       // part of the paired extent, so partition it using captured neighboring boundaries and clips.
@@ -1309,6 +1316,7 @@
         node.setAttribute('aria-label', region.label || item.name);
       if (!region || (data.cfxPoint === undefined && data.cfxRegion === undefined)) return;
       node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
+      node._cfxFillInteriors = Object.freeze((region.fillInteriors || []).map(candidate => Object.freeze(candidate.slice())));
       if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {

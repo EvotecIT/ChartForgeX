@@ -66,6 +66,82 @@ public sealed class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, position == ChartStepPosition.Start ? 0 : 2, false, $"{kind}-{position}-stem");
     }
 
+    [Fact]
+    public async Task ScalarLinearPeakKeepsItsPaintedObservation() {
+        if (!Enabled) return;
+        var chart = Frame().AddArea("Observed", new[] {
+            new ChartPoint(0, 2), new ChartPoint(.025, 8), new ChartPoint(.05, 2), new ChartPoint(2, 2)
+        });
+        Configure(chart, ChartStepPosition.End);
+        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        await AssertAvailabilityAsync(chart, 1, true, "scalar-linear-peak", expectedReadout: "8");
+    }
+
+    [Theory]
+    [InlineData(ChartInterpolation.Linear, true, false)]
+    [InlineData(ChartInterpolation.Linear, false, true)]
+    [InlineData(ChartInterpolation.Smooth, false, false)]
+    public async Task ScalarPeakKeepsItsOwnValueAcrossNativeSurfaces(ChartInterpolation interpolation, bool negative, bool reversedSecondary) {
+        if (!Enabled) return;
+        var direction = negative ? -1 : 1;
+        var chart = Frame().AddArea("Observed", new[] {
+            new ChartPoint(0, 2 * direction), new ChartPoint(.025, 8 * direction),
+            new ChartPoint(.05, 2 * direction), new ChartPoint(2, 2 * direction)
+        });
+        Configure(chart, ChartStepPosition.End, reversedSecondary);
+        if (negative) chart.Options.YAxis.WithBounds(-10, 0);
+        chart.Series[0].WithInterpolation(interpolation);
+        await AssertAvailabilityAsync(chart, 1, true, $"scalar-peak-{interpolation}-{negative}-{reversedSecondary}",
+            expectedReadout: negative ? "-8" : "8", captureScalarInk: interpolation == ChartInterpolation.Smooth);
+    }
+
+    [Fact]
+    public async Task StackedPeakKeepsItsRawValueAboveAnotherSeries() {
+        if (!Enabled) return;
+        var chart = Frame().WithYAxisBounds(0, 12)
+            .AddStackedArea("Base", new[] { new ChartPoint(0, 2), new ChartPoint(.025, 2), new ChartPoint(.05, 2), new ChartPoint(2, 2) })
+            .AddStackedArea("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(.025, 8), new ChartPoint(.05, 2), new ChartPoint(2, 2) });
+        chart.Options.ClipMarksToPlot = true;
+        chart.Series[0].WithInteractionKey("base").ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Series[1].WithInteractionKey("observed").WithInterpolation(ChartInterpolation.Linear)
+            .ConfigureMarkers(markers => markers.Enabled = false);
+        await AssertAvailabilityAsync(chart, 1, true, "scalar-stacked-peak", seriesIndex: 1, expectedReadout: "8");
+    }
+
+    [Fact]
+    public async Task ScalarPeakOnTheNativeClipBoundaryRemainsAvailable() {
+        if (!Enabled) return;
+        var chart = Frame().WithYAxisBounds(0, 8).AddArea("Observed", new[] {
+            new ChartPoint(0, 2), new ChartPoint(.025, 8), new ChartPoint(.05, 2), new ChartPoint(2, 2)
+        });
+        Configure(chart, ChartStepPosition.End);
+        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        await AssertAvailabilityAsync(chart, 1, true, "scalar-clipped-peak", expectedReadout: "8");
+    }
+
+    [Fact]
+    public async Task ScalarPeakOutsideTheNativeClipCannotUseItsPartialFootprint() {
+        if (!Enabled) return;
+        var chart = Frame().WithYAxisBounds(0, 8).AddArea("Observed", new[] {
+            new ChartPoint(0, 2), new ChartPoint(.025, 8.02), new ChartPoint(.05, 2), new ChartPoint(2, 2)
+        });
+        Configure(chart, ChartStepPosition.End);
+        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        await AssertAvailabilityAsync(chart, 1, false, "scalar-outside-clip-peak");
+    }
+
+    [Theory]
+    [InlineData(7.95, true)]
+    [InlineData(7.8, false)]
+    public async Task ScalarStepFillUsesOnlyTheOriginalLocalFootprint(double heldValue, bool available) {
+        if (!Enabled) return;
+        var chart = Frame().AddStepArea("Observed", new[] {
+            new ChartPoint(0, 8), new ChartPoint(1, heldValue), new ChartPoint(2, heldValue)
+        });
+        Configure(chart, ChartStepPosition.Start);
+        await AssertAvailabilityAsync(chart, 0, available, $"scalar-local-step-{heldValue}", expectedReadout: available ? "8" : null);
+    }
+
     [Theory]
     [InlineData(ChartSeriesKind.RangeArea, false, false)]
     [InlineData(ChartSeriesKind.RangeBand, false, false)]
@@ -161,7 +237,8 @@ public sealed class CartesianFillObservationBrowserTests {
         }
     }
 
-    private static async Task AssertAvailabilityAsync(Chart chart, int index, bool available, string name, bool patternOnly = false, bool hideBase = false, bool envelopeStroke = false) {
+    private static async Task AssertAvailabilityAsync(Chart chart, int index, bool available, string name, bool patternOnly = false, bool hideBase = false, bool envelopeStroke = false,
+        int seriesIndex = 0, string? expectedReadout = null, bool captureScalarInk = false) {
         // Hide only native boundaries. Transparent browser targets must not establish mark ink.
         var css = "[data-cfx-role='line'],[data-cfx-role^='range-upper'],[data-cfx-role^='range-lower'],[data-cfx-role='range-midline']{stroke:none!important}";
         if (patternOnly) css += "[data-cfx-role='area'],[data-cfx-role='range-area']{fill:none!important}";
@@ -169,7 +246,7 @@ public sealed class CartesianFillObservationBrowserTests {
         if (envelopeStroke) css += "[data-cfx-role='area']{fill:none!important;stroke:#DF3040!important;stroke-width:2!important}";
         var html = chart.ToInteractiveHtmlPage().Replace("</head>", "<style>" + css + "</style></head>", StringComparison.Ordinal);
         await using var session = await OpenAsync(html, 800, 560);
-        var page = session.Page; var point = page.Locator(Point(0, index));
+        var page = session.Page; var point = page.Locator(Point(seriesIndex, index));
         if (hideBase) {
             Assert.Equal("none", await page.Locator("[data-cfx-role='range-area']").EvaluateAsync<string>("node=>getComputedStyle(node).display"));
             Assert.True(await page.Locator("[data-cfx-role='range-area-pattern']").First.EvaluateAsync<bool>(
@@ -199,15 +276,27 @@ public sealed class CartesianFillObservationBrowserTests {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) {
             Directory.CreateDirectory(directory);
+            JsonElement? nativeFill = null;
+            if (captureScalarInk) nativeFill = await point.EvaluateAsync<JsonElement>("""
+                node=>{const region=node._cfxNativeRegion,path=node.closest('[data-cfx-role="series"]').querySelector('[data-cfx-role="area"]');
+                  const sourceMatrix=node.getScreenCTM(),inverse=path.getScreenCTM().inverse(),x=region.x+region.width/2,y=region.y+region.height/2;
+                  const witnesses=(node._cfxFillInteriors||[]).map(([cx,cy,radius])=>({x:cx,y:cy,radius,
+                    corners:[-1,1].flatMap(dx=>[-1,1].map(dy=>{
+                      const point=new DOMPoint(cx+dx*radius,cy+dy*radius).matrixTransform(sourceMatrix).matrixTransform(inverse);
+                      return {x:point.x,y:point.y,inside:path.isPointInFill(point)};
+                    }))}));
+                  return {region,x,y,path:path.getAttribute('d'),witnesses};}
+                """);
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "fill-" + name + ".png") });
             await File.WriteAllTextAsync(Path.Combine(directory, "fill-" + name + ".json"), JsonSerializer.Serialize(new {
                 available, position, hover, pointerSelected, active, keyboard, keyboardSelected,
-                tabindex = await point.GetAttributeAsync("tabindex"), console = session.ConsoleLog
+                tabindex = await point.GetAttributeAsync("tabindex"), nativeFill, console = session.ConsoleLog
             }, new JsonSerializerOptions { WriteIndented = true }));
         }
         if (available) {
             Assert.Contains("Observed", hover); Assert.Equal("true", pointerSelected);
             Assert.Equal("observed:" + index, active); Assert.Contains("Observed", keyboard); Assert.Equal("true", keyboardSelected);
+            if (expectedReadout is not null) { Assert.Contains(expectedReadout, hover); Assert.Contains(expectedReadout, keyboard); }
         } else {
             Assert.Empty(hover); Assert.NotEqual("true", pointerSelected);
             Assert.NotEqual("observed:" + index, active); Assert.NotEqual("true", keyboardSelected);
