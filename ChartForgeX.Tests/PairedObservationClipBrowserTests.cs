@@ -22,7 +22,7 @@ public sealed class PairedObservationClipBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 800, 600);
         var page = session.Page; var point = page.Locator(Point(0, 0));
         var role = kind == ChartSeriesKind.DifferenceArea ? negative ? "difference-first" : "difference-second" : "range-lower";
-        var position = await page.Locator("[data-cfx-role='" + role + "']").EvaluateAsync<float[]>("""
+        var position = await page.Locator("[data-cfx-role='" + role + "']").EvaluateAsync<double[]>("""
             path=>{const p=path.getPointAtLength(0),screen=new DOMPoint(p.x+1,p.y-1).matrixTransform(path.getScreenCTM());
               return [screen.x,screen.y];}
             """);
@@ -34,10 +34,10 @@ public sealed class PairedObservationClipBrowserTests {
             ()=>{window.cfxPairSelections=[];document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect',event=>{
               if(event.detail.target?.targetKind==='point')window.cfxPairSelections.push(event.detail.target);});}
             """);
-        await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync(position[0], position[1]);
+        await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
         await AssertPairedReadoutAsync(page, kind, negative);
         Assert.StartsWith("point|paired:0|", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-key") ?? "");
-        await page.Mouse.ClickAsync(position[0], position[1]);
+        await page.Mouse.ClickAsync((float)position[0], (float)position[1]);
         Assert.Equal("true", await point.GetAttributeAsync("aria-selected"));
         await CaptureAsync(page, kind + "-" + negative + "-pointer", position);
         await MoveAwayAsync(page); await point.FocusAsync();
@@ -75,7 +75,7 @@ public sealed class PairedObservationClipBrowserTests {
         var page = session.Page; var point = page.Locator(Point(0, 0));
         Assert.Equal("-1", await point.GetAttributeAsync("tabindex"));
         // The browser's minimum eight-unit hit rectangle can intersect the clip even when the captured extent does not.
-        var position = await point.EvaluateAsync<float[]>("""
+        var position = await point.EvaluateAsync<double[]>("""
             node=>{
               const box=node.getBoundingClientRect(),svg=node.ownerSVGElement;
               for(let parent=node;parent&&parent.ownerSVGElement;parent=parent.parentElement){
@@ -88,9 +88,9 @@ public sealed class PairedObservationClipBrowserTests {
             }
             """);
         Assert.True(await page.EvaluateAsync<bool>("p=>document.elementFromPoint(p[0],p[1])?.closest('[data-cfx-point]')?.dataset.cfxPoint==='0'", position));
-        await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync(position[0], position[1]);
+        await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
         Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync());
-        await page.Mouse.ClickAsync(position[0], position[1]);
+        await page.Mouse.ClickAsync((float)position[0], (float)position[1]);
         Assert.NotEqual("true", await point.GetAttributeAsync("aria-selected"));
         await MoveAwayAsync(page); await point.FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.NotEqual("true", await point.GetAttributeAsync("aria-selected"));
@@ -132,7 +132,7 @@ public sealed class PairedObservationClipBrowserTests {
         } else Assert.Contains("1 - 100", values);
     }
 
-    private static async Task CaptureAsync(IPage page, string name, float[] position) {
+    private static async Task CaptureAsync(IPage page, string name, double[] position) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;
         Directory.CreateDirectory(directory);
