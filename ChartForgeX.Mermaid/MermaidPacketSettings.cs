@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Mermaid;
@@ -18,7 +17,7 @@ internal sealed class MermaidPacketSettings {
         var settings = new MermaidPacketSettings();
         var rows = configuration.Last("packet.bitsPerRow");
         if (rows != null) {
-            if (!rows.IsString && double.TryParse(rows.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+            if (rows.TryGetNumber(out var value)
                 && value >= 1 && value <= 512 && value == Math.Truncate(value)) settings.BitsPerRow = (int)value;
             else error(rows, "must be an integer from 1 through 512");
         }

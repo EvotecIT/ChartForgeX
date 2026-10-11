@@ -1,7 +1,12 @@
 using System.Globalization;
+using System.Text.Json;
 using System.Xml.Linq;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
+using ChartForgeX.SvgRaster;
+using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using Microsoft.Playwright;
@@ -13,6 +18,25 @@ public sealed class MermaidPacketConfigurationTests {
     private const string Body = "packet-beta\n0-3: \"Flag\"\n+14: \"Payload\"\n+6: \"Tail\"";
     private const string Configured = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    showBits: true\n    bitOrder: descending\n---\n" + Body;
 
+    [Theory]
+    [InlineData("packet-source-options", false, PacketBitOrder.Ascending)]
+    [InlineData("packet-descending", true, PacketBitOrder.Descending)]
+    public void RenderedRowsMatchSharedUpstreamFieldExpectations(string name, bool showBits, PacketBitOrder order) {
+        var root = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures");
+        var parsed = new MermaidParser().ParsePacket(File.ReadAllText(Path.Combine(root, name + ".mmd")));
+        Assert.Empty(parsed.Diagnostics);
+        var block = parsed.Document!.ToPacketLayoutBlock();
+        Assert.Equal(16, block.BitsPerRow);
+        Assert.Equal(showBits, block.ShowBitNumbers);
+        Assert.Equal(order, block.BitOrder);
+        using var expected = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, name + ".expected.json")));
+        var ranges = expected.RootElement.GetProperty("packetRows").EnumerateArray()
+            .SelectMany(row => row.EnumerateArray()).Select(field => (field[0].GetInt32(), field[1].GetInt32()));
+        var svg = XDocument.Parse(block.ToSvg());
+        Assert.Equal(ranges, Fields(svg).Select(field => (Integer(field, "data-bit-start"), Integer(field, "data-bit-end"))));
+        Assert.Equal(showBits, svg.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "packet-bit-start"));
+    }
+
     [Fact]
     public void SourceSettingsAndIndependentHostOverridesReachDirectAndMarkdownRendering() {
         var parsed = new MermaidParser().ParsePacket(Configured);
@@ -23,7 +47,7 @@ public sealed class MermaidPacketConfigurationTests {
         Assert.Equal(PacketBitOrder.Descending, block.BitOrder);
         Assert.Equal(new[] { (0, 3), (4, 17), (18, 23) }, block.Fields.Select(field => (field.StartBit, field.EndBit)));
         var options = new MermaidPacketRenderOptions { ShowBitNumbers = false, BitOrder = PacketBitOrder.Ascending };
-        var direct = parsed.Document.ToPacketLayoutBlock(options);
+        var direct = parsed.Document!.ToPacketLayoutBlock(options);
         Assert.Equal(16, direct.BitsPerRow);
         Assert.False(direct.ShowBitNumbers);
         Assert.Equal(PacketBitOrder.Ascending, direct.BitOrder);
@@ -31,13 +55,27 @@ public sealed class MermaidPacketConfigurationTests {
         Assert.Empty(markup.Diagnostics);
         var artifact = Assert.Single(markup.Artifacts);
         var fenced = Assert.IsType<PacketLayoutBlock>(artifact.Model);
-        Assert.Equal(direct.ToSvg(), fenced.ToSvg());
+        Assert.Equal(direct.BitsPerRow, fenced.BitsPerRow);
+        Assert.Equal(direct.ShowBitNumbers, fenced.ShowBitNumbers);
+        Assert.Equal(direct.BitOrder, fenced.BitOrder);
+        Assert.Equal(Fields(XDocument.Parse(direct.ToSvg())).Select(field => field.ToString()),
+            Fields(XDocument.Parse(fenced.ToSvg())).Select(field => field.ToString()));
         var json = artifact.ToInterchangeJson();
         Assert.Equal(json, VisualArtifactInterchangeEnvelope.FromJson(json).ToJson());
         var defaults = new MermaidParser().ParsePacket(Body).Document!.ToPacketLayoutBlock();
         Assert.Equal(32, defaults.BitsPerRow);
         Assert.True(defaults.ShowBitNumbers);
         Assert.Equal(PacketBitOrder.Ascending, defaults.BitOrder);
+    }
+
+    [Theory]
+    [InlineData("0x10")]
+    [InlineData("0o20")]
+    [InlineData("0b10000")]
+    public void TypedRadixRowWidthsUseTheSharedNumericConfigurationOwner(string value) {
+        var parsed = new MermaidParser().ParsePacket(Configured.Replace("bitsPerRow: 16", "bitsPerRow: " + value));
+        Assert.Empty(parsed.Diagnostics);
+        Assert.Equal(16, parsed.Document!.ToPacketLayoutBlock().BitsPerRow);
     }
 
     [Fact]
@@ -51,7 +89,7 @@ public sealed class MermaidPacketConfigurationTests {
         Assert.Equal(8, block.BitsPerRow);
         Assert.False(block.ShowBitNumbers);
         Assert.Equal(PacketBitOrder.Ascending, block.BitOrder);
-        Assert.Equal(6, parsed.Document.Configuration.Settings.Count);
+        Assert.Equal(6, parsed.Document!.Configuration.Settings.Count);
     }
 
     [Theory]
@@ -111,6 +149,39 @@ public sealed class MermaidPacketConfigurationTests {
         var name = "packet-descending-" + (dark ? "dark-" : "light-") + width;
         await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), native);
+    }
+
+    [Theory]
+    [InlineData(PacketBitOrder.Ascending)]
+    [InlineData(PacketBitOrder.Descending)]
+    public void SingleBitNumbersShareTheirSvgAndPngHorizontalPosition(PacketBitOrder order) {
+        var theme = ChartTheme.Light();
+        theme.FontFamily = "Arial";
+        theme.UseGraphiteLayout = false;
+        theme.Background = theme.CardBackground = theme.PlotBackground = theme.Text = ChartColor.Transparent;
+        theme.MutedText = ChartColor.FromHex("#FF0000");
+        theme.Palette = new[] { ChartColor.Transparent };
+        var block = PacketLayoutBlock.Create().WithSize(520, 200).WithPadding(18)
+            .WithCard(false).WithTransparentBackground().WithTheme(theme).WithBitsPerRow(4)
+            .WithBitOrder(order).AddField(0, 0, "Flag");
+        var svg = block.ToSvg();
+        var raster = SvgRasterizer.Rasterize(svg, 520, 200);
+        Assert.Empty(raster.Diagnostics);
+        var expected = NumberInkColumns(raster.Image);
+        var actual = NumberInkColumns(block.RenderRgba());
+        Assert.InRange(actual.Min - expected.Min, -2, 2);
+        Assert.InRange(actual.Max - expected.Max, -2, 2);
+    }
+
+    private static (int Min, int Max) NumberInkColumns(RgbaImage image) {
+        var columns = new List<int>();
+        for (var y = 0; y < image.Height; y++)
+            for (var x = 0; x < image.Width; x++) {
+                var offset = (y * image.Width + x) * 4;
+                if (image.Pixels[offset + 3] > 64 && image.Pixels[offset] > 200 && image.Pixels[offset + 1] < 20) columns.Add(x);
+            }
+        Assert.NotEmpty(columns);
+        return (columns.Min(), columns.Max());
     }
 
     private static XElement[] Fields(XDocument svg) => svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "packet-field").ToArray();

@@ -35,7 +35,9 @@ public sealed partial class PngVisualBlockRenderer {
 
     private static void DrawPacketBitLabels(RgbaCanvas canvas, PacketLayoutBlock packet, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartColor color, double fontSize) {
         var inset = VisualBlockRendering.PacketBitInset(width);
-        canvas.DrawTextEmphasized(x + inset, y, VisualBlockRendering.PacketLeftBit(packet, slice).ToString(CultureInfo.InvariantCulture), color, fontSize);
+        var left = VisualBlockRendering.PacketLeftBit(packet, slice).ToString(CultureInfo.InvariantCulture);
+        var singleDescending = slice.EndBit == slice.StartBit && packet.BitOrder == PacketBitOrder.Descending;
+        canvas.DrawTextEmphasized(singleDescending ? x + width - inset - canvas.MeasureTextEmphasizedWidth(left, fontSize) : x + inset, y, left, color, fontSize);
         if (slice.EndBit == slice.StartBit) return;
         var end = VisualBlockRendering.PacketRightBit(packet, slice).ToString(CultureInfo.InvariantCulture);
         var endWidth = canvas.MeasureTextEmphasizedWidth(end, fontSize);

@@ -134,6 +134,16 @@ for (const { folder, file, hasExpected } of files) {
           assert.deepEqual(path.split('.').reduce((current, key) => current?.[key], configuration), value, `Configuration ${path}`);
         }
       }
+      if (expected.packetRows) {
+        // Inclusive ranges determine visible field widths. The auxiliary bits value
+        // differs from end-start+1 for split fields in both accepting pinned engines.
+        assert.deepEqual(diagram.db.getPacket().map(row => row.map(block => [block.start, block.end, block.label])), expected.packetRows);
+      }
+      if (expected.configurationAbsent) {
+        const configuration = mermaid.mermaidAPI.getConfig();
+        for (const path of expected.configurationAbsent)
+          assert.equal(path.split('.').reduce((current, key) => current?.[key], configuration), undefined, `Configuration ${path} is unavailable`);
+      }
       if (expected.nodes) {
         const vertices = diagram.db.getVertices();
         assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);
