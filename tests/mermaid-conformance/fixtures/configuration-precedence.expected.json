@@ -1,0 +1,9 @@
+{
+  "nodes": ["A", "B"],
+  "edges": [["A", "B"]],
+  "configuration": {
+    "theme": "default",
+    "flowchart.theme": "dark",
+    "fontFamily": "Arial, sans-serif"
+  }
+}
