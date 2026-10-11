@@ -7,6 +7,34 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttCommaTaskDateTests {
     [Theory]
+    [InlineData("", null)]
+    [InlineData("active,", null)]
+    [InlineData("task,", "task")]
+    [InlineData("2026,", "2026")]
+    public void CompleteConfiguredDateTakesPriorityOverAnIsoSuffix(string prefix, string? expectedId) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat [prefix,]YYYY-MM-DD\nTask :" + prefix + "prefix,2026-01-02,1d");
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal(expectedId, task.Id);
+        Assert.Equal(new DateTime(2026, 1, 2), task.Start);
+        Assert.Equal(new DateTime(2026, 1, 3), task.End);
+    }
+
+    [Fact]
+    public void RepeatedConfiguredDatePrefixesDoNotCreateDuplicateTaskIds() {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat [prefix,]YYYY-MM-DD\nFirst :prefix,2026-01-02,1d\nSecond :prefix,2026-01-04,prefix,2026-01-05");
+        Assert.Empty(parsed.Diagnostics);
+        Assert.All(parsed.Document!.Tasks, task => Assert.Null(task.Id));
+        Assert.Equal(new DateTime(2026, 1, 4), parsed.Document.Tasks[1].Start);
+    }
+
+    [Fact]
+    public void ConfiguredDatePrefixCannotBecomeADependencyTarget() {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat [prefix,]YYYY-MM-DD\nFirst :prefix,2026-01-02,1d\nSecond :after prefix,1d");
+        Assert.True(parsed.HasErrors);
+    }
+
+    [Theory]
     [InlineData("task,", "task")]
     [InlineData("", null)]
     public void ConfiguredTimestampsKeepEveryCommaBeforeTheDuration(string idPrefix, string? expectedId) {
