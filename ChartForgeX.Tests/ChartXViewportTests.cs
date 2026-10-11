@@ -159,7 +159,7 @@ public sealed class ChartXViewportTests {
         var prepared = chart.Prepare(Context(), new ChartXViewport(2, 6));
         Assert.NotEmpty(calls); Assert.All(calls.Values, count => Assert.Equal(1, count));
         Assert.All(prepared.Regions.Where(region => region.Role == "axis-x-label"), region => Assert.StartsWith("X ", region.Label!));
-        Assert.NotEmpty(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-x-label"));
+        Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "axis-x-label");
     }
 
     private static Chart Bare() => Chart.Create().WithSize(420, 280).WithAxes(false).WithGrid(false).WithLegend(false);
