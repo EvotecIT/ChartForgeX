@@ -108,7 +108,7 @@ public sealed class RangeBarSegmentedLayoutTests {
     }
 
     [Fact]
-    public void DenseSegmentedGroupsRejectInsufficientEffectSpaceWhileFlatRemainsAvailable() {
+    public void DenseSegmentedGroupsRejectInsufficientEffectSpaceWhileNarrowFlatMarksRemainAvailable() {
         var chart = Gallery(360, ChartBarStyle.SegmentedCapsule);
         for (var index = 2; index < 8; index++) chart.AddRangeBar("Group " + index, new[] {
             new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30), new ChartInterval(3, 15, 35), new ChartInterval(4, 25, 50)
@@ -117,6 +117,7 @@ public sealed class RangeBarSegmentedLayoutTests {
         Assert.Equal("The category slot cannot fit the mark's minimum painted footprint. Increase category-axis space, reduce grouped series, or use a simpler mark style.",
             Assert.Throws<InvalidOperationException>(() => chart.Prepare(context)).Message);
         chart.WithBarStyle(ChartBarStyle.Flat);
+        foreach (var series in chart.Series) series.StrokeWidth = 1;
         var prepared = chart.Prepare(context);
         Assert.Equal(32, prepared.Regions.Count(region => region.Role == "point"));
         var footprints = XDocument.Parse(prepared.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point")

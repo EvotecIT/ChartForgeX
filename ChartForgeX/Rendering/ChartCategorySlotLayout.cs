@@ -22,13 +22,14 @@ internal readonly struct ChartCategorySlotLayout {
         var occupied = pitch * .68;
         var gap = count > 1 ? Math.Min(spacing / 2, occupied / (count * 4)) : 0;
         var cell = (occupied - gap * (count - 1)) / count;
+        var minimumFootprint = measuredFootprint?.Invoke(minimumThickness) ?? minimumThickness * footprintRatio + footprintPadding;
+        if (minimumFootprint > cell)
+            throw new InvalidOperationException("The category slot cannot fit the mark's minimum painted footprint. Increase category-axis space, reduce grouped series, or use a simpler mark style.");
         var thickness = Math.Max(minimumThickness, Math.Min(maximumThickness, (cell - footprintPadding) / footprintRatio));
         if (measuredFootprint != null) {
             // The caller measures a monotonic painted footprint that includes the body.
             // Solve in pixel space without changing the linear contract of other marks.
             var lower = minimumThickness; var upper = Math.Max(lower, Math.Min(maximumThickness, cell));
-            if (measuredFootprint(lower) > cell)
-                throw new InvalidOperationException("The category slot cannot fit the mark's minimum painted footprint. Increase category-axis space, reduce grouped series, or use a simpler mark style.");
             if (measuredFootprint(upper) <= cell) lower = upper;
             else for (var iteration = 0; iteration < 40; iteration++) {
                 var middle = (lower + upper) / 2;
