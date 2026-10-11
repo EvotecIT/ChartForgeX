@@ -90,6 +90,9 @@ public sealed class MermaidConfigurationNullAndScalarTests {
     [InlineData("Arial # comment\t", "Arial")]
     [InlineData("'Arial\tserif'", "Arial\tserif")]
     [InlineData("\"Arial\tserif\"", "Arial\tserif")]
+    [InlineData("\"Arial\\\tserif\"", "Arial\tserif")]
+    [InlineData("\"Arial\\\\\tserif\"", "Arial\\\tserif")]
+    [InlineData("\"Arial\\tserif\"", "Arial\tserif")]
     public void YamlTabsOutsideIndentationPreserveScalarMeaning(string declaration, string expected) {
         var parsed = new MermaidParser().Parse("---\nconfig:\n  fontFamily: " + declaration + "\n---\nflowchart LR\nA --> B");
         Assert.Empty(parsed.Diagnostics);
