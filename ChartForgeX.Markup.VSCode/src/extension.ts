@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext): void {
     for (const document of vscode.workspace.textDocuments) {
       if (event.affectsConfiguration('chartforgexMarkup.ganttDateAnchor', document.uri)) {
         scheduleValidation(context, document, 0);
-        schedulePreviewRefresh(context, document, 0);
+        schedulePreviewRefresh(context, document, 0, true);
       }
     }
   }));
@@ -244,8 +244,8 @@ function scheduleValidation(context: vscode.ExtensionContext, document: vscode.T
   }, wait));
 }
 
-function schedulePreviewRefresh(context: vscode.ExtensionContext, document: vscode.TextDocument, delay?: number): void {
-  if (!vscode.workspace.getConfiguration('chartforgexMarkup').get<boolean>('previewAutoRefresh', true)) {
+function schedulePreviewRefresh(context: vscode.ExtensionContext, document: vscode.TextDocument, delay?: number, configurationChanged = false): void {
+  if (!configurationChanged && !vscode.workspace.getConfiguration('chartforgexMarkup').get<boolean>('previewAutoRefresh', true)) {
     return;
   }
 
