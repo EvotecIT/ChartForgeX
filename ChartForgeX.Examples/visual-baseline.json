@@ -5013,7 +5013,31 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 916,
+        "minDistinctColors": 915,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-block-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 420,
+      "logicalWidth": 900,
+      "logicalHeight": 420,
+      "svg": {
+        "minVisualNodes": 5,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 189000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 731,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5134,6 +5158,30 @@
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
         "minDistinctColors": 745,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-pie-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 820,
+      "height": 460,
+      "logicalWidth": 820,
+      "logicalHeight": 460,
+      "svg": {
+        "minVisualNodes": 4,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 188598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 577,
         "maxEdgeInkPixels": 0
       }
     },

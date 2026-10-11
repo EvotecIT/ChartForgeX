@@ -49,8 +49,9 @@ public sealed partial class PngVisualBlockRenderer {
             }
         }
 
-        var fontSize = VisualBlockRendering.BodyFontSize(theme, Math.Max(10, Math.Min(14, rect.Height * 0.26)));
-        DrawCenteredTextMiddle(canvas, item.Label, rect.X + rect.Width / 2, rect.Y + rect.Height / 2, fontSize, theme.Text, true, Math.Max(1, rect.Width - 16));
+        var caption = VisualBlockRendering.BlockLayoutCaptionBounds(item.Shape, rect.X, rect.Y, rect.Width, rect.Height);
+        var style = VisualBlockRendering.BlockLayoutText(theme, item.Label, Math.Max(10, Math.Min(14, rect.Height * 0.26)), caption.Width, caption.Height);
+        DrawAlignedTextAtBaseline(canvas, item.Label, caption.X, VisualBlockRendering.BlockLayoutBaseline(style, rect.Y + rect.Height / 2), caption.Width, TextAlignment.Center, theme.Text, style.FontSize, true);
     }
 
     private static void DrawBlockLayoutEdge(RgbaCanvas canvas, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ChartTheme theme) {
@@ -58,7 +59,8 @@ public sealed partial class PngVisualBlockRenderer {
         canvas.DrawLine(route.X1, route.Y1, route.X2, route.Y2, theme.Axis, 1.6);
         if (edge.Directed) DrawBlockArrowHead(canvas, route, theme.Axis);
         if (edge.Label.Length == 0) return;
-        DrawCenteredTextMiddle(canvas, edge.Label, (route.X1 + route.X2) / 2, (route.Y1 + route.Y2) / 2 - 7, VisualBlockRendering.BodyFontSize(theme, 10.5), theme.MutedText, true, 90);
+        var style = VisualBlockRendering.BlockLayoutText(theme, edge.Label, 10.5, 90, Math.Min(16, Math.Min(source.Height, target.Height) * .4));
+        DrawAlignedTextAtBaseline(canvas, edge.Label, (route.X1 + route.X2) / 2 - 45, VisualBlockRendering.BlockLayoutBaseline(style, (route.Y1 + route.Y2) / 2 - 7), 90, TextAlignment.Center, theme.MutedText, style.FontSize, true);
     }
 
     private static void DrawBlockArrowHead(RgbaCanvas canvas, BlockLayoutEdgeRoute route, ChartColor color) {
