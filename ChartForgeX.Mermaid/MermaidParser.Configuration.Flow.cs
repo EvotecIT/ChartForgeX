@@ -33,7 +33,8 @@ public sealed partial class MermaidParser {
     }
 
     // Shared physical scanning keeps unsupported flow nodes bounded without interpreting them.
-    private static void ScanConfigurationYamlFlow(string text, ref int depth, ref char quote, ref ConfigurationFlowScalar scalarState) {
+    private static int ScanConfigurationYamlFlow(string text, ref int depth, ref char quote, ref ConfigurationFlowScalar scalarState,
+        bool findMappingValue = false) {
         for (var position = 0; position < text.Length; position++) {
             var character = text[position];
             if (quote != '\0') {
@@ -48,13 +49,18 @@ public sealed partial class MermaidParser {
                 scalarState = character == '!' && position + 1 < text.Length && text[position + 1] == '<'
                     ? ConfigurationFlowScalar.VerbatimTag : ConfigurationFlowScalar.Property;
             else if (character == '#' && (position == 0 || text[position - 1] == ' ' || text[position - 1] == '\t')) break;
+            else if (findMappingValue && depth == 0 && character == ':' && (scalarState == ConfigurationFlowScalar.Quoted ||
+                position + 1 == text.Length || text[position + 1] == ' ' || text[position + 1] == '\t')) return position;
             else if ((character == '\'' || character == '"') && scalarState == ConfigurationFlowScalar.Node) quote = character;
-            else if (character == '{' || character == '[') { depth++; scalarState = ConfigurationFlowScalar.Node; }
-            else if (character == '}' || character == ']') { depth--; scalarState = ConfigurationFlowScalar.Plain; }
+            else if ((character == '{' || character == '[') && (!findMappingValue || depth > 0 || scalarState == ConfigurationFlowScalar.Node)) {
+                depth++; scalarState = ConfigurationFlowScalar.Node;
+            }
+            else if ((character == '}' || character == ']') && (!findMappingValue || depth > 0)) { depth--; scalarState = ConfigurationFlowScalar.Plain; }
             else if (character == ',' || character == ':' && (scalarState == ConfigurationFlowScalar.Quoted || position + 1 == text.Length ||
                 text[position + 1] == ' ' || text[position + 1] == '\t')) scalarState = ConfigurationFlowScalar.Node;
             else if (character != ' ' && character != '\t') scalarState = ConfigurationFlowScalar.Plain;
         }
+        return -1;
     }
 
     private enum ConfigurationFlowScalar { Node, Plain, Quoted, Property, VerbatimTag }
