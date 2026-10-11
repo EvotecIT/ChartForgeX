@@ -25,7 +25,7 @@ public sealed partial class MermaidParser {
                 var flow = Regex.Match(trimmed, @"^config\s*:\s*(\{.*)$", RegexOptions.CultureInvariant);
                 if (LeadingWhitespace(line) == rootIndent && flow.Success) {
                     var first = index;
-                    ReadConfigurationFlowMapping(lines, ref index, flow.Groups[1].Value);
+                    ReadConfigurationFlowMapping(lines, ref index, TrimYamlComment(flow.Groups[1].Value).Trim());
                     for (var extra = first + 1; extra <= index; extra++) length += lines[extra].Length + 1;
                     inConfiguration = false;
                 }
