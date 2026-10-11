@@ -28,6 +28,18 @@ internal readonly struct SvgRasterMatrix {
     public ChartPoint Transform(ChartPoint point) =>
         new(point.X * _a + point.Y * _c + _e, point.X * _b + point.Y * _d + _f);
 
+    /// <summary>Maximum device length of a transformed unit vector, including shear and anisotropic scale.</summary>
+    public double MaximumScale {
+        get {
+            // Normalize first so squaring very large or small finite coefficients stays representable.
+            double scale = Math.Max(Math.Max(Math.Abs(_a), Math.Abs(_b)), Math.Max(Math.Abs(_c), Math.Abs(_d)));
+            if (scale == 0 || double.IsInfinity(scale)) return scale;
+            double a = _a / scale, b = _b / scale, c = _c / scale, d = _d / scale;
+            double x = a * a + b * b, y = c * c + d * d, cross = a * c + b * d;
+            return scale * Math.Sqrt((x + y + Math.Sqrt((x - y) * (x - y) + 4 * cross * cross)) / 2);
+        }
+    }
+
     public double ScaleFactor {
         get {
             var x = Math.Sqrt(_a * _a + _b * _b);

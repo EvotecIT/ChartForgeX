@@ -12,6 +12,44 @@ namespace ChartForgeX.Tests;
 
 public sealed class FinancialDashOptionsTests {
     [Fact]
+    public void NonrepeatingSubpixelPatternUsesTheSameHighDpiResolutionAcrossRasterPaths() {
+        var chart = Chart.Create().WithSize(1200, 100).WithHeader(false).WithLegend(false).WithDataLabels(false);
+        chart.AddOhlc("Price", new[] { new ChartCandlestick(1, 4, 9, 1, 7), new ChartCandlestick(2, 7, 9, 1, 4) });
+        var pattern = Enumerable.Repeat(.0001, 65).ToArray(); pattern[64] = .0002;
+        chart.Series[0].Financial.Rising.DashPattern = pattern;
+        chart.Series[0].Financial.Rising.StrokeWidth = 2;
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200, 100)),
+            frame: new VisualFrame(showLegend: false)));
+        var native = prepared.ToRgba(new VisualRenderOptions(scale: 8, supersampling: 1));
+        var svg = SvgRasterizer.ToImage(prepared.ToSvg(), width: 9600, height: 800);
+        Assert.Equal(native.Width, svg.Width); Assert.Equal(native.Height, svg.Height);
+        Assert.Contains(native.Pixels, value => value != 0); Assert.Contains(svg.Pixels, value => value != 0);
+    }
+
+    [Theory]
+    [InlineData(ChartSeriesKind.Candlestick, .0001, .0001)]
+    [InlineData(ChartSeriesKind.Ohlc, .0001, .0001)]
+    [InlineData(ChartSeriesKind.Candlestick, 1e-20, 1e-20)]
+    [InlineData(ChartSeriesKind.Ohlc, 1e-20, 1e-20)]
+    [InlineData(ChartSeriesKind.Candlestick, 4, 1e-20)]
+    [InlineData(ChartSeriesKind.Ohlc, 1e-20, 4)]
+    public void AcceptedTinyPatternsExportAndRetainExactSvgLengthsAndPhase(ChartSeriesKind kind, double dash, double gap) {
+        var chart = FinancialMarkOptionsTests.Prices(kind);
+        var item = chart.Series[0].Financial.Rising;
+        item.DashPattern = new[] { dash, gap }; item.DashOffset = -1e-21;
+        if (kind == ChartSeriesKind.Candlestick) item.FillOpacity = 0;
+        var prepared = Prepare(chart);
+        var svg = prepared.ToSvg();
+        foreach (var node in XDocument.Parse(svg).Descendants().Where(node => node.Attribute("stroke-dasharray") != null)) {
+            var lengths = node.Attribute("stroke-dasharray")!.Value.Split(' ').Select(value => double.Parse(value, System.Globalization.CultureInfo.InvariantCulture));
+            Assert.Equal(new[] { dash, gap }, lengths);
+            Assert.Equal(-1e-21, double.Parse(node.Attribute("stroke-dashoffset")!.Value, System.Globalization.CultureInfo.InvariantCulture));
+        }
+        Assert.NotEmpty(prepared.ToPng());
+        Assert.NotEmpty(SvgRasterizer.ToImage(svg).Pixels);
+    }
+
+    [Fact]
     public void PatternsAreCopiedReadOnlyAndInvalidAssignmentsAreAtomic() {
         var item = new ChartFinancialOptions().Rising;
         var input = new[] { 8d, 5d, 2d };

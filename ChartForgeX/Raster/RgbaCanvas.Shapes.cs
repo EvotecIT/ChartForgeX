@@ -48,21 +48,15 @@ internal sealed partial class RgbaCanvas {
             phase = ChartStrokeDashes.NormalizeOffset(dashArray, dashOffset) * _scale;
         }
 
-        var outline = new List<List<ChartPoint>>();
+        var paths = new List<IReadOnlyList<ChartPoint>>(polylines.Count);
         foreach (var polyline in polylines) {
             if (polyline == null || polyline.Count == 0) continue;
             var device = new List<ChartPoint>(polyline.Count);
             foreach (var point in polyline) device.Add(new ChartPoint(point.X * _scale, point.Y * _scale));
-            if (pattern == null) {
-                RasterStroker.AppendOutline(device, width, lineCap, lineJoin, miterLimit, 1, outline);
-                continue;
-            }
-
-            double padding = width * Math.Max(1, miterLimit);
-            foreach (var dash in RasterStroker.Dash(device, pattern, -padding, -padding, _pixelWidth + padding, _pixelHeight + padding, phase))
-                RasterStroker.AppendOutline(dash, width, lineCap, lineJoin, miterLimit, 1, outline);
+            paths.Add(device);
         }
-
+        var outline = RasterStroker.CreateOutline(paths, width, lineCap, lineJoin, miterLimit, pattern,
+            phase, 1, 0, 0, _pixelWidth, _pixelHeight);
         FillContoursPixels(outline, color, RasterFillRule.NonZero, StrokeSubScanlines);
     }
 
