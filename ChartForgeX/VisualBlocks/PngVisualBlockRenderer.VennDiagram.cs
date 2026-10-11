@@ -23,7 +23,7 @@ public sealed partial class PngVisualBlockRenderer {
         }
 
         foreach (var placement in placements) {
-            DrawCenteredTextMiddle(canvas, placement.Set.Label, placement.X, placement.Y - placement.Radius * 0.52, VisualBlockRendering.BodyFontSize(theme, 13.5), placement.Set.TextColor ?? theme.Text, true, placement.Radius * 1.16);
+            DrawAlignedTextAtBaseline(canvas, placement.Set.Label, placement.X - placement.Radius * .58, placement.Y - placement.Radius * .52, placement.Radius * 1.16, TextAlignment.Center, placement.Set.TextColor ?? theme.Text, VisualBlockRendering.BodyFontSize(theme, 13.5), true);
         }
 
         foreach (var intersection in block.Intersections) DrawVennIntersectionStyle(canvas, placements, intersection);
@@ -44,6 +44,6 @@ public sealed partial class PngVisualBlockRenderer {
         var center = VisualBlockRendering.VennRegionCenter(placements, setIds);
         var maxWidth = Math.Max(42, placements[0].Radius * (setIds.Count == 1 ? 0.95 : 0.72));
         var yOffset = setIds.Count == 1 ? placements[0].Radius * 0.12 : setIds.Count == 2 ? 5 : 18;
-        DrawCenteredTextMiddle(canvas, label, center.X, center.Y + yOffset, fontSize, color, emphasized, maxWidth);
+        DrawAlignedTextAtBaseline(canvas, label, center.X - maxWidth / 2, center.Y + yOffset, maxWidth, TextAlignment.Center, color, fontSize, emphasized);
     }
 }
