@@ -21,7 +21,10 @@ public sealed partial class MermaidParser {
             var trimmed = TrimConfigurationYaml(raw);
             if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
             var indent = ConfigurationYamlIndent(raw);
-            if (opaqueIndent >= 0 && IsConfigurationYamlBlockContinuation(indent, opaqueIndent, trimmed)) continue;
+            if (opaqueIndent >= 0 && IsConfigurationYamlBlockContinuation(indent, opaqueIndent, trimmed)) {
+                SkipOpaqueConfigurationYamlFlow(lines, ref index, trimmed);
+                continue;
+            }
             opaqueIndent = -1;
             var sequenceItem = IsConfigurationYamlSequenceItem(trimmed);
             while (parents.Count > 0 && indent <= parents[parents.Count - 1].Indent) {
@@ -35,6 +38,7 @@ public sealed partial class MermaidParser {
                     configuration.Add(new MermaidConfigurationSetting(parent.Path.Length == 0 ? "config" : parent.Path, null, false, parent.Span));
                 parents.RemoveAt(parents.Count - 1);
                 opaqueIndent = parent.Indent;
+                SkipOpaqueConfigurationYamlFlow(lines, ref index, trimmed);
                 continue;
             }
             var match = ConfigurationYamlMapping(trimmed);
@@ -53,6 +57,7 @@ public sealed partial class MermaidParser {
                 Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Warning,
                     "Mermaid frontmatter configuration supports space-indented mappings with scalar values; this declaration is retained without application.", MermaidDiagnosticCodes.UnsupportedConfiguration);
                 opaqueIndent = indent;
+                SkipOpaqueConfigurationYamlFlow(lines, ref index, trimmed);
                 continue;
             }
             var path = parents.Count == 0 ? string.Empty : parents[parents.Count - 1].Path;
@@ -74,6 +79,7 @@ public sealed partial class MermaidParser {
                     if (IsOpaqueConfigurationYamlValue(valueText)) {
                         configuration.Add(new MermaidConfigurationSetting("config", valueText, false, span));
                         opaqueIndent = indent;
+                        SkipOpaqueConfigurationYamlFlow(lines, ref index, valueText);
                         continue;
                     }
                     var sourceLines = new List<ConfigurationJsonLine>();
@@ -93,6 +99,7 @@ public sealed partial class MermaidParser {
                     } else if (valueText.StartsWith("{", StringComparison.Ordinal) || IsOpaqueConfigurationYamlValue(valueText)) {
                         value = null; isString = false;
                         opaqueIndent = indent;
+                        SkipOpaqueConfigurationYamlFlow(lines, ref index, valueText);
                     } else {
                         ValidateConfigurationYamlPlainScalar(valueText);
                         if (Regex.IsMatch(valueText, @":(?:[ \t]|$)", RegexOptions.CultureInvariant))
