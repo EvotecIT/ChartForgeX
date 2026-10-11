@@ -15,8 +15,9 @@ public sealed partial class MermaidParser {
         var configuration = new MermaidSourceConfiguration();
         declarations = new List<MermaidDirective>();
         var originalLineStarts = ConfigurationLineStarts(source);
-        var length = frontMatter == null ? 0 : ConfigurationYamlLength(frontMatter);
-        if (length > MaximumConfigurationLength) {
+        long length = frontMatter == null ? 0 : ConfigurationYamlLength(frontMatter);
+        var budgetReported = length > MaximumConfigurationLength;
+        if (budgetReported) {
             ConfigurationError(result, new MermaidSourceSpan(1, 1, 3), "Mermaid source configuration exceeds 65536 characters.");
         } else if (frontMatter != null) ReadConfigurationYaml(frontMatter, configuration, result);
 
@@ -32,28 +33,34 @@ public sealed partial class MermaidParser {
             var start = index;
             var column = LeadingWhitespace(lines[start]) + 1;
             var directive = new StringBuilder();
+            long directiveLength = 0;
             var lastLineLength = 0;
             Match ending;
             do {
                 var raw = lines[index];
                 lastLineLength = raw.Length;
                 ending = Regex.Match(raw, @"\}\s*%%\s*$", RegexOptions.CultureInvariant);
-                if (directive.Length > 0) directive.Append('\n');
-                directive.Append(raw);
+                directiveLength += raw.Length + (index > start ? 1L : 0L);
+                if (directiveLength <= MaximumConfigurationLength) {
+                    if (index > start) directive.Append('\n');
+                    directive.Append(raw);
+                }
                 lines[index] = string.Empty;
-                if (ending.Success || directive.Length > MaximumConfigurationLength || index + 1 == lines.Length) break;
+                // Even rejected declarations must be consumed before scanning the diagram header.
+                if (ending.Success || index + 1 == lines.Length) break;
                 index++;
             } while (true);
 
-            var text = directive.ToString();
-            ending = Regex.Match(text, @"\}\s*%%\s*$", RegexOptions.CultureInvariant);
             var span = new MermaidSourceSpan(start + 1, column,
                 originalLineStarts[index] + lastLineLength - originalLineStarts[start] - column + 1);
-            length += text.Length;
+            length += directiveLength;
             if (length > MaximumConfigurationLength) {
-                ConfigurationError(result, span, "Mermaid source configuration exceeds 65536 characters.");
-                break;
+                if (!budgetReported) ConfigurationError(result, span, "Mermaid source configuration exceeds 65536 characters.");
+                budgetReported = true;
+                continue;
             }
+            var text = directive.ToString();
+            ending = Regex.Match(text, @"\}\s*%%\s*$", RegexOptions.CultureInvariant);
             declarations.Add(new MermaidDirective(text.Trim(), span));
             if (!ending.Success) {
                 ConfigurationError(result, span, "Mermaid init configuration must close with '}%%'.");
