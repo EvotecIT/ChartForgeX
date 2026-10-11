@@ -28,8 +28,8 @@ public sealed class MermaidRadarDocument : MermaidDocument {
     /// <summary>Gets or sets the optional maximum radar scale.</summary>
     public double? Maximum { get; set; }
 
-    /// <summary>Gets or sets the optional tick count.</summary>
-    public int? Ticks { get; set; }
+    /// <summary>Gets or sets the optional radial interval count, including fractional spacing divisors.</summary>
+    public double? Ticks { get; set; }
 
     /// <summary>Gets or sets the optional Mermaid graticule style.</summary>
     public string? Graticule { get; set; }

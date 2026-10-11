@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -9,6 +10,47 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects angular projection without changing source order, numeric radii or native paint.</summary>
 public sealed class RadialAngularReversalTests {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExplicitGuideShapeSurvivesAngularReversalWithSourceAndNativePaint(bool radar) {
+        var color = ChartColor.FromHex("#2468AC");
+        var angles = radar ? new[] { 1d, 2, 3, 4 } : new[] { 0d, .55, 2.7, 5.4 };
+        var points = angles.Select((angle, index) => new ChartPoint(angle, 25 + index * 10)).ToArray();
+        var chart = Bare().WithPolarGridShape(radar ? ChartPolarGridShape.Circle : ChartPolarGridShape.Polygon);
+        chart.Options.ShowAxes = false; chart.Options.PolarGridRingCount = 1; chart.Options.XAxis.TickCount = 4;
+        if (radar) chart.AddRadarLine("Signal", points); else chart.AddPolar("Signal", points);
+        chart.Series[0].WithPointColor(1, color).WithMarkerRadius(6);
+        var normal = Prepare(chart); chart.Options.XAxis.WithReversal(); var reversed = Prepare(chart);
+        var role = radar ? "radar-ring" : "polar-ring";
+        var guide = Assert.Single(reversed.Scene.Nodes, node => node.Role == role);
+        if (radar) Assert.IsType<VisualSceneEllipse>(guide);
+        else Assert.True(Assert.IsType<VisualScenePath>(guide).Close);
+        var svgGuide = Assert.Single(XDocument.Parse(reversed.ToSvg()).Descendants(),
+            element => (string?)element.Attribute("data-cfx-role") == role);
+        Assert.Equal(radar ? "ellipse" : "path", svgGuide.Name.LocalName);
+        var spokes = reversed.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == (radar ? "radar-spoke" : "polar-spoke")).ToArray();
+        var center = spokes[0].Start; var source = Center(reversed, "series-0-point-1");
+        if (radar) AssertSameRay(center, spokes[1].End, source);
+        else {
+            Assert.True(Center(normal, "series-0-point-1").Y < center.Y && source.Y > center.Y);
+            Assert.Equal(points[1].X.ToString("R", CultureInfo.InvariantCulture), Group(reversed, "series-0-point-1")["data-cfx-angle"]);
+        }
+        foreach (var key in new[] { "data-cfx-point", "data-cfx-category", "data-cfx-value" })
+            Assert.Equal(Group(normal, "series-0-point-1")[key], Group(reversed, "series-0-point-1")[key]);
+        AssertPixel(reversed, source, color);
+        var dx = spokes[0].End.X - center.X; var dy = spokes[0].End.Y - center.Y;
+        var radius = Math.Sqrt(dx * dx + dy * dy);
+        // With four axis-aligned spokes, the square edge and circle differ away from all spokes and observations.
+        var square = new ChartPoint(center.X + radius / 2, center.Y + radius / 2);
+        var circle = new ChartPoint(center.X + radius / Math.Sqrt(2), center.Y + radius / Math.Sqrt(2));
+        var image = RasterImageDecoder.Decode(reversed.ToPng());
+        bool HasPaint(ChartPoint point) => Enumerable.Range(-2, 5).Any(x => Enumerable.Range(-2, 5)
+            .Any(y => Pixel(image, new ChartPoint(point.X + x, point.Y + y))[3] > 0));
+        Assert.True(HasPaint(radar ? circle : square), "The selected guide shape must paint in native PNG after angular reversal.");
+        Assert.False(HasPaint(radar ? square : circle), "The other guide shape must not replace the selected native guide.");
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
