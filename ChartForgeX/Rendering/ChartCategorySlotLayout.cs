@@ -13,7 +13,7 @@ internal readonly struct ChartCategorySlotLayout {
 
     internal static ChartCategorySlotLayout Create(IEnumerable<double> mappedCategories, double extent, double spacing,
         int count, int position, double maximumThickness = double.PositiveInfinity, double minimumThickness = .1,
-        int sampleSlots = 0, double footprintRatio = 1, double footprintPadding = 0) {
+        int sampleSlots = 0, double footprintRatio = 1, double footprintPadding = 0, Func<double, double>? measuredFootprint = null) {
         var centers = mappedCategories.Distinct().OrderBy(value => value).ToArray();
         var pitch = sampleSlots > 0 ? extent / sampleSlots : extent;
         if (sampleSlots == 0)
@@ -23,7 +23,21 @@ internal readonly struct ChartCategorySlotLayout {
         var gap = count > 1 ? Math.Min(spacing / 2, occupied / (count * 4)) : 0;
         var cell = (occupied - gap * (count - 1)) / count;
         var thickness = Math.Max(minimumThickness, Math.Min(maximumThickness, (cell - footprintPadding) / footprintRatio));
-        var footprint = thickness * footprintRatio + footprintPadding;
+        if (measuredFootprint != null) {
+            // The caller measures a monotonic painted footprint that includes the body.
+            // Solve in pixel space without changing the linear contract of other marks.
+            var lower = minimumThickness; var upper = Math.Max(lower, Math.Min(maximumThickness, cell));
+            if (measuredFootprint(lower) > cell)
+                throw new InvalidOperationException("The category slot cannot fit the mark's minimum painted footprint. Increase category-axis space, reduce grouped series, or use a simpler mark style.");
+            if (measuredFootprint(upper) <= cell) lower = upper;
+            else for (var iteration = 0; iteration < 40; iteration++) {
+                var middle = (lower + upper) / 2;
+                if (measuredFootprint(middle) <= cell) lower = middle;
+                else upper = middle;
+            }
+            thickness = lower;
+        }
+        var footprint = measuredFootprint?.Invoke(thickness) ?? thickness * footprintRatio + footprintPadding;
         var offset = (position - (count - 1) / 2d) * (footprint + gap);
         return new ChartCategorySlotLayout(thickness, offset, pitch);
     }

@@ -197,6 +197,8 @@ ranges.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
 
 Horizontal range-bar charts accept only range-bar series on the primary axis. Vertical Cartesian mixtures and secondary Y axes retain their existing support. `ChartBarMode` does not stack intervals, and per-series stack configuration remains unsupported for range bars. Multiple range-bar series that previously overlapped now appear side by side; an overlap layout is not provided.
 
+Segmented range-bar slots include the visible cap, shadow and highlight footprint. If a category slot cannot fit those effects, rendering throws an actionable `InvalidOperationException`. Increase the category-axis space (height for horizontal intervals, width for vertical intervals), reduce grouped series, or use `ChartBarStyle.Flat` for a smaller footprint.
+
 ## Sankey layout
 
 `ChartOptions.Sankey` configures the shared native SVG/PNG geometry without changing authored nodes, flows or values:

@@ -15,12 +15,12 @@ internal static partial class VisualCartesianCompiler {
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
         var style = chart.Options.ResolvePreparedBarVisualStyle();
         var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.RangeBar).ToArray();
-        var padding = style.Kind == ChartBarStyle.SegmentedCapsule ? style.CapThickness + style.CapShadowSpread * 2
-            : participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth);
-        var ratio = style.Kind == ChartBarStyle.SegmentedCapsule ? 1.7 : 1.5;
+        var segmented = style.Kind == ChartBarStyle.SegmentedCapsule;
+        var padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth);
         var layout = ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].Points.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
             horizontal ? plot.Height : plot.Width, context.Theme.Spacing, participants.Length, Array.IndexOf(participants, index),
-            maximumThickness: 28, footprintRatio: ratio, footprintPadding: padding);
+            maximumThickness: 28, footprintRatio: 1.5, footprintPadding: padding,
+            measuredFootprint: segmented ? width => ChartSegmentedBarGeometry.RangeCategoryFootprint(style, width) : null);
         var thickness = layout.Thickness;
         for (var item = 0; item < count; item++) {
             var first = series.Points[item * 2]; var second = series.Points[item * 2 + 1];
@@ -38,9 +38,10 @@ internal static partial class VisualCartesianCompiler {
                 DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "range-bar", range: true, horizontal: horizontal);
                 DrawCap(start); DrawCap(end);
             }
-            var footprint = thickness * ratio + padding;
-            var obstacle = horizontal ? new ChartRect(minimum - padding / 2, category - footprint / 2, length + padding, footprint)
-                : new ChartRect(category - footprint / 2, minimum - padding / 2, footprint, length + padding);
+            var footprint = thickness * 1.5 + padding;
+            var obstacle = segmented ? ChartSegmentedBarGeometry.RangePaintBounds(style, bounds, horizontal)
+                : horizontal ? new ChartRect(minimum - padding / 2, category - footprint / 2, length + padding, footprint)
+                    : new ChartRect(category - footprint / 2, minimum - padding / 2, footprint, length + padding);
             obstacles.Add(new LabelObstacle(PointId(index, item), obstacle));
             var high = horizontal ? map.X(Math.Max(first.Y, second.Y)) : map.Y(Math.Max(first.Y, second.Y));
             var low = horizontal ? map.X(Math.Min(first.Y, second.Y)) : map.Y(Math.Min(first.Y, second.Y));
