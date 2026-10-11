@@ -8,13 +8,14 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualScheduleCompiler {
     private static void Dependencies(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        IReadOnlyList<RangeItem> items, IReadOnlyList<ChartGanttDependency> links, Func<double, double> project, double slot, double height) {
+        IReadOnlyList<RangeItem> items, IReadOnlyList<ChartGanttDependency> links, Func<double, double> project, double slot, double height, double minimum, double maximum) {
         var color = context.Theme.Resolve(context.ThemeMode).MutedForeground;
         var paint = VisualChartPaint.Stroke(color, SvgColorRole.Text);
         using (builder.PushClip(plot)) foreach (var link in links) {
             var previous = items[link.PredecessorIndex];
             var item = items[link.SuccessorIndex];
             if (previous.Marker || item.Marker) continue;
+            if ((previous.End < minimum && item.End < minimum) || (previous.Start > maximum && item.Start > maximum)) continue;
             var milestoneExtent = Math.Min(height, plot.Width) / 2;
             var start = new ChartPoint(project(previous.End) + (previous.Milestone ? milestoneExtent : 0), plot.Top + (previous.Row + .5) * slot);
             var end = new ChartPoint(project(item.Start) + (item.Milestone ? milestoneExtent : 0), plot.Top + (item.Row + .5) * slot);

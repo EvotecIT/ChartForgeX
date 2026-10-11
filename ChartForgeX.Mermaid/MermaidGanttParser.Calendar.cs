@@ -68,8 +68,21 @@ internal static partial class MermaidGanttParser {
 
     private static HashSet<string> CalendarTokens(string? value, string format, DateTime? dateAnchor, Action<string, int>? unrecognized = null) {
         var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(value)) return tokens;
         var chunkOffset = 0;
-        foreach (var chunk in (value ?? string.Empty).Split(',')) {
+        var chunks = (value ?? string.Empty).Split(',');
+        var literalCommas = 0;
+        foreach (var ch in MermaidGanttInputDateFormat.FormatCalendarDate(new DateTime(2000, 2, 29), format)) if (ch == ',') literalCommas++;
+        for (var index = 0; index < chunks.Length; index++) {
+            var chunk = chunks[index];
+            // A configured date can itself contain commas. Join only the bounded number
+            // emitted by that format, and consume them only when the complete date parses.
+            var candidate = chunk;
+            for (var end = index + 1; end < chunks.Length && end <= index + literalCommas; end++) {
+                candidate += "," + chunks[end];
+                if (!TryNormalizeCalendarDate(candidate.Trim(), format, out _, dateAnchor)) continue;
+                chunk = candidate; index = end; break;
+            }
             var trimmed = chunk.Trim();
             var sourceOffset = chunkOffset + chunk.IndexOf(trimmed, StringComparison.Ordinal);
             chunkOffset += chunk.Length + 1;
@@ -122,13 +135,9 @@ internal static partial class MermaidGanttParser {
             && string.Equals(token, day.ToString(), StringComparison.OrdinalIgnoreCase);
 
     private static string MergeCalendarTokens(string? existing, string added) {
-        var tokens = new List<string>();
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         // Keep complete declarations until all directives establish the final format.
-        foreach (var raw in ((existing ?? string.Empty) + "," + added).Split(',')) {
-            var token = raw.Trim();
-            if (token.Length > 0 && seen.Add(token)) tokens.Add(token);
-        }
-        return string.Join(", ", tokens);
+        var declaration = added.Trim();
+        if (string.IsNullOrWhiteSpace(existing)) return declaration;
+        return declaration.Length == 0 ? existing! : existing + ", " + declaration;
     }
 }
