@@ -9,7 +9,7 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 /// <summary>One measured numeric key scene for matrix and Cartesian color dimensions.</summary>
-internal static class VisualColorScaleLegendScene {
+internal static partial class VisualColorScaleLegendScene {
     /// <summary>Measures the optional heading lane shared by modern and legacy numeric key owners.</summary>
     internal static double HeadingHeight(VisualSceneBuilder builder, TextStyle style, double gap, string? heading) =>
         heading == null ? 0 : builder.MeasureText("Mg", style).Height + gap;
@@ -31,14 +31,15 @@ internal static class VisualColorScaleLegendScene {
     /// <summary>Measures the same caption rows that Draw emits, using the caller's numeric formatting policy.</summary>
     internal static double Height(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style,
         double gap, double width, double maximum, bool missing, Func<IReadOnlyList<double>, string[]> formatValues, bool hasDomain = true,
-        bool compact = false, double min = 0, double max = 0, bool inlineMissing = false, string? heading = null) {
+        bool compact = false, double min = 0, double max = 0, bool inlineMissing = false, string? heading = null,
+        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto) {
         var row = builder.MeasureText("Mg", style).Height;
         var headingHeight = Math.Max(0, Math.Min(maximum, HeadingHeight(builder, style, gap, heading)));
         maximum = Math.Max(0, maximum - headingHeight);
         if (!hasDomain) return headingHeight + (inlineMissing ? 0 : Math.Max(0, Math.Min(maximum, row + gap)));
         var columns = Columns(builder, scale, labels, style, width, gap, formatValues);
         var rows = scale.Mode == ChartColorScaleMode.Discrete ? (int)Math.Ceiling(scale.Bands.Count / (double)columns) : 1;
-        var inlineMidpoint = compact && InlineMidpoint(builder, scale, labels, style, gap, width, min, max, formatValues);
+        var inlineMidpoint = compact && InlineMidpoint(builder, scale, labels, style, gap, width, min, max, formatValues, legendStyle);
         var extra = (scale.MidpointLabel != null && !inlineMidpoint ? row + gap : 0) + (missing && !inlineMissing ? row + gap : 0);
         return headingHeight + Math.Max(0, Math.Min(maximum, rows * (12 + row + gap) + gap + extra));
     }
@@ -47,14 +48,15 @@ internal static class VisualColorScaleLegendScene {
     internal static void Draw(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style, double gap,
         ChartRect bounds, double min, double max, string prefix, bool missing, ChartColorBlend missingBlend,
         Func<IReadOnlyList<double>, string[]> formatValues, string diagnosticCode = "matrix.scale-overflow", bool hasDomain = true,
-        bool compact = false, ChartRect? missingBounds = null, string? heading = null, string? valueName = null) {
+        bool compact = false, ChartRect? missingBounds = null, string? heading = null, string? valueName = null,
+        ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto) {
         var row = builder.MeasureText("Mg", style).Height;
         var fullBounds = bounds;
         var headingHeight = Math.Max(0, Math.Min(bounds.Height, HeadingHeight(builder, style, gap, heading)));
         if (heading != null) bounds = new ChartRect(bounds.Left, bounds.Top + headingHeight, bounds.Width, Math.Max(0, bounds.Height - headingHeight));
         var columns = Columns(builder, scale, labels, style, bounds.Width, gap, formatValues);
         var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues) : null;
-        var inlineMidpoint = compact && InlineMidpoint(builder, scale, labels, style, gap, bounds.Width, min, max, formatValues);
+        var inlineMidpoint = compact && InlineMidpoint(builder, scale, labels, style, gap, bounds.Width, min, max, formatValues, legendStyle);
         var extra = (scale.MidpointLabel != null && !inlineMidpoint ? row + gap : 0) + (missing && !missingBounds.HasValue ? row + gap : 0);
         var available = Math.Max(0, bounds.Height - gap - extra);
         var rows = captions != null ? (int)Math.Ceiling(captions.Length / (double)columns) : 1;
@@ -71,6 +73,7 @@ internal static class VisualColorScaleLegendScene {
         var pitchY = available / rows; var swatchHeight = Math.Min(12, Math.Max(0, pitchY - row - gap));
         var y = bounds.Top + gap; var midpointX = bounds.Left + bounds.Width / 2;
         var metadata = new Dictionary<string, string> { ["data-cfx-scale-mode"] = scale.Mode.ToString().ToLowerInvariant() };
+        if (legendStyle != ChartColorLegendStyle.Auto) metadata["data-cfx-legend-style"] = legendStyle.ToString().ToLowerInvariant();
         if (captions == null && hasDomain) {
             metadata["data-cfx-min-value"] = VisualStateSceneTools.Number(scale.EffectiveMinimum(min));
             metadata["data-cfx-max-value"] = VisualStateSceneTools.Number(scale.EffectiveMaximum(max));
@@ -106,11 +109,16 @@ internal static class VisualColorScaleLegendScene {
                 } else {
                     var steps = ChartColorScaleLegend.Steps(scale, min, max); var width = bounds.Width / steps.Length;
                     if (scale.Mode == ChartColorScaleMode.Diverging && scale.EffectiveMaximum(max) > scale.EffectiveMinimum(min))
-                        midpointX = bounds.Left + (ChartColorScaleLegend.MidpointStep(scale, min, max, steps.Length) + .5) * width;
-                    var stepLabels = formatValues(steps);
-                    for (var index = 0; index < steps.Length; index++)
-                        Tile(index, new ChartRect(bounds.Left + index * width, y, width, swatchHeight), scale.BlendFor(steps[index], min, max), stepLabels[index],
-                            new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(steps[index]) });
+                        midpointX = legendStyle == ChartColorLegendStyle.Gradient ? bounds.Left + bounds.Width * ChartColorScaleLegend.MidpointRatio(scale, min, max)
+                            : bounds.Left + (ChartColorScaleLegend.MidpointStep(scale, min, max, steps.Length) + .5) * width;
+                    if (legendStyle == ChartColorLegendStyle.Gradient)
+                        Gradient(builder, scale, new ChartRect(bounds.Left, y, bounds.Width, swatchHeight), min, max, prefix + "-gradient");
+                    else {
+                        var stepLabels = formatValues(steps);
+                        for (var index = 0; index < steps.Length; index++)
+                            Tile(index, new ChartRect(bounds.Left + index * width, y, width, swatchHeight), scale.BlendFor(steps[index], min, max), stepLabels[index],
+                                new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(steps[index]) });
+                    }
                     var endpoints = formatValues(new[] { scale.EffectiveMinimum(min), scale.EffectiveMaximum(max) });
                     Caption((scale.LowLabel ?? labels.Less) + " · " + endpoints[0],
                         new ChartRect(bounds.Left, y + swatchHeight + gap / 2, bounds.Width / 2, row), "low", TextAlignment.Left);
@@ -128,10 +136,10 @@ internal static class VisualColorScaleLegendScene {
         }
 
         void Midpoint(double top) {
-            // Preserve the canonical stop anchor even when a compact key shares its caption row.
-            var width = 2 * Math.Min(midpointX - bounds.Left, bounds.Right - midpointX);
-            Caption(scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0],
-                new ChartRect(midpointX - width / 2, top, width, row), "midpoint", TextAlignment.Center);
+            var text = scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0];
+            var lane = MidpointCaptionLane(builder, text, style, new ChartRect(bounds.Left, top, bounds.Width, row), midpointX,
+                inwardEdges: legendStyle == ChartColorLegendStyle.Gradient);
+            Caption(text, lane.Bounds, "midpoint", lane.Alignment);
         }
 
         void Missing(double top, ChartRect? target = null) {
@@ -156,6 +164,18 @@ internal static class VisualColorScaleLegendScene {
             var captionStyle = captions != null || id == "midpoint" ? FitCaptionStyle(builder, text, style, box.Width) : style;
             VisualStateSceneTools.Text(builder, text, box, captionStyle, prefix + "-label", prefix + "-label-" + id, alignment);
         }
+    }
+
+    /// <summary>Keeps the numeric anchor centered when readable; edge captions face inward within the measured key.</summary>
+    internal static (ChartRect Bounds, TextAlignment Alignment) MidpointCaptionLane(VisualSceneBuilder builder,
+        string text, TextStyle style, ChartRect lane, double anchor, bool inwardEdges = true) {
+        anchor = Math.Max(lane.Left, Math.Min(lane.Right, anchor));
+        var symmetric = Math.Max(0, 2 * Math.Min(anchor - lane.Left, lane.Right - anchor));
+        if (!inwardEdges || symmetric > 0 && builder.MeasureText(text, FitCaptionStyle(builder, text, style, symmetric)).Width <= symmetric)
+            return (new ChartRect(anchor - symmetric / 2, lane.Top, symmetric, lane.Height), TextAlignment.Center);
+        return anchor <= lane.Left + lane.Width / 2
+            ? (new ChartRect(anchor, lane.Top, Math.Max(0, lane.Right - anchor), lane.Height), TextAlignment.Left)
+            : (new ChartRect(lane.Left, lane.Top, Math.Max(0, anchor - lane.Left), lane.Height), TextAlignment.Right);
     }
 
     /// <summary>Fits bounded key captions using the same measured, readable size policy for every consumer.</summary>
@@ -196,7 +216,7 @@ internal static class VisualColorScaleLegendScene {
 
     // Share a caption row only when actual glyph widths leave all three labels disjoint at their exact anchors.
     private static bool InlineMidpoint(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style,
-        double gap, double width, double min, double max, Func<IReadOnlyList<double>, string[]> formatValues) {
+        double gap, double width, double min, double max, Func<IReadOnlyList<double>, string[]> formatValues, ChartColorLegendStyle legendStyle) {
         if (scale.Mode == ChartColorScaleMode.Discrete || scale.MidpointLabel == null || width <= 0) return false;
         var endpoints = formatValues(new[] { scale.EffectiveMinimum(min), scale.EffectiveMaximum(max) });
         var low = builder.MeasureText((scale.LowLabel ?? labels.Less) + " · " + endpoints[0], style).Width;
@@ -204,7 +224,8 @@ internal static class VisualColorScaleLegendScene {
         var midpoint = builder.MeasureText(scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0], style).Width;
         var steps = ChartColorScaleLegend.Steps(scale, min, max);
         var x = scale.Mode == ChartColorScaleMode.Diverging && scale.EffectiveMaximum(max) > scale.EffectiveMinimum(min)
-            ? (ChartColorScaleLegend.MidpointStep(scale, min, max, steps.Length) + .5) * width / steps.Length : width / 2;
+            ? legendStyle == ChartColorLegendStyle.Gradient ? width * ChartColorScaleLegend.MidpointRatio(scale, min, max)
+                : (ChartColorScaleLegend.MidpointStep(scale, min, max, steps.Length) + .5) * width / steps.Length : width / 2;
         return low + gap <= x - midpoint / 2 && x + midpoint / 2 + gap <= width - high;
     }
 }
