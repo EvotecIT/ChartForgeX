@@ -107,7 +107,7 @@ public sealed partial class MermaidParser {
         }
         void ValidateString(MermaidConfigurationSetting? setting) {
             if (setting != null && !IsConfigurationStringValue(setting)) {
-                ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' must be a non-empty string of at most 4096 characters.");
+                ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' must be a non-empty string of at most 4096 characters containing complete Unicode characters.");
             }
         }
         foreach (var key in new[] { "theme", "layout", "look" }) {
@@ -156,7 +156,16 @@ public sealed partial class MermaidParser {
         string.Equals(value, "default", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsConfigurationStringValue(MermaidConfigurationSetting setting) =>
-        setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) && setting.Value!.Length <= 4096;
+        setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) && setting.Value!.Length <= 4096 && IsCompleteConfigurationUnicode(setting.Value);
+
+    private static bool IsCompleteConfigurationUnicode(string value) {
+        for (var index = 0; index < value.Length; index++) {
+            if (!char.IsSurrogate(value[index])) continue;
+            if (!char.IsHighSurrogate(value[index]) || index + 1 >= value.Length || !char.IsLowSurrogate(value[index + 1])) return false;
+            index++;
+        }
+        return true;
+    }
 
     private static bool IsRecognizedTheme(string? value) => IsNativeTheme(value) || value == "base" || value == "forest" ||
         value == "neutral" || value == "null" || value == "neo" || value == "neo-dark" || value == "redux" ||
