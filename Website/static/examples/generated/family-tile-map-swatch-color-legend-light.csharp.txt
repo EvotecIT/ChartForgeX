@@ -274,6 +274,39 @@ public static partial class V2GalleryModels {
 
 
 public static partial class V2GalleryModels {
+    private static Chart? Differences(ChartSeriesKind kind, string variant) {
+        if (kind != ChartSeriesKind.DifferenceArea) return null;
+        var dated = variant is "dated-gaps" or "compact-dated-gaps";
+        var day = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+        var first = new[] { 42d, 68, 48, 60, 74, 46, 62 };
+        var second = new[] { 56d, 54, 60, 60, 58, 64, 50 };
+        var pairs = new ChartDifferencePoint[first.Length];
+        for (var item = 0; item < pairs.Length; item++) pairs[item] = dated
+            ? new ChartDifferencePoint(day.AddDays(item + (item >= 4 ? 2 : 0)), first[item], second[item], item == 4)
+            : new ChartDifferencePoint(item + 1, first[item], second[item]);
+        var chart = Chart.Create().WithXAxis(dated ? "Observation date (UTC)" : "Observation")
+            .WithYAxis(dated ? "Primary reference" : "Completed requests");
+        if (dated) {
+            chart.ConfigureXAxis(axis => axis.WithTimeScale());
+            chart.AddLine("Primary reference", new[] { new ChartPoint(day, 1), new ChartPoint(day.AddDays(8), 2) });
+        }
+        chart.AddDifferenceArea("Actual and forecast", pairs);
+        var series = chart.Series[dated ? 1 : 0];
+        series.ConfigureDifferenceArea(options => {
+            options.FirstName = "Actual"; options.SecondName = "Forecast";
+            options.PositiveFill = ChartColor.FromHex("#267EAB"); options.NegativeFill = ChartColor.FromHex("#D47A34");
+            options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
+        }).WithMarkerRadius(3);
+        if (dated) {
+            series.UseSecondaryYAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
+            chart.WithSecondaryYAxis("Completed requests");
+        }
+        return chart;
+    }
+}
+
+
+public static partial class V2GalleryModels {
     private static Chart FinancialDashes(ChartSeriesKind kind) {
         var chart = FinancialOptions(kind);
         chart.Series[0].ConfigureFinancial(financial => {
@@ -994,6 +1027,7 @@ public static partial class V2GalleryModels {
 public static partial class V2GalleryModels {
     /// <summary>Creates an actual source model for every chart kind, without selecting a renderer or export backend.</summary>
     public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var differenceGapVariant = (variant is "dated-gaps" or "compact-dated-gaps") && kind == ChartSeriesKind.DifferenceArea;
         var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
         var precisionVariant = (variant is "precision" or "compact-precision") && kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is "authored-total" or "compact-authored-total") && kind == ChartSeriesKind.Sunburst;
@@ -1007,10 +1041,10 @@ public static partial class V2GalleryModels {
         var colorDimensionVariant = (variant is "color-dimension" or "compact-color-dimension") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
         var colorLegendVariant = (variant is "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
         var partialColorVariant = (variant is "partial-color-range" or "compact-partial-color-range") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter;
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalCartesian && !angularReversalVariant && !financialDashVariant && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant && !colorLegendVariant && !endpointLabels && !partialColorVariant)
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalCartesian && !angularReversalVariant && !financialDashVariant && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant && !colorLegendVariant && !endpointLabels && !partialColorVariant && !differenceGapVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (endpointLabels ? RangeBarEndpointLabels(variant) : null) ?? (angularReversalVariant ? AngularReversal(kind) : null) ?? (financialDashVariant ? FinancialDashes(kind) : null) ?? (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant || horizontalCartesian ? GeometryOptions(kind, variant) : null)
-            ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+            ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Differences(kind, variant) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant && !colorDimensionVariant && !colorLegendVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
         if (variant == "options" && kind == ChartSeriesKind.Area) {
@@ -1031,7 +1065,7 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.Lollipop => "Orders at each delivery stage", ChartSeriesKind.Candlestick => "Daily opening and closing prices",
         ChartSeriesKind.Ohlc => "Daily market price ranges", ChartSeriesKind.ErrorBar => "Delivery time and uncertainty",
         ChartSeriesKind.BoxPlot => "Delivery time by service level", ChartSeriesKind.RangeBand => "Expected temperature band",
-        ChartSeriesKind.RangeArea => "Expected operating range", ChartSeriesKind.RangeBar => "Minimum and maximum delivery times",
+        ChartSeriesKind.DifferenceArea => "Actual and forecast requests", ChartSeriesKind.RangeArea => "Expected operating range", ChartSeriesKind.RangeBar => "Minimum and maximum delivery times",
         ChartSeriesKind.Dumbbell => "Service capacity before and after", ChartSeriesKind.Slope => "Capacity change across teams",
         ChartSeriesKind.Heatmap => "Coverage across service areas", ChartSeriesKind.HexbinHeatmap => "Service coverage in hexagonal cells",
         ChartSeriesKind.CalendarHeatmap => "Daily activity across four months", ChartSeriesKind.DottedMap => "Service routes across Europe",
