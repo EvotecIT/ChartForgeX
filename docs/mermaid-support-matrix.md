@@ -77,18 +77,24 @@ Complete the semantic and artifact gates for [Agentflow](https://mermaid.js.org/
 
 The source evidence is [header dispatch and parse results](../ChartForgeX.Mermaid/MermaidParser.cs), [presentation parsing](../ChartForgeX.Mermaid/MermaidParser.Presentation.cs), [presentation application](../ChartForgeX.Mermaid/MermaidPresentation.cs), [render options](../ChartForgeX.Mermaid/MermaidRenderOptions.cs), [Gantt duration parsing](../ChartForgeX.Mermaid/MermaidGanttParser.Duration.cs), and [the upstream harness](../tests/mermaid-conformance/validate-mermaid.mjs). Per-family parser/conversion files and the listed tests establish the row-specific limits.
 
-## Existing Owner Candidates
+## Shared Owners And Active Candidates
 
-These are open implementation candidates as of the audit date. They reduce future work, but do not count as merged support or verified public package availability.
+The native hierarchy, authored identities, chart orientation and relationship styling owners are merged in [#273](https://github.com/EvotecIT/ChartForgeX/pull/273), [#251](https://github.com/EvotecIT/ChartForgeX/pull/251), [#261](https://github.com/EvotecIT/ChartForgeX/pull/261) and [#263](https://github.com/EvotecIT/ChartForgeX/pull/263). Reuse those APIs when extending language conversion. The former treemap and radar-form candidates, #271 and #257, are closed.
 
-| Candidate | Reusable contribution | Mermaid work still required |
+The following implementation PRs are open as of 11 October 2026. Each owns a distinct part of the remaining roadmap. Their local qualification does not establish merged support or public package availability; review and CI remain gates for the exact published candidate.
+
+| Active owner | Reusable contribution | Remaining qualification or scope |
 | --- | --- | --- |
-| [#271](https://github.com/EvotecIT/ChartForgeX/pull/271) | Hierarchical treemap candidate consolidated into merged #273; this PR is closed | Reuse the merged hierarchy and complete Mermaid styles/configuration/value formatting. Do not build a second hierarchy implementation in the language adapter. |
-| [#261](https://github.com/EvotecIT/ChartForgeX/pull/261) | Authored hierarchy identities and explicit Mermaid Sankey node/link mapping | Qualify settled identity semantics with CSV edge cases and source display/configuration options. |
-| [#251](https://github.com/EvotecIT/ChartForgeX/pull/251) | Shared chart orientation; replaces the Mermaid-specific XY orientation enum | Follow the intentional API migration and prove horizontal/vertical line and bar geometry, legends and source options. |
-| [#257](https://github.com/EvotecIT/ChartForgeX/pull/257) | Shared markers and native radar series forms | Map Mermaid curve options deliberately. Alternate graticule geometry remains open; this candidate does not change the Mermaid radar adapter. |
-| [#263](https://github.com/EvotecIT/ChartForgeX/pull/263) | Shared relationship-node styling | Use the settled owner API where applicable; it does not parse Mermaid classes/styles or complete diagram notation. |
-| [#273](https://github.com/EvotecIT/ChartForgeX/pull/273) | Merged native chart capabilities including treemap hierarchy, Sankey identities and XY orientation | Extend these shared APIs for remaining source presentation and compatibility gaps; native capabilities do not replace language conformance work. |
+| [#290](https://github.com/EvotecIT/ChartForgeX/pull/290) | Bounded YAML/legacy source configuration, precedence and located diagnostics | Settle configuration syntax and recovery contracts; extend supported settings through their native family owners. |
+| [#294](https://github.com/EvotecIT/ChartForgeX/pull/294), [#295](https://github.com/EvotecIT/ChartForgeX/pull/295) | Notation boundaries, authored directions and native sequence presentation | Complete the family grammar and visible notation gaps listed above without losing unsupported source. |
+| [#296](https://github.com/EvotecIT/ChartForgeX/pull/296) | Shared HTML sizing that preserves readable sequence text | Qualify compact host scrolling, explicit fit sizing and export behavior. |
+| [#297](https://github.com/EvotecIT/ChartForgeX/pull/297), [#311](https://github.com/EvotecIT/ChartForgeX/pull/311) | Native source font families and sizes across chart, topology, sequence and block output | Qualify compact/dense content and explicit host precedence; broader color and theme-variable mapping remains open. |
+| [#300](https://github.com/EvotecIT/ChartForgeX/pull/300), [#301](https://github.com/EvotecIT/ChartForgeX/pull/301), [#304](https://github.com/EvotecIT/ChartForgeX/pull/304), [#305](https://github.com/EvotecIT/ChartForgeX/pull/305), [#306](https://github.com/EvotecIT/ChartForgeX/pull/306), [#307](https://github.com/EvotecIT/ChartForgeX/pull/307), [#308](https://github.com/EvotecIT/ChartForgeX/pull/308), [#310](https://github.com/EvotecIT/ChartForgeX/pull/310) | Gantt dependencies, date/axis/tick formats, markers, guide strokes and explicit calendar anchors | Settle the dependency-ordered chain with resolved-date, native export, host and resource-bound proof. |
+| [#313](https://github.com/EvotecIT/ChartForgeX/pull/313) | Sankey source geometry and value-label settings over the native flow owner | Qualify CSV identities, source precedence, Unicode affixes and visible labels. |
+| [#318](https://github.com/EvotecIT/ChartForgeX/pull/318), [#321](https://github.com/EvotecIT/ChartForgeX/pull/321) | Packet row/bit-number settings and shared packet geometry | Qualify dimensions, fields crossing rows and source/host precedence. |
+| [#337](https://github.com/EvotecIT/ChartForgeX/pull/337) | Horizontal XY line geometry through the shared Cartesian orientation owner | Qualify continuous numeric/time categories, reversal, labels, zones and both orientations. |
+| [#339](https://github.com/EvotecIT/ChartForgeX/pull/339) | Treemap value-caption visibility through the merged hierarchy owner | Complete remaining source classes/styles and value formatting; keep hierarchy construction in the shared owner. |
+| [#341](https://github.com/EvotecIT/ChartForgeX/pull/341), [#342](https://github.com/EvotecIT/ChartForgeX/pull/342) | Closed radar curves, graticules, dimensions, margins and native polar-axis layout | Settle curve/layout proof and complete source theme mapping without duplicating polar geometry. |
 
 ## Completion Order
 
