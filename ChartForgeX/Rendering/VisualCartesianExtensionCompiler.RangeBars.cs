@@ -92,9 +92,11 @@ internal static partial class VisualCartesianCompiler {
         var layout = ResolveRangeBarLayout(chart, context, plot, map, index, out _);
         if (style.Kind != ChartBarStyle.SegmentedCapsule)
             return Math.Max(RangeBarMinimumLength, (series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth) / 2);
-        var paint = ChartSegmentedBarGeometry.RangePaintBounds(style, new ChartRect(0, 0, 0, layout.Thickness), true);
+        var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
+        var body = horizontal ? new ChartRect(0, 0, 0, layout.Thickness) : new ChartRect(0, 0, layout.Thickness, 0);
+        var paint = ChartSegmentedBarGeometry.RangePaintBounds(style, body, horizontal);
         // Zero/tiny intervals retain a two-pixel body even when their cap effects are narrower.
-        return Math.Max(RangeBarMinimumLength, Math.Max(-paint.Left, paint.Right));
+        return Math.Max(RangeBarMinimumLength, horizontal ? Math.Max(-paint.Left, paint.Right) : Math.Max(-paint.Top, paint.Bottom));
     }
 
     private static Dictionary<string, string> RangeBarMetadata(Chart chart, string category) => new() {

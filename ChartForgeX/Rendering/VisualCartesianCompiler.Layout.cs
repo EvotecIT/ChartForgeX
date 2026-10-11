@@ -18,14 +18,18 @@ internal static partial class VisualCartesianCompiler {
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
-            if (horizontal) {
-                if (series.Kind is not (ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot) || plot.Width <= 0 || plot.Height <= 0) continue;
-                var map = ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis);
+            if (series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot) {
+                if (plot.Width <= 0 || plot.Height <= 0) continue;
+                var secondary = series.YAxis == ChartAxisSide.Secondary;
+                var valueAxis = horizontal ? chart.Options.XAxis : secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+                var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis)
+                    : new ChartMapper(plot, secondary ? secondaryRange! : range, chart.Options.XAxis, valueAxis);
                 var intervalRadius = series.Kind == ChartSeriesKind.BoxPlot ? BoxPlotValuePaintRadius(series)
                     : RangeBarValuePaintRadius(chart, context, plot, map, index);
-                IncludeHorizontalIntervalExtents(x, series, chart.Options.XAxis, intervalRadius);
+                IncludeIntervalExtents(horizontal ? x : secondary ? secondaryY : primaryY, series, valueAxis, intervalRadius);
                 continue;
             }
+            if (horizontal) continue;
             var pointSeries = IsPointSeries(series.Kind);
             if (!pointSeries && series.Kind is not (ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar
                 or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop or ChartSeriesKind.Slope
@@ -71,7 +75,7 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static void IncludeHorizontalIntervalExtents(MarkerExtents extents, ChartSeries series, ChartAxis valueAxis, double radius) {
+    private static void IncludeIntervalExtents(MarkerExtents extents, ChartSeries series, ChartAxis valueAxis, double radius) {
         foreach (var point in series.Points) extents.Include(point.Y, radius, valueAxis);
     }
 
