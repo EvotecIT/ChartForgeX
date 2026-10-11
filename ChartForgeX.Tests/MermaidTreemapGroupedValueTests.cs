@@ -4,11 +4,35 @@ using ChartForgeX.Core;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
+using Microsoft.Playwright;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidTreemapGroupedValueTests {
+    [Theory]
+    [InlineData(320)]
+    [InlineData(960)]
+    public async Task GroupedMagnitudesRemainVisibleInCompactAndWideStaticHosts(int width) {
+        var source = "treemap-beta\n\"Storage\"\n  \"Documents\": 1,234.5\n  \"Media\": 765.5\n  \"Archive\"\n    \"Documents\": 240\n    \"Media\": 160\n";
+        var result = MermaidRenderer.Render(source);
+        Assert.Empty(result.Diagnostics);
+        var artifact = result.Artifact!;
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync(artifact.ToHtmlPage(), width, 520);
+        Assert.Equal("1234.5", await session.Page.Locator("[data-cfx-target-id=node-1]").GetAttributeAsync("data-cfx-value"));
+        Assert.True(await session.Page.Locator("[data-cfx-target-id=node-1]").IsVisibleAsync());
+        Assert.Equal(0, await session.Page.Locator("script").CountAsync());
+        Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            Directory.CreateDirectory(captures);
+            await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "treemap-values-browser-" + width + ".png"), FullPage = true });
+            File.WriteAllBytes(Path.Combine(captures, "treemap-values-native.png"), artifact.ToPng());
+        }
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
     [Theory]
     [InlineData("1,234.5", 1234.5)]
     [InlineData("1,23.5", 123.5)]
