@@ -15,6 +15,14 @@
     }
   },
   "fixtures": {
+    "fixtures/treemap-visibility.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Source value visibility from https://mermaid.js.org/syntax/treemap.html; typed configuration and hierarchy magnitudes are independent of caption presentation."
+    },
     "fixtures/configuration-precedence.mmd": {
       "syntax": {
         "10": "accepted",

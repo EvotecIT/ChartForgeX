@@ -92,7 +92,7 @@ public sealed partial class MermaidParser {
 
     private static bool IsConfigurationStringPath(string path) {
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look";
+        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look" || MermaidTreemapSettings.IsScalarPath(path);
     }
 
     private static List<int> ConfigurationLineStarts(string source) {
@@ -128,7 +128,10 @@ public sealed partial class MermaidParser {
         configuration.Layout = ReadString("layout");
         configuration.Look = ReadString("look");
         configuration.FontFamily = ReadString("fontFamily");
+        if (kind == MermaidDiagramKind.Treemap)
+            configuration.Treemap = MermaidTreemapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         foreach (var setting in configuration.Settings) {
+            if (configuration.Treemap?.Handles(setting.Path) == true) continue;
             var theme = Selected("theme");
             var font = Selected("fontFamily");
             if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
