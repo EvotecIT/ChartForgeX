@@ -11,16 +11,20 @@ internal static partial class RasterStroker {
     internal sealed class DashBudget {
         private readonly HashSet<(int Path, int Segment, double Cycle, int Entry)> _pieces = new();
         private readonly double _maximumWork;
+        private readonly double _maximumBleedWork;
         private long _work;
-        internal DashBudget(double pixelsPerUnit = 1) {
-            // Device-tile overlap scales with raster density. Retain the aggregate work
-            // guard while streaming only the current tile's unique geometry.
-            _maximumWork = MaximumDashWork * Math.Max(1, pixelsPerUnit * pixelsPerUnit);
+        private long _bleedWork;
+        internal DashBudget(double pixelsPerUnit = 1, int maximumDeviceDimension = 0) {
+            // A quarter-logical-pixel pattern requires at most two painted entries per
+            // device pixel. Allow that extent plus tile boundaries, retaining a finite cap.
+            _maximumBleedWork = MaximumDashWork * Math.Max(1, pixelsPerUnit * pixelsPerUnit);
+            _maximumWork = Math.Max(_maximumBleedWork, 4D * maximumDeviceDimension);
         }
         internal void BeginTile() => _pieces.Clear();
-        internal void Consume(int path, int segment, double cycle, int entry) {
+        internal void Consume(int path, int segment, double cycle, int entry, bool tileBleed) {
             // Per-tile geometry bounds memory; repeated tiles share an aggregate work guard.
-            if (++_work > _maximumWork) throw new InvalidOperationException("The stroke exceeds the raster dash-work limit.");
+            if (++_work > _maximumWork || tileBleed && ++_bleedWork > _maximumBleedWork)
+                throw new InvalidOperationException("The stroke exceeds the raster dash-work limit.");
             // Tile bleed may revisit a dash. Its contour, segment and pattern identity remain unchanged.
             if (_pieces.Add((path, segment, cycle, entry)) && _pieces.Count > MaximumDashPieces)
                 throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");
@@ -29,7 +33,7 @@ internal static partial class RasterStroker {
 
     /// <summary>Clips invisible lengths before splitting dashes, retaining their phase and joins.</summary>
     internal static List<List<ChartPoint>> Dash(IReadOnlyList<ChartPoint> points, IReadOnlyList<double> pattern,
-        double left, double top, double right, double bottom, double dashOffset, DashBudget budget, int pathIndex) {
+        double left, double top, double right, double bottom, double dashOffset, DashBudget budget, int pathIndex, double bleed) {
         var lengths = new List<double>(pattern.Count * 2);
         double total = 0;
         foreach (double value in pattern) {
@@ -52,6 +56,10 @@ internal static partial class RasterStroker {
                 phase = (phase + length % total) % total; run = null; continue;
             }
             if (first > 0) run = null;
+            var crossesTile = ClipDashSegment(a, b, left + bleed, top + bleed, right - bleed, bottom - bleed,
+                out var tileFirst, out var tileLast);
+            var tileStart = length * tileFirst;
+            var tileEnd = length * tileLast;
             var segmentPhase = phase;
             var firstPosition = length * first;
             var cycle = Math.Floor(firstPosition / total) + Math.Floor((segmentPhase + firstPosition % total) / total);
@@ -63,8 +71,9 @@ internal static partial class RasterStroker {
             while (position < end) {
                 // Count painted pieces, including zero-length dots. Gap steps alternate with
                 // these bounded entries and do not consume outline memory.
-                if ((index & 1) == 0) budget.Consume(pathIndex, i, cycle, index);
                 double remaining = lengths[index] - offset;
+                if ((index & 1) == 0) budget.Consume(pathIndex, i, cycle, index,
+                    !crossesTile || position > tileEnd || position + Math.Max(0, remaining) < tileStart);
                 if (remaining <= 0) {
                     if (lengths[index] == 0 && (index & 1) == 0) runs.Add(new List<ChartPoint> { DashPoint(a, b, position / length) });
                     index = (index + 1) % lengths.Count; if (index == 0) cycle++; offset = 0; continue;

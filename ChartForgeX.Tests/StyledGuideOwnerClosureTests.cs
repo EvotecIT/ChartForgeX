@@ -8,6 +8,17 @@ namespace ChartForgeX.Tests;
 
 public sealed class StyledGuideOwnerClosureTests {
     [Fact]
+    public void QuarterPixelDashesRenderAtTheMaximumAcceptedChartWidth() {
+        var chart = Chart.Create().WithSize(1000000, 16).WithHeader(false).WithLegend(false)
+            .AddLine("Values", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) }).AddHorizontalLine(1.5, "");
+        chart.Options.ShowAxes = false;
+        chart.Options.ShowGrid = false;
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 1, dash: new[] { .25, .25 });
+        Assert.Contains("stroke-dasharray=\"0.25 0.25\"", chart.ToSvg());
+        Assert.True(chart.ToPng().Length > 64);
+    }
+
+    [Fact]
     public void QuarterPixelDashesRenderOnAnAcceptedWideCanvas() {
         var chart = Chart.Create().WithSize(100000, 100).WithHeader(false).WithLegend(false)
             .AddLine("Values", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) }).AddHorizontalLine(1.5, "");

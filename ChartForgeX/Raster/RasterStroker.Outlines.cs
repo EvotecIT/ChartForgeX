@@ -17,7 +17,7 @@ internal static partial class RasterStroker {
             var path = paths[pathIndex];
             if (path == null || path.Count == 0) continue;
             if (pattern == null || pattern.Count == 0) AppendOutline(path, width, cap, join, miter, pixelsPerUnit, outline);
-            else foreach (var dash in Dash(path, pattern, left-padding, top-padding, right+padding, bottom+padding, offset, dashBudget!, pathIndex))
+            else foreach (var dash in Dash(path, pattern, left-padding, top-padding, right+padding, bottom+padding, offset, dashBudget!, pathIndex, padding))
                 AppendOutline(dash, width, cap, join, miter, pixelsPerUnit, outline);
         }
         return outline;
