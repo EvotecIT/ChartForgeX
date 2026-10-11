@@ -65,9 +65,9 @@ public sealed class HeatmapColorScaleLegendTests {
             Assert.True(label.Bounds.Left >= key.Bounds.Left && label.Bounds.Right <= key.Bounds.Right + .000001);
         });
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "matrix.scale-overflow");
-        chart.WithHeatmapScaleLegend(false);
+        chart.ConfigureHeatmapColorDimension(options => options.ShowLegend = false);
         Assert.DoesNotContain(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Regions, region => region.Role == prefix);
-        var hiddenContext = VisualExportRequest.ForChart(chart.WithHeatmapScaleLegend()).Context;
+        var hiddenContext = VisualExportRequest.ForChart(chart.ConfigureHeatmapColorDimension(options => options.ShowLegend = true)).Context;
         var frameHidden = new VisualRenderContext(hiddenContext.Layout, hiddenContext.Theme, hiddenContext.ThemeMode, new VisualFrame(showLegend: false), hiddenContext.Font);
         Assert.DoesNotContain(chart.Prepare(frameHidden).Regions, region => region.Role == prefix);
     }

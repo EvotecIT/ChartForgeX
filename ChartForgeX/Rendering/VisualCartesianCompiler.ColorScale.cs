@@ -12,7 +12,7 @@ internal static partial class VisualCartesianCompiler {
     private static ChartRect ColorScaleViewport(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect viewport, ChartColorPresentationSet surfaces, double frameLegendHeight) {
         if (!context.Frame.ShowLegend) return viewport;
-        var keys = Enumerable.Range(0, chart.Series.Count).Where(index => chart.Series[index].ShowInLegend
+        var keys = Enumerable.Range(0, chart.Series.Count).Where(index => surfaces[index]?.Presentation.ShowLegend == true
             && surfaces[index]?.Scale != null && surfaces[index]!.Count > 0).ToArray();
         if (keys.Length == 0) return viewport;
         var style = context.Frame.LegendStyle ?? VisualStateSceneTools.TickStyle(chart, context);
@@ -29,7 +29,7 @@ internal static partial class VisualCartesianCompiler {
             missingWidths[index] = compact && surfaces[index]!.Missing && builder.MeasureText(title, style).Width + gap + missingWidth <= viewport.Width ? missingWidth : 0;
             return row + VisualColorScaleLegendScene.Height(builder, surfaces[index]!.Scale!, surfaces[index]!.Presentation.Labels,
                 keyStyle, gap, viewport.Width, double.MaxValue, surfaces[index]!.Missing, surfaces[index]!.Presentation.ScaleValues,
-                surfaces[index]!.HasDomain, compact, surfaces[index]!.Minimum, surfaces[index]!.Maximum, missingWidths[index] > 0);
+                surfaces[index]!.HasDomain, compact, surfaces[index]!.Minimum, surfaces[index]!.Maximum, missingWidths[index] > 0, legendStyle: surfaces[index]!.Presentation.LegendStyle);
         }).ToArray();
         var heights = Measure(); var requested = heights.Sum() + gap * keys.Length;
         if (requested > budget) {
@@ -63,7 +63,7 @@ internal static partial class VisualCartesianCompiler {
                     surface.Minimum, surface.Maximum, prefix, surface.Missing, ChartColorScaleSurface.NoData(scale, context.Theme.Resolve(context.ThemeMode)),
                     surface.Presentation.ScaleValues, "cartesian.color-scale-overflow", surface.HasDomain, compact,
                     missingWidths[key] > 0 ? new ChartRect(viewport.Right - missingWidths[key], y, missingWidths[key], titleHeight) : null,
-                    valueName: surface.Presentation.HasOverrides ? surface.Presentation.Name : null);
+                    valueName: surface.Presentation.HasOverrides ? surface.Presentation.Name : null, legendStyle: surface.Presentation.LegendStyle);
             }
             y += allocation;
         }

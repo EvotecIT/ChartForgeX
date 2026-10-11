@@ -13,9 +13,11 @@ public sealed class PolarSecondaryAxisTests {
     }
 
     [Theory]
-    [InlineData(ChartSeriesKind.Radar)]
-    [InlineData(ChartSeriesKind.Polar)]
-    public void RadiusCaptionsUseTheirOwnAxisFormatterWithoutDuplicatingGridRings(ChartSeriesKind kind) {
+    [InlineData(ChartSeriesKind.Radar, null, 4)]
+    [InlineData(ChartSeriesKind.Polar, null, 4)]
+    [InlineData(ChartSeriesKind.Radar, 2.5, 3)]
+    [InlineData(ChartSeriesKind.Polar, 2.5, 3)]
+    public void RadiusCaptionsUseTheirOwnAxisFormatterWithoutDuplicatingGridRings(ChartSeriesKind kind, double? intervals, int expectedRings) {
         var chart = Chart.Create().WithSize(600, 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
             .WithYAxisBounds(0, 100).WithSecondaryYAxisBounds(0, 10);
         var points = new[] { new ChartPoint(0, 50), new ChartPoint(1, 50), new ChartPoint(2, 50) };
@@ -24,10 +26,14 @@ public sealed class PolarSecondaryAxisTests {
         chart.Series[1].UseSecondaryYAxis(); chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
         chart.Options.YAxis.LabelFormatter = value => "Count " + value;
         chart.Options.SecondaryYAxis.LabelFormatter = value => "Rate " + value;
+        chart.Options.PolarGridRingCount = intervals;
+        if (intervals.HasValue) chart.WithPolarGridShape(ChartPolarGridShape.Circle);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Contains(prepared.Regions, region => region.Label!.StartsWith("Count ", StringComparison.Ordinal));
         Assert.Contains(prepared.Regions, region => region.Label!.StartsWith("Rate ", StringComparison.Ordinal));
-        Assert.Equal(4, prepared.Scene.Nodes.Count(node => node.Role == (kind == ChartSeriesKind.Radar ? "radar-ring" : "polar-ring")));
+        var rings = prepared.Scene.Nodes.Where(node => node.Role == (kind == ChartSeriesKind.Radar ? "radar-ring" : "polar-ring")).ToArray();
+        Assert.Equal(expectedRings, rings.Length);
+        if (intervals.HasValue) Assert.All(rings, node => Assert.IsType<VisualSceneEllipse>(node));
     }
 
     [Theory]
