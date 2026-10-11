@@ -15,7 +15,7 @@ public static partial class GalleryWriter {
             if (root.Attribute("transform")!=null) return null;
             // Embedded panels have their own frames; only the root's untransformed surfaces can
             // explain pixels at this artifact's perimeter.
-            var frames=root.Elements().Where(e=>(string?)e.Attribute("data-cfx-role")=="frame-card" && e.Attribute("transform")==null).ToArray();
+            var frames=root.Elements().Where(e=>(string?)e.Attribute("data-cfx-role") is "frame-card" or "visual-card" && e.Attribute("transform")==null).ToArray();
             var svg=ReadSvgDimensions(svgPath);
             if (!TryPngSurfaceScale(svg,png,out var scale)) return null;
             PngFrameAllowance? allowance=null;

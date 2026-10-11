@@ -8,10 +8,10 @@ using ChartForgeX.Themes;
 
 namespace ChartForgeX.Rendering;
 
-/// <summary>Compiles numeric radial bars and columns from canonical category, stack and value-axis snapshots.</summary>
+/// <summary>Compiles numeric radial bars, columns and radar overlays from canonical category, stack and value-axis snapshots.</summary>
 internal static partial class VisualNumericRadialCompiler {
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartAxisValueFormatter.Cache? axisLabels = null) {
-        var bars = chart.Series[0].Kind == ChartSeriesKind.RadialBar;
+        var bars = chart.Series.All(series => series.Kind == ChartSeriesKind.RadialBar);
         var colors = context.Theme.Resolve(context.ThemeMode);
         Validate(chart);
         var coordinates = ChartBarCoordinateMap.Create(chart);
@@ -43,13 +43,22 @@ internal static partial class VisualNumericRadialCompiler {
         // Axis captions and totals also need mark avoidance when point captions are off.
         var obstacles = chart.Options.ShowAxes || chart.Options.ShowStackTotals || chart.Series.Any(series => series.ShowDataLabels ?? chart.Options.ShowDataLabels)
             ? new List<LabelObstacle>() : null;
+        if (obstacles != null && geometry.Inner > 0 && ChartSeriesKindTraits.IsMixedNumericRadial(chart))
+            obstacles.Add(new LabelObstacle("radial-hole", new LabelMarkShape(new[] {
+                ChartPathBuilder.Ellipse(geometry.Cx, geometry.Cy, geometry.Inner, geometry.Inner).Flatten()
+            }, true, 0, plot)));
         foreach (var total in stacks.Totals.Where(total => total.NormalizedTo.HasValue && total.SourceValue == 0))
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.stack-zero-total", "A normalized zero-only stack remains at its baseline; its source observations are retained."));
         using (builder.PushClip(plot)) {
             if (geometry.Outer > 0) Grid(chart, context, builder, plot, geometry, categoryLabels, categories, scales, tickLabels, bars, labels);
             var participants = Enumerable.Range(0, chart.Series.Count).ToArray();
-            for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
+            var drawingOrder = ChartSeriesKindTraits.IsMixedNumericRadial(chart) ? ChartSeriesColours.DrawingOrder(chart) : participants;
+            foreach (var seriesIndex in drawingOrder) {
                 var series = chart.Series[seriesIndex];
+                if (series.Kind == ChartSeriesKind.Radar) {
+                    DrawRadar(chart, context, builder, plot, geometry, seriesIndex, coordinates, categories, categoryLabels, scales, colors, labels, obstacles);
+                    continue;
+                }
                 var slot = stacks.Slot(participants, seriesIndex);
                 var seriesMetadata = new Dictionary<string, string> {
                     ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey,
@@ -94,24 +103,9 @@ internal static partial class VisualNumericRadialCompiler {
         Enumerable.Range(0, chart.Series.Count).SelectMany(series => Enumerable.Range(0, chart.Series[series].Points.Count)
             .Select(point => coordinates.Resolve(series, point))).Distinct().OrderBy(key => key.Value).ThenBy(key => key.Id).ToArray();
 
-    private static Dictionary<ChartAxisSide, RadialValueScale> Scales(Chart chart, ChartStackLayout stacks) {
-        var result = new Dictionary<ChartAxisSide, RadialValueScale>();
-        foreach (var side in chart.Series.Select(series => series.YAxis).Distinct()) {
-            var axis = Axis(chart, side);
-            var values = Enumerable.Range(0, chart.Series.Count).Where(index => chart.Series[index].YAxis == side)
-                .SelectMany(series => Enumerable.Range(0, chart.Series[series].Points.Count)
-                    .SelectMany(point => new[] { stacks.Point(series, point).Base, stacks.Point(series, point).End }))
-                .Where(value => axis.Scale != ChartScaleKind.Logarithmic || value != 0).ToArray();
-            // A series with no observations retains its legend and slot, but does not set another axis's domain.
-            if (values.Length == 0) {
-                // Without a complete authored domain there is no scale to display or measure.
-                if (!axis.Minimum.HasValue || !axis.Maximum.HasValue) continue;
-                values = new[] { axis.Minimum.Value, axis.Maximum.Value };
-            }
-            result.Add(side, RadialValueScale.Create(axis, values, "Numeric radial", true));
-        }
-        return result;
-    }
+    private static Dictionary<ChartAxisSide, RadialValueScale> Scales(Chart chart, ChartStackLayout stacks) =>
+        RadialValueScale.ForAxes(chart, series => Enumerable.Range(0, chart.Series[series].Points.Count)
+            .SelectMany(point => new[] { stacks.Point(series, point).Base, stacks.Point(series, point).End }), "Numeric radial", true);
 
     private static void DrawPoint(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, RadialSeriesGeometry geometry,
         ChartSeries series, int seriesIndex, int pointIndex, string category, ChartStackPoint stack, RadialSeriesMark mark,

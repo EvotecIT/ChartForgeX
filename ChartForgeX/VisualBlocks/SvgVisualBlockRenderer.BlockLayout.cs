@@ -36,7 +36,7 @@ public sealed partial class SvgVisualBlockRenderer {
     private static void WriteBlockLayoutNode(SvgMarkupWriter writer, BlockLayoutItem item, int index, BlockLayoutRect rect, ChartForgeX.Themes.ChartTheme theme) {
         var accent = VisualBlockRendering.PaletteAt(theme, index);
         if (item.Shape == BlockLayoutShape.Circle) {
-            var radius = Math.Max(8, Math.Min(rect.Width, rect.Height) / 2);
+            var radius = VisualBlockRendering.BlockLayoutCircleRadius(rect.Width, rect.Height);
             writer.StartElement("circle")
                 .Attribute("data-cfx-role", "block-layout-node")
                 .Attribute("data-block-id", item.Id)
@@ -99,7 +99,7 @@ public sealed partial class SvgVisualBlockRenderer {
         WriteText(writer, edge.Label, (route.X1 + route.X2) / 2 - 45, VisualBlockRendering.BlockLayoutBaseline(style, (route.Y1 + route.Y2) / 2 - 7), 90, TextAlignment.Center, theme.MutedText, theme.FontFamily, style.FontSize, "700", "block-layout-connector-label");
     }
 
-    private static void WriteBlockArrowHead(SvgMarkupWriter writer, BlockLayoutEdgeRoute route, ChartColor color) {
+    private static void WriteBlockArrowHead(SvgMarkupWriter writer, VisualBlockRendering.BlockLayoutEdgeRoute route, ChartColor color) {
         var angle = Math.Atan2(route.Y2 - route.Y1, route.X2 - route.X1);
         var a1 = angle + Math.PI * 0.84;
         var a2 = angle - Math.PI * 0.84;
@@ -135,25 +135,14 @@ public sealed partial class SvgVisualBlockRenderer {
             var x = geometry.X + placement.Column * (geometry.CellWidth + geometry.ColumnGap);
             var y = geometry.Y + placement.Row * (geometry.CellHeight + geometry.RowGap);
             var width = placement.ColumnSpan * geometry.CellWidth + (placement.ColumnSpan - 1) * geometry.ColumnGap;
-            rects[placement.Item.Id] = new BlockLayoutRect(x, y, width, geometry.CellHeight);
+            rects[placement.Item.Id] = new BlockLayoutRect(x, y, width, geometry.CellHeight, placement.Item.Shape);
         }
 
         return rects;
     }
 
-    private static BlockLayoutEdgeRoute BlockEdgeRoute(BlockLayoutRect source, BlockLayoutRect target) {
-        var sx = source.X + source.Width / 2;
-        var sy = source.Y + source.Height / 2;
-        var tx = target.X + target.Width / 2;
-        var ty = target.Y + target.Height / 2;
-        if (Math.Abs(ty - sy) < Math.Max(source.Height, target.Height) * 0.65) {
-            if (tx >= sx) return new BlockLayoutEdgeRoute(source.X + source.Width, sy, target.X, ty);
-            return new BlockLayoutEdgeRoute(source.X, sy, target.X + target.Width, ty);
-        }
-
-        if (ty >= sy) return new BlockLayoutEdgeRoute(sx, source.Y + source.Height, tx, target.Y);
-        return new BlockLayoutEdgeRoute(sx, source.Y, tx, target.Y + target.Height);
-    }
+    private static VisualBlockRendering.BlockLayoutEdgeRoute BlockEdgeRoute(BlockLayoutRect source, BlockLayoutRect target) =>
+        VisualBlockRendering.BlockLayoutRoute(source.Bounds, source.Shape, target.Bounds, target.Shape);
 
     private readonly struct BlockLayoutGeometry {
         public BlockLayoutGeometry(double x, double y, double cellWidth, double cellHeight, double columnGap, double rowGap) {
@@ -174,30 +163,20 @@ public sealed partial class SvgVisualBlockRenderer {
     }
 
     private readonly struct BlockLayoutRect {
-        public BlockLayoutRect(double x, double y, double width, double height) {
+        public BlockLayoutRect(double x, double y, double width, double height, BlockLayoutShape shape) {
             X = x;
             Y = y;
             Width = width;
             Height = height;
+            Shape = shape;
         }
 
         public double X { get; }
         public double Y { get; }
         public double Width { get; }
         public double Height { get; }
+        public BlockLayoutShape Shape { get; }
+        public ChartRect Bounds => new(X, Y, Width, Height);
     }
 
-    private readonly struct BlockLayoutEdgeRoute {
-        public BlockLayoutEdgeRoute(double x1, double y1, double x2, double y2) {
-            X1 = x1;
-            Y1 = y1;
-            X2 = x2;
-            Y2 = y2;
-        }
-
-        public double X1 { get; }
-        public double Y1 { get; }
-        public double X2 { get; }
-        public double Y2 { get; }
-    }
 }
