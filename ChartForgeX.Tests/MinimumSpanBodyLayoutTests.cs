@@ -88,7 +88,7 @@ public sealed class MinimumSpanBodyLayoutTests {
         }
         var svgBody = Assert.Single(group.Descendants(), element => Role(element) == body.Role);
         AssertRect(bounds, Rectangle(svgBody));
-        var region = Assert.Single(prepared.Regions, candidate => candidate.Id == (string?)group.Attribute("id"));
+        var region = Assert.Single(prepared.Regions, candidate => candidate.Id == (string?)group.Attribute("data-cfx-source-id"));
         AssertRect(bounds, region.Bounds);
     }
 
