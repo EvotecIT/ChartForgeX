@@ -11,13 +11,13 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawRangeEnvelope(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
         var series = chart.Series[index]; var count = series.Points.Count / 2;
-        var lower = new List<ChartPoint>(); var upper = new List<ChartPoint>(); var middle = new List<ChartPoint>();
+        var paired = new ChartPairedBoundaryGeometry(series, map);
+        var lower = paired.First; var upper = paired.Second; var middle = new List<ChartPoint>();
         var area = series.Kind == ChartSeriesKind.RangeArea; var color = Color(series, index, colors);
         var sourcePaint = VisualChartPaint.Series(series, color);
         for (var item = 0; item < count; item++) {
             var low = series.Points[item * 2]; var high = series.Points[item * 2 + 1]; var x = map.X(low.X);
             var breakBefore = low.BreakBefore || high.BreakBefore;
-            lower.Add(new ChartPoint(x, map.Y(low.Y), breakBefore)); upper.Add(new ChartPoint(x, map.Y(high.Y), breakBefore));
             middle.Add(new ChartPoint(x, map.Y((low.Y + high.Y) / 2), breakBefore));
         }
         var offset = 0;
@@ -26,11 +26,7 @@ internal static partial class VisualCartesianCompiler {
             var highPath = ChartPathBuilder.FromPoints(segment, series.Interpolation, series.StepPosition);
             var lowPath = ChartPathBuilder.FromPoints(lowSegment, series.Interpolation, series.StepPosition);
             var highFlat = highPath.Flatten(12); var lowFlat = lowPath.Flatten(12);
-            var commands = new List<ChartPathCommand>();
-            commands.Add(ChartPathCommand.MoveTo(highFlat[0].X, highFlat[0].Y));
-            for (var p = 1; p < highFlat.Count; p++) commands.Add(ChartPathCommand.LineTo(highFlat[p].X, highFlat[p].Y));
-            for (var p = lowFlat.Count - 1; p >= 0; p--) commands.Add(ChartPathCommand.LineTo(lowFlat[p].X, lowFlat[p].Y));
-            var polygon = new ChartPath(commands); var opacity = area ? context.Theme.AreaOpacity : ChartVisualPrimitives.RangeBandFillOpacity;
+            var polygon = ChartPairedBoundaryGeometry.Envelope(highFlat, lowFlat); var opacity = area ? context.Theme.AreaOpacity : ChartVisualPrimitives.RangeBandFillOpacity;
             var fill = ChartColorMath.WithOpacity(color, opacity);
             builder.Path(polygon, fill, role: area ? "range-area" : "range-band", close: true,
                 paint: VisualChartPaint.Fill(sourcePaint.WithOpacity(fill, opacity)));

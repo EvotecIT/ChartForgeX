@@ -23,6 +23,7 @@ public static partial class V2Examples {
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
         foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var variants = new List<string> { "wide", "compact" };
+            if (kind == ChartSeriesKind.DifferenceArea) { variants.Add("dated-gaps"); variants.Add("compact-dated-gaps"); }
             if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap) {
                 variants.Add("color-scale"); variants.Add("compact-color-scale");
             }
@@ -80,7 +81,10 @@ public static partial class V2Examples {
                 // options example intentionally demonstrates an explicitly requested legend.
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
-                var subtitle = precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
+                var subtitle = kind == ChartSeriesKind.DifferenceArea ? variant is "dated-gaps" or "compact-dated-gaps"
+                    ? "Named paired values retain a missing section on an independent scale"
+                    : "Blue shows Actual above Forecast; amber shows Actual below Forecast"
+                    : precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
                     : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"
                     : variant is "angular-reversal" or "compact-angular-reversal" ? kind == ChartSeriesKind.Polar ? "Clockwise authored radians retain their source directions and values"
                         : "Reversed category angles retain source labels, values and paint"

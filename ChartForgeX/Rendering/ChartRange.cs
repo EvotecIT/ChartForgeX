@@ -116,7 +116,7 @@ internal sealed class ChartRange {
                 continue;
             }
 
-            if (series.Kind == ChartSeriesKind.RangeBand || series.Kind == ChartSeriesKind.RangeArea) {
+            if (series.Kind == ChartSeriesKind.RangeBand || series.Kind == ChartSeriesKind.RangeArea || series.Kind == ChartSeriesKind.DifferenceArea) {
                 for (var i = 0; i + 1 < series.Points.Count; i += 2) {
                     range.Include(series.Points[i]);
                     range.Include(series.Points[i + 1]);
