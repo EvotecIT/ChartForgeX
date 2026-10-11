@@ -26,7 +26,7 @@ public sealed class InteractiveTreemapColorTooltipBrowserTests {
                 new ChartHierarchyItem("missing", "Nieznana zmiana", value: 2)
             }).ConfigureTreemap(options => {
                 options.ColorScale = ChartColorScale.Sequential(ChartForgeX.Primitives.ChartColor.FromHex("#DAE8F8"), ChartForgeX.Primitives.ChartColor.FromHex("#1C5CAB"));
-                options.ShowColorScaleLegend = !leafKeys;
+                options.ColorDimension.ShowLegend = !leafKeys;
                 if (titleOverride) options.ColorDimension.Name = colorLabel;
             });
         if (leafKeys) chart.WithPointLegend();

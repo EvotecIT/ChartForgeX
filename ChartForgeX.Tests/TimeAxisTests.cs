@@ -24,6 +24,34 @@ public sealed class TimeAxisTests {
     }
 
     [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public void ExactRadialGuides_PreserveDistinctSubSecondCaptions(bool radar, bool reversed) {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + 200.0 / 86400000;
+        var values = new[] { new ChartPoint(0, start), new ChartPoint(1, end), new ChartPoint(2, start) };
+        var chart = Chart.Create().WithSize(900, 700).WithHeader(false).WithLegend(false).WithDataLabels(false);
+        if (radar) chart.AddRadar("Fast", values);
+        else chart.AddPolar("Fast", values);
+        var axis = chart.Options.YAxis.WithTimeScale().WithBounds(start, end);
+        axis.Reversed = reversed;
+        chart.Options.PolarGridRingCount = 3;
+        var ticks = RadialValueScale.Create(axis, chart.Series, "Polar").EqualIntervalTicks(3);
+        Assert.True(ChartTicks.IsNumericTimeFallback(ticks));
+        var labels = XDocument.Parse(chart.ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == (radar ? "radar-ring-label" : "polar-radius-label"))
+            .Select(element => element.Value).ToArray();
+        Assert.Equal(2, labels.Length);
+        Assert.Equal(2, labels.Distinct(StringComparer.Ordinal).Count());
+        Assert.DoesNotContain(labels, label => label.Contains(':'));
+        var png = chart.ToPng();
+        axis.LabelFormatter = value => value.ToString("G17", CultureInfo.InvariantCulture);
+        Assert.Equal(png, chart.ToPng());
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void Render_VerticalSubSecondRange_PreservesNumericFallback(bool secondary) {

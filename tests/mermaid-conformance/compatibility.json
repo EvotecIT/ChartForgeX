@@ -15,20 +15,6 @@
     }
   },
   "fixtures": {
-    "fixtures/sankey-source-options.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored source settings and flow facts from the official Mermaid Sankey configuration and syntax documentation; checked with pinned reference parsers.",
-      "expectedByReference": {
-        "10": "sankey-source-options.expected.10.json"
-      },
-      "notes": {
-        "10": "Mermaid 10.9.8 drops nodeWidth and nodePadding from effective configuration. Other retained settings and node/flow facts are compared; pixel equality is not claimed. ChartForgeX applies the documented current node geometry options."
-      }
-    },
     "fixtures/configuration-precedence.mmd": {
       "syntax": {
         "10": "accepted",
@@ -498,6 +484,68 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/sankey-source-options.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored source settings and flow facts from the official Mermaid Sankey configuration and syntax documentation; checked with pinned reference parsers.",
+      "expectedByReference": {
+        "10": "sankey-source-options.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10.9.8 drops nodeWidth and nodePadding from effective configuration. Other retained settings and node/flow facts are compared; pixel equality is not claimed. ChartForgeX applies the documented current node geometry options."
+      }
+    },
+    "fixtures/radar-capped-circle.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-capped-polygon.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-circle.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-fractional-guides.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html and pinned Mermaid 11/12 renderer: fractional ticks retain the authored radial spacing divisor; 2.5 draws three guides at 0.4, 0.8 and 1.2 times the axis radius."
+    },
+    "fixtures/radar-polygon.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-zero-guides.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: zero hides concentric guides while preserving axes, observations and source configuration; pinned Mermaid 11 and 12 accept the case."
     }
   }
 }
