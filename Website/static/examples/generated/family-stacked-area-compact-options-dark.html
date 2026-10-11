@@ -359,13 +359,14 @@ public static partial class V2GalleryModels {
     private static Chart? Differences(ChartSeriesKind kind, string variant) {
         if (kind != ChartSeriesKind.DifferenceArea) return null;
         var dated = variant is &quot;dated-gaps&quot; or &quot;compact-dated-gaps&quot;;
+        var stepped = variant is &quot;step-start&quot; or &quot;step-middle&quot; or &quot;step-end&quot; or &quot;compact-step-middle&quot;;
         var day = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
-        var first = new[] { 42d, 68, 48, 60, 74, 46, 62 };
-        var second = new[] { 56d, 54, 60, 60, 58, 64, 50 };
+        var first = new[] { 42d, 68, stepped ? 78 : 48, 60, 74, 46, 62 };
+        var second = new[] { 56d, 54, stepped ? 62 : 60, 60, 58, 64, 50 };
         var pairs = new ChartDifferencePoint[first.Length];
         for (var item = 0; item &lt; pairs.Length; item++) pairs[item] = dated
             ? new ChartDifferencePoint(day.AddDays(item + (item &gt;= 4 ? 2 : 0)), first[item], second[item], item == 4)
-            : new ChartDifferencePoint(item + 1, first[item], second[item]);
+            : new ChartDifferencePoint(item + 1, first[item], second[item], stepped &amp;&amp; item == 5);
         var chart = Chart.Create().WithXAxis(dated ? &quot;Observation date (UTC)&quot; : &quot;Observation&quot;)
             .WithYAxis(dated ? &quot;Primary reference&quot; : &quot;Completed requests&quot;);
         if (dated) {
@@ -379,6 +380,11 @@ public static partial class V2GalleryModels {
             options.PositiveFill = ChartColor.FromHex(&quot;#267EAB&quot;); options.NegativeFill = ChartColor.FromHex(&quot;#D47A34&quot;);
             options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
         }).WithMarkerRadius(3);
+        if (stepped) series.WithInterpolation(ChartInterpolation.Step, variant switch {
+            &quot;step-start&quot; =&gt; ChartStepPosition.Start,
+            &quot;step-end&quot; =&gt; ChartStepPosition.End,
+            _ =&gt; ChartStepPosition.Middle
+        });
         if (dated) {
             series.UseSecondaryYAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
             chart.WithSecondaryYAxis(&quot;Completed requests&quot;);
@@ -1136,6 +1142,7 @@ public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates an actual source model for every chart kind, without selecting a renderer or export backend.&lt;/summary&gt;
     public static Chart Create(ChartSeriesKind kind, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
         var differenceGapVariant = (variant is &quot;dated-gaps&quot; or &quot;compact-dated-gaps&quot;) &amp;&amp; kind == ChartSeriesKind.DifferenceArea;
+        var differenceStepVariant = (variant is &quot;step-start&quot; or &quot;step-middle&quot; or &quot;step-end&quot; or &quot;compact-step-middle&quot;) &amp;&amp; kind == ChartSeriesKind.DifferenceArea;
         var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
         var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
@@ -1151,7 +1158,7 @@ public static partial class V2GalleryModels {
         var plotRegionVariant = kind == ChartSeriesKind.Scatter &amp;&amp; variant is &quot;quadrants&quot; or &quot;compact-quadrants&quot;
             || kind == ChartSeriesKind.Bubble &amp;&amp; variant is &quot;plot-regions&quot; or &quot;compact-plot-regions&quot;;
         var partialColorVariant = (variant is &quot;partial-color-range&quot; or &quot;compact-partial-color-range&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalCartesian &amp;&amp; !angularReversalVariant &amp;&amp; !financialDashVariant &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant &amp;&amp; !endpointLabels &amp;&amp; !partialColorVariant &amp;&amp; !differenceGapVariant &amp;&amp; !plotRegionVariant)
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalCartesian &amp;&amp; !angularReversalVariant &amp;&amp; !financialDashVariant &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant &amp;&amp; !endpointLabels &amp;&amp; !partialColorVariant &amp;&amp; !differenceGapVariant &amp;&amp; !differenceStepVariant &amp;&amp; !plotRegionVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (endpointLabels ? RangeBarEndpointLabels(variant) : null) ?? (angularReversalVariant ? AngularReversal(kind) : null) ?? (financialDashVariant ? FinancialDashes(kind) : null) ?? (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalCartesian ? GeometryOptions(kind, variant) : null)
             ?? PlotRegionObservations(kind, variant) ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Differences(kind, variant) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
@@ -1511,13 +1518,14 @@ public static partial class V2GalleryModels {
     private static Chart? Differences(ChartSeriesKind kind, string variant) {
         if (kind != ChartSeriesKind.DifferenceArea) return null;
         var dated = variant is &quot;dated-gaps&quot; or &quot;compact-dated-gaps&quot;;
+        var stepped = variant is &quot;step-start&quot; or &quot;step-middle&quot; or &quot;step-end&quot; or &quot;compact-step-middle&quot;;
         var day = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
-        var first = new[] { 42d, 68, 48, 60, 74, 46, 62 };
-        var second = new[] { 56d, 54, 60, 60, 58, 64, 50 };
+        var first = new[] { 42d, 68, stepped ? 78 : 48, 60, 74, 46, 62 };
+        var second = new[] { 56d, 54, stepped ? 62 : 60, 60, 58, 64, 50 };
         var pairs = new ChartDifferencePoint[first.Length];
         for (var item = 0; item &lt; pairs.Length; item++) pairs[item] = dated
             ? new ChartDifferencePoint(day.AddDays(item + (item &gt;= 4 ? 2 : 0)), first[item], second[item], item == 4)
-            : new ChartDifferencePoint(item + 1, first[item], second[item]);
+            : new ChartDifferencePoint(item + 1, first[item], second[item], stepped &amp;&amp; item == 5);
         var chart = Chart.Create().WithXAxis(dated ? &quot;Observation date (UTC)&quot; : &quot;Observation&quot;)
             .WithYAxis(dated ? &quot;Primary reference&quot; : &quot;Completed requests&quot;);
         if (dated) {
@@ -1531,6 +1539,11 @@ public static partial class V2GalleryModels {
             options.PositiveFill = ChartColor.FromHex(&quot;#267EAB&quot;); options.NegativeFill = ChartColor.FromHex(&quot;#D47A34&quot;);
             options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
         }).WithMarkerRadius(3);
+        if (stepped) series.WithInterpolation(ChartInterpolation.Step, variant switch {
+            &quot;step-start&quot; =&gt; ChartStepPosition.Start,
+            &quot;step-end&quot; =&gt; ChartStepPosition.End,
+            _ =&gt; ChartStepPosition.Middle
+        });
         if (dated) {
             series.UseSecondaryYAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
             chart.WithSecondaryYAxis(&quot;Completed requests&quot;);
@@ -2288,6 +2301,7 @@ public static partial class V2GalleryModels {
     /// &lt;summary&gt;Creates an actual source model for every chart kind, without selecting a renderer or export backend.&lt;/summary&gt;
     public static Chart Create(ChartSeriesKind kind, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
         var differenceGapVariant = (variant is &quot;dated-gaps&quot; or &quot;compact-dated-gaps&quot;) &amp;&amp; kind == ChartSeriesKind.DifferenceArea;
+        var differenceStepVariant = (variant is &quot;step-start&quot; or &quot;step-middle&quot; or &quot;step-end&quot; or &quot;compact-step-middle&quot;) &amp;&amp; kind == ChartSeriesKind.DifferenceArea;
         var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
         var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
@@ -2303,7 +2317,7 @@ public static partial class V2GalleryModels {
         var plotRegionVariant = kind == ChartSeriesKind.Scatter &amp;&amp; variant is &quot;quadrants&quot; or &quot;compact-quadrants&quot;
             || kind == ChartSeriesKind.Bubble &amp;&amp; variant is &quot;plot-regions&quot; or &quot;compact-plot-regions&quot;;
         var partialColorVariant = (variant is &quot;partial-color-range&quot; or &quot;compact-partial-color-range&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalCartesian &amp;&amp; !angularReversalVariant &amp;&amp; !financialDashVariant &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant &amp;&amp; !endpointLabels &amp;&amp; !partialColorVariant &amp;&amp; !differenceGapVariant &amp;&amp; !plotRegionVariant)
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalCartesian &amp;&amp; !angularReversalVariant &amp;&amp; !financialDashVariant &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant &amp;&amp; !endpointLabels &amp;&amp; !partialColorVariant &amp;&amp; !differenceGapVariant &amp;&amp; !differenceStepVariant &amp;&amp; !plotRegionVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (endpointLabels ? RangeBarEndpointLabels(variant) : null) ?? (angularReversalVariant ? AngularReversal(kind) : null) ?? (financialDashVariant ? FinancialDashes(kind) : null) ?? (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalCartesian ? GeometryOptions(kind, variant) : null)
             ?? PlotRegionObservations(kind, variant) ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Differences(kind, variant) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
