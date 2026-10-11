@@ -191,7 +191,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
                 new ChartHierarchyItem("missing", "Missing", value: 2)
             }).ConfigureTreemap(options => {
                 options.ColorScale = ChartColorScale.Sequential(red, blue).WithValueRange(0, 100).WithNoDataColor(missing);
-                options.ShowColorScaleLegend = false;
+                options.ColorDimension.ShowLegend = false;
             });
         chart.Series[0].WithPointColor(1, blue);
         chart.Options.SvgColorVariables = new SvgColorVariables().Add("--host-low", red, SvgColorRole.Ramp)

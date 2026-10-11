@@ -55,6 +55,15 @@ internal static class ChartGuards {
             throw new InvalidOperationException("Treemap color presentation requires a Treemap chart.");
         if (chart.Options.Sunburst.ColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst color presentation requires a Sunburst chart.");
+        chart.Options.MapColorDimension.ValidateLegend(chart.Options.MapColorScale);
+        chart.Options.HeatmapColorDimension.ValidateLegend(chart.Options.HeatmapColorScale);
+        if (chart.Series.Count > 0 && chart.Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
+            var sunburst = chart.Series[0].Kind == ChartSeriesKind.Sunburst;
+            var dimension = sunburst ? chart.Options.Sunburst.ColorDimension : chart.Options.Treemap.ColorDimension;
+            var scale = sunburst ? chart.Options.Sunburst.ColorScale : chart.Options.Treemap.ColorScale;
+            // Authored hierarchy color values resolve the existing theme scale during preparation.
+            dimension.ValidateLegend(scale, chart.Series[0].HierarchyItems.Any(item => item.ColorValue.HasValue));
+        }
         if (chart.Options.HeatmapColorScale != null && chart.Series.Any(series => series.IsCategoricalHeatmapRow
             || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
             throw new InvalidOperationException("Heatmap color scales require numeric rectangular, hexagonal or calendar heatmaps.");
