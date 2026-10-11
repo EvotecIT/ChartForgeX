@@ -94,7 +94,7 @@ The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roa
 
 ## Mermaid
 
-The [support matrix](docs/mermaid-support-matrix.md) records current parsing, rendering limits, upstream references and open owner dependencies. Thirty families have native render paths; that breadth does not establish complete grammar or visual fidelity. ZenUML is diagnostic-only, and Agentflow and Railroad are missing. The current conformance reference is Mermaid.js 12.1.0.
+The [support matrix](docs/mermaid-support-matrix.md) records current parsing, rendering limits, upstream references and open owner dependencies. Thirty families have native render paths; that breadth does not establish complete grammar or visual fidelity. ZenUML, Agentflow and Railroad are diagnostic-only. The current conformance reference is Mermaid.js 12.1.0.
 
 The compatibility goal is to adopt newer documented Mermaid syntax while preserving supported older syntax through regression fixtures. Start with explicit Mermaid 10, 11 and 12 reference versions; qualify the promised window before publishing it. Keep one semantic model where old and new spellings mean the same thing. Record deliberate grammar changes and migration guidance rather than maintaining separate renderer forks. Older majors and beta syntax need evidence for their individual contracts.
 
@@ -107,7 +107,7 @@ The stages set the default work order. Independent family fixes can proceed once
 - [ ] Compare typed semantic facts in both implementations: nodes, edges, nesting, labels, styles, time calculations, attributes and values. The current upstream harness checks syntax for every fixture and semantic expectations for selected flowchart and Gantt fixtures; extend both upstream and .NET assertions deliberately.
 - [ ] Distinguish invalid source, recognized-but-unimplemented features, retained metadata, approximate rendering and exact semantic mapping in parse/render results. Give diagnostics stable identities and original source spans, including through front matter, compact statements and Markdown fences.
 - [ ] Close silent fall-through paths where unsupported statements can become ordinary class/state/ER nodes or labels. Add focused regression cases that preserve useful raw source without reporting misleading success.
-- [ ] Inventory all registered upstream families and header aliases, including Agentflow, the four Railroad dialects and `flowchart-elk`. Keep unknown-family errors separate from recognized-but-unrenderable diagnostics.
+- [x] Inventory the registered upstream families and header aliases, including Agentflow, the four Railroad dialects and `flowchart-elk`. Known families without native implementations preserve source and report `CFXM002`; unknown headers report `CFXM001`, and the static ELK-header flowchart fallback reports `CFXM003`.
 
 Completion: every advertised feature has versioned positive and meaningful negative fixtures, preserved semantic facts, and an explicit rendering or diagnostic outcome. Parser acceptance alone cannot mark a family complete.
 
@@ -140,7 +140,8 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [ ] Finish hierarchical treemap qualification through the existing owner candidate in PR #271, also integrated in #273. Revalidate after merge; then close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
 - [ ] Reuse the stable Sankey identity work in PR #261 and the shared XY orientation work in #251, also integrated in #273. Qualify Mermaid label/configuration handling and all series orientations against the settled owner APIs.
 - [ ] Map radar graticule, curve appearance and scale options into shared polar geometry. PR #257 supplies native series forms but does not apply Mermaid graticule metadata; that mapping remains separate work.
-- [ ] Complete Gantt `until`, repeated calendar declarations, date/axis/tick formats, vertical markers and explicit today-marker behavior. Preserve the existing month/year and excludes/includes/weekend duration calculation and compare resolved dates against upstream.
+- [x] Resolve Gantt `until` end references, merge repeated calendar declarations, apply the final diagram calendar/date format and preserve milestone ranges for dependencies. Shared upstream fixtures cover source order, earliest referenced starts and included/excluded dates.
+- [ ] Complete Gantt date/axis/tick formats, forward `after` connectors through the native relation owner, vertical markers and explicit today-marker behavior. Preserve month/year and excludes/includes/weekend calculations and compare resolved dates against upstream.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene, quadrant regions and their labels as chart geometry, and timeline sections/events in both directions. Keep the current score-bar/scatter/ordered-time mappings explicit until replaced.
 - [ ] Broaden pie/show-data, XY numeric/category axes and legends, Sankey CSV/configuration/colors, and packet row/label/configuration cases, including Mermaid 12 bit-numbering direction.
 
