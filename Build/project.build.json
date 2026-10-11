@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/project.build.schema.json",
   "RootPath": "..",
-  "ExpectedVersion": null,
+  "ExpectedVersion": "2.0.X",
   "ExpectedVersionMap": {
     "ChartForgeX": "2.0.X",
     "ChartForgeX.Visuals": "2.0.X",
@@ -10,13 +10,21 @@
     "ChartForgeX.Interactivity.Html": "2.0.X",
     "ChartForgeX.Markup": "2.0.X",
     "ChartForgeX.Mermaid": "2.0.X",
-    "ChartForgeX.Markup.Mermaid": "2.0.X"
+    "ChartForgeX.Markup.Mermaid": "2.0.X",
+    "ChartForgeX.Markup.Cli": "2.0.X"
   },
+  "VersionBindings": [
+    {
+      "Path": "Directory.Build.props",
+      "Project": "ChartForgeX",
+      "Pattern": "(?<=<ChartForgeXProductVersion>)\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?=</ChartForgeXProductVersion>)"
+    }
+  ],
   "ExpectedVersionMapAsInclude": true,
   "ExpectedVersionMapUseWildcards": false,
+  "AlignPackageVersions": true,
   "ExcludeProjects": [
     "ChartForgeX.AotSmoke",
-    "ChartForgeX.Markup.Cli",
     "ChartForgeX.Benchmarks",
     "ChartForgeX.Examples",
     "ChartForgeX.Tests",
@@ -29,9 +37,9 @@
   "StagingPath": "artifacts/ProjectBuild",
   "CleanStaging": true,
   "PlanOutputPath": null,
-  "UpdateVersions": false,
+  "UpdateVersions": true,
   "Build": true,
-  "PackStrategy": "MSBuild",
+  "PackStrategy": "PerProject",
   "PublishNuget": false,
   "PublishGitHub": false,
   "CreateReleaseZip": true,
