@@ -144,6 +144,10 @@ public sealed class MermaidFontSizeTests {
 
     [Theory]
     [InlineData("1.2em")]
+    [InlineData(".5em")]
+    [InlineData("+.5rem")]
+    [InlineData(".5vh")]
+    [InlineData("5e-1em")]
     [InlineData("18pt")]
     [InlineData("var(--label-size)")]
     public void UnsupportedCssSizingRetainsItsDeclarationAndWarning(string value) {

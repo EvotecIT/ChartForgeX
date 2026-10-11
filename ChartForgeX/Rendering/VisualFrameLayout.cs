@@ -94,6 +94,26 @@ internal static class VisualFrameLayout {
             var side = position == ChartLegendPosition.Left || position == ChartLegendPosition.Right;
             var above = position is ChartLegendPosition.Top or ChartLegendPosition.TopLeft or ChartLegendPosition.TopRight;
             var legendWidth = side ? Math.Min((right - left) * 0.32, 180) : right - left;
+            var available = Math.Max(0, Math.Min(bottom - top, size.Height * context.Frame.LegendMaximumHeightFraction));
+            var requestedLineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
+            if (requestedLineHeight > available && available > 0) {
+                // Keep ordinary sizes and overflow behavior. Oversized text still contributes
+                // visible entries, with an 18px line floor before the normal row budget applies.
+                var targetRows = Math.Max(1, Math.Min(entries.Count, context.Frame.LegendMaximumRows ?? entries.Count));
+                var fittedLineHeight = Math.Max(Math.Min(18, available), (available - Math.Min(gap, available / 4)) / targetRows);
+                legendStyle = legendStyle.Clone();
+                legendStyle.FontSize *= Math.Min(1, fittedLineHeight / requestedLineHeight);
+                var widthScale = 1d;
+                foreach (var entry in entries) {
+                    var fixedWidth = 28d + (string.IsNullOrEmpty(entry.Value) ? 0 : gap)
+                        + (string.IsNullOrEmpty(entry.Percentage) ? 0 : gap * 2 / 3);
+                    var textWidth = builder.MeasureText(OneLine(entry.Label), legendStyle).Width
+                        + builder.MeasureText(entry.Value ?? string.Empty, legendStyle).Width
+                        + builder.MeasureText(entry.Percentage ?? string.Empty, legendStyle).Width;
+                    if (textWidth > 0) widthScale = Math.Min(widthScale, Math.Max(1, legendWidth - fixedWidth) / textWidth);
+                }
+                legendStyle.FontSize = Math.Max(Math.Min(12, legendStyle.FontSize), legendStyle.FontSize * widthScale);
+            }
             var rows = new List<List<VisualLegendEntry>>(); var row = new List<VisualLegendEntry>(); var used = 0d;
             foreach (var entry in entries) {
                 var width = LegendWidth(entry, 28);
@@ -102,7 +122,6 @@ internal static class VisualFrameLayout {
             }
             if (row.Count > 0) rows.Add(row);
             var lineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
-            var available = Math.Max(0, Math.Min(bottom - top, size.Height * context.Frame.LegendMaximumHeightFraction));
             var legendGap = Math.Min(gap, Math.Max(0, available - lineHeight));
             var legendTitle = context.Frame.LegendTitle;
             var legendTitleStyle = legendStyle.Clone(); legendTitleStyle.Font.Weight = 600;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -33,12 +34,13 @@ public sealed partial class SvgVisualBlockRenderer {
 
         foreach (var placement in placements) {
             var labelY = placement.Y - placement.Radius * 0.52;
-            WriteText(writer, placement.Set.Label, placement.X - placement.Radius * 0.58, labelY, placement.Radius * 1.16, TextAlignment.Center, placement.Set.TextColor ?? theme.Text, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 13.5), "800");
+            var style = VisualBlockRendering.FitBodyTextStyle(theme, placement.Set.Label, 13.5, placement.Radius * 1.16, placement.Radius * .24, 800);
+            WriteText(writer, placement.Set.Label, placement.X - placement.Radius * 0.58, labelY, placement.Radius * 1.16, TextAlignment.Center, placement.Set.TextColor ?? theme.Text, theme.FontFamily, style.FontSize, "800");
         }
 
         foreach (var intersection in block.Intersections) WriteVennIntersectionStyle(writer, placements, intersection);
-        foreach (var intersection in block.Intersections) WriteVennRegionText(writer, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 12.5), "700");
-        foreach (var textNode in block.TextNodes) WriteVennRegionText(writer, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, theme.FontFamily, VisualBlockRendering.BodyFontSize(theme, 11.5), "600");
+        foreach (var intersection in block.Intersections) WriteVennRegionText(writer, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, theme, 12.5, "700");
+        foreach (var textNode in block.TextNodes) WriteVennRegionText(writer, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, theme, 11.5, "600");
     }
 
     private static void WriteVennIntersectionStyle(SvgMarkupWriter writer, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {
@@ -58,11 +60,12 @@ public sealed partial class SvgVisualBlockRenderer {
             .Line();
     }
 
-    private static void WriteVennRegionText(SvgMarkupWriter writer, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, IReadOnlyList<string> setIds, string label, ChartColor color, string fontFamily, double fontSize, string weight) {
+    private static void WriteVennRegionText(SvgMarkupWriter writer, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, IReadOnlyList<string> setIds, string label, ChartColor color, ChartTheme theme, double defaultSize, string weight) {
         if (label.Length == 0) return;
         var center = VisualBlockRendering.VennRegionCenter(placements, setIds);
         var maxWidth = Math.Max(42, placements[0].Radius * (setIds.Count == 1 ? 0.95 : 0.72));
         var yOffset = setIds.Count == 1 ? placements[0].Radius * 0.12 : setIds.Count == 2 ? 5 : 18;
-        WriteText(writer, label, center.X - maxWidth / 2, center.Y + yOffset, maxWidth, TextAlignment.Center, color, fontFamily, fontSize, weight);
+        var style = VisualBlockRendering.FitBodyTextStyle(theme, label, defaultSize, maxWidth, placements[0].Radius * .24, int.Parse(weight, System.Globalization.CultureInfo.InvariantCulture));
+        WriteText(writer, label, center.X - maxWidth / 2, center.Y + yOffset, maxWidth, TextAlignment.Center, color, theme.FontFamily, style.FontSize, weight);
     }
 }
