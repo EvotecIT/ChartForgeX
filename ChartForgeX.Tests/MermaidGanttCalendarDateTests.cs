@@ -98,6 +98,9 @@ public sealed class MermaidGanttCalendarDateTests {
     [Theory]
     [InlineData("X", "-1.1234567", "86398.8765433")]
     [InlineData("x", "-1.1234", "86399998.8766")]
+    [InlineData("[epoch:]X", "epoch:-1.1234567", "epoch:86398.8765433")]
+    [InlineData("[epoch:]x", "epoch:-1.1234", "epoch:86399998.8766")]
+    [InlineData("X[ seconds]", "-1.1234567 seconds", "86398.8765433 seconds")]
     public void UnixCalendarMatchingPreservesAcceptedTicksAcrossTheEpoch(string format, string start, string excluded) {
         var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat " + format + "\nexcludes " + excluded + "\nTask :task," + start + ",1d");
         Assert.Empty(parsed.Diagnostics);
