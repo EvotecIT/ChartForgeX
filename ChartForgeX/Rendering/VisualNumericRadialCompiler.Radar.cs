@@ -73,6 +73,7 @@ internal static partial class VisualNumericRadialCompiler {
         }
         if (geometry.Outer > 0 && obstacles != null) {
             var closed = path.Flatten();
+            if (closed.Count > 0 && !closed[closed.Count - 1].Equals(closed[0])) closed.Add(closed[0]);
             var stroke = ChartLineVisualLayers.Build(color, series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth,
                 chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth);
             obstacles.Add(new LabelObstacle(SeriesId(seriesIndex), new LabelMarkShape(new[] { closed }, false, stroke, plot)));
