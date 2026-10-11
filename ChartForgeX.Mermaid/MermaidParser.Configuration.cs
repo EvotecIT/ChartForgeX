@@ -85,7 +85,7 @@ public sealed partial class MermaidParser {
 
     private static bool IsConfigurationStringPath(string path) {
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look" || path == "radar.curveTension";
+        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path);
     }
 
     private static List<int> ConfigurationLineStarts(string source) {
@@ -116,15 +116,10 @@ public sealed partial class MermaidParser {
         configuration.Layout = ReadString("layout");
         configuration.Look = ReadString("look");
         configuration.FontFamily = ReadString("fontFamily");
-        if (kind == MermaidDiagramKind.Radar) {
-            var tension = configuration.Last("radar.curveTension");
-            if (tension != null) {
-                if (tension.TryGetNumber(out var number) && number >= 0 && number <= 1) configuration.RadarCurveTension = number;
-                else ConfigurationError(result, tension.Span, "Mermaid configuration 'radar.curveTension' must be a finite number from zero through one.");
-            }
-        }
+        if (kind == MermaidDiagramKind.Radar)
+            configuration.Radar = MermaidRadarSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         foreach (var setting in configuration.Settings) {
-            if (kind == MermaidDiagramKind.Radar && setting.Path == "radar.curveTension") continue;
+            if (configuration.Radar?.Handles(setting.Path) == true) continue;
             var theme = Selected("theme");
             var font = Selected("fontFamily");
             if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
