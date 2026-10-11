@@ -10,6 +10,19 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidThemeFontTests {
+    [Fact]
+    public void EffectiveVariableFontLeavesInvalidReplacedGlobalFontsInSourceOnly() {
+        const string source = "%%{init: {'fontFamily':'Arial\\uFFFFserif','themeVariables':{'fontFamily':'Georgia'}}}%%\nflowchart LR\nA --> B";
+        var result = MermaidRenderer.Render(source);
+        Assert.False(result.HasErrors);
+        Assert.Equal(source, result.Document!.SourceText);
+        Assert.Equal("Georgia", result.Document.Configuration.FontFamily);
+        var artifact = Assert.IsType<VisualArtifact>(result.Artifact);
+        Assert.NotNull(System.Xml.Linq.XDocument.Parse(artifact.ToSvg()).Root);
+        Assert.NotEmpty(artifact.ToPng());
+        Assert.NotEmpty(artifact.ToInterchangeUtf8Json());
+    }
+
     [Theory]
     [InlineData("flowchart LR\nA[API] --> B[Store]")]
     [InlineData("sequenceDiagram\nAPI->>Store: Save request")]
