@@ -137,7 +137,8 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 ### 4. Chart and calendar fidelity
 
 - [x] Correct Gantt duration-unit case semantics: `M` means calendar months and `m` means minutes. Shared upstream timestamp fixtures cover month-end/leap-year clamping, fractional units, exclusion calendars and dependent tasks.
-- [ ] Finish hierarchical treemap qualification through the existing owner candidate in PR #271, also integrated in #273. Revalidate after merge; then close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
+- [ ] Qualify hierarchical treemap behavior against the shared owner merged in PR #273; PR #271 is closed after consolidation. Close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
+- [x] Preserve comma-separated treemap magnitudes through typed hierarchy conversion and static direct/fence output.
 - [ ] Reuse the stable Sankey identity work in PR #261 and the shared XY orientation work in #251, also integrated in #273. Qualify Mermaid label/configuration handling and all series orientations against the settled owner APIs.
 - [ ] Map radar graticule, curve appearance and scale options into shared polar geometry. PR #257 supplies native series forms but does not apply Mermaid graticule metadata; that mapping remains separate work.
 - [ ] Complete Gantt `until`, repeated calendar declarations, date/axis/tick formats, vertical markers and explicit today-marker behavior. Preserve the existing month/year and excludes/includes/weekend duration calculation and compare resolved dates against upstream.

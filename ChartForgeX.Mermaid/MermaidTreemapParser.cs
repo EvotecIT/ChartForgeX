@@ -102,6 +102,10 @@ internal static class MermaidTreemapParser {
     private static string UnescapeQuoted(string value) => value.Replace("\\\"", "\"").Replace("\\\\", "\\");
 
     private static bool TryParseValue(string text, out double value) {
+        if (text.IndexOf(',') >= 0) {
+            foreach (var ch in text) if (ch != ',' && ch != '.' && (ch < '0' || ch > '9')) { value = 0; return false; }
+            text = text.Replace(",", string.Empty);
+        }
         if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value) && !double.IsNaN(value) && !double.IsInfinity(value) && value >= 0) return true;
         value = 0;
         return false;
