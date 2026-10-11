@@ -21,6 +21,7 @@ public sealed class MermaidPacketConfigurationTests {
     [Theory]
     [InlineData("packet-source-options", false, PacketBitOrder.Ascending)]
     [InlineData("packet-descending", true, PacketBitOrder.Descending)]
+    [InlineData("packet-geometry", true, PacketBitOrder.Ascending)]
     public void RenderedRowsMatchSharedUpstreamFieldExpectations(string name, bool showBits, PacketBitOrder order) {
         var root = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures");
         var parsed = new MermaidParser().ParsePacket(File.ReadAllText(Path.Combine(root, name + ".mmd")));

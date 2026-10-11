@@ -18,12 +18,12 @@ public sealed partial class PngVisualBlockRenderer {
         if (rowCount == 0) return;
         var metrics = VisualBlockRendering.PacketRows(packet, content, y, rowCount, slices);
         var labelTop = metrics.LabelTop; var rowGap = metrics.Gap; var rowHeight = metrics.Height;
-        var bitWidth = content.Width / packet.BitsPerRow;
+        var bitWidth = metrics.BitWidth;
         for (var index = 0; index < slices.Count; index++) {
             var slice = slices[index];
             var rowY = y + slice.Row * (rowHeight + labelTop + rowGap) + labelTop;
             var x = content.X + VisualBlockRendering.PacketColumn(packet, slice) * bitWidth;
-            var width = Math.Max(1, slice.BitLength * bitWidth - 1);
+            var width = metrics.FieldWidth(slice.BitLength);
             var color = VisualBlockRendering.PaletteAt(theme, slice.FieldIndex);
             canvas.FillRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color.WithAlpha(48));
             canvas.StrokeRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color, 1);

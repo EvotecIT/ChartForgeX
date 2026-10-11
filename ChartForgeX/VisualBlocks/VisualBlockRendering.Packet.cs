@@ -13,14 +13,16 @@ internal static partial class VisualBlockRendering {
 
     public static PacketRowMetrics PacketRows(PacketLayoutBlock packet, ChartRect content, double top, int rows, IReadOnlyList<PacketLayoutSlice> slices) {
         var remaining = Math.Max(0, content.Bottom - top);
-        var gap = Math.Min(Math.Min(12, Math.Max(5, content.Height * .025)), remaining / (rows * 2));
+        var gap = Math.Min(packet.RowGap ?? Math.Min(12, Math.Max(5, content.Height * .025)), remaining / (rows * 2));
         var slot = Math.Max(0, (remaining - gap * Math.Max(0, rows - 1)) / rows);
         var labelTop = packet.ShowBitNumbers ? Math.Min(BodyFontSize(packet.Options.Theme, 16), slot * .4) : 0;
-        var height = Math.Min(52, slot - labelTop);
+        var height = Math.Min(packet.RowHeight ?? 52, slot - labelTop);
+        var bitWidth = Math.Min(packet.BitWidth ?? content.Width / packet.BitsPerRow, content.Width / packet.BitsPerRow);
+        var fieldGap = packet.FieldGap ?? 1;
         var bits = Math.Min(BodyFontSize(packet.Options.Theme, 9.5), labelTop * .75);
         var bitStyle = new TextStyle { Font = new FontSpec { Family = packet.Options.Theme.FontFamily, Weight = 700 }, FontSize = 1, LineHeight = 1 };
         foreach (var slice in slices) {
-            var width = Math.Max(1, slice.BitLength * content.Width / packet.BitsPerRow - 1);
+            var width = PacketFieldWidth(slice.BitLength, bitWidth, fieldGap);
             var numbers = ChartLabelScene.MeasureText(slice.StartBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
             var available = width - PacketBitInset(width) * 2;
             if (slice.EndBit != slice.StartBit) {
@@ -30,8 +32,10 @@ internal static partial class VisualBlockRendering {
             if (numbers > 0) bits = Math.Min(bits, Math.Max(1, available / numbers));
         }
         var label = Math.Min(BodyFontSize(packet.Options.Theme, Math.Max(9, Math.Min(13.5, height * .31))), height * .6);
-        return new PacketRowMetrics(labelTop, gap, height, bits, label);
+        return new PacketRowMetrics(labelTop, gap, height, bits, label, bitWidth, fieldGap);
     }
+
+    private static double PacketFieldWidth(int bits, double bitWidth, double gap) => Math.Max(Math.Min(1, bits * bitWidth), bits * bitWidth - gap);
 
     // End/start numbers on adjoining fields share the measured scene's label separation.
     public static double PacketBitInset(double width) => Math.Min(LabelPlacementService.DefaultGap / 2, width / 4);
@@ -46,8 +50,9 @@ internal static partial class VisualBlockRendering {
         packet.BitOrder == PacketBitOrder.Descending ? slice.StartBit : slice.EndBit;
 
     public readonly struct PacketRowMetrics {
-        public PacketRowMetrics(double labelTop, double gap, double height, double bitFontSize, double fieldFontSize) {
+        public PacketRowMetrics(double labelTop, double gap, double height, double bitFontSize, double fieldFontSize, double bitWidth, double fieldGap) {
             LabelTop = labelTop; Gap = gap; Height = height; BitFontSize = bitFontSize; FieldFontSize = fieldFontSize;
+            BitWidth = bitWidth; FieldGap = fieldGap;
         }
         public double LabelTop { get; }
         public double Gap { get; }
@@ -55,6 +60,9 @@ internal static partial class VisualBlockRendering {
         public double BitFontSize { get; }
         public double BitBaselineOffset => Math.Min(LabelTop * .25, Math.Max(4, BitFontSize * .3));
         public double FieldFontSize { get; }
+        public double BitWidth { get; }
+        public double FieldGap { get; }
+        public double FieldWidth(int bits) => PacketFieldWidth(bits, BitWidth, FieldGap);
     }
 
     public static void ValidatePacketLayout(PacketLayoutBlock packet) {
