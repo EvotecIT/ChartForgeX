@@ -160,7 +160,7 @@ internal static partial class VisualMatrixCompiler {
         var zero = min >= 0 && values.Any(value => value == 0);
         var nonZero = values.Where(value => value != 0).ToArray();
         var floor = zero && nonZero.Length > 0 ? nonZero.Min() : min;
-        var zeroLabel = presentation.Value(0);
+        var zeroLabel = zero ? presentation.Value(0) : string.Empty;
         var zeroWidth = zero ? Math.Min(bounds.Width * .3, builder.MeasureText(zeroLabel, style).Width + context.Theme.Spacing) : 0;
         if (nonZero.Length == 0) zeroWidth = bounds.Width;
         // Keep the complete key together: captions belong to the swatches, rather

@@ -11,6 +11,32 @@ namespace ChartForgeX.Tests;
 /// <summary>Same-measure color presentation preserves native paint and raw facts while capturing display text once.</summary>
 public sealed class SameValueColorPresentationTests {
     [Theory]
+    [InlineData(ChartSeriesKind.Heatmap)]
+    [InlineData(ChartSeriesKind.HexbinHeatmap)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap)]
+    public void PositiveLegacyKeysFormatOnlyObservedValuesAndEmittedSamples(ChartSeriesKind kind) {
+        var chart = Chart.Create().WithSize(800, 440).WithDataLabels(false);
+        if (kind == ChartSeriesKind.CalendarHeatmap) chart.AddCalendarHeatmap("Positive", new[] {
+            new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 10),
+            new ChartCalendarHeatmapItem(new DateTime(2026, 1, 6), 20)
+        });
+        else if (kind == ChartSeriesKind.HexbinHeatmap) chart.AddHexbinHeatmapRow("Positive", new double?[] { 10, 20 });
+        else chart.AddHeatmapRow("Positive", new double?[] { 10, 20 });
+        var calls = new Dictionary<double, int>();
+        chart.ConfigureHeatmapColorDimension(options => options.ValueFormat = ChartValueFormat.Custom(value => {
+            if (value < 10 || value > 20) throw new InvalidOperationException("Only the positive measurement domain can be formatted.");
+            calls[value] = calls.GetValueOrDefault(value) + 1;
+            return value.ToString("0.0", CultureInfo.InvariantCulture);
+        }));
+        var prepared = Prepare(chart);
+        Assert.Contains(10d, calls.Keys); Assert.Contains(20d, calls.Keys); Assert.DoesNotContain(0d, calls.Keys);
+        var capturedCalls = calls.ToArray();
+        _ = prepared.ToSvg(); _ = prepared.ToPng();
+        Assert.Equal(capturedCalls, calls.ToArray());
+        Assert.All(calls.Values, count => Assert.Equal(1, count));
+    }
+
+    [Theory]
     [InlineData(ChartSeriesKind.Heatmap, "legacy", false)]
     [InlineData(ChartSeriesKind.Heatmap, "positioned", false)]
     [InlineData(ChartSeriesKind.Heatmap, "discrete", false)]

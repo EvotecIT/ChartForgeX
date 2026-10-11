@@ -27,7 +27,7 @@ internal static partial class VisualMatrixCompiler {
         }
         var gap = context.Theme.Spacing / 2; var captionGap = context.Theme.Spacing / 3;
         var rangeLabel = presentation.Labels.Less + " – " + presentation.Labels.More;
-        var zeroLabel = presentation.Value(0);
+        var zeroLabel = model.ZeroDays > 0 ? presentation.Value(0) : string.Empty;
         var captionHeight = CalendarScaleCaptionHeight(chart, builder, model, style, presentation);
         var height = Math.Min(12, Math.Max(0, bounds.Height - captionHeight - captionGap));
         var special = (model.EmptyDays > 0 ? 1 : 0) + (model.ZeroDays > 0 ? 1 : 0);
