@@ -1,0 +1,12 @@
+requirementDiagram
+requirement test_req {
+  id: 1
+  text: validate the request.
+  risk: High
+  verifymethod: Test
+}
+element test_entity {
+  type: simulation
+  docref: "Test entity"
+}
+test_entity - satisfies -> test_req
