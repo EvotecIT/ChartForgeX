@@ -108,13 +108,14 @@ async function previewActiveDocument(context: vscode.ExtensionContext, resource?
 
 async function refreshPreview(context: vscode.ExtensionContext, document: vscode.TextDocument, panel: vscode.WebviewPanel): Promise<void> {
   const requestVersion = document.version;
+  const requestDateAnchor = ganttDateAnchor(document);
   if (!isChartForgeXMarkup(document)) {
     panel.webview.html = renderMessage('No versioned ChartForgeX visual block was found in this document.');
     return;
   }
 
   const result = await runCli(context, document, 'preview');
-  if (document.version !== requestVersion) {
+  if (document.version !== requestVersion || ganttDateAnchor(document) !== requestDateAnchor) {
     return;
   }
 
@@ -133,13 +134,14 @@ async function validateActiveDocument(context: vscode.ExtensionContext, showStat
   }
 
   const requestVersion = document.version;
+  const requestDateAnchor = ganttDateAnchor(document);
   if (!isChartForgeXMarkup(document)) {
     diagnostics.delete(document.uri);
     return false;
   }
 
   const result = await runCli(context, document, 'validate');
-  if (document.version !== requestVersion) {
+  if (document.version !== requestVersion || ganttDateAnchor(document) !== requestDateAnchor) {
     return false;
   }
 
@@ -294,6 +296,10 @@ function isChartForgeXMarkup(document: vscode.TextDocument): boolean {
     /~~~+\s*mermaid\b/i.test(document.getText());
 }
 
+function ganttDateAnchor(document: vscode.TextDocument): string {
+  return vscode.workspace.getConfiguration('chartforgexMarkup', document.uri).get<string>('ganttDateAnchor', '').trim();
+}
+
 async function runCli(context: vscode.ExtensionContext, document: vscode.TextDocument, command: string, extraArgs: string[] = []): Promise<CliResult> {
   let cli: CliCommand;
   try {
@@ -306,7 +312,7 @@ async function runCli(context: vscode.ExtensionContext, document: vscode.TextDoc
   const tempFile = path.join(tempRoot, tempDocumentName(document));
   fs.writeFileSync(tempFile, document.getText(), 'utf8');
   try {
-    const anchor = vscode.workspace.getConfiguration('chartforgexMarkup', document.uri).get<string>('ganttDateAnchor', '').trim();
+    const anchor = ganttDateAnchor(document);
     const renderArgs = command !== 'emit' && anchor ? ['--gantt-date-anchor', anchor, ...extraArgs] : extraArgs;
     const args = [...cli.args, command, tempFile, ...renderArgs];
     let result = await spawnProcess(cli.command, args, documentWorkingDirectory(document, tempRoot));
