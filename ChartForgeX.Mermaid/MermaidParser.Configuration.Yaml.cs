@@ -7,38 +7,6 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Mermaid;
 
 public sealed partial class MermaidParser {
-    private static int ConfigurationYamlLength(string text) {
-        var lines = text.Split('\n');
-        var rootIndent = int.MaxValue;
-        foreach (var line in lines) {
-            if (TrimConfigurationYaml(line).Length > 0 && !line.TrimStart(' ', '\t').StartsWith("#", StringComparison.Ordinal)) rootIndent = Math.Min(rootIndent, ConfigurationYamlIndent(line));
-        }
-        var length = 0;
-        var inConfiguration = false;
-        for (var index = 0; index < lines.Length; index++) {
-            var line = lines[index];
-            var trimmed = TrimConfigurationYaml(line);
-            if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
-            if (ConfigurationYamlIndent(line) <= rootIndent &&
-                (!inConfiguration || !IsConfigurationYamlBlockContinuation(ConfigurationYamlIndent(line), rootIndent, trimmed)))
-                inConfiguration = ConfigurationYamlIndent(line) == rootIndent && Regex.IsMatch(trimmed, @"^config[ \t]*:", RegexOptions.CultureInvariant);
-            if (inConfiguration) {
-                length += line.Length + (length > 0 ? 1 : 0);
-                var flow = Regex.Match(trimmed, @"^config[ \t]*:[ \t]*(\{.*)$", RegexOptions.CultureInvariant);
-                if (ConfigurationYamlIndent(line) == rootIndent && flow.Success) {
-                    var first = index;
-                    ReadConfigurationFlowMapping(lines, ref index, TrimConfigurationYaml(TrimYamlComment(flow.Groups[1].Value, true)));
-                    for (var extra = first + 1; extra <= index; extra++) {
-                        var continued = TrimConfigurationYaml(lines[extra]);
-                        if (continued.Length > 0 && !continued.StartsWith("#", StringComparison.Ordinal)) length += lines[extra].Length + 1;
-                    }
-                    inConfiguration = false;
-                }
-            }
-        }
-        return length;
-    }
-
     private static void ReadConfigurationYaml(string text, MermaidSourceConfiguration configuration, MermaidParseResult<MermaidDocument> result, IReadOnlyList<int> sourceLineStarts) {
         var parents = new List<(int Indent, string Path, int ChildIndent, MermaidSourceSpan Span)>();
         var declared = new HashSet<string>(StringComparer.Ordinal);
@@ -69,8 +37,9 @@ public sealed partial class MermaidParser {
                 opaqueIndent = parent.Indent;
                 continue;
             }
-            var match = Regex.Match(trimmed, @"^([A-Za-z_][A-Za-z0-9_-]*)[ \t]*:[ \t]*(.*)$", RegexOptions.CultureInvariant);
-            if (parents.Count == 0 && (indent != rootIndent || !match.Success || match.Groups[1].Value != "config")) continue;
+            var match = ConfigurationYamlMapping(trimmed);
+            var key = ConfigurationYamlKey(match);
+            if (parents.Count == 0 && (indent != rootIndent || !match.Success || key != "config")) continue;
             var span = new MermaidSourceSpan(index + 2, indent + 1, trimmed.Length);
             if (parents.Count > 0) {
                 var parent = parents[parents.Count - 1];
@@ -80,14 +49,14 @@ public sealed partial class MermaidParser {
                     continue;
                 }
             }
-            if (!match.Success || raw.Substring(0, indent).IndexOf('\t') >= 0) {
+            if (key == null || raw.Substring(0, indent).IndexOf('\t') >= 0) {
                 Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Warning,
                     "Mermaid frontmatter configuration supports space-indented mappings with scalar values; this declaration is retained without application.", MermaidDiagnosticCodes.UnsupportedConfiguration);
+                opaqueIndent = indent;
                 continue;
             }
             var path = parents.Count == 0 ? string.Empty : parents[parents.Count - 1].Path;
-            var key = match.Groups[1].Value;
-            if (parents.Count > 0) path = path.Length == 0 ? key : path + "." + key;
+            if (parents.Count > 0) path = path.Length == 0 ? ConfigurationPathKey(key!) : path + "." + ConfigurationPathKey(key!);
             var valueText = TrimConfigurationYaml(TrimYamlComment(match.Groups[2].Value, parents.Count == 0));
             if (!declared.Add(path)) { ConfigurationError(result, span, "Mermaid frontmatter configuration repeats '" + (path.Length == 0 ? "config" : path) + "'."); continue; }
             if (declared.Count > 256) { ConfigurationError(result, span, "Mermaid frontmatter configuration exceeds 256 keys."); break; }
@@ -146,7 +115,7 @@ public sealed partial class MermaidParser {
         (text.Length == 1 || text[1] == ' ' || text[1] == '\t');
 
     private static bool IsConfigurationYamlMappingEntry(string text) => !IsConfigurationYamlSequenceItem(text) &&
-        Regex.IsMatch(text, @"^(?:[A-Za-z_][A-Za-z0-9_-]*[ \t]*:|""(?:[^""\\]|\\.)*""[ \t]*:|'(?:[^']|'')*'[ \t]*:|[^'""#\[\]{},][^:]*:(?:[ \t]|$))", RegexOptions.CultureInvariant);
+        ConfigurationYamlValueSeparator(text) >= 0;
 
     private static bool IsOpaqueConfigurationYamlValue(string value) => value.Length > 0 && "[|>&*!".IndexOf(value[0]) >= 0;
 
@@ -212,8 +181,7 @@ public sealed partial class MermaidParser {
         return index;
     }
 
-    private static string TrimYamlComment(string value, bool flow = false) {
-        var quote = '\0';
+    private static string TrimYamlComment(string value, bool flow = false, char quote = '\0') {
         var first = ConfigurationYamlIndent(value);
         for (var index = 0; index < value.Length; index++) {
             var character = value[index];

@@ -11,6 +11,7 @@ public sealed partial class MermaidParser {
         var collected = new StringBuilder();
         var depth = 0;
         var quote = '\0';
+        var scalarState = ConfigurationFlowScalar.Node;
         var column = firstColumn;
         while (true) {
             if (value.Length > 0 || quote != '\0') {
@@ -21,22 +22,46 @@ public sealed partial class MermaidParser {
                 if (available > 0) collected.Append(value, 0, System.Math.Min(value.Length, available));
             }
             if (collected.Length > MaximumConfigurationLength) break;
-            for (var position = 0; position < value.Length; position++) {
-                var character = value[position];
-                if (quote != '\0') {
-                    if (quote == '"' && character == '\\') position++;
-                    else if (quote == '\'' && character == '\'' && position + 1 < value.Length && value[position + 1] == '\'') position++;
-                    else if (character == quote) quote = '\0';
-                } else if (character == '\'' || character == '"') quote = character;
-                else if (character == '{') depth++;
-                else if (character == '}') depth--;
-            }
+            ScanConfigurationYamlFlow(value, ref depth, ref quote, ref scalarState);
             if (depth <= 0 || index + 1 == lines.Length) break;
-            while (index + 1 < lines.Length && lines[index + 1].TrimStart(' ', '\t').StartsWith("#", System.StringComparison.Ordinal)) index++;
+            while (quote == '\0' && index + 1 < lines.Length && lines[index + 1].TrimStart(' ', '\t').StartsWith("#", System.StringComparison.Ordinal)) index++;
             if (index + 1 == lines.Length) break;
-            value = TrimConfigurationYaml(TrimYamlComment(lines[++index], true));
+            value = TrimConfigurationYaml(TrimYamlComment(lines[++index], true, quote));
             column = ConfigurationYamlIndent(lines[index]) + 1;
         }
         return collected.ToString();
     }
+
+    // Shared physical scanning keeps unsupported flow nodes bounded without interpreting them.
+    private static int ScanConfigurationYamlFlow(string text, ref int depth, ref char quote, ref ConfigurationFlowScalar scalarState,
+        bool findMappingValue = false) {
+        for (var position = 0; position < text.Length; position++) {
+            var character = text[position];
+            if (quote != '\0') {
+                if (quote == '"' && character == '\\') position++;
+                else if (quote == '\'' && character == '\'' && position + 1 < text.Length && text[position + 1] == '\'') position++;
+                else if (character == quote) { quote = '\0'; scalarState = ConfigurationFlowScalar.Quoted; }
+            } else if (scalarState == ConfigurationFlowScalar.VerbatimTag) {
+                if (character == '>') scalarState = ConfigurationFlowScalar.Property;
+            } else if (scalarState == ConfigurationFlowScalar.Property && "{}[],".IndexOf(character) < 0) {
+                if (character == ' ' || character == '\t') scalarState = ConfigurationFlowScalar.Node;
+            } else if (scalarState == ConfigurationFlowScalar.Node && (character == '!' || character == '&'))
+                scalarState = character == '!' && position + 1 < text.Length && text[position + 1] == '<'
+                    ? ConfigurationFlowScalar.VerbatimTag : ConfigurationFlowScalar.Property;
+            else if (character == '#' && (position == 0 || text[position - 1] == ' ' || text[position - 1] == '\t')) break;
+            else if (findMappingValue && depth == 0 && character == ':' && (scalarState == ConfigurationFlowScalar.Quoted ||
+                position + 1 == text.Length || text[position + 1] == ' ' || text[position + 1] == '\t')) return position;
+            else if ((character == '\'' || character == '"') && scalarState == ConfigurationFlowScalar.Node) quote = character;
+            else if ((character == '{' || character == '[') && (!findMappingValue || depth > 0 || scalarState == ConfigurationFlowScalar.Node)) {
+                depth++; scalarState = ConfigurationFlowScalar.Node;
+            }
+            else if ((character == '}' || character == ']') && (!findMappingValue || depth > 0)) { depth--; scalarState = ConfigurationFlowScalar.Plain; }
+            else if (character == ',' || character == ':' && (scalarState == ConfigurationFlowScalar.Quoted || position + 1 == text.Length ||
+                text[position + 1] == ' ' || text[position + 1] == '\t')) scalarState = ConfigurationFlowScalar.Node;
+            else if (character != ' ' && character != '\t') scalarState = ConfigurationFlowScalar.Plain;
+        }
+        return -1;
+    }
+
+    private enum ConfigurationFlowScalar { Node, Plain, Quoted, Property, VerbatimTag }
 }
