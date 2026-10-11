@@ -36,7 +36,7 @@ Flowchart, sequence, class, state, entity relationship, requirement, architectur
 
 ZenUML (`zenuml`), Agentflow (`agentflow-beta`) and Railroad (`railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta`) produce an inspectable `MermaidDocument` with retained raw body statements and `IsDiagnosticOnly` set to `true`. They return warning `CFXM002` and no visual artifact while their semantic parser and native renderer are unavailable. Recognition does not validate the retained body grammar.
 
-Diagram selection diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for the `flowchart-elk` layout fallback, and `CFXM004` for native conversion failure. The Markdown bridge preserves these codes and maps source lines into the host document. Other parser diagnostics keep their located messages with an empty code until they are classified.
+Diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for an authored layout that uses the native static fallback, `CFXM004` for native conversion failure, `CFXM005` for configuration retained without native application, `CFXM006` for invalid or over-limit configuration, `CFXM007` for a retained statement without native notation, and `CFXM008` for an invalid direction or unmatched state/ER boundary. The Markdown bridge preserves these codes and maps source lines into the host document. Other parser diagnostics keep their located messages with an empty code until they are classified.
 
 Unknown diagram families produce a parser error.
 
@@ -57,11 +57,43 @@ if (!result.HasErrors && result.Artifact != null) {
 }
 ```
 
-Inspect `Diagnostics` even when rendering succeeds: warnings identify syntax or configuration retained without exact visual interpretation. `accTitle` and single-line or multiline `accDescr` provide accessible names and descriptions. The `dark` and `default` source themes select static palettes. Other theme names and configuration keys produce approximation warnings; sequence previews retain their fixed palette.
+Inspect `Diagnostics` even when rendering succeeds: warnings identify syntax or configuration retained without exact visual interpretation. `accTitle` and single-line or multiline `accDescr` provide accessible names and descriptions. The `dark` and `default` source themes select static palettes. Source font stacks reach chart, topology and visual-block owners; native font resolution uses the existing fallback rules and does not fetch remote fonts. Other themes and settings produce approximation warnings; sequence previews retain their fixed palette and font.
 
 `MermaidRenderOptions` lives in `ChartForgeX.Mermaid` and supplies family defaults to both the source renderer and `MermaidVisualMarkupParser`. Replace the former `ChartForgeX.Markup.Mermaid.MermaidVisualMarkupRenderOptions` type with this shared type when migrating source code.
 
 Topology diagram dimensions set the minimum canvas. The renderer expands the canvas when node content or relationship notation needs more space; the artifact's natural size reports those rendered dimensions.
+
+## Source configuration
+
+`MermaidDocument.Configuration` exposes the effective `Theme`, `Layout`, `Look` and `FontFamily`, plus retained `Settings` with dotted paths, scalar values and original locations. `Theme` on the document addresses the same effective theme for callers that convert a model directly.
+
+Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. A recognized theme or look scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. Only diagram scopes defined by the supported Mermaid configuration schema participate in this precedence; treemap uses the global appearance settings. Recognized themes include `neo`, `neo-dark`, `redux`, `redux-dark`, `redux-color` and `redux-dark-color`; their names are retained with the native light-palette approximation warning. An unrecognized scoped theme or look retains a warning and allows the global value to apply. The latest global and active-family theme, layout and look values must each be non-empty strings, even when one overrides the other. Settings for inactive families remain retained with diagnostics. Layout names retain scoped precedence because the upstream layout registry is extensible. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
+
+```mermaid
+---
+config:
+  theme: default
+  fontFamily: Arial, sans-serif
+  flowchart:
+    theme: dark
+---
+flowchart LR
+A[API] --> B[Database]
+```
+
+The supported YAML subset uses consistently space-indented mappings with plain, single-quoted or JSON double-quoted scalar values and comments. Mapping keys can also use single or JSON double quotes. Quoted values in a root flow mapping fold physical line breaks according to YAML scalar rules. Nested mapping paths are retained. JSON objects are also accepted as the value of the root `config` key. YAML anchors, aliases, tags, sequences and block scalars are not interpreted as native settings. Their source remains available, and unsupported root and nested declarations produce diagnostics. Later supported initialization directives still apply. An opaque value at an effective required string setting is invalid, just like a non-string JSON value; a later supported value at the same path can replace it.
+
+Plain YAML scalars follow the YAML 1.2 printable Unicode ranges, including complete supplementary characters. Space and tab separate YAML values and comments; other printable Unicode characters remain part of the scalar. Quotes inside a plain scalar are literal text. Quoted scalars preserve non-C0 characters for JSON compatibility. Literal C0 control characters other than tabs produce `CFXM006`. JSON configuration accepts only space, tab, line feed and carriage return outside strings.
+
+Plain Boolean/null spellings, finite decimal and radix numbers, and YAML `.inf`/`.nan` forms retain their scalar types. Supported presentation settings require strings, so those typed values report `CFXM006`. Quoting preserves a string. Mixed-case spellings such as `tRuE`, bare `Infinity`, and overflowing decimal forms such as `1e9999` remain strings, following the current reference's YAML reader. This classification is consistent across the supported .NET targets.
+
+Legacy `%%{init: {...}}%%` and `%%{initialize: {...}}%%` declarations accept quoted JSON keys and either single-quoted or double-quoted strings. The opener `%%{` is contiguous; a line beginning with `%% {` is an ordinary comment. Declarations can span lines and appear before or after the family header. Blanking declarations before family parsing preserves the original locations of nodes and other statements. YAML settings identify their declaration; root flow mappings retain each property's original span across lines, comments and quote normalization. Legacy settings identify the complete directive declaration. Finite JSON numbers retain their authored spelling, including small exponents and long fractions.
+
+JSON configuration numbers must use JSON number syntax and fit the native reader's finite double range; overflow and leading zeroes report `CFXM006` on every target. YAML single-quoted strings, including those in root flow mappings, escape an interior quote by doubling it (`'Arial''s, serif'`) and preserve literal backslashes. Legacy `init` single-quoted strings retain JSON-style backslash escapes. Unescaped interior quotes are invalid configuration.
+
+Configuration is limited to 65,536 characters across the YAML `config` declarations and legacy declarations, 256 retained settings, eight JSON/mapping levels and 4,096 characters for each latest global or active-family theme/layout/look value and effective font string. Effective presentation strings contain complete Unicode characters; font names also use XML-compatible characters so native artifacts can export to SVG. Unsupported sequence bodies, including indentless items, count toward the configuration budget. Unrelated frontmatter metadata, whole YAML comment lines and blank lines outside scalar content do not consume it. Physical block-scalar and quoted flow-scalar bodies count, including lines beginning with `#` and whitespace-only lines. Comments do not end the active mapping; following indented settings remain subject to its limits. Over-budget declarations are omitted from the bounded directive collection; the original source remains available. YAML has an additional 256-key limit. Duplicate keys within one supported mapping, inconsistent sibling indentation, invalid supported values and over-limit input report `CFXM006` and prevent the shared renderer from producing an artifact. Repeated legacy declarations remain valid and merge in order.
+
+`layout`, `look`, `defaultRenderer`, theme variables and other family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
 
 ## Process diagrams
 
@@ -132,13 +164,14 @@ Class diagrams are parsed into `MermaidClassDocument` and converted to topology 
 Supported class parsing includes:
 
 - `classDiagram` headers.
+- Global `direction LR`, `RL`, `TB` and `BT`, retained in `MermaidClassDocument.Direction` and applied to the native layout.
 - `class Name` declarations.
 - `class Name { ... }` member blocks.
 - Class labels in `class id["Label"]` form.
 - Class members added through blocks or `Class : member` statements.
 - Annotations such as `<<interface>> ClassName`.
 - Common relationship connectors such as inheritance, dependency, aggregation, composition, solid links, dotted links, and labels after `:`.
-- `classDef`, `class`, `style`, `linkStyle`, and `cssClass` statements retained for future richer style mapping.
+- Style assignments, notes, links and callback declarations retained in `StyleStatements` and `RawStatements`, with `CFXM007`. They do not add classes or relationships, apply source styling, or execute callbacks.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -169,12 +202,12 @@ State diagrams are parsed into `MermaidStateDocument` and converted to topology 
 Supported state parsing includes:
 
 - `stateDiagram` and `stateDiagram-v2` headers.
-- `direction` statements.
+- Global `direction LR`, `RL`, `TB` and `BT`, applied to native node ordering. State direction values are case-insensitive and retained in canonical uppercase form.
 - State declarations including `state "Label" as id`, `state id as "Label"`, and `state id <<choice>>`.
 - Composite state blocks in `state id { ... }` form.
 - Transitions using `-->` with optional labels after `:`.
 - Start and end markers using `[*]`.
-- Notes, classes, separators, and other non-transition statements retained as source statements.
+- Inline, floating (`note "text" as ID`) and multiline notes, classes, styles and concurrency separators retained as source statements with `CFXM007`. Floating notes retain one line. Multiline note text is preserved through `end note`; arrows, colons and accessibility keywords inside the note stay literal text.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -196,7 +229,7 @@ var document = result.Document;
 var svg = document!.ToSvg();
 ```
 
-The conversion target for state diagrams is `TopologyChart`. Composite states become topology groups, states become topology nodes, and transitions become directed topology edges.
+The conversion target for state diagrams is `TopologyChart`. Composite states become topology groups, states become topology nodes, and transitions become directed topology edges. Notes and concurrent-region separators are retained without dedicated geometry. Composite-local direction is retained with `CFXM007` and does not replace the global direction. Unclosed notes or composites and stray terminators report `CFXM008` and prevent shared rendering.
 
 ## Entity Relationship Diagrams
 
@@ -205,11 +238,13 @@ Entity relationship diagrams are parsed into `MermaidEntityRelationshipDocument`
 Supported ER parsing includes:
 
 - `erDiagram` headers.
+- Global `direction LR`, `RL`, `TB` and `BT`, retained in `MermaidEntityRelationshipDocument.Direction` and applied to the native layout.
 - Entity declarations discovered from relationship rows.
 - Entity blocks in `ENTITY { ... }` form.
 - Attribute rows with type, name, optional key markers, and optional comments.
 - Crow's-foot connectors such as `||--o{`, `}|..||`, and related solid/dotted combinations.
 - Relationship labels after `:`.
+- `classDef`, `class` and `style` statements retained with `CFXM007`; presentation statements do not become entity identifiers.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -229,6 +264,10 @@ var artifact = document!.ToVisualArtifact();
 ```
 
 The conversion target for ER diagrams is `TopologyChart`. Entities become database-like topology nodes. Relationships use identifying or dashed non-identifying lines with visible crow's-foot endpoint cardinality. Entity attributes, keys, and comments appear inside the entity boxes.
+
+ER `subgraph` boundaries and local directions are retained with `CFXM007`. Entities and their relationships remain in the global layout; nested group geometry and group endpoints are not implemented. Unclosed entity/subgraph blocks and stray closing statements report `CFXM008`. The pinned Mermaid 10 reference interprets ER direction and subgraph words as entity names, while the 11/12 references recognize their newer notation. Shared expectations record that semantic difference; ChartForgeX follows the documented current notation.
+
+ER direction values are case-insensitive and retained in canonical uppercase form. A bare `direction` identifier remains an entity or state. ChartForgeX also preserves its existing bare style/note keyword identifiers; some upstream grammars reserve those words, depending on family and source ending. Class source direction values use the documented uppercase forms.
 
 ## Requirement Diagrams
 

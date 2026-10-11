@@ -34,32 +34,29 @@ internal sealed partial class RgbaCanvas {
     /// painting, so a translucent stroke keeps an even tone. A polyline whose last point repeats
     /// its first is closed.
     /// </summary>
-    internal void StrokePolylines(IReadOnlyList<IReadOnlyList<ChartPoint>> polylines, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin, IReadOnlyList<double>? dashArray = null, double miterLimit = DefaultMiterLimit) {
+    internal void StrokePolylines(IReadOnlyList<IReadOnlyList<ChartPoint>> polylines, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin, IReadOnlyList<double>? dashArray = null, double miterLimit = DefaultMiterLimit, double dashOffset = 0) {
         if (polylines == null) throw new ArgumentNullException(nameof(polylines));
         if (color.A == 0 || !(thickness > 0)) return;
         // Outline in device pixels, so the outline is built once at the resolution it is filled at.
         var width = thickness * _scale;
         double[]? pattern = null;
+        var phase = 0d;
         if (dashArray != null && dashArray.Count > 0) {
             pattern = new double[dashArray.Count];
             for (var i = 0; i < pattern.Length; i++) pattern[i] = dashArray[i] * _scale;
+            // Normalize before scaling so a finite large phase cannot overflow in device pixels.
+            phase = ChartStrokeDashes.NormalizeOffset(dashArray, dashOffset) * _scale;
         }
 
-        var outline = new List<List<ChartPoint>>();
+        var paths = new List<IReadOnlyList<ChartPoint>>(polylines.Count);
         foreach (var polyline in polylines) {
             if (polyline == null || polyline.Count == 0) continue;
             var device = new List<ChartPoint>(polyline.Count);
             foreach (var point in polyline) device.Add(new ChartPoint(point.X * _scale, point.Y * _scale));
-            if (pattern == null) {
-                RasterStroker.AppendOutline(device, width, lineCap, lineJoin, miterLimit, 1, outline);
-                continue;
-            }
-
-            double padding = width * Math.Max(1, miterLimit);
-            foreach (var dash in RasterStroker.Dash(device, pattern, -padding, -padding, _pixelWidth + padding, _pixelHeight + padding))
-                RasterStroker.AppendOutline(dash, width, lineCap, lineJoin, miterLimit, 1, outline);
+            paths.Add(device);
         }
-
+        var outline = RasterStroker.CreateOutline(paths, width, lineCap, lineJoin, miterLimit, pattern,
+            phase, 1, 0, 0, _pixelWidth, _pixelHeight);
         FillContoursPixels(outline, color, RasterFillRule.NonZero, StrokeSubScanlines);
     }
 

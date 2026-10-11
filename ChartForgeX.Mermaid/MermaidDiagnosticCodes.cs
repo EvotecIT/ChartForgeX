@@ -13,4 +13,16 @@ public static class MermaidDiagnosticCodes {
 
     /// <summary>A parsed document could not be converted into a native artifact.</summary>
     public const string ConversionFailed = "CFXM004";
+
+    /// <summary>A source setting is retained without native application.</summary>
+    public const string UnsupportedConfiguration = "CFXM005";
+
+    /// <summary>Source configuration is malformed, has an invalid supported value or exceeds a resource limit.</summary>
+    public const string InvalidConfiguration = "CFXM006";
+
+    /// <summary>A notation statement is retained without an exact native rendering.</summary>
+    public const string UnsupportedStatement = "CFXM007";
+
+    /// <summary>A recognized notation statement or block boundary is invalid.</summary>
+    public const string InvalidStatement = "CFXM008";
 }

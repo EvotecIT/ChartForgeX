@@ -7,3 +7,4 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("ChartForgeX.Visuals")]
 [assembly: InternalsVisibleTo("ChartForgeX.Stories")]
+[assembly: InternalsVisibleTo("ChartForgeX.Mermaid")]

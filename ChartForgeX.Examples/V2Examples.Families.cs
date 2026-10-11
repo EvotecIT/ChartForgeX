@@ -15,7 +15,7 @@ public static partial class V2Examples {
         ChartSeriesKind.ProgressRing, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
     };
     private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
-        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.Funnel, ChartSeriesKind.Waterfall,
+        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.RangeBar, ChartSeriesKind.BoxPlot, ChartSeriesKind.Funnel, ChartSeriesKind.Waterfall,
         ChartSeriesKind.Scatter, ChartSeriesKind.Bubble, ChartSeriesKind.Radar, ChartSeriesKind.Pyramid,
         ChartSeriesKind.RadialBar, ChartSeriesKind.RadialColumn, ChartSeriesKind.Candlestick, ChartSeriesKind.Ohlc
     };
@@ -23,6 +23,7 @@ public static partial class V2Examples {
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
         foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var variants = new List<string> { "wide", "compact" };
+            if (kind == ChartSeriesKind.DifferenceArea) { variants.Add("dated-gaps"); variants.Add("compact-dated-gaps"); }
             if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap) {
                 variants.Add("color-scale"); variants.Add("compact-color-scale");
             }
@@ -36,13 +37,21 @@ public static partial class V2Examples {
                 variants.Add("gradient-color-legend"); variants.Add("compact-gradient-color-legend");
                 variants.Add("swatch-color-legend"); variants.Add("compact-swatch-color-legend");
             }
+            if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter) {
+                variants.Add("partial-color-range"); variants.Add("compact-partial-color-range");
+            }
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
+            if (kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar or ChartSeriesKind.PolarArea) {
+                variants.Add("angular-reversal"); variants.Add("compact-angular-reversal");
+            }
+            if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) { variants.Add("dashed"); variants.Add("compact-dashed"); }
             if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
                 variants.Add("axis-labels"); variants.Add("compact-axis-labels");
                 variants.Add("all-labels"); variants.Add("compact-all-labels");
             }
             if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
-            if (kind == ChartSeriesKind.Waterfall) { variants.Add("horizontal"); variants.Add("compact-horizontal"); }
+            if (kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot) { variants.Add("horizontal"); variants.Add("compact-horizontal"); }
+            if (kind == ChartSeriesKind.RangeBar) variants.AddRange(new[] { "endpoint-labels", "compact-endpoint-labels", "horizontal-endpoint-labels", "compact-horizontal-endpoint-labels" });
             if (RelationshipOptionFamilies.Contains(kind)) {
                 variants.Add("options");
                 if (kind is ChartSeriesKind.Sankey or ChartSeriesKind.Sunburst) variants.Add("compact-options");
@@ -56,6 +65,7 @@ public static partial class V2Examples {
             foreach (var variant in variants) {
                 var precision = variant is "precision" or "compact-precision";
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift"
+                    : variant is "partial-color-range" or "compact-partial-color-range" ? kind == ChartSeriesKind.TileMap ? "Requests by state" : "Processing time and completion"
                     : variant is "positioned-color-scale" or "compact-positioned-color-scale" && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap
                         ? kind == ChartSeriesKind.TileMap ? "Temperature by state" : "Temperature across service areas"
                     : variant is "color-dimension" or "compact-color-dimension" or "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend" ? kind switch {
@@ -71,15 +81,26 @@ public static partial class V2Examples {
                 // options example intentionally demonstrates an explicitly requested legend.
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
-                var subtitle = precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
+                var subtitle = kind == ChartSeriesKind.DifferenceArea ? variant is "dated-gaps" or "compact-dated-gaps"
+                    ? "Named paired values retain a missing section on an independent scale"
+                    : "Blue shows Actual above Forecast; amber shows Actual below Forecast"
+                    : precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
+                    : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"
+                    : variant is "angular-reversal" or "compact-angular-reversal" ? kind == ChartSeriesKind.Polar ? "Clockwise authored radians retain their source directions and values"
+                        : "Reversed category angles retain source labels, values and paint"
+                    : variant is "dashed" or "compact-dashed" ? "Direction-specific dash patterns and phase preserve the source prices"
                     : variant is "axis-labels" or "compact-axis-labels" ? "Upright axis-relative labels with independent density"
                     : variant is "all-labels" or "compact-all-labels" ? "All captions fit individually; caption overlaps are intentional"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
                     : variant == "stage-bars-horizontal" ? "Horizontal stage bars; extents remain proportional"
                     : kind == ChartSeriesKind.Waterfall && variant is "horizontal" or "compact-horizontal" ? "Horizontal changes and checkpoints share a cumulative value axis"
+                    : kind == ChartSeriesKind.RangeBar && variant is "horizontal" or "compact-horizontal" ? "Grouped horizontal intervals preserve both authored endpoints"
+                    : kind == ChartSeriesKind.BoxPlot && variant is "horizontal" or "compact-horizontal" ? "Grouped horizontal summaries retain all five statistics"
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"
                     : kind == ChartSeriesKind.Sunburst && variant is "options" or "compact-options" ? "Leaf totals size sectors; measured color stays independent"
                     : kind == ChartSeriesKind.Sankey && variant is "options" or "compact-options" ? "Aligned and ordered weighted flows"
+                    : variant is "partial-color-range" or "compact-partial-color-range" ? kind == ChartSeriesKind.TileMap
+                        ? "Zero stays fixed; the color peak follows reported counts" : "The color ceiling stays at 100%; the lower bound follows observations"
                     : variant is "gradient-color-legend" or "compact-gradient-color-legend" ? "A continuous key retains every authored color anchor"
                     : variant is "swatch-color-legend" or "compact-swatch-color-legend" ? "A sampled key keeps the continuous measurement and its color domain"
                     : variant is "color-dimension" or "compact-color-dimension" ? "Temperature captions use their own format and culture"
@@ -105,6 +126,11 @@ public static partial class V2Examples {
             WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial(), "family-radial-column-" + variant + "-" + mode.ToString().ToLowerInvariant(),
                 "radial-column", "Regional counts and targets", variant, "Columns, reference area and target line share categories and radius", mode,
                 compact ? 360 : 800, compact ? 360 : 440, true, "V2GalleryModels.CreateMixedRadial()", new[] { "RadialColumn", "Radar" }, compact: compact);
+            var reversedVariant = compact ? "compact-mixed-angular-reversal" : "mixed-angular-reversal";
+            WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal()),
+                "family-radial-column-" + reversedVariant + "-" + mode.ToString().ToLowerInvariant(), "radial-column", "Regional counts and targets", reversedVariant,
+                "Columns, reference area and target line share reversed category angles", mode, compact ? 360 : 800, compact ? 360 : 440, true,
+                "V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal())", new[] { "RadialColumn", "Radar" }, compact: compact);
         }
     }
 
@@ -123,6 +149,7 @@ public static partial class V2Examples {
         ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar => "Two independent stacks; each reaches 100%; source values remain counts",
         ChartSeriesKind.StackedArea => "A normalized stack with middle-step boundaries",
         ChartSeriesKind.RangeArea => "Lower, middle and upper bounds share middle-step transitions",
+        ChartSeriesKind.RangeBar => "Two grouped interval series retain independent endpoints and caps",
         ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
         ChartSeriesKind.Waterfall => "An opening balance, changes and checkpoints retain the running balance on reversed axes",
         ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
