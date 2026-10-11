@@ -157,8 +157,8 @@ internal static partial class MermaidGanttParser {
                 if (endCount > maximumCommas + 1) continue;
                 var end = string.Join(",", chunks, boundary + 1, endCount).Trim();
                 if (!IsStart(start.Trim()) || !IsEnd(end)) continue;
-                var matches = (MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _) ? 1 : 0)
-                    + (MermaidGanttInputDateFormat.TryParseConfigured(end, document.DateFormat, out _) ? 1 : 0);
+                var matches = (MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _, document.DateAnchor) ? 1 : 0)
+                    + (MermaidGanttInputDateFormat.TryParseConfigured(end, document.DateFormat, out _, document.DateAnchor) ? 1 : 0);
                 if (matches <= configuredMatches) continue;
                 var parts = new List<string>(prefix);
                 if (hasId) parts.Add(chunks[first].Trim());

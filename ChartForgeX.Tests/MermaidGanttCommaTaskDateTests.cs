@@ -8,6 +8,18 @@ namespace ChartForgeX.Tests;
 public sealed class MermaidGanttCommaTaskDateTests {
     [Theory]
     [InlineData("", null)]
+    [InlineData("task,", "task")]
+    public void AnchoredConfiguredDateRetainsItsLiteralPrefix(string prefix, string? expectedId) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat [prefix,]MM-DD\nTask :" + prefix + "prefix,02-29,1d", new MermaidParseOptions { GanttDateAnchor = new DateTime(2024, 1, 1) });
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal(expectedId, task.Id);
+        Assert.Equal(new DateTime(2024, 2, 29), task.Start);
+        Assert.Equal(new DateTime(2024, 3, 1), task.End);
+    }
+
+    [Theory]
+    [InlineData("", null)]
     [InlineData("active,", null)]
     [InlineData("task,", "task")]
     [InlineData("2026,", "2026")]
