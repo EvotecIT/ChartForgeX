@@ -4978,8 +4978,8 @@
       },
       "width": 980,
       "height": 460,
-      "logicalWidth": 980,
-      "logicalHeight": 460,
+      "logicalWidth": 980.0,
+      "logicalHeight": 460.0,
       "svg": {
         "minVisualNodes": 17,
         "maxClippedTextNodes": 0,
@@ -4989,7 +4989,31 @@
         "outputScale": 1,
         "minVisiblePixels": 225400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 694,
+        "minDistinctColors": 631,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-gitgraph-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 980,
+      "height": 460,
+      "logicalWidth": 980.0,
+      "logicalHeight": 460.0,
+      "svg": {
+        "minVisualNodes": 10,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 225400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 537,
         "maxEdgeInkPixels": 0
       }
     },
