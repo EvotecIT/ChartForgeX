@@ -68,9 +68,18 @@ public sealed class RangeBarEndpointLabelBrowserTests {
         Assert.Equal("1", await page.Locator(point).GetAttributeAsync("data-cfx-source-1-index"));
         await page.Locator(Legend(0)).ClickAsync();
         Assert.Equal(1, await page.Locator("g[data-cfx-role='series'][data-cfx-series='0'].cfx-series-muted").CountAsync());
-        var opacity = await page.Locator(captions).EvaluateAllAsync<string[]>("nodes => nodes.map(node => getComputedStyle(node).opacity)");
-        Assert.All(opacity, value => Assert.True(double.Parse(value, System.Globalization.CultureInfo.InvariantCulture) < 1));
+        var opacity = await EffectiveOpacityAsync(page, captions);
+        if (!string.IsNullOrWhiteSpace(directory))
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "range-bar-endpoint-captions-muted.png") });
+        Assert.All(opacity, value => Assert.True(value < 1));
         await page.Locator(Legend(0)).ClickAsync();
+        Assert.All(await EffectiveOpacityAsync(page, captions), value => Assert.Equal(1, value));
+        await page.Locator(Legend(1)).FocusAsync(); await page.Keyboard.PressAsync("Shift+Space");
+        Assert.All(await EffectiveOpacityAsync(page, captions), value => Assert.True(value < 1));
+        var observedCaptions = "[data-cfx-role='data-label-source'][data-cfx-label-for='series-1-point-0']";
+        Assert.All(await EffectiveOpacityAsync(page, observedCaptions), value => Assert.Equal(1, value));
+        await page.Keyboard.PressAsync("i");
+        Assert.All(await EffectiveOpacityAsync(page, captions), value => Assert.Equal(1, value));
         await page.Locator(point).FocusAsync(); Assert.Equal(rows, await RowsAsync(page));
         if (!string.IsNullOrWhiteSpace(directory)) {
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "range-bar-endpoint-captions-selected.png") });
@@ -84,4 +93,6 @@ public sealed class RangeBarEndpointLabelBrowserTests {
     }
 
     private static Task<string[]> RowsAsync(IPage page) => page.Locator(".cfx-tooltip__meta").EvaluateAsync<string[]>("node => Array.from(node.children).map(child => child.textContent)");
+    private static Task<double[]> EffectiveOpacityAsync(IPage page, string selector) => page.Locator(selector).EvaluateAllAsync<double[]>(
+        "nodes => nodes.map(node => { let opacity=1; for(let n=node;n;n=n.parentElement) opacity*=Number(getComputedStyle(n).opacity); return opacity; })");
 }

@@ -1806,6 +1806,7 @@
         return;
       }
       node.classList.toggle('cfx-series-muted', muted);
+      pointLabelSurfaces(root, node).forEach(label => label.classList.toggle('cfx-series-muted', muted));
     });
     refreshKeyboardNavigation(root);
     syncResetControl(root);
@@ -1832,6 +1833,10 @@
       const pointContainer = target && target.point !== undefined && data.cfxSeries === String(target.series)
         && role === 'series' && data.cfxPoint === undefined;
       node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
+      pointLabelSurfaces(root, node).forEach(label => {
+        label.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
+        label.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
+      });
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
