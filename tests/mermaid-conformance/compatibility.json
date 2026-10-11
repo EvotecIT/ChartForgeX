@@ -1,0 +1,529 @@
+{
+  "schemaVersion": 1,
+  "references": {
+    "10": {
+      "package": "mermaid-10",
+      "version": "10.9.8"
+    },
+    "11": {
+      "package": "mermaid-11",
+      "version": "11.17.2"
+    },
+    "12": {
+      "package": "mermaid",
+      "version": "12.1.0"
+    }
+  },
+  "fixtures": {
+    "fixtures/accessibility-dark.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/architecture-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/architecture-nested.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/block-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/c4-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/class-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/class-notation.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/cynefin-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/er-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/er-notation.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/eventmodeling-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/flowchart-advanced.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/flowchart-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/flowchart-compact.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/flowchart-elk.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/flowchart-modern.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/flowchart-quoted-shapes.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gantt-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gantt-calendar.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gantt-clock-precision.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gantt-duration-calendar.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gantt-duration-units.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gantt-milestone-dependencies.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gantt-render-calendar.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser.",
+      "expectedByReference": {
+        "10": "gantt-render-calendar.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10 excludes the authored endpoint from calendar extension. ChartForgeX follows the current Mermaid 11/12 schedule while retaining this older syntax."
+      }
+    },
+    "fixtures/gantt-repeated-calendar.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gantt-until.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gitgraph-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/ishikawa-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/journey-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/kanban-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/mindmap-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/packet-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/pie-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/quadrant-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/radar-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/requirement-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/requirement-legacy.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/requirement-rich.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/sankey-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/sequence-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/sequence-legacy.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/sequence-rich.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/state-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/swimlane-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/timeline-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/treemap-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/treeview-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/usecase-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/venn-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/wardley-basic.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/xychart-basic.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/xychart-stable.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "recognition/agentflow.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "recognition/railroad-abnf.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "recognition/railroad-ebnf.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "recognition/railroad-ir.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "recognition/railroad-peg.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/radar-capped-circle.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-capped-polygon.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-circle.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-fractional-guides.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html and pinned Mermaid 11/12 renderer: fractional ticks retain the authored radial spacing divisor; 2.5 draws three guides at 0.4, 0.8 and 1.2 times the axis radius."
+    },
+    "fixtures/radar-polygon.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-zero-guides.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: zero hides concentric guides while preserving axes, observations and source configuration; pinned Mermaid 11 and 12 accept the case."
+    }
+  }
+}
