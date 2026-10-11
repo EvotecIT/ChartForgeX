@@ -70,7 +70,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         return family switch {
             "heatmap" => chart.WithSize(596, 400).WithXLabels("North", "South").WithHeatmapCellGap(20)
                 .AddHeatmapRow("Requests", new[] { 37d, 48d }).AddHeatmapRow("Previous", new[] { 61d, 54d }),
-            "map" => chart.WithMapLabels(false).WithMapScaleLegend(false).AddRegionMap("Coverage", new ChartMapDefinition("regions", "Regions", 100, 100, new[] {
+            "map" => chart.WithMapLabels(false).ConfigureMapColorDimension(options => options.ShowLegend = false).AddRegionMap("Coverage", new ChartMapDefinition("regions", "Regions", 100, 100, new[] {
                 new ChartMapRegion("A", "First", "M20 20H40V40H20Z"), new ChartMapRegion("B", "Second", "M60 60H80V80H60Z")
             }), new[] { new ChartRegionMapItem("A", 10), new ChartRegionMapItem("B", 20) }),
             "progress" => chart.AddProgressBars("Progress", new[] { new ChartProgressItem("Ready", 37), new ChartProgressItem("Working", 61) }),

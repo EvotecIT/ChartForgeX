@@ -74,10 +74,10 @@ public sealed class SunburstColorTests {
         Assert.Null(scale.Attribute("data-cfx-min-value")); Assert.Null(scale.Attribute("data-cfx-max-value"));
         Assert.DoesNotContain(xml.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "sunburst-color-scale-step");
         Assert.Contains(prepared.Regions, region => region.Label == "No data");
-        chart.Options.Sunburst.ShowColorScaleLegend = false;
+        chart.Options.Sunburst.ColorDimension.ShowLegend = false;
         Assert.DoesNotContain("data-cfx-role=\"sunburst-color-scale\"", Prepare(chart, true).ToSvg());
-        chart.Options.Sunburst.ShowColorScaleLegend = true; chart.Series[0].ShowInLegend = false;
-        Assert.DoesNotContain("data-cfx-role=\"sunburst-color-scale\"", Prepare(chart, true).ToSvg());
+        chart.Options.Sunburst.ColorDimension.ShowLegend = true; chart.Series[0].ShowInLegend = false;
+        Assert.Contains("data-cfx-role=\"sunburst-color-scale\"", Prepare(chart, true).ToSvg());
     }
 
     [Fact]

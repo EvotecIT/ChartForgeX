@@ -59,7 +59,7 @@ internal static partial class SmokeTests {
             .WithCard(false)
             .WithPlotBackground(false)
             .WithMapSurface(false)
-            .WithMapScaleLegend(false)
+            .ConfigureMapColorDimension(options => options.ShowLegend = false)
             .WithMapLabels(false)
             .WithMapRegionStroke(ChartColor.Black, 1)
             .AddRegionMap("Values", regionDefinition, regions);
@@ -68,7 +68,7 @@ internal static partial class SmokeTests {
             .WithCard(false)
             .WithPlotBackground(false)
             .WithMapSurface(false)
-            .WithMapScaleLegend(false)
+            .ConfigureMapColorDimension(options => options.ShowLegend = false)
             .WithMapLabels(false)
             .WithMapRegionStroke(ChartColor.Black, 0)
             .AddRegionMap("Values", regionDefinition, regions);
@@ -77,7 +77,7 @@ internal static partial class SmokeTests {
             .WithCard(false)
             .WithPlotBackground(false)
             .WithMapSurface(false)
-            .WithMapScaleLegend(false)
+            .ConfigureMapColorDimension(options => options.ShowLegend = false)
             .WithMapLabels(false)
             .WithMapRegionStroke(ChartColor.Black, 1)
             .AddTileMap("Values", tileDefinition, regions);
@@ -86,7 +86,7 @@ internal static partial class SmokeTests {
             .WithCard(false)
             .WithPlotBackground(false)
             .WithMapSurface(false)
-            .WithMapScaleLegend(false)
+            .ConfigureMapColorDimension(options => options.ShowLegend = false)
             .WithMapLabels(false)
             .WithMapRegionStroke(ChartColor.Black, 0)
             .AddTileMap("Values", tileDefinition, regions);

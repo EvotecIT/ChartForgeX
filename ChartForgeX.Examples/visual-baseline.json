@@ -5018,6 +5018,126 @@
       }
     },
     {
+      "name": "mermaid-radar-circle",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760.0,
+      "logicalHeight": 620.0,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 1165,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-radar-fractional-guides",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 1107,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-radar-hidden-fractional-guides",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 951,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-radar-polygon",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760.0,
+      "logicalHeight": 620.0,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 1141,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-radar-zero-guides",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 975,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-sequence-presentation",
       "layout": {
         "heightMode": "fixed",
