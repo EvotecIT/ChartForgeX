@@ -545,6 +545,16 @@
   // These Cartesian observations describe both boundaries, rather than one source Y location.
   const pairedExtentObservation = (node) => node.hasAttribute('data-cfx-point')
     && ['differencearea', 'rangearea', 'rangeband'].includes((node.dataset.cfxKind || '').toLowerCase());
+  const pairedConnectedSpan = (node, owner) => {
+    const index = Number(node.dataset.cfxPoint);
+    const followsPrevious = (point) => point
+      && point.getAttribute('data-cfx-source-0-break') !== 'true'
+      && point.getAttribute('data-cfx-source-1-break') !== 'true';
+    const previous = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index - 1) + '"]');
+    const next = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index + 1) + '"]');
+    // Native paired fills need a connected span; isolated observations can still paint their own markers or caps.
+    return !!(previous && followsPrevious(node) || followsPrevious(next));
+  };
   const pairedExtentScreenBox = (node) => {
     const region = node._cfxPairedRegion, matrix = node.getScreenCTM();
     if (!region || !matrix) return null;
@@ -644,14 +654,16 @@
     if (!owner) return null;
     const data = node.dataset || {};
     const paired = (data.cfxKind || '').toLowerCase() === 'differencearea' && data.cfxPoint !== undefined;
+    const connected = !pairedExtentObservation(node) || pairedConnectedSpan(node, owner);
     const relevant = (layer) => {
-      if (!paired) return true;
       const role = layer.dataset.cfxRole || '';
+      if (!connected && /^(difference-(positive|negative)|range-(area|band))(-pattern)?$/.test(role)) return false;
+      if (!paired) return true;
       if (role === 'difference-positive' || role === 'difference-positive-pattern') return Number(data.cfxFirst) > Number(data.cfxSecond);
       if (role === 'difference-negative' || role === 'difference-negative-pattern') return Number(data.cfxFirst) < Number(data.cfxSecond);
       return true;
     };
-    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="difference-positive"],[data-cfx-role="difference-negative"],[data-cfx-role="difference-first"],[data-cfx-role="difference-second"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
+    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="range-upper"],[data-cfx-role="range-lower"],[data-cfx-role="range-midline"],[data-cfx-role="difference-positive"],[data-cfx-role="difference-negative"],[data-cfx-role="difference-first"],[data-cfx-role="difference-second"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
       if (!relevant(layer)) continue;
       const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
