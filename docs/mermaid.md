@@ -67,7 +67,7 @@ Topology diagram dimensions set the minimum canvas. The renderer expands the can
 
 `MermaidDocument.Configuration` exposes the effective `Theme`, `Layout`, `Look` and `FontFamily`, plus retained `Settings` with dotted paths, scalar values and original locations. `Theme` on the document addresses the same effective theme for callers that convert a model directly.
 
-Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. A setting scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. This follows the tested upstream merge contract. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
+Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. A recognized theme or look scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. An unrecognized scoped theme or look retains a warning and allows the global value to apply; invalid scalar types still produce errors. Layout names retain scoped precedence because the upstream layout registry is extensible. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
 
 ```mermaid
 ---

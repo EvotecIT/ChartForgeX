@@ -28,7 +28,8 @@ public sealed partial class MermaidParser {
                     var first = index;
                     ReadConfigurationFlowMapping(lines, ref index, TrimYamlComment(flow.Groups[1].Value).Trim());
                     for (var extra = first + 1; extra <= index; extra++) {
-                        if (!lines[extra].TrimStart().StartsWith("#", StringComparison.Ordinal)) length += lines[extra].Length + 1;
+                        var continued = lines[extra].Trim();
+                        if (continued.Length > 0 && !continued.StartsWith("#", StringComparison.Ordinal)) length += lines[extra].Length + 1;
                     }
                     inConfiguration = false;
                 }
@@ -89,6 +90,8 @@ public sealed partial class MermaidParser {
                         valueText = ReadConfigurationFlowMapping(lines, ref index, valueText);
                     AddConfigurationJson(GeoJsonValue.Parse(NormalizeConfigurationJson(valueText), StringComparer.Ordinal, ConfigurationJsonLimits).AsObject("Mermaid frontmatter config"), string.Empty, span, configuration);
                 } else {
+                    foreach (var character in valueText)
+                        if (character < ' ' && character != '\t') throw new ArgumentException("Mermaid YAML scalars cannot contain literal control characters other than tabs.");
                     var isString = true;
                     string? value = valueText;
                     if (valueText.StartsWith("\"", StringComparison.Ordinal)) {
