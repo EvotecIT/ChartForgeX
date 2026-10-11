@@ -34,4 +34,26 @@ public sealed class StyledGuideOwnerClosureTests {
         Assert.Equal(control.Regions.Where(region => region.Role == "point").Select(region => region.Bounds),
             actual.Regions.Where(region => region.Role == "point").Select(region => region.Bounds));
     }
+
+    [Fact]
+    public void GuideSkippedAfterVerticalTotalGuttersKeepsTheDataRangeTickSpacing() {
+        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
+            .WithStackedBars().WithStackTotals()
+            .AddBar("First", new[] { new ChartPoint(1, 80), new ChartPoint(2, 60) })
+            .AddBar("Second", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) }).AddHorizontalLine(0, "");
+        chart.Options.YAxis.Labels.Add(new ChartAxisLabel(0, "Baseline"));
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 0);
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var control = chart.Prepare(context);
+        var axis = Assert.Single(control.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "axis-y");
+        var guideWidth = axis.End.Y - axis.Start.Y + 2;
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: guideWidth);
+        var actual = chart.Prepare(context);
+        var finalAxis = Assert.Single(actual.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "axis-y");
+        Assert.True(guideWidth > finalAxis.End.Y - finalAxis.Start.Y, "The guide must be oversized in the final plot.");
+        Assert.Equal(control.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label),
+            actual.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label));
+        Assert.Equal(control.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "grid-y").Select(node => node.Start.Y),
+            actual.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "grid-y").Select(node => node.Start.Y));
+    }
 }

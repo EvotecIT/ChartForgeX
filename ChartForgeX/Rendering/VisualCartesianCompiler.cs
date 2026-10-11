@@ -122,11 +122,10 @@ internal static partial class VisualCartesianCompiler {
         // Refit from the original data bounds: a guide may no longer fit after total lanes.
         range = dataRange;
         secondaryRange = secondaryDataRange;
-        if (ExpandCartesianRanges(chart, context, plot, range, secondaryRange, horizontal, stacks, bubbleScale)) {
-            if (!horizontal) {
-                axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
-                if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-            }
+        ExpandCartesianRanges(chart, context, plot, range, secondaryRange, horizontal, stacks, bubbleScale);
+        if (!horizontal) {
+            axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
+            if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
         }
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
