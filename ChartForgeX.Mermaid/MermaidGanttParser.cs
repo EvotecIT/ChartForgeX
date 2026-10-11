@@ -139,6 +139,7 @@ internal static partial class MermaidGanttParser {
         var prefix = new List<string>();
         var first = 0;
         while (first < chunks.Length && (string.IsNullOrWhiteSpace(chunks[first]) || KnownTags.Contains(chunks[first].Trim()))) {
+            if (StartsConfiguredDate(first)) break;
             if (!string.IsNullOrWhiteSpace(chunks[first])) prefix.Add(chunks[first].Trim());
             first++;
         }
@@ -176,6 +177,18 @@ internal static partial class MermaidGanttParser {
         var original = new List<string>();
         foreach (var chunk in chunks) if (chunk.Trim().Length > 0) original.Add(chunk.Trim());
         return original;
+
+        bool StartsConfiguredDate(int startIndex) {
+            var start = chunks[startIndex];
+            for (var boundary = startIndex; boundary < chunks.Length - 1 && boundary <= startIndex + maximumCommas; boundary++) {
+                if (boundary > startIndex) start += "," + chunks[boundary];
+                var endCount = chunks.Length - boundary - 1;
+                if (endCount <= maximumCommas + 1
+                    && MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _)
+                    && IsEnd(string.Join(",", chunks, boundary + 1, endCount).Trim())) return true;
+            }
+            return false;
+        }
 
         bool IsStart(string value) => IsClause(value, "after") || TryParseDate(value, document.DateFormat, out _);
         bool IsEnd(string value) => IsClause(value, "until") || TryParseDuration(value, out _, out _) || TryParseDate(value, document.DateFormat, out _);
