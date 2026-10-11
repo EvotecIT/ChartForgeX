@@ -26,7 +26,8 @@ public sealed partial class MermaidParser {
             } else if (character == '\\') {
                 if (++index == text.Length) throw new ArgumentException("Mermaid init configuration has an incomplete string escape.");
                 var escaped = text[index];
-                if (quote == '\'' && escaped == '\'') Append('\'', index);
+                if (yamlFlowMapping && escaped == '\t') { Append('\\', index - 1); Append('t', index); }
+                else if (quote == '\'' && escaped == '\'') Append('\'', index);
                 else { Append('\\', index - 1); Append(escaped, index); }
             } else if (character == quote) {
                 Append('"', index); quote = '\0';
