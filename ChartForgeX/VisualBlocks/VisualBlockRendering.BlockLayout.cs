@@ -1,12 +1,38 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
 internal static partial class VisualBlockRendering {
     public const int MaximumBlockLayoutItems = 10000;
     public const int MaximumBlockLayoutEdges = 20000;
+
+    public static ChartRect BlockLayoutCaptionBounds(BlockLayoutShape shape, double x, double y, double width, double height) {
+        var innerWidth = width; var innerHeight = height;
+        if (shape == BlockLayoutShape.Circle) innerWidth = innerHeight = Math.Min(width, height) / Math.Sqrt(2);
+        innerWidth = Math.Max(1, innerWidth - 16); innerHeight = Math.Max(1, innerHeight - 12);
+        return new ChartRect(x + (width - innerWidth) / 2, y + (height - innerHeight) / 2, innerWidth, innerHeight);
+    }
+
+    // Cell and connector captions share measured sizing and baseline placement in both backends.
+    public static TextStyle BlockLayoutText(ChartTheme theme, string text, double defaultSize, double width, double height) {
+        var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = 1, LineHeight = 1 };
+        var measured = ChartLabelScene.MeasureText(SingleLineText(text), style);
+        var lineHeight = ChartLabelScene.MeasureText("Mg", style).Height;
+        var widthLimit = measured.Width > 0 ? Math.Max(defaultSize, Math.Max(1, width) / measured.Width) : defaultSize;
+        style.FontSize = Math.Min(BodyFontSize(theme, defaultSize), Math.Min(widthLimit, Math.Max(1, height) / lineHeight));
+        return style;
+    }
+
+    public static double BlockLayoutBaseline(TextStyle style, double centerY) {
+        var ascent = TypographyFontResolver.ResolveFace(style.Font).Font?.Ascent(style.FontSize) ?? style.FontSize * .82;
+        return centerY - ChartLabelScene.MeasureText("Mg", style).Height / 2 + ascent;
+    }
 
     public static void ValidateBlockLayout(BlockLayoutBlock block) {
         if (block.Items.Count == 0) throw new InvalidOperationException("Block layouts must contain at least one item.");
