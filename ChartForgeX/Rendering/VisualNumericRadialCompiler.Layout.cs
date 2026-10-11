@@ -36,6 +36,12 @@ internal static partial class VisualNumericRadialCompiler {
                 .Select(metrics => Math.Sqrt(metrics.Width * metrics.Width + metrics.Height * metrics.Height)).DefaultIfEmpty(0).Max() + context.Theme.Spacing
             : 0;
         radius = Math.Max(0, radius - lane);
+        var radarExtent = chart.Series.Where(series => series.Kind == ChartSeriesKind.Radar && series.Points.Count > 0)
+            .Select(series => Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
+                ChartLineVisualLayers.Build(context.Theme.Resolve(context.ThemeMode).Accent,
+                    series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth,
+                    chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth) / 2)).DefaultIfEmpty(0).Max();
+        radius = Math.Max(0, radius - radarExtent);
         return new RadialSeriesGeometry(plot.Left + plot.Width / 2, plot.Top + plot.Height / 2, radius,
             radius * options.InnerRadiusRatio, start, sweep, lane);
     }
@@ -69,6 +75,9 @@ internal static partial class VisualNumericRadialCompiler {
         string[] categoryLabels, ChartBarCoordinateKey[] categories, Dictionary<ChartAxisSide, RadialValueScale> scales,
         Dictionary<ChartAxisSide, string[]> tickLabels, bool bars, List<RadialSeriesLabel> labels) {
         var colors = context.Theme.Resolve(context.ThemeMode); var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
+        // Keep the standalone primary-grid policy; a mixed secondary-only composition still has one shared grid.
+        var gridSide = ChartSeriesKindTraits.IsMixedNumericRadial(chart) && !scales.ContainsKey(ChartAxisSide.Primary)
+            ? ChartAxisSide.Secondary : ChartAxisSide.Primary;
         foreach (var pair in scales) {
             var axis = Axis(chart, pair.Key); var scale = pair.Value;
             using (builder.PushGroup(null, "radial-value-axis", new Dictionary<string, string> {
@@ -81,7 +90,7 @@ internal static partial class VisualNumericRadialCompiler {
                     var angle = ValueAngle(pair.Key, ratio, geometry.Start, geometry.Sweep, bars);
                     var radius = bars ? geometry.Outer + (pair.Key == ChartAxisSide.Secondary ? geometry.TickLane : 0)
                         : geometry.Inner + ratio * (geometry.Outer - geometry.Inner);
-                    if (chart.Options.ShowGrid && pair.Key == ChartAxisSide.Primary) {
+                    if (chart.Options.ShowGrid && pair.Key == gridSide) {
                         if (bars) {
                             var first = On(geometry, angle, geometry.Inner); var last = On(geometry, angle, geometry.Outer);
                             builder.Line(first.X, first.Y, last.X, last.Y, colors.Grid, context.Theme.GridStrokeWidth, "radial-value-grid", paint: VisualChartPaint.Stroke(colors.Grid, SvgColorRole.Grid));
