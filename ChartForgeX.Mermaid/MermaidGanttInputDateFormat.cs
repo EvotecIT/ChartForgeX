@@ -74,6 +74,12 @@ internal static class MermaidGanttInputDateFormat {
         return DateTime.TryParseExact(normalized.ToString(), nativeFormat.ToString(), English, DateTimeStyles.NoCurrentDateDefault, out value);
     }
 
+    internal static int CalendarCommaCount(string format) {
+        var count = 0;
+        foreach (var character in FormatCalendarDate(new DateTime(2000, 2, 29), format)) if (character == ',') count++;
+        return count;
+    }
+
     internal static string FormatCalendarDate(DateTime value, string format) {
         format = format.Trim();
         if (format == "X" || format == "x") return FormatUnix(value, format == "X");
