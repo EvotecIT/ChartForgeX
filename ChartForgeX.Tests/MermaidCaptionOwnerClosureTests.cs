@@ -3,6 +3,7 @@ using System.Xml.Linq;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
+using ChartForgeX.Typography;
 using ChartForgeX.VisualBlocks;
 using Microsoft.Playwright;
 using Xunit;
@@ -79,7 +80,12 @@ public sealed class MermaidCaptionOwnerClosureTests {
         var svg = chart.ToSvg(options); var png = chart.ToPng(options);
         var labels = XDocument.Parse(svg).Descendants().Where(e => e.Name.LocalName == "text" && e.AncestorsAndSelf().Any(a => (string?)a.Attribute("data-cfx-role") == "topology-node-label")).ToArray();
         Assert.Equal(new[] { "API", "UI" }, labels.Select(e => e.Value));
-        Assert.All(labels, e => Assert.InRange((double)e.Attribute("font-size")!, .001, 15));
+        Assert.All(labels, e => {
+            var style = new TextStyle { Font = new FontSpec { Family = "Arial", Weight = tile ? 700 : 600 }, FontSize = (double)e.Attribute("font-size")!, LineHeight = 1 };
+            var metrics = TextLayoutEngine.Measure(e.Value, style);
+            Assert.InRange(metrics.Width, .001, 80.002);
+            Assert.InRange(TextLayoutEngine.Measure("Ag", style).LineHeight, .001, 14.002);
+        });
         if (tile) Assert.Equal(2, XDocument.Parse(svg).Descendants().Count(e => e.Name.LocalName == "text" && e.AncestorsAndSelf().Any(a => (string?)a.Attribute("data-cfx-role") == "topology-subtitle-chip-text")));
         await Observe(svg, png, width, 360, "topology-captions-" + dark + "-" + tile + "-" + width, true);
     }
