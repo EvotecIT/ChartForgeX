@@ -39,6 +39,7 @@ public static partial class V2Examples {
             }
             if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
             if (kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar) { variants.Add("horizontal"); variants.Add("compact-horizontal"); }
+            if (kind == ChartSeriesKind.RangeBar) variants.AddRange(new[] { "endpoint-labels", "compact-endpoint-labels", "horizontal-endpoint-labels", "compact-horizontal-endpoint-labels" });
             if (RelationshipOptionFamilies.Contains(kind)) {
                 variants.Add("options");
                 if (kind is ChartSeriesKind.Sankey or ChartSeriesKind.Sunburst) variants.Add("compact-options");
@@ -68,6 +69,7 @@ public static partial class V2Examples {
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
                 var subtitle = precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
+                    : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"
                     : variant is "axis-labels" or "compact-axis-labels" ? "Upright axis-relative labels with independent density"
                     : variant is "all-labels" or "compact-all-labels" ? "All captions fit individually; caption overlaps are intentional"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"

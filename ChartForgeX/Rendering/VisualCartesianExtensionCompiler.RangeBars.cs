@@ -19,6 +19,8 @@ internal static partial class VisualCartesianCompiler {
         var segmented = style.Kind == ChartBarStyle.SegmentedCapsule;
         var layout = ResolveRangeBarLayout(chart, context, plot, map, index, out var padding);
         var thickness = layout.Thickness;
+        var endpoints = chart.Options.RangeBar.LabelContent == ChartRangeBarLabelContent.Endpoints;
+        var endpointFormatter = chart.Options.RangeBar.EndpointLabelFormatter;
         for (var item = 0; item < count; item++) {
             var first = series.Points[item * 2]; var second = series.Points[item * 2 + 1];
             var category = (horizontal ? map.Y(first.X) : map.X(first.X)) + layout.Offset;
@@ -28,9 +30,13 @@ internal static partial class VisualCartesianCompiler {
             var bounds = horizontal ? new ChartRect(minimum, category - thickness / 2, length, thickness)
                 : new ChartRect(category - thickness / 2, minimum, thickness, length);
             var color = PointColor(series, index, item, colors);
-            var label = ResolveObservationLabel(chart, context, series, item, colors,
-                () => Value(chart, Math.Min(first.Y, second.Y)) + "–" + Value(chart, Math.Max(first.Y, second.Y)));
-            using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, RangeBarMetadata(chart, categories[first.X]),
+            var captions = ResolveRangeBarLabels(chart, context, series, item, colors, categories[first.X],
+                new ChartInterval(first.X, first.Y, second.Y), endpoints, endpointFormatter);
+            var label = captions.Observation;
+            var metadata = RangeBarMetadata(chart, categories[first.X]);
+            if (captions.Start != null) metadata["data-cfx-start-label"] = captions.Start;
+            if (captions.End != null) metadata["data-cfx-end-label"] = captions.End;
+            using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, metadata,
                 ("x", first.X), ("start", first.Y), ("end", second.Y))) {
                 DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "range-bar", range: true, horizontal: horizontal);
                 DrawCap(start); DrawCap(end);
@@ -40,6 +46,11 @@ internal static partial class VisualCartesianCompiler {
                 : horizontal ? new ChartRect(minimum - padding / 2, category - footprint / 2, length + padding, footprint)
                     : new ChartRect(category - footprint / 2, minimum - padding / 2, footprint, length + padding);
             obstacles.Add(new LabelObstacle(PointId(index, item), obstacle));
+            if (endpoints) {
+                AddRangeBarEndpointLabels(chart, context, series, index, item, bounds, category, start, end,
+                    horizontal, label, captions.Start, captions.End, labels);
+                continue;
+            }
             var high = horizontal ? map.X(Math.Max(first.Y, second.Y)) : map.Y(Math.Max(first.Y, second.Y));
             var low = horizontal ? map.X(Math.Min(first.Y, second.Y)) : map.Y(Math.Min(first.Y, second.Y));
             var direction = horizontal ? high >= low ? 1 : -1 : high <= low ? 1 : -1;
