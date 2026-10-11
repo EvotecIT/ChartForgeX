@@ -13,9 +13,14 @@ internal static partial class VisualBlockRendering {
 
     public static PacketRowMetrics PacketRows(PacketLayoutBlock packet, ChartRect content, double top, int rows, IReadOnlyList<PacketLayoutSlice> slices) {
         var remaining = Math.Max(0, content.Bottom - top);
-        var gap = Math.Min(packet.RowGap ?? Math.Min(12, Math.Max(5, content.Height * .025)), remaining / (rows * 2));
+        var preferredLabelTop = packet.ShowBitNumbers ? BodyFontSize(packet.Options.Theme, 16) : 0;
+        var gapBudget = packet.RowGap.HasValue && rows > 1
+            ? Math.Max(0, remaining / rows - (packet.RowHeight ?? 52) - preferredLabelTop) * rows / (rows - 1)
+            : remaining / (rows * 2);
+        var gap = Math.Min(packet.RowGap ?? Math.Min(12, Math.Max(5, content.Height * .025)), gapBudget);
         var slot = Math.Max(0, (remaining - gap * Math.Max(0, rows - 1)) / rows);
-        var labelTop = packet.ShowBitNumbers ? Math.Min(BodyFontSize(packet.Options.Theme, 16), slot * .4) : 0;
+        var labelBudget = packet.RowHeight.HasValue ? Math.Max(slot * .4, slot - packet.RowHeight.Value) : slot * .4;
+        var labelTop = Math.Min(preferredLabelTop, labelBudget);
         var height = Math.Min(packet.RowHeight ?? 52, slot - labelTop);
         var bitWidth = Math.Min(packet.BitWidth ?? content.Width / packet.BitsPerRow, content.Width / packet.BitsPerRow);
         var fieldGap = packet.FieldGap ?? 1;

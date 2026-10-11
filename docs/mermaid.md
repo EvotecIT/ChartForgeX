@@ -1110,7 +1110,7 @@ Packet dimensions and spacing also accept independent source and host values:
 
 For example, add `bitWidth: 24`, `rowHeight: 40`, `paddingX: 3` and `paddingY: 7` beneath `packet` in the source configuration above. Host properties use the same last-source-value precedence as row width and direction; an explicit zero gap overrides source spacing. Markdown parsers snapshot these host options when constructed.
 
-These values are preferred dimensions within the fixed host preview. The shared renderer reduces bit widths, field heights and row gaps when necessary to fit that viewport, and reserves measured space above each row for visible bit numbers. Oversized horizontal gaps leave a positive field within its bit cell. They do not expand the canvas. When no dimension or gap is supplied, native automatic sizing remains in effect. This fitting policy gives SVG and PNG the same geometry; it does not promise Mermaid.js pixel dimensions.
+These values are preferred dimensions within the fixed host preview. The shared renderer reduces bit widths, field heights and row gaps when necessary to fit that viewport, and reserves measured space above each row for visible bit numbers. A requested row gap remains unchanged when the preferred rows and bit labels fit; an oversized gap uses the space left after those rows and labels. Oversized horizontal gaps leave a positive field within its bit cell. They do not expand the canvas. When no dimension or gap is supplied, native automatic sizing remains in effect. This fitting policy gives SVG and PNG the same geometry; it does not promise Mermaid.js pixel dimensions.
 
 ## Venn Diagrams
 
