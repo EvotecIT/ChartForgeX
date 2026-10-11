@@ -7,13 +7,14 @@ public sealed partial class MermaidParser {
     private static Match ConfigurationYamlMapping(string text) => Regex.Match(text,
         @"^(""(?:[^""\\]|\\.)*""|'(?:[^']|'')*'|[A-Za-z_][A-Za-z0-9_-]*(?=[ \t]*:(?:[ \t]|$)))[ \t]*:[ \t]*(.*)$", RegexOptions.CultureInvariant);
 
-    private static string? ConfigurationYamlKey(Match match) {
+    private static string? ConfigurationYamlKey(Match match, out string? error) {
+        error = null;
         if (!match.Success) return null;
         var key = match.Groups[1].Value;
         try {
             return key[0] == '"' ? ReadDoubleQuotedConfigurationYaml(key)
                 : key[0] == '\'' ? ReadSingleQuotedConfigurationYaml(key) : key;
-        } catch (ArgumentException) { return null; }
+        } catch (ArgumentException exception) { error = exception.Message; return null; }
     }
 
     // Unsupported keys can contain flow collections and nonseparating colons.
@@ -56,7 +57,7 @@ public sealed partial class MermaidParser {
                 if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
                 var mapping = ConfigurationYamlMapping(trimmed);
                 if (indent <= rootIndent && (!inConfiguration || !IsConfigurationYamlBlockContinuation(indent, rootIndent, trimmed)))
-                    inConfiguration = indent == rootIndent && ConfigurationYamlKey(mapping) == "config";
+                    inConfiguration = indent == rootIndent && ConfigurationYamlKey(mapping, out _) == "config";
                 if (!inConfiguration) continue;
                 Count(line);
                 var node = trimmed;
@@ -76,7 +77,7 @@ public sealed partial class MermaidParser {
                 if (IsConfigurationYamlBlockScalar(value))
                     scalarIndent = entry.Success || separator >= 0 ? ownerIndent : indent;
                 else if (value.StartsWith("{", StringComparison.Ordinal) || value.StartsWith("[", StringComparison.Ordinal)) {
-                    rootFlow = indent == rootIndent && ConfigurationYamlKey(mapping) == "config";
+                    rootFlow = indent == rootIndent && ConfigurationYamlKey(mapping, out _) == "config";
                     flowQuote = '\0'; scalarState = ConfigurationFlowScalar.Node;
                     ScanConfigurationYamlFlow(value, ref flowDepth, ref flowQuote, ref scalarState);
                     if (flowDepth <= 0 && rootFlow) inConfiguration = false;
