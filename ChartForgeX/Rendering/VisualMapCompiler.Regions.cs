@@ -86,8 +86,9 @@ internal static partial class VisualMapCompiler {
                 var x = plot.Left + (plot.Width - gridWidth) / 2 + region.Column * (size + gap);
                 var y = plot.Top + (plot.Height - gridHeight) / 2 + region.Row * (size + gap);
                 var bounds = new ChartRect(x, y, size, size); var inset = size * .22;
-                var geometry = Path(new[] { (IReadOnlyList<ChartPoint>)new[] { new ChartPoint(x + inset, y), new ChartPoint(x + size - inset, y),
-                    new ChartPoint(x + size, y + size / 2), new ChartPoint(x + size - inset, y + size), new ChartPoint(x + inset, y + size), new ChartPoint(x, y + size / 2) } });
+                var contour = new List<ChartPoint> { new ChartPoint(x + inset, y), new ChartPoint(x + size - inset, y),
+                    new ChartPoint(x + size, y + size / 2), new ChartPoint(x + size - inset, y + size), new ChartPoint(x + inset, y + size), new ChartPoint(x, y + size / 2) };
+                var geometry = Path(new[] { (IReadOnlyList<ChartPoint>)contour });
                 int? index = values.TryGetValue(region.Code, out var found) ? found : (int?)null;
                 var full = Formatted(chart, index, presentation); var id = index.HasValue ? "series-0-point-" + index.Value : "tile-map-empty-" + region.Code;
                 var blend = Fill(chart, colors, index, min, max); var fill = blend.Color;
@@ -99,8 +100,8 @@ internal static partial class VisualMapCompiler {
                     if (index.HasValue && pattern != ChartFillPattern.None) builder.Pattern(geometry, pattern, ChartColorMath.AccessibleTextOnBackground(fill).WithAlpha(90), role: "tile-map-pattern");
                     if (chart.Options.ShowMapLabels) {
                         var style = TickStyle(chart, context, ChartColorMath.AccessibleTextOnBackground(fill));
-                        VisualRadialPrimitives.Text(builder, region.Code, new ChartRect(x + inset, y, size - inset * 2, size),
-                            style, "tile-map-label", id + "-label", chart.Options.TickLabelStyle.Color.HasValue ? VisualChartPaint.Text(style) : SvgPaint.Literal(style.Color));
+                        TileLabel(builder, region.Code, bounds, contour, width / 2, style, id + "-label",
+                            chart.Options.TickLabelStyle.Color.HasValue ? VisualChartPaint.Text(style) : SvgPaint.Literal(style.Color));
                     }
                 }
             }
