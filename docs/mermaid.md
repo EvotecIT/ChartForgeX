@@ -664,6 +664,8 @@ var html = result.Artifact!.ToHtmlPage(new VisualArtifactRenderOptions {
 
 `Automatic` preserves sequence size and retains other families' existing standalone HTML sizing. `PreserveSize` uses the common scroll region for any supported artifact. These options affect HTML hosting; SVG and PNG exports keep their prepared geometry. Print output fits the scene to the available page width. To change layout or typography, supply those values when preparing the scene.
 
+For a trusted SVG that has already been rendered, `artifact.ToWatermarkedHtmlPage(options, renderedSvg, watermark)` applies the same host sizing while preserving the supplied scene and adding the watermark. The overload without options uses automatic sizing.
+
 ## Pie Charts
 
 Pie diagrams are parsed into `MermaidPieDocument` and converted to native ChartForgeX pie charts.
