@@ -11,7 +11,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-Import-Module PSPublishModule -Force -ErrorAction Stop
+Import-Module PSPublishModule -MinimumVersion 3.0.168 -Force -ErrorAction Stop
 
 $invokeParams = @{
     ConfigPath = $ConfigPath

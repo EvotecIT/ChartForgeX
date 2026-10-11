@@ -63,6 +63,12 @@ share the `2.0.X` release lane. PowerForge resolves the next version from the hi
 version in that group and updates `ChartForgeXProductVersion` in `Directory.Build.props`.
 The projects keep their shared version references, so package and assembly metadata stay aligned.
 
+Install PSPublishModule 3.0.168 or later before running this release entrypoint:
+
+```powershell
+Install-Module PSPublishModule -MinimumVersion 3.0.168 -Scope CurrentUser
+```
+
 Inspect the release plan before signing or publishing:
 
 ```powershell
