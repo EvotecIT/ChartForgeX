@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Xml.Linq;
+using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
@@ -11,6 +13,39 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidCaptionOwnerClosureTests {
+    [Theory]
+    [InlineData(80, 40, false)]
+    [InlineData(40, 108, false)]
+    [InlineData(80, 108, false)]
+    [InlineData(80, 108, true)]
+    public async Task ActorPaintRetainsTheCanonicalAttachmentAndCaptionGeometry(int width, int height, bool compact) {
+        var chart = TopologyChart.Create().WithId("actor-canonical-geometry").WithViewport(420, 280, 16)
+            .AddNode("actor", "API", 80, 70, width: width, height: height)
+            .AddNode("target", "UI", 280, 90, width: 80, height: 48)
+            .AddEdge("association", "actor", "target");
+        var actor = chart.Nodes[0]; actor.Shape = TopologyNodeShape.Actor;
+        chart.WithNodeDisplay("target", TopologyNodeDisplayMode.Tile);
+        actor.PreserveDisplayModeSize = !compact;
+        if (compact) chart.WithNodeDisplay("actor", TopologyNodeDisplayMode.CompactCard);
+        foreach (var node in chart.Nodes) node.ShowStatusBadge = false;
+        chart.Edges[0].SourcePort = TopologyEdgePort.Right;
+        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
+        await Observe(svg, chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }), 420, 280,
+            "actor-canonical-" + width + "-" + height + "-" + compact, true);
+        var arm = TopologyNodeShapeGeometry.SceneParts(actor)[2].Path.Commands[1];
+        var attachment = TopologyNodeShapeGeometry.BoundaryPoint(actor, 400, 100, TopologyEdgePort.Right, 0);
+        Assert.Equal(attachment.X, arm.X, 7);
+        Assert.Equal(attachment.Y, arm.Y, 7);
+        Assert.Equal(actor.Y + 34, arm.Y, 7);
+        var xml = XDocument.Parse(svg);
+        var surface = xml.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node" && (string?)element.Attribute("data-node-id") == "actor")
+            .Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-node-surface").ElementAt(2);
+        var paintedArm = Assert.Single(ChartMapPathParser.ParseSubpaths((string)surface.Attribute("d")!, 1)).Points;
+        var edge = xml.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
+        var route = Assert.Single(ChartMapPathParser.ParseSubpaths((string)edge.Attribute("d")!, 1)).Points;
+        Assert.Equal(paintedArm[1].Y, route[0].Y, 3);
+    }
+
     [Theory]
     [InlineData("1e2px", 100)]
     [InlineData("+1.8e1px", 18)]
