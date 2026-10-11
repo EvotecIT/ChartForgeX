@@ -1,0 +1,40 @@
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+// The gallery includes these licensed font fixtures beside the outputs.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels(false);
+chart.AddStepLine("Observed", new ChartPoint[] { new ChartPoint(0, 88), new ChartPoint(1, 44), new ChartPoint(2, 34), new ChartPoint(3, 56), new ChartPoint(4, 46), new ChartPoint(5, 64), new ChartPoint(6, 42, true), new ChartPoint(7, 58), new ChartPoint(8, 50), new ChartPoint(9, 38), new ChartPoint(10, 82) });
+chart.Series[0].WithMarkerRadius(3);
+chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+chart.AddStepLine("Utilization", new ChartPoint[] { new ChartPoint(0, 96), new ChartPoint(1, 72), new ChartPoint(2, 48), new ChartPoint(3, 61), new ChartPoint(4, 55), new ChartPoint(5, 76), new ChartPoint(6, 49, true), new ChartPoint(7, 67), new ChartPoint(8, 59), new ChartPoint(9, 84), new ChartPoint(10, 100) });
+chart.Series[1].WithMarkerRadius(3);
+chart.Series[1].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+chart.Series[1].UseSecondaryYAxis();
+chart.WithSecondaryYAxis("Utilization (%)");
+chart.Options.SecondaryYAxis.TickCount = 4;
+chart.Options.XAxis.WithReversal();
+chart.Options.XAxis.TickCount = 4;
+chart.Options.YAxis.TickCount = 4;
+// Preparation projects X 2–8. All authored points still determine the Y scales.
+var viewport = new ChartXViewport(2, 8);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Light,
+    new VisualFrame("Reversed steps, X 2\u20138", "Full-data Y scales remain independent; an authored gap at sample 6", showLegend: true), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = chart.Prepare(context, viewport);
+System.IO.File.WriteAllText("visual.svg", prepared.ToSvg("family-step-line-x-viewport-light"));
+System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
+System.IO.File.WriteAllText("visual.html", prepared.ToArtifact("family-step-line-x-viewport-light", VisualArtifactKind.Chart).ToHtmlPage());
+
+// Prepare the same window at thumbnail size, rather than resizing the full scene.
+var thumbnailTheme = VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 13.5, legendSize: 13.5, dataLabelSize: 13.5));
+var thumbnailContext = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 280), 16), thumbnailTheme, VisualThemeMode.Light, new VisualFrame("", "", showLegend: true), FontSpec.FromFamily("CFX Proof Carlito"));
+var thumbnail = chart.Prepare(thumbnailContext, viewport);
+var artifact = thumbnail.ToArtifact("family-step-line-x-viewport-light-thumbnail", VisualArtifactKind.Chart);
+artifact.Accessibility.Name = "Reversed steps, X 2\u20138";
+System.IO.File.WriteAllText("visual.thumbnail.svg", artifact.ToSvg());
+System.IO.File.WriteAllBytes("visual.thumbnail.png", thumbnail.ToPng());

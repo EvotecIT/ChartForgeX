@@ -79,6 +79,17 @@ Prepared Cartesian guides default to horizontal lines independently of the model
 
 Prepared Cartesian point semantics retain the complete resolved display label, even when visible placement shortens or omits it. Explicit point labels take precedence over the value formatter. Formatting runs once per point during preparation and the detached metadata reuses that result; exporting a prepared visual does not call the formatter again. Numeric coordinates and source identities remain separate metadata fields.
 
+`Chart.AddPlotRegion(new ChartPlotRegion(color, ...))` adds a passive solid background rectangle to a Cartesian chart. `Chart.PlotRegions` owns its immutable definitions in paint order. Nullable `xMinimum`, `xMaximum`, `yMinimum` and `yMaximum` extend to the corresponding final domain end; regions never expand domains. `yAxis` selects primary or secondary Y. Bounds follow physical X and Y. Horizontal charts use value coordinates for X and linear category slots for Y. Time bounds use OLE Automation dates, and logarithmic value bounds must be positive. A secondary region requires a secondary-axis series.
+
+Four regions express quadrants at any numeric pivot:
+
+```csharp
+chart.AddPlotRegion(new ChartPlotRegion(ChartColor.FromHex("#328c68"),
+    xMaximum: 4, yMinimum: 6, label: "Prioritize", opacity: .18));
+```
+
+The visible intersection follows the selected scales and axis reversal while authored bounds and captions remain in metadata, including empty intersections. Optional captions use fitted opaque backplates inside that intersection and avoid data marks; shortening or omission reports `cartesian.plot-region-label-overflow`. Prepared SVG and PNG share frozen geometry and paint. HTML regions and their captions remain descriptive backgrounds: points retain pointer, selection and keyboard actions. Other chart families reject plot regions.
+
 Visible Cartesian axes retain a descriptive region for each configured or generated tick and each axis title, including text shortened or omitted by placement. Tick regions include the complete resolved display text and numeric value. Each axis formatter runs once per tick during preparation; measurement, placement and semantics reuse the same result. These descriptive extents do not promise an exact hit-test shape.
 
 Automatic numeric axes keep compact captions when they distinguish ticks, and increase precision when small nonzero values round to zero or distinct ticks share a caption. Default mark values also retain small nonzero observations instead of displaying zero. Authored labels and axis or chart value formats remain authoritative. Precision affects display text; numeric values and prepared SVG/PNG snapshots remain unchanged by later model edits.
@@ -507,6 +518,26 @@ The formatter runs once for each compiled node, including nodes with hidden capt
 Secondary typography inherits chart, series and ordinal node data-label styling at 80% of the primary font size, then applies `SecondaryLabelStyle`. Explicit secondary colors override inherited ink. `SecondaryLabelSpacing` defaults to two logical pixels and accepts finite, nonnegative values. Both runs share horizontal or upright tangential placement and fit inside the actual sector, including rounded corners. Primary content takes priority: secondary text wraps, shortens at text-element boundaries or is omitted before the primary caption loses content. Font sizes stay fixed; automatic shrinking and configurable sector padding are separate policies.
 
 Full secondary text remains in `data-cfx-secondary-label` and descriptive node regions even when no caption fits. The optional HTML adapter exposes it as plain text in pointer and keyboard tooltips, separately from size, color, supplied totals and remainders. IDs, numeric metadata and target counts stay unchanged. A non-null formatter on a populated non-Sunburst chart fails preparation; style or spacing configuration without a formatter remains inactive. Treemap retains its own label and numeric-value captions.
+
+## Numeric X viewports
+
+`Chart.Prepare(context, new ChartXViewport(minimum, maximum))` prepares a numeric X window for charts containing Line and StepLine series with linear or step interpolation on a linear X axis. Bounds must be finite, increasing and inside the resolved full X domain. Other families, smooth interpolation, nonlinear X scales, sparklines, charts without observations and layouts without a usable plot reject the viewport request explicitly. Ordinary preparation remains available for every supported chart family.
+
+```csharp
+var overview = chart.Prepare(context);
+var detail = chart.Prepare(context, new ChartXViewport(2, 8));
+var projection = detail.XProjection!;
+double logicalX = projection.Project(5);
+double sourceX = projection.Unproject(logicalX);
+string svg = detail.ToSvg("detail");
+byte[] png = detail.ToPng();
+```
+
+The immutable viewport is a preparation input. It does not change authored axis bounds, series, source indices or decimation settings. Preparation resolves the full-data primary and secondary Y domains, then lays out the requested X ticks and marks through the shared Cartesian compiler. Marks, annotations and labels clip to the visible plot even when ordinary mark clipping is disabled. Crossing segments remain visible when both source endpoints lie outside the window, while authored gaps stay disconnected. Plot regions intersect the visible domain and retain their authored bounds. Off-window reference annotations retain their source facts without guide or caption paint; partially visible bands use their visible intersection.
+
+`ChartXProjection` captures `FullMinimum`, `FullMaximum`, `Minimum`, `Maximum`, `PlotBounds` and `Reversed` as detached values. Supported ordinary preparation exposes the full-domain projection through `PreparedVisual.XProjection`; other charts and unusable plots return null. Source or axis mutations after preparation cannot change the projection or its SVG/PNG exports. Prepare the full domain again to reset the window. The available detail is the retained source model, including any earlier decimation.
+
+These native windows repeat Core layout for each request. The HTML adapter's existing geometry zoom keeps its current behavior; standalone data-domain interaction requires its own prepared tick/layer plan and lifecycle support.
 
 ## Enforcement boundary
 

@@ -8,12 +8,20 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
-    private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles) {
+    private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, bool constrainXToPlot) {
         for (var index = 0; index < chart.Annotations.Count; index++) {
             var annotation = chart.Annotations[index];
             if (annotation.EndValue.HasValue != bands) continue;
             var horizontal = annotation.Kind == ChartAnnotationKind.HorizontalLine || annotation.Kind == ChartAnnotationKind.HorizontalBand;
-            var position = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, map.Y(annotation.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, map.X(annotation.Value)));
+            var projectedPosition = horizontal ? map.Y(annotation.Value) : map.X(annotation.Value);
+            var projectedEnd = annotation.EndValue.HasValue
+                ? (horizontal ? map.Y(annotation.EndValue.Value) : map.X(annotation.EndValue.Value)) : projectedPosition;
+            // A window must not relocate an off-window reference to its visible boundary.
+            // Keep its descriptive group and source facts without guide or caption paint.
+            var outsideX = constrainXToPlot && !horizontal && (bands
+                ? Math.Max(projectedPosition, projectedEnd) <= plot.Left || Math.Min(projectedPosition, projectedEnd) >= plot.Right
+                : projectedPosition < plot.Left || projectedPosition > plot.Right);
+            var position = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, projectedPosition)) : Math.Max(plot.Left, Math.Min(plot.Right, projectedPosition));
             var color = annotation.Color;
             var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
             var id = "annotation-" + Number(index);
@@ -26,12 +34,12 @@ internal static partial class VisualCartesianCompiler {
                 ["data-cfx-label"] = annotation.Label, ["data-cfx-show-label"] = annotation.ShowLabel ? "true" : "false", ["aria-label"] = description
             })) {
             if (annotation.EndValue.HasValue) {
-                var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, map.Y(annotation.EndValue.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, map.X(annotation.EndValue.Value)));
+                var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, projectedEnd)) : Math.Max(plot.Left, Math.Min(plot.Right, projectedEnd));
                 bounds = horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
                     : new ChartRect(Math.Min(position, end), plot.Top, Math.Abs(end - position), plot.Height);
-                builder.Rect(bounds, ChartColorMath.WithOpacity(color, annotation.Opacity), role: "annotation-band",
+                if (!outsideX) builder.Rect(bounds, ChartColorMath.WithOpacity(color, annotation.Opacity), role: "annotation-band",
                     paint: VisualChartPaint.Fill(SvgPaint.Of(color, SvgColorRole.Axis).WithOpacity(ChartColorMath.WithOpacity(color, annotation.Opacity), annotation.Opacity)));
-            } else {
+            } else if (!outsideX) {
                 var start = horizontal ? new ChartPoint(plot.Left, position) : new ChartPoint(position, plot.Top);
                 var end = horizontal ? new ChartPoint(plot.Right, position) : new ChartPoint(position, plot.Bottom);
                 builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(end.X, end.Y) }),
@@ -39,7 +47,7 @@ internal static partial class VisualCartesianCompiler {
                     dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, SvgColorRole.Axis));
             }
             builder.AddRegion(new VisualSemanticRegion(id, "annotation", bounds, description));
-            if (annotation.ShowLabel && !string.IsNullOrEmpty(annotation.Label)) {
+            if (!outsideX && annotation.ShowLabel && !string.IsNullOrEmpty(annotation.Label)) {
                 var plate = new ChartColorBlend(colors.Surface, SvgColorRole.Surface, color, SvgColorRole.Axis, .12);
                 var backplate = plate.Color;
                 var ink = ChartColorBlend.Contrast(plate);

@@ -40,6 +40,8 @@ public static partial class V2Examples {
                 variants.Add("gradient-color-legend"); variants.Add("compact-gradient-color-legend");
                 variants.Add("swatch-color-legend"); variants.Add("compact-swatch-color-legend");
             }
+            if (kind == ChartSeriesKind.Scatter) { variants.Add("quadrants"); variants.Add("compact-quadrants"); }
+            if (kind == ChartSeriesKind.Bubble) { variants.Add("plot-regions"); variants.Add("compact-plot-regions"); }
             if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter) {
                 variants.Add("partial-color-range"); variants.Add("compact-partial-color-range");
             }
@@ -68,6 +70,8 @@ public static partial class V2Examples {
             foreach (var variant in variants) {
                 var precision = variant is "precision" or "compact-precision";
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift"
+                    : variant is "quadrants" or "compact-quadrants" ? "Effort and impact"
+                    : variant is "plot-regions" or "compact-plot-regions" ? "Capacity and delay"
                     : variant is "partial-color-range" or "compact-partial-color-range" ? kind == ChartSeriesKind.TileMap ? "Requests by state" : "Processing time and completion"
                     : variant is "positioned-color-scale" or "compact-positioned-color-scale" && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap
                         ? kind == ChartSeriesKind.TileMap ? "Temperature by state" : "Temperature across service areas"
@@ -95,6 +99,8 @@ public static partial class V2Examples {
                     : variant is "angular-reversal" or "compact-angular-reversal" ? kind == ChartSeriesKind.Polar ? "Clockwise authored radians retain their source directions and values"
                         : "Reversed category angles retain source labels, values and paint"
                     : variant is "dashed" or "compact-dashed" ? "Direction-specific dash patterns and phase preserve the source prices"
+                    : variant is "quadrants" or "compact-quadrants" ? "Four background regions share an authored effort and impact pivot"
+                    : variant is "plot-regions" or "compact-plot-regions" ? "Bounded operating guidance leaves source values and bubble sizes independent"
                     : variant is "axis-labels" or "compact-axis-labels" ? "Upright axis-relative labels with independent density"
                     : variant is "all-labels" or "compact-all-labels" ? "All captions fit individually; caption overlaps are intentional"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
