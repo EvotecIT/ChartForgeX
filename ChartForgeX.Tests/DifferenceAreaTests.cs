@@ -106,7 +106,7 @@ public sealed partial class DifferenceAreaTests {
     private static Chart Model(params ChartDifferencePoint[] pairs) {
         var chart = Chart.Create().WithSize(600, 420).WithHeader(false).WithAxes(false).WithGrid(false).WithLegend(false)
             .WithDataLabels(false).WithLineVisualStyle(ChartLineVisualStyle.Plain()).AddDifferenceArea("Comparison", pairs);
-        chart.Series[0].WithStrokeWidth(0).ConfigureDifferenceArea(options => {
+        chart.Series[0].WithStrokeWidth(1).ConfigureDifferenceArea(options => {
             options.PositiveFill = Red; options.NegativeFill = Blue;
             options.PositiveFillOpacity = .5; options.NegativeFillOpacity = .5;
         });

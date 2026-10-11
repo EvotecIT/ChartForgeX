@@ -63,8 +63,11 @@ public sealed class DifferenceAreaBrowserTests {
         var chart = Chart.Create().WithSize(600, 380).AddDifferenceArea("Pair", new[] {
             new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 8)
         }).WithLineVisualStyle(ChartLineVisualStyle.Plain());
-        chart.Series[0].WithStrokeWidth(0).ConfigureMarkers(markers => markers.Enabled = false)
-            .ConfigureDifferenceArea(options => { options.PositiveFillOpacity = 0; options.NegativeFillOpacity = .8; });
+        chart.Series[0].WithColor(ChartColor.Transparent).WithStrokeWidth(1).ConfigureMarkers(markers => markers.Enabled = false)
+            .ConfigureDifferenceArea(options => {
+                options.PositiveFill = ChartColor.FromHex("#DF3040"); options.NegativeFill = ChartColor.FromHex("#305CDF");
+                options.PositiveFillOpacity = 0; options.NegativeFillOpacity = .8;
+            });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         await page.Locator(Point(0, 0)).FocusAsync();
