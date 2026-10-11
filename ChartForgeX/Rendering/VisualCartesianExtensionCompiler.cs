@@ -143,6 +143,12 @@ internal static partial class VisualCartesianCompiler {
     private static ChartRect Extents(double x1, double y1, double x2, double y2, double inflate = 0) =>
         new(Math.Min(x1, x2) - inflate, Math.Min(y1, y2) - inflate, Math.Abs(x2 - x1) + inflate * 2, Math.Abs(y2 - y1) + inflate * 2);
 
+    /// <summary>Centers only a forced minimum body length on the mapped interval.</summary>
+    private static (double Minimum, double Length) MinimumBodySpan(double first, double second, double minimumLength) {
+        var minimum = Math.Min(first, second); var length = Math.Abs(first - second);
+        return length >= minimumLength ? (minimum, length) : (minimum - (minimumLength - length) / 2, minimumLength);
+    }
+
     private static string Value(Chart chart, double value) => ChartNumericFormatter.FormatValue(chart.Options, value);
 
     private static bool HasSeriesPaint(ChartSeries series, int observation) => series.Color.HasValue || series.StateRole != ChartSeriesState.None
