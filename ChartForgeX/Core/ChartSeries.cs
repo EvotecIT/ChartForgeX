@@ -173,7 +173,7 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the series should appear in the chart legend.
+    /// Gets or sets whether categorical entries for the series appear in the chart legend. Numeric color keys use ColorDimension.ShowLegend.
     /// </summary>
     public bool ShowInLegend { get; set; } = true;
 
@@ -419,7 +419,7 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Sets whether the series should appear in the chart legend.
+    /// Sets whether categorical entries for the series appear in the chart legend. Numeric color keys use ColorDimension.ShowLegend.
     /// </summary>
     /// <param name="visible">True to show the series in legends; otherwise false.</param>
     /// <returns>The current series.</returns>

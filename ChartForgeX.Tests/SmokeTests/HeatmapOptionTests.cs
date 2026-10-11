@@ -19,9 +19,9 @@ internal static partial class SmokeTests {
         var axesOnly = HeatmapSample().WithLegend(false).ToSvg();
         Assert(axesOnly.Contains("data-cfx-role=\"heatmap-row-label\"", System.StringComparison.Ordinal), "Heatmaps should keep axes when only legends are disabled.");
         Assert(!axesOnly.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "The shared legend permission should hide continuous heatmap scales while retaining axes.");
-        var withoutScale = HeatmapSample().WithHeatmapScaleLegend(false).ToSvg();
+        var withoutScale = HeatmapSample().ConfigureHeatmapColorDimension(options => options.ShowLegend = false).ToSvg();
         Assert(!withoutScale.Contains("data-cfx-role=\"heatmap-scale-label\"", System.StringComparison.Ordinal), "Heatmap scale legends should be optional.");
-        Assert(HeatmapSample().WithHeatmapScaleLegend(false).ToPng().Length > 64, "Heatmaps without scale legends should render valid PNG output.");
+        Assert(HeatmapSample().ConfigureHeatmapColorDimension(options => options.ShowLegend = false).ToPng().Length > 64, "Heatmaps without scale legends should render valid PNG output.");
         var withoutColumns = HeatmapSample().WithHeatmapColumnLabels(false).ToSvg();
         Assert(withoutColumns.Contains("data-cfx-role=\"heatmap-row-label\"", System.StringComparison.Ordinal), "Heatmap row labels should remain visible when column labels are hidden.");
         Assert(!withoutColumns.Contains("data-cfx-role=\"heatmap-column-label\"", System.StringComparison.Ordinal), "Heatmap column labels should be optional.");
