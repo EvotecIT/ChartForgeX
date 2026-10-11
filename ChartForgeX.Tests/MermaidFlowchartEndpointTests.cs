@@ -10,6 +10,50 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidFlowchartEndpointTests {
+    [Theory]
+    [InlineData("A---ox-->|after|B", "x", "---o")]
+    [InlineData("A---xo-->|after|B", "o", "---x")]
+    [InlineData("A---ox --o|after|B", "x", "---o")]
+    [InlineData("A---xo --x|after|B", "o", "---x")]
+    public void PipeLabelsDoNotConsumeAnEarlierCompactTarget(string statement, string intermediate, string firstOperator) {
+        var parsed = new MermaidParser().ParseFlowchart("flowchart LR\n" + statement);
+        Assert.Empty(parsed.Diagnostics);
+        Assert.Equal(new[] { "A", intermediate, "B" }, parsed.Document!.Nodes.Select(node => node.Id));
+        Assert.Equal(2, parsed.Document.Edges.Count);
+        Assert.Equal(("A", intermediate, firstOperator, (string?)null),
+            (parsed.Document.Edges[0].SourceId, parsed.Document.Edges[0].TargetId, parsed.Document.Edges[0].Operator, parsed.Document.Edges[0].Label));
+        Assert.Equal((intermediate, "B", "after"),
+            (parsed.Document.Edges[1].SourceId, parsed.Document.Edges[1].TargetId, parsed.Document.Edges[1].Label));
+    }
+
+    [Theory]
+    [InlineData("-- \"x < y\" --o", VisualLinkDirection.Forward, "Circle")]
+    [InlineData("-- \"x < y\" ---", VisualLinkDirection.None, "None")]
+    [InlineData("-- \"x > y\" --x", VisualLinkDirection.Forward, "Cross")]
+    [InlineData("<---", VisualLinkDirection.Backward, "None")]
+    public async Task LayerOrderUsesEndpointsInsteadOfCaptionComparisons(string op, VisualLinkDirection direction, string targetMarker) {
+        var source = "flowchart LR\nA " + op + " B";
+        var parsed = new MermaidParser().ParseFlowchart(source);
+        Assert.Empty(parsed.Diagnostics);
+        var chart = parsed.Document!.ToTopologyChart();
+        var edge = Assert.Single(chart.Edges);
+        Assert.Equal(direction, edge.Direction);
+        Assert.Equal(targetMarker, edge.TargetMarker.ToString());
+        Assert.Equal(direction == VisualLinkDirection.Backward ? "1" : "0", chart.Nodes.Single(node => node.Id == "A").Metadata["mermaid.layer"]);
+        Assert.Equal(direction == VisualLinkDirection.Backward ? "0" : "1", chart.Nodes.Single(node => node.Id == "B").Metadata["mermaid.layer"]);
+        if (!InteractiveChartBrowser.Enabled) return;
+        var artifact = MermaidRenderer.Render(source).Artifact!;
+        var svg = artifact.ToSvg();
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>");
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        var name = Path.Combine(captures, "label-layers-" + direction + "-" + targetMarker);
+        File.WriteAllText(name + ".svg", svg); File.WriteAllBytes(name + ".native.png", artifact.ToPng());
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = name + ".browser.png", FullPage = true });
+    }
+
     [Fact]
     public void VersionedFixtureRetainsEveryEndpointAndTargetIdentity() {
         var fixture = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "flowchart-endpoints.mmd");

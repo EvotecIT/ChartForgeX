@@ -97,12 +97,12 @@ public static class MermaidFlowchartRendering {
                 edge.Label,
                 TopologyEdgeKind.Dependency,
                 TopologyHealthStatus.Unknown,
-                ToVisualLinkDirection(edge.Operator),
+                MermaidFlowchartOperators.Direction(edge.Operator),
                 TopologyEdgeRouting.Orthogonal);
 
             var target = chart.Edges[chart.Edges.Count - 1];
-            target.SourceMarker = EndpointMarker(edge.Operator, true);
-            target.TargetMarker = EndpointMarker(edge.Operator, false);
+            target.SourceMarker = MermaidFlowchartOperators.Marker(edge.Operator, true);
+            target.TargetMarker = MermaidFlowchartOperators.Marker(edge.Operator, false);
             target.LineStyle = ToLineStyle(edge.Operator);
             if (document.Kind == MermaidDiagramKind.UseCase) target.Routing = TopologyEdgeRouting.Straight;
             var edgeColor = StyleValue(edge.Styles, "stroke");
@@ -217,20 +217,6 @@ public static class MermaidFlowchartRendering {
             default:
                 return TopologyLayoutDirection.TopToBottom;
         }
-    }
-
-    private static VisualLinkDirection ToVisualLinkDirection(string edgeOperator) {
-        var source = EndpointMarker(edgeOperator, true) != TopologyMarkerKind.None;
-        var target = EndpointMarker(edgeOperator, false) != TopologyMarkerKind.None;
-        return source && target ? VisualLinkDirection.Bidirectional : source ? VisualLinkDirection.Backward
-            : target ? VisualLinkDirection.Forward : VisualLinkDirection.None;
-    }
-
-    private static TopologyMarkerKind EndpointMarker(string edgeOperator, bool source) {
-        if (edgeOperator.Length == 0) return TopologyMarkerKind.None;
-        var marker = edgeOperator[source ? 0 : edgeOperator.Length - 1];
-        if (marker == (source ? '<' : '>')) return TopologyMarkerKind.Arrow;
-        return marker == 'o' ? TopologyMarkerKind.Circle : marker == 'x' ? TopologyMarkerKind.Cross : TopologyMarkerKind.None;
     }
 
     private static TopologyEdgeLineStyle ToLineStyle(string edgeOperator) {

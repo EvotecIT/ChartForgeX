@@ -282,10 +282,7 @@ internal static partial class MermaidFlowchartParser {
         if (TryParsePipeLabelOperator(text, ref position, out edgeOperator, out label)) return true;
         if (TryParseInlineLabelOperator(text, ref position, out edgeOperator, out label)) return true;
 
-        if (position < text.Length && (text[position] == '<' || text[position] == 'o' || text[position] == 'x')) position++;
-        while (position < text.Length && (text[position] == '-' || text[position] == '.' || text[position] == '=')) position++;
-        // A single endpoint belongs to the link; a following o/x starts the target id.
-        if (position < text.Length && (text[position] == '>' || text[position] == 'o' || text[position] == 'x')) position++;
+        position = MermaidFlowchartOperators.ReadEnd(text, start);
         if (position == start) return false;
 
         edgeOperator = text.Substring(start, position - start);
@@ -298,15 +295,15 @@ internal static partial class MermaidFlowchartParser {
         edgeOperator = string.Empty;
         label = null;
         var start = position;
-        var firstPipe = text.IndexOf('|', start);
-        if (firstPipe < 0) return false;
-
-        var before = text.Substring(start, firstPipe - start).Trim();
-        if (before.Length == 0 || !LooksLikeOperator(before)) return false;
+        var end = MermaidFlowchartOperators.ReadEnd(text, start);
+        if (end == start) return false;
+        var firstPipe = end;
+        SkipWhitespace(text, ref firstPipe);
+        if (firstPipe >= text.Length || text[firstPipe] != '|') return false;
         var secondPipe = text.IndexOf('|', firstPipe + 1);
         if (secondPipe < 0) return false;
 
-        edgeOperator = before;
+        edgeOperator = text.Substring(start, end - start);
         label = Unquote(text.Substring(firstPipe + 1, secondPipe - firstPipe - 1).Trim());
         position = secondPipe + 1;
         return true;
