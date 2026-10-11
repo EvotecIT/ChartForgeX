@@ -85,7 +85,14 @@ public sealed partial class MermaidParser {
                 continue;
             }
             try {
+                foreach (var character in valueText)
+                    if (character < ' ' && character != '\t') throw new ArgumentException("Mermaid YAML scalars cannot contain literal control characters other than tabs.");
                 if (parents.Count == 0) {
+                    if (IsOpaqueConfigurationYamlValue(valueText)) {
+                        configuration.Add(new MermaidConfigurationSetting("config", valueText, false, span));
+                        opaqueIndent = indent;
+                        continue;
+                    }
                     var sourceLines = new List<ConfigurationJsonLine>();
                     if (valueText.StartsWith("{", StringComparison.Ordinal))
                         valueText = ReadConfigurationFlowMapping(lines, ref index, valueText, sourceLines, indent + match.Groups[2].Index + 1);
@@ -94,17 +101,13 @@ public sealed partial class MermaidParser {
                     AddConfigurationJson(GeoJsonValue.Parse(normalized, StringComparer.Ordinal, ConfigurationJsonLimits).AsObject("Mermaid frontmatter config"),
                         string.Empty, span, configuration, value => ConfigurationJsonPropertySpan(value, offsets, sourceLines, sourceLineStarts, span));
                 } else {
-                    foreach (var character in valueText)
-                        if (character < ' ' && character != '\t') throw new ArgumentException("Mermaid YAML scalars cannot contain literal control characters other than tabs.");
                     var isString = true;
                     string? value = valueText;
                     if (valueText.StartsWith("\"", StringComparison.Ordinal)) {
                         value = ReadDoubleQuotedConfigurationYaml(valueText);
                     } else if (valueText.StartsWith("'", StringComparison.Ordinal)) {
                         value = ReadSingleQuotedConfigurationYaml(valueText);
-                    } else if (valueText.StartsWith("{", StringComparison.Ordinal) || valueText.StartsWith("[", StringComparison.Ordinal) ||
-                        valueText.StartsWith("|", StringComparison.Ordinal) || valueText.StartsWith(">", StringComparison.Ordinal) ||
-                        valueText.StartsWith("&", StringComparison.Ordinal) || valueText.StartsWith("*", StringComparison.Ordinal) || valueText.StartsWith("!", StringComparison.Ordinal)) {
+                    } else if (valueText.StartsWith("{", StringComparison.Ordinal) || IsOpaqueConfigurationYamlValue(valueText)) {
                         value = null; isString = false;
                         opaqueIndent = indent;
                     } else {
@@ -119,6 +122,8 @@ public sealed partial class MermaidParser {
         }
         while (parents.Count > 0) CompleteConfigurationYamlParent(parents, configuration);
     }
+
+    private static bool IsOpaqueConfigurationYamlValue(string value) => value.Length > 0 && "[|>&*!".IndexOf(value[0]) >= 0;
 
     private static void ValidateConfigurationYamlPlainScalar(string value) {
         var leading = value[0];
