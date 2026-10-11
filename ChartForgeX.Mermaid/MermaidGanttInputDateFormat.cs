@@ -83,6 +83,18 @@ internal static partial class MermaidGanttInputDateFormat {
         return DateTime.TryParseExact(normalized.ToString(), nativeFormat.ToString(), English, DateTimeStyles.NoCurrentDateDefault, out value);
     }
 
+    internal static int CalendarCommaCount(string format) {
+        var sample = new DateTime(2000, 2, 29);
+        // Ambiguous standards retain both accepted interpretations. A native long date
+        // must remain one date even when the Mermaid field emits no literal comma.
+        return Math.Max(Count(FormatCalendarDate(sample, format)), Count(NativeCalendarKey(sample, format)));
+        int Count(string? value) {
+            var count = 0;
+            if (value != null) foreach (var character in value) if (character == ',') count++;
+            return count;
+        }
+    }
+
     internal static string FormatCalendarDate(DateTime value, string format, bool nativeFormat = false) {
         format = format.Trim();
         if (format == "X" || format == "x") return FormatUnix(value, format == "X");

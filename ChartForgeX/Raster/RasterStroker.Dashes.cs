@@ -13,12 +13,13 @@ internal static partial class RasterStroker {
         private readonly double _maximumWork;
         private long _work;
         internal DashBudget(double pixelsPerUnit = 1) {
-            // Fixed device tiles multiply with raster density in both dimensions. The canvas
-            // allocation limit bounds density; source geometry retains the same unique-piece cap.
+            // Device-tile overlap scales with raster density. Retain the aggregate work
+            // guard while streaming only the current tile's unique geometry.
             _maximumWork = MaximumDashWork * Math.Max(1, pixelsPerUnit * pixelsPerUnit);
         }
+        internal void BeginTile() => _pieces.Clear();
         internal void Consume(int path, int segment, double cycle, int entry) {
-            // Unique geometry bounds memory; repeated tile regeneration also needs an aggregate work guard.
+            // Per-tile geometry bounds memory; repeated tiles share an aggregate work guard.
             if (++_work > _maximumWork) throw new InvalidOperationException("The stroke exceeds the raster dash-work limit.");
             // Tile bleed may revisit a dash. Its contour, segment and pattern identity remain unchanged.
             if (_pieces.Add((path, segment, cycle, entry)) && _pieces.Count > MaximumDashPieces)
