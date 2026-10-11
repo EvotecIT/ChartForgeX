@@ -5210,6 +5210,30 @@
       }
     },
     {
+      "name": "mermaid-source-font-size-c4-subtitle-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 5,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 490,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-source-font-size-fishbone",
       "layout": {
         "heightMode": "fixed",
@@ -5446,6 +5470,30 @@
         "minVisiblePixels": 188598,
         "minTransparentPixels": 2,
         "minDistinctColors": 748,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-requirement-subtitle-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 5,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268800,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 513,
         "maxEdgeInkPixels": 0
       }
     },

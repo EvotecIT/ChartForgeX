@@ -5,6 +5,8 @@ using ChartForgeX.VisualArtifacts;
 internal static class MermaidExamples {
     internal static void Write(string output) {
         var examples = new Dictionary<string, string> {
+            ["mermaid-source-font-size-c4-subtitle-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':32}}}%%\nC4Container\nContainer(api, \"API\", \"HTTP\", \"Service\")\n",
+            ["mermaid-source-font-size-requirement-subtitle-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nrequirementDiagram\nrequirement API {\n text: HTTP\n}\n",
             ["mermaid-source-font-size-group-header-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nflowchart LR\nsubgraph Service[Service group]\n A --> B\nend\n",
             ["mermaid-source-font-size-packet-narrow-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\npacket-beta\n0-1: \"ACK\"\n2-31: \"Payload\"\n",
             ["mermaid-source-font-size-axis-rotated-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':32}}}%%\nxychart-beta\nx-axis Month [September,October,November]\ny-axis Count 0 --> 100\nline [20,50,80]\n",

@@ -121,14 +121,15 @@ internal sealed partial class VisualTopologyCompiler {
                 paint: new VisualScenePaintBinding(stroke: GroupAccentPaint(callout.Group, leaderInk, active, leaderStyle.StrokeOpacity)));
             _builder.Rect(bounds, _colors.Surface, accent, _context.Theme.AxisStrokeWidth * _scale, _context.Theme.BarRadius * _scale, "topology-callout", paint: new VisualScenePaintBinding(CardPaint(_colors.Surface), GroupAccentPaint(callout.Group, accent, active)));
             BuildCalloutPreview(callout, accent, accentRole);
-            Text(callout.Label, Bounds(callout.X + 12, callout.Y + 8, callout.Width - 80, 24), _context.Theme.Typography.DataLabelSize, _colors.Foreground, 600, "topology-callout-title");
-            Text(callout.Subtitle, Bounds(callout.X + 12, callout.Y + 32, callout.Width - 80, 18), _context.Theme.Typography.DataLabelSize * .85, _colors.MutedForeground, 400, "topology-callout-subtitle", paint: MutedPaint(_colors.MutedForeground));
+            var fitText = _context.Theme.Typography.DataLabelSize > VisualTextFitting.MaximumOrdinaryFontSize;
+            Text(callout.Label, Bounds(callout.X + 12, callout.Y + 8, callout.Width - 80, 24), _context.Theme.Typography.DataLabelSize, _colors.Foreground, 600, "topology-callout-title", fitSingleLine: fitText);
+            Text(callout.Subtitle, Bounds(callout.X + 12, callout.Y + 32, callout.Width - 80, 18), _context.Theme.Typography.DataLabelSize * .85, _colors.MutedForeground, 400, "topology-callout-subtitle", paint: MutedPaint(_colors.MutedForeground), fitSingleLine: fitText);
             var counts = new[] { callout.HealthyCount, callout.WarningCount, callout.CriticalCount, callout.UnknownCount + callout.DisabledCount };
             var statuses = new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown };
             for (var i = 0; i < counts.Length; i++) {
                 var b = Bounds(callout.X + 12 + i * 42, callout.Y + 58, 36, 22);
                 using (PinnedState()) _builder.Rect(b, ChartColorMath.WithOpacity(Status(statuses[i]), .1), Status(statuses[i]), _context.Theme.AxisStrokeWidth * _scale, b.Height / 2, "topology-callout-status", paint: new VisualScenePaintBinding(StatusPaint(statuses[i], ChartColorMath.WithOpacity(Status(statuses[i]), .1), .1), StatusPaint(statuses[i], Status(statuses[i]))));
-                Text(counts[i].ToString(System.Globalization.CultureInfo.InvariantCulture), b, _context.Theme.Typography.DataLabelSize * .8, _colors.Foreground, 400, "topology-callout-count", centered: true);
+                Text(counts[i].ToString(System.Globalization.CultureInfo.InvariantCulture), b, _context.Theme.Typography.DataLabelSize * .8, _colors.Foreground, 400, "topology-callout-count", centered: true, fitSingleLine: fitText);
             }
             _builder.AddRegion(new VisualSemanticRegion(callout.Group.Id + "-callout", "topology-callout", bounds, callout.Label));
         }
