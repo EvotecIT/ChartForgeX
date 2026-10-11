@@ -80,17 +80,20 @@ public sealed class BlockTypographyCeilingTests {
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(2)]
-    public void ClassicVennSetIntersectionAndTextShareTheirSvgBaseline(int role) {
-        var theme = ChartTheme.Light(); theme.UseGraphiteLayout = false; theme.FontFamily = "Arial";
+    [InlineData(0, "Arial")]
+    [InlineData(1, "Arial")]
+    [InlineData(2, "Arial")]
+    [InlineData(0, "Segoe UI")]
+    [InlineData(1, "Segoe UI")]
+    [InlineData(2, "Segoe UI")]
+    public void ClassicVennSetIntersectionAndTextShareTheirSvgBaselineAndWidth(int role, string family) {
+        var theme = ChartTheme.Light(); theme.UseGraphiteLayout = false; theme.FontFamily = family;
         theme.DataLabelFontSize = 48;
         theme.Text = theme.MutedText = theme.Background = theme.CardBackground = theme.PlotBackground = ChartColor.Transparent;
         var red = ChartColor.FromHex("#FF0000");
         var block = VennDiagramBlock.Create().WithSize(600, 400).WithCard(false).WithTheme(theme).WithTransparentBackground()
             .AddSet("A", "MMMM", 60).AddSet("B", "NNNN", 50)
-            .AddIntersection(new[] { "A", "B" }, "MMMM", 10).AddText(new[] { "A" }, "note", "MMMM");
+            .AddIntersection(new[] { "A", "B" }, "MMMM", 10).AddText(new[] { "A" }, "note", "Data");
         if (role == 0) block.Sets[0].TextColor = red;
         else if (role == 1) block.Intersections[0].TextColor = red;
         else block.TextNodes[0].TextColor = red;
@@ -99,22 +102,25 @@ public sealed class BlockTypographyCeilingTests {
         var expected = RedInkRows(raster.Image); var actual = RedInkRows(block.RenderRgba());
         Assert.InRange(actual.Min - expected.Min, -2, 2);
         Assert.InRange(actual.Max - expected.Max, -2, 2);
+        Assert.InRange(actual.Left - expected.Left, -2, 2);
+        Assert.InRange(actual.Right - expected.Right, -2, 2);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(captures)) return;
         Directory.CreateDirectory(captures);
-        var name = "venn-baseline-role-" + role;
+        var name = "venn-baseline-role-" + role + "-" + family.Replace(' ', '-');
         File.WriteAllBytes(Path.Combine(captures, name + "-svg-raster.png"), SvgRasterizer.ToPng(block.ToSvg(), 600, 400));
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), block.ToPng());
     }
 
-    private static (int Min, int Max) RedInkRows(RgbaImage image) {
+    private static (int Min, int Max, int Left, int Right) RedInkRows(RgbaImage image) {
         var rows = new List<int>();
+        var columns = new List<int>();
         for (var y = 0; y < image.Height; y++)
             for (var x = 0; x < image.Width; x++) {
                 var offset = (y * image.Width + x) * 4;
-                if (image.Pixels[offset + 3] > 64 && image.Pixels[offset] > 200 && image.Pixels[offset + 1] < 20) { rows.Add(y); break; }
+                if (image.Pixels[offset + 3] > 64 && image.Pixels[offset] > 200 && image.Pixels[offset + 1] < 20) { rows.Add(y); columns.Add(x); }
             }
         Assert.NotEmpty(rows);
-        return (rows.Min(), rows.Max());
+        return (rows.Min(), rows.Max(), columns.Min(), columns.Max());
     }
 }
