@@ -58,6 +58,12 @@ internal sealed class VisualLegendEntry {
 /// <summary>Measures and paints one common frame before any family lays out its marks.</summary>
 internal static class VisualFrameLayout {
     internal static ChartRect Build(VisualSceneBuilder builder, VisualRenderContext context, IReadOnlyList<VisualLegendEntry> entries, VisualFramePaints? paints = null) {
+        return Build(builder, context, entries, out _, paints);
+    }
+
+    internal static ChartRect Build(VisualSceneBuilder builder, VisualRenderContext context, IReadOnlyList<VisualLegendEntry> entries,
+        out double legendHeight, VisualFramePaints? paints = null) {
+        legendHeight = 0;
         var size = context.Layout.Size;
         var colors = context.Theme.Resolve(context.ThemeMode);
         var typography = context.Theme.Typography;
@@ -141,6 +147,7 @@ internal static class VisualFrameLayout {
             var visible = rows.Count;
             if (omitted > 0) builder.AddDiagnostic(new VisualDiagnostic("frame.legend-overflow", "Some legend entries do not fit the resolved frame; all entries remain in descriptive regions."));
             var height = visible * lineHeight + titleHeight;
+            if (height > 0) legendHeight = height + legendGap;
             var x = position == ChartLegendPosition.Right ? right - legendWidth : left;
             var y = side || above ? top : bottom - height;
             using (builder.PushClip(new ChartRect(x, y, legendWidth, height))) {

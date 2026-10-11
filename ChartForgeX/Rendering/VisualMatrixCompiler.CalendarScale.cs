@@ -8,24 +8,30 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMatrixCompiler {
-    private static double CalendarScaleCaptionHeight(Chart chart, VisualSceneBuilder builder, ChartCalendarHeatmapModel model, TextStyle style) {
-        var height = builder.MeasureText(chart.Options.Labels.Less + " – " + chart.Options.Labels.More, style).Height;
-        if (model.EmptyDays > 0) height = Math.Max(height, builder.MeasureText(chart.Options.Labels.NoData, style).Height);
-        if (model.ZeroDays > 0) height = Math.Max(height, builder.MeasureText(ChartNumericFormatter.FormatValue(chart.Options, 0), style).Height);
+    private static double CalendarScaleCaptionHeight(Chart chart, VisualSceneBuilder builder, ChartCalendarHeatmapModel model, TextStyle style, ChartColorPresentation presentation) {
+        var height = builder.MeasureText(presentation.Labels.Less + " – " + presentation.Labels.More, style).Height;
+        if (model.EmptyDays > 0) height = Math.Max(height, builder.MeasureText(presentation.NoData, style).Height);
+        if (model.ZeroDays > 0) height = Math.Max(height, builder.MeasureText(presentation.Value(0), style).Height);
         return height;
     }
 
     /// <summary>Keeps measured special-bucket captions and the ordered intensity ramp in one centred key.</summary>
-    private static void CalendarScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartCalendarHeatmapModel model, ChartRect bounds) {
+    private static void CalendarScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartCalendarHeatmapModel model, ChartRect bounds, ChartColorPresentation presentation) {
         if (bounds.Width <= 0 || bounds.Height <= 0) return;
         var style = VisualStateSceneTools.TickStyle(chart, context); var colors = context.Theme.Resolve(context.ThemeMode);
+        var fullBounds = bounds;
+        if (presentation.HasName) {
+            VisualColorScaleLegendScene.Heading(builder, bounds, style, "calendar-scale", presentation.Name);
+            var heading = Math.Min(bounds.Height, VisualColorScaleLegendScene.HeadingHeight(builder, style, context.Theme.Spacing / 2, presentation.Name));
+            bounds = new ChartRect(bounds.Left, bounds.Top + heading, bounds.Width, Math.Max(0, bounds.Height - heading));
+        }
         var gap = context.Theme.Spacing / 2; var captionGap = context.Theme.Spacing / 3;
-        var rangeLabel = chart.Options.Labels.Less + " – " + chart.Options.Labels.More;
-        var zeroLabel = ChartNumericFormatter.FormatValue(chart.Options, 0);
-        var captionHeight = CalendarScaleCaptionHeight(chart, builder, model, style);
+        var rangeLabel = presentation.Labels.Less + " – " + presentation.Labels.More;
+        var zeroLabel = model.ZeroDays > 0 ? presentation.Value(0) : string.Empty;
+        var captionHeight = CalendarScaleCaptionHeight(chart, builder, model, style, presentation);
         var height = Math.Min(12, Math.Max(0, bounds.Height - captionHeight - captionGap));
         var special = (model.EmptyDays > 0 ? 1 : 0) + (model.ZeroDays > 0 ? 1 : 0);
-        var emptyWidth = model.EmptyDays > 0 ? Math.Max(12, builder.MeasureText(chart.Options.Labels.NoData, style).Width + gap) : 0;
+        var emptyWidth = model.EmptyDays > 0 ? Math.Max(12, builder.MeasureText(presentation.NoData, style).Width + gap) : 0;
         var zeroWidth = model.ZeroDays > 0 ? Math.Max(12, builder.MeasureText(zeroLabel, style).Width + gap) : 0;
         var rampWidth = Math.Max(120, builder.MeasureText(rangeLabel, style).Width);
         var wantedWidth = emptyWidth + zeroWidth + rampWidth + special * gap;
@@ -35,19 +41,19 @@ internal static partial class VisualMatrixCompiler {
         var left = bounds.Left + (bounds.Width - keyWidth) / 2;
         var textTop = bounds.Top + height + captionGap;
         var textHeight = Math.Max(0, bounds.Bottom - textTop);
-        if (height <= 0 || textHeight < captionHeight) builder.AddDiagnostic(new VisualDiagnostic("calendar.scale-overflow",
+        if (height <= 0 || textHeight + .000001 < captionHeight) builder.AddDiagnostic(new VisualDiagnostic("calendar.scale-overflow",
             "The calendar key does not fit at the configured text size; its complete captions and bucket values remain in descriptive regions."));
-        builder.AddRegion(new VisualSemanticRegion("calendar-scale", "calendar-scale", new ChartRect(left, bounds.Top, keyWidth, bounds.Height),
-            (model.EmptyDays > 0 ? chart.Options.Labels.NoData + "; " : "") + (model.ZeroDays > 0 ? zeroLabel + "; " : "") + rangeLabel));
+        builder.AddRegion(new VisualSemanticRegion("calendar-scale", "calendar-scale", presentation.HasName ? fullBounds : new ChartRect(left, bounds.Top, keyWidth, bounds.Height),
+            (model.EmptyDays > 0 ? presentation.NoData + "; " : "") + (model.ZeroDays > 0 ? zeroLabel + "; " : "") + rangeLabel));
         using (builder.PushGroup("calendar-scale", "calendar-scale")) {
             var index = 0;
-            if (model.EmptyDays > 0) Special(true, emptyWidth, chart.Options.Labels.NoData, "calendar-scale-empty", "calendar-scale-label");
+            if (model.EmptyDays > 0) Special(true, emptyWidth, presentation.NoData, "calendar-scale-empty", "calendar-scale-label");
             if (model.ZeroDays > 0) Special(false, zeroWidth, zeroLabel, "calendar-scale-zero-label", "calendar-scale-zero-label");
             var pitch = rampWidth / 5;
             for (var step = 0; step < 5; step++) {
                 var value = model.ScaleValue(step);
                 Tile(new ChartRect(left + step * pitch, bounds.Top, Math.Max(0, pitch - Math.Min(3, pitch / 4)), height),
-                    value, false, false, ChartNumericFormatter.FormatValue(chart.Options, value));
+                    value, false, false, presentation.Value(value));
             }
             VisualStateSceneTools.Text(builder, rangeLabel, new ChartRect(left, textTop, rampWidth, textHeight), style,
                 "calendar-scale-label", "calendar-scale-range", TextAlignment.Center);
@@ -64,6 +70,10 @@ internal static partial class VisualMatrixCompiler {
                 var metadata = new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(value),
                     ["data-cfx-empty"] = empty ? "true" : "false", ["data-cfx-zero"] = zero ? "true" : "false",
                     ["data-cfx-level"] = model.Level(value).ToString(CultureInfo.InvariantCulture) };
+                if (!empty && presentation.HasOverrides) {
+                    metadata["data-cfx-formatted-value"] = label;
+                    metadata["data-cfx-label-value"] = presentation.Name;
+                }
                 if (empty && chart.Options.PinStateColorsInForcedColors) metadata["data-cfx-pin-state-colors"] = "true";
                 using (VisualStateSceneTools.Mark(builder, "calendar-scale-" + index++, "calendar-scale-step", box, label, metadata))
                     if (height > 0) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));

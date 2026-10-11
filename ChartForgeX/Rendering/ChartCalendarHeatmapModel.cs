@@ -8,8 +8,8 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>
 /// Renderer-neutral days, weeks, colours, words, and cell geometry of a calendar heatmap, so SVG and PNG draw the
-/// same calendar. Weeks start on the series' first day of week; a day with the value zero is drawn neutral and the
-/// colour ramp starts at the smallest non-zero value.
+/// same calendar. Weeks start on the series' first day of week. Default coloring gives zero its own neutral paint;
+/// an explicit numeric scale instead maps every present value, including zero, over the complete observed domain.
 /// </summary>
 internal sealed class ChartCalendarHeatmapModel {
     private static readonly string[] InvariantDays = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
@@ -70,10 +70,10 @@ internal sealed class ChartCalendarHeatmapModel {
     /// <summary>Gets the number of drawn days without data.</summary>
     public int EmptyDays => Math.Max(0, TotalDays - FilledDays);
 
-    /// <summary>Gets the number of days at zero that are drawn neutral (see <see cref="IsZero"/>).</summary>
+    /// <summary>Gets the number of days at zero, independently of their configured paint.</summary>
     public int ZeroDays { get; }
 
-    /// <summary>Gets the number of days with a value: days with data that are not a neutral zero.</summary>
+    /// <summary>Gets the number of days with a non-zero value; zero days remain separately counted.</summary>
     public int ValueDays => FilledDays - ZeroDays;
 
     public static ChartCalendarHeatmapModel? Build(Chart chart) {
@@ -135,8 +135,9 @@ internal sealed class ChartCalendarHeatmapModel {
     public ChartColor Color(double value, ChartColor? pointColor) => Blend(value, pointColor).Color;
 
     /// <summary>Returns the colour of a day as a blend, for SVG colour variables (see <see cref="Color"/>).</summary>
-    public ChartColorBlend Blend(double value, ChartColor? pointColor) =>
-        IsZero(value) && !pointColor.HasValue ? ChartHeatmapSurface.ZeroBlend(Chart) : ChartHeatmapSurface.CalendarBlend(Chart, Series, pointColor, value, RampMin, Max);
+    public ChartColorBlend Blend(double value, ChartColor? pointColor) => Chart.Options.HeatmapColorScale != null
+        ? ChartHeatmapSurface.CalendarBlend(Chart, Series, pointColor, value, Min, Max)
+        : IsZero(value) && !pointColor.HasValue ? ChartHeatmapSurface.ZeroBlend(Chart) : ChartHeatmapSurface.CalendarBlend(Chart, Series, pointColor, value, RampMin, Max);
 
     /// <summary>Returns the intensity level: 0 for a neutral zero, otherwise 1 to 4 along the ramp.</summary>
     public int Level(double value) => IsZero(value) ? 0 : Math.Max(1, ChartHeatmapSurface.Level(ChartHeatmapSurface.CalendarRatio(value, RampMin, Max)));

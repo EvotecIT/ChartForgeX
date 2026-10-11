@@ -31,18 +31,39 @@ public sealed class MermaidThemeFontTests {
     }
 
     [Theory]
-    [InlineData(false, "Courier New, monospace")]
-    [InlineData(true, "Georgia, serif")]
-    public void VariableDeclarationsMergeInSourceOrderAndFamilyFontStillWins(bool familyOverride, string expected) {
+    [InlineData(false)]
+    [InlineData(true)]
+    public void VariableFontRetainsPriorityAndUnsupportedFamilyFontRetainsItsDiagnostic(bool familyOverride) {
+        const string expected = "Courier New, monospace";
         var source = "---\nconfig:\n  fontFamily: Arial\n  themeVariables:\n    fontFamily: Arial\n" +
             (familyOverride ? "  flowchart:\n    fontFamily: Georgia, serif\n" : string.Empty) +
             "---\n%%{init: {'themeVariables':{'fontFamily':'Courier New, monospace'}}}%%\n" +
             "%%{init: {'fontFamily':'Arial'}}%%\nflowchart LR\nA --> B";
         var rendered = MermaidRenderer.Render(source);
-        Assert.Empty(rendered.Diagnostics);
+        Assert.Equal(familyOverride ? 1 : 0, rendered.Diagnostics.Count);
+        Assert.All(rendered.Diagnostics, item => Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, item.Code));
         Assert.Equal(expected, rendered.Document!.Configuration.FontFamily);
         Assert.Equal(expected, Assert.IsType<TopologyChart>(rendered.Artifact!.Model).Theme!.FontFamily);
         Assert.Contains(rendered.Document.Configuration.Settings, item => item.Path == "themeVariables.fontFamily" && item.Span.Line == 5);
+    }
+
+    [Theory]
+    [InlineData("'fontFamily':'Arial','themeVariables':{'fontFamily':'Georgia'}")]
+    [InlineData("'themeVariables':{'fontFamily':'Georgia'},'fontFamily':'Arial'")]
+    public void VariableFontWinsInsideOneDirectiveRegardlessOfPropertyOrder(string settings) {
+        var rendered = MermaidRenderer.Render("%%{init: {" + settings + "}}%%\nflowchart LR\nA --> B");
+        Assert.Empty(rendered.Diagnostics);
+        Assert.Equal("Georgia", rendered.Document!.Configuration.FontFamily);
+    }
+
+    [Fact]
+    public void SharedLayeredFontFixtureKeepsAuthoredVariablesAndAppliesTheReferenceEffectiveFont() {
+        var root = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures");
+        using var expected = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "theme-variable-font-layers.expected.json")));
+        var rendered = MermaidRenderer.Render(File.ReadAllText(Path.Combine(root, "theme-variable-font-layers.mmd")));
+        Assert.Empty(rendered.Diagnostics);
+        Assert.Equal(expected.RootElement.GetProperty("configuration").GetProperty("themeVariables.fontFamily").GetString(), rendered.Document!.Configuration.FontFamily);
+        Assert.Equal("Georgia", rendered.Document.Configuration.Settings.Last(item => item.Path == "themeVariables.fontFamily").Value);
     }
 
     [Theory]

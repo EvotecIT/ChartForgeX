@@ -11,11 +11,11 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Native hierarchy marks use the canonical numeric layouts and retained, measured labels.</summary>
 internal static partial class VisualHierarchyCompiler {
-    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
+    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors, ChartColorPresentationSet? colorScales = null) {
         var series = chart.Series[0];
         if (!series.ShowInLegend) return Array.Empty<VisualLegendEntry>();
         if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
-            var surface = new ChartHierarchySurface(chart, colors);
+            var surface = (colorScales ??= new ChartColorPresentationSet(chart)).HierarchySurface(colors);
             if (surface.Scale != null && surface.ShowLegend) return Array.Empty<VisualLegendEntry>();
             if (series.Kind == ChartSeriesKind.Treemap && chart.Options.ShowPointLegend) return series.HierarchyItems.Select((item, index) => (item, index))
                 .Where(entry => series.Relationships!.Children(entry.index).Count == 0)
@@ -32,7 +32,7 @@ internal static partial class VisualHierarchyCompiler {
             series.FillPattern, series.StateRole, series.InteractionIdentityKey, paint: VisualChartPaint.Series(series, color)) };
     }
 
-    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
+    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartColorPresentationSet? colorScales = null) {
         if (chart.Series.Count != 1) throw new InvalidOperationException("Prepared hierarchy charts require one series.");
         var series = chart.Series[0];
         if (!series.HasSourceData) { builder.AddDiagnostic(new VisualDiagnostic("hierarchy.no-data", "The hierarchy has no observations.")); return; }
@@ -44,19 +44,20 @@ internal static partial class VisualHierarchyCompiler {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name,
             ["data-cfx-kind"] = series.Kind.ToString(), ["data-cfx-state"] = series.StateRole.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty
         };
-        if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
-            var surface = new ChartHierarchySurface(chart, colors);
-            metadata["data-cfx-label-color"] = surface.Title ?? chart.Options.Labels.Color;
-            metadata["data-cfx-label-no-data"] = chart.Options.Labels.NoData;
+        var hierarchySurface = series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst ? (colorScales ??= new ChartColorPresentationSet(chart)).HierarchySurface(colors) : null;
+        if (hierarchySurface != null) {
+            var surface = hierarchySurface;
+            metadata["data-cfx-label-color"] = surface.Title;
+            metadata["data-cfx-label-no-data"] = surface.Presentation.NoData;
             metadata["data-cfx-label-authored-value"] = chart.Options.Labels.AuthoredValue;
             metadata["data-cfx-label-remainder"] = chart.Options.Labels.Remainder;
         }
         if (series.Kind == ChartSeriesKind.Sunburst) metadata["data-cfx-parent-value-policy"] = chart.Options.Sunburst.ParentValuePolicy.ToString();
         using (builder.PushGroup("series-0", "hierarchy-series", metadata)) {
-            if (series.Kind == ChartSeriesKind.Treemap) Treemap(chart, context, builder, plot, colors);
+            if (series.Kind == ChartSeriesKind.Treemap) Treemap(chart, context, builder, plot, colors, hierarchySurface!);
             else {
                 if (series.Kind == ChartSeriesKind.Tree) Tree(chart, context, builder, plot, colors);
-                else if (series.Kind == ChartSeriesKind.Sunburst) Sunburst(chart, context, builder, plot, colors);
+                else if (series.Kind == ChartSeriesKind.Sunburst) Sunburst(chart, context, builder, plot, colors, hierarchySurface!);
                 else throw new NotSupportedException("Unknown hierarchy family.");
             }
         }
