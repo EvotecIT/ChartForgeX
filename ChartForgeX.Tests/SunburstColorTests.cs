@@ -99,7 +99,7 @@ public sealed class SunburstColorTests {
         var themed = NodesFromSvg(prepared.ToSvg(new VisualSvgOptions("colors", variables)));
         Assert.Contains("var(--ramp-high,", (string?)Mark(themed["band"]).Attribute("fill"));
         Assert.Contains("var(--explicit,", (string?)Mark(themed["custom"]).Attribute("fill"));
-        var svg = prepared.ToSvg(); chart.Options.Sunburst.ColorScale = null; chart.Options.Sunburst.ColorLegendTitle = "Changed";
+        var svg = prepared.ToSvg(); chart.Options.Sunburst.ColorScale = null; chart.Options.Sunburst.ColorDimension.Name = "Changed";
         chart.Series[0].WithNodeState("band", ChartSeriesState.None);
         Assert.Equal(svg, prepared.ToSvg());
     }

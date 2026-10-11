@@ -77,6 +77,19 @@ chart.SaveInteractiveHtml("observations.html", options => {
 
 `HtmlInteractiveDashboardOptions.Tooltip` and `.Crosshair` apply the same settings to every child chart. Replace the former flat `TooltipMode` property with `Tooltip.Mode` when migrating existing adapter configuration.
 
+`Crosshair.Stroke`, `StrokeWidth` and `LineStyle` override both guide lines. Each defaults to null, retaining the existing appearance: ordinary charts use solid blue guides with a soft glow, while Graphite uses dashed guides in the axis color. Explicit styling uses crisp strokes without glow. Widths are finite, non-negative CSS pixels; zero width or a transparent stroke hides the lines while retaining the guide label, target identity and notifications. The line styles are `Solid`, `Dashed` and `Dotted`.
+
+```csharp
+chart.SaveInteractiveHtml("readings.html", options => {
+    options.Crosshair.Stroke = ChartColor.FromRgb(14, 116, 144);
+    options.Crosshair.StrokeWidth = 2;
+    options.Crosshair.LineStyle = HtmlChartCrosshairLineStyle.Dotted;
+    options.Crosshair.ShowLabel = false;
+});
+```
+
+These paint options do not enable crosshairs, change tooltip acquisition or alter native SVG and PNG exports. Dashboard children receive the same settings. `HtmlCrosshairExamples.CreatePage` and the Graphite gallery provide executable examples of all three patterns in light and dark palettes.
+
 Set `Tooltip.DelayMilliseconds` to reduce transient pointer readouts when scanning a chart. Its default is `0`, so tooltips appear immediately. The delay accepts non-negative integers and starts once for each acquired target; movement within that target updates the eventual position without postponing it. Switching targets or acquiring with a new pointer contact starts a new delay. Events from an older contact do not move or dismiss the newer contact's readout. Leaving, resetting, hiding or removing the chart, or making the target unavailable cancels a pending readout. Content and painted availability are checked again when the delay expires.
 
 ```csharp
@@ -225,6 +238,8 @@ chart.dispatchEvent(new CustomEvent('cfx-clear-scenario'));
 These commands preserve the same host events, deep-link updates, synchronized chart behavior, focus trails, and reveal labels as the built-in controls.
 
 ## State Bookmarks
+
+The current zoom and pan controls transform the complete rendered SVG, including its axes and labels. They do not change data domains or regenerate ticks. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
 
 Enable `ChartInteractionFeatures.StateBookmarks` when a host wants to save and replay user exploration state. The adapter captures only reusable chart state:
 

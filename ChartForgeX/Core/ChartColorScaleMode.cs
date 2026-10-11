@@ -2,7 +2,7 @@ namespace ChartForgeX.Core;
 
 /// <summary>Describes how a numeric color scale selects its colors.</summary>
 public enum ChartColorScaleMode {
-    /// <summary>Interpolates evenly between ordered color stops.</summary>
+    /// <summary>Interpolates between ordered continuous color stops.</summary>
     Sequential,
     /// <summary>Interpolates independently on each side of a midpoint stop.</summary>
     Diverging,
