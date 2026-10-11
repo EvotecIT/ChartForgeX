@@ -38,6 +38,8 @@
         if (mark) {
           data.cfxLabel = mark.dataset.cfxLabel || data.cfxLabel;
           if (mark.dataset.cfxValue !== undefined) data.cfxValue = mark.dataset.cfxValue;
+          if (mark.dataset.cfxFormattedValue !== undefined) data.cfxFormattedValue = mark.dataset.cfxFormattedValue;
+          if (mark.dataset.cfxLabelValue !== undefined) data.cfxLabelValue = mark.dataset.cfxLabelValue;
         }
       }
       if (match && match[2] !== undefined) {
