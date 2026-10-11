@@ -30,6 +30,7 @@ public sealed partial class MermaidParser {
         var scalarIndent = -1;
         var flowDepth = 0;
         var flowQuote = '\0';
+        var scalarState = ConfigurationFlowScalar.Node;
         var rootFlow = false;
         void Count(string line) { length += line.Length + (length > 0 ? 1L : 0L); }
         for (var index = 0; index < lines.Length; index++) {
@@ -38,7 +39,7 @@ public sealed partial class MermaidParser {
             var indent = ConfigurationYamlIndent(line);
             if (flowDepth > 0) {
                 if (flowQuote != '\0' || trimmed.Length > 0 && !trimmed.StartsWith("#", StringComparison.Ordinal)) Count(line);
-                ScanConfigurationYamlFlow(line, ref flowDepth, ref flowQuote);
+                ScanConfigurationYamlFlow(line, ref flowDepth, ref flowQuote, ref scalarState);
                 if (flowDepth <= 0 && rootFlow) inConfiguration = false;
             } else if (scalarIndent >= 0 && (trimmed.Length == 0 || indent > scalarIndent)) Count(line);
             else {
@@ -67,8 +68,8 @@ public sealed partial class MermaidParser {
                     scalarIndent = separator.Success ? ownerIndent : indent;
                 else if (value.StartsWith("{", StringComparison.Ordinal) || value.StartsWith("[", StringComparison.Ordinal)) {
                     rootFlow = indent == rootIndent && ConfigurationYamlKey(mapping) == "config";
-                    flowQuote = '\0';
-                    ScanConfigurationYamlFlow(value, ref flowDepth, ref flowQuote);
+                    flowQuote = '\0'; scalarState = ConfigurationFlowScalar.Node;
+                    ScanConfigurationYamlFlow(value, ref flowDepth, ref flowQuote, ref scalarState);
                     if (flowDepth <= 0 && rootFlow) inConfiguration = false;
                 }
             }

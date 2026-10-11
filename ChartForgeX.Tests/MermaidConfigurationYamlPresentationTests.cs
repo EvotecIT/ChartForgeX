@@ -33,10 +33,32 @@ public sealed class MermaidConfigurationYamlPresentationTests {
     [InlineData("config:\n  other: {'message':'before\n    ", "\n    after'}")]
     [InlineData("config: ['before\n  #", "\n  after']")]
     [InlineData("config: &defaults ['before\n  ", "\n  after']")]
+    [InlineData("config: [!custom 'before\n  #", "\n  after']")]
+    [InlineData("config: [&defaults \"before\n  ", "\n  after\"]")]
+    [InlineData("config:\n  other: {note: !<tag:example.com,2000:app> 'before\n    #", "\n    after'}")]
     public void OpaqueYamlNodeKindsCannotBypassPhysicalScalarAccounting(string prefix, string suffix) {
         var result = MermaidRenderer.Render("---\n" + prefix + new string(' ', 70000) + suffix + "\n---\nflowchart LR\nA --> B");
         Assert.True(result.HasErrors); Assert.Null(result.Artifact);
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
+    }
+
+    [Theory]
+    [InlineData("config: [key:'value]\n")]
+    [InlineData("config: [key:\"value]\n")]
+    [InlineData("config: [O'Reilly]\n")]
+    [InlineData("config: [!custom O'Reilly]\n")]
+    [InlineData("config: [!<tag:example.com,2000:app> 'short']\n")]
+    [InlineData("config: [&defaults \"short\"]\n")]
+    [InlineData("config: [Arial\"serif]\n")]
+    [InlineData("config:\n  other: {note: O'Reilly}\n")]
+    [InlineData("config:\n  other: {note: Arial\"serif}\n")]
+    [InlineData("config: &defaults [plain\n  O'Reilly]\n")]
+    [InlineData("config: [https://example.test/O'Reilly]\n")]
+    public void QuotesInsideOpaquePlainScalarsDoNotConsumeFollowingMetadata(string configuration) {
+        var source = "---\n" + configuration + "description: " + new string('x', 70000) + "\n---\nflowchart LR\nA --> B";
+        var result = MermaidRenderer.Render(source);
+        Assert.False(result.HasErrors); Assert.NotNull(result.Artifact);
+        Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
     }
 
     [Theory]
