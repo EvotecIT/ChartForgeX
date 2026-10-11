@@ -16,6 +16,7 @@ internal static partial class ChartTimeScale {
         // Milliseconds are epoch intervals, so display-zone offsets must not move their boundaries.
         var zone = interval.Unit == ChartTimeTickUnit.Millisecond ? TimeZoneInfo.Utc : axis.TimeZone ?? TimeZoneInfo.Utc;
         try {
+            if (interval.Unit == ChartTimeTickUnit.Hour) return GenerateFixedHours(zone, min, max, interval.Count);
             var localMin = ToLocal(min, zone); var localMax = ToLocal(max, zone);
             var walkMin = localMin - RepeatedHourWidth(localMin, zone);
             var walkMax = localMax + RepeatedHourWidth(localMax, zone);
@@ -61,7 +62,8 @@ internal static partial class ChartTimeScale {
                 break;
             default: floor = new DateTime(value.Year, (value.Month - 1) / count * count + 1, 1); break;
         }
-        return floor >= value ? floor : FixedNext(floor, interval);
+        var comparable = interval.Unit >= ChartTimeTickUnit.Day ? NormalizeCalendarBoundary(floor, zone) : floor;
+        return comparable >= value ? floor : FixedNext(floor, interval);
     }
 
     private static DateTime? FixedNext(DateTime value, ChartTimeTickInterval interval) {

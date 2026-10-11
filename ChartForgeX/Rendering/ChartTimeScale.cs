@@ -160,7 +160,11 @@ internal static partial class ChartTimeScale {
 
     private static void ResolveInstants(DateTime local, TimeZoneInfo zone, TimeInterval interval, List<DateTime> instants) {
         instants.Clear();
-        if (local.Year < MinimumYear || zone.IsInvalidTime(local)) return;
+        if (local.Year < MinimumYear) return;
+        if (zone.IsInvalidTime(local)) {
+            if (interval.Unit <= TimeUnit.Hour) return;
+            local = NormalizeCalendarBoundary(local, zone);
+        }
         if (!zone.IsAmbiguousTime(local)) {
             instants.Add(TimeZoneInfo.ConvertTimeToUtc(local, zone));
             return;

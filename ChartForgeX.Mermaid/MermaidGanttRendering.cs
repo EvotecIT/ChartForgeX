@@ -20,9 +20,9 @@ public static class MermaidGanttRendering {
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height);
-        chart.Options.GanttTickLabelFormatter = (value, effectiveInterval) => FormatAxisValue(value, document, effectiveInterval, chart.Options.XAxis.TimeZone);
         if (!string.IsNullOrWhiteSpace(document.AxisFormat))
             chart.WithXAxisValueFormatter(value => FormatAxisValue(value, document, null, chart.Options.XAxis.TimeZone));
+        chart.Options.XAxis.TimeTickLabelFormatter = (value, effectiveInterval) => FormatAxisValue(value, document, effectiveInterval, chart.Options.XAxis.TimeZone);
         if (options.Today.HasValue && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase)) chart.WithGanttToday(options.Today.Value);
         chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
         foreach (var task in document.Tasks) {
