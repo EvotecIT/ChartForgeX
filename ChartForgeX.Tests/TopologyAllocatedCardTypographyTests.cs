@@ -11,6 +11,22 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyAllocatedCardTypographyTests {
     [Theory]
+    [InlineData("Arial")]
+    [InlineData("Inter, Segoe UI, system-ui, sans-serif")]
+    public async Task CompactPillSubtitleRetainsReadableOrdinaryTypography(string font) {
+        var theme = TopologyTheme.Light(); theme.Typography = new VisualTypography(font, dataLabelSize: 12);
+        var chart = TopologyChart.Create().WithTheme(theme).WithViewport(240, 160, 16)
+            .AddNode("region", "AMER", 50, 60, kind: TopologyNodeKind.Hub, width: 104, height: 34, subtitle: "47 sites")
+            .WithNodeDisplay("region", TopologyNodeDisplayMode.Pill);
+        var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false };
+        var svg = chart.ToSvg(options); var xml = XDocument.Parse(svg);
+        var subtitle = Assert.Single(RoleText(xml, "topology-node-subtitle"));
+        Assert.Equal("47 sites", subtitle.Value);
+        Assert.True((double)subtitle.Attribute("font-size")! >= 8);
+        await Capture(svg, chart.ToPng(options), "ordinary-pill-subtitle-" + (font == "Arial" ? "arial" : "system"));
+    }
+
+    [Theory]
     [InlineData(32)]
     [InlineData(256)]
     public async Task GeographicCalloutsRetainTheirFixedHeightText(int size) {
