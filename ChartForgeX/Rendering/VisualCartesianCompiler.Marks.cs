@@ -87,7 +87,7 @@ internal static partial class VisualCartesianCompiler {
             var fill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, pointIndex, pointColor, pointPaint) : ((ChartColor Color, SvgPaint Paint)?)null;
             AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
                 calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null,
-                markFill: fill?.Color, markFillPaint: fill?.Paint);
+                horizontal: horizontal, markFill: fill?.Color, markFillPaint: fill?.Paint);
         }
     }
 

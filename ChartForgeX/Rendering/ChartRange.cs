@@ -23,14 +23,14 @@ internal sealed class ChartRange {
         var barXValues = new List<double>();
         var bubbleXValues = new List<double>();
         var horizontalBarYValues = new List<double>();
-        var hasHorizontalBars = false;
+        var hasHorizontalSeries = false;
         var usesHorizontalBaseline = false;
         var usesVerticalBaseline = false;
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
             if (series.Kind == ChartSeriesKind.Waterfall) {
                 var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
-                if (horizontal) { hasHorizontalBars = true; usesHorizontalBaseline = true; }
+                if (horizontal) { hasHorizontalSeries = true; usesHorizontalBaseline = true; }
                 var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
                 foreach (var step in ChartWaterfallSteps.Create(series)) {
                     if (horizontal) {
@@ -130,12 +130,11 @@ internal sealed class ChartRange {
             for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
                 var p = series.Points[pointIndex];
                 if (ChartCartesianOrientation.IsHorizontalLine(chart, series)) {
-                    hasHorizontalBars = true;
-                    horizontalBarYValues.Add(p.X);
+                    hasHorizontalSeries = true;
                     range.IncludeX(p.Y);
                     range.IncludeY(p.X);
                 } else if (ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
-                    hasHorizontalBars = true;
+                    hasHorizontalSeries = true;
                     usesHorizontalBaseline = true;
                     horizontalBarYValues.Add(p.X);
                     range.IncludeX(stacks.Point(seriesIndex, pointIndex).End);
@@ -168,15 +167,16 @@ internal sealed class ChartRange {
         if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon && horizontalBarYValues.Count == 0) range.MaxY = range.MinY + 1;
         range.ApplyBarPadding(barXValues, chart.Options.XAxis);
         range.ApplyHorizontalBarPadding(horizontalBarYValues);
-        if (!hasHorizontalBars) {
+        if (!hasHorizontalSeries) {
             if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(chart.Options.YAxis);
             range.ApplyVerticalPadding(chart.Options.YAxis);
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
 
         range.ApplyBarPadding(bubbleXValues, chart.Options.XAxis);
-        if (hasHorizontalBars) {
+        if (hasHorizontalSeries) {
             if (usesHorizontalBaseline) range.ApplyLogarithmicXBaseline(chart.Options.XAxis);
+            else (range.MinX, range.MaxX) = PaddedValueBounds(range.MinX, range.MaxX, chart.Options.XAxis);
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
         if (applyOptionBounds) range.ApplyXAxisOptions(chart);
@@ -319,17 +319,20 @@ internal sealed class ChartRange {
         || kind == ChartSeriesKind.RangeBar || kind == ChartSeriesKind.BoxPlot || kind == ChartSeriesKind.Lollipop || kind == ChartSeriesKind.Slope;
 
     private void ApplyVerticalPadding(ChartAxis axis) {
-        if (axis.Scale == ChartScaleKind.Logarithmic) return;
-        var padY = (MaxY - MinY) * .08;
-        if (!ChartMath.IsFinite(padY)) return;
-        if (axis.Scale == ChartScaleKind.Time) {
-            if (ChartMath.IsFinite(MinY - padY)) MinY -= padY;
-            if (ChartMath.IsFinite(MaxY + padY)) MaxY += padY;
-            return;
-        }
+        (MinY, MaxY) = PaddedValueBounds(MinY, MaxY, axis);
+    }
 
-        if (MinY > 0) MinY = 0;
-        if (ChartMath.IsFinite(MaxY + padY)) MaxY += padY;
+    private static (double Minimum, double Maximum) PaddedValueBounds(double minimum, double maximum, ChartAxis axis) {
+        if (axis.Scale == ChartScaleKind.Logarithmic) return (minimum, maximum);
+        var padding = (maximum - minimum) * .08;
+        if (!ChartMath.IsFinite(padding)) return (minimum, maximum);
+        if (axis.Scale == ChartScaleKind.Time) {
+            if (ChartMath.IsFinite(minimum - padding)) minimum -= padding;
+        } else if (minimum > 0) {
+            minimum = 0;
+        }
+        if (ChartMath.IsFinite(maximum + padding)) maximum += padding;
+        return (minimum, maximum);
     }
 
     private static bool UsesZeroBaseline(ChartAxis axis) => axis.Scale != ChartScaleKind.Logarithmic && axis.Scale != ChartScaleKind.Time;
@@ -354,7 +357,7 @@ internal sealed class ChartRange {
         var spacing = double.PositiveInfinity;
         for (var i = 1; i < xValues.Count; i++) {
             var delta = xValues[i] - xValues[i - 1];
-            if (delta > 0.000001 && delta < spacing) spacing = delta;
+            if (delta > 0 && delta < spacing) spacing = delta;
         }
 
         if (double.IsInfinity(spacing)) spacing = 1;
@@ -374,7 +377,7 @@ internal sealed class ChartRange {
         var spacing = double.PositiveInfinity;
         for (var i = 1; i < yValues.Count; i++) {
             var delta = yValues[i] - yValues[i - 1];
-            if (delta > 0.000001 && delta < spacing) spacing = delta;
+            if (delta > 0 && delta < spacing) spacing = delta;
         }
 
         if (double.IsInfinity(spacing)) spacing = 1;

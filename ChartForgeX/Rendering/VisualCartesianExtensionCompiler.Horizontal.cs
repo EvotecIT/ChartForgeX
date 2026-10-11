@@ -62,7 +62,7 @@ internal static partial class VisualCartesianCompiler {
             TimeZone = x.TimeZone, TimeZoneLabel = x.TimeZoneLabel, ShowTimeZone = x.ShowTimeZone,
             ValueFormat = x.ValueFormat ?? (ReferenceEquals(chart.Options.ValueFormat, ChartValueFormat.ExistingValue) ? null : chart.Options.ValueFormat) };
         var waterfall = chart.Series.Any(series => series.Kind == ChartSeriesKind.Waterfall);
-        var categoryAxis = new ChartAxis { Scale = y.Scale, LabelAngle = y.LabelAngle, LabelDensity = y.LabelDensity,
+        var categoryAxis = new ChartAxis { Scale = y.Scale, TickCount = y.TickCount, LabelAngle = y.LabelAngle, LabelDensity = y.LabelDensity,
             TimeZone = y.TimeZone, TimeZoneLabel = y.TimeZoneLabel, ShowTimeZone = y.ShowTimeZone,
             ValueFormat = y.ValueFormat ?? (waterfall ? null : x.ValueFormat) };
         var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
@@ -71,15 +71,18 @@ internal static partial class VisualCartesianCompiler {
         return (valueAxis, categoryAxis);
     }
 
-    private static IReadOnlyList<double> HorizontalCategories(Chart chart, ChartRange range) => chart.Series.SelectMany(ChartCartesianOrientation.Categories)
-        .Where(value => value >= range.MinY && value <= range.MaxY).Distinct().OrderBy(value => value).ToArray();
+    private static IReadOnlyList<double> HorizontalCategoryTicks(Chart chart, ChartRange range, ChartAxis axis) =>
+        chart.Series.All(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
+            ? ChartTicks.ForAxis(axis, range.MinY, range.MaxY)
+            : chart.Series.SelectMany(ChartCartesianOrientation.Categories)
+                .Where(value => value >= range.MinY && value <= range.MaxY).Distinct().OrderBy(value => value).ToArray();
 
     private static ChartRect MeasureHorizontalPlot(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
         ChartRange range, VisualThemeColors colors, AxisLabelCache cache) {
         if (!chart.Options.ShowAxes) return viewport;
         var axes = HorizontalAxes(chart, cache); var spacing = context.Theme.Spacing;
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
-        var categories = HorizontalCategories(chart, range); var widest = 0d;
+        var categories = HorizontalCategoryTicks(chart, range, axes.Category); var widest = 0d;
         foreach (var category in categories) widest = Math.Max(widest, VisualAxisText.RotatedMetrics(builder.MeasureText(cache.Format(axes.Category, category, null, categories), style), axes.Category.LabelAngle).Width);
         var left = chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .35, widest + spacing) : 0;
         var bottom = chart.Options.XAxis.Visible ? TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache).Height + spacing : 0;
@@ -93,7 +96,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawHorizontalAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartRange range, ChartMapper map, VisualThemeColors colors, ChartRect viewport, AxisLabelCache cache, double categoryLabelRight) {
-        var axes = HorizontalAxes(chart, cache); var xTicks = ChartTicks.ForAxis(axes.Value, range.MinX, range.MaxX); var categories = HorizontalCategories(chart, range);
+        var axes = HorizontalAxes(chart, cache); var xTicks = ChartTicks.ForAxis(axes.Value, range.MinX, range.MaxX); var categories = HorizontalCategoryTicks(chart, range, axes.Category);
         var spacing = context.Theme.Spacing;
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle(); var width = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
