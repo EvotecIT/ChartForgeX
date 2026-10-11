@@ -144,23 +144,19 @@ internal sealed partial class RgbaCanvas {
             var edge = edges[next];
             if (edge.Bottom <= scanY) continue;
             var crossing = new FillIntersection(edge.X + (scanY - edge.Top) * edge.Slope, edge.Winding, edge.SecondShape);
-            var j = crossings.Count - 1;
             crossings.Add(crossing);
             active.Add(next);
-            while (j >= existing && comparer.Compare(crossings[j], crossing) > 0) {
-                crossings[j + 1] = crossings[j];
-                active[j + 1] = active[j];
-                j--;
-            }
-
-            crossings[j + 1] = crossing;
-            active[j + 1] = next;
         }
 
         var added = crossings.Count - existing;
-        if (added == 0 || existing == 0) return;
-        var startedCrossings = crossings.GetRange(existing, added);
-        var startedEdges = active.GetRange(existing, added);
+        if (added == 0) return;
+        // Equal top-Y edges are not ordered by x. Sorting the batch once avoids quadratic
+        // insertion work for dense caps while retaining the same x/winding ordering.
+        var startedCrossings = new FillIntersection[added];
+        var startedEdges = new int[added];
+        crossings.CopyTo(existing, startedCrossings, 0, added);
+        active.CopyTo(existing, startedEdges, 0, added);
+        Array.Sort(startedCrossings, startedEdges, comparer);
         var left = existing - 1;
         var right = added - 1;
         for (var write = crossings.Count - 1; right >= 0; write--) {

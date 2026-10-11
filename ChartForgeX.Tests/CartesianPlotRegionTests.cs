@@ -8,7 +8,7 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-public sealed class CartesianPlotRegionTests {
+public sealed partial class CartesianPlotRegionTests {
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
