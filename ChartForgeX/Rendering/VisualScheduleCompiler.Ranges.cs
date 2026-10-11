@@ -33,8 +33,11 @@ internal static partial class VisualScheduleCompiler {
             ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null;
         var ticks = fixedTicks ?? ChartTicks.ForAxis(axis, min, max);
         var milliseconds = fixedTicks != null && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
+        var effectiveInterval = fixedTicks == null ? (ChartTimeTickUnit?)null : chart.Options.GanttTickInterval?.Unit;
         var formatTick = ChartAxisValueFormatter.Create(axis, ticks,
-            axis.Scale == ChartScaleKind.Time ? tick => ChartTimeScale.Format(axis, tick, milliseconds) : chart.Options.ValueFormatter, chart.Options);
+            axis.Scale == ChartScaleKind.Time ? tick => gantt && chart.Options.GanttTickLabelFormatter != null
+                ? chart.Options.GanttTickLabelFormatter(tick, effectiveInterval)
+                : ChartTimeScale.Format(axis, tick, milliseconds) : chart.Options.ValueFormatter, chart.Options);
         var tickLabels = ticks.ToDictionary(value => value, formatTick);
         string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : formatTick(value);
         var layout = LaneLayout(chart, context, builder, viewport, chart.Series.Select(series => series.Name), Array.Empty<string>(), false,
