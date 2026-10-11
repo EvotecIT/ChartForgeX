@@ -34,6 +34,27 @@ public sealed class MermaidConfigurationFlowQuoteTests {
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration);
     }
 
+    [Theory]
+    [InlineData("\"Arial\tserif\"", "Arial\tserif")]
+    [InlineData("\"Arial\\\tserif\"", "Arial\tserif")]
+    [InlineData("\"Arial\\\\\tserif\"", "Arial\\\tserif")]
+    public void RootFlowDoubleQuotedTabsMatchBlockYamlAndPreservePropertySpans(string literal, string expected) {
+        var declaration = "\"fontFamily\":" + literal;
+        var parsed = new MermaidParser().Parse("---\nconfig: {\n  " + declaration + "\n}\n---\nflowchart LR\nA --> B");
+        Assert.False(parsed.HasErrors);
+        Assert.Equal(expected, parsed.Document!.Configuration.FontFamily);
+        var setting = Assert.Single(parsed.Document.Configuration.Settings);
+        Assert.Equal(new MermaidSourceSpan(3, 3, declaration.Length), setting.Span);
+    }
+
+    [Fact]
+    public void LegacyDirectiveRejectsBackslashEscapedLiteralTabs() {
+        var result = MermaidRenderer.Render("%%{init: {\"fontFamily\":\"Arial\\\tserif\"}}%%\nflowchart LR\nA --> B");
+        Assert.True(result.HasErrors);
+        Assert.Null(result.Artifact);
+        Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration);
+    }
+
     [Fact]
     public void LegacyDirectiveSingleQuotesKeepTheirExistingJsonEscapeSemantics() {
         var parsed = new MermaidParser().Parse("%%{init: {'fontFamily':'Arial\\'s \\tserif'}}%%\nflowchart LR\nA --> B");
