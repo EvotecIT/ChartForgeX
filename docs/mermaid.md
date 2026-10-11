@@ -900,7 +900,7 @@ Native C# radar charts keep their polygon default and can select circular guides
 
 Static SVG and PNG share the same radar path geometry. Circular graticules, including the default, select closed cubic curves with tension `0.17`; polygonal graticules select straight edges.
 
-Set `config.radar.curveTension` to a finite number from zero through one in frontmatter or an init directive. Zero draws straight edges; larger values increase the tangent length between observations. Polygonal source graticules keep straight edges regardless of this source setting. Invalid values produce a located configuration error. Direct native radar series keep straight edges by default.
+Set `config.radar.curveTension` to a finite number from zero through one in frontmatter or an init directive. Zero draws straight edges; larger values increase the tangent length between observations. Polygonal source graticules keep straight edges regardless of this source setting and report a located warning that the setting is retained without being applied. Invalid values produce a located configuration error. Direct native radar series keep straight edges by default.
 
 ```yaml
 ---

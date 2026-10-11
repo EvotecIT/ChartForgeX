@@ -166,6 +166,15 @@ public sealed partial class MermaidParser {
         }
     }
 
+    private static void ReportRadarCurvePolicy(MermaidDocument document, MermaidParseResult<MermaidDocument> result) {
+        if (!(document is MermaidRadarDocument radar) || !string.Equals(radar.Graticule, "polygon", StringComparison.OrdinalIgnoreCase)
+            || !document.Configuration.RadarCurveTension.HasValue) return;
+        var setting = document.Configuration.Last("radar.curveTension")!;
+        Add(result, setting.Span.Line, setting.Span.Column, setting.Span.Length, MermaidDiagnosticSeverity.Warning,
+            "Mermaid source configuration 'radar.curveTension' is retained but polygon graticules use straight curves unless a host override is supplied.",
+            MermaidDiagnosticCodes.UnsupportedConfiguration);
+    }
+
     private static string? ConfigurationScope(MermaidDiagramKind kind) => kind switch {
         MermaidDiagramKind.Flowchart => "flowchart", MermaidDiagramKind.Swimlane => "swimlane", MermaidDiagramKind.UseCase => "usecase",
         MermaidDiagramKind.Class => "class", MermaidDiagramKind.State => "state", MermaidDiagramKind.EntityRelationship => "er",
