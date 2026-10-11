@@ -8,6 +8,20 @@ namespace ChartForgeX.Tests;
 /// <summary>Color presentation has owned callback options and clear numeric-family applicability.</summary>
 public sealed class ColorDimensionApiTests {
     [Fact]
+    public void LegendControlsHaveIndependentDefaultsAndRejectUnsupportedStylesWithoutChangingThePolicy() {
+        var options = new ChartColorDimensionOptions();
+        Assert.True(options.ShowLegend); Assert.Equal(ChartColorLegendStyle.Auto, options.LegendStyle);
+        options.LegendStyle = ChartColorLegendStyle.Gradient;
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.LegendStyle = (ChartColorLegendStyle)999);
+        Assert.Equal(ChartColorLegendStyle.Gradient, options.LegendStyle);
+        var chart = Chart.Create().AddHeatmapRow("Values", new[] { 1d, 2 });
+        chart.Options.HeatmapColorDimension.LegendStyle = ChartColorLegendStyle.Swatches;
+        Assert.Contains("resolved ChartColorScale", Assert.Throws<InvalidOperationException>(() => Prepare(chart)).Message);
+        chart.Options.HeatmapColorDimension.LegendStyle = ChartColorLegendStyle.Auto;
+        Assert.NotNull(Prepare(chart));
+    }
+
+    [Fact]
     public void ConfigurationEditsExistingOwnedOptionsAndResetsEachPolicyIndependently() {
         var chart = Chart.Create().AddScatter("Samples", new[] { new ChartPoint(1, 2) });
         var series = chart.Series[0];

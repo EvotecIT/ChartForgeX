@@ -66,7 +66,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
         var definition = new ChartTileMapDefinition("identities", "Identities", new[] {
             new ChartTileMapRegion(longCode, "Long name", 0, 0), new ChartTileMapRegion("OK", "Other name", 1, 0) });
         var chart = Chart.Create().AddTileMap("Samples", definition, new[] { new ChartRegionMapItem(longCode, 0) })
-            .WithMapScaleLegend(false).WithMapSurface(false);
+            .ConfigureMapColorDimension(options => options.ShowLegend = false).WithMapSurface(false);
         var scene = Compile(chart, 120, 70);
         Assert.DoesNotContain(scene.Nodes.OfType<VisualSceneText>(), text => text.Id == "series-0-point-0-label");
         Assert.Contains(scene.Nodes.OfType<VisualSceneText>(), text => text.Id == "tile-map-empty-OK-label" && text.Text.Lines[0].Text == "OK");
@@ -91,7 +91,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
     public void AuthoredSmallTypeAndExplicitInkArePreservedWithoutChangingSharedTickStyle() {
         var chart = Chart.Create().AddTileMap("Samples", new ChartTileMapDefinition("small", "Small", new[] {
             new ChartTileMapRegion("OK", "Other name", 0, 0) }), new[] { new ChartRegionMapItem("OK", 10) })
-            .WithMapScaleLegend(false).WithMapSurface(false);
+            .ConfigureMapColorDimension(options => options.ShowLegend = false).WithMapSurface(false);
         var ink = ChartColor.FromHex("#1234AB");
         chart.Options.TickLabelStyle.FontSize = 6;
         chart.Options.TickLabelStyle.Color = ink;

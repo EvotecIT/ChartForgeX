@@ -143,7 +143,7 @@ internal static class DashboardPortfolioExamples {
             .WithTheme(DashboardTheme())
             .WithLegend(false)
             .WithDataLabels(false)
-            .WithHeatmapScaleLegend(false)
+            .ConfigureHeatmapColorDimension(options => options.ShowLegend = false)
             .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%");
 
@@ -263,7 +263,7 @@ internal static class DashboardPortfolioExamples {
             .WithLegend(false)
             .WithPlotBackground(false)
             .WithDataLabels(false)
-            .WithHeatmapScaleLegend(false)
+            .ConfigureHeatmapColorDimension(options => options.ShowLegend = false)
             .WithPadding(34, 70, 34, 26)
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
         chart.AddHexbinHeatmapRows(RestaurantCustomerRows(), RestaurantOrange);
