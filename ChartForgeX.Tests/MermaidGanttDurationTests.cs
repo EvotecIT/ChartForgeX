@@ -9,6 +9,37 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttDurationTests {
     [Theory]
+    [InlineData("1970-01-01T00:00:00.000", "1970-01-01T00:00:01.000")]
+    [InlineData("1969-12-31T23:59:59.000", "1970-01-01T00:00:00.000")]
+    public void OrdinaryClockDatesRetainBinaryAdditionAtTheUnixEpoch(string start, string expected) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DDTHH:mm:ss.SSS\nTask :task, " + start + ", 1.001s\nTail :tail, after task, 0ms");
+        Assert.False(parsed.HasErrors);
+        Assert.Equal(expected, parsed.Document!.Tasks[0].End.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture));
+        Assert.Equal(parsed.Document.Tasks[0].End, parsed.Document.Tasks[1].Start);
+    }
+    [Theory]
+    [InlineData("0.5ms")]
+    [InlineData("0.0005s")]
+    public void PositiveSubmillisecondDurationsCanReachTheExactTimestampCeiling(string duration) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DDTHH:mm:ss.fffffff\nTask :task, 9999-12-31T23:59:59.9994999, " + duration);
+        Assert.False(parsed.HasErrors);
+        Assert.Equal(DateTime.MaxValue, Assert.Single(parsed.Document!.Tasks).End);
+    }
+
+    [Theory]
+    [InlineData("1d")]
+    [InlineData("24h")]
+    [InlineData("1440m")]
+    [InlineData("86400s")]
+    [InlineData("86400000ms")]
+    public void WholeDayDurationsApplyExclusionsFromSubmillisecondStarts(string duration) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DDTHH:mm:ss.fffffff\nexcludes weekends\nTask :task, 2026-01-03T00:00:00.0005000, " + duration);
+        Assert.False(parsed.HasErrors);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal(new DateTime(2026, 1, 5).AddTicks(5000), task.End);
+    }
+
+    [Theory]
     [InlineData(false, 960)]
     [InlineData(true, 960)]
     [InlineData(false, 320)]

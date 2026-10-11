@@ -25,7 +25,7 @@ public sealed partial class MermaidParser {
             } else if (text.StartsWith("accDescr:", StringComparison.Ordinal)) {
                 presentation.Accessibility.Description = text.Substring(9).Trim();
                 lines[i] = string.Empty;
-            } else if (text.StartsWith("accDescr", StringComparison.Ordinal) && text.Substring(8).TrimStart().StartsWith("{", StringComparison.Ordinal)) {
+            } else if (IsMultilineAccessibilityDescription(text)) {
                 var start = i;
                 var description = new StringBuilder();
                 var part = text.Substring(text.IndexOf('{') + 1);
@@ -45,4 +45,7 @@ public sealed partial class MermaidParser {
         }
         return presentation;
     }
+
+    private static bool IsMultilineAccessibilityDescription(string text) =>
+        text.StartsWith("accDescr", StringComparison.Ordinal) && text.Substring(8).TrimStart().StartsWith("{", StringComparison.Ordinal);
 }
