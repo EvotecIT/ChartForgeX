@@ -63,6 +63,11 @@ internal static partial class VisualBlockRendering {
     public static int PacketRightBit(PacketLayoutBlock packet, PacketLayoutSlice slice) =>
         packet.BitOrder == PacketBitOrder.Descending ? slice.StartBit : slice.EndBit;
 
+    // The same measured cell fitting serves both exporters; ordinary long fields keep truncation.
+    public static double PacketFieldFontSize(PacketLayoutBlock packet, PacketLayoutSlice slice, double width, double height) =>
+        FitBodyTextStyle(packet.Options.Theme, slice.Field.Label, Math.Max(9, Math.Min(13.5, height * .31)),
+            Math.Max(1, width - 10), height * .6, 700).FontSize;
+
     public readonly struct PacketRowMetrics {
         public PacketRowMetrics(double labelTop, double gap, double height, double bitFontSize, double fieldFontSize, double bitWidth, double fieldGap) {
             LabelTop = labelTop; Gap = gap; Height = height; BitFontSize = bitFontSize; FieldFontSize = fieldFontSize;

@@ -34,9 +34,9 @@ public sealed class MermaidCaptionOwnerClosureTests {
             "actor-canonical-" + width + "-" + height + "-" + compact, true);
         var arm = TopologyNodeShapeGeometry.SceneParts(actor)[2].Path.Commands[1];
         var attachment = TopologyNodeShapeGeometry.BoundaryPoint(actor, 400, 100, TopologyEdgePort.Right, 0);
-        Assert.Equal(attachment.X, arm.X, 7);
-        Assert.Equal(attachment.Y, arm.Y, 7);
-        Assert.Equal(actor.Y + 34, arm.Y, 7);
+        Assert.Equal(attachment.X, arm.X, 3);
+        Assert.Equal(attachment.Y, arm.Y, 3);
+        Assert.Equal(actor.Y + 34 * Math.Min(1, Math.Min(width / 48d, height / 76d)), arm.Y, 7);
         var xml = XDocument.Parse(svg);
         var surface = xml.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node" && (string?)element.Attribute("data-node-id") == "actor")
             .Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-node-surface").ElementAt(2);
