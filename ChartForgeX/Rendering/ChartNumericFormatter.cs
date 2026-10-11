@@ -34,11 +34,14 @@ internal static class ChartNumericFormatter {
 
     internal static string FormatCompactAxisValue(double value) {
         var caption = FormatCompact(value); var zero = FormatCompact(0);
-        return value == 0 ? zero : NeedsPrecision(value, caption, zero) ? ChartValueFormat.FormatSignificant(value) : caption;
+        return RefineCompactAxisValue(value, caption, zero);
     }
 
+    internal static string RefineCompactAxisValue(double value, string caption, string zero) =>
+        value == 0 ? zero : NeedsPrecision(value, caption, zero) ? ChartValueFormat.FormatSignificant(value) : caption;
+
     // Caption comparison is linear in the number of values, including large numeric matrix columns.
-    private static void RefineDefaults(IReadOnlyList<double> values, string[] captions, string zero) {
+    internal static void RefineDefaults(IReadOnlyList<double> values, string[] captions, string zero) {
         for (var index = 0; index < values.Count; index++) if (values[index] == 0) captions[index] = zero;
         if (!Ambiguous(values, captions, zero)) return;
         for (var index = 0; index < values.Count; index++) captions[index] = values[index] == 0 ? zero : ChartValueFormat.FormatSignificant(values[index]);

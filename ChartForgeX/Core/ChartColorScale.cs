@@ -10,10 +10,11 @@ namespace ChartForgeX.Core;
 /// Maps finite numeric values to continuous color stops or discrete bands. Continuous scales infer their domain
 /// from source values unless fixed bounds are supplied; an inferred constant domain uses the low color.
 /// </summary>
-public sealed class ChartColorScale {
+public sealed partial class ChartColorScale {
     private readonly ChartColor[] _colors;
     private readonly int? _midpointIndex;
     private readonly ChartColorBand[] _bands;
+    private readonly ChartColorStop[] _stops;
 
     /// <summary>Gets the color-selection mode.</summary>
     public ChartColorScaleMode Mode => _bands.Length > 0 ? ChartColorScaleMode.Discrete
@@ -87,7 +88,8 @@ public sealed class ChartColorScale {
         string? lowLabel,
         string? midpointLabel,
         string? highLabel,
-        ChartColorBand[]? bands = null) {
+        ChartColorBand[]? bands = null,
+        ChartColorStop[]? stops = null) {
         ValidateNullableFinite(midpointValue, nameof(midpointValue));
         ValidateNullableFinite(minimumValue, nameof(minimumValue));
         ValidateNullableFinite(maximumValue, nameof(maximumValue));
@@ -96,6 +98,7 @@ public sealed class ChartColorScale {
         _colors = colors;
         _midpointIndex = midpointIndex;
         _bands = bands ?? Array.Empty<ChartColorBand>();
+        _stops = stops ?? Array.Empty<ChartColorStop>();
         MidpointValue = midpointValue;
         MinimumValue = minimumValue;
         MaximumValue = maximumValue;
@@ -179,22 +182,26 @@ public sealed class ChartColorScale {
     /// <summary>
     /// Creates a copy with explicit color interpolation bounds.
     /// </summary>
+    /// <remarks>For positioned stops, only the endpoint anchors move; bounds must remain outside all interior anchors.</remarks>
     /// <param name="minimumValue">The minimum value used by the color scale.</param>
     /// <param name="maximumValue">The maximum value used by the color scale.</param>
     /// <returns>A color scale.</returns>
     public ChartColorScale WithValueRange(double minimumValue, double maximumValue) {
         EnsureContinuous();
+        if (HasPositionedStops) return WithPositionedRange(minimumValue, maximumValue);
         return new(_colors, _midpointIndex, MidpointValue, minimumValue, maximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel);
     }
 
     /// <summary>
     /// Creates a copy with an explicit diverging midpoint value.
     /// </summary>
+    /// <remarks>A positioned midpoint must remain strictly between its neighboring anchors; other anchors do not move.</remarks>
     /// <param name="midpointValue">The midpoint value used by the color scale.</param>
     /// <returns>A color scale.</returns>
     public ChartColorScale WithMidpoint(double midpointValue) {
         ValidateFinite(midpointValue, nameof(midpointValue));
         if (Mode != ChartColorScaleMode.Diverging) throw new InvalidOperationException("Only a diverging color scale has a configurable midpoint.");
+        if (HasPositionedStops) return WithPositionedMidpoint(midpointValue);
         return new(_colors, _midpointIndex, midpointValue, MinimumValue, MaximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel);
     }
 
@@ -204,7 +211,7 @@ public sealed class ChartColorScale {
     /// <param name="noDataColor">The color used for regions without values.</param>
     /// <returns>A color scale.</returns>
     public ChartColorScale WithNoDataColor(ChartColor noDataColor) =>
-        new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, noDataColor, LowLabel, MidpointLabel, HighLabel, _bands);
+        new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, noDataColor, LowLabel, MidpointLabel, HighLabel, _bands, _stops);
 
     /// <summary>
     /// Creates a copy with custom legend labels.
@@ -215,7 +222,7 @@ public sealed class ChartColorScale {
     /// <returns>A color scale.</returns>
     public ChartColorScale WithLabels(string? lowLabel, string? midpointLabel, string? highLabel) {
         EnsureContinuous();
-        return new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, NoDataColor, lowLabel, midpointLabel, highLabel);
+        return new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, NoDataColor, lowLabel, midpointLabel, highLabel, stops: _stops);
     }
 
     /// <summary>Resolves a finite value using discrete bands or the continuous scale's explicit domain.</summary>
@@ -245,6 +252,7 @@ public sealed class ChartColorScale {
         if (Mode == ChartColorScaleMode.Discrete) return ChartColorBlend.Solid(_bands[BandIndex(value)].Color, SvgColorRole.Ramp);
         var (min, max) = ResolveRange(sourceMinimum, sourceMaximum);
         if (max == min) return ChartColorBlend.Solid(LowColor, SvgColorRole.Ramp);
+        if (HasPositionedStops) return AlongPositioned(value);
 
         var last = _colors.Length - 1;
         if (!_midpointIndex.HasValue) return Along(0, last, Ratio(value, min, max));
@@ -295,6 +303,7 @@ public sealed class ChartColorScale {
     /// <summary>Returns the value at which the stop <paramref name="index"/> is drawn exactly.</summary>
     internal double StopValue(int index, double sourceMinimum, double sourceMaximum) {
         var (min, max) = ResolveRange(sourceMinimum, sourceMaximum);
+        if (HasPositionedStops) return _stops[index].Value;
         var last = _colors.Length - 1;
         if (!_midpointIndex.HasValue) return ChartMath.InterpolateRange(min, max, index / (double)last);
         var midpointIndex = _midpointIndex.Value;

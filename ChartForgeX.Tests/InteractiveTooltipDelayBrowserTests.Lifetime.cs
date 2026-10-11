@@ -79,6 +79,9 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await Task.Delay(Delay + 80);
         Assert.True(await page.EvaluateAsync<bool>("() => window.suspendedRoot.querySelector('.cfx-tooltip').hidden"));
         if (change == "root-hidden") {
+            // Restoring a host beneath the pointer can legitimately start a fresh native hover.
+            // Keep the pointer away so this assertion checks cancellation of the old queued readout.
+            await MoveAwayAsync(page);
             await page.EvaluateAsync("() => window.suspendedRoot.hidden=false");
             await Task.Delay(60);
             Assert.True(await TipHiddenAsync(page));

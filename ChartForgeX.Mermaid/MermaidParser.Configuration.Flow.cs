@@ -22,6 +22,8 @@ public sealed partial class MermaidParser {
                 else if (character == '}') depth--;
             }
             if (depth <= 0 || collected.Length > MaximumConfigurationLength || index + 1 == lines.Length) break;
+            while (index + 1 < lines.Length && lines[index + 1].TrimStart().StartsWith("#", System.StringComparison.Ordinal)) index++;
+            if (index + 1 == lines.Length) break;
             value = TrimYamlComment(lines[++index]).Trim();
         }
         return collected.ToString();

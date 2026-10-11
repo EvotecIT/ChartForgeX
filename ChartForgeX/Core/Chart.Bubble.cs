@@ -25,7 +25,7 @@ public sealed partial class Chart {
         if (bubbles == null) throw new ArgumentNullException(nameof(bubbles));
         var points = new List<ChartPoint>();
         foreach (var bubble in bubbles) {
-            points.Add(new ChartPoint(bubble.X, bubble.Y));
+            points.Add(new ChartPoint(bubble.X, bubble.Y).WithColorValue(bubble.ColorValue));
             points.Add(new ChartPoint(bubble.X, bubble.Size));
         }
 

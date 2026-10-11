@@ -11,6 +11,7 @@ public sealed class MermaidConfigurationRegressionTests {
     [InlineData("look")]
     public void SupportedStringSettingsRejectObjectsAndEmptyYamlInGlobalAndActiveScopes(string key) {
         foreach (var scoped in new[] { false, true }) {
+            if (scoped && key == "fontFamily") continue; // Mermaid's font family is a root setting; family keys are retained with warnings.
             var objectSetting = "'" + key + "': {'value': 'dark'}";
             var payload = scoped ? "{'flowchart': {" + objectSetting + "}}" : "{" + objectSetting + "}";
             var yaml = scoped ? "  flowchart:\n    " + key + ":" : "  " + key + ":";
