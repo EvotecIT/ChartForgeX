@@ -285,7 +285,7 @@
     layer.replaceChildren();
     layer.hidden = false;
     (nodes || []).forEach((node) => {
-      if (!node || !isInteractiveTarget(node) || !stage.contains(node) || node.closest('[data-cfx-role="legend-item"]')) return;
+      if (!node || isPassiveTarget(node) || !stage.contains(node) || node.closest('[data-cfx-role="legend-item"]')) return;
       const target = targetIdentity(node);
       const labelText = revealText(node, target);
       const key = [labelText, target.series ?? '', target.point ?? '', target.value || ''].join('|');
