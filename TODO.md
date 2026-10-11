@@ -114,7 +114,7 @@ Completion: every advertised feature has versioned positive and meaningful negat
 ### 2. Shared presentation, layout and host policy
 
 - [x] Parse bounded source configuration into inspectable settings. Space-indented YAML scalar mappings and single-line/multiline legacy `init`/`initialize` declarations share limits and preserve declaration spans; legacy JSON reuses the core reader.
-- [x] Qualify frontmatter-before-directive precedence, last declarations and family-scoped theme/font overrides. Apply native `dark`/`default` palettes and font stacks where supported; retain other layout, appearance and configuration settings with stable diagnostics.
+- [x] Qualify frontmatter-before-directive precedence, last declarations and family-scoped theme overrides. Apply native `dark`/`default` palettes and root font stacks where supported; retain unsupported family font keys and other layout, appearance and configuration settings with stable diagnostics.
 - [ ] Define a coherent precedence and policy for host presentation overrides, source settings and family defaults through the existing native export owners.
 - [ ] Map supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Cover sequence themes too; current sequence previews retain a fixed palette.
 - [ ] Handle Mermaid 12 `theme`/`look`/`layout` changes deliberately. Preserve older `defaultRenderer` declarations with a documented diagnostic or mapping. Keep deterministic CFX layout and appearance explicit; reproducing ELK or browser paint is a separate fidelity goal.

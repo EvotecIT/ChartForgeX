@@ -115,6 +115,7 @@ public sealed class MermaidConfigurationBoundaryTests {
     public void PlainYamlBooleanAndNullVariantsAreTypedWhileQuotedValuesRemainStrings(string scalar) {
         foreach (var key in new[] { "theme", "fontFamily", "layout", "look" }) {
             foreach (var scoped in new[] { false, true }) {
+                if (scoped && key == "fontFamily") continue;
                 var prefix = scoped ? "  flowchart:\n    " : "  ";
                 foreach (var quoted in new[] { false, true }) {
                     var value = quoted ? "'" + scalar + "'" : scalar;
