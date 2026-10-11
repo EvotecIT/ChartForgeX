@@ -109,7 +109,7 @@ internal static partial class VisualScheduleCompiler {
                 }
             }
             // Links are foreground annotations: successor fills must not cover their arrowheads.
-            if (gantt) Dependencies(chart, context, builder, plot, items, links, Project, slot, height);
+            if (gantt) Dependencies(chart, context, builder, plot, items, links, Project, slot, height, min, max);
         }
     }
 
