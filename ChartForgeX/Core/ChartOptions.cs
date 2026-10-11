@@ -247,7 +247,6 @@ public sealed partial class ChartOptions {
 
     /// <summary>Formats adapter defaults using the effective fixed interval, or null after automatic fallback.
     /// Authored axis labels and caller formatters retain precedence.</summary>
-    internal Func<double, ChartTimeTickUnit?, string>? GanttTickLabelFormatter { get; set; }
 
     /// <summary>
     /// Gets or sets how heatmap values are converted into cell colors.

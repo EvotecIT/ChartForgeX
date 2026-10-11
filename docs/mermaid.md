@@ -798,7 +798,9 @@ For a milestone with a nonzero duration, `Start` and `End` retain the range used
 
 `axisFormat %a %d %b` displays labels such as `Sun 04 Jan`; `%I:%M:%S.%L %p` displays `01:05:06.007 PM`. `%U` and `%W` number weeks from Sunday and Monday, and `%V` with `%G` uses ISO week/year numbering. `%_d`, `%-d` and `%0d` choose space, no or zero padding. Composite `%c`, `%x` and `%X` use the reference formatter's English US defaults. Native Gantt dates use UTC interpretation by default. `WithXAxisTimeScale(displayZone)` applies the selected zone to both tick alignment and calendar labels, including `%Z` and daylight-saving offsets. Epoch directives `%Q` and `%s` always describe the underlying UTC instant. Changing the host display zone after conversion updates subsequent labels.
 
-`axisFormat` follows Mermaid/D3 formatting, including literal text such as `YYYY-MM-DD`. Callers that relied on the previous adapter interpreting that literal as an input-date pattern should use `%Y-%m-%d` instead. Host-specific date formatting can still be supplied through the native chart axis formatter.
+`axisFormat` follows Mermaid/D3 formatting, including literal text such as `YYYY-MM-DD`. Callers that relied on the previous adapter interpreting that literal as an input-date pattern should use `%Y-%m-%d` instead. Host-specific date formatting can still be supplied through the native chart axis formatter. Assigning a formatter or value format replaces the source policy; assigning `null`, including `WithXAxisValueFormatter(null)`, restores native labels.
+
+Calendar boundaries skipped by a midnight daylight-saving change use the first valid instant of that date. Hourly ranges apply D3's elapsed-hour offset and display-zone floor, including fractional-hour transitions; counts filter the local hour field. The bounded range stops if that filtered operation cannot advance to a later instant.
 
 ## XY Charts
 

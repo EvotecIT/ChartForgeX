@@ -35,8 +35,8 @@ internal static partial class VisualScheduleCompiler {
         var milliseconds = fixedTicks != null && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
         var effectiveInterval = fixedTicks == null ? (ChartTimeTickUnit?)null : chart.Options.GanttTickInterval?.Unit;
         var formatTick = ChartAxisValueFormatter.Create(axis, ticks,
-            axis.Scale == ChartScaleKind.Time ? tick => gantt && chart.Options.GanttTickLabelFormatter != null
-                ? chart.Options.GanttTickLabelFormatter(tick, effectiveInterval)
+            axis.Scale == ChartScaleKind.Time ? tick => gantt && axis.TimeTickLabelFormatter != null
+                ? axis.TimeTickLabelFormatter(tick, effectiveInterval)
                 : ChartTimeScale.Format(axis, tick, milliseconds) : chart.Options.ValueFormatter, chart.Options);
         var tickLabels = ticks.ToDictionary(value => value, formatTick);
         string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : formatTick(value);
