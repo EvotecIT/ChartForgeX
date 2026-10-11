@@ -51,39 +51,49 @@ public sealed class ArtifactHtmlSizingTests {
         Assert.True(await session.Page.Locator("svg").EvaluateAsync<bool>("element => element.getBoundingClientRect().width <= innerWidth"));
     }
 
-    [Fact]
-    public async Task HostCanPreserveAnotherFamilyWithoutChangingItsAutomaticSizing() {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task HostCanPreserveAnotherFamilyWithoutChangingItsAutomaticSizing(bool trustedWatermarkedSvg) {
         if (!InteractiveChartBrowser.Enabled) return;
         var artifact = Chart.Create().WithSize(960, 560).WithTitle("Results")
             .AddBar("Counts", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) }).ToVisualArtifact();
         var defaultHtml = artifact.ToHtmlPage();
         var options = new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize };
-        await using var session = await InteractiveChartBrowser.OpenAsync(artifact.ToHtmlPage(options), 320, 620);
+        var html = trustedWatermarkedSvg
+            ? artifact.ToWatermarkedHtmlPage(options, artifact.ToSvg(), VisualWatermark.FromText("REVIEW"))
+            : artifact.ToHtmlPage(options);
+        await using var session = await InteractiveChartBrowser.OpenAsync(html, 320, 620);
         Assert.True(await session.Page.Locator(".chartforgex-visual-artifact").EvaluateAsync<bool>("element => element.scrollWidth > element.clientWidth"));
         Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
+        await Capture(session.Page, "artifact-html-preserve-chart-" + trustedWatermarkedSvg + "-320");
         await session.Page.SetContentAsync(defaultHtml);
         Assert.True(await session.Page.Locator("svg").EvaluateAsync<bool>("element => element.getBoundingClientRect().width <= innerWidth"));
         Assert.Equal(defaultHtml, artifact.ToHtmlPage());
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    [Fact]
-    public async Task ExplicitFitToWidthOverridesSequenceDefaultsWithoutChangingItsScene() {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExplicitFitToWidthOverridesSequenceDefaultsWithoutChangingItsScene(bool trustedWatermarkedSvg) {
         var artifact = MermaidRenderer.Render(Source).Artifact!;
         var svg = artifact.ToSvg();
         var png = artifact.ToPng();
         var options = new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.FitToWidth };
-        var html = artifact.ToHtmlPage(options);
+        var mark = VisualWatermark.FromText("REVIEW");
+        var html = trustedWatermarkedSvg ? artifact.ToWatermarkedHtmlPage(options, svg, mark) : artifact.ToHtmlPage(options);
         Assert.Equal(svg, artifact.ToSvg(options));
         Assert.Equal(png, artifact.ToPng(options));
-        Assert.Contains(svg, html);
+        Assert.Contains(trustedWatermarkedSvg ? artifact.ToWatermarkedSvg(svg, mark) : svg, html);
+        if (trustedWatermarkedSvg) Assert.Equal(artifact.ToWatermarkedHtmlPage(svg, mark), artifact.ToWatermarkedHtmlPage(null, svg, mark));
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 320, 620);
         Assert.True(await session.Page.Locator("svg text").First.EvaluateAsync<double>(
             "element => parseFloat(getComputedStyle(element).fontSize) * element.getScreenCTM().a") < 6);
         Assert.False(await session.Page.Locator(".chartforgex-visual-artifact").EvaluateAsync<bool>("element => element.scrollWidth > element.clientWidth"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
-        await Capture(session.Page, "artifact-html-size-fit-320");
+        await Capture(session.Page, "artifact-html-size-fit-" + trustedWatermarkedSvg + "-320");
     }
 
     [Fact]
