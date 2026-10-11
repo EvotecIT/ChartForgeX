@@ -8,7 +8,8 @@ internal static partial class MermaidGanttInputDateFormat {
     private static readonly string[] CompleteDateFallbacks = {
         "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-dd H:mm", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTH:mm",
         "yyyy-MM-dd HH:mmK", "yyyy-MM-dd H:mmK", "yyyy-MM-ddTHH:mmK", "yyyy-MM-ddTH:mmK",
-        "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", "yyyy-M-d", "yyyy-M-d H:mm", "yyyy-M-d H:mm:ss",
+        "yyyy-MM-dd HH:mm:ss.FFFFFFFK", "yyyy-MM-dd H:mm:ss.FFFFFFFK",
+        "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", "yyyy-MM-ddTH:mm:ss.FFFFFFFK", "yyyy-M-d", "yyyy-M-d H:mm", "yyyy-M-d H:mm:ss",
         "MMMM d yyyy", "MMM d yyyy", "MMMM d, yyyy", "MMM d, yyyy", "d MMMM yyyy", "d MMM yyyy",
         "M/d/yyyy", "M-d-yyyy", "yyyy/M/d", "o", "r"
     };

@@ -755,8 +755,8 @@ Input formats without a year require `MermaidParseOptions.GanttDateAnchor`. Mont
 Retained .NET formats with offset fields and complete ISO fallback values normalize authored offsets to UTC and expose `DateTimeKind.Unspecified`, matching Mermaid `Z`/`ZZ` input. Minute-precision ISO fallbacks accept offsets as well as seconds-bearing forms. Values without offsets retain their authored wall-clock fields. Parsing does not apply the host timezone. Mermaid tokens take precedence for ambiguous single-character formats; if that interpretation fails, a standard .NET format can still accept its textual date, such as `dateFormat M` with `February 29` and a leap-year anchor. Calendar exclusions and inclusions retain the interpretation selected while parsing, so native month/day rules match the day and native sortable timestamps retain their full clock fields.
 
 ```csharp
+using System;
 using ChartForgeX.Markup.Mermaid;
-
 using ChartForgeX.Mermaid;
 
 const string source = "gantt\ndateFormat MM-DD\nBuild :02-29,1d";
