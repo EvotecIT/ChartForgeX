@@ -12,7 +12,7 @@ internal static partial class RasterStroker {
         if (!(width > 0) || double.IsInfinity(width)) return outline;
         if (!(miter >= 1) || double.IsInfinity(miter)) miter = 4;
         double padding = width * Math.Max(1, miter);
-        if (pattern != null && pattern.Count > 0) dashBudget ??= new DashBudget();
+        if (pattern != null && pattern.Count > 0) dashBudget ??= new DashBudget(pixelsPerUnit);
         for (var pathIndex = 0; pathIndex < paths.Count; pathIndex++) {
             var path = paths[pathIndex];
             if (path == null || path.Count == 0) continue;

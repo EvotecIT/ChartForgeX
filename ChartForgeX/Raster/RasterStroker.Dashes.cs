@@ -10,10 +10,16 @@ internal static partial class RasterStroker {
 
     internal sealed class DashBudget {
         private readonly HashSet<(int Path, int Segment, double Cycle, int Entry)> _pieces = new();
-        private int _work;
+        private readonly double _maximumWork;
+        private long _work;
+        internal DashBudget(double pixelsPerUnit = 1) {
+            // Fixed device tiles multiply with raster density in both dimensions. The canvas
+            // allocation limit bounds density; source geometry retains the same unique-piece cap.
+            _maximumWork = MaximumDashWork * Math.Max(1, pixelsPerUnit * pixelsPerUnit);
+        }
         internal void Consume(int path, int segment, double cycle, int entry) {
             // Unique geometry bounds memory; repeated tile regeneration also needs an aggregate work guard.
-            if (++_work > MaximumDashWork) throw new InvalidOperationException("The stroke exceeds the raster dash-work limit.");
+            if (++_work > _maximumWork) throw new InvalidOperationException("The stroke exceeds the raster dash-work limit.");
             // Tile bleed may revisit a dash. Its contour, segment and pattern identity remain unchanged.
             if (_pieces.Add((path, segment, cycle, entry)) && _pieces.Count > MaximumDashPieces)
                 throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");
