@@ -1618,12 +1618,60 @@
     "family-range-bar-compact-dark.svg",
     "family-range-bar-compact-dark.thumbnail.png",
     "family-range-bar-compact-dark.thumbnail.svg",
+    "family-range-bar-compact-horizontal-dark.csharp.txt",
+    "family-range-bar-compact-horizontal-dark.html",
+    "family-range-bar-compact-horizontal-dark.png",
+    "family-range-bar-compact-horizontal-dark.svg",
+    "family-range-bar-compact-horizontal-dark.thumbnail.png",
+    "family-range-bar-compact-horizontal-dark.thumbnail.svg",
+    "family-range-bar-compact-horizontal-light.csharp.txt",
+    "family-range-bar-compact-horizontal-light.html",
+    "family-range-bar-compact-horizontal-light.png",
+    "family-range-bar-compact-horizontal-light.svg",
+    "family-range-bar-compact-horizontal-light.thumbnail.png",
+    "family-range-bar-compact-horizontal-light.thumbnail.svg",
     "family-range-bar-compact-light.csharp.txt",
     "family-range-bar-compact-light.html",
     "family-range-bar-compact-light.png",
     "family-range-bar-compact-light.svg",
     "family-range-bar-compact-light.thumbnail.png",
     "family-range-bar-compact-light.thumbnail.svg",
+    "family-range-bar-compact-options-dark.csharp.txt",
+    "family-range-bar-compact-options-dark.html",
+    "family-range-bar-compact-options-dark.png",
+    "family-range-bar-compact-options-dark.svg",
+    "family-range-bar-compact-options-dark.thumbnail.png",
+    "family-range-bar-compact-options-dark.thumbnail.svg",
+    "family-range-bar-compact-options-light.csharp.txt",
+    "family-range-bar-compact-options-light.html",
+    "family-range-bar-compact-options-light.png",
+    "family-range-bar-compact-options-light.svg",
+    "family-range-bar-compact-options-light.thumbnail.png",
+    "family-range-bar-compact-options-light.thumbnail.svg",
+    "family-range-bar-horizontal-dark.csharp.txt",
+    "family-range-bar-horizontal-dark.html",
+    "family-range-bar-horizontal-dark.png",
+    "family-range-bar-horizontal-dark.svg",
+    "family-range-bar-horizontal-dark.thumbnail.png",
+    "family-range-bar-horizontal-dark.thumbnail.svg",
+    "family-range-bar-horizontal-light.csharp.txt",
+    "family-range-bar-horizontal-light.html",
+    "family-range-bar-horizontal-light.png",
+    "family-range-bar-horizontal-light.svg",
+    "family-range-bar-horizontal-light.thumbnail.png",
+    "family-range-bar-horizontal-light.thumbnail.svg",
+    "family-range-bar-options-dark.csharp.txt",
+    "family-range-bar-options-dark.html",
+    "family-range-bar-options-dark.png",
+    "family-range-bar-options-dark.svg",
+    "family-range-bar-options-dark.thumbnail.png",
+    "family-range-bar-options-dark.thumbnail.svg",
+    "family-range-bar-options-light.csharp.txt",
+    "family-range-bar-options-light.html",
+    "family-range-bar-options-light.png",
+    "family-range-bar-options-light.svg",
+    "family-range-bar-options-light.thumbnail.png",
+    "family-range-bar-options-light.thumbnail.svg",
     "family-range-bar-wide-dark.csharp.txt",
     "family-range-bar-wide-dark.html",
     "family-range-bar-wide-dark.png",
@@ -6546,6 +6594,152 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-range-bar-options-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-options-light.csharp.txt",
+      "svg": "family-range-bar-options-light.svg",
+      "png": "family-range-bar-options-light.png",
+      "html": "family-range-bar-options-light.html",
+      "thumbnail": "family-range-bar-options-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-compact-options-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-options-light.csharp.txt",
+      "svg": "family-range-bar-compact-options-light.svg",
+      "png": "family-range-bar-compact-options-light.png",
+      "html": "family-range-bar-compact-options-light.html",
+      "thumbnail": "family-range-bar-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-horizontal-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-horizontal-light.csharp.txt",
+      "svg": "family-range-bar-horizontal-light.svg",
+      "png": "family-range-bar-horizontal-light.png",
+      "html": "family-range-bar-horizontal-light.html",
+      "thumbnail": "family-range-bar-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-compact-horizontal-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-horizontal-light.csharp.txt",
+      "svg": "family-range-bar-compact-horizontal-light.svg",
+      "png": "family-range-bar-compact-horizontal-light.png",
+      "html": "family-range-bar-compact-horizontal-light.html",
+      "thumbnail": "family-range-bar-compact-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 21
+    },
+    {
       "id": "family-range-bar-wide-dark",
       "family": "range-bar",
       "familyLabel": "Range Bar",
@@ -6610,6 +6804,152 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-range-bar-options-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-options-dark.csharp.txt",
+      "svg": "family-range-bar-options-dark.svg",
+      "png": "family-range-bar-options-dark.png",
+      "html": "family-range-bar-options-dark.html",
+      "thumbnail": "family-range-bar-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-compact-options-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-options-dark.csharp.txt",
+      "svg": "family-range-bar-compact-options-dark.svg",
+      "png": "family-range-bar-compact-options-dark.png",
+      "html": "family-range-bar-compact-options-dark.html",
+      "thumbnail": "family-range-bar-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-horizontal-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-horizontal-dark.csharp.txt",
+      "svg": "family-range-bar-horizontal-dark.svg",
+      "png": "family-range-bar-horizontal-dark.png",
+      "html": "family-range-bar-horizontal-dark.html",
+      "thumbnail": "family-range-bar-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-compact-horizontal-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-horizontal-dark.csharp.txt",
+      "svg": "family-range-bar-compact-horizontal-dark.svg",
+      "png": "family-range-bar-compact-horizontal-dark.png",
+      "html": "family-range-bar-compact-horizontal-dark.html",
+      "thumbnail": "family-range-bar-compact-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 21
     },
     {
       "id": "family-box-plot-wide-light",
