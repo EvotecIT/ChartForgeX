@@ -19,9 +19,9 @@ public static class StoryArtifactExtensions {
     public static VisualArtifact ToVisualArtifact(this VisualStory story, string? id = null,
         VisualArtifactSourceLanguage sourceLanguage = VisualArtifactSourceLanguage.Native) {
         if (story == null) throw new ArgumentNullException(nameof(story));
-        story.Validate();
-        var source = new StoryStaticSource(new SvgVisualStoryRenderer().RenderStatic(story, "story-artifact"),
-            PngVisualStoryRenderer.RenderScene(story, story.Scenes.Count - 1));
+        var prepared = story.Prepare();
+        var source = new StoryStaticSource(prepared.PrepareFrame(prepared.ContentDuration).ToSvg("story-artifact"),
+            prepared.RenderAt(prepared.ContentDuration));
         var artifact = Create(story, source, id, "visual-story", story.Title, story.Description,
             story.Width, story.Height, sourceLanguage);
         artifact.Accessibility.Name = story.Title;

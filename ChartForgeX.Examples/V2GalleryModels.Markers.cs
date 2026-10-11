@@ -20,7 +20,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Bubble) {
             var chart = Chart.Create().WithXAxis("Workload batches").WithYAxis("Time (minutes)")
                 .AddBubble("Standard", new[] { new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81) })
-                .AddBubble("Priority", new[] { new ChartBubble(1.5, 32, 9), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 81) });
+                .AddBubble("Priority", new[] { new ChartBubble(1.5, 32, 16), new ChartBubble(2.5, 20, 36), new ChartBubble(3.5, 36, 200) })
+                .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
             chart.Series[0].ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Circle);
             chart.Series[1].ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
             return chart;

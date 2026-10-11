@@ -41,14 +41,16 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void AddHorizontalLabel(Chart chart, VisualRenderContext context, ChartSeries series, int index, int item, ChartPoint anchor,
-        ChartRect bounds, double value, double direction, ResolvedPointLabel label, List<LabelPlacementRequest> labels) {
+        ChartRect bounds, double value, double direction, ResolvedPointLabel label, List<LabelPlacementRequest> labels,
+        string? associatedId = null, ChartColor? markFill = null, SvgColorRole? markFillRole = null) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || label.Text.Length == 0) return;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         if (placement == ChartDataLabelPlacement.Left) anchor = new ChartPoint(bounds.Left, anchor.Y);
         if (placement == ChartDataLabelPlacement.Right) anchor = new ChartPoint(bounds.Right, anchor.Y);
         if (placement == ChartDataLabelPlacement.Above) anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top);
         if (placement == ChartDataLabelPlacement.Below) anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Bottom);
-        AddLabel(chart, context, series, index, item, anchor, bounds, label, labels, value, barDirection: direction, horizontal: true);
+        AddLabel(chart, context, series, index, item, anchor, bounds, label, labels, value, associatedId,
+            barDirection: direction, horizontal: true, markFill: markFill, markFillRole: markFillRole);
     }
 
     private static (ChartAxis Value, ChartAxis Category) HorizontalAxes(Chart chart, AxisLabelCache cache) {
@@ -58,15 +60,18 @@ internal static partial class VisualCartesianCompiler {
             LabelDensity = x.LabelDensity, SymmetricLogarithmThreshold = x.SymmetricLogarithmThreshold,
             TimeZone = x.TimeZone, TimeZoneLabel = x.TimeZoneLabel, ShowTimeZone = x.ShowTimeZone,
             ValueFormat = x.ValueFormat ?? (ReferenceEquals(chart.Options.ValueFormat, ChartValueFormat.ExistingValue) ? null : chart.Options.ValueFormat) };
-        var categoryAxis = new ChartAxis { LabelAngle = y.LabelAngle, LabelDensity = y.LabelDensity, ValueFormat = y.ValueFormat ?? x.ValueFormat };
-        var categoryLabels = y.Labels.Count > 0 ? y.Labels : x.Labels;
+        var waterfall = chart.Series.Any(series => series.Kind == ChartSeriesKind.Waterfall);
+        var categoryAxis = new ChartAxis { Scale = y.Scale, LabelAngle = y.LabelAngle, LabelDensity = y.LabelDensity,
+            TimeZone = y.TimeZone, TimeZoneLabel = y.TimeZoneLabel, ShowTimeZone = y.ShowTimeZone,
+            ValueFormat = y.ValueFormat ?? (waterfall ? null : x.ValueFormat) };
+        var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
         foreach (var label in categoryLabels) categoryAxis.Labels.Add(label);
         cache.HorizontalValueAxis = valueAxis; cache.HorizontalCategoryAxis = categoryAxis;
         return (valueAxis, categoryAxis);
     }
 
-    private static IReadOnlyList<double> HorizontalCategories(Chart chart, ChartRange range) => chart.Series.SelectMany(series => series.Points)
-        .Select(point => point.X).Where(value => value >= range.MinY && value <= range.MaxY).Distinct().OrderBy(value => value).ToArray();
+    private static IReadOnlyList<double> HorizontalCategories(Chart chart, ChartRange range) => chart.Series.SelectMany(ChartCartesianOrientation.Categories)
+        .Where(value => value >= range.MinY && value <= range.MaxY).Distinct().OrderBy(value => value).ToArray();
 
     private static ChartRect MeasureHorizontalPlot(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
         ChartRange range, VisualThemeColors colors, AxisLabelCache cache) {
@@ -74,7 +79,7 @@ internal static partial class VisualCartesianCompiler {
         var axes = HorizontalAxes(chart, cache); var spacing = context.Theme.Spacing;
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
         var categories = HorizontalCategories(chart, range); var widest = 0d;
-        foreach (var category in categories) widest = Math.Max(widest, RotatedMetrics(builder.MeasureText(cache.Format(axes.Category, category, null, categories), style), axes.Category.LabelAngle).Width);
+        foreach (var category in categories) widest = Math.Max(widest, VisualAxisText.RotatedMetrics(builder.MeasureText(cache.Format(axes.Category, category, null, categories), style), axes.Category.LabelAngle).Width);
         var left = chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .35, widest + spacing) : 0;
         var bottom = chart.Options.XAxis.Visible ? TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache).Height + spacing : 0;
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground });

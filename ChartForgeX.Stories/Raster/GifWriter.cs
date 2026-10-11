@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace ChartForgeX.Raster;
 
-internal static class GifWriter {
+internal static partial class GifWriter {
     private const int MaximumGifFieldValue = 65535;
 
     public static byte[] WriteRgba(IReadOnlyList<RgbaImage> frames, int delayCentiseconds, bool loop) {

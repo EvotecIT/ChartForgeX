@@ -154,7 +154,7 @@ public sealed class MermaidReviewRegressionTests {
     [InlineData("ishikawa-basic.mmd")]
     [InlineData("wardley-basic.mmd")]
     public void VisualBlockFamiliesRetainAuthoredAccessibilityInSvgAndHtml(string fixture) {
-        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        var root = new DirectoryInfo(TestRepository.Root);
         while (root != null && !File.Exists(Path.Combine(root.FullName, "ChartForgeX.sln"))) root = root.Parent;
         Assert.NotNull(root);
         var source = File.ReadAllText(Path.Combine(root!.FullName, "tests", "mermaid-conformance", "fixtures", fixture));

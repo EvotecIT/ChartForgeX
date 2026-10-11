@@ -18,9 +18,12 @@ public readonly struct ChartBubble {
     public readonly double Y;
 
     /// <summary>
-    /// Gets the positive value used to scale the marker area.
+    /// Gets the positive source value mapped to a logical marker radius by <see cref="ChartOptions.Bubble"/>.
     /// </summary>
     public readonly double Size;
+
+    /// <summary>Gets the independent numeric color measurement, or null when no measurement is supplied.</summary>
+    public double? ColorValue { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartBubble"/> struct.
@@ -28,14 +31,18 @@ public readonly struct ChartBubble {
     /// <param name="x">The horizontal coordinate.</param>
     /// <param name="y">The vertical coordinate.</param>
     /// <param name="size">The positive size value.</param>
-    public ChartBubble(double x, double y, double size) {
+    public ChartBubble(double x, double y, double size) : this(x, y, size, null) { }
+
+    private ChartBubble(double x, double y, double size, double? colorValue) {
         ChartPrimitiveGuards.Finite(x, nameof(x));
         ChartPrimitiveGuards.Finite(y, nameof(y));
         ChartPrimitiveGuards.Finite(size, nameof(size));
         if (size <= 0) throw new ArgumentOutOfRangeException(nameof(size), size, "Bubble size must be greater than zero.");
+        if (colorValue.HasValue) ChartPrimitiveGuards.Finite(colorValue.Value, nameof(colorValue));
         X = x;
         Y = y;
         Size = size;
+        ColorValue = colorValue;
     }
 
     /// <summary>
@@ -46,4 +53,9 @@ public readonly struct ChartBubble {
     /// <param name="size">The positive size value.</param>
     public ChartBubble(DateTime x, double y, double size) : this(ChartDateTime.ToOADate(x), y, size) {
     }
+
+    /// <summary>Returns an independent bubble with the same coordinates and size and a replacement color measurement.</summary>
+    /// <param name="value">The finite numeric color measurement, or null to clear it.</param>
+    /// <returns>A new bubble. The current bubble is unchanged.</returns>
+    public ChartBubble WithColorValue(double? value) => new(X, Y, Size, value);
 }

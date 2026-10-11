@@ -1,5 +1,11 @@
   // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
+  // Both readout lifetime and keyboard availability follow the same native paint inputs.
+  // Adapter state and paint-probe attributes are excluded so observing paint cannot observe itself.
+  const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
+    'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
+    'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
+    'stop-color', 'stop-opacity', 'font-size'];
   // Cache only for this render: host CSS can change between successive focus and pointer events.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
@@ -140,22 +146,26 @@
     }
     return null;
   };
-  const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
-    ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  const observationPaint = (node, styles) => withNativeHighlightPaint(node, () => {
+    // A probe suspends adapter opacity only; use fresh live style values after the suspension.
+    if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
+    return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  });
+  const retainedGeometryFact = (node) => ['zero', 'precision-collapse', 'layout-collapse'].includes((node.dataset || {}).cfxGeometryStatus);
   // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
   // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
   const pointerTargetPaint = (node, styles = new Map()) => {
     if (!node || !isInteractiveTarget(node)) return null;
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
     if (legend) return childPaint(node, true, styles);
-    if (node.closest('.cfx-series-muted') || ['zero', 'precision-collapse'].includes(node.dataset.cfxGeometryStatus)) return null;
+    if (node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
     return observationPaint(node, styles);
   };
   const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
     if (pointerTargetPaint(node, styles)) return true;
-    // Authored zero/precision-collapse facts remain a keyboard readout, without becoming pointer targets.
+    // Authored facts without painted geometry remain a keyboard readout, without becoming pointer targets.
     const pointer = event instanceof PointerEvent || event instanceof MouseEvent && event.detail > 0;
-    return !pointer && ['zero', 'precision-collapse'].includes((node.dataset || {}).cfxGeometryStatus)
+    return !pointer && retainedGeometryFact(node)
       && paintAncestorsVisible(node, styles) && keyboardTargetAvailable(node);
   };
   const paintColour = (node, styles = new Map()) => {

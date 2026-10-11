@@ -241,6 +241,10 @@ public static partial class GalleryWriter {
         new(
             "Interactive HTML Adapter",
             "Host-side HTML adapter demos for interactive chart review and synchronized dashboard exploration.",
+            "graphite-light-line-interactive",
+            "graphite-dark-line-interactive",
+            "sunburst-branch-highlight-light",
+            "sunburst-branch-highlight-dark",
             "domain-security-interactive",
             "reporting-state-timeline-interactive",
             "reporting-status-matrix-interactive",
@@ -254,6 +258,12 @@ public static partial class GalleryWriter {
         new(
             "Static and Animated Stories",
             "Script-free terminal and visual stories with still images and animated exports.",
+            "write-fix-reveal-widescreen",
+            "write-fix-reveal-square",
+            "write-fix-reveal-portrait",
+            "session-replay-widescreen",
+            "session-replay-square",
+            "session-replay-portrait",
             "animated-engineering-portfolio-story",
             "api-request-response-story",
             "chart-in-five-lines-story",

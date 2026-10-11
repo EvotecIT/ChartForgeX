@@ -1,4 +1,4 @@
-  // Separately painted captions are pointer surfaces of their declared native point, never new observations.
+  // Separately painted captions are pointer surfaces of their declared native target, never new observations.
   const pointLabelTarget = (root, target) => {
     const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
     const point = label && label._cfxLabelTarget;
@@ -78,7 +78,8 @@
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
       }
-      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = xLabels.get(Number(data.cfxX)) || '';
+      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = data.cfxCategoryLabel !== undefined
+        ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX)) || '';
       if (data.cfxRole === 'legend-item') return;
       const region = regions.get(data.cfxSourceId || '');
       // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
@@ -100,8 +101,11 @@
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
       // Retained numeric facts have keyboard semantics without a pointer surface.
-      if (['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return;
-      if (box.width > 0 && box.height > 0) return;
+      if (retainedGeometryFact(node)) return;
+      // A hollow candle's unpainted interior still belongs to its observation's browser target.
+      const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
+        && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
+      if (box.width > 0 && box.height > 0 && !hollowCandle) return;
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const width = Math.max(8, region.width); const height = Math.max(8, region.height);
       hit.setAttribute('x', region.x + (region.width - width) / 2);
@@ -114,7 +118,7 @@
     const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
     svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
       const mark = marks.get(label.dataset.cfxLabelFor);
-      const point = mark && mark.closest('[data-cfx-point]');
+      const point = mark && mark.closest('[data-cfx-point],[data-cfx-target-kind]');
       if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text')) return;
       label._cfxLabelTarget = point;
       (point._cfxPointLabels ||= []).push(label);

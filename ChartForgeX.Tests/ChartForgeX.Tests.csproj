@@ -8,6 +8,8 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <AssemblyMetadata Include="RepositoryRoot" Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/..'))" />
+    <AssemblyMetadata Include="MarkupCliPath" Value="$(ArtifactsPath)/bin/ChartForgeX.Markup.Cli/$(ArtifactsPivots)/ChartForgeX.Markup.Cli.dll" Condition="'$(UseArtifactsOutput)' == 'true'" />
     <EmbeddedResource Include="Fixtures\OpenType\*.ttf" />
     <EmbeddedResource Include="Fixtures\OpenType\variable-compact.otf" />
     <EmbeddedResource Include="Fixtures\OpenType\variable-malformed.otf" />

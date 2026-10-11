@@ -20,7 +20,7 @@ public sealed class ChartMarkerOptions {
 
     /// <summary>
     /// Gets or sets the logical marker radius. Null preserves the family and theme default; zero hides glyphs.
-    /// Bubble values retain their relative size encoding, scaled by this radius relative to the theme radius.
+    /// Bubble series use <see cref="ChartOptions.Bubble"/> radius bounds and reject a non-null marker radius.
     /// </summary>
     public double? Radius {
         get => _radius;

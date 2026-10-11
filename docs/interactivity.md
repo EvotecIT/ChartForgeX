@@ -77,6 +77,38 @@ chart.SaveInteractiveHtml("observations.html", options => {
 
 `HtmlInteractiveDashboardOptions.Tooltip` and `.Crosshair` apply the same settings to every child chart. Replace the former flat `TooltipMode` property with `Tooltip.Mode` when migrating existing adapter configuration.
 
+Set `Tooltip.DelayMilliseconds` to reduce transient pointer readouts when scanning a chart. Its default is `0`, so tooltips appear immediately. The delay accepts non-negative integers and starts once for each acquired target; movement within that target updates the eventual position without postponing it. Switching targets or acquiring with a new pointer contact starts a new delay. Events from an older contact do not move or dismiss the newer contact's readout. Leaving, resetting, hiding or removing the chart, or making the target unavailable cancels a pending readout. Content and painted availability are checked again when the delay expires.
+
+```csharp
+var html = chart.ToInteractiveHtmlPage(options => {
+    options.Tooltip.DelayMilliseconds = 250;
+    options.Tooltip.Range = HtmlChartTooltipRange.WithinDistance(64);
+});
+```
+
+Keyboard focus and explicit pins appear immediately and cancel pending pointer readouts. Hover emphasis, crosshair guides and dashboard synchronization remain immediate. The dashboard tooltip options apply the same delay to each child. Configuring a delay does not enable the `Tooltips` feature or affect native SVG and PNG exports.
+
+The [light Graphite example](../Website/static/examples/generated/graphite-light-line-interactive.html) and [dark Graphite example](../Website/static/examples/generated/graphite-dark-line-interactive.html) use a 360 ms delay with shared readouts. Generate both with `dotnet run --project ChartForgeX.Examples -c Release -- --graphite-only`.
+## Tooltip position
+
+`Tooltip.Position` selects the readout's screen anchor and placement independently of its content or acquisition range. `HtmlChartTooltipAnchor.Pointer` is the default and follows the latest pointer; keyboard focus uses the target's centre. `Node` uses the acquired native target's current bounds. `Chart` uses the displayed chart stage, excluding controls and compare panels; a narrow `Readable` chart uses its contained viewport rather than its wider SVG.
+
+`Placements` is a copied, read-only sequence of directions: `Top`, `TopRight`, `Right`, `BottomRight`, `Bottom`, `BottomLeft`, `Left`, and `TopLeft`. The adapter tries them in order using the rendered tooltip size and an 8 CSS pixel browser-viewport inset. If none fits, it clamps the first choice to that viewport. The default is one `BottomRight` placement with a 14 CSS pixel `Gap`. A diagonal placement applies the gap on both axes; `OffsetX` and `OffsetY` add signed CSS pixel offsets after anchoring. The gap must be finite and non-negative, and both offsets must be finite.
+
+```csharp
+chart.SaveInteractiveHtml("readings.html", options => {
+    options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
+    options.Tooltip.Position.Placements = new[] {
+        HtmlChartTooltipPlacement.Top,
+        HtmlChartTooltipPlacement.Bottom
+    };
+    options.Tooltip.Position.Gap = 12;
+    options.Tooltip.Position.OffsetX = 6;
+});
+```
+
+Visible node and chart readouts follow page or contained scrolling, resizing, and adapter zoom/pan changes, including pinned readouts. Observed target or host changes dismiss visible readouts when their native target is hidden, clipped away, or removed, including pointer and pinned readouts. Availability refreshes on DOM, scrolling, resize and transition events; idle CSSOM-only stylesheet edits require a later event. Delayed pointer readouts use the latest pointer and live anchor bounds when shown. Dashboard children receive independent copies of the same position settings. Placement settings do not enable tooltips or change native SVG and PNG exports. Executable pointer, node, and chart examples are in the Graphite gallery and `HtmlTooltipPositionExamples.CreatePage`.
+
 ## Semantic Series Identity
 
 Series ordinals are local rendering details. Synchronized dashboards therefore match legend, hover, and selection state by `data-cfx-series-key`, never by an ordinal from a different chart. The series name is the automatic key, so charts with the same named measure work without extra configuration. Set an explicit key when display labels differ but the underlying measure is the same:

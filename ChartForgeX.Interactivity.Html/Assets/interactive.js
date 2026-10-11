@@ -216,6 +216,29 @@
       : data.cfxColorMissing === 'true' ? rowName(node, 'no-data', 'No data') : undefined;
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
+  const sizeTooltipRows = (node) => {
+    const value = (node.dataset || {}).cfxSize;
+    return value === undefined || value === null || value === '' ? [] : [{ name: rowName(node, 'size', 'Size'), value }];
+  };
+  const dimensionTooltipRows = (node) => sizeTooltipRows(node).map((row) => ({ ...row, dimension: 'size' }))
+    .concat(colorTooltipRows(node).map((row) => ({ ...row, dimension: 'color' })));
+  // A financial Y is the tuple's opening member; all readouts use the complete prices.
+  const financialTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if (!['candlestick', 'ohlc'].includes((data.cfxKind || '').toLowerCase())) return null;
+    return ['Open', 'High', 'Low', 'Close'].filter((part) => {
+      const value = data['cfx' + part];
+      return value !== undefined && value !== null && value !== '';
+    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: String(data['cfx' + part]) }));
+  };
+  const waterfallTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if (!data.cfxWaterfallKind) return [];
+    const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
+    return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
+      { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
+      .filter((row) => row.value !== undefined && row.value !== '');
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -223,9 +246,16 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
-    push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
-    push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
-    push('End', data.cfxEnd);
+    if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
+    else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
+    const financialRows = financialTooltipRows(node);
+    if (financialRows) rows.push(...financialRows);
+    else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
+    else {
+      push(data.cfxValue !== undefined ? 'Value' : 'Y', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+      push('End', data.cfxEnd);
+    }
+    sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Target', data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
@@ -235,7 +265,7 @@
     if (Number(data.cfxRemainderValue) > 0)
       push(rowName(node, 'remainder', 'Remainder'), data.cfxRemainderValue);
     push('Percent', percentText(data.cfxPercent));
-    push('Delta', data.cfxDelta);
+    if (!data.cfxWaterfallKind) push('Delta', data.cfxDelta);
     push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
     metadataRows(node).forEach((row) => push(row.name, row.value));
     return rows;
@@ -258,6 +288,13 @@
       title.classList.add('cfx-tooltip__title--series');
     }
     tip.appendChild(title);
+    const secondary = (node.dataset || {}).cfxSecondaryLabel;
+    if (secondary) {
+      const caption = document.createElement('div');
+      caption.className = 'cfx-tooltip__secondary';
+      caption.textContent = secondary;
+      tip.appendChild(caption);
+    }
     const rows = tooltipRows(node);
     if (rows.length) {
       const list = document.createElement('dl');
@@ -275,34 +312,21 @@
     return true;
   };
   const showTip = (root, tip, node, event) => {
-    if (!hasFeature(root, 'Tooltips')) return;
-    if (root.dataset.cfxTooltipPinned === 'true') return;
+    if (!hasFeature(root, 'Tooltips') || root.dataset.cfxTooltipPinned === 'true') { cancelTooltipRequest(root); return; }
     if (!tooltipReadoutAvailable(node, event)) { hideTip(root, tip, false); return; }
-    if (!renderTip(tip, node)) return;
+    if (event instanceof PointerEvent && tooltipDelay(root) > 0) { requestPointerTip(root, tip, node, event); return; }
+    cancelTooltipRequest(root);
+    if (displayTip(tip, node, event)) rememberImmediateTooltip(root, tip, node, event);
+  };
+  const displayTip = (tip, node, event) => {
+    if (!renderTip(tip, node)) return false;
     tip.hidden = false;
     moveTip(tip, event, node);
+    return true;
   };
   const moveTip = (tip, event, node) => {
-    if (tip.hidden) return;
-    let clientX = event && event.clientX;
-    let clientY = event && event.clientY;
-    if ((!Number.isFinite(clientX) || !Number.isFinite(clientY)) && node && node.getBoundingClientRect) {
-      const rect = node.getBoundingClientRect();
-      clientX = rect.left + rect.width / 2;
-      clientY = rect.top + rect.height / 2;
-    }
-    if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
-      clientX = 24;
-      clientY = 24;
-    }
-    const tipWidth = tip.offsetWidth || 0;
-    const tipHeight = tip.offsetHeight || 0;
-    const maxX = Math.max(8, window.innerWidth - tipWidth - 8);
-    const maxY = Math.max(8, window.innerHeight - tipHeight - 8);
-    const x = Math.max(8, Math.min(maxX, clientX + 14));
-    const y = Math.max(8, Math.min(maxY, clientY + 14));
-    tip.style.left = x + 'px';
-    tip.style.top = y + 'px';
+    updateTooltipPointer(tip, node, event);
+    positionTooltip(tip, event, node);
   };
   const targetKey = (target) => target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
   const compareItems = (root) => {
@@ -382,6 +406,7 @@
     return items;
   };
   const hideTip = (root, tip, force) => {
+    cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
     // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
     const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
@@ -391,12 +416,14 @@
       showTip(root, tip, focused);
       return;
     }
+    forgetTooltipPosition(tip);
     tip.hidden = true;
     tip.classList.remove('cfx-tooltip--pinned');
     root.removeAttribute('data-cfx-tooltip-pinned');
     root.removeAttribute('data-cfx-pinned-target');
   };
   const pinTip = (root, tip, node, event) => {
+    cancelTooltipRequest(root);
     if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);
@@ -415,6 +442,12 @@
   };
   // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
+  // Both readout lifetime and keyboard availability follow the same native paint inputs.
+  // Adapter state and paint-probe attributes are excluded so observing paint cannot observe itself.
+  const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
+    'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
+    'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
+    'stop-color', 'stop-opacity', 'font-size'];
   // Cache only for this render: host CSS can change between successive focus and pointer events.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
@@ -555,22 +588,26 @@
     }
     return null;
   };
-  const observationPaint = (node, styles) => paintAncestorsVisible(node, styles)
-    ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  const observationPaint = (node, styles) => withNativeHighlightPaint(node, () => {
+    // A probe suspends adapter opacity only; use fresh live style values after the suspension.
+    if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
+    return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
+  });
+  const retainedGeometryFact = (node) => ['zero', 'precision-collapse', 'layout-collapse'].includes((node.dataset || {}).cfxGeometryStatus);
   // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
   // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
   const pointerTargetPaint = (node, styles = new Map()) => {
     if (!node || !isInteractiveTarget(node)) return null;
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
     if (legend) return childPaint(node, true, styles);
-    if (node.closest('.cfx-series-muted') || ['zero', 'precision-collapse'].includes(node.dataset.cfxGeometryStatus)) return null;
+    if (node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
     return observationPaint(node, styles);
   };
   const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
     if (pointerTargetPaint(node, styles)) return true;
-    // Authored zero/precision-collapse facts remain a keyboard readout, without becoming pointer targets.
+    // Authored facts without painted geometry remain a keyboard readout, without becoming pointer targets.
     const pointer = event instanceof PointerEvent || event instanceof MouseEvent && event.detail > 0;
-    return !pointer && ['zero', 'precision-collapse'].includes((node.dataset || {}).cfxGeometryStatus)
+    return !pointer && retainedGeometryFact(node)
       && paintAncestorsVisible(node, styles) && keyboardTargetAvailable(node);
   };
   const paintColour = (node, styles = new Map()) => {
@@ -624,11 +661,313 @@
       swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);
       if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
       list.append(name, value);
+      dimensionTooltipRows(row.point).forEach((dimension) => {
+        const term = document.createElement('dt'), measurement = document.createElement('dd');
+        term.dataset.cfxTooltipDimension = dimension.dimension;
+        term.dataset.cfxTooltipObservation = row.key;
+        term.dataset.cfxTooltipPoint = row.point.dataset.cfxPoint;
+        term.dataset.cfxTooltipSourcePoint = row.source;
+        term.textContent = row.name + ' · ' + dimension.name; measurement.textContent = dimension.value;
+        if (row.state === 'quiet' || row.state === 'success') { term.className = 'cfx-tooltip__quiet'; measurement.className = 'cfx-tooltip__quiet'; }
+        list.append(term, measurement);
+      });
     });
     tip.appendChild(list);
     return true;
   };
-  // Separately painted captions are pointer surfaces of their declared native point, never new observations.
+  // Timing is scoped to one chart and semantic target; hover and guide notifications stay immediate.
+  const tooltipRequests = new WeakMap();
+  const pendingTooltips = new Set();
+  let tooltipObserver = null;
+  const tooltipObservedNodes = new Map();
+  // A closed shadow tree is still reachable from its chart. Keep every enclosing tree in the lifetime boundary.
+  const tooltipRootTrees = (root) => {
+    const trees = [];
+    for (let tree = root.getRootNode(); tree; tree = tree.host && tree.host.getRootNode()) trees.push(tree);
+    return trees;
+  };
+  const tooltipLifetimeNodes = (root) => {
+    const nodes = [];
+    for (let node = root; node; node = node.parentNode || node.host) nodes.push(node);
+    return nodes;
+  };
+  const tooltipDelay = (root) => {
+    const value = Number(root.dataset.cfxTooltipDelay || 0);
+    return Number.isInteger(value) && value >= 0 && value <= 2147483647 ? value : 0;
+  };
+  const removePendingTooltip = (request) => {
+    if (!pendingTooltips.delete(request)) return;
+    if (!pendingTooltips.size && tooltipObserver) {
+      tooltipObserver.disconnect(); tooltipObserver = null; tooltipObservedNodes.clear();
+    } else if (tooltipObserver) {
+      // A shared observer cannot unobserve one node or downgrade its subtree boundary. Release canceled hosts.
+      // Preserve queued removals for surviving requests before disconnect discards the native record queue.
+      checkPendingTooltipMutations(tooltipObserver.takeRecords());
+      if (!tooltipObserver) return;
+      tooltipObserver.disconnect(); tooltipObservedNodes.clear();
+      for (const pending of pendingTooltips) watchPendingTooltips(pending);
+    }
+  };
+  const cancelTooltipRequest = (root) => {
+    const request = tooltipRequests.get(root);
+    if (!request) return;
+    if (request.timer !== undefined) window.clearTimeout(request.timer);
+    removePendingTooltip(request);
+    tooltipRequests.delete(root);
+  };
+  const tooltipRequestAvailable = ({ root, tip, node }) => root.isConnected && tip.isConnected && root.contains(tip)
+    && node.isConnected && root.contains(node) && hasFeature(root, 'Tooltips')
+    && root.dataset.cfxTooltipPinned !== 'true' && !!pointerTargetPaint(node);
+  const currentPointerTooltip = (root, event) => {
+    if (!event || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY) || !hasFeature(root, 'Tooltips')) return null;
+    // The event's old hit can outlive a scroll, reflow or host update. Resolve the actual native surface again.
+    let hit = root.ownerDocument.elementFromPoint(event.clientX, event.clientY);
+    const trees = tooltipRootTrees(root);
+    // Descend only through the actual enclosing host hit: outer dialogs must continue to obscure the chart.
+    for (let index = trees.length - 2; index >= 0; index--) {
+      if (hit !== trees[index].host) return null;
+      hit = trees[index].elementFromPoint(event.clientX, event.clientY);
+    }
+    if (!hit || !root.contains(hit)) return null;
+    const legend = hit && hit.closest('[data-cfx-role="legend-item"]');
+    if (legend && root.contains(legend) && pointerTargetPaint(legend)) return legend;
+    const candidates = pointerCandidates(root, { target: hit, clientX: event.clientX, clientY: event.clientY }, root.dataset.cfxTooltipRange !== 'exact');
+    const point = acquiredTooltipPoint(root, candidates);
+    return point && point.node;
+  };
+  const checkPendingTooltipMutations = (records) => {
+    // Native paint probes are synchronous reads, not host changes. Observing their own suspension
+    // would queue another availability probe indefinitely while a pointer request is pending.
+    records = records.filter(record => record.type !== 'attributes' || record.attributeName !== 'data-cfx-highlight-probe');
+    if (!records.length) return;
+    for (const pending of Array.from(pendingTooltips)) {
+      const removed = records.some(record => record.type === 'childList'
+        && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)
+          || pending.nodes.some(boundary => node.contains(boundary))));
+      // Ancestor child-list delivery is needed for detach, but unrelated dashboard updates need no paint scan.
+      const paintChanged = records.some(record => pending.root.contains(record.target)
+        || record.type === 'attributes' && pending.nodes.includes(record.target));
+      if (removed || paintChanged && !tooltipRequestAvailable(pending)) cancelTooltipRequest(pending.root);
+    }
+  };
+  const watchPendingTooltips = (request) => {
+    // Observe only while a request is queued, so a detached or briefly replaced host cannot retain a long timer.
+    if (!tooltipObserver) tooltipObserver = new MutationObserver(checkPendingTooltipMutations);
+    for (const node of request.nodes) {
+      const subtree = node === request.root;
+      if (tooltipObservedNodes.has(node) && (tooltipObservedNodes.get(node) || !subtree)) continue;
+      // Descendants belong to the chart. Enclosing elements and shadow hosts contribute only their own style and detach.
+      tooltipObserver.observe(node, { childList: true, attributes: node instanceof Element, subtree });
+      tooltipObservedNodes.set(node, subtree);
+    }
+  };
+  const requestPointerTip = (root, tip, node, event) => {
+    const key = targetKey(targetIdentity(node));
+    const previous = tooltipRequests.get(root);
+    if (previous && previous.key === key && (previous.pointerId === undefined || previous.pointerId === event.pointerId)) {
+      previous.node = node; previous.event = event; previous.pointerId = event.pointerId;
+      if (previous.shown) displayTip(tip, node, event);
+      return;
+    }
+    cancelTooltipRequest(root);
+    tip.hidden = true;
+    const request = { root, tip, node, key, event, pointerId: event.pointerId, shown: false, nodes: tooltipLifetimeNodes(root) };
+    tooltipRequests.set(root, request);
+    pendingTooltips.add(request);
+    watchPendingTooltips(request);
+    request.timer = window.setTimeout(() => {
+      removePendingTooltip(request);
+      request.timer = undefined;
+      if (tooltipRequests.get(root) !== request) return;
+      const acquired = tooltipRequestAvailable(request) && currentPointerTooltip(root, request.event);
+      if (!acquired || targetKey(targetIdentity(acquired)) !== request.key) { cancelTooltipRequest(root); return; }
+      request.node = acquired;
+      request.shown = true;
+      displayTip(tip, acquired, request.event);
+    }, tooltipDelay(root));
+  };
+  // An immediate focus readout is already shown for this identity; pointer handoff must not hide it again.
+  const rememberImmediateTooltip = (root, tip, node, event) => {
+    if (tooltipDelay(root) > 0) tooltipRequests.set(root, { root, tip, node, event, key: targetKey(targetIdentity(node)), shown: true });
+  };
+  const ownsTooltipPointer = (root, event) => {
+    const request = tooltipRequests.get(root);
+    return !(event instanceof PointerEvent) || !request || request.pointerId === undefined || request.pointerId === event.pointerId;
+  };
+  const updateTooltipPointer = (tip, node, event) => {
+    if (!(event instanceof PointerEvent)) return;
+    const root = tip.closest('.cfx-interactive-chart'), request = root && tooltipRequests.get(root);
+    if (request && !request.shown && ownsTooltipPointer(root, event) && request.key === targetKey(targetIdentity(node))) request.event = event;
+  };
+  const retainPointerTip = (root, event) => {
+    const request = tooltipRequests.get(root);
+    if (!request || !tooltipRequestAvailable(request)) return false;
+    const node = currentPointerTooltip(root, event);
+    if (!node || targetKey(targetIdentity(node)) !== request.key) return false;
+    request.node = node; request.event = event;
+    return true;
+  };
+  // Screen placement belongs to the Html adapter; target acquisition supplies the canonical native node.
+  const tooltipPositions = new WeakMap();
+  const activeTooltipPositions = new Set();
+  const tooltipPositionTrees = new Set();
+  let tooltipPositionFrame = 0, tooltipPositionObserver = null, tooltipPositionResize = null;
+  const tooltipDirections = {
+    top: [0, -1], 'top-right': [1, -1], right: [1, 0], 'bottom-right': [1, 1],
+    bottom: [0, 1], 'bottom-left': [-1, 1], left: [-1, 0], 'top-left': [-1, -1]
+  };
+  const forgetTooltipPosition = (tip) => {
+    const state = tooltipPositions.get(tip);
+    tooltipPositions.delete(tip);
+    if (state) activeTooltipPositions.delete(state);
+    if (tooltipPositionResize && state) tooltipPositionResize.unobserve(state.stage);
+    if (activeTooltipPositions.size) {
+      if (tooltipPositionObserver && Array.from(tooltipPositionTrees).some(tree =>
+        !Array.from(activeTooltipPositions).some(current => current.trees.includes(tree)))) {
+        // Drain surviving hosts' removals before rebuilding registrations to release unused shadow trees.
+        checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
+        if (!tooltipPositionObserver) return;
+        tooltipPositionObserver.disconnect(); tooltipPositionTrees.clear();
+        for (const current of activeTooltipPositions) watchTooltipPositionTrees(current);
+      }
+      return;
+    }
+    if (tooltipPositionObserver) { tooltipPositionObserver.disconnect(); tooltipPositionObserver = null; tooltipPositionTrees.clear(); }
+    if (tooltipPositionResize) { tooltipPositionResize.disconnect(); tooltipPositionResize = null; }
+    window.removeEventListener('resize', queueTooltipPositionRefresh);
+    document.removeEventListener('scroll', queueTooltipPositionRefresh, true);
+    document.removeEventListener('transitionend', queueTooltipPositionRefresh, true);
+    if (tooltipPositionFrame) { cancelAnimationFrame(tooltipPositionFrame); tooltipPositionFrame = 0; }
+  };
+  const tooltipPositionAvailable = (state) => state.root.isConnected && state.tip.isConnected && state.node.isConnected
+    && state.root.contains(state.tip) && state.root.contains(state.node) && !state.tip.hidden && !state.root.hidden
+    && hasFeature(state.root, 'Tooltips') && state.stage.getClientRects().length > 0
+    && (!state.paintChanged || tooltipReadoutAvailable(state.node, state.readoutEvent));
+  const queueTooltipPositionRefresh = (invalidation) => {
+    // Native geometry events can change clipping or responsive paint without a DOM attribute mutation.
+    if (invalidation) for (const state of activeTooltipPositions) state.paintChanged = true;
+    if (tooltipPositionFrame || !activeTooltipPositions.size) return;
+    tooltipPositionFrame = requestAnimationFrame(() => {
+      tooltipPositionFrame = 0;
+      for (const state of Array.from(activeTooltipPositions)) {
+        if (state.tip.hidden) { forgetTooltipPosition(state.tip); continue; }
+        if (!tooltipPositionAvailable(state)) { hideTip(state.root, state.tip, true); continue; }
+        state.paintChanged = false;
+        placeTooltip(state, true);
+      }
+    });
+  };
+  const checkTooltipPositionMutations = (records) => {
+    // Placement writes cannot change target paint or layout. External tooltip styles still invalidate geometry.
+    records = records.filter(record => {
+      const placed = tooltipPositions.get(record.target);
+      return !(placed && record.type === 'attributes' && record.attributeName === 'style'
+        && placed.style === placed.tip.getAttribute('style'));
+    });
+    if (!records.length) return;
+    for (const current of Array.from(activeTooltipPositions)) {
+      // A new delayed target can hide a shown readout. Release geometry without cancelling its new request.
+      if (current.tip.hidden) { forgetTooltipPosition(current.tip); continue; }
+      const removed = records.some(record => record.type === 'childList'
+        && Array.from(record.removedNodes).some(node => node.contains(current.root) || node.contains(current.node) || node.contains(current.tip)
+          || current.nodes.some(boundary => node.contains(boundary))));
+      if (removed) { hideTip(current.root, current.tip, true); continue; }
+      // Other dashboard content may move this chart, but only the chart or its ancestors invalidate paint.
+      if (records.some(record => !current.tip.contains(record.target) && (current.root.contains(record.target)
+        || record.type === 'attributes' && current.nodes.includes(record.target)))) current.paintChanged = true;
+    }
+    queueTooltipPositionRefresh();
+  };
+  const watchTooltipPositionTrees = (state) => {
+    for (const tree of state.trees) {
+      if (tooltipPositionTrees.has(tree)) continue;
+      tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
+        attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
+      tooltipPositionTrees.add(tree);
+    }
+  };
+  const watchTooltipPosition = (state) => {
+    if (activeTooltipPositions.has(state)) return;
+    activeTooltipPositions.add(state);
+    if (!tooltipPositionObserver) {
+      // Shared listeners exist only while a readout is visible, including pointer and pinned readouts.
+      window.addEventListener('resize', queueTooltipPositionRefresh);
+      document.addEventListener('scroll', queueTooltipPositionRefresh, true);
+      document.addEventListener('transitionend', queueTooltipPositionRefresh, true);
+      tooltipPositionObserver = new MutationObserver(checkTooltipPositionMutations);
+      if (typeof ResizeObserver !== 'undefined') tooltipPositionResize = new ResizeObserver(queueTooltipPositionRefresh);
+    }
+    watchTooltipPositionTrees(state);
+    if (tooltipPositionResize) tooltipPositionResize.observe(state.stage);
+  };
+  const refreshTooltipPosition = (root) => {
+    const state = tooltipPositions.get(root.querySelector('.cfx-tooltip'));
+    if (state && activeTooltipPositions.has(state)) { state.paintChanged = true; queueTooltipPositionRefresh(); }
+  };
+  const tooltipAnchorRect = (state) => {
+    if (state.anchor === 'chart') return state.stage.getBoundingClientRect();
+    const rect = state.node.getBoundingClientRect();
+    if (state.anchor === 'node') return rect;
+    let x = state.event?.clientX, y = state.event?.clientY;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) { x = rect.left + rect.width / 2; y = rect.top + rect.height / 2; }
+    if (!Number.isFinite(x) || !Number.isFinite(y)) { x = 24; y = 24; }
+    return { left: x, right: x, top: y, bottom: y, width: 0, height: 0 };
+  };
+  const tooltipPositionGeometry = (state, anchor) => {
+    const stage = state.stage.getBoundingClientRect(), tip = state.tip.getBoundingClientRect();
+    return [anchor.left, anchor.top, anchor.width, anchor.height, stage.left, stage.top, stage.width, stage.height,
+      tip.left, tip.top, tip.width, tip.height, window.innerWidth, window.innerHeight];
+  };
+  const placeTooltip = (state, skipUnchanged = false) => {
+    const { root, tip } = state, anchor = tooltipAnchorRect(state);
+    const geometry = tooltipPositionGeometry(state, anchor);
+    if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
+    // Measure at a stable origin, then keep the measured width while positioning. This prevents
+    // fixed-position shrink-to-fit from changing the readout as it approaches a containing block's edge.
+    tip.style.left = '0px'; tip.style.top = '0px';
+    tip.style.width = '';
+    tip.style.width = getComputedStyle(tip).width;
+    const origin = tip.getBoundingClientRect();
+    tip.style.left = '1px'; tip.style.top = '1px';
+    const unit = tip.getBoundingClientRect();
+    // The one-pixel probe converts screen coordinates through ordinary translated/scaled host blocks.
+    const scaleX = unit.left - origin.left || 1, scaleY = unit.top - origin.top || 1;
+    const gap = Number(root.dataset.cfxTooltipGap ?? 14);
+    const offsetX = Number(root.dataset.cfxTooltipOffsetX || 0), offsetY = Number(root.dataset.cfxTooltipOffsetY || 0);
+    const placements = (root.dataset.cfxTooltipPlacements || 'bottom-right').split(',');
+    const candidates = placements.map(placement => {
+      const [dx, dy] = tooltipDirections[placement] || tooltipDirections['bottom-right'];
+      return {
+        x: (dx > 0 ? anchor.right + gap : dx < 0 ? anchor.left - gap - unit.width : anchor.left + (anchor.width - unit.width) / 2) + offsetX,
+        y: (dy > 0 ? anchor.bottom + gap : dy < 0 ? anchor.top - gap - unit.height : anchor.top + (anchor.height - unit.height) / 2) + offsetY
+      };
+    });
+    const position = candidates.find(candidate => candidate.x >= 8 && candidate.y >= 8
+      && candidate.x + unit.width <= window.innerWidth - 8 && candidate.y + unit.height <= window.innerHeight - 8) || candidates[0];
+    const x = clamp(position.x, 8, Math.max(8, window.innerWidth - unit.width - 8));
+    const y = clamp(position.y, 8, Math.max(8, window.innerHeight - unit.height - 8));
+    tip.style.left = (x - origin.left) / scaleX + 'px';
+    tip.style.top = (y - origin.top) / scaleY + 'px';
+    state.style = tip.getAttribute('style');
+    state.geometry = tooltipPositionGeometry(state, anchor);
+  };
+  const positionTooltip = (tip, event, node) => {
+    if (tip.hidden) return;
+    const root = tip.closest('.cfx-interactive-chart'), stage = root && root.querySelector('.cfx-stage');
+    if (!root || !stage || !node) return;
+    let state = tooltipPositions.get(tip);
+    const pinned = state && root.dataset.cfxTooltipPinned === 'true' && state.key === root.dataset.cfxPinnedTarget;
+    if (!state) { state = { root, tip, stage, trees: tooltipRootTrees(root), nodes: tooltipLifetimeNodes(root) }; tooltipPositions.set(tip, state); }
+    // A pin retains its acquisition mode: later pointer movement must not invalidate a keyboard-only fact.
+    if (!pinned) { state.node = node; state.key = targetKey(targetIdentity(node)); state.readoutEvent = event; }
+    state.event = event; state.anchor = root.dataset.cfxTooltipAnchor || 'pointer';
+    state.paintChanged = true;
+    if (!tooltipPositionAvailable(state)) { hideTip(root, tip, true); return; }
+    state.paintChanged = false;
+    placeTooltip(state);
+    watchTooltipPosition(state);
+  };
+  // Separately painted captions are pointer surfaces of their declared native target, never new observations.
   const pointLabelTarget = (root, target) => {
     const label = target instanceof Element ? target.closest('[data-cfx-label-for]') : null;
     const point = label && label._cfxLabelTarget;
@@ -708,7 +1047,8 @@
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
       }
-      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = xLabels.get(Number(data.cfxX)) || '';
+      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = data.cfxCategoryLabel !== undefined
+        ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX)) || '';
       if (data.cfxRole === 'legend-item') return;
       const region = regions.get(data.cfxSourceId || '');
       // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
@@ -730,8 +1070,11 @@
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
       // Retained numeric facts have keyboard semantics without a pointer surface.
-      if (['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return;
-      if (box.width > 0 && box.height > 0) return;
+      if (retainedGeometryFact(node)) return;
+      // A hollow candle's unpainted interior still belongs to its observation's browser target.
+      const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
+        && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
+      if (box.width > 0 && box.height > 0 && !hollowCandle) return;
       const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const width = Math.max(8, region.width); const height = Math.max(8, region.height);
       hit.setAttribute('x', region.x + (region.width - width) / 2);
@@ -744,11 +1087,121 @@
     const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
     svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
       const mark = marks.get(label.dataset.cfxLabelFor);
-      const point = mark && mark.closest('[data-cfx-point]');
+      const point = mark && mark.closest('[data-cfx-point],[data-cfx-target-kind]');
       if (!point || point.closest('[data-cfx-role="legend-item"]') || !label.querySelector('text')) return;
       label._cfxLabelTarget = point;
       (point._cfxPointLabels ||= []).push(label);
     });
+  };
+  // Transient HTML paint is separate from native primitives and their current host CSS.
+  // The probe attribute is deliberately outside the scoped availability observer's attribute filter.
+  const withNativeHighlightPaint = (node, read) => {
+    const root = node && node.closest('.cfx-interactive-chart');
+    if (!root || !root._cfxBranchHighlights || root.hasAttribute('data-cfx-highlight-probe')) return read();
+    root.setAttribute('data-cfx-highlight-probe', '');
+    try { return read(); } finally { root.removeAttribute('data-cfx-highlight-probe'); }
+  };
+  const prepareRootBranchHighlights = (root) => {
+    if (root.dataset.cfxHighlightMode !== 'root-branch') return;
+    // Prepared targets normalize family names; native metadata also accepts the enum spelling.
+    const nodes = Array.from(root.querySelectorAll('[data-cfx-kind="sunburst" i][data-cfx-target-kind="node"]'));
+    if (!nodes.length) return;
+    root._cfxBranchHighlights = nodes;
+    nodes.forEach((node) => {
+      node.dataset.cfxHighlightManaged = 'true';
+      const paint = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      paint.setAttribute('data-cfx-highlight-paint', '');
+      // Keep accessible names on the identity owner. Captions and hatches stay with their native mark.
+      Array.from(node.children).filter(child => !child.matches('title,desc')).forEach(child => paint.appendChild(child));
+      node.appendChild(paint);
+    });
+  };
+  const highlightStyle = (root, group) => {
+    const prefix = 'data-cfx-highlight-' + group + '-';
+    const result = {};
+    ['stroke', 'stroke-width', 'opacity'].forEach(key => {
+      const value = root.getAttribute(prefix + key);
+      if (value !== null) result[key] = value;
+    });
+    return result;
+  };
+  const highlightOutline = (paint, style) => {
+    const primary = paint.querySelector('[data-cfx-role="sunburst-segment-mark"]');
+    let outline = paint.querySelector('[data-cfx-highlight-outline]');
+    if (!primary || style.stroke === undefined && style['stroke-width'] === undefined) {
+      if (outline) outline.remove();
+      return;
+    }
+    // Copy only the primary geometry: no hatch, IDs, targets, tab stops or native paint attributes.
+    if (!outline) {
+      outline = document.createElementNS('http://www.w3.org/2000/svg', primary.localName);
+      outline.setAttribute('data-cfx-role', 'interaction-highlight');
+      outline.setAttribute('data-cfx-highlight-outline', '');
+      outline.setAttribute('aria-hidden', 'true');
+      outline.setAttribute('focusable', 'false');
+      paint.insertBefore(outline, paint.firstChild);
+    }
+    ['d', 'transform', 'fill-rule'].forEach(key => {
+      const value = primary.getAttribute(key);
+      if (value === null) outline.removeAttribute(key); else outline.setAttribute(key, value);
+    });
+    const native = getComputedStyle(primary);
+    const width = Number(style['stroke-width'] ?? 2.5);
+    // Native stroke stays on top. The extra width exposes the requested outline outside it.
+    paint.style.setProperty('--cfx-highlight-stroke', style.stroke ?? native.stroke);
+    paint.style.setProperty('--cfx-highlight-stroke-width', width > 0 ? String(Math.min(Number.MAX_VALUE, (parseFloat(native.strokeWidth) || 0) + width * 2)) : '0');
+  };
+  const clearRootBranchHighlight = (root) => {
+    (root._cfxBranchHighlights || []).forEach(node => {
+      delete node.dataset.cfxHighlightState;
+      const paint = node.querySelector('[data-cfx-highlight-paint]');
+      paint.style.removeProperty('--cfx-highlight-opacity');
+      paint.style.removeProperty('--cfx-highlight-stroke');
+      paint.style.removeProperty('--cfx-highlight-stroke-width');
+      const outline = paint.querySelector('[data-cfx-highlight-outline]');
+      if (outline) outline.remove();
+    });
+  };
+  const refreshRootBranchHighlightAvailability = (root) => {
+    let hiddenActive = false;
+    withNativeHighlightPaint(root, () => (root._cfxBranchHighlights || []).forEach(node => {
+      const available = !!pointerTargetPaint(node);
+      node.toggleAttribute('data-cfx-highlight-unavailable', !available);
+      // Zero/collapsed facts deliberately have no pointer paint, but keep keyboard readouts.
+      if (!available && node.dataset.cfxHighlightState === 'item' && node.dataset.cfxGeometryStatus === 'visible') hiddenActive = true;
+    }));
+    // Host paint is local to this chart; losing it must not clear an available peer's hover.
+    if (hiddenActive) clearHover(root, true, false);
+  };
+  const applyRootBranchHighlight = (root, active) => {
+    const nodes = root._cfxBranchHighlights;
+    if (!nodes || !nodes.includes(active)) return false;
+    if (!tooltipReadoutAvailable(active, null)) return false;
+    const branch = active.dataset.cfxBranchRoot;
+    const graphite = root.dataset.cfxLook === 'graphite';
+    const branchStyle = highlightStyle(root, 'branch'), itemStyle = highlightStyle(root, 'item');
+    const otherItemStyle = highlightStyle(root, 'other-item'), otherBranchStyle = highlightStyle(root, 'other-branch');
+    withNativeHighlightPaint(root, () => nodes.forEach(node => {
+      const ownBranch = node.dataset.cfxBranchRoot;
+      const highlighted = node === active;
+      const related = branch && ownBranch === branch;
+      // The central root has no branch. Focusing it leaves the surrounding branches at native strength.
+      let style = {}, state = 'neutral';
+      if (highlighted) { style = { opacity: '1', ...(branch ? branchStyle : {}), ...itemStyle }; state = 'item'; }
+      else if (related) { style = { opacity: graphite ? '1' : '.82', ...branchStyle, ...otherItemStyle }; state = 'branch'; }
+      else if (branch && ownBranch) { style = { opacity: graphite ? '.3' : '.38', ...otherBranchStyle }; state = 'other-branch'; }
+      node.dataset.cfxHighlightState = state;
+      setNodeHovered(node, highlighted, !!related && !highlighted);
+      const paint = node.querySelector('[data-cfx-highlight-paint]');
+      paint.style.setProperty('--cfx-highlight-opacity', style.opacity ?? '1');
+      highlightOutline(paint, style);
+    }));
+    root.dataset.cfxHovering = 'true';
+    root.dataset.cfxHoverMode = 'root-branch';
+    root.dataset.cfxHoverUnit = 'branch';
+    root.dataset.cfxHoverLabel = text(active);
+    refreshRootBranchHighlightAvailability(root);
+    return true;
   };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
@@ -770,18 +1223,22 @@
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
+    if (data.cfxWaterfallKind) return waterfallTooltipRows(item);
     const reference = legendTarget(item);
+    const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
+    const svg = item.closest('svg');
+    const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
+    const financialRows = mark && financialTooltipRows(mark);
+    if (financialRows) return financialRows.concat(dimensionTooltipRows(mark));
     if (reference) {
       const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
-      const svg = item.closest('svg');
-      const mark = svg && referencedTargetNode(svg, { ...reference, seriesKey: seriesKey(item) });
-      return rows.concat(mark ? colorTooltipRows(mark) : []);
+      return rows.concat(mark ? dimensionTooltipRows(mark) : []);
     }
     const values = legendSeriesValues(item);
     if (!values.length) return [];
     if (data.cfxPoint !== undefined) {
       const entry = values.find((candidate) => String(candidate.point) === data.cfxPoint);
-      return entry ? [{ name: 'Value', value: summaryValue(entry.value) }] : [];
+      return entry ? [{ name: 'Value', value: summaryValue(entry.value) }].concat(mark ? dimensionTooltipRows(mark) : []) : [];
     }
     const kind = (data.cfxKind || '').toLowerCase();
     if (totalSeriesKinds.has(kind)) return [{ name: 'Total', value: summaryValue(values.reduce((sum, entry) => sum + entry.value, 0)) }];
@@ -817,6 +1274,58 @@
     tip.appendChild(list);
     return true;
   };
+  // Absolute overlays and SVG pan translations use stage CSS pixels, including its scroll origin.
+  // Browser hit geometry stays in screen pixels; account for axis-aligned host scaling and the stage border.
+  const stagePoint = (stage, point, bounded = false) => {
+    const rect = stage.getBoundingClientRect();
+    const scaleX = rect.width / stage.offsetWidth || 1;
+    const scaleY = rect.height / stage.offsetHeight || 1;
+    const x = (point.x - rect.left) / scaleX - stage.clientLeft + stage.scrollLeft;
+    const y = (point.y - rect.top) / scaleY - stage.clientTop + stage.scrollTop;
+    return bounded ? {
+      x: clamp(x, stage.scrollLeft, stage.scrollLeft + stage.clientWidth),
+      y: clamp(y, stage.scrollTop, stage.scrollTop + stage.clientHeight)
+    } : { x, y };
+  };
+  const stagePointer = (stage, event, bounded = false) => stagePoint(stage, { x: event.clientX, y: event.clientY }, bounded);
+  // The guide spans only the visible viewport, so a Readable overlay cannot add scrollable content.
+  const positionStageViewport = (stage, overlay) => {
+    overlay.style.left = stage.scrollLeft + 'px';
+    overlay.style.top = stage.scrollTop + 'px';
+    overlay.style.width = stage.clientWidth + 'px';
+    overlay.style.height = stage.clientHeight + 'px';
+  };
+  // A guide belongs to the current viewport. Discard stale dimensions before they can enlarge a resized scroller.
+  // Share the existing resize lifecycle with keyboard availability, including initially hidden fragment hosts.
+  const bindStageLayout = (root, stage, crosshair) => {
+    if (!stage || !hasFeature(root, 'Crosshair') && !hasFeature(root, 'KeyboardNavigation')) return;
+    let width = stage.clientWidth, height = stage.clientHeight;
+    let frame = 0;
+    let observer;
+    const hideGuide = () => hideCrosshair(root, crosshair);
+    const queueRefresh = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (!root.isConnected) {
+          if (observer) observer.disconnect();
+          window.removeEventListener('resize', queueRefresh);
+          stage.removeEventListener('scroll', hideGuide);
+          return;
+        }
+        if (width !== stage.clientWidth || height !== stage.clientHeight) hideGuide();
+        width = stage.clientWidth;
+        height = stage.clientHeight;
+        refreshKeyboardNavigation(root);
+      });
+    };
+    stage.addEventListener('scroll', hideGuide, { passive: true });
+    window.addEventListener('resize', queueRefresh);
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(queueRefresh);
+      observer.observe(stage);
+    }
+  };
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const getState = (root) => ({
     zoom: Number(root.dataset.cfxZoom || '1'),
@@ -836,6 +1345,7 @@
     stage.style.setProperty('--cfx-zoom', state.zoom);
     stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
+    refreshTooltipPosition(root);
   };
   // The reset control is contextual: it exists only while the reader has changed the view.
   const viewChanged = (root) => {
@@ -1015,7 +1525,7 @@
     if (pointerTargetPaint(node)) return true;
     // Retained authored facts can have no filled geometry, while still belonging to the data component.
     const data = node.dataset;
-    if (!data.cfxTargetKind || !data.cfxTargetId || !['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return false;
+    if (!data.cfxTargetKind || !data.cfxTargetId || !retainedGeometryFact(node)) return false;
     const svg = node.ownerSVGElement;
     if (!svg) return false;
     // The viewport detects hidden hosts; CSS-hidden inner groups need their own ancestor check.
@@ -1025,7 +1535,7 @@
     const viewport = svg.getBoundingClientRect();
     return viewport.width > 0 && viewport.height > 0;
   };
-  const keyboardTargets = (root) => {
+  const keyboardTargets = (root) => withNativeHighlightPaint(root, () => {
     const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
     const candidateSet = new Set(candidates);
     const containers = new Set();
@@ -1043,7 +1553,7 @@
       seen.add(focusNode);
       return true;
     });
-  };
+  });
   const keyboardDataGroups = (nodes) => {
     const groups = new Map();
     nodes.forEach((node) => {
@@ -1074,6 +1584,7 @@
     branches.forEach((branch) => svg.appendChild(branch));
   };
   const refreshKeyboardNavigation = (root, focused) => {
+    refreshRootBranchHighlightAvailability(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
     const activeElement = root.getRootNode().activeElement;
@@ -1136,10 +1647,13 @@
       refreshKeyboardNavigation(root);
     });
     paintObserver.observe(root, { subtree: true, attributes: true,
-      attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'clip-path'] });
+      attributeFilter: paintAvailabilityAttributes });
   };
   const prepareKeyboardNavigation = (root) => {
-    if (!hasFeature(root, 'KeyboardNavigation')) return;
+    if (!hasFeature(root, 'KeyboardNavigation')) {
+      if (root._cfxBranchHighlights) bindKeyboardNavigationAvailability(root);
+      return;
+    }
     root._cfxKeyboardNavigation = { owned: new Set() };
     // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
@@ -1150,8 +1664,9 @@
     const stage = root.querySelector('.cfx-stage');
     if (!stage || !stage.contains(node)) return;
     const style = getComputedStyle(stage);
-    const stageBox = stage.getBoundingClientRect();
     const box = node.getBoundingClientRect();
+    const start = stagePoint(stage, { x: box.left, y: box.top });
+    const end = stagePoint(stage, { x: box.right, y: box.bottom });
     const scrollAxis = (overflow, extent, available, offset, start, end, itemStart, itemEnd) => {
       if (!['auto', 'scroll'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
@@ -1164,10 +1679,10 @@
       if (itemEnd > end) return offset + itemEnd - end;
       return offset;
     };
-    const left = stageBox.left + stage.clientLeft + 8;
-    const top = stageBox.top + stage.clientTop + 8;
-    stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, box.left, box.right);
-    stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, box.top, box.bottom);
+    const left = stage.scrollLeft + 8;
+    const top = stage.scrollTop + 8;
+    stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, start.x, end.x);
+    stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, start.y, end.y);
   };
   const focusKeyboardTarget = (root, node) => {
     const focusNode = targetFocusNode(node);
@@ -1348,6 +1863,7 @@
     return false;
   };
   const clearHover = (root, emit, sync) => {
+    clearRootBranchHighlight(root);
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
@@ -1383,6 +1899,8 @@
     if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
+  const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
+    : root._cfxBranchHighlights?.includes(node) ? 'root-branch' : 'series';
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
@@ -1392,7 +1910,8 @@
     if (!localNode && target.targetKind && target.targetId) return false;
     // A peer's equivalent mark may have a different local point ordinal or series position.
     const localTarget = localNode ? targetIdentity(localNode) : target;
-    const hoverMode = mode === 'shared' ? 'shared' : 'series';
+    const hoverMode = hoverModeForTarget(root, localNode, mode);
+    if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
     const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
     let matched = false;
@@ -1614,14 +2133,17 @@
     const range = root.dataset.cfxTooltipRange || 'distance';
     return range === 'nearest' || range === 'distance' && point.distance <= Number(root.dataset.cfxTooltipDistance ?? 120);
   };
+  const acquiredTooltipPoint = (root, candidates) => candidates && (tooltipAcquiresPoint(root, candidates.observation)
+    ? candidates.observation : tooltipAcquiresPoint(root, candidates.native) ? candidates.native : null);
   const showCrosshair = (root, crosshair, point, event) => {
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
-    const rect = stage.getBoundingClientRect();
+    const local = stagePoint(stage, point);
+    positionStageViewport(stage, crosshair);
     crosshair.hidden = false;
-    crosshair.style.setProperty('--cfx-crosshair-x', (point.x - rect.left) + 'px');
-    crosshair.style.setProperty('--cfx-crosshair-y', (point.y - rect.top) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-x', (local.x - stage.scrollLeft) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', (local.y - stage.scrollTop) + 'px');
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
     if (label) label.textContent = text(point.node);
     const target = targetIdentity(point.node);
@@ -1652,9 +2174,8 @@
     const searchNearest = guideEnabled || root.dataset.cfxTooltipRange !== 'exact';
     const candidates = pointerCandidates(root, event, searchNearest);
     const observation = candidates && candidates.observation;
-    const native = candidates && candidates.native;
     // Nearest/bounded acquisition can refine a line summary to a real observation; Exact retains the summary.
-    const tooltipPoint = tooltipAcquiresPoint(root, observation) ? observation : tooltipAcquiresPoint(root, native) ? native : null;
+    const tooltipPoint = acquiredTooltipPoint(root, candidates);
     const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
     if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
@@ -1664,8 +2185,8 @@
     }
     const point = tooltipPoint || guidePoint;
     const key = targetKey(targetIdentity(point.node));
-    const mode = point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
-      ? crosshairHoverMode(event, point.node) : 'series';
+    const mode = hoverModeForTarget(root, point.node, point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
+      ? crosshairHoverMode(event, point.node) : 'series');
     const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
     if (changed) setHover(root, point.node, true, true, mode);
     if (guidePoint) showCrosshair(root, crosshair, guidePoint, event);
@@ -2100,6 +2621,15 @@
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
     applyRenderedTargetContract(root);
+    prepareRootBranchHighlights(root);
+    if (root._cfxBranchHighlights) root.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      clearHover(root, true, true);
+      hideCrosshair(root, crosshair);
+      hideTip(root, tip, true);
+    });
     applyViewport(root, getState(root));
     renderCompare(root);
     if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());
@@ -2114,6 +2644,7 @@
       });
     }
     prepareKeyboardNavigation(root);
+    bindStageLayout(root, stage, crosshair);
     const targets = interactiveTargets(root);
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
@@ -2121,13 +2652,17 @@
       [node, ...labels].forEach(surface => {
         surface.addEventListener('pointerenter', (event) => {
           if (!pointerTargetPaint(node)) return;
+          if (!ownsTooltipPointer(root, event)) hideCrosshair(root, crosshair);
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
-        surface.addEventListener('pointermove', (event) => moveTip(tip, event, node));
-        surface.addEventListener('pointerleave', () => {
+        surface.addEventListener('pointermove', (event) => {
+          if (ownsTooltipPointer(root, event)) moveTip(tip, event, node);
+        });
+        surface.addEventListener('pointerleave', (event) => {
+          if (!ownsTooltipPointer(root, event)) return;
           clearHover(root, true, true);
-          hideTip(root, tip, false);
+          if (!retainPointerTip(root, event)) hideTip(root, tip, false);
         });
       });
       // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
@@ -2176,13 +2711,8 @@
         if (event.key === 'Enter' && focusNode.matches('a[href]')) return;
         event.preventDefault();
         event.stopPropagation();
-        if (focusNode !== node) {
-          toggleSelection(root, node);
-          pinTip(root, tip, node, event);
-          return;
-        }
-        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.shiftKey) toggleSeriesFocus(root, node, true, true);
-        else node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        // Keep the keyboard event: a synthetic click's finite (0,0) would replace the focused mark's position.
+        activateTarget(event);
       });
     });
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
@@ -2264,6 +2794,10 @@
       if (hasFeature(root, 'StepPlayback') && initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) startScenarioPlayback(root, initialRoute, 0, false, true);
     }
     if (stage) {
+      stage.addEventListener('pointerenter', (event) => {
+        // A new contact can acquire sparse plot space before any native mark receives its own entry.
+        if (!ownsTooltipPointer(root, event)) updateNearestPoint(root, crosshair, tip, event);
+      });
       stage.addEventListener('wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
         event.preventDefault();
@@ -2274,30 +2808,33 @@
         if (event.button !== 0) return;
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           const state = getState(root);
-          drag = { mode: 'pan', id: event.pointerId, x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY };
+          const point = stagePointer(stage, event);
+          drag = { mode: 'pan', id: event.pointerId, x: point.x, y: point.y, panX: state.panX, panY: state.panY };
+          event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
-          const rect = stage.getBoundingClientRect();
-          drag = { mode: 'brush', id: event.pointerId, left: event.clientX - rect.left, top: event.clientY - rect.top };
+          const point = stagePointer(stage, event, true);
+          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y };
           brush.hidden = false;
           brush.style.left = drag.left + 'px';
           brush.style.top = drag.top + 'px';
           brush.style.width = '0px';
           brush.style.height = '0px';
+          event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         }
       });
       stage.addEventListener('pointermove', (event) => {
         if (!drag || drag.id !== event.pointerId) {
+          if (!ownsTooltipPointer(root, event)) return;
           updateNearestPoint(root, crosshair, tip, event);
           return;
         }
         if (drag.mode === 'pan') {
-          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + event.clientX - drag.x, panY: drag.panY + event.clientY - drag.y });
+          const point = stagePointer(stage, event);
+          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
         } else if (drag.mode === 'brush' && brush) {
-          const rect = stage.getBoundingClientRect();
-          const x = clamp(event.clientX - rect.left, 0, rect.width);
-          const y = clamp(event.clientY - rect.top, 0, rect.height);
+          const { x, y } = stagePointer(stage, event, true);
           const left = Math.min(drag.left, x);
           const top = Math.min(drag.top, y);
           brush.style.left = left + 'px';
@@ -2325,13 +2862,15 @@
         stage.releasePointerCapture(event.pointerId);
         drag = null;
       });
-      stage.addEventListener('pointerleave', () => {
+      stage.addEventListener('pointerleave', (event) => {
+        if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      stage.addEventListener('pointercancel', () => {
-        drag = null;
+      stage.addEventListener('pointercancel', (event) => {
+        if (drag && drag.id === event.pointerId) drag = null;
+        if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
@@ -2354,6 +2893,7 @@
       if (brush) brush.hidden = true;
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
+      if (root._cfxBranchHighlights) clearHover(root, true, true);
       publishCompare(root, true);
       syncResetControl(root);
     });

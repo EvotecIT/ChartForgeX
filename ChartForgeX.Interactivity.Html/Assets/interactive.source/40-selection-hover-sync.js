@@ -134,6 +134,7 @@
     return false;
   };
   const clearHover = (root, emit, sync) => {
+    clearRootBranchHighlight(root);
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
@@ -169,6 +170,8 @@
     if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
+  const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
+    : root._cfxBranchHighlights?.includes(node) ? 'root-branch' : 'series';
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
@@ -178,7 +181,8 @@
     if (!localNode && target.targetKind && target.targetId) return false;
     // A peer's equivalent mark may have a different local point ordinal or series position.
     const localTarget = localNode ? targetIdentity(localNode) : target;
-    const hoverMode = mode === 'shared' ? 'shared' : 'series';
+    const hoverMode = hoverModeForTarget(root, localNode, mode);
+    if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
     const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
     let matched = false;
@@ -400,14 +404,17 @@
     const range = root.dataset.cfxTooltipRange || 'distance';
     return range === 'nearest' || range === 'distance' && point.distance <= Number(root.dataset.cfxTooltipDistance ?? 120);
   };
+  const acquiredTooltipPoint = (root, candidates) => candidates && (tooltipAcquiresPoint(root, candidates.observation)
+    ? candidates.observation : tooltipAcquiresPoint(root, candidates.native) ? candidates.native : null);
   const showCrosshair = (root, crosshair, point, event) => {
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
-    const rect = stage.getBoundingClientRect();
+    const local = stagePoint(stage, point);
+    positionStageViewport(stage, crosshair);
     crosshair.hidden = false;
-    crosshair.style.setProperty('--cfx-crosshair-x', (point.x - rect.left) + 'px');
-    crosshair.style.setProperty('--cfx-crosshair-y', (point.y - rect.top) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-x', (local.x - stage.scrollLeft) + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', (local.y - stage.scrollTop) + 'px');
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
     if (label) label.textContent = text(point.node);
     const target = targetIdentity(point.node);
@@ -438,9 +445,8 @@
     const searchNearest = guideEnabled || root.dataset.cfxTooltipRange !== 'exact';
     const candidates = pointerCandidates(root, event, searchNearest);
     const observation = candidates && candidates.observation;
-    const native = candidates && candidates.native;
     // Nearest/bounded acquisition can refine a line summary to a real observation; Exact retains the summary.
-    const tooltipPoint = tooltipAcquiresPoint(root, observation) ? observation : tooltipAcquiresPoint(root, native) ? native : null;
+    const tooltipPoint = acquiredTooltipPoint(root, candidates);
     const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
     if (!tooltipPoint && !guidePoint) {
       hideCrosshair(root, crosshair);
@@ -450,8 +456,8 @@
     }
     const point = tooltipPoint || guidePoint;
     const key = targetKey(targetIdentity(point.node));
-    const mode = point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
-      ? crosshairHoverMode(event, point.node) : 'series';
+    const mode = hoverModeForTarget(root, point.node, point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
+      ? crosshairHoverMode(event, point.node) : 'series');
     const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
     if (changed) setHover(root, point.node, true, true, mode);
     if (guidePoint) showCrosshair(root, crosshair, guidePoint, event);

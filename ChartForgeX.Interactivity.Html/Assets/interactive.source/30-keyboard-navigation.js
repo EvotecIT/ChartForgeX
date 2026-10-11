@@ -8,7 +8,7 @@
     if (pointerTargetPaint(node)) return true;
     // Retained authored facts can have no filled geometry, while still belonging to the data component.
     const data = node.dataset;
-    if (!data.cfxTargetKind || !data.cfxTargetId || !['zero', 'precision-collapse'].includes(data.cfxGeometryStatus)) return false;
+    if (!data.cfxTargetKind || !data.cfxTargetId || !retainedGeometryFact(node)) return false;
     const svg = node.ownerSVGElement;
     if (!svg) return false;
     // The viewport detects hidden hosts; CSS-hidden inner groups need their own ancestor check.
@@ -18,7 +18,7 @@
     const viewport = svg.getBoundingClientRect();
     return viewport.width > 0 && viewport.height > 0;
   };
-  const keyboardTargets = (root) => {
+  const keyboardTargets = (root) => withNativeHighlightPaint(root, () => {
     const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
     const candidateSet = new Set(candidates);
     const containers = new Set();
@@ -36,7 +36,7 @@
       seen.add(focusNode);
       return true;
     });
-  };
+  });
   const keyboardDataGroups = (nodes) => {
     const groups = new Map();
     nodes.forEach((node) => {
@@ -67,6 +67,7 @@
     branches.forEach((branch) => svg.appendChild(branch));
   };
   const refreshKeyboardNavigation = (root, focused) => {
+    refreshRootBranchHighlightAvailability(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
     const activeElement = root.getRootNode().activeElement;
@@ -129,10 +130,13 @@
       refreshKeyboardNavigation(root);
     });
     paintObserver.observe(root, { subtree: true, attributes: true,
-      attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'clip-path'] });
+      attributeFilter: paintAvailabilityAttributes });
   };
   const prepareKeyboardNavigation = (root) => {
-    if (!hasFeature(root, 'KeyboardNavigation')) return;
+    if (!hasFeature(root, 'KeyboardNavigation')) {
+      if (root._cfxBranchHighlights) bindKeyboardNavigationAvailability(root);
+      return;
+    }
     root._cfxKeyboardNavigation = { owned: new Set() };
     // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
@@ -143,8 +147,9 @@
     const stage = root.querySelector('.cfx-stage');
     if (!stage || !stage.contains(node)) return;
     const style = getComputedStyle(stage);
-    const stageBox = stage.getBoundingClientRect();
     const box = node.getBoundingClientRect();
+    const start = stagePoint(stage, { x: box.left, y: box.top });
+    const end = stagePoint(stage, { x: box.right, y: box.bottom });
     const scrollAxis = (overflow, extent, available, offset, start, end, itemStart, itemEnd) => {
       if (!['auto', 'scroll'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
@@ -157,10 +162,10 @@
       if (itemEnd > end) return offset + itemEnd - end;
       return offset;
     };
-    const left = stageBox.left + stage.clientLeft + 8;
-    const top = stageBox.top + stage.clientTop + 8;
-    stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, box.left, box.right);
-    stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, box.top, box.bottom);
+    const left = stage.scrollLeft + 8;
+    const top = stage.scrollTop + 8;
+    stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, start.x, end.x);
+    stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, start.y, end.y);
   };
   const focusKeyboardTarget = (root, node) => {
     const focusNode = targetFocusNode(node);

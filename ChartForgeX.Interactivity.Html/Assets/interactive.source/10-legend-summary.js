@@ -18,18 +18,22 @@
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
+    if (data.cfxWaterfallKind) return waterfallTooltipRows(item);
     const reference = legendTarget(item);
+    const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
+    const svg = item.closest('svg');
+    const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
+    const financialRows = mark && financialTooltipRows(mark);
+    if (financialRows) return financialRows.concat(dimensionTooltipRows(mark));
     if (reference) {
       const rows = data.cfxValue === undefined ? [] : [{ name: 'Value', value: data.cfxValue }];
-      const svg = item.closest('svg');
-      const mark = svg && referencedTargetNode(svg, { ...reference, seriesKey: seriesKey(item) });
-      return rows.concat(mark ? colorTooltipRows(mark) : []);
+      return rows.concat(mark ? dimensionTooltipRows(mark) : []);
     }
     const values = legendSeriesValues(item);
     if (!values.length) return [];
     if (data.cfxPoint !== undefined) {
       const entry = values.find((candidate) => String(candidate.point) === data.cfxPoint);
-      return entry ? [{ name: 'Value', value: summaryValue(entry.value) }] : [];
+      return entry ? [{ name: 'Value', value: summaryValue(entry.value) }].concat(mark ? dimensionTooltipRows(mark) : []) : [];
     }
     const kind = (data.cfxKind || '').toLowerCase();
     if (totalSeriesKinds.has(kind)) return [{ name: 'Total', value: summaryValue(values.reduce((sum, entry) => sum + entry.value, 0)) }];

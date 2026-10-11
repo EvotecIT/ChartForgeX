@@ -78,7 +78,9 @@ internal static partial class VisualMapCompiler {
                 var next = swatchTop + swatchHeight;
                 if (ChartHeatmapSurface.MapMidpointLabel(chart) != null) {
                     var center = area.Left + (ChartHeatmapSurface.MapScaleMidpointStep(chart, min, max, steps.Length) + .5) * swatchWidth;
-                    var width = Math.Min(area.Width, Math.Max(swatchWidth, builder.MeasureText(layout.Texts[1], style).Width));
+                    // Fit symmetrically around the stop so clipping at either key edge cannot move the text anchor.
+                    var width = Math.Min(2 * Math.Min(center - area.Left, area.Right - center),
+                        Math.Max(swatchWidth, builder.MeasureText(layout.Texts[1], style).Width));
                     VisualRadialPrimitives.Text(builder, layout.Texts[1], Intersect(new ChartRect(center - width / 2, next, width, row), area), style, "map-scale-midpoint-label", "map-scale-midpoint");
                     next += row;
                 }

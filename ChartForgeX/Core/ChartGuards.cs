@@ -45,6 +45,20 @@ internal static class ChartGuards {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.ValidateHourWeekdayHeatmapOwnership();
         ValidateRenderableChart(chart, preparing);
+        if (chart.Options.HeatmapColorScale != null && chart.Series.Any(series => series.IsCategoricalHeatmapRow
+            || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
+            throw new InvalidOperationException("Heatmap color scales require numeric rectangular, hexagonal or calendar heatmaps.");
+        if (chart.Options.RadialGeometry.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn))
+            throw new InvalidOperationException("Radial geometry corner radius requires numeric radial bars or columns.");
+        if (chart.Options.Sunburst.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
+            throw new InvalidOperationException("Sunburst corner radius requires a Sunburst chart.");
+        if (chart.Options.Sunburst.SecondaryLabelFormatter != null && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
+            throw new InvalidOperationException("Sunburst secondary labels require a Sunburst chart.");
+        if ((chart.Options.XAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
+            || chart.Options.YAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
+            || chart.Options.SecondaryYAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed)
+            && (chart.Series.Count == 0 || chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn)))
+            throw new NotSupportedException("Relative axis label orientation requires numeric radial bars or columns.");
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
@@ -59,7 +73,7 @@ internal static class ChartGuards {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts require at least one positive value.");
         }
 
-        if (!preparing && exclusiveKinds[0] == ChartSeriesKind.Waterfall && chart.Series[0].Points.Count == 0) {
+        if (!preparing && exclusiveKinds[0] == ChartSeriesKind.Waterfall && !chart.Series[0].HasSourceData) {
             throw new InvalidOperationException("Waterfall charts require at least one value.");
         }
 
@@ -116,8 +130,11 @@ internal static class ChartGuards {
     }
 
     private static void ValidateSeriesShape(ChartSeries series, bool preparing) {
+        series.ValidateWaterfall();
         series.ValidateInterpolation();
         series.ValidateMarkerAndRadarOptions();
+        series.ValidateFinancialOptions();
+        series.ValidateColorValues();
         if (ChartSeries.IsRelationshipKind(series.Kind)) series.ValidateRelationships(preparing);
         if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
             && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea)
@@ -212,7 +229,7 @@ internal static class ChartGuards {
             // A categorical matrix may list entities nothing is known about, so it can be empty; a numeric one cannot.
             if (!preparing && !chart.Series.Any(series => series.Points.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
             if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
-            if (chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
+            if (chart.Options.HeatmapColorScale == null && chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
                 throw new InvalidOperationException("Relative (count) heatmaps use a neutral sequential scale; the semantic status scale is reserved for status data.");
             }
         }

@@ -8,9 +8,10 @@ namespace ChartForgeX.Terminal;
 /// <summary>Exports terminal story playback and completed images.</summary>
 public static class TerminalStoryExtensions {
     /// <summary>Exports the exact command, output and table transcript in playback order.</summary>
+    /// <exception cref="InvalidOperationException">The expanded transcript exceeds 16 Mi UTF-16 characters.</exception>
     public static string ToTranscript(this TerminalStory story) {
         if (story == null) throw new ArgumentNullException(nameof(story));
-        return string.Join(Environment.NewLine, TerminalStoryLayout.Build(story).TranscriptLines);
+        return string.Join(Environment.NewLine, TerminalStoryTranscript.Build(story));
     }
 
     /// <summary>Saves the exact terminal transcript as UTF-8 text.</summary>

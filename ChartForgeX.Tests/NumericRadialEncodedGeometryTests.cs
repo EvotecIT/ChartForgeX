@@ -9,11 +9,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class NumericRadialEncodedGeometryTests {
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void RoundedNativeSlicesRetainTheirNonzeroFactWithoutInventingPaint(bool bars) {
+    [InlineData(true, 0)]
+    [InlineData(false, 0)]
+    [InlineData(true, 6)]
+    [InlineData(false, 6)]
+    public void EncodedNativeSlicesRetainTheirNonzeroFactWithoutInventingPaint(bool bars, double cornerRadius) {
         var chart = Create(bars);
-        Capture(chart, (bars ? "bar" : "column") + "-rounded");
+        chart.WithRadialGeometry(new(cornerRadius: cornerRadius));
+        if (cornerRadius > 0) chart.Series[0].WithPointFillPattern(0, ChartFillPattern.Crosshatch);
+        Capture(chart, (bars ? "bar" : "column") + "-precision-" + cornerRadius);
         var svg = XDocument.Parse(chart.ToSvg());
         var small = Point(svg, 0);
         Assert.Equal("1", (string?)small.Attribute("data-cfx-y"));

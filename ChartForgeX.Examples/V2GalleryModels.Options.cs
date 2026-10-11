@@ -35,8 +35,18 @@ public static partial class V2GalleryModels {
             return chart;
         }
         if (kind == ChartSeriesKind.Waterfall) {
-            var chart = Basic(kind, variant)!;
-            chart.Options.XAxis.WithReversal();
+            var horizontal = variant is "horizontal" or "compact-horizontal";
+            var chart = Chart.Create().WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance")
+                .AddWaterfall("Movement", new[] {
+                    ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                    ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                    ChartWaterfallItem.Total(7)
+                });
+            chart.Series[0].WithPointColor(4, "#A5358A");
+            chart.ConfigureWaterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            if (horizontal) chart.WithXAxis("Running balance").WithYAxis("Stage").WithBarStyle(ChartBarStyle.SegmentedCapsule);
+            else chart.WithYAxis("Running balance");
+            chart.Options.XAxis.WithReversal(!horizontal || variant == "compact-horizontal");
             chart.Options.YAxis.WithReversal();
             return chart.WithDataLabels();
         }
@@ -57,6 +67,8 @@ public static partial class V2GalleryModels {
         }
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Radar)
             return MarkerOptions(kind);
+        if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)
+            return FinancialOptions(kind);
         if (kind == ChartSeriesKind.Funnel)
             return Chart.Create().WithXLabels("Received", "Reviewed", "Qualified", "Completed").WithDataLabels()
                 .AddFunnel("Requests", new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0) })

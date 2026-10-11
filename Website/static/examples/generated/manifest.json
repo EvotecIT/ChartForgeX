@@ -184,6 +184,30 @@
     "family-box-plot-wide-light.svg",
     "family-box-plot-wide-light.thumbnail.png",
     "family-box-plot-wide-light.thumbnail.svg",
+    "family-bubble-color-scale-dark.csharp.txt",
+    "family-bubble-color-scale-dark.html",
+    "family-bubble-color-scale-dark.png",
+    "family-bubble-color-scale-dark.svg",
+    "family-bubble-color-scale-dark.thumbnail.png",
+    "family-bubble-color-scale-dark.thumbnail.svg",
+    "family-bubble-color-scale-light.csharp.txt",
+    "family-bubble-color-scale-light.html",
+    "family-bubble-color-scale-light.png",
+    "family-bubble-color-scale-light.svg",
+    "family-bubble-color-scale-light.thumbnail.png",
+    "family-bubble-color-scale-light.thumbnail.svg",
+    "family-bubble-compact-color-scale-dark.csharp.txt",
+    "family-bubble-compact-color-scale-dark.html",
+    "family-bubble-compact-color-scale-dark.png",
+    "family-bubble-compact-color-scale-dark.svg",
+    "family-bubble-compact-color-scale-dark.thumbnail.png",
+    "family-bubble-compact-color-scale-dark.thumbnail.svg",
+    "family-bubble-compact-color-scale-light.csharp.txt",
+    "family-bubble-compact-color-scale-light.html",
+    "family-bubble-compact-color-scale-light.png",
+    "family-bubble-compact-color-scale-light.svg",
+    "family-bubble-compact-color-scale-light.thumbnail.png",
+    "family-bubble-compact-color-scale-light.thumbnail.svg",
     "family-bubble-compact-dark.csharp.txt",
     "family-bubble-compact-dark.html",
     "family-bubble-compact-dark.png",
@@ -256,6 +280,30 @@
     "family-bullet-wide-light.svg",
     "family-bullet-wide-light.thumbnail.png",
     "family-bullet-wide-light.thumbnail.svg",
+    "family-calendar-heatmap-color-scale-dark.csharp.txt",
+    "family-calendar-heatmap-color-scale-dark.html",
+    "family-calendar-heatmap-color-scale-dark.png",
+    "family-calendar-heatmap-color-scale-dark.svg",
+    "family-calendar-heatmap-color-scale-dark.thumbnail.png",
+    "family-calendar-heatmap-color-scale-dark.thumbnail.svg",
+    "family-calendar-heatmap-color-scale-light.csharp.txt",
+    "family-calendar-heatmap-color-scale-light.html",
+    "family-calendar-heatmap-color-scale-light.png",
+    "family-calendar-heatmap-color-scale-light.svg",
+    "family-calendar-heatmap-color-scale-light.thumbnail.png",
+    "family-calendar-heatmap-color-scale-light.thumbnail.svg",
+    "family-calendar-heatmap-compact-color-scale-dark.csharp.txt",
+    "family-calendar-heatmap-compact-color-scale-dark.html",
+    "family-calendar-heatmap-compact-color-scale-dark.png",
+    "family-calendar-heatmap-compact-color-scale-dark.svg",
+    "family-calendar-heatmap-compact-color-scale-dark.thumbnail.png",
+    "family-calendar-heatmap-compact-color-scale-dark.thumbnail.svg",
+    "family-calendar-heatmap-compact-color-scale-light.csharp.txt",
+    "family-calendar-heatmap-compact-color-scale-light.html",
+    "family-calendar-heatmap-compact-color-scale-light.png",
+    "family-calendar-heatmap-compact-color-scale-light.svg",
+    "family-calendar-heatmap-compact-color-scale-light.thumbnail.png",
+    "family-calendar-heatmap-compact-color-scale-light.thumbnail.svg",
     "family-calendar-heatmap-compact-dark.csharp.txt",
     "family-calendar-heatmap-compact-dark.html",
     "family-calendar-heatmap-compact-dark.png",
@@ -292,6 +340,30 @@
     "family-candlestick-compact-light.svg",
     "family-candlestick-compact-light.thumbnail.png",
     "family-candlestick-compact-light.thumbnail.svg",
+    "family-candlestick-compact-options-dark.csharp.txt",
+    "family-candlestick-compact-options-dark.html",
+    "family-candlestick-compact-options-dark.png",
+    "family-candlestick-compact-options-dark.svg",
+    "family-candlestick-compact-options-dark.thumbnail.png",
+    "family-candlestick-compact-options-dark.thumbnail.svg",
+    "family-candlestick-compact-options-light.csharp.txt",
+    "family-candlestick-compact-options-light.html",
+    "family-candlestick-compact-options-light.png",
+    "family-candlestick-compact-options-light.svg",
+    "family-candlestick-compact-options-light.thumbnail.png",
+    "family-candlestick-compact-options-light.thumbnail.svg",
+    "family-candlestick-options-dark.csharp.txt",
+    "family-candlestick-options-dark.html",
+    "family-candlestick-options-dark.png",
+    "family-candlestick-options-dark.svg",
+    "family-candlestick-options-dark.thumbnail.png",
+    "family-candlestick-options-dark.thumbnail.svg",
+    "family-candlestick-options-light.csharp.txt",
+    "family-candlestick-options-light.html",
+    "family-candlestick-options-light.png",
+    "family-candlestick-options-light.svg",
+    "family-candlestick-options-light.thumbnail.png",
+    "family-candlestick-options-light.thumbnail.svg",
     "family-candlestick-wide-dark.csharp.txt",
     "family-candlestick-wide-dark.html",
     "family-candlestick-wide-dark.png",
@@ -628,6 +700,30 @@
     "family-gauge-wide-light.svg",
     "family-gauge-wide-light.thumbnail.png",
     "family-gauge-wide-light.thumbnail.svg",
+    "family-heatmap-color-scale-dark.csharp.txt",
+    "family-heatmap-color-scale-dark.html",
+    "family-heatmap-color-scale-dark.png",
+    "family-heatmap-color-scale-dark.svg",
+    "family-heatmap-color-scale-dark.thumbnail.png",
+    "family-heatmap-color-scale-dark.thumbnail.svg",
+    "family-heatmap-color-scale-light.csharp.txt",
+    "family-heatmap-color-scale-light.html",
+    "family-heatmap-color-scale-light.png",
+    "family-heatmap-color-scale-light.svg",
+    "family-heatmap-color-scale-light.thumbnail.png",
+    "family-heatmap-color-scale-light.thumbnail.svg",
+    "family-heatmap-compact-color-scale-dark.csharp.txt",
+    "family-heatmap-compact-color-scale-dark.html",
+    "family-heatmap-compact-color-scale-dark.png",
+    "family-heatmap-compact-color-scale-dark.svg",
+    "family-heatmap-compact-color-scale-dark.thumbnail.png",
+    "family-heatmap-compact-color-scale-dark.thumbnail.svg",
+    "family-heatmap-compact-color-scale-light.csharp.txt",
+    "family-heatmap-compact-color-scale-light.html",
+    "family-heatmap-compact-color-scale-light.png",
+    "family-heatmap-compact-color-scale-light.svg",
+    "family-heatmap-compact-color-scale-light.thumbnail.png",
+    "family-heatmap-compact-color-scale-light.thumbnail.svg",
     "family-heatmap-compact-dark.csharp.txt",
     "family-heatmap-compact-dark.html",
     "family-heatmap-compact-dark.png",
@@ -652,6 +748,30 @@
     "family-heatmap-wide-light.svg",
     "family-heatmap-wide-light.thumbnail.png",
     "family-heatmap-wide-light.thumbnail.svg",
+    "family-hexbin-heatmap-color-scale-dark.csharp.txt",
+    "family-hexbin-heatmap-color-scale-dark.html",
+    "family-hexbin-heatmap-color-scale-dark.png",
+    "family-hexbin-heatmap-color-scale-dark.svg",
+    "family-hexbin-heatmap-color-scale-dark.thumbnail.png",
+    "family-hexbin-heatmap-color-scale-dark.thumbnail.svg",
+    "family-hexbin-heatmap-color-scale-light.csharp.txt",
+    "family-hexbin-heatmap-color-scale-light.html",
+    "family-hexbin-heatmap-color-scale-light.png",
+    "family-hexbin-heatmap-color-scale-light.svg",
+    "family-hexbin-heatmap-color-scale-light.thumbnail.png",
+    "family-hexbin-heatmap-color-scale-light.thumbnail.svg",
+    "family-hexbin-heatmap-compact-color-scale-dark.csharp.txt",
+    "family-hexbin-heatmap-compact-color-scale-dark.html",
+    "family-hexbin-heatmap-compact-color-scale-dark.png",
+    "family-hexbin-heatmap-compact-color-scale-dark.svg",
+    "family-hexbin-heatmap-compact-color-scale-dark.thumbnail.png",
+    "family-hexbin-heatmap-compact-color-scale-dark.thumbnail.svg",
+    "family-hexbin-heatmap-compact-color-scale-light.csharp.txt",
+    "family-hexbin-heatmap-compact-color-scale-light.html",
+    "family-hexbin-heatmap-compact-color-scale-light.png",
+    "family-hexbin-heatmap-compact-color-scale-light.svg",
+    "family-hexbin-heatmap-compact-color-scale-light.thumbnail.png",
+    "family-hexbin-heatmap-compact-color-scale-light.thumbnail.svg",
     "family-hexbin-heatmap-compact-dark.csharp.txt",
     "family-hexbin-heatmap-compact-dark.html",
     "family-hexbin-heatmap-compact-dark.png",
@@ -832,6 +952,30 @@
     "family-ohlc-compact-light.svg",
     "family-ohlc-compact-light.thumbnail.png",
     "family-ohlc-compact-light.thumbnail.svg",
+    "family-ohlc-compact-options-dark.csharp.txt",
+    "family-ohlc-compact-options-dark.html",
+    "family-ohlc-compact-options-dark.png",
+    "family-ohlc-compact-options-dark.svg",
+    "family-ohlc-compact-options-dark.thumbnail.png",
+    "family-ohlc-compact-options-dark.thumbnail.svg",
+    "family-ohlc-compact-options-light.csharp.txt",
+    "family-ohlc-compact-options-light.html",
+    "family-ohlc-compact-options-light.png",
+    "family-ohlc-compact-options-light.svg",
+    "family-ohlc-compact-options-light.thumbnail.png",
+    "family-ohlc-compact-options-light.thumbnail.svg",
+    "family-ohlc-options-dark.csharp.txt",
+    "family-ohlc-options-dark.html",
+    "family-ohlc-options-dark.png",
+    "family-ohlc-options-dark.svg",
+    "family-ohlc-options-dark.thumbnail.png",
+    "family-ohlc-options-dark.thumbnail.svg",
+    "family-ohlc-options-light.csharp.txt",
+    "family-ohlc-options-light.html",
+    "family-ohlc-options-light.png",
+    "family-ohlc-options-light.svg",
+    "family-ohlc-options-light.thumbnail.png",
+    "family-ohlc-options-light.thumbnail.svg",
     "family-ohlc-wide-dark.csharp.txt",
     "family-ohlc-wide-dark.html",
     "family-ohlc-wide-dark.png",
@@ -1084,6 +1228,54 @@
     "family-radar-wide-light.svg",
     "family-radar-wide-light.thumbnail.png",
     "family-radar-wide-light.thumbnail.svg",
+    "family-radial-bar-all-labels-dark.csharp.txt",
+    "family-radial-bar-all-labels-dark.html",
+    "family-radial-bar-all-labels-dark.png",
+    "family-radial-bar-all-labels-dark.svg",
+    "family-radial-bar-all-labels-dark.thumbnail.png",
+    "family-radial-bar-all-labels-dark.thumbnail.svg",
+    "family-radial-bar-all-labels-light.csharp.txt",
+    "family-radial-bar-all-labels-light.html",
+    "family-radial-bar-all-labels-light.png",
+    "family-radial-bar-all-labels-light.svg",
+    "family-radial-bar-all-labels-light.thumbnail.png",
+    "family-radial-bar-all-labels-light.thumbnail.svg",
+    "family-radial-bar-axis-labels-dark.csharp.txt",
+    "family-radial-bar-axis-labels-dark.html",
+    "family-radial-bar-axis-labels-dark.png",
+    "family-radial-bar-axis-labels-dark.svg",
+    "family-radial-bar-axis-labels-dark.thumbnail.png",
+    "family-radial-bar-axis-labels-dark.thumbnail.svg",
+    "family-radial-bar-axis-labels-light.csharp.txt",
+    "family-radial-bar-axis-labels-light.html",
+    "family-radial-bar-axis-labels-light.png",
+    "family-radial-bar-axis-labels-light.svg",
+    "family-radial-bar-axis-labels-light.thumbnail.png",
+    "family-radial-bar-axis-labels-light.thumbnail.svg",
+    "family-radial-bar-compact-all-labels-dark.csharp.txt",
+    "family-radial-bar-compact-all-labels-dark.html",
+    "family-radial-bar-compact-all-labels-dark.png",
+    "family-radial-bar-compact-all-labels-dark.svg",
+    "family-radial-bar-compact-all-labels-dark.thumbnail.png",
+    "family-radial-bar-compact-all-labels-dark.thumbnail.svg",
+    "family-radial-bar-compact-all-labels-light.csharp.txt",
+    "family-radial-bar-compact-all-labels-light.html",
+    "family-radial-bar-compact-all-labels-light.png",
+    "family-radial-bar-compact-all-labels-light.svg",
+    "family-radial-bar-compact-all-labels-light.thumbnail.png",
+    "family-radial-bar-compact-all-labels-light.thumbnail.svg",
+    "family-radial-bar-compact-axis-labels-dark.csharp.txt",
+    "family-radial-bar-compact-axis-labels-dark.html",
+    "family-radial-bar-compact-axis-labels-dark.png",
+    "family-radial-bar-compact-axis-labels-dark.svg",
+    "family-radial-bar-compact-axis-labels-dark.thumbnail.png",
+    "family-radial-bar-compact-axis-labels-dark.thumbnail.svg",
+    "family-radial-bar-compact-axis-labels-light.csharp.txt",
+    "family-radial-bar-compact-axis-labels-light.html",
+    "family-radial-bar-compact-axis-labels-light.png",
+    "family-radial-bar-compact-axis-labels-light.svg",
+    "family-radial-bar-compact-axis-labels-light.thumbnail.png",
+    "family-radial-bar-compact-axis-labels-light.thumbnail.svg",
     "family-radial-bar-compact-dark.csharp.txt",
     "family-radial-bar-compact-dark.html",
     "family-radial-bar-compact-dark.png",
@@ -1156,6 +1348,54 @@
     "family-radial-bar-wide-light.svg",
     "family-radial-bar-wide-light.thumbnail.png",
     "family-radial-bar-wide-light.thumbnail.svg",
+    "family-radial-column-all-labels-dark.csharp.txt",
+    "family-radial-column-all-labels-dark.html",
+    "family-radial-column-all-labels-dark.png",
+    "family-radial-column-all-labels-dark.svg",
+    "family-radial-column-all-labels-dark.thumbnail.png",
+    "family-radial-column-all-labels-dark.thumbnail.svg",
+    "family-radial-column-all-labels-light.csharp.txt",
+    "family-radial-column-all-labels-light.html",
+    "family-radial-column-all-labels-light.png",
+    "family-radial-column-all-labels-light.svg",
+    "family-radial-column-all-labels-light.thumbnail.png",
+    "family-radial-column-all-labels-light.thumbnail.svg",
+    "family-radial-column-axis-labels-dark.csharp.txt",
+    "family-radial-column-axis-labels-dark.html",
+    "family-radial-column-axis-labels-dark.png",
+    "family-radial-column-axis-labels-dark.svg",
+    "family-radial-column-axis-labels-dark.thumbnail.png",
+    "family-radial-column-axis-labels-dark.thumbnail.svg",
+    "family-radial-column-axis-labels-light.csharp.txt",
+    "family-radial-column-axis-labels-light.html",
+    "family-radial-column-axis-labels-light.png",
+    "family-radial-column-axis-labels-light.svg",
+    "family-radial-column-axis-labels-light.thumbnail.png",
+    "family-radial-column-axis-labels-light.thumbnail.svg",
+    "family-radial-column-compact-all-labels-dark.csharp.txt",
+    "family-radial-column-compact-all-labels-dark.html",
+    "family-radial-column-compact-all-labels-dark.png",
+    "family-radial-column-compact-all-labels-dark.svg",
+    "family-radial-column-compact-all-labels-dark.thumbnail.png",
+    "family-radial-column-compact-all-labels-dark.thumbnail.svg",
+    "family-radial-column-compact-all-labels-light.csharp.txt",
+    "family-radial-column-compact-all-labels-light.html",
+    "family-radial-column-compact-all-labels-light.png",
+    "family-radial-column-compact-all-labels-light.svg",
+    "family-radial-column-compact-all-labels-light.thumbnail.png",
+    "family-radial-column-compact-all-labels-light.thumbnail.svg",
+    "family-radial-column-compact-axis-labels-dark.csharp.txt",
+    "family-radial-column-compact-axis-labels-dark.html",
+    "family-radial-column-compact-axis-labels-dark.png",
+    "family-radial-column-compact-axis-labels-dark.svg",
+    "family-radial-column-compact-axis-labels-dark.thumbnail.png",
+    "family-radial-column-compact-axis-labels-dark.thumbnail.svg",
+    "family-radial-column-compact-axis-labels-light.csharp.txt",
+    "family-radial-column-compact-axis-labels-light.html",
+    "family-radial-column-compact-axis-labels-light.png",
+    "family-radial-column-compact-axis-labels-light.svg",
+    "family-radial-column-compact-axis-labels-light.thumbnail.png",
+    "family-radial-column-compact-axis-labels-light.thumbnail.svg",
     "family-radial-column-compact-dark.csharp.txt",
     "family-radial-column-compact-dark.html",
     "family-radial-column-compact-dark.png",
@@ -1372,6 +1612,30 @@
     "family-sankey-wide-light.svg",
     "family-sankey-wide-light.thumbnail.png",
     "family-sankey-wide-light.thumbnail.svg",
+    "family-scatter-color-scale-dark.csharp.txt",
+    "family-scatter-color-scale-dark.html",
+    "family-scatter-color-scale-dark.png",
+    "family-scatter-color-scale-dark.svg",
+    "family-scatter-color-scale-dark.thumbnail.png",
+    "family-scatter-color-scale-dark.thumbnail.svg",
+    "family-scatter-color-scale-light.csharp.txt",
+    "family-scatter-color-scale-light.html",
+    "family-scatter-color-scale-light.png",
+    "family-scatter-color-scale-light.svg",
+    "family-scatter-color-scale-light.thumbnail.png",
+    "family-scatter-color-scale-light.thumbnail.svg",
+    "family-scatter-compact-color-scale-dark.csharp.txt",
+    "family-scatter-compact-color-scale-dark.html",
+    "family-scatter-compact-color-scale-dark.png",
+    "family-scatter-compact-color-scale-dark.svg",
+    "family-scatter-compact-color-scale-dark.thumbnail.png",
+    "family-scatter-compact-color-scale-dark.thumbnail.svg",
+    "family-scatter-compact-color-scale-light.csharp.txt",
+    "family-scatter-compact-color-scale-light.html",
+    "family-scatter-compact-color-scale-light.png",
+    "family-scatter-compact-color-scale-light.svg",
+    "family-scatter-compact-color-scale-light.thumbnail.png",
+    "family-scatter-compact-color-scale-light.thumbnail.svg",
     "family-scatter-compact-dark.csharp.txt",
     "family-scatter-compact-dark.html",
     "family-scatter-compact-dark.png",
@@ -1810,6 +2074,18 @@
     "family-waterfall-compact-dark.svg",
     "family-waterfall-compact-dark.thumbnail.png",
     "family-waterfall-compact-dark.thumbnail.svg",
+    "family-waterfall-compact-horizontal-dark.csharp.txt",
+    "family-waterfall-compact-horizontal-dark.html",
+    "family-waterfall-compact-horizontal-dark.png",
+    "family-waterfall-compact-horizontal-dark.svg",
+    "family-waterfall-compact-horizontal-dark.thumbnail.png",
+    "family-waterfall-compact-horizontal-dark.thumbnail.svg",
+    "family-waterfall-compact-horizontal-light.csharp.txt",
+    "family-waterfall-compact-horizontal-light.html",
+    "family-waterfall-compact-horizontal-light.png",
+    "family-waterfall-compact-horizontal-light.svg",
+    "family-waterfall-compact-horizontal-light.thumbnail.png",
+    "family-waterfall-compact-horizontal-light.thumbnail.svg",
     "family-waterfall-compact-light.csharp.txt",
     "family-waterfall-compact-light.html",
     "family-waterfall-compact-light.png",
@@ -1828,6 +2104,18 @@
     "family-waterfall-compact-options-light.svg",
     "family-waterfall-compact-options-light.thumbnail.png",
     "family-waterfall-compact-options-light.thumbnail.svg",
+    "family-waterfall-horizontal-dark.csharp.txt",
+    "family-waterfall-horizontal-dark.html",
+    "family-waterfall-horizontal-dark.png",
+    "family-waterfall-horizontal-dark.svg",
+    "family-waterfall-horizontal-dark.thumbnail.png",
+    "family-waterfall-horizontal-dark.thumbnail.svg",
+    "family-waterfall-horizontal-light.csharp.txt",
+    "family-waterfall-horizontal-light.html",
+    "family-waterfall-horizontal-light.png",
+    "family-waterfall-horizontal-light.svg",
+    "family-waterfall-horizontal-light.thumbnail.png",
+    "family-waterfall-horizontal-light.thumbnail.svg",
     "family-waterfall-options-dark.csharp.txt",
     "family-waterfall-options-dark.html",
     "family-waterfall-options-dark.png",
@@ -3406,6 +3694,82 @@
       "semanticRegions": 19
     },
     {
+      "id": "family-scatter-color-scale-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-color-scale-light.csharp.txt",
+      "svg": "family-scatter-color-scale-light.svg",
+      "png": "family-scatter-color-scale-light.png",
+      "html": "family-scatter-color-scale-light.html",
+      "thumbnail": "family-scatter-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 36
+    },
+    {
+      "id": "family-scatter-compact-color-scale-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-color-scale-light.csharp.txt",
+      "svg": "family-scatter-compact-color-scale-light.svg",
+      "png": "family-scatter-compact-color-scale-light.png",
+      "html": "family-scatter-compact-color-scale-light.html",
+      "thumbnail": "family-scatter-compact-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 36
+    },
+    {
       "id": "family-scatter-options-light",
       "family": "scatter",
       "familyLabel": "Scatter",
@@ -3536,6 +3900,82 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 19
+    },
+    {
+      "id": "family-scatter-color-scale-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-color-scale-dark.csharp.txt",
+      "svg": "family-scatter-color-scale-dark.svg",
+      "png": "family-scatter-color-scale-dark.png",
+      "html": "family-scatter-color-scale-dark.html",
+      "thumbnail": "family-scatter-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 36
+    },
+    {
+      "id": "family-scatter-compact-color-scale-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time by workload",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-color-scale-dark.csharp.txt",
+      "svg": "family-scatter-compact-color-scale-dark.svg",
+      "png": "family-scatter-compact-color-scale-dark.png",
+      "html": "family-scatter-compact-color-scale-dark.html",
+      "thumbnail": "family-scatter-compact-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 36
     },
     {
       "id": "family-scatter-options-dark",
@@ -3670,6 +4110,82 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-bubble-color-scale-light",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-color-scale-light.csharp.txt",
+      "svg": "family-bubble-color-scale-light.svg",
+      "png": "family-bubble-color-scale-light.png",
+      "html": "family-bubble-color-scale-light.html",
+      "thumbnail": "family-bubble-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-bubble-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 34
+    },
+    {
+      "id": "family-bubble-compact-color-scale-light",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-bubble-compact-color-scale-light.csharp.txt",
+      "svg": "family-bubble-compact-color-scale-light.svg",
+      "png": "family-bubble-compact-color-scale-light.png",
+      "html": "family-bubble-compact-color-scale-light.html",
+      "thumbnail": "family-bubble-compact-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-bubble-compact-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 34
+    },
+    {
       "id": "family-bubble-options-light",
       "family": "bubble",
       "familyLabel": "Bubble",
@@ -3700,7 +4216,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-bubble-compact-options-light",
@@ -3806,6 +4322,82 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-bubble-color-scale-dark",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-color-scale-dark.csharp.txt",
+      "svg": "family-bubble-color-scale-dark.svg",
+      "png": "family-bubble-color-scale-dark.png",
+      "html": "family-bubble-color-scale-dark.html",
+      "thumbnail": "family-bubble-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-bubble-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 34
+    },
+    {
+      "id": "family-bubble-compact-color-scale-dark",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Workload, time and request volume",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-bubble-compact-color-scale-dark.csharp.txt",
+      "svg": "family-bubble-compact-color-scale-dark.svg",
+      "png": "family-bubble-compact-color-scale-dark.png",
+      "html": "family-bubble-compact-color-scale-dark.html",
+      "thumbnail": "family-bubble-compact-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-bubble-compact-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 34
+    },
+    {
       "id": "family-bubble-options-dark",
       "family": "bubble",
       "familyLabel": "Bubble",
@@ -3836,7 +4428,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-bubble-compact-options-dark",
@@ -4074,6 +4666,76 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-candlestick-options-light",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-candlestick-options-light.csharp.txt",
+      "svg": "family-candlestick-options-light.svg",
+      "png": "family-candlestick-options-light.png",
+      "html": "family-candlestick-options-light.html",
+      "thumbnail": "family-candlestick-options-light.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-candlestick-compact-options-light",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-candlestick-compact-options-light.csharp.txt",
+      "svg": "family-candlestick-compact-options-light.svg",
+      "png": "family-candlestick-compact-options-light.png",
+      "html": "family-candlestick-compact-options-light.html",
+      "thumbnail": "family-candlestick-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
+    },
+    {
       "id": "family-candlestick-wide-dark",
       "family": "candlestick",
       "familyLabel": "Candlestick",
@@ -4138,6 +4800,76 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-candlestick-options-dark",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-candlestick-options-dark.csharp.txt",
+      "svg": "family-candlestick-options-dark.svg",
+      "png": "family-candlestick-options-dark.png",
+      "html": "family-candlestick-options-dark.html",
+      "thumbnail": "family-candlestick-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-candlestick-compact-options-dark",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-candlestick-compact-options-dark.csharp.txt",
+      "svg": "family-candlestick-compact-options-dark.svg",
+      "png": "family-candlestick-compact-options-dark.png",
+      "html": "family-candlestick-compact-options-dark.html",
+      "thumbnail": "family-candlestick-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
     },
     {
       "id": "family-range-band-wide-light",
@@ -5696,6 +6428,72 @@
       "semanticRegions": 27
     },
     {
+      "id": "family-heatmap-color-scale-light",
+      "family": "heatmap",
+      "familyLabel": "Heatmap",
+      "group": "matrices-maps",
+      "title": "Coverage across service areas",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Heatmap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-heatmap-color-scale-light.csharp.txt",
+      "svg": "family-heatmap-color-scale-light.svg",
+      "png": "family-heatmap-color-scale-light.png",
+      "html": "family-heatmap-color-scale-light.html",
+      "thumbnail": "family-heatmap-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-heatmap-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 38
+    },
+    {
+      "id": "family-heatmap-compact-color-scale-light",
+      "family": "heatmap",
+      "familyLabel": "Heatmap",
+      "group": "matrices-maps",
+      "title": "Coverage across service areas",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Heatmap"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-heatmap-compact-color-scale-light.csharp.txt",
+      "svg": "family-heatmap-compact-color-scale-light.svg",
+      "png": "family-heatmap-compact-color-scale-light.png",
+      "html": "family-heatmap-compact-color-scale-light.html",
+      "thumbnail": "family-heatmap-compact-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-heatmap-compact-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 38
+    },
+    {
       "id": "family-heatmap-wide-dark",
       "family": "heatmap",
       "familyLabel": "Heatmap",
@@ -5766,6 +6564,72 @@
         "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 27
+    },
+    {
+      "id": "family-heatmap-color-scale-dark",
+      "family": "heatmap",
+      "familyLabel": "Heatmap",
+      "group": "matrices-maps",
+      "title": "Coverage across service areas",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Heatmap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-heatmap-color-scale-dark.csharp.txt",
+      "svg": "family-heatmap-color-scale-dark.svg",
+      "png": "family-heatmap-color-scale-dark.png",
+      "html": "family-heatmap-color-scale-dark.html",
+      "thumbnail": "family-heatmap-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-heatmap-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 38
+    },
+    {
+      "id": "family-heatmap-compact-color-scale-dark",
+      "family": "heatmap",
+      "familyLabel": "Heatmap",
+      "group": "matrices-maps",
+      "title": "Coverage across service areas",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Heatmap"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-heatmap-compact-color-scale-dark.csharp.txt",
+      "svg": "family-heatmap-compact-color-scale-dark.svg",
+      "png": "family-heatmap-compact-color-scale-dark.png",
+      "html": "family-heatmap-compact-color-scale-dark.html",
+      "thumbnail": "family-heatmap-compact-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-heatmap-compact-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 38
     },
     {
       "id": "family-hexbin-heatmap-wide-light",
@@ -5840,6 +6704,72 @@
       "semanticRegions": 27
     },
     {
+      "id": "family-hexbin-heatmap-color-scale-light",
+      "family": "hexbin-heatmap",
+      "familyLabel": "Hexbin heatmap",
+      "group": "matrices-maps",
+      "title": "Service coverage in hexagonal cells",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "HexbinHeatmap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-hexbin-heatmap-color-scale-light.csharp.txt",
+      "svg": "family-hexbin-heatmap-color-scale-light.svg",
+      "png": "family-hexbin-heatmap-color-scale-light.png",
+      "html": "family-hexbin-heatmap-color-scale-light.html",
+      "thumbnail": "family-hexbin-heatmap-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-hexbin-heatmap-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 36
+    },
+    {
+      "id": "family-hexbin-heatmap-compact-color-scale-light",
+      "family": "hexbin-heatmap",
+      "familyLabel": "Hexbin heatmap",
+      "group": "matrices-maps",
+      "title": "Service coverage in hexagonal cells",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "HexbinHeatmap"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-hexbin-heatmap-compact-color-scale-light.csharp.txt",
+      "svg": "family-hexbin-heatmap-compact-color-scale-light.svg",
+      "png": "family-hexbin-heatmap-compact-color-scale-light.png",
+      "html": "family-hexbin-heatmap-compact-color-scale-light.html",
+      "thumbnail": "family-hexbin-heatmap-compact-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-hexbin-heatmap-compact-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 36
+    },
+    {
       "id": "family-hexbin-heatmap-wide-dark",
       "family": "hexbin-heatmap",
       "familyLabel": "Hexbin heatmap",
@@ -5912,6 +6842,72 @@
       "semanticRegions": 27
     },
     {
+      "id": "family-hexbin-heatmap-color-scale-dark",
+      "family": "hexbin-heatmap",
+      "familyLabel": "Hexbin heatmap",
+      "group": "matrices-maps",
+      "title": "Service coverage in hexagonal cells",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "HexbinHeatmap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-hexbin-heatmap-color-scale-dark.csharp.txt",
+      "svg": "family-hexbin-heatmap-color-scale-dark.svg",
+      "png": "family-hexbin-heatmap-color-scale-dark.png",
+      "html": "family-hexbin-heatmap-color-scale-dark.html",
+      "thumbnail": "family-hexbin-heatmap-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-hexbin-heatmap-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 36
+    },
+    {
+      "id": "family-hexbin-heatmap-compact-color-scale-dark",
+      "family": "hexbin-heatmap",
+      "familyLabel": "Hexbin heatmap",
+      "group": "matrices-maps",
+      "title": "Service coverage in hexagonal cells",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "HexbinHeatmap"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-hexbin-heatmap-compact-color-scale-dark.csharp.txt",
+      "svg": "family-hexbin-heatmap-compact-color-scale-dark.svg",
+      "png": "family-hexbin-heatmap-compact-color-scale-dark.png",
+      "html": "family-hexbin-heatmap-compact-color-scale-dark.html",
+      "thumbnail": "family-hexbin-heatmap-compact-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-hexbin-heatmap-compact-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 36
+    },
+    {
       "id": "family-calendar-heatmap-wide-light",
       "family": "calendar-heatmap",
       "familyLabel": "Calendar Heatmap",
@@ -5978,6 +6974,72 @@
       "semanticRegions": 144
     },
     {
+      "id": "family-calendar-heatmap-color-scale-light",
+      "family": "calendar-heatmap",
+      "familyLabel": "Calendar Heatmap",
+      "group": "matrices-maps",
+      "title": "Daily activity across four months",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "CalendarHeatmap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-calendar-heatmap-color-scale-light.csharp.txt",
+      "svg": "family-calendar-heatmap-color-scale-light.svg",
+      "png": "family-calendar-heatmap-color-scale-light.png",
+      "html": "family-calendar-heatmap-color-scale-light.html",
+      "thumbnail": "family-calendar-heatmap-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-calendar-heatmap-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 147
+    },
+    {
+      "id": "family-calendar-heatmap-compact-color-scale-light",
+      "family": "calendar-heatmap",
+      "familyLabel": "Calendar Heatmap",
+      "group": "matrices-maps",
+      "title": "Daily activity across four months",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "CalendarHeatmap"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-calendar-heatmap-compact-color-scale-light.csharp.txt",
+      "svg": "family-calendar-heatmap-compact-color-scale-light.svg",
+      "png": "family-calendar-heatmap-compact-color-scale-light.png",
+      "html": "family-calendar-heatmap-compact-color-scale-light.html",
+      "thumbnail": "family-calendar-heatmap-compact-color-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-calendar-heatmap-compact-color-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 143
+    },
+    {
       "id": "family-calendar-heatmap-wide-dark",
       "family": "calendar-heatmap",
       "familyLabel": "Calendar Heatmap",
@@ -6042,6 +7104,72 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 144
+    },
+    {
+      "id": "family-calendar-heatmap-color-scale-dark",
+      "family": "calendar-heatmap",
+      "familyLabel": "Calendar Heatmap",
+      "group": "matrices-maps",
+      "title": "Daily activity across four months",
+      "variant": "color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "CalendarHeatmap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-calendar-heatmap-color-scale-dark.csharp.txt",
+      "svg": "family-calendar-heatmap-color-scale-dark.svg",
+      "png": "family-calendar-heatmap-color-scale-dark.png",
+      "html": "family-calendar-heatmap-color-scale-dark.html",
+      "thumbnail": "family-calendar-heatmap-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-calendar-heatmap-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 147
+    },
+    {
+      "id": "family-calendar-heatmap-compact-color-scale-dark",
+      "family": "calendar-heatmap",
+      "familyLabel": "Calendar Heatmap",
+      "group": "matrices-maps",
+      "title": "Daily activity across four months",
+      "variant": "compact-color-scale",
+      "primary": false,
+      "seriesKinds": [
+        "CalendarHeatmap"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-calendar-heatmap-compact-color-scale-dark.csharp.txt",
+      "svg": "family-calendar-heatmap-compact-color-scale-dark.svg",
+      "png": "family-calendar-heatmap-compact-color-scale-dark.png",
+      "html": "family-calendar-heatmap-compact-color-scale-dark.html",
+      "thumbnail": "family-calendar-heatmap-compact-color-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-calendar-heatmap-compact-color-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 143
     },
     {
       "id": "family-dotted-map-wide-light",
@@ -7684,7 +8812,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-compact-options-light",
@@ -7715,9 +8843,87 @@
         "png",
         "html"
       ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-waterfall-horizontal-light",
+      "family": "waterfall",
+      "familyLabel": "Waterfall",
+      "group": "compare",
+      "title": "Changes in available capacity",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-waterfall-horizontal-light.csharp.txt",
+      "svg": "family-waterfall-horizontal-light.svg",
+      "png": "family-waterfall-horizontal-light.png",
+      "html": "family-waterfall-horizontal-light.html",
+      "thumbnail": "family-waterfall-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-waterfall-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-waterfall-compact-horizontal-light",
+      "family": "waterfall",
+      "familyLabel": "Waterfall",
+      "group": "compare",
+      "title": "Changes in available capacity",
+      "variant": "compact-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-waterfall-compact-horizontal-light.csharp.txt",
+      "svg": "family-waterfall-compact-horizontal-light.svg",
+      "png": "family-waterfall-compact-horizontal-light.png",
+      "html": "family-waterfall-compact-horizontal-light.html",
+      "thumbnail": "family-waterfall-compact-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-waterfall-compact-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-wide-dark",
@@ -7816,7 +9022,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 22
     },
     {
       "id": "family-waterfall-compact-options-dark",
@@ -7847,9 +9053,87 @@
         "png",
         "html"
       ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-waterfall-horizontal-dark",
+      "family": "waterfall",
+      "familyLabel": "Waterfall",
+      "group": "compare",
+      "title": "Changes in available capacity",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-waterfall-horizontal-dark.csharp.txt",
+      "svg": "family-waterfall-horizontal-dark.svg",
+      "png": "family-waterfall-horizontal-dark.png",
+      "html": "family-waterfall-horizontal-dark.html",
+      "thumbnail": "family-waterfall-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-waterfall-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-waterfall-compact-horizontal-dark",
+      "family": "waterfall",
+      "familyLabel": "Waterfall",
+      "group": "compare",
+      "title": "Changes in available capacity",
+      "variant": "compact-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "Waterfall"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-waterfall-compact-horizontal-dark.csharp.txt",
+      "svg": "family-waterfall-compact-horizontal-dark.svg",
+      "png": "family-waterfall-compact-horizontal-dark.png",
+      "html": "family-waterfall-compact-horizontal-dark.html",
+      "thumbnail": "family-waterfall-compact-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-waterfall-compact-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
     },
     {
       "id": "family-radar-wide-light",
@@ -8932,19 +10216,9 @@
         "html"
       ],
       "diagnostics": [
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
@@ -9078,19 +10352,9 @@
         "html"
       ],
       "diagnostics": [
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
-        "sankey.label-overflow",
         "sankey.label-overflow"
       ],
       "diagnosticMessages": [
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
-        "Sankey labels were shortened or omitted to fit; full text is retained in node semantics.",
         "Sankey labels were shortened or omitted to fit; full text is retained in node semantics."
       ],
       "semanticRegions": 17
@@ -9398,9 +10662,13 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
@@ -9441,6 +10709,7 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -9449,6 +10718,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
@@ -9484,9 +10754,13 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
@@ -9527,6 +10801,7 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -9535,6 +10810,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
@@ -9636,9 +10912,13 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
@@ -9679,6 +10959,7 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -9687,6 +10968,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
@@ -9722,9 +11004,13 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
@@ -9765,6 +11051,7 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
+        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -9773,6 +11060,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
         "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
@@ -11166,6 +12454,76 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-ohlc-options-light",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-ohlc-options-light.csharp.txt",
+      "svg": "family-ohlc-options-light.svg",
+      "png": "family-ohlc-options-light.png",
+      "html": "family-ohlc-options-light.html",
+      "thumbnail": "family-ohlc-options-light.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-ohlc-compact-options-light",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-ohlc-compact-options-light.csharp.txt",
+      "svg": "family-ohlc-compact-options-light.svg",
+      "png": "family-ohlc-compact-options-light.png",
+      "html": "family-ohlc-compact-options-light.html",
+      "thumbnail": "family-ohlc-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
+    },
+    {
       "id": "family-ohlc-wide-dark",
       "family": "ohlc",
       "familyLabel": "OHLC",
@@ -11230,6 +12588,76 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-ohlc-options-dark",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-ohlc-options-dark.csharp.txt",
+      "svg": "family-ohlc-options-dark.svg",
+      "png": "family-ohlc-options-dark.png",
+      "html": "family-ohlc-options-dark.html",
+      "thumbnail": "family-ohlc-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-ohlc-compact-options-dark",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-ohlc-compact-options-dark.csharp.txt",
+      "svg": "family-ohlc-compact-options-dark.svg",
+      "png": "family-ohlc-compact-options-dark.png",
+      "html": "family-ohlc-compact-options-dark.html",
+      "thumbnail": "family-ohlc-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
     },
     {
       "id": "family-polar-area-wide-light",
@@ -12454,6 +13882,8 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -12464,9 +13894,11 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-bar-compact-options-light",
@@ -12507,6 +13939,7 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -12519,9 +13952,192 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
+    },
+    {
+      "id": "family-radial-bar-axis-labels-light",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests by region and service",
+      "variant": "axis-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-bar-axis-labels-light.csharp.txt",
+      "svg": "family-radial-bar-axis-labels-light.svg",
+      "png": "family-radial-bar-axis-labels-light.png",
+      "html": "family-radial-bar-axis-labels-light.html",
+      "thumbnail": "family-radial-bar-axis-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-axis-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 31
+    },
+    {
+      "id": "family-radial-bar-compact-axis-labels-light",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests by region and service",
+      "variant": "compact-axis-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-bar-compact-axis-labels-light.csharp.txt",
+      "svg": "family-radial-bar-compact-axis-labels-light.svg",
+      "png": "family-radial-bar-compact-axis-labels-light.png",
+      "html": "family-radial-bar-compact-axis-labels-light.html",
+      "thumbnail": "family-radial-bar-compact-axis-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-compact-axis-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 31
+    },
+    {
+      "id": "family-radial-bar-all-labels-light",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests by region and service",
+      "variant": "all-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-bar-all-labels-light.csharp.txt",
+      "svg": "family-radial-bar-all-labels-light.svg",
+      "png": "family-radial-bar-all-labels-light.png",
+      "html": "family-radial-bar-all-labels-light.html",
+      "thumbnail": "family-radial-bar-all-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-all-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 41
+    },
+    {
+      "id": "family-radial-bar-compact-all-labels-light",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests by region and service",
+      "variant": "compact-all-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-bar-compact-all-labels-light.csharp.txt",
+      "svg": "family-radial-bar-compact-all-labels-light.svg",
+      "png": "family-radial-bar-compact-all-labels-light.png",
+      "html": "family-radial-bar-compact-all-labels-light.html",
+      "thumbnail": "family-radial-bar-compact-all-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-compact-all-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 41
     },
     {
       "id": "family-radial-bar-dual-axes-light",
@@ -12554,7 +14170,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-radial-bar-compact-dual-axes-light",
@@ -12587,7 +14203,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-radial-bar-wide-dark",
@@ -12732,6 +14348,8 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -12742,9 +14360,11 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-bar-compact-options-dark",
@@ -12785,6 +14405,7 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -12797,9 +14418,192 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
+    },
+    {
+      "id": "family-radial-bar-axis-labels-dark",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests by region and service",
+      "variant": "axis-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-bar-axis-labels-dark.csharp.txt",
+      "svg": "family-radial-bar-axis-labels-dark.svg",
+      "png": "family-radial-bar-axis-labels-dark.png",
+      "html": "family-radial-bar-axis-labels-dark.html",
+      "thumbnail": "family-radial-bar-axis-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-axis-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 31
+    },
+    {
+      "id": "family-radial-bar-compact-axis-labels-dark",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests by region and service",
+      "variant": "compact-axis-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-bar-compact-axis-labels-dark.csharp.txt",
+      "svg": "family-radial-bar-compact-axis-labels-dark.svg",
+      "png": "family-radial-bar-compact-axis-labels-dark.png",
+      "html": "family-radial-bar-compact-axis-labels-dark.html",
+      "thumbnail": "family-radial-bar-compact-axis-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-compact-axis-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 31
+    },
+    {
+      "id": "family-radial-bar-all-labels-dark",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests by region and service",
+      "variant": "all-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-bar-all-labels-dark.csharp.txt",
+      "svg": "family-radial-bar-all-labels-dark.svg",
+      "png": "family-radial-bar-all-labels-dark.png",
+      "html": "family-radial-bar-all-labels-dark.html",
+      "thumbnail": "family-radial-bar-all-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-all-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 41
+    },
+    {
+      "id": "family-radial-bar-compact-all-labels-dark",
+      "family": "radial-bar",
+      "familyLabel": "Radial Bar",
+      "group": "compare",
+      "title": "Requests by region and service",
+      "variant": "compact-all-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialBar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-bar-compact-all-labels-dark.csharp.txt",
+      "svg": "family-radial-bar-compact-all-labels-dark.svg",
+      "png": "family-radial-bar-compact-all-labels-dark.png",
+      "html": "family-radial-bar-compact-all-labels-dark.html",
+      "thumbnail": "family-radial-bar-compact-all-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-bar-compact-all-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 41
     },
     {
       "id": "family-radial-bar-dual-axes-dark",
@@ -12832,7 +14636,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-radial-bar-compact-dual-axes-dark",
@@ -12865,7 +14669,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 16
     },
     {
       "id": "family-radial-column-wide-light",
@@ -13028,7 +14832,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-column-compact-options-light",
@@ -13066,6 +14870,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -13075,9 +14884,232 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
+    },
+    {
+      "id": "family-radial-column-axis-labels-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional service workload",
+      "variant": "axis-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-axis-labels-light.csharp.txt",
+      "svg": "family-radial-column-axis-labels-light.svg",
+      "png": "family-radial-column-axis-labels-light.png",
+      "html": "family-radial-column-axis-labels-light.html",
+      "thumbnail": "family-radial-column-axis-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-axis-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 31
+    },
+    {
+      "id": "family-radial-column-compact-axis-labels-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional service workload",
+      "variant": "compact-axis-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-axis-labels-light.csharp.txt",
+      "svg": "family-radial-column-compact-axis-labels-light.svg",
+      "png": "family-radial-column-compact-axis-labels-light.png",
+      "html": "family-radial-column-compact-axis-labels-light.html",
+      "thumbnail": "family-radial-column-compact-axis-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-axis-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 31
+    },
+    {
+      "id": "family-radial-column-all-labels-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional service workload",
+      "variant": "all-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-all-labels-light.csharp.txt",
+      "svg": "family-radial-column-all-labels-light.svg",
+      "png": "family-radial-column-all-labels-light.png",
+      "html": "family-radial-column-all-labels-light.html",
+      "thumbnail": "family-radial-column-all-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-all-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 41
+    },
+    {
+      "id": "family-radial-column-compact-all-labels-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional service workload",
+      "variant": "compact-all-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-all-labels-light.csharp.txt",
+      "svg": "family-radial-column-compact-all-labels-light.svg",
+      "png": "family-radial-column-compact-all-labels-light.png",
+      "html": "family-radial-column-compact-all-labels-light.html",
+      "thumbnail": "family-radial-column-compact-all-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-all-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 41
     },
     {
       "id": "family-radial-column-wide-dark",
@@ -13240,7 +15272,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
     },
     {
       "id": "family-radial-column-compact-options-dark",
@@ -13278,6 +15310,11 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -13287,9 +15324,232 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 30
+    },
+    {
+      "id": "family-radial-column-axis-labels-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional service workload",
+      "variant": "axis-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-axis-labels-dark.csharp.txt",
+      "svg": "family-radial-column-axis-labels-dark.svg",
+      "png": "family-radial-column-axis-labels-dark.png",
+      "html": "family-radial-column-axis-labels-dark.html",
+      "thumbnail": "family-radial-column-axis-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-axis-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 31
+    },
+    {
+      "id": "family-radial-column-compact-axis-labels-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional service workload",
+      "variant": "compact-axis-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-axis-labels-dark.csharp.txt",
+      "svg": "family-radial-column-compact-axis-labels-dark.svg",
+      "png": "family-radial-column-compact-axis-labels-dark.png",
+      "html": "family-radial-column-compact-axis-labels-dark.html",
+      "thumbnail": "family-radial-column-compact-axis-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-axis-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 31
+    },
+    {
+      "id": "family-radial-column-all-labels-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional service workload",
+      "variant": "all-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-all-labels-dark.csharp.txt",
+      "svg": "family-radial-column-all-labels-dark.svg",
+      "png": "family-radial-column-all-labels-dark.png",
+      "html": "family-radial-column-all-labels-dark.html",
+      "thumbnail": "family-radial-column-all-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-all-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 41
+    },
+    {
+      "id": "family-radial-column-compact-all-labels-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional service workload",
+      "variant": "compact-all-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-all-labels-dark.csharp.txt",
+      "svg": "family-radial-column-compact-all-labels-dark.svg",
+      "png": "family-radial-column-compact-all-labels-dark.png",
+      "html": "family-radial-column-compact-all-labels-dark.html",
+      "thumbnail": "family-radial-column-compact-all-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-all-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 41
     },
     {
       "id": "family-chord-wide-light",

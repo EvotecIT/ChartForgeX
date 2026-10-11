@@ -20,8 +20,9 @@ internal sealed partial class VisualExportRequest {
         var theme = FromTheme(options.Theme);
         ChartGuards.RenderCompatibility(chart, preparing: true);
         var family = VisualChartCompiler.Family(chart);
-        // Numeric radial labels are formatted once during preparation, rather than while counting entries here.
-        var showLegend = family == VisualChartFamily.NumericRadial ? ChartLegendVisibility.ForSeries(chart)
+        // Category captions are formatted during preparation, rather than while counting entries here.
+        var showLegend = family == VisualChartFamily.NumericRadial || family == VisualChartFamily.Cartesian && chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall
+            ? ChartLegendVisibility.ForSeries(chart)
             : ChartLegendVisibility.ForPreparedContent(chart, VisualChartCompiler.LegendEntries(family, chart, theme.Resolve(VisualThemeMode.Light)).Count);
         var frame = new VisualFrame(options.ShowHeader && !options.HostOwnsFrame ? chart.Title : string.Empty,
             options.ShowHeader && !options.HostOwnsFrame ? chart.Subtitle : string.Empty,

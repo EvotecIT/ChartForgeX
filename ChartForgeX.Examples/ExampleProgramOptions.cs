@@ -11,6 +11,26 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--story-appearance-only")) {
+            StoryAppearanceExamples.Write(output);
+            Console.WriteLine("Generated desktop story examples in: " + output);
+            return true;
+        }
+        if (HasArg(args, "--story-replay-only")) {
+            StoryReplayExamples.Write(output);
+            Console.WriteLine("Generated recorded replay examples in: " + output);
+            return true;
+        }
+        if (HasArg(args, "--story-playback-only")) {
+            StoryPlaybackExamples.Write(output);
+            Console.WriteLine("Generated story playback examples in: " + output);
+            return true;
+        }
+        if (HasArg(args, "--sunburst-highlight-only")) {
+            SunburstBranchHighlightExamples.Write(output);
+            Console.WriteLine("Generated Sunburst highlight examples in: " + output);
+            return true;
+        }
         if (HasArg(args, "--wallpaper-only")) {
             WallpaperOwnerExamples.Write(output);
             Console.WriteLine("Generated wallpaper examples in: " + output);

@@ -6,7 +6,7 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Resolves authored node states and ordinal overrides once for weighted flow and hierarchy scenes.</summary>
-internal static class ChartRelationshipPaint {
+internal static partial class ChartRelationshipPaint {
     internal static ChartSeriesState State(ChartSeries series, int node) => node >= 0 && node < series.Nodes.Count
         && series.NodeStates.TryGetValue(series.Nodes[node].Id, out var state) ? state : series.StateRole;
 

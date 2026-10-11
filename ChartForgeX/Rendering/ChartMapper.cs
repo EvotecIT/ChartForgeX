@@ -30,6 +30,9 @@ internal sealed class ChartMapper {
         return System.Math.Min(_plot.Right, System.Math.Max(_plot.Left, X(0)));
     }
 
+    /// <summary>Maps a horizontal cumulative value while treating zero as the positive logarithmic baseline.</summary>
+    public double XOrBaseline(double value) => _xAxis.Scale == ChartScaleKind.Logarithmic && value == 0 ? XBaseline() : X(value);
+
     public double YBaseline() {
         if (_yAxis.Scale == ChartScaleKind.Logarithmic) return Y(_range.MinY);
         return System.Math.Min(_plot.Bottom, System.Math.Max(_plot.Top, Y(0)));

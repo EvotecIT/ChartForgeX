@@ -35,8 +35,29 @@ internal static class PresentationPackageSmoke {
         story.Outcome("ready", "Ready", "result");
         Require(story.ToSvg().Contains("Ready", StringComparison.Ordinal), "Stories scene SVG failed.");
         Require(story.ToPng().Length > 64, "Stories scene raster failed.");
+        var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
+            .Type("Ready", TimeSpan.FromSeconds(.5));
+        var editing = VisualStory.Create("AOT editing").WithSize(480, 320);
+        editing.Scene("edit", "Edit", 1).Panel("source", new VisualStorySourceSurface(editor));
+        editing.Outcome("source", "Ready", "source");
+        var prepared = editing.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
+        var sampling = new VisualStoryFrameOptions(2, maximumFrames: 2);
+        Require(prepared.ToSvg().Contains("Ready", StringComparison.Ordinal), "Stories prepared editor failed.");
+        Require(RasterAnimationEncoder.Encode(prepared.FrameSource(RasterAnimationFormat.Gif, sampling), RasterAnimationFormat.Gif,
+            new RasterAnimationOptions { PlayCount = 1 }).Length > 64, "Stories container-specific frame source failed.");
+        using (var stream = new System.IO.MemoryStream()) {
+            prepared.WriteAnimation(stream, RasterAnimationFormat.Apng, sampling);
+            Require(stream.Length > 64 && stream.CanWrite, "Stories streaming APNG failed.");
+        }
         var terminal = TerminalStory.Create().WithTitle("Completed terminal").WithWidth(480)
             .WithPngOutputScale(1).WithFinalPrompt(false).Command("status", .1).Output("Ready");
+        var replay = StoryReplay.Create(TimeSpan.FromSeconds(20)).Command(TimeSpan.FromSeconds(1), "status")
+            .Output(TimeSpan.FromSeconds(10), "Captured result").CompressPauses(TimeSpan.FromSeconds(1));
+        var replayStory = VisualStory.Create("AOT replay").WithSize(480, 320);
+        replayStory.Scene("run", "Replay", replay.Duration.TotalSeconds).Panel("terminal", new VisualStoryReplaySurface(replay));
+        replayStory.Outcome("terminal", "Result", "terminal");
+        Require(replayStory.Prepare().ToSvg().Contains("Captured result", StringComparison.Ordinal), "Stories replay failed.");
+        Require(replayStory.ToPng().Length > 64, "Stories replay raster failed.");
         var terminalArtifact = terminal.ToVisualArtifact();
         Require(ReferenceEquals(terminal, terminalArtifact.Model) && terminalArtifact.ToSvg().Contains("Ready", StringComparison.Ordinal),
             "Stories completed terminal artifact lost its model or transcript.");

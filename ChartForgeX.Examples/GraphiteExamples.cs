@@ -13,6 +13,11 @@ internal static class GraphiteExamples {
         foreach (var dark in new[] { false, true }) {
             var suffix = dark ? "dark" : "light";
             gallery.Append("<section class='").Append(suffix).Append("'><h2>").Append(suffix).Append("</h2>");
+            foreach (var anchor in Enum.GetValues<HtmlChartTooltipAnchor>()) {
+                var name = "graphite-" + suffix + "-tooltip-" + anchor.ToString().ToLowerInvariant();
+                File.WriteAllText(Path.Combine(output, name + ".html"), HtmlTooltipPositionExamples.CreatePage(anchor, dark));
+                gallery.Append("<p><a href='").Append(name).Append(".html'>").Append(anchor).Append(" tooltip placement</a></p>");
+            }
             foreach (var item in Create(dark)) {
                 var name = "graphite-" + suffix + "-" + item.Key;
                 item.Value.WithPngOutputScale(scale);
@@ -20,9 +25,14 @@ internal static class GraphiteExamples {
                 item.Value.SavePng(Path.Combine(output, name + ".png"));
                 item.Value.SaveHtml(Path.Combine(output, name + ".html"));
                 if (item.Key == "line") item.Value.SaveInteractiveHtml(Path.Combine(output,name+"-interactive.html"),
-                    options => { options.Tooltip.Mode = HtmlChartTooltipMode.SharedX; options.Crosshair.ShowLabel = false; });
+                    options => {
+                        options.Tooltip.Mode = HtmlChartTooltipMode.SharedX;
+                        options.Tooltip.DelayMilliseconds = 360;
+                        options.Crosshair.ShowLabel = false;
+                    });
                 var nativeWidth = item.Value.Options.Size.Width;
                 gallery.Append("<h2>").Append(item.Key).Append("</h2><div class='pair'><img alt='SVG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".svg'><img alt='PNG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".png'></div>");
+                if (item.Key == "line") gallery.Append("<p><a href='").Append(name).Append("-interactive.html'>Explore pointer tooltips with a 360 ms delay</a></p>");
             }
             var theme=dark?ChartTheme.GraphiteDark():ChartTheme.GraphiteLight();
             var metric=MetricCard.Create().WithSize(300,200).WithTheme(theme).WithMetric("Coverage","98.4%").WithCaption("Assets reporting")

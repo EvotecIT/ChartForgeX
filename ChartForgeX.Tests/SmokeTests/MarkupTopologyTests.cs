@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -777,6 +778,9 @@ flowchart LR
     }
 
     private static string FindMarkupCliDll() {
+        var routed = typeof(TestRepository).Assembly.GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>()
+            .SingleOrDefault(attribute => attribute.Key == "MarkupCliPath")?.Value;
+        if (routed != null && File.Exists(routed)) return routed;
         var root = FindRepositoryRoot();
         foreach (var configuration in new[] { "Release", "Debug" }) {
             var candidate = Path.Combine(root, "ChartForgeX.Markup.Cli", "bin", configuration, "net8.0", "ChartForgeX.Markup.Cli.dll");

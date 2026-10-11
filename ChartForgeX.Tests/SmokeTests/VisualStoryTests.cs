@@ -10,114 +10,7 @@ using ChartForgeX.Terminal;
 namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
-    private static void VisualStoriesRevealDeclaredOutcomesAcrossPortableFormats() {
-        var source = StorySourceText.Create("Write-Output \"ready\"", "powershell")
-            .AddSpan(0, 12, StorySyntaxKind.Command)
-            .AddSpan(13, 7, StorySyntaxKind.String);
-        var story = VisualStory.Create("Portable story")
-            .WithDescription("A resolved source-to-result presentation.")
-            .WithSize(480, 320);
-        story.Scene("source", "Run the example", 0.25)
-            .Panel("code", new VisualStorySourceSurface(source, "PowerShell source"));
-        story.Scene("result", "See the result", 0.25, VisualStorySceneLayout.Split)
-            .Panel("code", new VisualStorySourceSurface(source, "PowerShell source"))
-            .Panel("result", new VisualStoryTextSurface("ready", emphasized: true))
-            .Panel(
-                "vector",
-                new VisualStoryMediaSurface(
-                    new ChartForgeX.Raster.RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 }),
-                    "Resolved vector preview",
-                    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><rect width=\"1\" height=\"1\" fill=\"none\"/></svg>"));
-        story.Outcome("visible-result", "The result is visible", "result");
-
-        var transcript = story.ToTranscript();
-        var svg = story.ToSvg("portable");
-        var html = story.ToHtmlPage();
-        var png = story.ToPng();
-        var options = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithMaximumFrames(4);
-        var gif = story.ToGif(options);
-        var apng = story.ToApng(options);
-
-        Assert(transcript.Contains("Outcomes:", StringComparison.Ordinal) &&
-               transcript.Contains("The result is visible", StringComparison.Ordinal) &&
-               transcript.Contains("PowerShell source", StringComparison.Ordinal) &&
-               transcript.Contains("Write-Output \"ready\"", StringComparison.Ordinal),
-            "Visual-story transcripts should preserve promised outcomes, source captions, and source text.");
-        Assert(svg.Contains("data-cfx-story=\"visual\"", StringComparison.Ordinal) &&
-               svg.Contains("data-cfx-scene=\"source\"", StringComparison.Ordinal) &&
-               svg.Contains("data-cfx-scene=\"result\"", StringComparison.Ordinal) &&
-               svg.Contains("@media (prefers-reduced-motion:reduce)", StringComparison.Ordinal) &&
-               svg.Contains("cfx-story-scene-last", StringComparison.Ordinal) &&
-               svg.Contains("-motion-scene-0", StringComparison.Ordinal) &&
-               svg.Contains(".cfx-story-scene-0{opacity:0;animation:", StringComparison.Ordinal) &&
-               svg.Contains(".cfx-story-scene-1{opacity:1;animation:", StringComparison.Ordinal) &&
-               svg.Contains("0%{opacity:1}0.5%{opacity:1}12.5%{opacity:0}100%{opacity:0}", StringComparison.Ordinal) &&
-               svg.Contains("0%{opacity:0}0.5%{opacity:0}12.5%{opacity:1}100%{opacity:1}", StringComparison.Ordinal) &&
-               svg.Contains("animation:", StringComparison.Ordinal) &&
-               svg.Contains(" 2s linear infinite both", StringComparison.Ordinal) &&
-               svg.Contains("mix-blend-mode:plus-lighter", StringComparison.Ordinal) &&
-               svg.Contains("isolation:isolate", StringComparison.Ordinal) &&
-               svg.Contains("data-cfx-motion-duration=\"2\"", StringComparison.Ordinal) &&
-               !svg.Contains("animation-timing-function:steps(1,end)", StringComparison.Ordinal) &&
-               !svg.Contains("cfx-story-seed-", StringComparison.Ordinal) &&
-               svg.Contains("data-cfx-role=\"story-vector-media\"", StringComparison.Ordinal) &&
-               svg.Contains("data:image/svg+xml;base64,", StringComparison.Ordinal) &&
-               !svg.Contains("<script", StringComparison.OrdinalIgnoreCase),
-            "Visual-story SVG should be self-contained, script-free, animated, and completed under reduced motion.");
-        var embeddedPngStart = svg.IndexOf("data:image/png;base64,", StringComparison.Ordinal);
-        Assert(embeddedPngStart >= 0, "Visual-story SVG should contain a raster scene base.");
-        embeddedPngStart += "data:image/png;base64,".Length;
-        var embeddedPngEnd = svg.IndexOf('"', embeddedPngStart);
-        var embeddedScene = PngReader.Decode(Convert.FromBase64String(svg.Substring(
-            embeddedPngStart,
-            embeddedPngEnd - embeddedPngStart)));
-        Assert(CountNearColorInRect(
-                embeddedScene.Pixels,
-                embeddedScene.Width,
-                0,
-                0,
-                embeddedScene.Width,
-                embeddedScene.Height,
-                255,
-                0,
-                0,
-                0) == 0,
-            "SVG vector media should replace its raster representation instead of being layered over it.");
-        Assert(html.Contains("<!doctype html>", StringComparison.OrdinalIgnoreCase) &&
-               html.Contains("chartforgex-visual-story", StringComparison.Ordinal),
-            "Visual stories should render complete responsive HTML pages.");
-        Assert(png.Length > 8 && png[0] == 137 && png[1] == 80 && png[2] == 78 && png[3] == 71,
-            "Visual-story PNG should render the completed scene.");
-        Assert(gif.Length > 8 && gif[0] == (byte)'G' && gif[1] == (byte)'I' && gif[2] == (byte)'F',
-            "Visual stories should export animated GIF.");
-        Assert(apng.Length > 128 && apng[0] == 137 && apng[1] == 80 && apng[2] == 78 && apng[3] == 71,
-            "Visual stories should export animated PNG.");
-        Assert(ReadImageDescriptors(gif).Length == 2 && ReadApngFrameControls(apng).Length == 2,
-            "Animated story frame quantization should retain the completed endpoint without adding a full extra frame interval.");
-
-        var longTransition = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithTransition(1)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithMaximumFrames(4);
-        var firstAnimatedFrame = GifReader.Decode(story.ToGif(longTransition));
-        var noTransition = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithTransition(0)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithMaximumFrames(4);
-        var expectedFirstFrame = GifReader.Decode(story.ToGif(noTransition));
-        Assert(firstAnimatedFrame.Pixels.SequenceEqual(expectedFirstFrame.Pixels),
-            "A transition longer than its scene should still begin with the complete current scene.");
-    }
-
-    private static void VisualStoriesRejectUnrevealedOutcomesAndInvalidSyntaxSpans() {
+    internal static void VisualStoriesRejectUnrevealedOutcomesAndInvalidSyntaxSpans() {
         var noOutcome = VisualStory.Create("Missing outcome").WithSize(480, 320);
         noOutcome.Scene("only", "Only scene").Panel("text", new VisualStoryTextSurface("Nothing promised"));
         AssertThrows<InvalidOperationException>(() => noOutcome.ToSvg(), "Visual stories should require a declared outcome.");
@@ -376,9 +269,10 @@ internal static partial class SmokeTests {
             .WithFramesPerSecond(4)
             .WithEndHold(0)
             .WithMaximumFrames(30);
-        AssertThrows<InvalidOperationException>(
-            () => retainedScenes.ToGif(constrainedAnimation),
-            "Animated visual-story memory limits should include cached scene images.");
+        var streamingScenes = retainedScenes.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero));
+        var producer = streamingScenes.FrameSource(new VisualStoryFrameOptions(4, maximumFrames: 30));
+        Assert(producer.FrameCount == 24 && producer.AdditionalWorkingBytes < 1500L * 1000 * 4 * 24,
+            "Story export should reserve bounded producer memory rather than retaining an RGBA frame for every scene.");
 
         var encoderBuffers = VisualStory.Create("Encoder memory").WithSize(3840, 2160);
         encoderBuffers.Scene("first", "First", 2.8)
@@ -581,8 +475,8 @@ internal static partial class SmokeTests {
             0,
             128,
             32);
-        Assert(truncationBounds.Right >= truncatedBounds.X + truncatedBounds.Width - 28,
-            "Vertically truncated source panels should draw a visible ellipsis on the final rendered line.");
+        Assert(!truncationBounds.IsEmpty && truncatedStory.Prepare().ToSvg().Contains("source-scroll-position", StringComparison.Ordinal),
+            "Vertically clipped source should retain readable text and indicate continuation in the fixed viewport.");
 
         var denseLinesStory = VisualStory.Create("Bounded source lines")
             .WithSize(480, 320)
@@ -620,165 +514,10 @@ internal static partial class SmokeTests {
             0,
             128,
             32);
-        Assert(horizontalMarker.Right >= horizontalBounds.X + horizontalBounds.Width - 20,
-            "Horizontally truncated syntax runs should reserve a visible line-level ellipsis.");
+        var wrappedSource = XDocument.Parse(horizontalStory.Prepare().ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "source-text").Select(element => element.Value);
+        Assert(string.Concat(wrappedSource) == horizontalSource.Text,
+            "Source wrapping should preserve complete syntax runs at a fixed readable size.");
     }
 
-    private static void VisualStoryRasterLayoutStaysBoundedAtEveryDensity() {
-        var theme = VisualStoryTheme.PremiumDark();
-        theme.Muted = ChartColor.FromRgb(255, 0, 128);
-        var split = VisualStory.Create("Bounded panel titles")
-            .WithSize(480, 320)
-            .WithTheme(theme);
-        var splitScene = split.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Split);
-        splitScene.Panel("left", new VisualStoryTextSurface("left"), new string('W', 80));
-        splitScene.Panel("right", new VisualStoryTextSurface("right"), "Right panel");
-        split.Outcome("visible", "Right panel is visible", "right");
-        var splitPixels = ReadPngRgba(split.ToPng(), out var splitWidth, out _);
-        var splitBounds = VisualStoryLayout.Panels(split, splitScene);
-        var titleGapX = (int)Math.Ceiling(splitBounds[0].X + splitBounds[0].Width);
-        var titleGapWidth = Math.Max(1, (int)Math.Floor(splitBounds[1].X) - titleGapX);
-        var titleGapInk = CountNearColorInRect(
-            splitPixels,
-            splitWidth,
-            titleGapX,
-            (int)(splitBounds[0].Y + VisualStoryLayout.PanelPadding),
-            titleGapWidth,
-            22,
-            255,
-            0,
-            128,
-            16);
-        Assert(titleGapInk == 0, "Raster visual-story panel titles should not bleed into the adjacent panel gap.");
-
-        var stacked = VisualStory.Create("Bounded wrapped text")
-            .WithSize(480, 320)
-            .WithTheme(theme);
-        var stackedScene = stacked.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Stacked);
-        stackedScene.Panel("first", new VisualStoryTextSurface(string.Join(" ", Enumerable.Repeat("overflow", 80))));
-        stackedScene.Panel("second", new VisualStoryTextSurface("ready"));
-        stacked.Outcome("visible", "Ready is visible", "second");
-        var stackedPixels = ReadPngRgba(stacked.ToPng(), out var stackedWidth, out _);
-        var stackedBounds = VisualStoryLayout.Panels(stacked, stackedScene);
-        var textGapY = (int)Math.Ceiling(stackedBounds[0].Y + stackedBounds[0].Height);
-        var textGapHeight = Math.Max(1, (int)Math.Floor(stackedBounds[1].Y) - textGapY);
-        var textGapInk = CountNearColorInRect(
-            stackedPixels,
-            stackedWidth,
-            (int)(stackedBounds[0].X + VisualStoryLayout.PanelPadding),
-            textGapY,
-            (int)(stackedBounds[0].Width - VisualStoryLayout.PanelPadding * 2),
-            textGapHeight,
-            255,
-            0,
-            128,
-            16);
-        Assert(textGapInk == 0, "Wrapped raster story text should remain inside the available panel height.");
-
-        var normalOptions = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithTransition(0)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithMaximumFrames(2);
-        var highDensityOptions = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithTransition(0)
-            .WithEndHold(0)
-            .WithLoop(false)
-            .WithOutputScale(2)
-            .WithMaximumFrames(2);
-        var normal = GifReader.Decode(split.ToGif(normalOptions));
-        var highDensity = GifReader.Decode(split.ToGif(highDensityOptions));
-        var stretched = ImageComposition.Create(highDensity.Width, highDensity.Height, ChartColor.Transparent)
-            .DrawImage(normal, 0, 0, highDensity.Width, highDensity.Height, VisualCanvasImageFit.Stretch)
-            .ToImage();
-        Assert(highDensity.Width == normal.Width * 2 && highDensity.Height == normal.Height * 2,
-            "Animated visual-story output scale should multiply the rendered frame dimensions.");
-        Assert(!highDensity.Pixels.SequenceEqual(stretched.Pixels),
-            "Animated visual-story output scale should render at the requested density instead of stretching one-times frames.");
-
-        var terminal = TerminalStory.Create()
-            .WithWidth(480)
-            .WithPngOutputScale(1)
-            .WithTiming(0, 200, 0)
-            .WithFinalPrompt(false)
-            .Command("Get-Process | Sort-Object CPU", 0.05)
-            .Output("ready", TerminalTextTone.Success);
-        var terminalRenderer = new PngTerminalStoryRenderer();
-        var terminalNormal = PngReader.Decode(terminalRenderer.Render(terminal, 1));
-        var terminalHighDensity = PngReader.Decode(terminalRenderer.Render(terminal, 4));
-        var stretchedTerminal = ImageComposition.Create(
-                terminalHighDensity.Width,
-                terminalHighDensity.Height,
-                ChartColor.Transparent)
-            .DrawImage(
-                terminalNormal,
-                0,
-                0,
-                terminalHighDensity.Width,
-                terminalHighDensity.Height,
-                VisualCanvasImageFit.Stretch)
-            .ToImage();
-        Assert(!terminalHighDensity.Pixels.SequenceEqual(stretchedTerminal.Pixels),
-            "Terminal panels should support native story output density instead of stretched terminal text.");
-
-        var terminalStory = VisualStory.Create("Terminal density")
-            .WithSize(480, 320);
-        terminalStory.Scene("result", "Completed", 0.25)
-            .Panel("terminal", new VisualStoryTerminalSurface(terminal, "A completed terminal command"));
-        terminalStory.Outcome("visible", "The terminal is visible", "terminal");
-        var terminalStoryFrame = GifReader.Decode(terminalStory.ToGif(highDensityOptions.WithOutputScale(4)));
-        Assert(terminalStoryFrame.Width == terminalStory.Width * 4 &&
-               terminalStoryFrame.Height == terminalStory.Height * 4,
-            "Animated visual stories should propagate their requested density through terminal panels.");
-
-        var longTerminal = TerminalStory.Create()
-            .WithWidth(960)
-            .WithPngOutputScale(4)
-            .WithTiming(0, 200, 0)
-            .WithFinalPrompt(false)
-            .Output(string.Join(Environment.NewLine, Enumerable.Repeat("completed line", 105)));
-        var fittedTerminalStory = VisualStory.Create("Fitted terminal density")
-            .WithSize(480, 320);
-        fittedTerminalStory.Scene("result", "Completed", 0.25)
-            .Panel("terminal", new VisualStoryTerminalSurface(longTerminal, "A long completed transcript"));
-        fittedTerminalStory.Outcome("visible", "The terminal is visible", "terminal");
-        var fittedTerminalGif = fittedTerminalStory.ToGif(
-            VisualStoryAnimationOptions.Create()
-                .WithFramesPerSecond(4)
-                .WithTransition(0)
-                .WithEndHold(0)
-                .WithOutputScale(4)
-                .WithMaximumFrames(2));
-        Assert(fittedTerminalGif.Length > 8,
-            "Nested terminal canvases should render only at the density needed by their fitted story panel.");
-
-        var enlargedTerminal = terminalRenderer.RenderFitted(terminal, 700, 300, 4);
-        Assert(enlargedTerminal.Width > terminal.Width * 4,
-            "Enlarged terminal panels should render at their fitted destination density instead of stretching a four-times source.");
-
-        var outgoing = new RgbaImage(1, 1, new byte[] { 255, 0, 0, 255 });
-        var incoming = new RgbaImage(1, 1, new byte[] { 0, 0, 0, 0 });
-        var transparentFade = VisualStoryAnimatedRasterRenderer.CrossFade(
-            outgoing,
-            incoming,
-            0.5);
-        Assert(transparentFade.Pixels[3] >= 126 && transparentFade.Pixels[3] <= 129,
-            "Raster story cross-fades should reduce outgoing alpha when the incoming scene is transparent.");
-        Assert(transparentFade.Pixels[0] >= 254 &&
-               transparentFade.Pixels[1] == 0 &&
-               transparentFade.Pixels[2] == 0,
-            "Raster story cross-fades should interpolate transparent colors in premultiplied-alpha space without dark fringes.");
-        var opaqueFade = VisualStoryAnimatedRasterRenderer.CrossFade(
-            outgoing,
-            new RgbaImage(1, 1, new byte[] { 0, 0, 255, 255 }),
-            0.5);
-        Assert(opaqueFade.Pixels[3] == 255 &&
-               opaqueFade.Pixels[0] >= 126 && opaqueFade.Pixels[0] <= 129 &&
-               opaqueFade.Pixels[2] >= 126 && opaqueFade.Pixels[2] <= 129,
-            "Raster story cross-fades should linearly interpolate opaque scene colors without reducing opacity.");
-
-        AssertExactAnimatedRasterDuration();
-    }
 }

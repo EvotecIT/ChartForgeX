@@ -26,26 +26,30 @@ public sealed class PngTerminalStoryRenderer {
         TerminalStory story,
         double targetWidth,
         double targetHeight,
-        int outputScale) {
+        int outputScale,
+        double? elapsedSeconds = null) {
         ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
         var layout = BuildFittedLayout(story, out var fonts);
         var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
-        return RenderImage(story, layout, fonts, renderScale, null);
+        return RenderImage(story, layout, fonts, renderScale, elapsedSeconds);
     }
 
     internal static long EstimateFittedWorkingBytes(
         TerminalStory story,
         double targetWidth,
         double targetHeight,
-        int outputScale) {
+        int outputScale) => EstimateFittedWorkingBytes(story, targetWidth, targetHeight, outputScale, out _);
+
+    internal static long EstimateFittedWorkingBytes(
+        TerminalStory story, double targetWidth, double targetHeight, int outputScale, out long retainedBytes) {
         ValidateFittedArguments(story, targetWidth, targetHeight, outputScale);
         var layout = BuildFittedLayout(story, out _);
         var renderScale = FittedRenderScale(layout, targetWidth, targetHeight, outputScale);
         RasterAllocationGuard.Calculate(layout.Width, layout.Height, 2, renderScale);
         var width = checked((long)layout.Width * renderScale);
         var height = checked((long)layout.Height * renderScale);
-        return checked(AnimatedRasterMemoryBudget.RenderWorkingBytes(width, height, 2) +
-            AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(width, height, 1));
+        retainedBytes = AnimatedRasterMemoryBudget.RgbaFramesRetainedBytes(width, height, 1);
+        return checked(AnimatedRasterMemoryBudget.RenderWorkingBytes(width, height, 2) + retainedBytes);
     }
 
     internal byte[] Render(TerminalStory story, TrueTypeFont? outlineFont) {
@@ -82,10 +86,10 @@ public sealed class PngTerminalStoryRenderer {
             var tabOpacity = layout.TabOpacity(tab.Id, elapsedSeconds);
             if (tabOpacity <= 0) continue;
             foreach (var line in renderedTab.Lines) {
-                var state = VisibleState(line, elapsedSeconds);
+                var state = TerminalLinePlayback.At(line, elapsedSeconds);
                 if (!state.Visible) continue;
                 var y = layout.ContentTop + line.RowIndex * story.LineHeight + state.TranslateY;
-                var visibleText = line.IsCommand && elapsedSeconds.HasValue ? VisibleCommand(line, state.Progress) : line.Text;
+                var visibleText = line.IsCommand && elapsedSeconds.HasValue ? TerminalLinePlayback.CommandText(line, elapsedSeconds.Value) : line.Text;
                 if (line.IsCommand) {
                     var promptLength = Math.Min(line.PromptLength, visibleText.Length);
                     var prompt = visibleText.Substring(0, promptLength);
@@ -94,7 +98,7 @@ public sealed class PngTerminalStoryRenderer {
                     TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, WithOpacity(tab.Theme.Accent, tabOpacity), story.FontSize, outlineFont);
                     TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, WithOpacity(tab.Theme.Text, tabOpacity), story.FontSize, outlineFont);
                 } else {
-                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(ToneColor(tab.Theme, line.Tone), state.Opacity * tabOpacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
+                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(TerminalLinePlayback.ToneColor(tab.Theme, line.Tone), state.Opacity * tabOpacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
                 }
 
                 if (line.IsFinalPrompt && CursorVisible(layout, line, elapsedSeconds)) {
@@ -155,31 +159,10 @@ public sealed class PngTerminalStoryRenderer {
         if (outputScale < 1 || outputScale > 4) throw new ArgumentOutOfRangeException(nameof(outputScale));
     }
 
-    private static VisibleLineState VisibleState(TerminalRenderedLine line, double? elapsedSeconds) {
-        if (!elapsedSeconds.HasValue) return new VisibleLineState(true, 1, 1, 0);
-        var elapsed = elapsedSeconds.Value;
-        if (elapsed < line.StartSeconds) return new VisibleLineState(false, 0, 0, 0);
-        if (line.IsCommand) {
-            var progress = line.DurationSeconds <= 0 ? 1 : Unit((elapsed - line.StartSeconds) / line.DurationSeconds);
-            return new VisibleLineState(true, progress, 1, 0);
-        }
-
-        var reveal = line.DurationSeconds <= 0 ? 1 : Unit((elapsed - line.StartSeconds) / line.DurationSeconds);
-        var eased = 1 - Math.Pow(1 - reveal, 3);
-        return new VisibleLineState(true, reveal, eased, (1 - eased) * 3);
-    }
-
-    private static string VisibleCommand(TerminalRenderedLine line, double progress) {
-        if (progress >= 1) return line.Text;
-        var elements = TerminalTextWidth.VisibleElements(line.Text).ToArray();
-        var count = Math.Max(0, Math.Min(elements.Length, (int)Math.Floor(elements.Length * progress)));
-        return string.Concat(elements.Take(count));
-    }
-
     internal static bool CursorVisible(TerminalStoryLayout layout, TerminalRenderedLine line, double? elapsedSeconds) {
         if (!elapsedSeconds.HasValue) return true;
-        if (elapsedSeconds.Value < line.StartSeconds) return false;
-        return (elapsedSeconds.Value - line.StartSeconds) % 1 < 0.47;
+        if (!StoryPlaybackClock.Started(elapsedSeconds.Value, line.StartSeconds)) return false;
+        return (StoryPlaybackClock.Ticks(elapsedSeconds.Value) - StoryPlaybackClock.Ticks(line.StartSeconds)) % TimeSpan.TicksPerSecond < 4_700_000;
     }
 
     private static ChartColor WithOpacity(ChartColor color, double opacity) {
@@ -189,29 +172,4 @@ public sealed class PngTerminalStoryRenderer {
 
     private static double Unit(double value) => Math.Max(0, Math.Min(1, value));
 
-    private static ChartColor ToneColor(TerminalTheme theme, TerminalTextTone tone) {
-        switch (tone) {
-            case TerminalTextTone.Default: return theme.Text;
-            case TerminalTextTone.Muted: return theme.Muted;
-            case TerminalTextTone.Accent: return theme.Accent;
-            case TerminalTextTone.Success: return theme.Success;
-            case TerminalTextTone.Warning: return theme.Warning;
-            case TerminalTextTone.Error: return theme.Error;
-            default: throw new ArgumentOutOfRangeException(nameof(tone));
-        }
-    }
-
-    private readonly struct VisibleLineState {
-        public readonly bool Visible;
-        public readonly double Progress;
-        public readonly double Opacity;
-        public readonly double TranslateY;
-
-        public VisibleLineState(bool visible, double progress, double opacity, double translateY) {
-            Visible = visible;
-            Progress = progress;
-            Opacity = opacity;
-            TranslateY = translateY;
-        }
-    }
 }

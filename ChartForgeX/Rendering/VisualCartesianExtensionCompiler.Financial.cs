@@ -40,29 +40,17 @@ internal static partial class VisualCartesianCompiler {
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, map.Y(median)), bounds, median, label, labels, obstacles);
             } else {
                 var open = series.Points[raw].Y; var high = series.Points[raw + 1].Y; var low = series.Points[raw + 2].Y; var close = series.Points[raw + 3].Y;
-                var rising = close >= open; var color = FinancialColor(series, index, item, rising, colors);
-                var sourcePaint = SvgPaint.Of(color, SemanticMarkPaintRole(series, item));
+                var style = FinancialStyle(series, index, item, close >= open, colors);
                 var candle = series.Kind == ChartSeriesKind.Candlestick;
                 var width = candle ? Math.Max(8, Math.Min(22, plot.Width / Math.Max(1, count * 5))) : Math.Max(7, Math.Min(18, plot.Width / Math.Max(1, count * 6)));
                 var highY = map.Y(high); var lowY = map.Y(low); var openY = map.Y(open); var closeY = map.Y(close);
-                var bounds = Extents(x - width / 2, Math.Min(Math.Min(highY, lowY), Math.Min(openY, closeY)), x + width / 2, Math.Max(Math.Max(highY, lowY), Math.Max(openY, closeY)));
+                var body = FinancialBody(x, width, openY, closeY);
+                var bounds = FinancialBounds(candle, body, highY, lowY, openY, closeY, style);
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, close));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label,
                     ("x", xValue), ("open", open), ("high", high), ("low", low), ("close", close))) {
-                    var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : candle ? ChartVisualPrimitives.CandlestickStrokeWidth : ChartVisualPrimitives.OhlcStrokeWidth;
-                    builder.Line(x, highY, x, lowY, color, stroke, role: candle ? "candlestick-wick" : "ohlc-stem", paint: VisualChartPaint.Stroke(sourcePaint));
-                    if (candle) {
-                        var height = Math.Max(2, Math.Abs(closeY - openY));
-                        var body = new ChartRect(x - width / 2, (openY + closeY - height) / 2, width, height);
-                        var opacity = rising ? ChartVisualPrimitives.CandlestickRisingFillOpacity : ChartVisualPrimitives.CandlestickFallingFillOpacity;
-                        var fill = ChartColorMath.WithOpacity(color, opacity); var radius = Math.Min(ChartVisualPrimitives.CandlestickBodyRadius, height / 2);
-                        builder.Rect(body, fill, color, stroke, radius, role: "candlestick-body",
-                            paint: new VisualScenePaintBinding(fill: sourcePaint.WithOpacity(fill, opacity), stroke: sourcePaint));
-                        DrawPattern(builder, RoundedRectanglePath(body, radius), ObservationPattern(series, item), fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "candlestick-pattern");
-                    } else {
-                        builder.Line(x - width / 2, openY, x, openY, color, stroke, role: "ohlc-open", paint: VisualChartPaint.Stroke(sourcePaint));
-                        builder.Line(x, closeY, x + width / 2, closeY, color, stroke, role: "ohlc-close", paint: VisualChartPaint.Stroke(sourcePaint));
-                    }
+                    DrawFinancialMark(builder, candle, body, highY, lowY, openY, closeY, style,
+                        ObservationPattern(series, item), ChartStateMark.Backdrop(chart.Options, colors, context.Frame));
                 }
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, closeY), bounds, close, label, labels, obstacles);
             }

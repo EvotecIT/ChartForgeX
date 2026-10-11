@@ -41,6 +41,13 @@ internal sealed partial class VisualSceneBuilder {
             imageResource: new VisualSceneImageResource(href, bounds, preserveAspectRatio, opacity, role, id)));
     }
 
+    /// <summary>Embeds already resolved static SVG with the native fallback retained inside the returned group.</summary>
+    internal IDisposable PushEmbeddedSvg(string resolvedSvg, ChartRect bounds, string? preserveAspectRatio = null, double opacity = 1, string? role = null, string? id = null) {
+        ValidateRect(bounds); ImageOpacity(opacity);
+        return OpenGroup(new VisualSceneGroup(null, null, bounds, null,
+            imageResource: VisualSceneImageResource.EmbeddedSvg(resolvedSvg, bounds, preserveAspectRatio, opacity, role, id)));
+    }
+
     private static void ImageOpacity(double opacity) {
         ChartGuards.Finite(opacity, nameof(opacity));
         if (opacity < 0 || opacity > 1) throw new ArgumentOutOfRangeException(nameof(opacity));
@@ -96,8 +103,8 @@ internal sealed partial class VisualSceneBuilder {
 
     internal void SliceGradient(double cx, double cy, double outerRadius, double innerRadius, double startAngle, double sweep,
         ChartPoint start, ChartPoint end, IReadOnlyList<VisualGradientStop> stops,
-        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null) {
-        Slice(cx, cy, outerRadius, innerRadius, startAngle, sweep, ChartColor.Transparent, stroke,strokeWidth, role, id, paint);
+        ChartColor? stroke = null, double strokeWidth = 1, string? role = null, string? id = null, VisualScenePaintBinding? paint = null, double cornerRadius = 0) {
+        Slice(cx, cy, outerRadius, innerRadius, startAngle, sweep, ChartColor.Transparent, stroke, strokeWidth, role, id, paint, cornerRadius);
         ReplaceWithGradient(start, end, stops);
     }
 
@@ -121,8 +128,11 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     internal void PatternSlice(double cx, double cy, double outerRadius, double innerRadius, double start, double sweep,
-        ChartFillPattern pattern, ChartColor color, double spacing = 8, double strokeWidth = 1.5, string? role = null, Themes.SvgPaint? paint = null) {
-        if (!ChartSlicePathGeometry.HasEncodedFillArea(cx, cy, outerRadius, innerRadius, start, sweep)) return;
+        ChartFillPattern pattern, ChartColor color, double spacing = 8, double strokeWidth = 1.5, string? role = null, Themes.SvgPaint? paint = null, double cornerRadius = 0) {
+        NonNegative(cornerRadius, nameof(cornerRadius));
+        if (!ChartSlicePathGeometry.HasEncodedFillArea(cx, cy, outerRadius, innerRadius, start, sweep, cornerRadius)) return;
+        var rounded = ChartSlicePathGeometry.RoundedPath(cx, cy, outerRadius, innerRadius, start, sweep, cornerRadius);
+        if (rounded != null) { Pattern(rounded, pattern, color, spacing, strokeWidth, role, paint); return; }
         // Retain one numeric contour clip independent of either export backend.
         var slice = new VisualSceneSlice(cx, cy, outerRadius, innerRadius, start, sweep, color, null, 0, null, null);
         var contours = VisualSceneGeometry.Flatten(slice, 4);
