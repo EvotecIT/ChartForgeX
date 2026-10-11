@@ -178,6 +178,8 @@ internal static partial class MermaidGanttParser {
         return original;
 
         bool StartsConfiguredDate(int startIndex) {
+            if (chunks.Length - startIndex <= maximumCommas + 1
+                && MermaidGanttInputDateFormat.TryParseConfigured(string.Join(",", chunks, startIndex, chunks.Length - startIndex).Trim(), document.DateFormat, out _)) return true;
             var start = chunks[startIndex];
             for (var boundary = startIndex; boundary < chunks.Length - 1 && boundary <= startIndex + maximumCommas; boundary++) {
                 if (boundary > startIndex) start += "," + chunks[boundary];
