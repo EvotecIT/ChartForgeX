@@ -121,7 +121,7 @@ public sealed class SequencePresentationTests {
         }
     }
 
-    private static string Source(string theme) => "---\nconfig:\n  theme: default\n  fontFamily: Arial, sans-serif\n  sequence:\n    theme: " + theme + "\n    fontFamily: Georgia, serif\n---\n" + Body;
+    private static string Source(string theme) => "---\nconfig:\n  theme: default\n  fontFamily: Georgia, serif\n  sequence:\n    theme: " + theme + "\n---\n" + Body;
 
     private static void AssertStatusColors(VisualThemeColors colors, VisualArtifactInterchangeTheme theme) {
         var status = colors.Status;
