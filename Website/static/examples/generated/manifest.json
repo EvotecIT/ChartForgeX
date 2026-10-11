@@ -7158,7 +7158,7 @@
       "family": "heatmap",
       "familyLabel": "Heatmap",
       "group": "matrices-maps",
-      "title": "Coverage across service areas",
+      "title": "Temperature across service areas",
       "variant": "positioned-color-scale",
       "primary": false,
       "seriesKinds": [
@@ -7191,7 +7191,7 @@
       "family": "heatmap",
       "familyLabel": "Heatmap",
       "group": "matrices-maps",
-      "title": "Coverage across service areas",
+      "title": "Temperature across service areas",
       "variant": "compact-positioned-color-scale",
       "primary": false,
       "seriesKinds": [
@@ -7428,7 +7428,7 @@
       "family": "heatmap",
       "familyLabel": "Heatmap",
       "group": "matrices-maps",
-      "title": "Coverage across service areas",
+      "title": "Temperature across service areas",
       "variant": "positioned-color-scale",
       "primary": false,
       "seriesKinds": [
@@ -7461,7 +7461,7 @@
       "family": "heatmap",
       "familyLabel": "Heatmap",
       "group": "matrices-maps",
-      "title": "Coverage across service areas",
+      "title": "Temperature across service areas",
       "variant": "compact-positioned-color-scale",
       "primary": false,
       "seriesKinds": [
@@ -8616,7 +8616,7 @@
       "family": "tile-map",
       "familyLabel": "Tile Map",
       "group": "matrices-maps",
-      "title": "Service coverage by state",
+      "title": "Temperature by state",
       "variant": "positioned-color-scale",
       "primary": false,
       "seriesKinds": [
@@ -8729,7 +8729,7 @@
       "family": "tile-map",
       "familyLabel": "Tile Map",
       "group": "matrices-maps",
-      "title": "Service coverage by state",
+      "title": "Temperature by state",
       "variant": "compact-positioned-color-scale",
       "primary": false,
       "seriesKinds": [
@@ -9172,7 +9172,7 @@
       "family": "tile-map",
       "familyLabel": "Tile Map",
       "group": "matrices-maps",
-      "title": "Service coverage by state",
+      "title": "Temperature by state",
       "variant": "positioned-color-scale",
       "primary": false,
       "seriesKinds": [
@@ -9285,7 +9285,7 @@
       "family": "tile-map",
       "familyLabel": "Tile Map",
       "group": "matrices-maps",
-      "title": "Service coverage by state",
+      "title": "Temperature by state",
       "variant": "compact-positioned-color-scale",
       "primary": false,
       "seriesKinds": [
