@@ -38,7 +38,7 @@ public sealed partial class MermaidParser {
         return length;
     }
 
-    private static void ReadConfigurationYaml(string text, MermaidSourceConfiguration configuration, MermaidParseResult<MermaidDocument> result) {
+    private static void ReadConfigurationYaml(string text, MermaidSourceConfiguration configuration, MermaidParseResult<MermaidDocument> result, IReadOnlyList<int> sourceLineStarts) {
         var parents = new List<(int Indent, string Path, int ChildIndent, MermaidSourceSpan Span)>();
         var declared = new HashSet<string>(StringComparer.Ordinal);
         var opaqueIndent = -1;
@@ -86,9 +86,13 @@ public sealed partial class MermaidParser {
             }
             try {
                 if (parents.Count == 0) {
+                    var sourceLines = new List<ConfigurationJsonLine>();
                     if (valueText.StartsWith("{", StringComparison.Ordinal))
-                        valueText = ReadConfigurationFlowMapping(lines, ref index, valueText);
-                    AddConfigurationJson(GeoJsonValue.Parse(NormalizeConfigurationJson(valueText), StringComparer.Ordinal, ConfigurationJsonLimits).AsObject("Mermaid frontmatter config"), string.Empty, span, configuration);
+                        valueText = ReadConfigurationFlowMapping(lines, ref index, valueText, sourceLines, indent + match.Groups[2].Index + 1);
+                    var offsets = new List<int>();
+                    var normalized = NormalizeConfigurationJson(valueText, offsets);
+                    AddConfigurationJson(GeoJsonValue.Parse(normalized, StringComparer.Ordinal, ConfigurationJsonLimits).AsObject("Mermaid frontmatter config"),
+                        string.Empty, span, configuration, value => ConfigurationJsonPropertySpan(value, offsets, sourceLines, sourceLineStarts, span));
                 } else {
                     foreach (var character in valueText)
                         if (character < ' ' && character != '\t') throw new ArgumentException("Mermaid YAML scalars cannot contain literal control characters other than tabs.");
@@ -117,6 +121,10 @@ public sealed partial class MermaidParser {
     }
 
     private static void ValidateConfigurationYamlPlainScalar(string value) {
+        var leading = value[0];
+        if ("]},@`%".IndexOf(leading) >= 0 || (leading == '-' || leading == '?' || leading == ':') &&
+            (value.Length == 1 || value[1] == ' ' || value[1] == '\t'))
+            throw new ArgumentException("Mermaid YAML plain scalars cannot begin with a reserved indicator; quote the intended string.");
         // YAML 1.2 allows all non-C0 characters inside quoted scalars for JSON compatibility.
         // Its printable stream ranges still apply to the plain scalars validated here.
         for (var index = 0; index < value.Length; index++) {
