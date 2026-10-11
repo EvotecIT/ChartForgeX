@@ -8,6 +8,9 @@ internal static class MermaidExamples {
             ["mermaid-packet-preferred-row-gap"] = "---\nconfig:\n  packet:\n    bitsPerRow: 8\n    rowHeight: 20\n    paddingY: 100\n    showBits: false\n---\npacket-beta\n0-7: \"Header\"\n8-15: \"Payload\"\n",
             ["mermaid-packet-descending"] = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    bitOrder: descending\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"\n+1: \"Ready\"\n+5: \"Tail\"\n",
             ["mermaid-packet-source-options"] = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    showBits: false\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"\n+1: \"Ready\"\n+5: \"Tail\"\n",
+            ["mermaid-source-font-size-actor-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':'+2.56e2px'}}}%%\nusecase-beta\ndirection LR\nactor API\nactor UI\n",
+            ["mermaid-source-font-size-tile-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nflowchart LR\nAPI\nUI\n",
+            ["mermaid-source-font-size-git-cherry-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\ngitGraph\ncommit id: \"base\"\nbranch dev\ncommit id: \"work\"\ncheckout main\ncherry-pick id: \"work\"\n",
             ["mermaid-source-font-size-wardley-fit"] = "%%{init: {\"themeVariables\":{\"fontSize\":256}}}%%\nwardley-beta\nanchor User [0.9, 0.15]\ncomponent API [0.55, 0.4]\nUser +'uses'> API\nnote \"Data\" [0.25, 0.6]\naccelerator Faster [0.45, 0.65]\nannotation 1, [0.5, 0.5] \"Review\"\npipeline API {\n  component Build [0.3]\n}\n",
             ["mermaid-source-font-size-fishbone-fit"] = "%%{init: {\"themeVariables\":{\"fontSize\":256}}}%%\nishikawa-beta\nAPI\n  People\n    Data\n  Process\n    Review\n",
             ["mermaid-source-font-size-block-fit"] = "%%{init: {\"themeVariables\":{\"fontSize\":256}}}%%\nblock-beta\ncolumns 2\nAPI Store\nAPI --> Store\n",
@@ -46,6 +49,23 @@ internal static class MermaidExamples {
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
             if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
                 block.Options.ShowCard = false;
+            if (item.Key == "mermaid-source-font-size-git-cherry-fit" && result.Artifact.Model is ChartForgeX.VisualBlocks.GitGraphBlock git) {
+                git.WithTitle("").WithSubtitle("").WithSize(320, 460).WithCommitLabels(false);
+                git.ShowBranchLabels = false;
+            }
+            if ((item.Key == "mermaid-source-font-size-actor-fit" || item.Key == "mermaid-source-font-size-tile-fit") &&
+                result.Artifact.Model is ChartForgeX.Topology.TopologyChart topology) {
+                topology.Title = ""; topology.Subtitle = ""; topology.LayoutMode = ChartForgeX.Topology.TopologyLayoutMode.Manual;
+                topology.DefaultRenderOptions = new ChartForgeX.Topology.TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeTileSubtitles = true };
+                ChartForgeX.Topology.TopologyChartExtensions.WithViewport(topology, 320, 360, 16);
+                for (var index = 0; index < topology.Nodes.Count; index++) {
+                    var node = topology.Nodes[index]; node.X = 32 + index * 176; node.Y = 90; node.Width = 80;
+                    node.Height = item.Key == "mermaid-source-font-size-tile-fit" ? 48 : 108;
+                    if (item.Key == "mermaid-source-font-size-tile-fit") {
+                        node.DisplayMode = ChartForgeX.Topology.TopologyNodeDisplayMode.Tile; node.Subtitle = "Ready";
+                    }
+                }
+            }
             result.Artifact.SaveSvg(Path.Combine(output, item.Key + ".svg"));
             result.Artifact.SavePng(Path.Combine(output, item.Key + ".png"));
             result.Artifact.SaveHtml(Path.Combine(output, item.Key + ".html"));

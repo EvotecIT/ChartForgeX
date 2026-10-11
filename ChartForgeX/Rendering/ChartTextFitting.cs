@@ -3,6 +3,19 @@ using System;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartTextFitting {
+    // The native fallback has discrete advances, so evaluate candidates instead
+    // of extrapolating from a one-pixel probe.
+    internal static double FitFontSize(double minimum, double preferred, Func<double, bool> fits) {
+        if (fits(preferred)) return preferred;
+        var upper = preferred;
+        for (var iteration = 0; iteration < 18; iteration++) {
+            var candidate = (minimum + upper) / 2;
+            if (fits(candidate)) minimum = candidate;
+            else upper = candidate;
+        }
+        return Math.Floor(minimum * 1000) / 1000;
+    }
+
     public static string TrimEnd(string value, double fontSize, double maxWidth, Func<string, double, double> measure) {
         return FitEnd(value, maxWidth, text => measure(text, fontSize), "...");
     }

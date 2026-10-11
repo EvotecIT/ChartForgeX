@@ -66,7 +66,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var commit = placement.Commit;
         var branchIndex = BranchIndex(layout, commit.BranchName);
         var color = VisualBlockRendering.PaletteAt(theme, branchIndex);
-        var radius = commit.Type == GitGraphCommitType.CherryPick ? System.Math.Max(CommitRadius(commit), 7.5 * layout.FontScale) : CommitRadius(commit);
+        var radius = VisualBlockRendering.GitCommitRadius(commit, layout.FontScale);
         var fill = commit.Type == GitGraphCommitType.Reverse ? theme.CardBackground : color;
         var stroke = color;
         writer.StartElement("circle")
@@ -109,10 +109,4 @@ public sealed partial class SvgVisualBlockRenderer {
         return 0;
     }
 
-    private static double CommitRadius(GitGraphCommit commit) {
-        if (commit.Type == GitGraphCommitType.Highlight) return 8.5;
-        if (commit.Type == GitGraphCommitType.Merge) return 7.5;
-        if (commit.Type == GitGraphCommitType.CherryPick) return 7.5;
-        return 6.5;
-    }
 }
