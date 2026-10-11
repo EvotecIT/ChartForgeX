@@ -4802,6 +4802,30 @@
       }
     },
     {
+      "name": "mermaid-flowchart-shape-aliases",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 640,
+      "height": 612,
+      "logicalWidth": 640.0,
+      "logicalHeight": 612.0,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 195840,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 520,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-gantt-calendar",
       "layout": {
         "heightMode": "fixed",

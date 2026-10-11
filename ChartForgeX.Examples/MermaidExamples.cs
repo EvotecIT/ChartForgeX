@@ -5,6 +5,7 @@ using ChartForgeX.VisualArtifacts;
 internal static class MermaidExamples {
     internal static void Write(string output) {
         var examples = new Dictionary<string, string> {
+            ["mermaid-flowchart-shape-aliases"] = "flowchart LR\nA@{ shape: fr-rect, label: \"Framed process\" } --> B@{ shape: framed-rectangle, label: \"Subprocess\" }\nC@{ shape: question, label: \"Decision\" } --> D@{ shape: odd, label: \"Asymmetric\" }\nE@{ shape: lean-right, label: \"Input\" } --> F@{ shape: lean-left, label: \"Output\" }\nG@{ shape: manual, label: \"Manual task\" } --> H@{ shape: trapezoid-top, label: \"Operation\" }\nI@{ shape: priority, label: \"Priority\" } --> J@{ shape: trapezoid-bottom, label: \"Action\" }\n",
             ["mermaid-treemap-values"] = "treemap-beta\n\"Storage\"\n  \"Documents\": 1,234.5\n  \"Media\": 765.5\n  \"Archive\"\n    \"Documents\": 240\n    \"Media\": 160\n",
             ["mermaid-radar-circle"] = "radar-beta\naxis Reliability, Performance, Security, Usability, Operations\ncurve current[\"Current\"]{75, 60, 85, 65, 80}\ncurve target[\"Target\"]{90, 85, 90, 80, 90}\nmax 100\ngraticule circle\n",
             ["mermaid-radar-polygon"] = "radar-beta\naxis Reliability, Performance, Security, Usability, Operations\ncurve current[\"Current\"]{75, 60, 85, 65, 80}\ncurve target[\"Target\"]{90, 85, 90, 80, 90}\nmax 100\ngraticule polygon\n",
