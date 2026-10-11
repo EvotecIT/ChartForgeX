@@ -29,7 +29,7 @@ internal static partial class VisualCartesianCompiler {
                 IncludeIntervalExtents(horizontal ? x : secondary ? secondaryY : primaryY, series, valueAxis, intervalRadius);
                 continue;
             }
-            if (horizontal) continue;
+            if (horizontal && !ChartCartesianOrientation.IsHorizontalLine(chart, series)) continue;
             var pointSeries = IsPointSeries(series.Kind);
             if (!pointSeries && series.Kind is not (ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar
                 or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop or ChartSeriesKind.Slope
