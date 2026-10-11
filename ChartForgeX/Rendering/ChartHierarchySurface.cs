@@ -15,15 +15,16 @@ internal sealed class ChartHierarchySurface {
     internal bool HasDomain { get; }
     internal bool HasMissing { get; }
     internal bool ShowLegend { get; }
-    internal string? Title { get; }
+    internal string Title => Presentation.Name;
+    internal ChartColorPresentation Presentation { get; }
     internal string RolePrefix { get; }
 
-    internal ChartHierarchySurface(Chart chart, VisualThemeColors colors) {
+    internal ChartHierarchySurface(Chart chart, VisualThemeColors colors, ChartColorPresentation presentation) {
         _series = chart.Series[0]; _colors = colors;
         var sunburst = _series.Kind == ChartSeriesKind.Sunburst;
         var configured = sunburst ? chart.Options.Sunburst.ColorScale : chart.Options.Treemap.ColorScale;
         ShowLegend = sunburst ? chart.Options.Sunburst.ShowColorScaleLegend : chart.Options.Treemap.ShowColorScaleLegend;
-        Title = sunburst ? chart.Options.Sunburst.ColorLegendTitle : chart.Options.Treemap.ColorLegendTitle;
+        Presentation = presentation;
         RolePrefix = sunburst ? "sunburst" : "treemap";
         var observations = _series.HierarchyItems.Where(item => item.ColorValue.HasValue).Select(item => item.ColorValue!.Value).ToArray();
         Scale = configured ?? (observations.Length > 0 ? ChartColorScaleSurface.Default(colors) : null);
