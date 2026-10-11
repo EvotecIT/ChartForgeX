@@ -13,7 +13,7 @@ internal sealed partial class RgbaCanvas {
         if (right <= left || bottom <= top) return;
         var tileWidth = dashed ? 2048 : right - left;
         var tileHeight = dashed ? 2048 : bottom - top;
-        var budget = dashed ? new RasterStroker.DashBudget() : null;
+        var budget = dashed ? new RasterStroker.DashBudget(_scale) : null;
         for (var y = top; y < bottom; y += tileHeight) for (var x = left; x < right; x += tileWidth) {
             var bounds = new ChartRect(x / (double)_scale, y / (double)_scale,
                 Math.Min(tileWidth, right - x) / (double)_scale, Math.Min(tileHeight, bottom - y) / (double)_scale);

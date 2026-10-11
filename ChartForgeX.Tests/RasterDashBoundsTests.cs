@@ -13,11 +13,13 @@ public sealed class RasterDashBoundsTests {
         SvgRasterizer.Rasterize("<svg xmlns='http://www.w3.org/2000/svg' width='1048576' height='1'><path d='M0 .5 H2048' fill='none' stroke='#000' stroke-width='1048576' stroke-dasharray='1 1'/></svg>"));
 
     [Theory]
-    [InlineData(64)]
-    [InlineData(256)]
-    [InlineData(1024)]
-    public void ThickAcceptedDashesDoNotSpendTheBudgetAgainForAdjacentTileBleed(double width) {
-        var canvas = new RgbaCanvas(30000, 4, 1);
+    [InlineData(64, 1)]
+    [InlineData(256, 1)]
+    [InlineData(1024, 1)]
+    [InlineData(1024, 2)]
+    [InlineData(1024, 4)]
+    public void ThickAcceptedDashesDoNotSpendTheBudgetAgainForAdjacentTileBleed(double width, int density) {
+        var canvas = new RgbaCanvas(30000, 4, density);
         canvas.StrokePolylines(new[] { new[] { new ChartPoint(0, 2), new ChartPoint(30000, 2) } },
             ChartColors.Black, width, RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .25, .25 });
         Assert.Contains(canvas.Pixels, value => value > 0);
