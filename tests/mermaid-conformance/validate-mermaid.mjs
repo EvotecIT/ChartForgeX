@@ -128,6 +128,7 @@ for (const { folder, file, hasExpected } of files) {
         const vertices = diagram.db.getVertices();
         assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);
         assert.deepEqual(diagram.db.getEdges().map(edge => [edge.start, edge.end]), expected.edges);
+        if (expected.referenceEdgeTypes) assert.deepEqual(diagram.db.getEdges().map(edge => edge.type), expected.referenceEdgeTypes);
       }
       if (expected.tasks) {
         const day = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');

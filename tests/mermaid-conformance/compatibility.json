@@ -135,6 +135,14 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/flowchart-endpoints.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored endpoint and compact-id fixture based on the official Mermaid flowchart circle/cross and multidirectional link syntax; semantic types verified with pinned Mermaid 10.9.8, 11.17.2 and 12.1.0."
+    },
     "fixtures/flowchart-modern.mmd": {
       "syntax": {
         "10": "rejected",

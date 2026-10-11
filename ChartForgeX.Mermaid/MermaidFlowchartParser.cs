@@ -282,7 +282,10 @@ internal static partial class MermaidFlowchartParser {
         if (TryParsePipeLabelOperator(text, ref position, out edgeOperator, out label)) return true;
         if (TryParseInlineLabelOperator(text, ref position, out edgeOperator, out label)) return true;
 
-        while (position < text.Length && IsOperatorCharacter(text[position])) position++;
+        if (position < text.Length && (text[position] == '<' || text[position] == 'o' || text[position] == 'x')) position++;
+        while (position < text.Length && (text[position] == '-' || text[position] == '.' || text[position] == '=')) position++;
+        // A single endpoint belongs to the link; a following o/x starts the target id.
+        if (position < text.Length && (text[position] == '>' || text[position] == 'o' || text[position] == 'x')) position++;
         if (position == start) return false;
 
         edgeOperator = text.Substring(start, position - start);

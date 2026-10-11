@@ -562,5 +562,7 @@ public enum TopologyMarkerKind {
     /// <summary>A one-or-many cardinality endpoint.</summary>
     OneOrMany,
     /// <summary>A zero-or-many cardinality endpoint.</summary>
-    ZeroOrMany
+    ZeroOrMany,
+    /// <summary>A cross endpoint marker.</summary>
+    Cross
 }
