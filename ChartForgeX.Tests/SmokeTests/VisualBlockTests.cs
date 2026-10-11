@@ -390,7 +390,7 @@ internal static partial class SmokeTests {
             .WithMetric("Certificates", 150)
             .AddItem("Valid", 100, displayValue: 99.5, displayFormat: "0.0")
             .AddItem("Expiring", 50);
-        Assert(formattedComposition.ToSvg("visual-block-composition-formatted-display-value").Contains(">99.5  67%<", StringComparison.Ordinal), "SegmentedMetricBlock composition legends should honor formatted display values.");
+        Assert(formattedComposition.ToSvg("visual-block-composition-formatted-display-value").Contains(">99.5 67%<", StringComparison.Ordinal), "SegmentedMetricBlock composition legends should honor formatted display values.");
         Assert(composition.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "SegmentedMetricBlock should render an embeddable HTML fragment.");
         Assert(composition.ToPng().Length > 64, "SegmentedMetricBlock composition strips should render PNG output.");
 
