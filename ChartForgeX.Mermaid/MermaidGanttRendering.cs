@@ -19,8 +19,10 @@ public static class MermaidGanttRendering {
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(ResolveSubtitle(document, options))
-            .WithSize(options.Width, options.Height)
-            .WithXAxisValueFormatter(value => FormatAxisValue(value, document));
+            .WithSize(options.Width, options.Height);
+        chart.Options.GanttTickLabelFormatter = (value, effectiveInterval) => FormatAxisValue(value, document, effectiveInterval);
+        if (!string.IsNullOrWhiteSpace(document.AxisFormat))
+            chart.WithXAxisValueFormatter(value => FormatAxisValue(value, document, null));
         if (options.Today.HasValue && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase)) chart.WithGanttToday(options.Today.Value);
         chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
         foreach (var task in document.Tasks) {
@@ -100,17 +102,17 @@ public static class MermaidGanttRendering {
         return document.Header;
     }
 
-    private static string FormatAxisValue(double value, MermaidGanttDocument document) {
+    private static string FormatAxisValue(double value, MermaidGanttDocument document, ChartTimeTickUnit? effectiveInterval) {
         try {
-            var format = string.IsNullOrWhiteSpace(document.AxisFormat) ? DefaultAxisFormat(document) : document.AxisFormat!;
+            var format = string.IsNullOrWhiteSpace(document.AxisFormat) ? DefaultAxisFormat(effectiveInterval) : document.AxisFormat!;
             return MermaidGanttAxisFormat.Format(DateTime.FromOADate(value), format);
         } catch (ArgumentException) {
             return value.ToString("0.##", CultureInfo.InvariantCulture);
         }
     }
 
-    private static string DefaultAxisFormat(MermaidGanttDocument document) {
-        switch (MermaidGanttTicks.Parse(document.TickInterval, document.Weekday)?.Unit) {
+    private static string DefaultAxisFormat(ChartTimeTickUnit? effectiveInterval) {
+        switch (effectiveInterval) {
             case ChartTimeTickUnit.Millisecond: return "%Y-%m-%d %H:%M:%S.%L";
             case ChartTimeTickUnit.Second: return "%Y-%m-%d %H:%M:%S";
             case ChartTimeTickUnit.Minute:

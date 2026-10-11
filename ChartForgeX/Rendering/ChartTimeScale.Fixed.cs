@@ -19,7 +19,7 @@ internal static partial class ChartTimeScale {
             var localMin = ToLocal(min, zone); var localMax = ToLocal(max, zone);
             var walkMin = localMin - RepeatedHourWidth(localMin, zone);
             var walkMax = localMax + RepeatedHourWidth(localMax, zone);
-            var candidate = FixedCeiling(walkMin, interval);
+            var candidate = FixedCeiling(walkMin, interval, zone);
             var ticks = new List<double>(); var instants = new List<DateTime>(2);
             var resolution = new TimeInterval(interval.Unit <= ChartTimeTickUnit.Hour ? TimeUnit.Second : TimeUnit.Day, 1);
             var steps = 0;
@@ -39,7 +39,7 @@ internal static partial class ChartTimeScale {
         } catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { return null; }
     }
 
-    private static DateTime? FixedCeiling(DateTime value, ChartTimeTickInterval interval) {
+    private static DateTime? FixedCeiling(DateTime value, ChartTimeTickInterval interval, TimeZoneInfo zone) {
         var count = interval.Count;
         DateTime floor;
         switch (interval.Unit) {
@@ -53,7 +53,8 @@ internal static partial class ChartTimeScale {
             case ChartTimeTickUnit.Day: floor = new DateTime(value.Year, value.Month, (value.Day - 1) / count * count + 1); break;
             case ChartTimeTickUnit.Week:
                 floor = value.Date.AddDays(-(((int)value.DayOfWeek - (int)interval.WeekStart + 7) % 7));
-                var epochWeek = TickEpoch.AddDays(-(((int)TickEpoch.DayOfWeek - (int)interval.WeekStart + 7) % 7));
+                var localEpoch = ToLocal(TickEpoch.ToOADate(), zone);
+                var epochWeek = localEpoch.Date.AddDays(-(((int)localEpoch.DayOfWeek - (int)interval.WeekStart + 7) % 7));
                 var weeks = (floor.Ticks - epochWeek.Ticks) / (TimeSpan.TicksPerDay * 7);
                 var remaining = PositiveRemainder(weeks, count);
                 if (remaining != 0) return FixedAddDays(floor, (count - remaining) * 7);
