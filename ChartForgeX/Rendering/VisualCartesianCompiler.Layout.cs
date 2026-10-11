@@ -19,9 +19,11 @@ internal static partial class VisualCartesianCompiler {
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             if (horizontal) {
-                if (series.Kind != ChartSeriesKind.RangeBar || plot.Width <= 0 || plot.Height <= 0) continue;
+                if (series.Kind is not (ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot) || plot.Width <= 0 || plot.Height <= 0) continue;
                 var map = ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis);
-                IncludeHorizontalIntervalExtents(x, series, chart.Options.XAxis, RangeBarValuePaintRadius(chart, context, plot, map, index));
+                var intervalRadius = series.Kind == ChartSeriesKind.BoxPlot ? BoxPlotValuePaintRadius(series)
+                    : RangeBarValuePaintRadius(chart, context, plot, map, index);
+                IncludeHorizontalIntervalExtents(x, series, chart.Options.XAxis, intervalRadius);
                 continue;
             }
             var pointSeries = IsPointSeries(series.Kind);

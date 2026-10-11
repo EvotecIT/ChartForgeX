@@ -8,6 +8,15 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
+    private const double BoxPlotMinimumLength = 2;
+
+    /// <summary>Contains line strokes and the minimum-width quartile body extending beyond a collapsed value.</summary>
+    private static double BoxPlotValuePaintRadius(ChartSeries series) {
+        var bodyStroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;
+        var medianStroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotMedianStrokeWidth;
+        return Math.Max(Math.Max(bodyStroke, medianStroke) / 2, BoxPlotMinimumLength + bodyStroke / 2);
+    }
+
     private static void DrawBoxPlots(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
         IReadOnlyDictionary<double, string> categories) {
@@ -26,8 +35,8 @@ internal static partial class VisualCartesianCompiler {
             ChartPoint Project(double value) => horizontal ? new ChartPoint(map.X(value), category) : new ChartPoint(category, map.Y(value));
             var first = Project(q1); var third = Project(q3); var min = Project(minimum); var max = Project(maximum);
             var thickness = layout.Thickness;
-            var box = horizontal ? new ChartRect(Math.Min(first.X, third.X), category - thickness / 2, Math.Max(2, Math.Abs(third.X - first.X)), thickness)
-                : new ChartRect(category - thickness / 2, Math.Min(first.Y, third.Y), thickness, Math.Max(2, Math.Abs(third.Y - first.Y)));
+            var box = horizontal ? new ChartRect(Math.Min(first.X, third.X), category - thickness / 2, Math.Max(BoxPlotMinimumLength, Math.Abs(third.X - first.X)), thickness)
+                : new ChartRect(category - thickness / 2, Math.Min(first.Y, third.Y), thickness, Math.Max(BoxPlotMinimumLength, Math.Abs(third.Y - first.Y)));
             var bounds = horizontal ? Extents(Math.Min(Math.Min(min.X, max.X), box.Left), box.Top, Math.Max(Math.Max(min.X, max.X), box.Right), box.Bottom)
                 : Extents(box.Left, Math.Min(Math.Min(min.Y, max.Y), box.Top), box.Right, Math.Max(Math.Max(min.Y, max.Y), box.Bottom));
             var color = PointColor(series, index, item, colors); var sourcePaint = VisualChartPaint.Series(series, color, item);
