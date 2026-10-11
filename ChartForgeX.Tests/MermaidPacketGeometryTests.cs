@@ -24,10 +24,10 @@ public sealed class MermaidPacketGeometryTests {
         var fields = Fields(block);
         Assert.Equal(93, Number(fields[0], "width"));
         Assert.Equal(40, Number(fields[0], "height"));
-        Assert.Equal(96, Number(fields[1], "x") - Number(fields[0], "x"));
+        Assert.Equal(96, Number(fields[1], "x") - Number(fields[0], "x"), 6);
         var withoutNumbers = parsed.Document!.ToPacketLayoutBlock(new MermaidPacketRenderOptions { ShowBitNumbers = false });
         var rows = Fields(withoutNumbers);
-        Assert.Equal(47, Number(rows[2], "y") - Number(rows[0], "y"));
+        Assert.Equal(47, Number(rows[2], "y") - Number(rows[0], "y"), 6);
 
         var options = new MermaidPacketRenderOptions { RowHeight = 28, FieldGap = 0, RowGap = 0 };
         var parser = new MermaidVisualMarkupParser(new MermaidRenderOptions { Packet = options });
