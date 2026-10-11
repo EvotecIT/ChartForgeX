@@ -5169,9 +5169,9 @@
         "frameFontFingerprint": ""
       },
       "width": 360,
-      "height": 245,
+      "height": 240,
       "logicalWidth": 360.0,
-      "logicalHeight": 245.0,
+      "logicalHeight": 240.0,
       "svg": {
         "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
@@ -5179,9 +5179,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 44100,
+        "minVisiblePixels": 43200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 98,
+        "minDistinctColors": 149,
         "maxEdgeInkPixels": 0
       }
     },
