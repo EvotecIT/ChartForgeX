@@ -10,11 +10,14 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class NativeTopologyCaptionFootprintTests {
-    [Fact]
-    public void DetailedCardWithoutRoomForACompleteDetailLineDoesNotPaintAnOrphanDivider() {
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public void DetailedCardFitsItsHeaderAndOnlyPaintsADividerWithACompleteDetailLine(bool preserveSize, bool detailFits) {
         var chart = TopologyChart.Create().WithViewport(360, 260, 20).WithLegend(null)
             .AddNode("small", "A", 40, 40, width: 160, height: 40)
             .AddNodeDetail("small", "Status", "Ready");
+        Assert.Single(chart.Nodes).PreserveDisplayModeSize = preserveSize;
         var baseTheme = VisualTheme.Graphite();
         var theme = new VisualTheme(baseTheme.Resolve(VisualThemeMode.Light).ToTokens(), baseTheme.Resolve(VisualThemeMode.Dark).ToTokens(),
             new VisualTypography(dataLabelSize: 40));
@@ -22,8 +25,9 @@ public sealed class NativeTopologyCaptionFootprintTests {
             frame: new VisualFrame(showLegend: false)), new TopologyRenderOptions { IncludeLegend = false });
         var svg = XDocument.Parse(prepared.ToSvg());
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "A");
-        Assert.DoesNotContain(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-node-detail-separator");
-        Assert.DoesNotContain(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-node-detail");
+        Assert.Equal(detailFits, svg.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-node-detail-separator"));
+        Assert.Equal(detailFits, svg.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "topology-node-detail"));
+        if (detailFits) Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "Status Ready");
         Assert.Equal("Ready", Assert.Single(Assert.Single(prepared.SemanticInterchange!.Nodes).Details).Value);
     }
 
