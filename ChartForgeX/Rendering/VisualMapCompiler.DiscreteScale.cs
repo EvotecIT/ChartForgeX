@@ -34,9 +34,11 @@ internal static partial class VisualMapCompiler {
         var row = layout.Texts.Concat(new[] { "Mg", title, presentation.NoData })
             .Max(text => builder.MeasureText(text, style).Height);
         var missing = HasMissingMapValues(chart);
-        using (builder.PushGroup("map-scale", "map-scale", new Dictionary<string, string> {
+        var keyMetadata = new Dictionary<string, string> {
             ["data-cfx-scale-mode"] = "discrete", ["data-cfx-band-count"] = N(scale.Bands.Count)
-        })) using (builder.PushClip(area)) {
+        };
+        if (presentation.LegendStyle != ChartColorLegendStyle.Auto) keyMetadata["data-cfx-legend-style"] = presentation.LegendStyle.ToString().ToLowerInvariant();
+        using (builder.PushGroup("map-scale", "map-scale", keyMetadata)) using (builder.PushClip(area)) {
             VisualRadialPrimitives.Text(builder, title, new ChartRect(area.Left, area.Top, area.Width, Math.Min(row, area.Height)),
                 style, "map-scale-title", "map-scale-title");
             var top = Math.Min(area.Bottom, area.Top + row + gap / 2);

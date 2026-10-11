@@ -95,11 +95,11 @@ public sealed partial class Chart {
     public Chart WithLegendPosition(ChartLegendPosition position) { Options.LegendPosition = position; return this; }
 
     /// <summary>
-    /// Sets whether heatmap scale legends should be rendered.
+    /// Sets whether categorical heatmap state keys should be rendered. Numeric keys use HeatmapColorDimension.ShowLegend.
     /// </summary>
-    /// <param name="visible">True to render heatmap scale legends; otherwise false.</param>
+    /// <param name="visible">True to render categorical state keys when the chart legend is enabled.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithHeatmapScaleLegend(bool visible = true) { Options.ShowHeatmapScale = visible; return this; }
+    public Chart WithHeatmapCategoryLegend(bool visible = true) { Options.ShowHeatmapCategoryLegend = visible; return this; }
 
     /// <summary>Sets the numeric color scale for rectangular, hexagonal and calendar heatmaps.</summary>
     /// <param name="scale">The shared scale, or null to restore the family's default coloring.</param>
@@ -140,13 +140,6 @@ public sealed partial class Chart {
     /// <param name="visible">True to render map region labels; otherwise false.</param>
     /// <returns>The current chart.</returns>
     public Chart WithMapLabels(bool visible = true) { Options.ShowMapLabels = visible; return this; }
-
-    /// <summary>
-    /// Sets whether map scale legends should be rendered.
-    /// </summary>
-    /// <param name="visible">True to render map scale legends; otherwise false.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithMapScaleLegend(bool visible = true) { Options.ShowMapScaleLegend = visible; return this; }
 
     /// <summary>
     /// Sets where map scale legends should be rendered.

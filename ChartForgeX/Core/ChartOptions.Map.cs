@@ -45,11 +45,6 @@ public sealed partial class ChartOptions {
     public bool ShowMapLabels { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether map scale legends are rendered.
-    /// </summary>
-    public bool ShowMapScaleLegend { get; set; } = true;
-
-    /// <summary>
     /// Gets or sets where map scale legends are rendered.
     /// </summary>
     public ChartMapScaleLegendPosition MapScaleLegendPosition { get; set; } = ChartMapScaleLegendPosition.Bottom;

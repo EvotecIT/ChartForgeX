@@ -464,7 +464,7 @@ internal static partial class SmokeTests {
         var chart = Chart.Create()
             .WithSize(240, 190)
             .WithMapLabels(false)
-            .WithMapScaleLegend(false)
+            .ConfigureMapColorDimension(options => options.ShowLegend = false)
             .AddRegionMap("Holes", definition, new[] {
                 new ChartRegionMapItem("A", 100, ChartColor.FromHex("#DC2626")),
                 new ChartRegionMapItem("B", 0)
@@ -532,7 +532,7 @@ internal static partial class SmokeTests {
         var chart = Chart.Create()
             .WithSize(420, 300)
             .WithMapLabels(false)
-            .WithMapScaleLegend(false)
+            .ConfigureMapColorDimension(options => options.ShowLegend = false)
             .AddRegionMap("Normalized", definition, new[] {
                 new ChartRegionMapItem("A", 10)
             });
@@ -562,7 +562,7 @@ internal static partial class SmokeTests {
     private static void RegionMapScaleLegendCanBeHiddenForCompactCards() {
         var chart = Chart.Create()
             .WithSize(420, 260)
-            .WithMapScaleLegend(false)
+            .ConfigureMapColorDimension(options => options.ShowLegend = false)
             .WithMapLabels(false)
             .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 95),
@@ -594,7 +594,7 @@ internal static partial class SmokeTests {
     private static void TileMapScaleLegendCanBeHiddenForCompactCards() {
         var chart = Chart.Create()
             .WithSize(360, 220)
-            .WithMapScaleLegend(false)
+            .ConfigureMapColorDimension(options => options.ShowLegend = false)
             .AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] {
                 new ChartRegionMapItem("CA", 95),
                 new ChartRegionMapItem("NY", 82)
