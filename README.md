@@ -41,6 +41,36 @@ The core package renders SVG, script-free static HTML, PNG, JPEG, BMP, PPM, and 
 
 Point markers share one typed configuration across connected Cartesian series, scatter, bubble, radar and polar. Use `series.ConfigureMarkers(...)` for nine built-in shapes, visibility, fill and outline; SVG, native PNG and legends use the same geometry. Ordinary point glyphs also accept a radius override. Bubble sizes use one chart-wide domain and radius range through `chart.ConfigureBubble(...)`, so equal values share a logical radius across series. Set explicit bounds and radius endpoints to preserve that meaning when data or layout changes. `AddRadarLine` and `AddRadarArea` share categorical/radial axes and make the fill policy explicit. See [marker and radar options](docs/v2/api-conventions.md#point-markers-and-radial-forms) and [bubble sizing](docs/v2/api-conventions.md#bubble-size-scale) for defaults and limits.
 
+Scatter and Bubble observations accept an independent finite numeric color measurement, with null for missing data. `WithColorValue(...)` returns a new `ChartPoint` or `ChartBubble`, preserving coordinates and the point's segment boundary or bubble's size. Set the series' `ColorScale` with the shared sequential, diverging or named discrete `ChartColorScale`:
+
+```csharp
+var chart = Chart.Create()
+    .ConfigureLabels(labels => labels.Color = "Temperature (°C)")
+    .AddBubble("Recorded batches", new[] {
+        new ChartBubble(15, 28, 9).WithColorValue(-12),
+        new ChartBubble(30, 42, 36).WithColorValue(0),
+        new ChartBubble(45, 18, 81).WithColorValue(null)
+    });
+chart.Series[0].WithColorScale(ChartColorScale.Sequential(
+        ChartColor.FromHex("#2166AC"), ChartColor.FromHex("#B2182B"))
+    .WithValueRange(-15, 30)
+    .WithNoDataColor(ChartColor.FromHex("#9CA3AF")));
+```
+
+Color domains use each series' retained observations unless fixed bounds are supplied; use fixed bounds to compare series or preserve colors across decimation. Missing color keeps the observation's Y and size and uses the configured no-data color. Explicit point colors and marker fills take precedence. `series.WithColorScale(null)` restores ordinary paint and hides its numeric key while retaining authored color facts for readouts. Numeric keys share the legend budget and visibility policy. Each series can name and format its color measurement independently of Y and bubble size:
+
+```csharp
+chart.Series[0].ConfigureColorDimension(options => {
+    options.Name = "Temperature";
+    options.ValueFormat = ChartValueFormat.Number("0.0 '°C'",
+        System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
+});
+```
+
+The same `ChartColorDimensionOptions` configures numeric maps through `ConfigureMapColorDimension`, matrices and calendars through `ConfigureHeatmapColorDimension`, and hierarchies through `ConfigureTreemap` / `ConfigureSunburst` with `options.ColorDimension`. Map and heatmap values are their color measurement, so their numeric labels and readouts use that format without a duplicate color row. Hierarchy size and Cartesian Y keep their own formatting. Null `Name` or `ValueFormat` restores that family's default independently. Custom empty display text is preserved; raw numeric values and selection identities stay unchanged. A prepared visual captures the presentation for reuse by SVG, native PNG and HTML readouts.
+
+The optional nullable color member increases `ChartPoint` and `ChartBubble` storage and participates in value equality; existing constructor signatures are unchanged.
+
 ## Shared prepared rendering
 
 The prepared pipeline lays out a chart once, then exports SVG and native PNG from the same detached scene. All supported chart kinds, chart grids, topology, flow and sequence use this route. The shared context controls logical size, frame, light/dark palette and typography. Unsupported family combinations and options fail explicitly during preparation.
@@ -248,7 +278,7 @@ report.SaveSvg("cpu-by-site.svg");
 record CpuSample(string Site, double Minute, double Cpu);
 ```
 
-Legends with a single entry are hidden by default. Use `chart.WithLegend(true)` or assign `chart.Options.ShowLegend = true` to display one explicitly. Pie and donut names and percentages share one legend item, with the percentage directly after the name. Gauge swatches use the drawn value color.
+A single ordinary series without a numeric color scale hides its legend by default. Configured numeric color scales display their keys automatically. Use `chart.WithLegend(true)` or assign `chart.Options.ShowLegend = true` to display a legend explicitly; `chart.WithLegend(false)` hides ordinary legends and numeric keys together. Pie and donut names and percentages share one legend item, with the percentage directly after the name. Gauge swatches use the drawn value color.
 
 Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, progress-ring, and state-timeline legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
 
@@ -724,7 +754,7 @@ var chart = Chart.Create().WithDataLabels().AddSunburst("Allocation", new[] {
     new ChartHierarchyItem("south-support", "Support", "all", value: 4)
 }).ConfigureSunburst(options => {
     options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal;
-    options.ColorLegendTitle = "Change (%)";
+    options.ColorDimension.Name = "Change (%)";
     options.ColorScale = ChartColorScale.Sequential(
         ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(204, 104, 52));
 });
@@ -751,7 +781,7 @@ var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
 }).ConfigureTreemap(options => {
     options.GroupPadding = 6;
     options.Gap = 3;
-    options.ColorLegendTitle = "Change (%)";
+    options.ColorDimension.Name = "Change (%)";
     options.ColorScale = ChartColorScale.Diverging(
         ChartColor.FromRgb(94, 76, 160), ChartColor.FromRgb(229, 229, 233), ChartColor.FromRgb(204, 104, 52), 0);
 });
@@ -762,7 +792,7 @@ Leaves require finite non-negative `Value`; groups require null `Value`, and the
 
 `ChartOptions.Treemap` controls group padding, sibling gaps, group labels, and the color legend. `ChartSeries.HierarchyItems` is an immutable snapshot; `Points` remains empty. Point styling overrides use item input ordinals, while SVG and HTML targets retain item IDs through input reordering or label renaming. See the [migration guide](docs/v2/migration.md#hierarchical-treemap) and [configured examples](ChartForgeX.Examples/V2GalleryModels.Treemap.cs).
 
-Interactive tooltips show area and color as separate values, including missing color data. `ColorLegendTitle` names the color tooltip row; otherwise it uses `ChartLabels.Color`. `WithLabels` localizes that name, `NoData`, and the discrete legend's `AllValues` and `Value` words.
+Interactive tooltips show area and color as separate values, including missing color data. `ColorDimension.Name` names the color key and tooltip row; otherwise the row uses `ChartLabels.Color`. `ColorDimension.ValueFormat` formats color independently of area. `WithLabels` localizes `NoData` and the discrete legend's `AllValues` and `Value` words.
 
 `WithNodeState(id, state)` applies semantic styling by item ID. With a numeric color scale, the state appears as an outline and preserves the quantitative fill. Without a scale, shared state colors supply the fill unless an explicit color overrides them.
 
@@ -799,7 +829,7 @@ Use `WithXAxis`, `WithYAxis` and `WithSecondaryYAxis` for horizontal axis titles
 | Cartesian lines and areas | `AddLine`, `AddSmoothLine`, `AddStepLine`, `AddArea`, `AddStepArea`, `AddSmoothArea`, `AddStackedArea`, `AddSmoothStackedArea`, `AddScatter`, `AddDecimatedLine`, `AddDecimatedArea`, `AddDecimatedScatter`, `ChartDecimator.Decimate`, `AddTrendLine`, `AddPointCallout`, `WithPointLabel`, `WithLegendEntry`, `WithSemanticRole`, `AddMeanLine`, `AddMedianLine`, `AddStandardDeviationBand`, `AddSlope` |
 | Combo charts | `AddBarLineCombo`, `AddColumnLineCombo`, `AddBarAreaCombo`, `AddColumnAreaCombo`, `AddScatterLineCombo` |
 | Bars and distributions | `AddBar`, `AddHistogram`, `AddLollipop`, `AddBubble`, `AddErrorBar`, `AddCandlestick`, `AddOhlc`, `AddRangeBand`, `AddRangeArea`, `AddDumbbell`, `AddPareto`, `AddRangeBar`, `AddBoxPlot`, `AddHorizontalBar`, `WithStackedHorizontalBars`, `WithBarStyle` (`Solid`, `Flat`, `SegmentedCapsule`) |
-| Heatmaps and calendars | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `AddCalendarHeatmap`, `ChartCalendarHeatmapItem`, `AddHeatmapCategoryRow`, `ChartHeatmapCell`, `AddHourWeekdayHeatmap`, `ChartTimedValue`, `ChartTimeAggregation`, `HeatmapRelativeScale` |
+| Heatmaps and calendars | `AddHeatmapRow`, `AddHeatmapRows`, `ChartHeatmapRow`, `AddHexbinHeatmapRow`, `AddHexbinHeatmapRows`, `AddCalendarHeatmap`, `ChartCalendarHeatmapItem`, `AddHeatmapCategoryRow`, `ChartHeatmapCell`, `AddHourWeekdayHeatmap`, `ChartTimedValue`, `ChartTimeAggregation`, `HeatmapRelativeScale`, `WithHeatmapColorScale` |
 | Maps | `AddDottedMap`, `ChartMapPoint`, `ChartMapViewport`, `WithMapViewport`, `AddMapConnector`, `AddMapRoute`, `AddMapConnectorBetweenPoints`, `AddMapRouteBetweenPoints`, `AddRegionMap`, `AddTileMap`, `ChartMapCatalog`, `ChartMapCatalogEntry`, `ChartMapCatalogEntryKind`, `EmbeddedEntries`, `ExternalEntries`, `Load`, `FromAssetDirectory`, `ChartMapDefinition`, `ChartMapRegion`, `ChartTileMapCatalog`, `ChartTileMapDefinition`, `ChartTileMapRegion`, `ChartRegionMapItem`, `WithMapLabels`, `WithMapScaleLegend`, `WithMapScaleLegendPosition`, `WithMapSurface`, `WithMapRegionStroke`, `WithRegionMapBounds`, `WithRegionMapCoordinateBounds`, `AddMapBaseLayer`, `AddMapBoundaryLayer` |
 | KPI and radial visuals | `AddGauge`, `AddCircle`, `AddProgressRing`, `AddRadialBar`, `AddRadialColumn`, `ChartRadialGeometryOptions`, `WithRadialGeometry`, `AddLayeredRadial`, `ChartRadialLayer`, `ChartRadialLayerCap`, `AddBullet`, `AddWaterfall`, `AddRadar`, `AddPolar`, `AddPolarArea` |
 | Hierarchy and flow | `AddFunnel`, `AddPyramid`, `AddTreemap`, `AddSankey`, `ConfigureSankey`, `ChartSankeyOptions`, `AddChord`, `ConfigureChord`, `ChartChordOptions`, `ChartNode`, `ChartFlowLink`, `WithNodeState`, `AddTree`, `ChartTreeLink`, `AddSunburst`, `ChartHierarchyItem`, `ConfigureSunburst`, `ChartSunburstOptions`, `ChartHierarchyValuePolicy`, `AddPie`, `AddDonut` |
@@ -816,14 +846,14 @@ Use `WithXAxis`, `WithYAxis` and `WithSecondaryYAxis` for horizontal axis titles
 - ChartForgeX validates chart data before rendering so invalid payloads fail near the caller instead of producing partial markup or malformed PNGs.
 - Specialized data checks reject non-finite values, malformed trees, multiple tree roots, and cyclic Sankey flows.
 - Scoped inline SVG ids are available through `chart.ToSvg("panel-a")` and `grid.ToSvg("report-a")`, so repeated charts can be embedded safely. Topology charts take the same scope through `topology.ToSvg("panel-a", options)` or `TopologyRenderOptions.IdScope` (also used by the HTML renderers), which covers markers, filters, element ids, and the ids of icon artwork imported from SVG packs (ids in hand-written inline artwork are not rewritten).
-- Heatmaps distinguish no-data cells through `data-cfx-status="empty"` while keeping an explicit zero value as real data.
-- Count and intensity heatmaps (the default sequential scale, hexbin, calendar, and hour-by-weekday) use a neutral single-hue ramp and expose `data-cfx-level` (0–4) instead of a status; calendars default to the first categorical colour rather than the positive status colour. Only `ChartHeatmapScale.Semantic` emits `positive`/`warning`/`negative` status, and it is rejected together with `HeatmapRelativeScale`. The interactive tooltip names the level row `Level`; set `ChartLabels.Level` (through `chart.WithLabels`) to localize it.
+- Numeric matrices reserve masked columns without drawing cell marks. Calendar missing days carry `data-cfx-empty="true"`; explicit zero values remain real observations.
+- Without an explicit `HeatmapColorScale`, count and intensity heatmaps (the default sequential scale, hexbin, calendar, and hour-by-weekday) use a neutral single-hue ramp and expose `data-cfx-level` (0–4) instead of a status; calendars default to the first categorical colour rather than the positive status colour. Only `ChartHeatmapScale.Semantic` emits `positive`/`warning`/`negative` status, and it is rejected together with `HeatmapRelativeScale` when no explicit `HeatmapColorScale` supplies the coloring. The interactive tooltip names the level row `Level`; set `ChartLabels.Level` (through `chart.WithLabels`) to localize it.
 - Gantt lanes (`AddGanttLane`) list time-bounded items such as incidents per entity, colour them through the same `WithStateCategories` map (for example `VisualStatusTokens.SeverityCategories()`), stack overlapping items into sub-rows, list consecutive lanes with the same group under one group header, run open items (`end: null`) to `WithGanttLaneNow` or the latest time, and draw a neutral "Now" line. `WithGanttLaneNow(DateTime?)` converts Local timestamps to UTC like lane items; classic `WithGanttToday(DateTime?)` keeps wall-clock dates. DateTime lane endpoints and Now are rounded to 100 µs on the shared time axis; an interval that collapses at this resolution is rejected, while a Now value within the same interval is displayed at that rounded instant. Items expose `data-cfx-status`, `data-cfx-meta-state`, `data-cfx-meta-ongoing`, `data-cfx-sub-row`, and a `<title>` tooltip.
 - Hour-by-weekday heatmaps (`AddHourWeekdayHeatmap`) bucket `ChartTimedValue` samples into seven weekday rows by 24 hour columns in UTC or a supplied time zone, aggregate with count, sum, mean, or maximum (count and sum show empty buckets as zero, mean and maximum mask them), keep weekday rows with no samples, and colour by the observed range (`HeatmapRelativeScale`) instead of reading 0–100 values as percentages. They require an empty chart and own its seven series rows; adding another series is rejected.
 - Categorical heatmaps (`AddHeatmapCategoryRow`) colour each cell through the same `WithStateCategories` map as state timelines, draw a swatch legend in category order instead of the numeric scale, keep masked (null) cells empty, draw optional cell text, and emit `data-cfx-status` with the category key. Cell identities remain stable by row and column even when custom tooltips repeat. Automatic SVG and PNG labels measure the formatted cell text at a readable minimum of 8 px and hide labels that do not fit; explicit Always mode retains its fit behavior. Categorical labels stay centered without reserving unused side lanes. Column labels of matrix and categorical heatmaps shrink to their column on one line, or, with `WithXAxisLabelAngle`, rotate at the tick font size like x-axis labels (up to 120 px long, every n-th column when neighbours would overlap), the plot moves in on the side they slant towards so the outermost label fits, and the plot reserves the band they take. A row may have no cells at all (an entity nothing is known about), and the optional `group` argument lists consecutive rows under one group header (`data-cfx-role="heatmap-row-group"`). Cell tooltips default to `row, column: label`; a caller's tooltip is appended to that text (`row, column: label. tooltip`) instead of replacing it, in the accessible name and the native hover text (`<title>`) alike, and the interactive HTML adapter shows the same text. Cell links render as SVG `<a href>` and accept only relative, fragment, `http`, `https`, and `mailto` targets.
 - Matrix heatmaps expose `data-cfx-row-count`, `data-cfx-column-count`, `data-cfx-min`, and `data-cfx-max`.
 - Calendar heatmaps expose `data-cfx-start-date` plus filled/empty day counts. `AddCalendarHeatmap(..., firstDayOfWeek, dayNames, monthNames)` starts weeks on any weekday and takes localized day and month names; the scale words come from `ChartLabels` (`Less`, `More`, `NoData`) and the accessible group name from `ChartLabels.AccessibleTextFormatter`. Cells fill the plot, limited by its width or height; `WithCalendarHeatmapCells(size, maximumSize, gap)` sets a preferred size, a maximum, or the gap. With the default padding (sized for cartesian axes and legends) a calendar lays itself out over the chart area, below the header and inside the card when they are drawn, so a short report card keeps readable days; padding set on the chart is honoured. Each day cell carries the accessible name `series, day: value`, with the day written by `ChartLabels.DateFormatter` (ISO `yyyy-MM-dd` by default; `data-cfx-date` stays ISO). Weekday labels go on every row when the cells are tall enough, and the month of the first value is always named.
-- Count heatmaps (`HeatmapRelativeScale`, including hour-by-weekday) and calendars draw a zero neutral instead of in the weakest ramp colour, so a quiet hour does not look like activity; in calendars the ramp then starts at the smallest non-zero value, and the scale shows the zero swatch separately.
+- Without an explicit `HeatmapColorScale`, count heatmaps (`HeatmapRelativeScale`, including hour-by-weekday) and calendars draw a zero neutral instead of in the weakest ramp colour, so a quiet hour does not look like activity; in calendars the ramp then starts at the smallest non-zero value, and the scale shows the zero swatch separately.
 - State timelines use a linear or time x-axis; nonlinear scales are rejected to preserve elapsed-time geometry. Numeric endpoints outside the supported date range retain round-trip values in metadata.
 - State timeline DateTime intervals support instants on or after 1899-12-30 UTC; earlier dates are rejected because OLE Automation fractions are not chronologically ordered before that epoch. DateTime endpoints and explicit labels use the same 100 µs time-axis resolution; intervals shorter than that resolution are rejected when their endpoints coincide after rounding. Explicit x-axis labels define tick positions and support label highlights. During repeated daylight-saving hours, interval metadata and tooltips include UTC offsets.
 - State timelines draw one lane per entity on a real time axis. Segment colours come only from the caller's state map (never the series palette), contiguous buckets in the same state draw as one run, uncovered time stays empty, and the optional `group` argument lists consecutive lanes under one group header (`data-cfx-role="state-lane-group"`), as Gantt lanes do. The summary header is drawn inside the plot frame, above the first lane. Each segment exposes `data-cfx-status`, `data-cfx-start`, `data-cfx-end`, `data-cfx-meta-duration`, and a `<title>` tooltip, so `ChartForgeX.Interactivity.Html` hover works without extra configuration.
@@ -863,7 +893,7 @@ var palette = ChartPalettes.FromHex("#2563EB", "#14B8A6", "#F59E0B", "#EF4444");
 var color = ChartColor.FromHex("#2563EB");
 ```
 
-`ChartColorScale` maps numeric values to sequential ramps, diverging ramps, or fixed discrete bands. Maps consume it through `WithMapColorScale`; the value-to-color API also works independently of a chart. A band upper bound is exclusive, so a value of 100 selects the last band here:
+`ChartColorScale` maps numeric values to sequential ramps, diverging ramps, or fixed discrete bands. Maps consume it through `WithMapColorScale`; numeric rectangular, hexagonal and calendar heatmaps use `WithHeatmapColorScale`. Sunburst and Treemap expose it through their family options. The value-to-color API also works independently of a chart. A band upper bound is exclusive, so a value of 100 selects the last band here:
 
 ```csharp
 var scale = ChartColorScale.Discrete(new[] {
@@ -876,6 +906,44 @@ var high = scale.ColorFor(100);
 ```
 
 Continuous scales infer their finite domain from source values or use `WithValueRange(minimum, maximum)` for a fixed domain. `ColorFor(value)` requires that fixed domain; `ColorFor(value, sourceMinimum, sourceMaximum)` uses the supplied source bounds when no domain is fixed. An inferred constant domain keeps its one observed value and uses the low color. `WithNoDataColor` sets the missing-data paint; otherwise each renderer uses its theme fallback. [Numeric color-scale migration](docs/v2/migration.md#numeric-color-scales) describes the type and converter renames.
+
+Use `ChartColorStop` when colors belong at specific values rather than equal intervals. Stops use finite, strictly ascending absolute values; their first and last values fix the domain. Values between two stops interpolate between those colors, exact stops retain their colors, and values outside the endpoints clamp. The same scale works with every numeric-color family:
+
+```csharp
+var cold = ChartColor.FromHex("#2166AC");
+var cool = ChartColor.FromHex("#67A9CF");
+var neutral = ChartColor.FromHex("#D1D5DB");
+var warm = ChartColor.FromHex("#D9A441");
+var hot = ChartColor.FromHex("#B2182B");
+var sequential = ChartColorScale.Sequential(new[] {
+    new ChartColorStop(-20, cold), new ChartColorStop(0, neutral),
+    new ChartColorStop(5, warm), new ChartColorStop(40, hot)
+});
+var diverging = ChartColorScale.Diverging(
+    new[] { new ChartColorStop(-20, cold), new ChartColorStop(-3, cool) },
+    new ChartColorStop(0, neutral),
+    new[] { new ChartColorStop(5, warm), new ChartColorStop(40, hot) }
+).WithLabels("Cold", "Freezing", "Warm");
+chart.WithMapColorScale(diverging);
+var colorAtTwo = sequential.ColorFor(2);
+```
+
+`Stops` exposes the detached authored anchors; existing color-only ramps and discrete scales have an empty stop list. `WithValueRange` moves only the endpoint anchors and rejects a range that crosses an interior stop. On a positioned diverging scale, `WithMidpoint` moves the pivot between its neighboring stops. Numeric keys sample the domain in at most 11 swatches and retain every authored value/color pair in their descriptive metadata; they do not promise a separate visible caption for each stop.
+
+The new sequential overload makes the invalid calls `ChartColorScale.Sequential(null)` and `Sequential(default)` ambiguous at compile time. Null-validation callers can select an overload with `(IEnumerable<ChartColor>)null!` or `(IEnumerable<ChartColorStop>)null!`; valid color-only calls keep their existing behavior.
+
+Numeric heatmaps share one color domain across all rows. An explicit scale maps every observed value, including zero, and overrides the legacy `HeatmapScale` and `HeatmapRelativeScale` coloring without changing those settings. Cell or day colors still take precedence. The measured key uses the same stops or named intervals, and `WithHeatmapScaleLegend(false)` hides it. Values remain in their original units in labels and tooltips; explicit scales do not attach legacy intensity levels or status meanings.
+
+```csharp
+var temperatures = Chart.Create()
+    .AddHeatmapRow("Indoor", new double?[] { -5, 0, 10, null, 20 })
+    .AddHeatmapRow("Outdoor", new double?[] { -10, -2, 8, 12, 25 })
+    .WithHeatmapColorScale(ChartColorScale.Diverging(
+        ChartColor.FromHex("#2563EB"), ChartColor.FromHex("#F1F5F9"),
+        ChartColor.FromHex("#DC2626"), midpointValue: 0).WithValueRange(-10, 25));
+```
+
+`WithHeatmapColorScale(null)` restores the family's default coloring and key. Masked matrix cells stay absent; the scale does not create cells for missing observations. Calendar missing days keep their separate marks and default missing-day paint unless `WithNoDataColor` specifies another color. Calendar values remain non-negative. Categorical state matrices and unrelated chart families reject a numeric heatmap scale.
 
 Use fluent series styling for a single emphasized series:
 
