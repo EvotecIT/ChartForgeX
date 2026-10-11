@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -133,6 +134,91 @@ public sealed class PairedObservationClipBrowserTests {
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("false", await point.GetAttributeAsync("aria-selected"));
         await CaptureAsync(page, "offplot-x-cap-keyboard", position);
+        AssertNoConsoleErrors(session);
+    }
+
+    [Fact]
+    public async Task OffPlotBoundaryCapRetainsReadoutAndKeyboardIdentityWithoutCrosshair() {
+        if (!Enabled) return;
+        // Both Y values are inside the plot: only the source X excludes the guide anchor.
+        var chart = Create(ChartSeriesKind.DifferenceArea, 8, 2, visibleSibling: true, firstX: -.001);
+        var html = chart.ToInteractiveHtmlPage(options => options.Interaction.Features =
+            ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection |
+            ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Crosshair);
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+            await File.WriteAllTextAsync(Path.Combine(directory, "crosshair-offplot-cap.svg"), prepared.ToSvg());
+            await File.WriteAllBytesAsync(Path.Combine(directory, "crosshair-offplot-cap.native.png"), prepared.ToPng());
+            await File.WriteAllTextAsync(Path.Combine(directory, "crosshair-offplot-cap.html"), html);
+        }
+        await using var session = await OpenAsync(html, 800, 600);
+        var page = session.Page; var point = page.Locator(Point(0, 0));
+        var root = page.Locator(".cfx-interactive-chart"); var guide = page.Locator(".cfx-crosshair");
+        Assert.Equal(1, await guide.CountAsync());
+        await MoveToAsync(page, Point(0, 1));
+        Assert.False(await guide.IsHiddenAsync());
+        Assert.Equal("paired:1", await root.GetAttributeAsync("data-cfx-crosshair"));
+        var position = await page.Locator("[data-cfx-role=difference-second]").EvaluateAsync<double[]>("""
+            path=>{
+              const matrix=path.getScreenCTM(),anchor=path.getPointAtLength(0).matrixTransform(matrix);
+              let left=-Infinity,top=-Infinity,right=Infinity,bottom=Infinity;
+              for(let parent=path;parent&&parent.ownerSVGElement;parent=parent.parentElement){
+                const match=/^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path')||'');if(!match)continue;
+                const rect=parent.ownerSVGElement.getElementById(match[1]).firstElementChild;
+                if(rect.tagName!=='rect')throw new Error('Expected actual rectangular native plot clip');
+                const r=rect.getBBox(),m=parent.getScreenCTM(),a=new DOMPoint(r.x,r.y).matrixTransform(m),
+                  b=new DOMPoint(r.x+r.width,r.y+r.height).matrixTransform(m);
+                left=Math.max(left,a.x);top=Math.max(top,a.y);right=Math.min(right,b.x);bottom=Math.min(bottom,b.y);
+              }
+              if(!Number.isFinite(left)||!(anchor.x<left&&anchor.y>top&&anchor.y<bottom))
+                throw new Error('Expected source X outside and endpoint Y inside actual plot clip');
+              const radius=parseFloat(getComputedStyle(path).strokeWidth)*Math.hypot(matrix.a,matrix.b)/2,
+                visible=anchor.x+radius-left;
+              if(!(visible>0))throw new Error('Expected a real round endpoint cap inside native clip');
+              const screen=new DOMPoint(left+Math.min(.1,visible/2),anchor.y),local=screen.matrixTransform(matrix.inverse());
+              if(!(screen.x<right&&path.isPointInStroke(local)))throw new Error('Pointer must hit actual native boundary ink');
+              return [screen.x,screen.y];
+            }
+            """);
+        Assert.True(await page.EvaluateAsync<bool>("p=>document.elementFromPoint(p[0],p[1])?.closest('[data-cfx-point]')?.dataset.cfxPoint==='0'", position));
+        Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
+        Assert.Equal("paired:0", await point.GetAttributeAsync("data-cfx-target-id"));
+        Assert.Equal("2", await point.GetAttributeAsync("data-cfx-source-count"));
+        for (var member = 0; member < 2; member++) {
+            Assert.Equal(member.ToString(), await point.GetAttributeAsync("data-cfx-source-" + member + "-index"));
+            Assert.Equal("-0.001", await point.GetAttributeAsync("data-cfx-source-" + member + "-x"));
+            Assert.Equal(member == 0 ? "8" : "2", await point.GetAttributeAsync("data-cfx-source-" + member + "-y"));
+        }
+        await page.EvaluateAsync("""
+            ()=>{window.cfxCapSelections=[];document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect',event=>{
+              if(event.detail.target?.targetKind==='point')window.cfxCapSelections.push(event.detail.target);});}
+            """);
+        async Task AssertCapReadoutAsync() {
+            Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
+            var values = await page.Locator(".cfx-tooltip dd").AllTextContentsAsync();
+            Assert.Contains("8", values); Assert.Contains("2", values);
+            Assert.True(await guide.IsHiddenAsync());
+            Assert.Null(await root.GetAttributeAsync("data-cfx-crosshair"));
+        }
+        await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
+        await AssertCapReadoutAsync();
+        Assert.StartsWith("point|paired:0|", await root.GetAttributeAsync("data-cfx-hover-key") ?? "");
+        await page.Mouse.ClickAsync((float)position[0], (float)position[1]);
+        Assert.Equal("true", await point.GetAttributeAsync("aria-selected"));
+        await CaptureAsync(page, "crosshair-offplot-cap-pointer", position);
+        await MoveAwayAsync(page); await point.FocusAsync();
+        Assert.Equal("paired:0", await page.EvaluateAsync<string>("()=>document.activeElement.dataset.cfxTargetId"));
+        await AssertCapReadoutAsync();
+        await CaptureAsync(page, "crosshair-offplot-cap-keyboard", position);
+        await page.Keyboard.PressAsync("Space");
+        Assert.Equal("false", await point.GetAttributeAsync("aria-selected"));
+        var selections = await page.EvaluateAsync<JsonElement>("()=>window.cfxCapSelections");
+        Assert.Equal(2, selections.GetArrayLength());
+        Assert.All(selections.EnumerateArray(), target => {
+            Assert.Equal("paired:0", target.GetProperty("targetId").GetString());
+            Assert.Equal("0", target.GetProperty("sourcePoint").ToString());
+        });
         AssertNoConsoleErrors(session);
     }
 
