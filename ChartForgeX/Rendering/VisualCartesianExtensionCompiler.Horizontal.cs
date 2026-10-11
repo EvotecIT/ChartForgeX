@@ -62,9 +62,11 @@ internal static partial class VisualCartesianCompiler {
             TimeZone = x.TimeZone, TimeZoneLabel = x.TimeZoneLabel, ShowTimeZone = x.ShowTimeZone,
             ValueFormat = x.ValueFormat ?? (ReferenceEquals(chart.Options.ValueFormat, ChartValueFormat.ExistingValue) ? null : chart.Options.ValueFormat) };
         var waterfall = chart.Series.Any(series => series.Kind == ChartSeriesKind.Waterfall);
+        var legacyCategories = ChartCartesianOrientation.UsesLegacyCategoryLabels(chart);
         var categoryAxis = new ChartAxis { Scale = y.Scale, TickCount = y.TickCount, LabelAngle = y.LabelAngle, LabelDensity = y.LabelDensity,
             TimeZone = y.TimeZone, TimeZoneLabel = y.TimeZoneLabel, ShowTimeZone = y.ShowTimeZone,
-            ValueFormat = y.ValueFormat ?? (waterfall ? null : x.ValueFormat) };
+            ValueFormat = y.ValueFormat ?? (legacyCategories && !waterfall ? x.ValueFormat : null) };
+        if (!legacyCategories) foreach (var label in x.Labels) valueAxis.Labels.Add(label);
         var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
         foreach (var label in categoryLabels) categoryAxis.Labels.Add(label);
         cache.HorizontalValueAxis = valueAxis; cache.HorizontalCategoryAxis = categoryAxis;

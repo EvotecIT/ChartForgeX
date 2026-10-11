@@ -9,19 +9,21 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles) {
+        var horizontalValues = ChartCartesianOrientation.IsHorizontal(chart);
         for (var index = 0; index < chart.Annotations.Count; index++) {
             var annotation = chart.Annotations[index];
             if (annotation.EndValue.HasValue != bands) continue;
-            var horizontal = annotation.Kind == ChartAnnotationKind.HorizontalLine || annotation.Kind == ChartAnnotationKind.HorizontalBand;
+            var kind = ChartCartesianOrientation.AnnotationKind(annotation, horizontalValues);
+            var horizontal = kind == ChartAnnotationKind.HorizontalLine || kind == ChartAnnotationKind.HorizontalBand;
             var position = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, map.Y(annotation.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, map.X(annotation.Value)));
             var color = annotation.Color;
             var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
             var id = "annotation-" + Number(index);
-            var description = annotation.Kind + ": " + Number(annotation.Value)
+            var description = kind + ": " + Number(annotation.Value)
                 + (annotation.EndValue.HasValue ? " to " + Number(annotation.EndValue.Value) : string.Empty)
                 + (annotation.Label.Length > 0 ? ": " + annotation.Label : string.Empty);
             using (builder.PushGroup(id, "annotation", new Dictionary<string, string> {
-                ["data-cfx-kind"] = annotation.Kind.ToString(), ["data-cfx-value"] = Number(annotation.Value),
+                ["data-cfx-kind"] = kind.ToString(), ["data-cfx-value"] = Number(annotation.Value),
                 ["data-cfx-end-value"] = annotation.EndValue.HasValue ? Number(annotation.EndValue.Value) : string.Empty,
                 ["data-cfx-label"] = annotation.Label, ["data-cfx-show-label"] = annotation.ShowLabel ? "true" : "false", ["aria-label"] = description
             })) {

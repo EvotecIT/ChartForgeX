@@ -18,8 +18,16 @@ internal static class ChartCartesianOrientation {
 
     internal static ChartAxis CategoryAxis(Chart chart) => IsHorizontal(chart) ? chart.Options.YAxis : chart.Options.XAxis;
 
-    internal static IReadOnlyList<ChartAxisLabel> CategoryLabels(Chart chart) => IsHorizontal(chart) && chart.Options.YAxis.Labels.Count == 0
+    internal static bool UsesLegacyCategoryLabels(Chart chart) => IsHorizontal(chart)
+        && !chart.Series.Any(series => IsHorizontalLine(chart, series));
+
+    internal static IReadOnlyList<ChartAxisLabel> CategoryLabels(Chart chart) => UsesLegacyCategoryLabels(chart) && chart.Options.YAxis.Labels.Count == 0
         ? chart.Options.XAxis.Labels : CategoryAxis(chart).Labels;
+
+    internal static ChartAnnotationKind AnnotationKind(ChartAnnotation annotation, bool horizontalValues) =>
+        annotation.FollowsSeriesValueAxis && horizontalValues
+            ? annotation.EndValue.HasValue ? ChartAnnotationKind.VerticalBand : ChartAnnotationKind.VerticalLine
+            : annotation.Kind;
 
     internal static IEnumerable<double> Categories(ChartSeries series) => series.Kind == ChartSeriesKind.Waterfall
         ? ChartWaterfallSteps.Create(series).Select(step => step.X) : series.Points.Select(point => point.X);

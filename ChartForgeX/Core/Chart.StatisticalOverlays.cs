@@ -7,7 +7,7 @@ namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
     /// <summary>
-    /// Adds a horizontal annotation line at the mean y value of the supplied points.
+    /// Adds an annotation line at the mean source Y value, following the chart's value-axis orientation.
     /// </summary>
     /// <param name="label">The annotation label.</param>
     /// <param name="points">The source points used to compute the mean.</param>
@@ -15,11 +15,11 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddMeanLine(string label, IEnumerable<ChartPoint> points, ChartColor? color = null) {
         var values = StatisticalValues(points, nameof(points));
-        return AddHorizontalLine(values.Average(), label, color);
+        return AddStatisticalAnnotation(values.Average(), null, label, color, 1);
     }
 
     /// <summary>
-    /// Adds a horizontal annotation line at the median y value of the supplied points.
+    /// Adds an annotation line at the median source Y value, following the chart's value-axis orientation.
     /// </summary>
     /// <param name="label">The annotation label.</param>
     /// <param name="points">The source points used to compute the median.</param>
@@ -30,11 +30,11 @@ public sealed partial class Chart {
         values.Sort();
         var middle = values.Count / 2;
         var median = values.Count % 2 == 0 ? (values[middle - 1] + values[middle]) / 2.0 : values[middle];
-        return AddHorizontalLine(median, label, color);
+        return AddStatisticalAnnotation(median, null, label, color, 1);
     }
 
     /// <summary>
-    /// Adds a horizontal band around the mean y value using population standard deviation.
+    /// Adds a band around the mean source Y value using population standard deviation and the chart's value-axis orientation.
     /// </summary>
     /// <param name="label">The annotation label.</param>
     /// <param name="points">The source points used to compute the band.</param>
@@ -50,7 +50,13 @@ public sealed partial class Chart {
         var mean = values.Average();
         var variance = values.Sum(value => (value - mean) * (value - mean)) / values.Count;
         var distance = Math.Sqrt(variance) * deviations;
-        return AddHorizontalBand(mean - distance, mean + distance, label, color, opacity);
+        return AddStatisticalAnnotation(mean - distance, mean + distance, label, color, opacity);
+    }
+
+    private Chart AddStatisticalAnnotation(double value, double? endValue, string label, ChartColor? color, double opacity) {
+        var kind = endValue.HasValue ? ChartAnnotationKind.HorizontalBand : ChartAnnotationKind.HorizontalLine;
+        Annotations.Add(new ChartAnnotation(kind, value, endValue, label, color ?? Options.Theme.Axis, opacity) { FollowsSeriesValueAxis = true });
+        return this;
     }
 
     private static List<double> StatisticalValues(IEnumerable<ChartPoint> points, string parameterName) {

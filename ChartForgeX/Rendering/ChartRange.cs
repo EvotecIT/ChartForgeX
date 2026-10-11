@@ -157,7 +157,7 @@ internal sealed class ChartRange {
         }
 
         foreach (var annotation in chart.Annotations) {
-            range.Include(annotation);
+            range.Include(annotation, ChartCartesianOrientation.AnnotationKind(annotation, hasHorizontalSeries));
         }
         range.InitializeEmptyX(chart.Options.XAxis);
         range.InitializeEmptyY(chart.Options.YAxis);
@@ -231,8 +231,8 @@ internal sealed class ChartRange {
         if (value > MaxY) MaxY = value;
     }
 
-    private void Include(ChartAnnotation annotation) {
-        if (annotation.Kind == ChartAnnotationKind.HorizontalLine || annotation.Kind == ChartAnnotationKind.HorizontalBand) {
+    private void Include(ChartAnnotation annotation, ChartAnnotationKind kind) {
+        if (kind == ChartAnnotationKind.HorizontalLine || kind == ChartAnnotationKind.HorizontalBand) {
             IncludeY(annotation.Value);
             if (annotation.EndValue.HasValue) IncludeY(annotation.EndValue.Value);
         } else {

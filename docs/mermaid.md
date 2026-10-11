@@ -813,6 +813,8 @@ The conversion target for XY charts is `Chart`. Category labels, axis ranges, se
 
 Native callers can set `chart.Options.LineOrientation = ChartOrientation.Horizontal` for line and step-line series. The primary physical X axis owns values, and the physical Y axis owns linear or time categories. Horizontal lines can share a chart with horizontal bars; vertical series and secondary-axis series require a separate chart. Interpolation, step placement, breaks and marker bounds use the same prepared geometry for SVG and PNG.
 
+For horizontal line charts, configure value formatting and explicit value labels on `XAxis`, and category formatting and labels on `YAxis`. The mean, median and standard-deviation helpers follow the current value axis during preparation, including orientation changes made after adding them. Explicit `AddHorizontalLine` and `AddHorizontalBand` annotations retain their physical Y coordinates.
+
 ## Sankey Diagrams
 
 Sankey diagrams are parsed into `MermaidSankeyDocument` and converted to native ChartForgeX Sankey charts.
