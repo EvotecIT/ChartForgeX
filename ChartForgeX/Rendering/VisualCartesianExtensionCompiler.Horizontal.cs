@@ -31,7 +31,7 @@ internal static partial class VisualCartesianCompiler {
     private static (double Height, double Offset, double Pitch) ResolveHorizontalBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, ChartStackLayout stacks, int index) {
         var slot = stacks.Slot(Enumerable.Range(0, chart.Series.Count).ToArray(), index);
         var layout = ChartCategorySlotLayout.Create(stacks.HorizontalCategories.Select(map.Y),
-            plot.Height, context.Theme.Spacing, slot.Count, slot.Position, maximumThickness: 30);
+            plot.Height, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false, maximumThickness: 30);
         return (layout.Thickness, layout.Offset, layout.Pitch);
     }
 
