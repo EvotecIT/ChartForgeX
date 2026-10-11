@@ -87,6 +87,14 @@ internal static class VisualFrameLayout {
         var headingGaps = headingHeight > 0 ? gap * 5 / 6 + (!string.IsNullOrEmpty(context.Frame.Title) && !string.IsNullOrEmpty(context.Frame.Subtitle) ? gap / 6 : 0) : 0;
         var headingScale = headingHeight / 2 + headingGaps >= bottom - top
             ? Math.Min(1, Math.Max(1, (bottom - top) * .4 - headingGaps) / headingHeight) : 1;
+        double HeadingWidthScale(string? text, TextStyle style) {
+            if (string.IsNullOrEmpty(text) || style.EffectiveFontSize <= VisualTextFitting.MaximumOrdinaryFontSize) return 1;
+            var fitted = VisualTextFitting.FitOversized(builder, style, double.MaxValue,
+                candidate => builder.MeasureText(text!, candidate).Width <= Math.Max(1, right - left));
+            return fitted.EffectiveFontSize / style.EffectiveFontSize;
+        }
+        headingScale = Math.Min(headingScale, Math.Min(HeadingWidthScale(context.Frame.Title, titleStyle),
+            HeadingWidthScale(context.Frame.Subtitle, subtitleStyle)));
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
             var headingTop = top;
             Header(context.Frame.Title, titleStyle, paints?.Foreground);

@@ -36,10 +36,14 @@ public sealed class MermaidChartCaptionTypographyTests {
         Assert.False(rendered.HasErrors);
         var chart = Assert.IsType<Chart>(rendered.Artifact!.Model);
         chart.WithSize(width, height); chart.Options.Theme.UseGraphiteLayout = graphite;
-        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var request = VisualExportRequest.ForChart(chart);
+        var prepared = chart.Prepare(request.Context);
         var labels = XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
         var expected = family == "sankey" ? new[] { "Source", "Target" } : flat ? new[] { "Documents", "Media" } : new[] { "Storage", "Documents", "Media" };
         foreach (var label in expected) Assert.Contains(labels, text => text.Replace("\n", "").Contains(label, StringComparison.Ordinal));
+        string WithoutSpaces(string value) => new(value.Where(character => !char.IsWhiteSpace(character)).ToArray());
+        foreach (var heading in new[] { request.Context.Frame.Title, request.Context.Frame.Subtitle })
+            if (!string.IsNullOrEmpty(heading)) Assert.Contains(WithoutSpaces(heading), WithoutSpaces(string.Concat(labels)));
         Assert.True(prepared.ToPng().Length > 64);
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + prepared.ToSvg() + "</body></html>", width, height);
