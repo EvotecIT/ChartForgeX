@@ -242,7 +242,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
     private static Chart NonCartesian(string family) => family switch {
         "pie" => Chart.Create().WithXLabels("First", "Second", "Third").AddPie("Share", ChartPoints.FromValues(5, 3, 2)),
         "sankey" => Chart.Create().AddSankey("Flow", new[] { new ChartNode("Input", "Input"), new ChartNode("API", "API"), new ChartNode("Mail", "Mail") }, new[] { new ChartFlowLink("input-api", "Input", "API", 4), new ChartFlowLink("input-mail", "Input", "Mail", 2) }),
-        "map" => Chart.Create().WithMapLabels(false).WithMapScaleLegend(false).AddRegionMap("Coverage", new ChartMapDefinition("two", "Two regions", 100, 100, new[] {
+        "map" => Chart.Create().WithMapLabels(false).ConfigureMapColorDimension(options => options.ShowLegend = false).AddRegionMap("Coverage", new ChartMapDefinition("two", "Two regions", 100, 100, new[] {
             new ChartMapRegion("A", "First", "M0 0H50V100H0Z"), new ChartMapRegion("B", "Second", "M50 0H100V100H50Z")
         }), new[] { new ChartRegionMapItem("A", 10) }),
         _ => throw new ArgumentOutOfRangeException(nameof(family))

@@ -32,6 +32,10 @@ public static partial class V2Examples {
             if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble) {
                 variants.Add("color-dimension"); variants.Add("compact-color-dimension");
             }
+            if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter) {
+                variants.Add("gradient-color-legend"); variants.Add("compact-gradient-color-legend");
+                variants.Add("swatch-color-legend"); variants.Add("compact-swatch-color-legend");
+            }
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
             if (kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar or ChartSeriesKind.PolarArea) {
                 variants.Add("angular-reversal"); variants.Add("compact-angular-reversal");
@@ -57,7 +61,7 @@ public static partial class V2Examples {
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift"
                     : variant is "positioned-color-scale" or "compact-positioned-color-scale" && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap
                         ? kind == ChartSeriesKind.TileMap ? "Temperature by state" : "Temperature across service areas"
-                    : variant is "color-dimension" or "compact-color-dimension" ? kind switch {
+                    : variant is "color-dimension" or "compact-color-dimension" or "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend" ? kind switch {
                         ChartSeriesKind.TileMap => "Temperature by state", ChartSeriesKind.Heatmap => "Temperature by grid position",
                         ChartSeriesKind.CalendarHeatmap => "Daily average temperature", ChartSeriesKind.Treemap => "Team workload and temperature",
                         ChartSeriesKind.Scatter => "Temperature by workload", _ => "Workload, requests and temperature"
@@ -81,6 +85,8 @@ public static partial class V2Examples {
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"
                     : kind == ChartSeriesKind.Sunburst && variant is "options" or "compact-options" ? "Leaf totals size sectors; measured color stays independent"
                     : kind == ChartSeriesKind.Sankey && variant is "options" or "compact-options" ? "Aligned and ordered weighted flows"
+                    : variant is "gradient-color-legend" or "compact-gradient-color-legend" ? "A continuous key retains every authored color anchor"
+                    : variant is "swatch-color-legend" or "compact-swatch-color-legend" ? "A sampled key keeps the continuous measurement and its color domain"
                     : variant is "color-dimension" or "compact-color-dimension" ? "Temperature captions use their own format and culture"
                     : variant is "positioned-color-scale" or "compact-positioned-color-scale" ? "Absolute color anchors use uneven numeric intervals"
                     : variant is "color-scale" or "compact-color-scale" ? kind == ChartSeriesKind.Scatter ? "Temperature has its own fixed color domain; processing time stays independent"

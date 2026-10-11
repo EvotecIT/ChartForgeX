@@ -79,7 +79,7 @@ public sealed class ScatterBubbleColorLegendTests {
     }
 
     [Fact]
-    public void KeysRespectFrameAndSeriesVisibilityWhilePointLegendUsesMappedPaint() {
+    public void KeysRespectFrameAndNumericVisibilityWhilePointLegendUsesMappedPaint() {
         var chart = Create(false, 0, 10).WithPointLegend();
         chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
@@ -88,8 +88,11 @@ public sealed class ScatterBubbleColorLegendTests {
         chart.WithLegend(false);
         Assert.Empty(Role(XDocument.Parse(Prepare(chart).ToSvg()), "color-scale-0"));
         chart.WithLegend(); chart.Series[0].ShowInLegend = false;
+        Assert.NotEmpty(Role(XDocument.Parse(Prepare(chart).ToSvg()), "color-scale-0"));
+        chart.Series[0].ColorDimension.ShowLegend = false;
         Assert.Empty(Role(XDocument.Parse(Prepare(chart).ToSvg()), "color-scale-0"));
         chart.Series[0].ShowInLegend = true;
+        chart.Series[0].ColorDimension.ShowLegend = true;
         prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 500)), frame: new VisualFrame(showLegend: false)));
         Assert.Empty(Role(XDocument.Parse(prepared.ToSvg()), "color-scale-0"));
         Assert.NotEmpty(Role(XDocument.Parse(Prepare(chart).ToSvg()), "color-scale-0"));
