@@ -6,6 +6,11 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.VisualBlocks;
 
 internal static partial class VisualBlockRendering {
+    // Bitmap text uses discrete raster scales. Use its native ascent rather than a
+    // proportional outline-font estimate when positioning the measured line box.
+    public static double TextAscent(TextStyle style) =>
+        TypographyFontResolver.ResolveFace(style.Font).Font?.Ascent(style.FontSize) ?? TextLayoutEngine.Measure("Mg", style).LineHeight;
+
     // Ordinary long captions retain truncation at their default size. Larger requested
     // sizes fit the measured width and height of their semantic cell first.
     public static TextStyle FitBodyTextStyle(ChartTheme theme, string text, double defaultSize, double width, double height, int weight) {
@@ -30,8 +35,8 @@ internal static partial class VisualBlockRendering {
 
         bool Fits(double size, bool includeWidth) {
             style.FontSize = size;
-            return ChartLabelScene.MeasureText("Mg", style).Height <= height &&
-                (!includeWidth || ChartLabelScene.MeasureText(normalized, style).Width <= width);
+            return TextLayoutEngine.Measure("Mg", style).Height <= height &&
+                (!includeWidth || TextLayoutEngine.Measure(normalized, style).Width <= width);
         }
     }
 }

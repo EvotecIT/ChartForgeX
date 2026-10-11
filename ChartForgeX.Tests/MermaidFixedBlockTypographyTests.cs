@@ -1,5 +1,7 @@
 using System.Xml.Linq;
+using System.Globalization;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using Microsoft.Playwright;
@@ -8,6 +10,31 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidFixedBlockTypographyTests {
+    [Theory]
+    [InlineData(21)]
+    [InlineData(256)]
+    public void FittedFishboneCaptionRespectsTheNativeAdvanceAtBitmapScaleBoundaries(int size) {
+        var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size + "}}}%%\nishikawa-beta\nAPI\n  Management\n    Data");
+        Assert.Empty(rendered.Diagnostics);
+        var caption = XDocument.Parse(rendered.Artifact!.ToSvg()).Descendants()
+            .Single(e => e.Name.LocalName == "text" && e.Value == "Management");
+        var style = new TextStyle {
+            Font = new FontSpec { Family = (string)caption.Attribute("font-family")!, Weight = int.Parse((string)caption.Attribute("font-weight")!, CultureInfo.InvariantCulture) },
+            FontSize = double.Parse((string)caption.Attribute("font-size")!, CultureInfo.InvariantCulture), LineHeight = 1
+        };
+        if (Environment.GetEnvironmentVariable("CFX_TEST_REQUIRE_BITMAP_FONT") == "1")
+            Assert.Null(TypographyFontResolver.ResolveFace(style.Font).Font);
+        var actual = TextLayoutEngine.Measure(caption.Value, style);
+        Assert.InRange(actual.Width, 1, 108);
+        Assert.InRange(actual.Height, 1, 24);
+        var png = rendered.Artifact!.ToPng();
+        Assert.NotEmpty(png);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        File.WriteAllBytes(Path.Combine(captures, "fishbone-management-" + size + "-native.png"), png);
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]

@@ -21,10 +21,10 @@ internal static partial class VisualBlockRendering {
         var bitStyle = new TextStyle { Font = new FontSpec { Family = packet.Options.Theme.FontFamily, Weight = 700 }, FontSize = 1, LineHeight = 1 };
         foreach (var slice in slices) {
             var width = Math.Max(1, slice.BitLength * content.Width / packet.BitsPerRow - 1);
-            var numbers = ChartLabelScene.MeasureText(slice.StartBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
+            var numbers = TextLayoutEngine.Measure(slice.StartBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
             var available = width - PacketBitInset(width) * 2;
             if (slice.EndBit != slice.StartBit) {
-                numbers += ChartLabelScene.MeasureText(slice.EndBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
+                numbers += TextLayoutEngine.Measure(slice.EndBit.ToString(CultureInfo.InvariantCulture), bitStyle).Width;
                 available -= LabelPlacementService.DefaultGap;
             }
             if (numbers > 0) bits = Math.Min(bits, Math.Max(1, available / numbers));

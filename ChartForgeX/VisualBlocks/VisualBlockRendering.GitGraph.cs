@@ -71,7 +71,7 @@ internal static partial class VisualBlockRendering {
 
     public static double GitFontSize(GitGraphLayout layout, ChartTheme theme, string text, double defaultSize, double width) {
         var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = 1, LineHeight = 1 };
-        var measured = ChartLabelScene.MeasureText(SingleLineText(text), style).Width;
+        var measured = TextLayoutEngine.Measure(SingleLineText(text), style).Width;
         var fitted = measured > 0 ? Math.Max(defaultSize, Math.Max(1, width) / measured) : defaultSize;
         return Math.Min(defaultSize * layout.FontScale, fitted);
     }
@@ -81,7 +81,7 @@ internal static partial class VisualBlockRendering {
         var scale = font / 9.5;
         var inset = Math.Min(5, 5 * scale);
         var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = font, LineHeight = 1 };
-        var width = Math.Min(96, Math.Max(38, ChartLabelScene.MeasureText(SingleLineText(tag), style).Width + inset * 2));
+        var width = Math.Min(96, Math.Max(38, TextLayoutEngine.Measure(SingleLineText(tag), style).Width + inset * 2));
         var top = y - radius - 24 * scale;
         return new GitTagMetrics(new ChartRect(x - width / 2, top, width, 18 * scale), font, inset, top + 12.5 * scale);
     }

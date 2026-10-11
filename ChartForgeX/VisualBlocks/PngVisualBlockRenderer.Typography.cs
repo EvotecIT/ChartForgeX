@@ -12,9 +12,9 @@ public sealed partial class PngVisualBlockRenderer {
         TextAlignment alignment, ChartColor color, ChartTheme theme, double defaultSize, int weight) {
         var style = VisualBlockRendering.FitBodyTextStyle(theme, text, defaultSize, width, height, weight);
         var fitted = VisualBlockRendering.FitMeasuredText(text, style.FontSize, width, theme.FontFamily, weight);
-        var metrics = ChartLabelScene.MeasureText(fitted, style);
+        var metrics = TextLayoutEngine.Measure(fitted, style);
         var left = alignment == TextAlignment.Center ? x + (width - metrics.Width) / 2 : alignment == TextAlignment.Right ? x + width - metrics.Width : x;
-        var ascent = TypographyFontResolver.ResolveFace(style.Font).Font?.Ascent(style.FontSize) ?? style.FontSize * .82;
+        var ascent = VisualBlockRendering.TextAscent(style);
         style.Color = color;
         canvas.DrawStyledText(left, baseline - ascent, width, fitted, style, TextWrapMode.NoWrap, maximumLines: 1, trimming: TextTrimming.None);
     }
