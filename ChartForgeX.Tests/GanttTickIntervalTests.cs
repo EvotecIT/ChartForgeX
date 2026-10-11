@@ -13,7 +13,42 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GanttTickIntervalTests {
+    [Theory]
+    [InlineData("100millisecond", "2026-01-01 13:05:06.007")]
+    [InlineData("1second", "2026-01-01 13:05:06")]
+    [InlineData("1minute", "2026-01-01 13:05")]
+    [InlineData("1hour", "2026-01-01 13:05")]
+    [InlineData("1day", "2026-01-01")]
+    [InlineData("2week", "2026-01-01")]
+    [InlineData("invalid", "2026-01-01")]
+    public void MermaidFixedClockIntervalsChooseDistinctDefaultsAndPreserveAuthoredFormatting(string interval, string expected) {
+        var document = new MermaidParser().ParseGantt("gantt\ntickInterval " + interval + "\nTask :2026-01-01, 1d").Document!;
+        var value = new DateTime(2026, 1, 1, 13, 5, 6, 7).ToOADate();
+        Assert.Equal(expected, document.ToChart().Options.XAxisValueFormatter!(value));
+        document.AxisFormat = "%Y/%m/%d";
+        Assert.Equal("2026/01/01", document.ToChart().Options.XAxisValueFormatter!(value));
+    }
+
     private static string Fixture(string extension) => Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "gantt-tick-interval." + extension);
+
+    [Fact]
+    public async Task MermaidMillisecondTicksReachSvgPngAndStaticBrowserLabels() {
+        var document = new MermaidParser().ParseGantt("gantt\ntickInterval 100millisecond\nTask :2026-01-01, 300ms").Document!;
+        var chart = document.ToChart(new MermaidGanttRenderOptions { Width = 1200, Height = 360 }).WithLegend(false);
+        var expected = new[] { "2026-01-01 00:00:00.000", "2026-01-01 00:00:00.100", "2026-01-01 00:00:00.200", "2026-01-01 00:00:00.300" };
+        var svg = chart.ToSvg();
+        Assert.Equal(expected, XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").Select(element => element.Value));
+        Assert.NotEmpty(chart.ToPng());
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", 1200, 360);
+        Assert.Equal(expected, await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync());
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "gantt-mermaid-clock-default-browser.png"), FullPage = true });
+        File.WriteAllBytes(Path.Combine(captures, "gantt-mermaid-clock-default-native.png"), chart.ToPng());
+    }
 
     [Fact]
     public void NativeCalendarBoundariesMatchSharedD3ReferenceCases() {
