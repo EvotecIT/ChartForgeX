@@ -125,7 +125,7 @@ internal static partial class VisualScheduleCompiler {
             Markers(chart, context, builder, plot, items, Project, Format, min, max, colors, obstacles, predecessors);
             if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             // Links are foreground annotations: successor fills must not cover their arrowheads.
-            if (gantt) Dependencies(chart, context, builder, plot, items, renderedLinks, Project, slot, height);
+            if (gantt) Dependencies(chart, context, builder, plot, items, renderedLinks, Project, slot, height, min, max);
         }
     }
 
