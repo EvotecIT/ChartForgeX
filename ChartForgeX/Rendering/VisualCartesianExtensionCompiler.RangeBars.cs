@@ -8,26 +8,23 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
+    private const double RangeBarMinimumLength = 2;
+
     private static void DrawRangeBars(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
         IReadOnlyDictionary<double, string> categories) {
         var series = chart.Series[index]; var count = series.Points.Count / 2;
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
         var style = chart.Options.ResolvePreparedBarVisualStyle();
-        var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.RangeBar).ToArray();
         var segmented = style.Kind == ChartBarStyle.SegmentedCapsule;
-        var padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth);
-        var layout = ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].Points.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
-            horizontal ? plot.Height : plot.Width, context.Theme.Spacing, participants.Length, Array.IndexOf(participants, index),
-            maximumThickness: 28, footprintRatio: 1.5, footprintPadding: padding,
-            measuredFootprint: segmented ? width => ChartSegmentedBarGeometry.RangeCategoryFootprint(style, width) : null);
+        var layout = ResolveRangeBarLayout(chart, context, plot, map, index, out var padding);
         var thickness = layout.Thickness;
         for (var item = 0; item < count; item++) {
             var first = series.Points[item * 2]; var second = series.Points[item * 2 + 1];
             var category = (horizontal ? map.Y(first.X) : map.X(first.X)) + layout.Offset;
             var start = horizontal ? map.X(first.Y) : map.Y(first.Y);
             var end = horizontal ? map.X(second.Y) : map.Y(second.Y);
-            var minimum = Math.Min(start, end); var length = Math.Max(2, Math.Abs(start - end));
+            var minimum = Math.Min(start, end); var length = Math.Max(RangeBarMinimumLength, Math.Abs(start - end));
             var bounds = horizontal ? new ChartRect(minimum, category - thickness / 2, length, thickness)
                 : new ChartRect(category - thickness / 2, minimum, thickness, length);
             var color = PointColor(series, index, item, colors);
@@ -64,6 +61,29 @@ internal static partial class VisualCartesianCompiler {
                 }
             }
         }
+    }
+
+    // Rendering and automatic value gutters measure the same grouped category thickness.
+    private static ChartCategorySlotLayout ResolveRangeBarLayout(Chart chart, VisualRenderContext context, ChartRect plot,
+        ChartMapper map, int index, out double padding) {
+        var horizontal = ChartCartesianOrientation.IsHorizontal(chart, chart.Series[index]);
+        var style = chart.Options.ResolvePreparedBarVisualStyle();
+        var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.RangeBar).ToArray();
+        padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth);
+        return ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].Points.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
+            horizontal ? plot.Height : plot.Width, context.Theme.Spacing, participants.Length, Array.IndexOf(participants, index),
+            maximumThickness: 28, footprintRatio: 1.5, footprintPadding: padding,
+            measuredFootprint: style.Kind == ChartBarStyle.SegmentedCapsule ? width => ChartSegmentedBarGeometry.RangeCategoryFootprint(style, width) : null);
+    }
+
+    private static double RangeBarValuePaintRadius(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, int index) {
+        var series = chart.Series[index]; var style = chart.Options.ResolvePreparedBarVisualStyle();
+        var layout = ResolveRangeBarLayout(chart, context, plot, map, index, out _);
+        if (style.Kind != ChartBarStyle.SegmentedCapsule)
+            return Math.Max(RangeBarMinimumLength, (series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth) / 2);
+        var paint = ChartSegmentedBarGeometry.RangePaintBounds(style, new ChartRect(0, 0, 0, layout.Thickness), true);
+        // Zero/tiny intervals retain a two-pixel body even when their cap effects are narrower.
+        return Math.Max(RangeBarMinimumLength, Math.Max(-paint.Left, paint.Right));
     }
 
     private static Dictionary<string, string> RangeBarMetadata(Chart chart, string category) => new() {

@@ -15,8 +15,15 @@ internal static partial class VisualCartesianCompiler {
     private static bool ExpandMarkerRanges(Chart chart, VisualRenderContext context, ChartRect plot,
         ChartRange range, ChartRange? secondaryRange, ChartStackLayout stacks, ChartBubbleSizeScale? bubbleScale) {
         var x = new MarkerExtents(); var primaryY = new MarkerExtents(); var secondaryY = new MarkerExtents();
+        var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
+            if (horizontal) {
+                if (series.Kind != ChartSeriesKind.RangeBar || plot.Width <= 0 || plot.Height <= 0) continue;
+                var map = ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis);
+                IncludeHorizontalIntervalExtents(x, series, chart.Options.XAxis, RangeBarValuePaintRadius(chart, context, plot, map, index));
+                continue;
+            }
             var pointSeries = IsPointSeries(series.Kind);
             if (!pointSeries && series.Kind is not (ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar
                 or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop or ChartSeriesKind.Slope
@@ -60,6 +67,10 @@ internal static partial class VisualCartesianCompiler {
             var axis = side == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
             (side == ChartAxisSide.Secondary ? secondaryY : primaryY).Include(markerY, markerRadius, axis);
         }
+    }
+
+    private static void IncludeHorizontalIntervalExtents(MarkerExtents extents, ChartSeries series, ChartAxis valueAxis, double radius) {
+        foreach (var point in series.Points) extents.Include(point.Y, radius, valueAxis);
     }
 
     private sealed class MarkerExtents {
