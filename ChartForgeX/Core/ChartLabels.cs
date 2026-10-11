@@ -24,6 +24,11 @@ public sealed class ChartLabels {
     private string _category = "Category";
     private string _start = "Start";
     private string _end = "End";
+    private string _minimum = "Minimum";
+    private string _q1 = "Q1";
+    private string _median = "Median";
+    private string _q3 = "Q3";
+    private string _maximum = "Maximum";
     private string _openingBalance = "Opening balance";
     private string _subtotal = "Subtotal";
     private string _total = "Total";
@@ -84,7 +89,7 @@ public sealed class ChartLabels {
     /// <summary>Gets or sets the waterfall tooltip row name for a supplied change. Default <c>Change</c>.</summary>
     public string Change { get => _change; set => _change = Required(value, nameof(value)); }
 
-    /// <summary>Gets or sets the range-bar tooltip row name for the category. Default <c>Category</c>.</summary>
+    /// <summary>Gets or sets the Cartesian tooltip row name for the category. Default <c>Category</c>.</summary>
     public string Category { get => _category; set => _category = Required(value, nameof(value)); }
 
     /// <summary>Gets or sets the range-bar tooltip row name for the authored interval start. Default <c>Start</c>.</summary>
@@ -92,6 +97,21 @@ public sealed class ChartLabels {
 
     /// <summary>Gets or sets the range-bar tooltip row name for the authored interval end. Default <c>End</c>.</summary>
     public string End { get => _end; set => _end = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the box plot tooltip row name for the minimum whisker. Default <c>Minimum</c>.</summary>
+    public string Minimum { get => _minimum; set => _minimum = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the box plot tooltip row name for the first quartile. Default <c>Q1</c>.</summary>
+    public string Q1 { get => _q1; set => _q1 = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the box plot tooltip row name for the median. Default <c>Median</c>.</summary>
+    public string Median { get => _median; set => _median = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the box plot tooltip row name for the third quartile. Default <c>Q3</c>.</summary>
+    public string Q3 { get => _q3; set => _q3 = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the box plot tooltip row name for the maximum whisker. Default <c>Maximum</c>.</summary>
+    public string Maximum { get => _maximum; set => _maximum = Required(value, nameof(value)); }
 
     /// <summary>Gets or sets the default waterfall opening-balance axis caption and tooltip row name. Default <c>Opening balance</c>.</summary>
     public string OpeningBalance { get => _openingBalance; set => _openingBalance = Required(value, nameof(value)); }

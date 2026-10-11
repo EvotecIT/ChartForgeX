@@ -1,0 +1,85 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+
+namespace ChartForgeX.Rendering;
+
+internal static partial class VisualCartesianCompiler {
+    private static void DrawBoxPlots(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
+        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
+        IReadOnlyDictionary<double, string> categories) {
+        var series = chart.Series[index]; var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
+        var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.BoxPlot).ToArray();
+        var padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth
+            : Math.Max(ChartVisualPrimitives.BoxPlotStrokeWidth, ChartVisualPrimitives.BoxPlotMedianStrokeWidth));
+        var layout = ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].Points.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
+            horizontal ? plot.Height : plot.Width, context.Theme.Spacing, participants.Length, Array.IndexOf(participants, index),
+            maximumThickness: 46, footprintPadding: padding);
+        for (var item = 0; item < series.AuthoredObservationCount; item++) {
+            var raw = item * 5; var x = series.Points[raw].X;
+            var minimum = series.Points[raw].Y; var q1 = series.Points[raw + 1].Y; var median = series.Points[raw + 2].Y;
+            var q3 = series.Points[raw + 3].Y; var maximum = series.Points[raw + 4].Y;
+            var category = (horizontal ? map.Y(x) : map.X(x)) + layout.Offset;
+            ChartPoint Project(double value) => horizontal ? new ChartPoint(map.X(value), category) : new ChartPoint(category, map.Y(value));
+            var first = Project(q1); var third = Project(q3); var min = Project(minimum); var max = Project(maximum);
+            var thickness = layout.Thickness;
+            var box = horizontal ? new ChartRect(Math.Min(first.X, third.X), category - thickness / 2, Math.Max(2, Math.Abs(third.X - first.X)), thickness)
+                : new ChartRect(category - thickness / 2, Math.Min(first.Y, third.Y), thickness, Math.Max(2, Math.Abs(third.Y - first.Y)));
+            var bounds = horizontal ? Extents(Math.Min(Math.Min(min.X, max.X), box.Left), box.Top, Math.Max(Math.Max(min.X, max.X), box.Right), box.Bottom)
+                : Extents(box.Left, Math.Min(Math.Min(min.Y, max.Y), box.Top), box.Right, Math.Max(Math.Max(min.Y, max.Y), box.Bottom));
+            var color = PointColor(series, index, item, colors); var sourcePaint = VisualChartPaint.Series(series, color, item);
+            var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, median));
+            using (ObservationGroup(builder, series, index, item, raw, 5, bounds, label, BoxPlotMetadata(chart, categories[x]),
+                ("x", x), ("minimum", minimum), ("q1", q1), ("median", median), ("q3", q3), ("maximum", maximum))) {
+                var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;
+                var whisker = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotWhiskerOpacity);
+                builder.Line(min.X, min.Y, max.X, max.Y, whisker, stroke, role: "boxplot-whisker",
+                    paint: VisualChartPaint.Stroke(sourcePaint.WithOpacity(whisker, ChartVisualPrimitives.BoxPlotWhiskerOpacity)));
+                CrossLine(minimum, thickness * .74, stroke, "boxplot-cap");
+                CrossLine(maximum, thickness * .74, stroke, "boxplot-cap");
+                var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotBodyFillOpacity);
+                var radius = Math.Min(ChartVisualPrimitives.BoxPlotBodyRadius, Math.Min(box.Width, box.Height) / 2);
+                builder.Rect(box, fill, color, stroke, radius, role: "boxplot-body",
+                    paint: new VisualScenePaintBinding(fill: sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BoxPlotBodyFillOpacity), stroke: sourcePaint));
+                DrawPattern(builder, RoundedRectanglePath(box, radius), ObservationPattern(series, item), fill,
+                    ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "boxplot-pattern");
+                CrossLine(median, thickness, series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotMedianStrokeWidth, "boxplot-median");
+
+                void CrossLine(double value, double span, double width, string role) {
+                    var center = Project(value);
+                    builder.Line(horizontal ? center.X : center.X - span / 2, horizontal ? center.Y - span / 2 : center.Y,
+                        horizontal ? center.X : center.X + span / 2, horizontal ? center.Y + span / 2 : center.Y,
+                        color, width, role: role, paint: VisualChartPaint.Stroke(sourcePaint));
+                }
+            }
+            obstacles.Add(new LabelObstacle(PointId(index, item), new ChartRect(bounds.Left - padding / 2, bounds.Top - padding / 2,
+                bounds.Width + padding, bounds.Height + padding)));
+            if (horizontal) AddHorizontalLabel(chart, context, series, index, item, Project(median), bounds, median,
+                max.X >= min.X ? 1 : -1, label, labels);
+            else AddLabel(chart, context, series, index, item, Project(median), bounds, label, labels, median);
+        }
+    }
+
+    private static Dictionary<string, string> BoxPlotMetadata(Chart chart, string category) => new() {
+        ["data-cfx-kind"] = "BoxPlot", ["data-cfx-category-label"] = category,
+        ["data-cfx-orientation"] = chart.Options.BoxPlot.Orientation == ChartOrientation.Horizontal ? "horizontal" : "vertical",
+        ["data-cfx-label-category"] = chart.Options.Labels.Category, ["data-cfx-label-minimum"] = chart.Options.Labels.Minimum,
+        ["data-cfx-label-q1"] = chart.Options.Labels.Q1, ["data-cfx-label-median"] = chart.Options.Labels.Median,
+        ["data-cfx-label-q3"] = chart.Options.Labels.Q3, ["data-cfx-label-maximum"] = chart.Options.Labels.Maximum
+    };
+
+    private static IReadOnlyList<VisualLegendEntry> BoxPlotLegendEntries(Chart chart, ChartSeries series, VisualThemeColors colors, ChartAxisValueFormatter.Cache cache) {
+        var entries = new List<VisualLegendEntry>();
+        var categories = ChartCartesianCategoryLabels.Resolve(chart, series.Points.Select(point => point.X), cache);
+        for (var item = 0; item < series.AuthoredObservationCount; item++) {
+            var category = categories[series.Points[item * 5].X]; var pattern = ObservationPattern(series, item);
+            var color = PointColor(series, 0, item, colors); var paint = VisualChartPaint.Series(series, color, item);
+            entries.Add(new VisualLegendEntry(category, color, PointId(0, item), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
+                marker: VisualMarkerScene.Legend(chart, series, color, paint, item, pattern), paint: paint, metadata: BoxPlotMetadata(chart, category)));
+        }
+        return entries;
+    }
+}

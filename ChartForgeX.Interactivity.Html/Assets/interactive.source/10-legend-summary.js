@@ -24,6 +24,8 @@
     const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
     const svg = item.closest('svg');
     const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
+    const boxPlotRows = mark && boxPlotTooltipRows(mark);
+    if (boxPlotRows) return boxPlotRows.concat(dimensionTooltipRows(mark));
     const financialRows = mark && financialTooltipRows(mark);
     if (financialRows) return financialRows.concat(dimensionTooltipRows(mark));
     if (reference) {

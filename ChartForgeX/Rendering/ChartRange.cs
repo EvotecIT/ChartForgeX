@@ -48,12 +48,11 @@ internal sealed class ChartRange {
                 continue;
             }
             if (ChartSeriesKindTraits.IsExclusive(series.Kind)) continue;
-            if (series.Kind == ChartSeriesKind.RangeBar && ChartCartesianOrientation.IsHorizontal(chart, series)) {
+            if (series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot && ChartCartesianOrientation.IsHorizontal(chart, series)) {
                 hasHorizontalBars = true;
-                for (var item = 0; item + 1 < series.Points.Count; item += 2) {
-                    var first = series.Points[item]; var second = series.Points[item + 1];
-                    range.IncludeY(first.X); horizontalBarYValues.Add(first.X);
-                    range.IncludeX(first.Y); range.IncludeX(second.Y);
+                foreach (var point in series.Points) {
+                    range.IncludeY(point.X); horizontalBarYValues.Add(point.X);
+                    range.IncludeX(point.Y);
                 }
                 continue;
             }

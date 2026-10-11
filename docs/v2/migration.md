@@ -51,6 +51,14 @@ Configure tooltip content through `HtmlChartInteractionOptions.Tooltip.Mode` and
 
 The default range remains 120 CSS pixels. Enabling only `ChartInteractionFeatures.Tooltips` now also acquires nearby observations without requiring `Crosshair`. Choose `Exact` for direct pointer hits only. Crosshair labels default to visible for every palette; set `Crosshair.ShowLabel = false` to retain a compact label-free presentation. Keyboard and pinned readouts keep explicit target semantics.
 
+## Box plot grouping and orientation
+
+Multiple box plot series at the same category now appear side by side instead of overlapping. Category pitch controls their thickness, so dense plots can use narrower bodies. Existing `AddBoxPlot` overloads and five-number summaries retain their values and source order; `ChartBarMode` does not stack them.
+
+Set `ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal)` for primary physical X values and Y categories. `ChartBoxPlot.X` remains the category coordinate. Move value bounds, scales, reversal and tick formatting to `XAxis`, and category bounds, reversal and formatting to `YAxis`. Explicit Y labels win; `WithXLabels` remains a fallback. Horizontal charts accept only box plot series on the primary axis. Vertical mixtures and secondary Y projection retain their support.
+
+HTML tooltip rows now expose Category, Minimum, Q1, Median, Q3 and Maximum instead of a generic Y row containing only the minimum. Localize them through the corresponding `ChartLabels` properties. Default data labels still show the median, and custom point labels still win. Raw-sample calculations retain interpolated quartiles at `(n - 1) * p` and min/max whiskers; this change introduces no IQR filtering or new statistical estimator. See [box plot conventions](api-conventions.md#grouped-box-plots-and-orientation).
+
 ## Waterfall opening balances and checkpoints
 
 Keep `AddWaterfall(name, IEnumerable<ChartPoint>)` for signed deltas with an automatically appended final total. For an explicit opening balance or intermediate checkpoints, pass `ChartWaterfallItem.OpeningBalance(x, value)`, `.Delta(x, value)`, `.Subtotal(x)` and `.Total(x)` to the typed overload. Include every desired display position explicitly; typed input appends no extra total. Items accumulate in input order with distinct X coordinates. An opening balance must be first and may occur only once; positive, negative, zero and opening-only input are valid. Subtotals sum changes since the opening balance or preceding checkpoint without resetting the running balance; totals include the opening balance and all changes. Input without an opening item still starts at zero. Use existing axis labels, point labels, point colors, fill patterns and label styles.

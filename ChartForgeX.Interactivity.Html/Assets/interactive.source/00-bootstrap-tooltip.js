@@ -165,7 +165,7 @@
   const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
-    if (tooltipTitle && (data.cfxKind || '').toLowerCase() === 'rangebar')
+    if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
       return [seriesLabel(node), data.cfxLabel].filter(Boolean).join(': ');
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
@@ -243,6 +243,14 @@
       { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
       .filter((row) => row.value !== undefined && row.value !== '');
   };
+  const boxPlotTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'boxplot') return null;
+    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX }]
+      .concat(['minimum', 'q1', 'median', 'q3', 'maximum'].map((key) => ({
+        name: rowName(node, key, ''), value: data['cfx' + key.charAt(0).toUpperCase() + key.slice(1)]
+      }))).filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -250,6 +258,8 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
+    const boxPlotRows = boxPlotTooltipRows(node);
+    if (boxPlotRows) return rows.concat(boxPlotRows, metadataRows(node));
     if ((data.cfxKind || '').toLowerCase() === 'rangebar') {
       push(rowName(node, 'category', ''), data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX);
       push(rowName(node, 'start', ''), data.cfxStart);

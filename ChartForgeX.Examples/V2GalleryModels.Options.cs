@@ -45,6 +45,20 @@ public static partial class V2GalleryModels {
             else chart.WithYAxis("Delivery time (minutes)");
             return chart;
         }
+        if (kind == ChartSeriesKind.BoxPlot) {
+            var horizontal = variant is "horizontal" or "compact-horizontal";
+            var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk")
+                .AddBoxPlot("Expected", new[] { new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35),
+                    new ChartBoxPlot(3, 12, 20, 28, 35, 45), new ChartBoxPlot(4, 20, 30, 35, 45, 55) })
+                .AddBoxPlot("Observed", new[] { new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
+                    new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58) })
+                .ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .WithDataLabels();
+            chart.Series[1].WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
+            if (horizontal) chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+            else chart.WithYAxis("Delivery time (minutes)");
+            return chart;
+        }
         if (kind == ChartSeriesKind.Waterfall) {
             var horizontal = variant is "horizontal" or "compact-horizontal";
             var chart = Chart.Create().WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance")

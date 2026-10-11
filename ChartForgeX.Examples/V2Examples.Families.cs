@@ -15,7 +15,7 @@ public static partial class V2Examples {
         ChartSeriesKind.ProgressRing, ChartSeriesKind.Heatmap, ChartSeriesKind.RegionMap, ChartSeriesKind.TileMap, ChartSeriesKind.Pictorial, ChartSeriesKind.ProgressBar
     };
     private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
-        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.RangeBar, ChartSeriesKind.Funnel, ChartSeriesKind.Waterfall,
+        ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.RangeBar, ChartSeriesKind.BoxPlot, ChartSeriesKind.Funnel, ChartSeriesKind.Waterfall,
         ChartSeriesKind.Scatter, ChartSeriesKind.Bubble, ChartSeriesKind.Radar, ChartSeriesKind.Pyramid,
         ChartSeriesKind.RadialBar, ChartSeriesKind.RadialColumn, ChartSeriesKind.Candlestick, ChartSeriesKind.Ohlc
     };
@@ -38,7 +38,7 @@ public static partial class V2Examples {
                 variants.Add("all-labels"); variants.Add("compact-all-labels");
             }
             if (kind == ChartSeriesKind.Funnel) { variants.Add("cone-vertical"); variants.Add("stage-bars-horizontal"); }
-            if (kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar) { variants.Add("horizontal"); variants.Add("compact-horizontal"); }
+            if (kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot) { variants.Add("horizontal"); variants.Add("compact-horizontal"); }
             if (RelationshipOptionFamilies.Contains(kind)) {
                 variants.Add("options");
                 if (kind is ChartSeriesKind.Sankey or ChartSeriesKind.Sunburst) variants.Add("compact-options");
@@ -74,6 +74,7 @@ public static partial class V2Examples {
                     : variant == "stage-bars-horizontal" ? "Horizontal stage bars; extents remain proportional"
                     : kind == ChartSeriesKind.Waterfall && variant is "horizontal" or "compact-horizontal" ? "Horizontal changes and checkpoints share a cumulative value axis"
                     : kind == ChartSeriesKind.RangeBar && variant is "horizontal" or "compact-horizontal" ? "Grouped horizontal intervals preserve both authored endpoints"
+                    : kind == ChartSeriesKind.BoxPlot && variant is "horizontal" or "compact-horizontal" ? "Grouped horizontal summaries retain all five statistics"
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"
                     : kind == ChartSeriesKind.Sunburst && variant is "options" or "compact-options" ? "Leaf totals size sectors; measured color stays independent"
                     : kind == ChartSeriesKind.Sankey && variant is "options" or "compact-options" ? "Aligned and ordered weighted flows"

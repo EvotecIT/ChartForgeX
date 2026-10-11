@@ -12,7 +12,7 @@ public static partial class V2GalleryModels {
         var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
         var precisionVariant = (variant is "precision" or "compact-precision") && kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is "authored-total" or "compact-authored-total") && kind == ChartSeriesKind.Sunburst;
-        var horizontalCartesian = (variant is "horizontal" or "compact-horizontal") && kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar;
+        var horizontalCartesian = (variant is "horizontal" or "compact-horizontal") && kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot;
         var radialLabelVariant = (variant is "axis-labels" or "compact-axis-labels" or "all-labels" or "compact-all-labels") && kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
         var colorScaleVariant = (variant is "color-scale" or "compact-color-scale") && kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
         var positionedColorVariant = (variant is "positioned-color-scale" or "compact-positioned-color-scale") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;

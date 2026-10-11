@@ -195,6 +195,13 @@ internal static partial class VisualCartesianCompiler {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
             candidates.Add(new LabelCandidate(positive ? spacing : -spacing, 0, positive ? 0 : 1, .5));
             candidates.Add(new LabelCandidate(positive ? -spacing : spacing, 0, positive ? 1 : 0, .5));
+            if (series.Kind == ChartSeriesKind.BoxPlot) {
+                // A median lies inside the quartile body; offer clear category-side lanes.
+                candidates.Add(new LabelCandidate(0, mark.Top - anchor.Y - spacing, .5, 1));
+                candidates.Add(new LabelCandidate(0, mark.Bottom - anchor.Y + spacing, .5, 0));
+                candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
+                candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
+            }
         }
         else {
             var positive = barDirection.GetValueOrDefault(value) >= 0;

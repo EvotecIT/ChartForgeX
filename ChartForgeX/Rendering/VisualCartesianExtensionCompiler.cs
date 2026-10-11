@@ -41,8 +41,10 @@ internal static partial class VisualCartesianCompiler {
         switch (series.Kind) {
             case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
                 DrawRangeEnvelope(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
-            case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc: case ChartSeriesKind.BoxPlot:
+            case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc:
                 DrawFinancial(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+            case ChartSeriesKind.BoxPlot:
+                DrawBoxPlots(chart, context, builder, plot, map, index, colors, labels, obstacles, categoryCaptions!); break;
             case ChartSeriesKind.RangeBar:
                 DrawRangeBars(chart, context, builder, plot, map, index, colors, labels, obstacles, categoryCaptions!); break;
             case ChartSeriesKind.HorizontalBar:

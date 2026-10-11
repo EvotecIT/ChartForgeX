@@ -199,6 +199,24 @@ Horizontal range-bar charts accept only range-bar series on the primary axis. Ve
 
 Range-bar slots include the minimum body and cap-stroke footprint for flat styles, and the visible caps, shadows and highlights for segmented styles. If a category slot cannot fit the minimum painted footprint, rendering throws an actionable `InvalidOperationException`. Increase the category-axis space (height for horizontal intervals, width for vertical intervals), reduce grouped series, reduce stroke widths or cap effects, or choose a simpler mark style. Horizontal automatic value bounds also contain endpoint paint and the minimum interval body; explicit value bounds remain exact and may intentionally clip that paint.
 
+## Grouped box plots and orientation
+
+`AddBoxPlot` accepts raw samples for one category or an enumerable of authored `ChartBoxPlot` summaries. Multiple box plot series use distinct category slots, including the body, median stroke and whisker caps. Point labels, colors, patterns and interaction keys index complete summaries. The default data label is the median; a custom point label takes precedence.
+
+```csharp
+var distributions = Chart.Create().WithXLabels("Standard", "Express")
+    .ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal)
+    .AddBoxPlot("Expected", new[] { new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35) })
+    .AddBoxPlot("Observed", new[] { new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42) })
+    .WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+```
+
+`ChartOptions.BoxPlot.Orientation` defaults to `Vertical` and may be configured before or after adding series. `ChartBoxPlot.X` always denotes the category coordinate. Horizontal box plots use the primary physical X value axis and Y category axis, including bounds and reversal. Move value scales and tick formatting to `XAxis` and category formatting to `YAxis`; explicit Y labels win, with `WithXLabels` as a fallback when Y has no explicit labels. Positive logarithmic values use the existing value-axis scale without an invented zero baseline. Horizontal charts require only box plot series on the primary axis. Existing vertical Cartesian mixtures and secondary Y axes remain supported. Box plots do not participate in scalar bar stacking or normalization.
+
+Raw samples are sorted for calculation. For probability `p`, the quantile interpolates between adjacent sorted samples at zero-based position `(n - 1) * p`, with `p` equal to 0.25, 0.5 and 0.75. Thus samples `[30, 0, 20, 10]` produce minimum `0`, Q1 `7.5`, median `15`, Q3 `22.5` and maximum `30`. A single sample supplies all five values. Whiskers reach the sample minimum and maximum; no IQR fence or outlier filtering is applied. Authored summaries retain their supplied five values exactly and must satisfy `Minimum <= Q1 <= Median <= Q3 <= Maximum`.
+
+`ChartOptions.Labels.Category`, `.Minimum`, `.Q1`, `.Median`, `.Q3` and `.Maximum` localize HTML readout rows. The readout exposes all five raw statistics; its heading uses the captured series name and median or custom point label. Raw sample summaries retain their derived identity and immutable `BoxPlotSourceSamples`; they do not acquire invented sample indices. Prepared geometry, labels and metadata remain detached from later model changes. Multi-category raw ingestion, IQR/outlier policies and separate per-statistic data labels remain separate work.
+
 ## Sankey layout
 
 `ChartOptions.Sankey` configures the shared native SVG/PNG geometry without changing authored nodes, flows or values:
