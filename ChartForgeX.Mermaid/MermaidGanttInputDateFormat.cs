@@ -9,7 +9,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>Maps explicit Mermaid input-date fields to the platform calendar parser.</summary>
 internal static class MermaidGanttInputDateFormat {
     private static readonly CultureInfo English = CreateEnglishCalendar();
-    private static readonly string[] Tokens = { "YYYY", "MMMM", "DDDD", "MMM", "DDD", "SSS", "YY", "MM", "DD", "Do", "HH", "hh", "mm", "ss", "SS", "ZZ", "Q", "M", "D", "H", "h", "m", "s", "S", "A", "a", "Z" };
+    private static readonly string[] Tokens = { "YYYY", "MMMM", "DDDD", "MMM", "DDD", "SSS", "YY", "MM", "DD", "Do", "HH", "hh", "mm", "ss", "SS", "ZZ", "Q", "M", "D", "H", "h", "m", "s", "S", "A", "a", "Z", "X", "x" };
 
     internal static bool TryParseConfigured(string input, string format, out DateTime value) {
         value = default;
@@ -36,6 +36,12 @@ internal static class MermaidGanttInputDateFormat {
         pattern.Append("\\z");
         var match = Regex.Match(input, pattern.ToString(), RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
         if (!match.Success) return false;
+        // Unix fields determine the complete instant, including when surrounded by literals.
+        // As in the source field grammar, the final Unix field supplies that instant.
+        for (var i = fields.Count - 1; i >= 0; i--) {
+            var token = fields[i].Token;
+            if (token == "X" || token == "x") return TryUnix(match.Groups["f" + i.ToString(CultureInfo.InvariantCulture)].Value, token == "X", out value);
+        }
         var normalized = new StringBuilder(); var nativeFormat = new StringBuilder(); var offset = false;
         for (var i = 0; i < fields.Count; i++) {
             var part = fields[i];
@@ -70,17 +76,14 @@ internal static class MermaidGanttInputDateFormat {
 
     internal static string FormatCalendarDate(DateTime value, string format) {
         format = format.Trim();
-        if (format == "X" || format == "x") {
-            var ticks = value.Ticks - new DateTime(1970, 1, 1).Ticks;
-            return format == "x" ? (ticks / (decimal)TimeSpan.TicksPerMillisecond).ToString("0.####", CultureInfo.InvariantCulture)
-                : (ticks / (decimal)TimeSpan.TicksPerSecond).ToString("0.#######", CultureInfo.InvariantCulture);
-        }
+        if (format == "X" || format == "x") return FormatUnix(value, format == "X");
         var fields = Parts(format);
         if (!UsesMermaidFields(fields))
             return value.ToString(MermaidGanttParser.ToDotNetDateFormat(format), CultureInfo.InvariantCulture);
         var result = new StringBuilder();
         foreach (var part in fields) {
             if (part.Token == null) result.Append(part.Text);
+            else if (part.Token == "X" || part.Token == "x") result.Append(FormatUnix(value, part.Token == "X"));
             else if (part.Token == "Q") result.Append(((value.Month - 1) / 3 + 1).ToString(CultureInfo.InvariantCulture));
             else if (part.Token == "Do") result.Append(value.Day.ToString(CultureInfo.InvariantCulture)).Append(Ordinal(value.Day));
             else if (part.Token == "DDD" || part.Token == "DDDD") result.Append(value.DayOfYear.ToString(part.Token == "DDD" ? "0" : "000", CultureInfo.InvariantCulture));
@@ -97,7 +100,7 @@ internal static class MermaidGanttInputDateFormat {
     // formats use the same fallback for parsing and calendar matching. Bracket contents
     // are authored literals and cannot switch the format language.
     private static bool UsesMermaidFields(List<Part> fields) =>
-        fields.Exists(part => part.Token == "YYYY" || part.Token == "YY") &&
+        fields.Exists(part => part.Token == "YYYY" || part.Token == "YY" || part.Token == "X" || part.Token == "x") &&
         !fields.Exists(part => part.Token == null && !part.Bracketed &&
             part.Text.IndexOfAny(new[] { '%', 'f', 'F', 'y', 'd', 't', 'z', 'g', 'K', '\\', '\'', '"' }) >= 0);
 
@@ -110,6 +113,12 @@ internal static class MermaidGanttInputDateFormat {
             return true;
         } catch (ArgumentOutOfRangeException) { return false; }
         catch (OverflowException) { return false; }
+    }
+
+    private static string FormatUnix(DateTime value, bool seconds) {
+        var ticks = value.Ticks - new DateTime(1970, 1, 1).Ticks;
+        return (ticks / (decimal)(seconds ? TimeSpan.TicksPerSecond : TimeSpan.TicksPerMillisecond))
+            .ToString(seconds ? "0.#######" : "0.####", CultureInfo.InvariantCulture);
     }
 
     private static int Year(List<Part> fields, Match match) {
@@ -142,6 +151,7 @@ internal static class MermaidGanttInputDateFormat {
         "Q" => "[1-4]", "Do" => "[0-9]{1,2}(?:st|nd|rd|th)", "DDD" or "DDDD" => "[0-9]{1,3}",
         "Z" or "ZZ" => "(?:Z|[+-][0-9]{2}:?[0-9]{2})", "A" => "(?:AM|PM)", "a" => "(?:am|pm)",
         "SSS" => "[0-9]{3}", "SS" => "[0-9]{2}", "S" => "[0-9]",
+        "X" or "x" => "[+-]?[0-9]+(?:\\.[0-9]+)?",
         _ => token.Length == 2 ? "[0-9]{2}" : "[0-9]{1,2}"
     };
 
