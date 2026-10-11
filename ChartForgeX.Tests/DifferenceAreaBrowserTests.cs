@@ -51,9 +51,14 @@ public sealed class DifferenceAreaBrowserTests {
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.NotEqual("comparison:2", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
         await page.Locator(Legend(0)).ClickAsync(); await MoveAwayAsync(page);
-        Assert.Equal(string.Empty, await TooltipTextAsync(page));
+        Assert.Equal("true", await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
+        Assert.True(await point.EvaluateAsync<bool>("node => !!node.closest('.cfx-series-muted')"));
+        Assert.Equal(0, await page.Locator("[data-cfx-role='point'][data-cfx-series='0'][tabindex='0']").CountAsync());
+        Assert.Equal("48", await point.GetAttributeAsync("data-cfx-first"));
+        Assert.Equal("60", await point.GetAttributeAsync("data-cfx-second"));
         await page.Locator("[data-cfx-reset]").ClickAsync();
         Assert.Equal(0, await page.Locator("[data-cfx-point][aria-selected='true']").CountAsync());
+        Assert.Equal(0, await page.Locator(".cfx-series-muted").CountAsync());
         AssertNoConsoleErrors(session);
     }
 
@@ -70,9 +75,15 @@ public sealed class DifferenceAreaBrowserTests {
             });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
-        await page.Locator(Point(0, 0)).FocusAsync();
-        Assert.Equal(string.Empty, await TooltipTextAsync(page));
-        await page.Locator(Point(0, 1)).FocusAsync();
+        var unavailable = page.Locator(Point(0, 0)); var available = page.Locator(Point(0, 1));
+        Assert.Equal("-1", await unavailable.GetAttributeAsync("tabindex"));
+        await unavailable.FocusAsync();
+        Assert.True(await available.EvaluateAsync<bool>("node => node === document.activeElement"));
+        Assert.Equal("0", await available.GetAttributeAsync("tabindex"));
+        Assert.Equal("8", await unavailable.GetAttributeAsync("data-cfx-first"));
+        Assert.Equal("2", await unavailable.GetAttributeAsync("data-cfx-second"));
+        Assert.Equal("2", await available.GetAttributeAsync("data-cfx-first"));
+        Assert.Equal("8", await available.GetAttributeAsync("data-cfx-second"));
         Assert.Contains("Pair", await TooltipTextAsync(page));
         AssertNoConsoleErrors(session);
     }
