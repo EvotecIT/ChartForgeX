@@ -34,15 +34,15 @@ public sealed class MermaidConfigurationUnicodeExportTests {
     }
 
     [Theory]
-    [InlineData("\\uD83D\\uDE00", "\uD83D\uDE00")]
-    [InlineData("\\uFFFE", "\uFFFE")]
-    [InlineData("\\uFFFF", "\uFFFF")]
-    public void CompleteUnicodeAndQuotedNoncharactersRetainStrictJsonAndXmlExports(string escaped, string decoded) {
-        foreach (var prefix in Declarations("fontFamily", "Arial" + escaped + "serif")) {
+    [InlineData("fontFamily", "\\uD83D\\uDE00", "\uD83D\uDE00")]
+    [InlineData("layout", "\\uFFFE", "\uFFFE")]
+    [InlineData("layout", "\\uFFFF", "\uFFFF")]
+    public void CompleteUnicodeAndQuotedNoncharactersRetainStrictJsonAndXmlExports(string key, string escaped, string decoded) {
+        foreach (var prefix in Declarations(key, "Arial" + escaped + "serif")) {
             var source = prefix + "sequenceDiagram\nA->>B: Hello";
             var rendered = MermaidRenderer.Render(source);
             Assert.False(rendered.HasErrors);
-            Assert.Equal("Arial" + decoded + "serif", rendered.Document!.Configuration.FontFamily);
+            Assert.Equal("Arial" + decoded + "serif", key == "fontFamily" ? rendered.Document!.Configuration.FontFamily : rendered.Document!.Configuration.Layout);
             var artifact = Assert.IsType<VisualArtifact>(rendered.Artifact);
             Assert.True((artifact.ExportFormats & VisualArtifactExportFormat.Json) != 0);
             var json = artifact.ToInterchangeJson();
