@@ -3229,7 +3229,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-compact-light",
@@ -3268,7 +3268,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-explicit-status-light",
@@ -3303,7 +3303,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-wide-dark",
@@ -3338,7 +3338,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-compact-dark",
@@ -3377,7 +3377,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-explicit-status-dark",
@@ -3412,7 +3412,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "donut-wide-light",
@@ -3767,7 +3767,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-line-compact-light",
@@ -3800,7 +3800,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-line-options-light",
@@ -3833,7 +3833,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-line-compact-options-light",
@@ -3866,7 +3866,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-line-wide-dark",
@@ -3899,7 +3899,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-line-compact-dark",
@@ -3932,7 +3932,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-line-options-dark",
@@ -3965,7 +3965,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-line-compact-options-dark",
@@ -3998,7 +3998,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-step-line-wide-light",
@@ -4031,7 +4031,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-step-line-compact-light",
@@ -4064,7 +4064,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-step-line-wide-dark",
@@ -4097,7 +4097,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-step-line-compact-dark",
@@ -4130,7 +4130,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-area-wide-light",
@@ -4163,7 +4163,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-area-compact-light",
@@ -4196,7 +4196,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-area-wide-dark",
@@ -4229,7 +4229,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-area-compact-dark",
@@ -4262,7 +4262,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-wide-light",
@@ -4295,7 +4295,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-compact-light",
@@ -4328,7 +4328,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-wide-dark",
@@ -4361,7 +4361,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-compact-dark",
@@ -4394,7 +4394,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-scatter-wide-light",
@@ -4427,7 +4427,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-scatter-compact-light",
@@ -4460,7 +4460,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-scatter-color-scale-light",
@@ -4498,7 +4498,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-compact-color-scale-light",
@@ -4536,7 +4536,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-positioned-color-scale-light",
@@ -4573,7 +4573,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-scatter-compact-positioned-color-scale-light",
@@ -4610,7 +4610,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-scatter-color-dimension-light",
@@ -4647,7 +4647,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-color-dimension-light",
@@ -4684,7 +4684,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-gradient-color-legend-light",
@@ -4721,7 +4721,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-compact-gradient-color-legend-light",
@@ -4758,7 +4758,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-swatch-color-legend-light",
@@ -4795,7 +4795,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-swatch-color-legend-light",
@@ -4832,7 +4832,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-partial-color-range-light",
@@ -4869,7 +4869,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 32
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-compact-partial-color-range-light",
@@ -4906,7 +4906,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 32
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-options-light",
@@ -4939,7 +4939,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-scatter-compact-options-light",
@@ -4972,7 +4972,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-scatter-wide-dark",
@@ -5005,7 +5005,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-scatter-compact-dark",
@@ -5038,7 +5038,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-scatter-color-scale-dark",
@@ -5076,7 +5076,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-compact-color-scale-dark",
@@ -5114,7 +5114,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-positioned-color-scale-dark",
@@ -5151,7 +5151,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-scatter-compact-positioned-color-scale-dark",
@@ -5188,7 +5188,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-scatter-color-dimension-dark",
@@ -5225,7 +5225,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-color-dimension-dark",
@@ -5262,7 +5262,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-gradient-color-legend-dark",
@@ -5299,7 +5299,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-compact-gradient-color-legend-dark",
@@ -5336,7 +5336,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-swatch-color-legend-dark",
@@ -5373,7 +5373,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-swatch-color-legend-dark",
@@ -5410,7 +5410,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-partial-color-range-dark",
@@ -5447,7 +5447,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 32
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-compact-partial-color-range-dark",
@@ -5484,7 +5484,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 32
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-options-dark",
@@ -5517,7 +5517,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-scatter-compact-options-dark",
@@ -5550,7 +5550,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-bubble-wide-light",
@@ -5583,7 +5583,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-bubble-compact-light",
@@ -5616,7 +5616,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-bubble-color-scale-light",
@@ -5654,7 +5654,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-bubble-compact-color-scale-light",
@@ -5692,7 +5692,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-bubble-color-dimension-light",
@@ -5729,7 +5729,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-compact-color-dimension-light",
@@ -5766,7 +5766,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-options-light",
@@ -5799,7 +5799,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-bubble-compact-options-light",
@@ -5836,7 +5836,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-bubble-wide-dark",
@@ -5869,7 +5869,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-bubble-compact-dark",
@@ -5902,7 +5902,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-bubble-color-scale-dark",
@@ -5940,7 +5940,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-bubble-compact-color-scale-dark",
@@ -5978,7 +5978,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-bubble-color-dimension-dark",
@@ -6015,7 +6015,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-compact-color-dimension-dark",
@@ -6052,7 +6052,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-options-dark",
@@ -6085,7 +6085,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-bubble-compact-options-dark",
@@ -6122,7 +6122,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-error-bar-wide-light",
@@ -6155,7 +6155,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-error-bar-compact-light",
@@ -6188,7 +6188,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-error-bar-wide-dark",
@@ -6221,7 +6221,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-error-bar-compact-dark",
@@ -6254,7 +6254,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-candlestick-wide-light",
@@ -6287,7 +6287,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-compact-light",
@@ -6320,7 +6320,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-options-light",
@@ -6353,7 +6353,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-compact-options-light",
@@ -6390,7 +6390,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-dashed-light",
@@ -6423,7 +6423,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-compact-dashed-light",
@@ -6460,7 +6460,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-wide-dark",
@@ -6493,7 +6493,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-compact-dark",
@@ -6526,7 +6526,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-options-dark",
@@ -6559,7 +6559,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-compact-options-dark",
@@ -6596,7 +6596,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-dashed-dark",
@@ -6629,7 +6629,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-compact-dashed-dark",
@@ -6666,7 +6666,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-range-band-wide-light",
@@ -6699,7 +6699,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-band-compact-light",
@@ -6732,7 +6732,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-band-wide-dark",
@@ -6765,7 +6765,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-band-compact-dark",
@@ -6798,7 +6798,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-wide-light",
@@ -6831,7 +6831,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-compact-light",
@@ -6864,7 +6864,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-options-light",
@@ -6897,7 +6897,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-range-area-compact-options-light",
@@ -6934,7 +6934,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-range-area-wide-dark",
@@ -6967,7 +6967,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-compact-dark",
@@ -7000,7 +7000,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-options-dark",
@@ -7033,7 +7033,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-range-area-compact-options-dark",
@@ -7070,7 +7070,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-wide-light",
@@ -7103,7 +7103,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-compact-light",
@@ -7136,7 +7136,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-options-light",
@@ -7169,7 +7169,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-bar-compact-options-light",
@@ -7206,7 +7206,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-bar-wide-dark",
@@ -7239,7 +7239,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-compact-dark",
@@ -7272,7 +7272,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-options-dark",
@@ -7305,7 +7305,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-bar-compact-options-dark",
@@ -7342,7 +7342,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-lollipop-wide-light",
@@ -7375,7 +7375,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-lollipop-compact-light",
@@ -7412,7 +7412,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-lollipop-wide-dark",
@@ -7445,7 +7445,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-lollipop-compact-dark",
@@ -7482,7 +7482,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-dumbbell-wide-light",
@@ -7515,7 +7515,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-dumbbell-compact-light",
@@ -7548,7 +7548,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-dumbbell-wide-dark",
@@ -7581,7 +7581,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-dumbbell-compact-dark",
@@ -7614,7 +7614,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-range-bar-wide-light",
@@ -7647,7 +7647,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-compact-light",
@@ -7680,7 +7680,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-options-light",
@@ -7713,7 +7713,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-compact-options-light",
@@ -7752,7 +7752,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-horizontal-light",
@@ -7789,7 +7789,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-compact-horizontal-light",
@@ -7826,7 +7826,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-endpoint-labels-light",
@@ -7859,7 +7859,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-range-bar-compact-endpoint-labels-light",
@@ -7896,7 +7896,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-range-bar-horizontal-endpoint-labels-light",
@@ -7929,7 +7929,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-compact-horizontal-endpoint-labels-light",
@@ -7962,7 +7962,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-wide-dark",
@@ -7995,7 +7995,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-compact-dark",
@@ -8028,7 +8028,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-options-dark",
@@ -8061,7 +8061,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-compact-options-dark",
@@ -8100,7 +8100,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-horizontal-dark",
@@ -8137,7 +8137,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-compact-horizontal-dark",
@@ -8174,7 +8174,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-endpoint-labels-dark",
@@ -8207,7 +8207,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-range-bar-compact-endpoint-labels-dark",
@@ -8244,7 +8244,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-range-bar-horizontal-endpoint-labels-dark",
@@ -8277,7 +8277,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-compact-horizontal-endpoint-labels-dark",
@@ -8310,7 +8310,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-box-plot-wide-light",
@@ -8343,7 +8343,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-box-plot-compact-light",
@@ -8376,7 +8376,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-box-plot-options-light",
@@ -8409,7 +8409,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-box-plot-compact-options-light",
@@ -8446,7 +8446,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-box-plot-horizontal-light",
@@ -8479,7 +8479,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-box-plot-compact-horizontal-light",
@@ -8516,7 +8516,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-box-plot-wide-dark",
@@ -8549,7 +8549,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-box-plot-compact-dark",
@@ -8582,7 +8582,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-box-plot-options-dark",
@@ -8615,7 +8615,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-box-plot-compact-options-dark",
@@ -8652,7 +8652,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-box-plot-horizontal-dark",
@@ -8685,7 +8685,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-box-plot-compact-horizontal-dark",
@@ -8722,7 +8722,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-horizontal-bar-wide-light",
@@ -8755,7 +8755,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-horizontal-bar-compact-light",
@@ -8788,7 +8788,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-horizontal-bar-options-light",
@@ -8821,7 +8821,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-horizontal-bar-compact-options-light",
@@ -8858,7 +8858,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-horizontal-bar-wide-dark",
@@ -8891,7 +8891,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-horizontal-bar-compact-dark",
@@ -8924,7 +8924,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-horizontal-bar-options-dark",
@@ -8957,7 +8957,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-horizontal-bar-compact-options-dark",
@@ -8994,7 +8994,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-heatmap-wide-light",
@@ -13423,7 +13423,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-waterfall-compact-light",
@@ -13456,7 +13456,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-waterfall-options-light",
@@ -13489,7 +13489,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-compact-options-light",
@@ -13528,7 +13528,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-horizontal-light",
@@ -13561,7 +13561,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-compact-horizontal-light",
@@ -13600,7 +13600,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-wide-dark",
@@ -13633,7 +13633,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-waterfall-compact-dark",
@@ -13666,7 +13666,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-waterfall-options-dark",
@@ -13699,7 +13699,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-compact-options-dark",
@@ -13738,7 +13738,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-horizontal-dark",
@@ -13771,7 +13771,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-compact-horizontal-dark",
@@ -13810,7 +13810,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-radar-wide-light",
@@ -16177,7 +16177,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-stacked-area-compact-light",
@@ -16210,7 +16210,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-stacked-area-options-light",
@@ -16243,7 +16243,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 25
     },
     {
       "id": "family-stacked-area-compact-options-light",
@@ -16276,7 +16276,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 25
     },
     {
       "id": "family-stacked-area-wide-dark",
@@ -16309,7 +16309,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-stacked-area-compact-dark",
@@ -16342,7 +16342,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-stacked-area-options-dark",
@@ -16375,7 +16375,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 25
     },
     {
       "id": "family-stacked-area-compact-options-dark",
@@ -16408,7 +16408,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 25
     },
     {
       "id": "family-slope-wide-light",
@@ -16441,7 +16441,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-slope-compact-light",
@@ -16478,7 +16478,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-slope-wide-dark",
@@ -16511,7 +16511,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-slope-compact-dark",
@@ -16548,7 +16548,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-treemap-wide-light",
@@ -17375,7 +17375,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-compact-light",
@@ -17408,7 +17408,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-options-light",
@@ -17441,7 +17441,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-compact-options-light",
@@ -17478,7 +17478,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-dashed-light",
@@ -17511,7 +17511,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-compact-dashed-light",
@@ -17548,7 +17548,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-wide-dark",
@@ -17581,7 +17581,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-compact-dark",
@@ -17614,7 +17614,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-options-dark",
@@ -17647,7 +17647,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-compact-options-dark",
@@ -17684,7 +17684,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-dashed-dark",
@@ -17717,7 +17717,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-compact-dashed-dark",
@@ -17754,7 +17754,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-polar-area-wide-light",
@@ -18052,7 +18052,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-trend-line-compact-light",
@@ -18086,7 +18086,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-trend-line-precision-light",
@@ -18119,7 +18119,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 14
     },
     {
       "id": "family-trend-line-compact-precision-light",
@@ -18152,7 +18152,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 14
     },
     {
       "id": "family-trend-line-wide-dark",
@@ -18186,7 +18186,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-trend-line-compact-dark",
@@ -18220,7 +18220,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-trend-line-precision-dark",
@@ -18253,7 +18253,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 14
     },
     {
       "id": "family-trend-line-compact-precision-dark",
@@ -18286,7 +18286,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 14
     },
     {
       "id": "family-polar-wide-light",
@@ -21149,7 +21149,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-difference-area-compact-light",
@@ -21182,7 +21182,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-difference-area-dated-gaps-light",
@@ -21216,7 +21216,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-difference-area-compact-dated-gaps-light",
@@ -21258,7 +21258,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-difference-area-wide-dark",
@@ -21291,7 +21291,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-difference-area-compact-dark",
@@ -21324,7 +21324,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 21
     },
     {
       "id": "family-difference-area-dated-gaps-dark",
@@ -21358,7 +21358,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-difference-area-compact-dated-gaps-dark",
@@ -21400,7 +21400,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 28
+      "semanticRegions": 29
     },
     {
       "id": "family-radial-column-mixed-light",
@@ -21819,7 +21819,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 57
+      "semanticRegions": 60
     },
     {
       "id": "topology-expanded-light",
@@ -21951,7 +21951,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 57
+      "semanticRegions": 60
     },
     {
       "id": "topology-expanded-dark",
@@ -22081,7 +22081,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-light",
@@ -22120,7 +22120,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-density-light",
@@ -22153,7 +22153,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-density-light",
@@ -22190,7 +22190,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-sum-light",
@@ -22223,7 +22223,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-sum-light",
@@ -22256,7 +22256,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-mean-light",
@@ -22289,7 +22289,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-mean-light",
@@ -22322,7 +22322,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-wide-dark",
@@ -22355,7 +22355,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-dark",
@@ -22394,7 +22394,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-density-dark",
@@ -22427,7 +22427,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-density-dark",
@@ -22464,7 +22464,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-sum-dark",
@@ -22497,7 +22497,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-sum-dark",
@@ -22530,7 +22530,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-mean-dark",
@@ -22563,7 +22563,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-mean-dark",
@@ -22596,7 +22596,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     }
   ]
 }
