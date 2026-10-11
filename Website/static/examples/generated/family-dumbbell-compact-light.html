@@ -160,7 +160,7 @@ public static partial class V2GalleryModels {
             var values = new[] { 0d, 2.5, 5, 10, 22.5, 40, 55 };
             return chart.AddTileMap(&quot;Daily mean&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;),
                 codes.Select((code, index) =&gt; new ChartRegionMapItem(code, values[index])))
-                .WithMapLabels(false).WithMapColorScale(scale).ConfigureMapColorDimension(Present);
+                .WithMapLabels().WithMapColorScale(scale).ConfigureMapColorDimension(Present);
         }
         if (kind == ChartSeriesKind.Heatmap) {
             return chart.WithXLabels(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;, &quot;F&quot;)
@@ -1100,7 +1100,7 @@ public static partial class V2GalleryModels {
             var values = new[] { 0d, 2.5, 5, 10, 22.5, 40, 55 };
             return chart.AddTileMap(&quot;Daily mean&quot;, ChartTileMapCatalog.Get(&quot;us-states&quot;),
                 codes.Select((code, index) =&gt; new ChartRegionMapItem(code, values[index])))
-                .WithMapLabels(false).WithMapColorScale(scale).ConfigureMapColorDimension(Present);
+                .WithMapLabels().WithMapColorScale(scale).ConfigureMapColorDimension(Present);
         }
         if (kind == ChartSeriesKind.Heatmap) {
             return chart.WithXLabels(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;, &quot;F&quot;)
