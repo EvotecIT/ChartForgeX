@@ -14,6 +14,10 @@ internal static partial class VisualHierarchyCompiler {
         var style = LabelStyle(chart, context, fill, pointIndex);
         var inset = Math.Min(insetLimit, Math.Min(bounds.Width, bounds.Height) / 5);
         double width = Math.Max(0, bounds.Width - inset * 2), height = Math.Max(0, bounds.Height - inset * 2);
+        style = VisualTextFitting.FitOversized(builder, style, height, fittedStyle => {
+            var measured = builder.MeasureText(text, fittedStyle);
+            return measured.Width <= width && measured.Height <= height;
+        });
         var metrics = builder.MeasureText("M", style);
         int count = Math.Min(maximumLines, (int)Math.Floor(height / metrics.LineHeight));
         if (count < 1 || width < 6) { builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.")); return; }

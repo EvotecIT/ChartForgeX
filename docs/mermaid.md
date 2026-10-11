@@ -1398,3 +1398,5 @@ The [Mermaid roadmap](../TODO.md#mermaid) tracks language depth, version coverag
 5. Add focused parser tests, conversion tests, and static SVG/PNG smoke output.
 
 For IX and other consuming hosts, the preferred integration is to accept Mermaid where users already know Mermaid, accept `chartforgex` fences where ChartForgeX adds richer native artifacts, and keep host-specific behavior outside the parser packages.
+
+Oversized source typography fits Sankey captions and rectangular hierarchy labels within their native mark and column bounds. Ordinary legend text still follows the configured row and height budget; oversized legend text can shrink to fit. CSS font-size functions containing whitespace or line breaks are retained with a warning because native rendering does not evaluate CSS sizing expressions.

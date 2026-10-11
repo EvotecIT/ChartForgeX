@@ -102,7 +102,7 @@ internal static class VisualFrameLayout {
             var legendWidth = side ? Math.Min((right - left) * 0.32, 180) : right - left;
             var available = Math.Max(0, Math.Min(bottom - top, size.Height * context.Frame.LegendMaximumHeightFraction));
             var requestedLineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
-            if (requestedLineHeight > available && available > 0) {
+            if (legendStyle.EffectiveFontSize > 18 && requestedLineHeight > available && available > 0) {
                 // Keep ordinary sizes and overflow behavior. Oversized text still contributes
                 // visible entries, with an 18px line floor before the normal row budget applies.
                 var targetRows = Math.Max(1, Math.Min(entries.Count, context.Frame.LegendMaximumRows ?? entries.Count));
