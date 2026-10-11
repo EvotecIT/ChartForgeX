@@ -65,6 +65,11 @@ internal static class Program {
         if (useCase.HasErrors || useCase.Artifact is null) throw new InvalidOperationException("Mermaid source package renderer failed.");
         if (!useCase.Artifact.ToSvg().Contains("data-node-shape=\"Actor\"", StringComparison.Ordinal) || useCase.Artifact.ToPng().Length <= 64) throw new InvalidOperationException("Mermaid source package SVG/PNG output failed.");
         var useCaseJson = useCase.Artifact.ToInterchangeJson();
+        var treemap = new MermaidParser().ParseTreemap("treemap-beta\n\"Storage\"\n  \"Documents\": 1,234.5\n  \"Media\": 765.5\n");
+        if (treemap.HasErrors || treemap.Document is null) throw new InvalidOperationException("Packed treemap parser rejected grouped magnitudes.");
+        var treemapChart = treemap.Document.ToChart();
+        if (treemapChart.Series[0].HierarchyItems[1].Value != 1234.5 || !treemapChart.ToSvg().Contains("data-cfx-role=\"treemap-label\"", StringComparison.Ordinal)) throw new InvalidOperationException("Packed treemap values or native captions were lost.");
+        PackageAssertions.Png(treemapChart.ToPng());
         if (VisualArtifactInterchangeEnvelope.FromJson(useCaseJson).ToJson() != useCaseJson) throw new InvalidOperationException("Mermaid source package interchange failed.");
 
         var tableMarkup = new VisualMarkupParser().Parse("~~~chartforgex table v1 {#package-table}\n| State |\n| --- |\n| Ready |\n~~~");
