@@ -98,10 +98,13 @@ internal static partial class VisualCartesianCompiler {
         }
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
-        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
-            axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
-            if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-            if (measureAxes) plot = MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
+        if (ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
+            if (!horizontal) {
+                axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
+                if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+            }
+            if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
+                : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         }
         if (plot.Width <= 0 || plot.Height <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.insufficient-space", "No plotting area remains after measuring the frame and axes."));
@@ -115,7 +118,7 @@ internal static partial class VisualCartesianCompiler {
         if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(chart, plot, horizontalTotals, context.Theme.Spacing);
         if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(chart, plot, verticalTotals, context.Theme.Spacing);
         // Axis measurement and total lanes can change the final radius-to-plot ratio.
-        if (!horizontal && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
+        if (ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale) && !horizontal) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
         }
@@ -176,6 +179,9 @@ internal static partial class VisualCartesianCompiler {
         if (ChartCartesianOrientation.IsHorizontal(chart) && chart.Series.Any(series => !ChartCartesianOrientation.IsHorizontal(chart, series)
             || series.YAxis != ChartAxisSide.Primary))
             throw new NotSupportedException("Horizontal Cartesian charts require homogeneous series on the primary horizontal value axis.");
+        if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
+            && chart.Options.YAxis.Scale != ChartScaleKind.Linear && chart.Options.YAxis.Scale != ChartScaleKind.Time)
+            throw new NotSupportedException("Horizontal line charts require a linear or time category axis.");
         foreach (var series in chart.Series) {
             if (!Supports(series.Kind)) throw Unsupported("series kind " + series.Kind);
             if (series.Points.Count % ObservationStride(series.Kind) != 0)

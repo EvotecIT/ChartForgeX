@@ -12,12 +12,14 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
         ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null) {
         var series = chart.Series[index];
+        var horizontal = ChartCartesianOrientation.IsHorizontalLine(chart, series);
         var points = new List<ChartPoint>(series.Points.Count);
         var lower = new List<ChartPoint>(series.Points.Count);
         for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
             var point = series.Points[pointIndex];
             var stack = stacks.Point(index, pointIndex);
-            points.Add(new ChartPoint(map.X(point.X), map.Y(stack.End), point.BreakBefore));
+            points.Add(horizontal ? new ChartPoint(map.X(point.Y), map.Y(point.X), point.BreakBefore)
+                : new ChartPoint(map.X(point.X), map.Y(stack.End), point.BreakBefore));
             lower.Add(new ChartPoint(map.X(point.X), series.Kind == ChartSeriesKind.StackedArea ? map.YOrBaseline(stack.Base) : map.YBaseline(), point.BreakBefore));
         }
         var color = Color(series, index, colors);
@@ -44,7 +46,10 @@ internal static partial class VisualCartesianCompiler {
                         offset += segment.Count;
                     }
                 }
-                var linePath = ChartPathBuilder.FromPoints(points, series.Interpolation, series.StepPosition);
+                var linePath = horizontal && series.Interpolation == ChartInterpolation.Step
+                    ? ChartPathBuilder.FromPoints(points.Select(point => new ChartPoint(point.Y, point.X, point.BreakBefore)).ToArray(),
+                        series.Interpolation, series.StepPosition).Transpose()
+                    : ChartPathBuilder.FromPoints(points, series.Interpolation, series.StepPosition);
                 foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
                     if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
                         paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));

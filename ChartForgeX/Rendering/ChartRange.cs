@@ -24,12 +24,13 @@ internal sealed class ChartRange {
         var bubbleXValues = new List<double>();
         var horizontalBarYValues = new List<double>();
         var hasHorizontalBars = false;
+        var usesHorizontalBaseline = false;
         var usesVerticalBaseline = false;
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
             if (series.Kind == ChartSeriesKind.Waterfall) {
                 var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
-                if (horizontal) hasHorizontalBars = true;
+                if (horizontal) { hasHorizontalBars = true; usesHorizontalBaseline = true; }
                 var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
                 foreach (var step in ChartWaterfallSteps.Create(series)) {
                     if (horizontal) {
@@ -128,8 +129,14 @@ internal sealed class ChartRange {
 
             for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
                 var p = series.Points[pointIndex];
-                if (ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
+                if (ChartCartesianOrientation.IsHorizontalLine(chart, series)) {
                     hasHorizontalBars = true;
+                    horizontalBarYValues.Add(p.X);
+                    range.IncludeX(p.Y);
+                    range.IncludeY(p.X);
+                } else if (ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
+                    hasHorizontalBars = true;
+                    usesHorizontalBaseline = true;
                     horizontalBarYValues.Add(p.X);
                     range.IncludeX(stacks.Point(seriesIndex, pointIndex).End);
                     range.IncludeY(p.X);
@@ -169,7 +176,7 @@ internal sealed class ChartRange {
 
         range.ApplyBarPadding(bubbleXValues, chart.Options.XAxis);
         if (hasHorizontalBars) {
-            range.ApplyLogarithmicXBaseline(chart.Options.XAxis);
+            if (usesHorizontalBaseline) range.ApplyLogarithmicXBaseline(chart.Options.XAxis);
             if (applyOptionBounds) range.ApplyYAxisOptions(chart);
         }
         if (applyOptionBounds) range.ApplyXAxisOptions(chart);

@@ -24,9 +24,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
             json.Append("]}");
         }
         json.Append("],\"xLabels\":[");
-        for (var index = 0; index < chart.Options.XAxisLabels.Count; index++) {
+        var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
+        for (var index = 0; index < categoryLabels.Count; index++) {
             if (index > 0) json.Append(',');
-            var label = chart.Options.XAxisLabels[index];
+            var label = categoryLabels[index];
             json.Append("{\"value\":").Append(label.Value.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"text\":").Append(HtmlJsonString.Encode(label.Text)).Append('}');
         }
