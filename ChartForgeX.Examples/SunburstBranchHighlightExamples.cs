@@ -24,7 +24,7 @@ public static class SunburstBranchHighlightExamples {
                 new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
             });
         chart.ConfigureSunburst(options => {
-            options.ColorLegendTitle = "Change (%)";
+            options.ColorDimension.Name = "Change (%)";
             options.ColorScale = ChartColorScale.Diverging(ChartColor.FromHex("#8b7bd4"), ChartColor.FromHex("#b8b8b8"), ChartColor.FromHex("#dd8e59"), 0).WithValueRange(-10, 15);
         });
         chart.Series[0].WithNodeState("engineering-support", ChartSeriesState.Warning).WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
@@ -68,7 +68,7 @@ var chart = Chart.Create().WithSize(800, 460).WithTitle("Work allocation").WithD
         new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
     });
 chart.ConfigureSunburst(options => {
-    options.ColorLegendTitle = "Change (%)";
+    options.ColorDimension.Name = "Change (%)";
     options.ColorScale = ChartColorScale.Diverging(ChartColor.FromHex("#8b7bd4"), ChartColor.FromHex("#b8b8b8"), ChartColor.FromHex("#dd8e59"), 0).WithValueRange(-10, 15);
 });
 chart.Series[0].WithNodeState("engineering-support", ChartSeriesState.Warning).WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
