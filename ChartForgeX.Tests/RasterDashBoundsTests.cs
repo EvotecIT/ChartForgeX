@@ -2,11 +2,113 @@ using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.SvgRaster;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class RasterDashBoundsTests {
+    [Fact]
+    public void UnrepresentableMixedEntriesKeepZeroEntryCapContracts() {
+        byte[] Render(double[] pattern) {
+            var canvas = new RgbaCanvas(80, 30, 1);
+            canvas.StrokePolylines(new[] { new[] { new ChartPoint(4, 15), new ChartPoint(76, 15) } },
+                ChartColors.Black, 2, RasterLineCap.Round, RasterLineJoin.Miter, pattern);
+            return canvas.Pixels;
+        }
+        Assert.Equal(Render(new[] { 0d, 8d }), Render(new[] { 1e-20, 8d }));
+        Assert.Equal(Render(new[] { 8d, 0d }), Render(new[] { 8d, 1e-20 }));
+    }
+
+    [Theory]
+    [InlineData(0.0001, 0.0001, .5)]
+    [InlineData(0.00001, 0.00009, .1)]
+    [InlineData(1e-20, 1e-20, .5)]
+    public void SubpixelButtDashesRetainTheirPaintedFraction(double dash, double gap, double duty) {
+        var pattern = dash.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + " "
+            + gap.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+        var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='120' height='40'>"
+            + "<path d='M10 20 H110' fill='none' stroke='black' stroke-width='4' stroke-linecap='butt' stroke-dasharray='" + pattern + "'/></svg>");
+        foreach (int x in Enumerable.Range(20, 80))
+            Assert.InRange(image.Pixels[(20 * 120 + x) * 4 + 3], (int)(255 * duty) - 4, (int)(255 * duty) + 4);
+    }
+
+    [Theory]
+    [InlineData(4)]
+    [InlineData(8)]
+    public void SubpixelOddManyEntryPatternsBoundWideHighDpiClosedStrokes(int scale) {
+        var points = new[] { new ChartPoint(0, 0), new ChartPoint(1200 * scale, 0),
+            new ChartPoint(1200 * scale, 100 * scale), new ChartPoint(0, 100 * scale), new ChartPoint(0, 0) };
+        var pattern = Enumerable.Repeat(.0001 * scale, 65).ToArray();
+        var runs = RasterStroker.Dash(points, pattern, -20 * scale, -20 * scale, 1220 * scale, 120 * scale, double.MaxValue % (.013 * scale));
+        Assert.NotEmpty(runs);
+        Assert.InRange(runs.Count, 1, 50000);
+        var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='" + 1200 * scale
+            + "' height='" + 100 * scale + "' viewBox='0 0 1200 100'><path d='M10 50 H1190' fill='none' stroke='black'"
+            + " stroke-width='2' stroke-dasharray='" + string.Join(" ", Enumerable.Repeat(".0001", 65)) + "'/></svg>");
+        Assert.Equal(1200 * scale, image.Width);
+        Assert.Equal(100 * scale, image.Height);
+        double meanAlpha = Enumerable.Range(100 * scale, 1000 * scale)
+            .Average(x => image.Pixels[(50 * scale * image.Width + x) * 4 + 3]);
+        Assert.InRange(meanAlpha, 120, 135);
+    }
+
+    [Fact]
+    public void ExactRepeatedPatternsRetainOddParityZeroCapsAndOffset() {
+        byte[] Render(double[] pattern) {
+            var canvas = new RgbaCanvas(80, 40, 1);
+            canvas.StrokePolylines(new[] { new[] { new ChartPoint(-10, 10), new ChartPoint(70, 10),
+                new ChartPoint(70, 30), new ChartPoint(-10, 30), new ChartPoint(-10, 10) } },
+                ChartColors.Black, 3, RasterLineCap.Round, RasterLineJoin.Miter, pattern, dashOffset: -17.25);
+            return canvas.Pixels;
+        }
+        foreach (var primitive in new[] { new[] { 0d, 8d }, new[] { 3d, 1d, 2d } })
+            Assert.Equal(Render(primitive), Render(Enumerable.Range(0, 3).SelectMany(_ => primitive).ToArray()));
+    }
+
+    [Fact]
+    public void ExcessiveResolvedDashGeometryStillKeepsItsResourceGuard() {
+        var points = new[] { new ChartPoint(0, 0), new ChartPoint(200002, 0) };
+        Assert.Throws<InvalidOperationException>(() => RasterStroker.Dash(points, new[] { 1d, 1d }, -1, -1, 200003, 1));
+        var repeated = Enumerable.Range(0, 100002).Select(index => new ChartPoint(index % 2 == 0 ? 0 : 100, 10)).ToArray();
+        Assert.Throws<InvalidOperationException>(() => RasterStroker.CreateOutline(new[] { repeated }, 2,
+            RasterLineCap.Round, RasterLineJoin.Miter, 4, new[] { .0001, .0001 }, 0, 1, 0, 0, 120, 40));
+    }
+
+    [Theory]
+    [InlineData("round", .1)]
+    [InlineData("square", .1)]
+    [InlineData("round", 2)]
+    [InlineData("square", 2)]
+    [InlineData("round", .01)]
+    [InlineData("square", .01)]
+    [InlineData("round", .0001)]
+    public void DenseLowDutyCapsKeepTheirOverlappingEnvelope(string cap, double width) {
+        string Svg(string dash) => "<svg xmlns='http://www.w3.org/2000/svg' width='120' height='40'>"
+            + "<path d='M10 20.5 H110' fill='none' stroke='black' stroke-width='"
+            + width.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "' stroke-linecap='" + cap + "'" + dash + "/></svg>";
+        // Infinitesimal repeated caps overlap to the solid segment envelope, irrespective of duty.
+        var actual = SvgRasterizer.ToImage(Svg(" stroke-dasharray='1e-23 9.99e-21'"));
+        var expected = SvgRasterizer.ToImage(Svg(""));
+        for (int i = 3; i < actual.Pixels.Length; i += 4)
+            Assert.InRange(Math.Abs(actual.Pixels[i] - expected.Pixels[i]), 0, 1);
+    }
+
+    [Theory]
+    [InlineData("butt", .00005, 255)]
+    [InlineData("round", .00005, 255)]
+    [InlineData("butt", .00015, 0)]
+    [InlineData("round", .00015, 0)]
+    public void DenseOddPatternKeepsOriginalJoinAndClosedSeamPhase(string cap, double phase, int alpha) {
+        var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='120' height='100'>"
+            + "<path d='M20 20 H100 V80 H20 Z' fill='none' stroke='black' stroke-width='10' stroke-linecap='" + cap
+            + "' stroke-linejoin='miter' stroke-dasharray='.0001 .0002 .0001' stroke-dashoffset='"
+            + phase.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "'/></svg>");
+        // This miter corner lies beyond the two segment bodies and their round caps.
+        Assert.Equal(alpha, image.Pixels[(15 * 120 + 15) * 4 + 3]);
+        Assert.Equal(alpha, image.Pixels[(15 * 120 + 104) * 4 + 3]);
+    }
+
     [Fact]
     public void FractionalDashLengthsFinishRoundedBoundaries() {
         var canvas = new RgbaCanvas(120, 40, 1);

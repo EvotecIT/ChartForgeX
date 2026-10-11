@@ -24,8 +24,11 @@ public static partial class V2Examples {
                 .Add(Chart.Create().WithXLabels("Mon", "Tue", "Wed").AddBar("Capacity", new[] { new ChartPoint(1, 52), new ChartPoint(2, 64), new ChartPoint(3, 58) })),
             _ => model
         };
+        // The full horizontal interval model needs the thumbnail's legend space for its painted category slots.
+        var horizontalIntervals = family == "range-bar" && model is Chart chart
+            && chart.Options.RangeBar.Orientation == ChartOrientation.Horizontal;
         var prepared = previewModel.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(ThumbnailWidth, ThumbnailHeight), 16),
-            ThumbnailTheme, mode, new VisualFrame("", "", showLegend: family is "topology" or "sequence" or "flow" or "chart-grid" ? false : legend),
+            ThumbnailTheme, mode, new VisualFrame("", "", showLegend: horizontalIntervals || family is "topology" or "sequence" or "flow" or "chart-grid" ? false : legend),
             FontSpec.FromFamily(ProofFont)));
         var kind = family switch {
             "topology" => VisualArtifactKind.Topology, "flow" => VisualArtifactKind.Flow,

@@ -165,6 +165,8 @@
   const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
+    if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
+      return [seriesLabel(node), data.cfxLabel].filter(Boolean).join(': ');
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
     const label = data.cfxLabel || data.cfxText || '';
@@ -241,6 +243,21 @@
       { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
       .filter((row) => row.value !== undefined && row.value !== '');
   };
+  const boxPlotTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'boxplot') return null;
+    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX }]
+      .concat(['minimum', 'q1', 'median', 'q3', 'maximum'].map((key) => ({
+        name: rowName(node, key, ''), value: data['cfx' + key.charAt(0).toUpperCase() + key.slice(1)]
+      }))).filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
+  const rangeBarTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
+    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
+      { name: rowName(node, 'start', ''), value: data.cfxStart }, { name: rowName(node, 'end', ''), value: data.cfxEnd }]
+      .filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -248,6 +265,10 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
+    const boxPlotRows = boxPlotTooltipRows(node);
+    if (boxPlotRows) return rows.concat(boxPlotRows, metadataRows(node));
+    const rangeBarRows = rangeBarTooltipRows(node);
+    if (rangeBarRows) return rows.concat(rangeBarRows, metadataRows(node));
     if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
     else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);
@@ -1229,6 +1250,17 @@
     return Array.from(values.values()).sort((a, b) => a.point - b.point);
   };
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
+  const comparisonLegendRows = (node) => {
+    const data = node.dataset || {}, kind = (data.cfxKind || '').toLowerCase();
+    if (!['dumbbell', 'errorbar'].includes(kind)) return null;
+    const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX;
+    const rows = [{ name: rowName(node, 'category', 'Category'), value: category }];
+    if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: data.cfxStart },
+      { name: rowName(node, 'end', 'End'), value: data.cfxEnd }, { name: rowName(node, 'delta', 'Delta'), value: data.cfxDelta });
+    else rows.push({ name: rowName(node, 'value', 'Value'), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
+      { name: rowName(node, 'lower', 'Lower'), value: data.cfxLower }, { name: rowName(node, 'upper', 'Upper'), value: data.cfxUpper });
+    return rows.filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
     if (data.cfxWaterfallKind) return waterfallTooltipRows(item);
@@ -1236,6 +1268,12 @@
     const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
     const svg = item.closest('svg');
     const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
+    const rangeBarRows = mark && rangeBarTooltipRows(mark);
+    if (rangeBarRows) return rangeBarRows.concat(dimensionTooltipRows(mark));
+    const boxPlotRows = mark && boxPlotTooltipRows(mark);
+    if (boxPlotRows) return boxPlotRows.concat(dimensionTooltipRows(mark));
+    const comparisonRows = mark && comparisonLegendRows(mark);
+    if (comparisonRows) return comparisonRows.concat(dimensionTooltipRows(mark));
     const financialRows = mark && financialTooltipRows(mark);
     if (financialRows) return financialRows.concat(dimensionTooltipRows(mark));
     if (reference) {
@@ -1797,6 +1835,7 @@
         return;
       }
       node.classList.toggle('cfx-series-muted', muted);
+      pointLabelSurfaces(root, node).forEach(label => label.classList.toggle('cfx-series-muted', muted));
     });
     refreshKeyboardNavigation(root);
     syncResetControl(root);
@@ -1823,6 +1862,10 @@
       const pointContainer = target && target.point !== undefined && data.cfxSeries === String(target.series)
         && role === 'series' && data.cfxPoint === undefined;
       node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
+      pointLabelSurfaces(root, node).forEach(label => {
+        label.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
+        label.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
+      });
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
