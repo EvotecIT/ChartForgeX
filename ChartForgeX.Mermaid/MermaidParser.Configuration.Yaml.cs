@@ -19,7 +19,8 @@ public sealed partial class MermaidParser {
             var line = lines[index];
             var trimmed = TrimConfigurationYaml(line);
             if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
-            if (ConfigurationYamlIndent(line) <= rootIndent)
+            if (ConfigurationYamlIndent(line) <= rootIndent &&
+                (!inConfiguration || !IsConfigurationYamlBlockContinuation(ConfigurationYamlIndent(line), rootIndent, trimmed)))
                 inConfiguration = ConfigurationYamlIndent(line) == rootIndent && Regex.IsMatch(trimmed, @"^config[ \t]*:", RegexOptions.CultureInvariant);
             if (inConfiguration) {
                 length += line.Length + (length > 0 ? 1 : 0);
@@ -52,9 +53,22 @@ public sealed partial class MermaidParser {
             var trimmed = TrimConfigurationYaml(raw);
             if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
             var indent = ConfigurationYamlIndent(raw);
-            if (opaqueIndent >= 0 && indent > opaqueIndent) continue;
+            if (opaqueIndent >= 0 && IsConfigurationYamlBlockContinuation(indent, opaqueIndent, trimmed)) continue;
             opaqueIndent = -1;
-            while (parents.Count > 0 && indent <= parents[parents.Count - 1].Indent) CompleteConfigurationYamlParent(parents, configuration);
+            var sequenceItem = IsConfigurationYamlSequenceItem(trimmed);
+            while (parents.Count > 0 && indent <= parents[parents.Count - 1].Indent) {
+                var parent = parents[parents.Count - 1];
+                if (sequenceItem && indent == parent.Indent && parent.ChildIndent < 0) break;
+                CompleteConfigurationYamlParent(parents, configuration);
+            }
+            if (sequenceItem && parents.Count > 0 && parents[parents.Count - 1].ChildIndent < 0) {
+                var parent = parents[parents.Count - 1];
+                if (!IsConfigurationStringPath(parent.Path))
+                    configuration.Add(new MermaidConfigurationSetting(parent.Path.Length == 0 ? "config" : parent.Path, null, false, parent.Span));
+                parents.RemoveAt(parents.Count - 1);
+                opaqueIndent = parent.Indent;
+                continue;
+            }
             var match = Regex.Match(trimmed, @"^([A-Za-z_][A-Za-z0-9_-]*)[ \t]*:[ \t]*(.*)$", RegexOptions.CultureInvariant);
             if (parents.Count == 0 && (indent != rootIndent || !match.Success || match.Groups[1].Value != "config")) continue;
             var span = new MermaidSourceSpan(index + 2, indent + 1, trimmed.Length);
@@ -85,7 +99,14 @@ public sealed partial class MermaidParser {
                 continue;
             }
             try {
+                foreach (var character in valueText)
+                    if (character < ' ' && character != '\t') throw new ArgumentException("Mermaid YAML scalars cannot contain literal control characters other than tabs.");
                 if (parents.Count == 0) {
+                    if (IsOpaqueConfigurationYamlValue(valueText)) {
+                        configuration.Add(new MermaidConfigurationSetting("config", valueText, false, span));
+                        opaqueIndent = indent;
+                        continue;
+                    }
                     var sourceLines = new List<ConfigurationJsonLine>();
                     if (valueText.StartsWith("{", StringComparison.Ordinal))
                         valueText = ReadConfigurationFlowMapping(lines, ref index, valueText, sourceLines, indent + match.Groups[2].Index + 1);
@@ -94,17 +115,13 @@ public sealed partial class MermaidParser {
                     AddConfigurationJson(GeoJsonValue.Parse(normalized, StringComparer.Ordinal, ConfigurationJsonLimits).AsObject("Mermaid frontmatter config"),
                         string.Empty, span, configuration, value => ConfigurationJsonPropertySpan(value, offsets, sourceLines, sourceLineStarts, span));
                 } else {
-                    foreach (var character in valueText)
-                        if (character < ' ' && character != '\t') throw new ArgumentException("Mermaid YAML scalars cannot contain literal control characters other than tabs.");
                     var isString = true;
                     string? value = valueText;
                     if (valueText.StartsWith("\"", StringComparison.Ordinal)) {
                         value = ReadDoubleQuotedConfigurationYaml(valueText);
                     } else if (valueText.StartsWith("'", StringComparison.Ordinal)) {
                         value = ReadSingleQuotedConfigurationYaml(valueText);
-                    } else if (valueText.StartsWith("{", StringComparison.Ordinal) || valueText.StartsWith("[", StringComparison.Ordinal) ||
-                        valueText.StartsWith("|", StringComparison.Ordinal) || valueText.StartsWith(">", StringComparison.Ordinal) ||
-                        valueText.StartsWith("&", StringComparison.Ordinal) || valueText.StartsWith("*", StringComparison.Ordinal) || valueText.StartsWith("!", StringComparison.Ordinal)) {
+                    } else if (valueText.StartsWith("{", StringComparison.Ordinal) || IsOpaqueConfigurationYamlValue(valueText)) {
                         value = null; isString = false;
                         opaqueIndent = indent;
                     } else {
@@ -119,6 +136,19 @@ public sealed partial class MermaidParser {
         }
         while (parents.Count > 0) CompleteConfigurationYamlParent(parents, configuration);
     }
+
+    // Indentless sequence items and flow continuations still belong to their owning
+    // opaque YAML node. Only a mapping entry at the owning indentation ends it.
+    private static bool IsConfigurationYamlBlockContinuation(int indent, int ownerIndent, string text) =>
+        indent > ownerIndent || indent == ownerIndent && !IsConfigurationYamlMappingEntry(text);
+
+    private static bool IsConfigurationYamlSequenceItem(string text) => text.Length > 0 && text[0] == '-' &&
+        (text.Length == 1 || text[1] == ' ' || text[1] == '\t');
+
+    private static bool IsConfigurationYamlMappingEntry(string text) => !IsConfigurationYamlSequenceItem(text) &&
+        Regex.IsMatch(text, @"^(?:[A-Za-z_][A-Za-z0-9_-]*[ \t]*:|""(?:[^""\\]|\\.)*""[ \t]*:|'(?:[^']|'')*'[ \t]*:|[^'""#\[\]{},][^:]*:(?:[ \t]|$))", RegexOptions.CultureInvariant);
+
+    private static bool IsOpaqueConfigurationYamlValue(string value) => value.Length > 0 && "[|>&*!".IndexOf(value[0]) >= 0;
 
     private static void ValidateConfigurationYamlPlainScalar(string value) {
         var leading = value[0];

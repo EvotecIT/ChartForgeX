@@ -102,7 +102,7 @@ public sealed partial class MermaidParser {
         var scope = ConfigurationScope(kind);
         MermaidConfigurationSetting? Selected(string key) {
             if (key == "fontFamily") return configuration.Last("themeVariables.fontFamily") ?? configuration.Last(key);
-            var scoped = configuration.Last(scope + "." + key);
+            var scoped = scope == null ? null : configuration.Last(scope + "." + key);
             return scoped != null && IsUnusableAppearance(key, scoped)
                 ? configuration.Last(key) ?? scoped : scoped ?? configuration.Last(key);
         }
@@ -114,7 +114,7 @@ public sealed partial class MermaidParser {
         }
         foreach (var key in new[] { "theme", "layout", "look" }) {
             ValidateString(configuration.Last(key));
-            ValidateString(configuration.Last(scope + "." + key));
+            if (scope != null) ValidateString(configuration.Last(scope + "." + key));
         }
         string? ReadString(string key) {
             var setting = Selected(key);
@@ -169,13 +169,18 @@ public sealed partial class MermaidParser {
         return null;
     }
 
-    private static string ConfigurationScope(MermaidDiagramKind kind) => kind switch {
+    private static string? ConfigurationScope(MermaidDiagramKind kind) => kind switch {
         MermaidDiagramKind.Flowchart => "flowchart", MermaidDiagramKind.Swimlane => "swimlane", MermaidDiagramKind.UseCase => "usecase",
         MermaidDiagramKind.Class => "class", MermaidDiagramKind.State => "state", MermaidDiagramKind.EntityRelationship => "er",
         MermaidDiagramKind.Sequence => "sequence", MermaidDiagramKind.Requirement => "requirement", MermaidDiagramKind.GitGraph => "gitGraph",
         MermaidDiagramKind.XYChart => "xyChart", MermaidDiagramKind.Quadrant => "quadrantChart", MermaidDiagramKind.Gantt => "gantt", MermaidDiagramKind.Agentflow => "agentflow",
         MermaidDiagramKind.Railroad => "railroad", MermaidDiagramKind.TreeView => "treeView", MermaidDiagramKind.Wardley => "wardley-beta",
-        _ => kind.ToString().ToLowerInvariant()
+        MermaidDiagramKind.Pie => "pie", MermaidDiagramKind.Journey => "journey", MermaidDiagramKind.MindMap => "mindmap",
+        MermaidDiagramKind.Timeline => "timeline", MermaidDiagramKind.Sankey => "sankey", MermaidDiagramKind.Block => "block",
+        MermaidDiagramKind.Packet => "packet", MermaidDiagramKind.Architecture => "architecture", MermaidDiagramKind.Kanban => "kanban",
+        MermaidDiagramKind.Radar => "radar", MermaidDiagramKind.C4 => "c4", MermaidDiagramKind.Venn => "venn",
+        MermaidDiagramKind.Ishikawa => "ishikawa", MermaidDiagramKind.EventModeling => "eventmodeling", MermaidDiagramKind.Cynefin => "cynefin",
+        _ => null
     };
 
     private static bool IsNativeTheme(string? value) => string.Equals(value, "dark", StringComparison.OrdinalIgnoreCase) ||
