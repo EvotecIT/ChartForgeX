@@ -73,6 +73,7 @@ internal static class MermaidExamples {
                 ChartForgeX.Topology.TopologyChartExtensions.WithViewport(actors, 360, 240, 16);
                 for (var index = 0; index < actors.Nodes.Count; index++) {
                     var node = actors.Nodes[index]; node.X = 60 + index * 160; node.Y = 70;
+                    node.PreserveDisplayModeSize = false;
                     node.DisplayMode = index == 0 ? ChartForgeX.Topology.TopologyNodeDisplayMode.Tile : ChartForgeX.Topology.TopologyNodeDisplayMode.Icon;
                     node.ShowStatusBadge = false;
                 }

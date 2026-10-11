@@ -14,6 +14,44 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidAllocatedTypographyClosureTests {
     [Theory]
+    [InlineData(TopologyNodeDisplayMode.Card, false, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(TopologyNodeDisplayMode.Card, true, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(TopologyNodeDisplayMode.CompactCard, false, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(TopologyNodeDisplayMode.CompactCard, true, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(TopologyNodeDisplayMode.Tile, false, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(TopologyNodeDisplayMode.Tile, true, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(TopologyNodeDisplayMode.Icon, false, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(TopologyNodeDisplayMode.Icon, true, TopologyEdgeRouting.Orthogonal)]
+    [InlineData(TopologyNodeDisplayMode.Card, false, TopologyEdgeRouting.Straight)]
+    [InlineData(TopologyNodeDisplayMode.Card, true, TopologyEdgeRouting.Straight)]
+    [InlineData(TopologyNodeDisplayMode.Tile, false, TopologyEdgeRouting.Straight)]
+    [InlineData(TopologyNodeDisplayMode.Tile, true, TopologyEdgeRouting.Straight)]
+    public async Task AutomaticActorRoutesAvoidThePaintedCaption(TopologyNodeDisplayMode mode, bool incoming, TopologyEdgeRouting routing) {
+        var chart = TopologyChart.Create().WithViewport(320, 280, 16)
+            .AddNode("actor", "API", 80, 40, width: 64, height: 46)
+            .AddNode("target", "Store", 80, 135, width: 64, height: 46)
+            .WithNodeDisplay("actor", mode)
+            .AddEdge("link", incoming ? "target" : "actor", incoming ? "actor" : "target");
+        chart.Nodes[0].Shape = TopologyNodeShape.Actor;
+        foreach (var node in chart.Nodes) node.ShowStatusBadge = false;
+        chart.Edges[0].Routing = routing;
+        var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
+        var svg = chart.ToSvg(options);
+        var xml = XDocument.Parse(svg);
+        var label = xml.Descendants().Single(element => element.Name.LocalName == "text" && element.Value == "API");
+        var size = (double)label.Attribute("font-size")!;
+        var weight = (int)label.Attribute("font-weight")!;
+        var builder = new VisualSceneBuilder(new VisualSize(320, 280), FontSpec.FromFamily((string)label.Attribute("font-family")!));
+        var metrics = builder.MeasureText(label.Value, size, weight);
+        var bounds = new ChartRect((double)label.Attribute("x")!, (double)label.Attribute("y")! - builder.TextAscent(size, weight), metrics.Width, metrics.Height);
+        var path = xml.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line");
+        var points = Assert.Single(ChartMapPathParser.ParseSubpaths((string)path.Attribute("d")!, 1)).Points;
+        var stroke = new LabelMarkShape(new[] { points.ToList() }, false, (double)path.Attribute("stroke-width")!);
+        Assert.False(stroke.Intersects(bounds), "The automatic edge crosses the actor's painted caption.");
+        await Capture(svg, chart.ToPng(options), "actor-auto-" + mode + "-" + incoming + "-" + routing, 320, 280);
+    }
+
+    [Theory]
     [InlineData(360, 32, 90, false)]
     [InlineData(760, 256, 45, true)]
     public async Task RotatedAxisCaptionsRetainACompleteMonth(int width, int size, double angle, bool dark) {
