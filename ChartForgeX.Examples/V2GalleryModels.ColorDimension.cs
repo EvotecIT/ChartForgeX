@@ -6,18 +6,23 @@ using ChartForgeX.Themes;
 
 public static partial class V2GalleryModels {
     private static Chart? ColorDimensionObservations(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
-        if (variant is not ("color-dimension" or "compact-color-dimension")) return null;
+        var gradient = variant is "gradient-color-legend" or "compact-gradient-color-legend";
+        var swatches = variant is "swatch-color-legend" or "compact-swatch-color-legend";
+        if (variant is not ("color-dimension" or "compact-color-dimension") && !gradient && !swatches) return null;
         var colors = VisualTheme.Graphite().Resolve(mode);
         var scale = PositionedTemperatureScale().WithNoDataColor(colors.Border);
         var format = ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
-        void Present(ChartColorDimensionOptions options) { options.Name = "Temperature"; options.ValueFormat = format; }
+        void Present(ChartColorDimensionOptions options) {
+            options.Name = "Temperature"; options.ValueFormat = format;
+            options.LegendStyle = gradient ? ChartColorLegendStyle.Gradient : swatches ? ChartColorLegendStyle.Swatches : ChartColorLegendStyle.Auto;
+        }
         var chart = Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled");
         if (kind == ChartSeriesKind.TileMap) {
             var codes = new[] { "CA", "TX", "NY", "FL", "WA", "IL", "CO" };
             var values = new[] { 0d, 2.5, 5, 10, 22.5, 40, 55 };
             return chart.AddTileMap("Daily mean", ChartTileMapCatalog.Get("us-states"),
                 codes.Select((code, index) => new ChartRegionMapItem(code, values[index])))
-                .WithMapLabels(false).WithMapColorScale(scale).ConfigureMapColorDimension(Present);
+                .WithMapLabels().WithMapColorScale(scale).ConfigureMapColorDimension(Present);
         }
         if (kind == ChartSeriesKind.Heatmap) {
             return chart.WithXLabels("A", "B", "C", "D", "E", "F")
@@ -60,7 +65,7 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.Bubble) {
             chart.AddBubble("Recorded batches", temperatures.Select((value, index) =>
                 new ChartBubble((index + 1) * 16, minutes[index], sizes[index]).WithColorValue(value)));
-            scale = ChartColorScale.Discrete(new[] {
+            if (!gradient) scale = ChartColorScale.Discrete(new[] {
                 new ChartColorBand(0, colors.Palette[0], "Cold"),
                 new ChartColorBand(15, colors.Status.Medium.Fill, "Mild"),
                 new ChartColorBand(null, colors.Status.Critical.Fill, "Warm")

@@ -33,6 +33,7 @@ public sealed partial class ChartSeries {
         var supported = SupportsNumericColor;
         if (ColorDimension.HasOverrides && !supported)
             throw new InvalidOperationException("Series '" + Name + "' requires the Scatter or Bubble kind for color presentation.");
+        if (supported) ColorDimension.ValidateLegend(ColorScale);
         for (var index = 0; index < Points.Count; index++) {
             if (!Points[index].ColorValue.HasValue) continue;
             if (!supported)

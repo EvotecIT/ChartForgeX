@@ -6,7 +6,7 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 /// <summary>One owner for bounded numeric swatches, exact ramp stops and named band intervals.</summary>
-internal static class ChartColorScaleLegend {
+internal static partial class ChartColorScaleLegend {
     internal const int MaximumSteps = 11;
 
     internal static int StepCount(ChartColorScale scale) => scale.Colors.Count <= 3 ? 5 : Math.Min(scale.Colors.Count, MaximumSteps);
