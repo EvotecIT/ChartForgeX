@@ -477,22 +477,6 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
-    "fixtures/configuration-precedence.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored ChartForgeX configuration merge example; verified with the pinned official Mermaid parsers."
-    },
-    "fixtures/radar-curve-tension.mmd": {
-      "syntax": {
-        "10": "rejected",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored ChartForgeX closed-curve configuration example; qualified against the pinned official Mermaid parsers and radar renderer."
-    },
     "fixtures/radar-capped-circle.mmd": {
       "syntax": {
         "10": "rejected",
@@ -540,6 +524,30 @@
         "12": "accepted"
       },
       "provenance": "https://mermaid.js.org/syntax/radar.html: zero hides concentric guides while preserving axes, observations and source configuration; pinned Mermaid 11 and 12 accept the case."
+    },
+    "fixtures/configuration-precedence.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX configuration merge example; verified with the pinned official Mermaid parsers."
+    },
+    "fixtures/radar-curve-tension.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX closed-curve configuration example; qualified against the pinned official Mermaid parsers and radar renderer."
+    },
+    "fixtures/treemap-grouped-values.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored comma-separated treemap values, qualified against pinned official Mermaid parsers. The reference removes comma separators, including nonstandard grouping. Typed node magnitudes and parent indices are compared without relying on native hierarchy layout."
     }
   }
 }
