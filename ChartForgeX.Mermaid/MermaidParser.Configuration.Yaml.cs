@@ -11,6 +11,7 @@ public sealed partial class MermaidParser {
         var parents = new List<(int Indent, string Path, int ChildIndent, MermaidSourceSpan Span)>();
         var declared = new HashSet<string>(StringComparer.Ordinal);
         var opaqueIndent = -1;
+        var opaqueScalarIndent = -1;
         var lines = text.Split('\n');
         var rootIndent = int.MaxValue;
         foreach (var line in lines) {
@@ -21,7 +22,12 @@ public sealed partial class MermaidParser {
             var trimmed = TrimConfigurationYaml(raw);
             if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;
             var indent = ConfigurationYamlIndent(raw);
-            if (opaqueIndent >= 0 && IsConfigurationYamlBlockContinuation(indent, opaqueIndent, trimmed)) continue;
+            if (opaqueScalarIndent >= 0 && indent > opaqueScalarIndent) continue;
+            opaqueScalarIndent = -1;
+            if (opaqueIndent >= 0 && IsConfigurationYamlBlockContinuation(indent, opaqueIndent, trimmed)) {
+                if (SkipOpaqueConfigurationYamlNode(lines, ref index, trimmed)) opaqueScalarIndent = indent;
+                continue;
+            }
             opaqueIndent = -1;
             var sequenceItem = IsConfigurationYamlSequenceItem(trimmed);
             while (parents.Count > 0 && indent <= parents[parents.Count - 1].Indent) {
@@ -35,12 +41,18 @@ public sealed partial class MermaidParser {
                     configuration.Add(new MermaidConfigurationSetting(parent.Path.Length == 0 ? "config" : parent.Path, null, false, parent.Span));
                 parents.RemoveAt(parents.Count - 1);
                 opaqueIndent = parent.Indent;
+                if (SkipOpaqueConfigurationYamlNode(lines, ref index, trimmed)) opaqueScalarIndent = indent;
                 continue;
             }
             var match = ConfigurationYamlMapping(trimmed);
-            var key = ConfigurationYamlKey(match);
-            if (parents.Count == 0 && (indent != rootIndent || !match.Success || key != "config")) continue;
+            var key = ConfigurationYamlKey(match, out var keyError);
             var span = new MermaidSourceSpan(index + 2, indent + 1, trimmed.Length);
+            if (keyError != null && (parents.Count > 0 || indent == rootIndent)) {
+                ConfigurationError(result, span, keyError);
+                opaqueIndent = indent;
+                continue;
+            }
+            if (parents.Count == 0 && (indent != rootIndent || !match.Success || key != "config")) continue;
             if (parents.Count > 0) {
                 var parent = parents[parents.Count - 1];
                 if (parent.ChildIndent < 0) parents[parents.Count - 1] = (parent.Indent, parent.Path, indent, parent.Span);
@@ -53,6 +65,7 @@ public sealed partial class MermaidParser {
                 Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Warning,
                     "Mermaid frontmatter configuration supports space-indented mappings with scalar values; this declaration is retained without application.", MermaidDiagnosticCodes.UnsupportedConfiguration);
                 opaqueIndent = indent;
+                if (SkipOpaqueConfigurationYamlNode(lines, ref index, trimmed)) opaqueScalarIndent = indent;
                 continue;
             }
             var path = parents.Count == 0 ? string.Empty : parents[parents.Count - 1].Path;
@@ -74,6 +87,7 @@ public sealed partial class MermaidParser {
                     if (IsOpaqueConfigurationYamlValue(valueText)) {
                         configuration.Add(new MermaidConfigurationSetting("config", valueText, false, span));
                         opaqueIndent = indent;
+                        if (SkipOpaqueConfigurationYamlNode(lines, ref index, valueText)) opaqueScalarIndent = indent;
                         continue;
                     }
                     var sourceLines = new List<ConfigurationJsonLine>();
@@ -93,6 +107,7 @@ public sealed partial class MermaidParser {
                     } else if (valueText.StartsWith("{", StringComparison.Ordinal) || IsOpaqueConfigurationYamlValue(valueText)) {
                         value = null; isString = false;
                         opaqueIndent = indent;
+                        if (SkipOpaqueConfigurationYamlNode(lines, ref index, valueText)) opaqueScalarIndent = indent;
                     } else {
                         ValidateConfigurationYamlPlainScalar(valueText);
                         if (Regex.IsMatch(valueText, @":(?:[ \t]|$)", RegexOptions.CultureInvariant))
