@@ -19,30 +19,10 @@ public sealed partial class MermaidParser {
     // Unsupported keys can contain flow collections and nonseparating colons.
     // Locate their value without interpreting or applying the key itself.
     private static int ConfigurationYamlValueSeparator(string text) {
-        var start = Regex.Match(text, @"^(?:(?:&[^\s]+|![^\s]+)[ \t]+)*", RegexOptions.CultureInvariant).Length;
-        var flowKey = start < text.Length && (text[start] == '[' || text[start] == '{');
-        var quotedKey = start < text.Length && (text[start] == '\'' || text[start] == '"');
         var depth = 0;
         var quote = '\0';
-        var nodeStart = true;
-        for (var index = start; index < text.Length; index++) {
-            var character = text[index];
-            if (quote != '\0') {
-                if (character == '\\' && quote == '"') index++;
-                else if (character == quote) {
-                    if (quote == '\'' && index + 1 < text.Length && text[index + 1] == '\'') index++;
-                    else quote = '\0';
-                }
-                continue;
-            }
-            if (nodeStart && (character == '\'' || character == '"')) { quote = character; nodeStart = false; continue; }
-            if (flowKey && (character == '[' || character == '{')) { depth++; nodeStart = true; continue; }
-            if (flowKey && (character == ']' || character == '}')) { depth--; nodeStart = false; continue; }
-            if (character == ':' && depth == 0 && (quotedKey || index + 1 == text.Length || text[index + 1] == ' ' || text[index + 1] == '\t')) return index;
-            if (depth > 0 && (character == ',' || character == ':' && index + 1 < text.Length && (text[index + 1] == ' ' || text[index + 1] == '\t'))) nodeStart = true;
-            else if (character != ' ' && character != '\t') nodeStart = false;
-        }
-        return -1;
+        var scalarState = ConfigurationFlowScalar.Node;
+        return ScanConfigurationYamlFlow(text, ref depth, ref quote, ref scalarState, findMappingValue: true);
     }
 
     // Count physical scalar content before discarding presentation comments or whitespace.
