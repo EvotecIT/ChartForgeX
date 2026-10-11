@@ -1,10 +1,24 @@
 using System.Globalization;
+using System.Text.Json;
 using ChartForgeX.Mermaid;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttOffsetFallbackRegressionTests {
+    [Fact]
+    public void OffsetFallbacksMatchPinnedReferenceTimestamps() {
+        var root = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures");
+        var parsed = new MermaidParser().ParseGantt(File.ReadAllText(Path.Combine(root, "gantt-offset-fallback.mmd")));
+        Assert.Empty(parsed.Diagnostics);
+        using var expected = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "gantt-offset-fallback.expected.json")));
+        var timestamps = expected.RootElement.GetProperty("taskTimestamps").EnumerateArray()
+            .Select(item => (item[0].GetString(), item[1].GetString()!, item[2].GetString()!));
+        Assert.Equal(timestamps, parsed.Document!.Tasks.Select(task => (task.Id,
+            task.Start.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture),
+            task.End.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture))));
+    }
+
     [Theory]
     [InlineData("2026-01-02 00:30:00+14:00", "2026-01-01T10:30:00.0000000")]
     [InlineData("2026-01-02 00:30:12.1234567+14:00", "2026-01-01T10:30:12.1234567")]
