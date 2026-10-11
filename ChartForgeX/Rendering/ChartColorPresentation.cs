@@ -16,7 +16,6 @@ internal sealed class ChartColorPresentation {
         ChartValueFormat defaultFormat, bool compactDefault = false, ChartColorPresentationSet? preparation = null) {
         HasName = options.Name != null; HasFormat = options.ValueFormat != null;
         Name = options.Name ?? defaultName; Labels = labels.Capture();
-        if (HasName) Labels.Value = Name;
         _format = options.ValueFormat ?? defaultFormat;
         _values = preparation?.Values(_format) ?? new Dictionary<double, string>();
         _compactDefault = !HasFormat && compactDefault;

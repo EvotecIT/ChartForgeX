@@ -55,7 +55,7 @@ public static partial class V2Examples {
                     : variant is "positioned-color-scale" or "compact-positioned-color-scale" && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap
                         ? kind == ChartSeriesKind.TileMap ? "Temperature by state" : "Temperature across service areas"
                     : variant is "color-dimension" or "compact-color-dimension" ? kind switch {
-                        ChartSeriesKind.TileMap => "Temperature by state", ChartSeriesKind.Heatmap => "Temperature across service areas",
+                        ChartSeriesKind.TileMap => "Temperature by state", ChartSeriesKind.Heatmap => "Temperature by grid position",
                         ChartSeriesKind.CalendarHeatmap => "Daily average temperature", ChartSeriesKind.Treemap => "Team workload and temperature",
                         ChartSeriesKind.Scatter => "Temperature by workload", _ => "Workload, requests and temperature"
                     } : V2GalleryModels.Title(kind);
