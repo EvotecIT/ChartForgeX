@@ -45,7 +45,8 @@ public sealed class HorizontalPhysicalAxisClosureTests {
     [InlineData(ChartSeriesKind.Waterfall)]
     public async Task RetainedStatisticsUsePhysicalXAfterObservationsBecomeEmpty(ChartSeriesKind kind) {
         var chart = Model(kind);
-        chart.AddMeanLine("Mean", chart.Series[0].Points).AddStandardDeviationBand("Deviation", chart.Series[0].Points);
+        chart.AddStandardDeviationBand("Deviation", chart.Series[0].Points, color: HorizontalRasterAssertions.Band, opacity: 1)
+            .AddMeanLine("Mean", chart.Series[0].Points, HorizontalRasterAssertions.Guide);
         chart.Series[0].Points.Clear();
         var range = ChartRange.FromChart(chart);
         Assert.True(range.MinX < 25 && range.MaxX > 25);
@@ -60,7 +61,13 @@ public sealed class HorizontalPhysicalAxisClosureTests {
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Contains("data-cfx-kind=\"VerticalLine\"", svg);
         Assert.Contains("data-cfx-kind=\"VerticalBand\"", svg);
-        Assert.NotEmpty(png);
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture);
+            File.WriteAllText(Path.Combine(capture, "empty-" + kind + ".svg"), svg);
+            File.WriteAllBytes(Path.Combine(capture, "empty-" + kind + ".native.png"), png);
+        }
+        HorizontalRasterAssertions.Statistics(prepared, line.Bounds, band.Bounds);
         if (kind != ChartSeriesKind.Line || !InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", 700, 450);
         InteractiveChartBrowser.AssertNoConsoleErrors(session);

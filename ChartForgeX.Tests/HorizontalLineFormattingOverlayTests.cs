@@ -102,7 +102,8 @@ public sealed class HorizontalLineFormattingOverlayTests {
         var chart = Model(step);
         if (configureFirst) chart.Options.LineOrientation = ChartOrientation.Horizontal;
         var points = chart.Series[0].Points;
-        chart.AddMeanLine("Mean", points).AddMedianLine("Median", points).AddStandardDeviationBand("Deviation", points);
+        chart.AddStandardDeviationBand("Deviation", points, color: HorizontalRasterAssertions.Band, opacity: 1)
+            .AddMeanLine("Mean", points, HorizontalRasterAssertions.Guide).AddMedianLine("Median", points, HorizontalRasterAssertions.Guide);
         chart.Options.LineOrientation = ChartOrientation.Horizontal;
         var range = ChartRange.FromChart(chart);
         Assert.Equal(1, range.MinY); Assert.Equal(4, range.MaxY);
@@ -115,7 +116,7 @@ public sealed class HorizontalLineFormattingOverlayTests {
         Assert.True(band.Bounds.Width > 50);
         Assert.Contains("data-cfx-kind=\"VerticalLine\"", prepared.ToSvg());
         Assert.Contains("data-cfx-kind=\"VerticalBand\"", prepared.ToSvg());
-        Assert.True(prepared.ToPng().Length > 64);
+        HorizontalRasterAssertions.Statistics(prepared, guides.First(guide => guide.Bounds.Width == 0).Bounds, band.Bounds);
         // A later preparation follows the current orientation; the detached scene retains its geometry.
         chart.Options.LineOrientation = ChartOrientation.Vertical;
         var vertical = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

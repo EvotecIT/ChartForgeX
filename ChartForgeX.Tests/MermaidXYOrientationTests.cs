@@ -1,6 +1,8 @@
 using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Markup.Mermaid;
+using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
 using Xunit;
@@ -19,6 +21,10 @@ public sealed class MermaidXYOrientationTests {
         Assert.False(parsed.HasErrors);
         var document = Assert.IsType<MermaidXYChartDocument>(parsed.Document);
         var chart = document.ToChart();
+        chart.WithBarStyle(ChartBarStyle.Flat).WithLineMarkers(ChartLineMarkerMode.None);
+        var barColor = ChartColor.FromHex("#1767CB");
+        var lineColor = ChartColor.FromHex("#D017CB");
+        foreach (var item in chart.Series) item.Color = item.Kind == ChartSeriesKind.HorizontalBar ? barColor : lineColor;
         Assert.Equal("Count", chart.XAxisTitle);
         Assert.Equal("Month", chart.YAxisTitle);
         Assert.Equal(0, chart.Options.XAxis.Minimum);
@@ -34,7 +40,17 @@ public sealed class MermaidXYOrientationTests {
         Assert.True(points[0].Bounds.Top > points[1].Bounds.Top && points[1].Bounds.Top > points[2].Bounds.Top);
         var svg = prepared.ToSvg();
         foreach (var label in new[] { "Jan", "Feb", "Mar", "Month", "Count" }) Assert.Contains(">" + label + "<", svg);
-        Assert.True(prepared.ToPng().Length > 64);
+        var raster = RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        if (kind != "line") foreach (var point in points)
+            Assert.True(HorizontalRasterAssertions.HasColor(raster, point.Bounds.Left + point.Bounds.Width / 2, point.Bounds.Top + point.Bounds.Height / 2, barColor), "The native horizontal bar must occupy its prepared value/category position.");
+        if (kind != "bar") {
+            var linePoints = prepared.Regions.Where(region => region.Role == "point").Skip(kind == "mixed" ? 3 : 0).Take(3).ToArray();
+            for (var index = 1; index < linePoints.Length; index++) {
+                var first = linePoints[index - 1].Bounds; var second = linePoints[index].Bounds;
+                Assert.True(HorizontalRasterAssertions.HasColor(raster, (first.Left + first.Width / 2 + second.Left + second.Width / 2) / 2,
+                    (first.Top + first.Height / 2 + second.Top + second.Height / 2) / 2, lineColor), "The native line must connect the transposed observations.");
+            }
+        }
         var direct = MermaidRenderer.Render(source);
         Assert.False(direct.HasErrors);
         Assert.NotNull(direct.Artifact);
