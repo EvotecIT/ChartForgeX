@@ -18,6 +18,11 @@ internal static class GraphiteExamples {
                 File.WriteAllText(Path.Combine(output, name + ".html"), HtmlTooltipPositionExamples.CreatePage(anchor, dark));
                 gallery.Append("<p><a href='").Append(name).Append(".html'>").Append(anchor).Append(" tooltip placement</a></p>");
             }
+            foreach (var lineStyle in Enum.GetValues<HtmlChartCrosshairLineStyle>()) {
+                var name = "graphite-" + suffix + "-crosshair-" + lineStyle.ToString().ToLowerInvariant();
+                File.WriteAllText(Path.Combine(output, name + ".html"), HtmlCrosshairExamples.CreatePage(lineStyle, dark));
+                gallery.Append("<p><a href='").Append(name).Append(".html'>").Append(lineStyle).Append(" crosshair lines</a></p>");
+            }
             foreach (var item in Create(dark)) {
                 var name = "graphite-" + suffix + "-" + item.Key;
                 item.Value.WithPngOutputScale(scale);

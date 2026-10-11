@@ -40,16 +40,19 @@ internal static partial class VisualMarkerScene {
 
     internal static ChartRect Bounds(double x, double y, double extent) => new(x - extent, y - extent, extent * 2, extent * 2);
 
+    /// <summary>Resolves the actual fill for native marks and their contained text using the same override precedence.</summary>
+    internal static (ChartColor Color, SvgPaint Paint) ResolveFill(ChartSeries series, int point, ChartColor fill, SvgPaint paint) {
+        var authoredPoint = point >= 0 && point < series.PointColors.Count && series.PointColors[point].HasValue;
+        return series.Markers.Fill.HasValue && !authoredPoint
+            ? (series.Markers.Fill.Value, VisualChartPaint.Series(series, series.Markers.Fill.Value, explicitOverride: true)) : (fill, paint);
+    }
+
     internal static void Draw(VisualSceneBuilder builder, ChartSeries series, int point, double x, double y, double radius,
         ChartColor fill, SvgPaint fillPaint, string role, ChartColor? stroke = null, double strokeWidth = 1,
         SvgPaint? strokePaint = null, ChartFillPattern pattern = ChartFillPattern.None, ChartColor? backdrop = null,
         string? patternRole = null) {
         if (radius <= 0 || !Enabled(series)) return;
-        var authoredPoint = point >= 0 && point < series.PointColors.Count && series.PointColors[point].HasValue;
-        if (series.Markers.Fill.HasValue && !authoredPoint) {
-            fill = series.Markers.Fill.Value;
-            fillPaint = VisualChartPaint.Series(series, fill, explicitOverride: true);
-        }
+        (fill, fillPaint) = ResolveFill(series, point, fill, fillPaint);
         var width = StrokeWidth(series, stroke.HasValue, strokeWidth);
         if (series.Markers.Stroke.HasValue) {
             stroke = series.Markers.Stroke.Value;
