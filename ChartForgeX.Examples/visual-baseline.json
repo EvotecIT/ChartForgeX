@@ -3770,6 +3770,102 @@
       }
     },
     {
+      "name": "horizontal-statistics-360-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 360,
+      "height": 420,
+      "logicalWidth": 360.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 302388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 813,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "horizontal-statistics-360-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 360,
+      "height": 420,
+      "logicalWidth": 360.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 302388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 875,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "horizontal-statistics-760-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 420,
+      "logicalWidth": 760.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 638388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 709,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "horizontal-statistics-760-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 420,
+      "logicalWidth": 760.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 638388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 791,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "icon-palette",
       "layout": {
         "heightMode": "natural",
@@ -8086,102 +8182,6 @@
         "minVisiblePixels": 710470,
         "minTransparentPixels": 43930,
         "minDistinctColors": 1448,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "horizontal-statistics-360-dark",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 360,
-      "height": 420,
-      "logicalWidth": 360.0,
-      "logicalHeight": 420.0,
-      "svg": {
-        "minVisualNodes": 16,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 302388,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 813,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "horizontal-statistics-360-light",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 360,
-      "height": 420,
-      "logicalWidth": 360.0,
-      "logicalHeight": 420.0,
-      "svg": {
-        "minVisualNodes": 16,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 302388,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 875,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "horizontal-statistics-760-dark",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 760,
-      "height": 420,
-      "logicalWidth": 760.0,
-      "logicalHeight": 420.0,
-      "svg": {
-        "minVisualNodes": 16,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 638388,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 709,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "horizontal-statistics-760-light",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 760,
-      "height": 420,
-      "logicalWidth": 760.0,
-      "logicalHeight": 420.0,
-      "svg": {
-        "minVisualNodes": 16,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 638388,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 791,
         "maxEdgeInkPixels": 0
       }
     }
