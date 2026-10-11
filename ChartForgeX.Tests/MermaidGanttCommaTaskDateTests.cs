@@ -31,6 +31,44 @@ public sealed class MermaidGanttCommaTaskDateTests {
     [InlineData("milestone")]
     [InlineData("vert")]
     [InlineData("")]
+    public void EndOnlyConfiguredDatesKeepTheirLiteralPrefixes(string literal) {
+        var prefix = literal + ",";
+        var source = "gantt\ndateFormat [" + prefix + "]YYYY-MM-DD\nFirst :task," + prefix + "2026-01-02,1d\nSecond :" + prefix + "2026-01-04";
+        var parsed = new MermaidParser().ParseGantt(source);
+        Assert.Empty(parsed.Diagnostics);
+        var task = parsed.Document!.Tasks[1];
+        Assert.Null(task.Id); Assert.Empty(task.Tags);
+        Assert.Equal(0, task.Progress); Assert.False(task.IsMilestone); Assert.False(task.IsVerticalMarker);
+        Assert.Equal(new DateTime(2026, 1, 3), task.Start);
+        Assert.Equal(new DateTime(2026, 1, 4), task.End);
+    }
+
+    [Theory]
+    [InlineData("active")]
+    [InlineData("done")]
+    [InlineData("crit")]
+    [InlineData("milestone")]
+    [InlineData("vert")]
+    [InlineData("")]
+    public void EndOnlyConfiguredDatesUseTheHostAnchorBeforeConsumingTags(string literal) {
+        var prefix = literal + ",";
+        var source = "gantt\ndateFormat [" + prefix + "]MM-DD\nFirst :task," + prefix + "02-29,1d\nSecond :" + prefix + "03-02";
+        var parsed = new MermaidParser().ParseGantt(source, new MermaidParseOptions { GanttDateAnchor = new DateTime(2024, 1, 1) });
+        Assert.Empty(parsed.Diagnostics);
+        var task = parsed.Document!.Tasks[1];
+        Assert.Null(task.Id); Assert.Empty(task.Tags);
+        Assert.Equal(0, task.Progress); Assert.False(task.IsMilestone); Assert.False(task.IsVerticalMarker);
+        Assert.Equal(new DateTime(2024, 3, 1), task.Start);
+        Assert.Equal(new DateTime(2024, 3, 2), task.End);
+    }
+
+    [Theory]
+    [InlineData("active")]
+    [InlineData("done")]
+    [InlineData("crit")]
+    [InlineData("milestone")]
+    [InlineData("vert")]
+    [InlineData("")]
     public void ConfiguredLiteralPrefixesAreDatesRatherThanStatusTags(string literal) {
         var source = "gantt\ndateFormat [" + literal + ",]YYYY-MM-DD\nTask :" + literal + ",2026-01-02,1d";
         var parsed = new MermaidParser().ParseGantt(source);
