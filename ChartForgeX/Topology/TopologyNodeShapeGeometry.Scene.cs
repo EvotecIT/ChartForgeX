@@ -40,13 +40,12 @@ internal static partial class TopologyNodeShapeGeometry {
         }
         switch (node.Shape ?? TopologyNodeShape.Rounded) {
             case TopologyNodeShape.Actor:
-                // Actor routing and its caption use the canonical 48 by 76 figure.
-                // Node display modes reserve space; they do not scale that figure.
                 var cx = x + w / 2;
-                Ellipse(cx, y + 15, 9, 9);
-                Open(cx, y + 24, cx, y + 50);
-                Open(cx - 17, y + 34, cx + 17, y + 34);
-                Open(cx - 15, y + 68, cx, y + 50, cx + 15, y + 68);
+                var actorScale = ActorScale(node);
+                Ellipse(cx, y + 15 * actorScale, 9 * actorScale, 9 * actorScale);
+                Open(cx, y + 24 * actorScale, cx, y + 50 * actorScale);
+                Open(cx - 17 * actorScale, y + 34 * actorScale, cx + 17 * actorScale, y + 34 * actorScale);
+                Open(cx - 15 * actorScale, y + 68 * actorScale, cx, y + 50 * actorScale, cx + 15 * actorScale, y + 68 * actorScale);
                 break;
             case TopologyNodeShape.Ellipse:
             case TopologyNodeShape.Circle:

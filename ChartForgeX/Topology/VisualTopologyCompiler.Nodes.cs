@@ -51,7 +51,8 @@ internal sealed partial class VisualTopologyCompiler {
                     foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) _builder.Path(Transform(part.Path), part.Fill ? fill : null, accent, strokeWidth, role: "topology-node-surface", close: part.Close, paint: surfacePaint);
                 } else _builder.Rect(bounds, fill, accent, strokeWidth, mode == TopologyNodeDisplayMode.Pill ? bounds.Height / 2 : _context.Theme.BarRadius * _scale, role: "topology-node-surface", paint: surfacePaint);
                 if (UseNodeAccentBand(mode, _options)) _builder.Rect(new ChartRect(bounds.X + strokeWidth / 2, bounds.Y + strokeWidth / 2, 4 * _scale, Math.Max(0, bounds.Height - strokeWidth)), accent, role: "topology-node-accent", paint: new VisualScenePaintBinding(accentPaint));
-                var hasGlyph = node.Kind != TopologyNodeKind.Generic || node.Symbol != null || node.IconId != null || ResolveRenderableNodeArtwork(node, _options) != null || mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork;
+                var hasGlyph = node.Kind != TopologyNodeKind.Generic || node.Symbol != null || node.IconId != null || ResolveRenderableNodeArtwork(node, _options) != null
+                    || node.Shape != TopologyNodeShape.Actor && (mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork);
                 if (hasGlyph && mode != TopologyNodeDisplayMode.Dot) {
                     var center = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork;
                     BuildGlyph(node, center ? node.X + node.Width / 2 : node.X + 22, node.Y + (mode == TopologyNodeDisplayMode.Card && _options.IncludeNodeLabels && node.Details.Count > 0 ? 28 : node.Height / 2), accent, glyphRole: accentRole);
@@ -198,7 +199,7 @@ internal sealed partial class VisualTopologyCompiler {
                 // readable size. Retain a fitting text-element prefix and disclose the loss;
                 // appending an ellipsis must not erase the only glyph that could fit.
                 lines.Add(ChartTextFitting.FitEnd(text, bounds.Width, probe => _builder.MeasureText(probe, size, weight).Width, string.Empty));
-                _builder.AddDiagnostic(new VisualDiagnostic("topology.label-truncated", "A compact topology symbol exceeds its measured bounds; complete source text remains in semantic interchange."));
+                _builder.AddDiagnostic(new VisualDiagnostic("topology.label-truncated", "A topology label exceeds its measured bounds; complete source text remains in semantic interchange."));
                 continue;
             }
             var elements = StringInfo.ParseCombiningCharacters(text); var count = elements.Length;

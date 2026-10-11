@@ -7,7 +7,7 @@ namespace ChartForgeX.Topology;
 
 internal static partial class TopologyNodeShapeGeometry {
     internal static ChartPoint RoutingCenter(TopologyNode node) => new(node.X + node.Width / 2,
-        node.Shape == TopologyNodeShape.Actor ? node.Y + 34 : node.Y + node.Height / 2);
+        node.Shape == TopologyNodeShape.Actor ? node.Y + 34 * ActorScale(node) : node.Y + node.Height / 2);
 
     internal static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port, double gap) {
         var center = RoutingCenter(node);
@@ -45,11 +45,17 @@ internal static partial class TopologyNodeShapeGeometry {
         if (length < 0.000001) return origin;
         var unit = new ChartPoint(direction.X / length, direction.Y / length);
         var furthest = double.NegativeInfinity;
-        foreach (var path in ChartMapPathParser.ParseSubpaths(Path(node), 1)) {
-            for (var i = 1; i < path.Points.Count; i++) Intersect(path.Points[i - 1], path.Points[i]);
-            if (path.IsClosed && path.Points.Count > 1) Intersect(path.Points[path.Points.Count - 1], path.Points[0]);
-        }
+        // Compact figures have fractional arm coordinates. Route against their painted
+        // numeric contours rather than rounding a horizontal arm through SVG text first.
+        if (node.Shape == TopologyNodeShape.Actor) {
+            foreach (var part in SceneParts(node)) Contour(part.Path.Flatten(1), part.Close);
+        } else foreach (var path in ChartMapPathParser.ParseSubpaths(Path(node), 1)) Contour(path.Points, path.IsClosed);
         return double.IsNegativeInfinity(furthest) ? origin : new ChartPoint(origin.X + unit.X * (furthest + gap), origin.Y + unit.Y * (furthest + gap));
+
+        void Contour(IReadOnlyList<ChartPoint> points, bool closed) {
+            for (var i = 1; i < points.Count; i++) Intersect(points[i - 1], points[i]);
+            if (closed && points.Count > 1) Intersect(points[points.Count - 1], points[0]);
+        }
 
         void Intersect(ChartPoint start, ChartPoint end) {
             var sx = end.X - start.X; var sy = end.Y - start.Y;

@@ -5,6 +5,10 @@ using ChartForgeX.VisualArtifacts;
 internal static class MermaidExamples {
     internal static void Write(string output) {
         var examples = new Dictionary<string, string> {
+            ["mermaid-source-font-size-group-header-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nflowchart LR\nsubgraph Service[Service group]\n A --> B\nend\n",
+            ["mermaid-source-font-size-packet-narrow-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\npacket-beta\n0-1: \"ACK\"\n2-31: \"Payload\"\n",
+            ["mermaid-source-font-size-axis-rotated-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':32}}}%%\nxychart-beta\nx-axis Month [September,October,November]\ny-axis Count 0 --> 100\nline [20,50,80]\n",
+            ["mermaid-source-font-size-actor-compact-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':32}}}%%\nusecase-beta\ndirection LR\nactor API\nactor UI\nAPI --> UI\n",
             ["mermaid-source-font-size-sankey-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nsankey-beta\nSource,Target,10\n",
             ["mermaid-source-font-size-treemap-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\ntreemap-beta\n\"Storage\"\n  \"Documents\": 5\n  \"Media\": 5\n",
             ["mermaid-source-font-size-axis-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nxychart-beta\nx-axis Month [Jan,Feb,Mar]\ny-axis Count 0 --> 100\nbar [20,50,80]\n",
@@ -56,6 +60,23 @@ internal static class MermaidExamples {
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
             if (item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
                 block.Options.ShowCard = false;
+            if (item.Key == "mermaid-source-font-size-packet-narrow-fit" && result.Artifact.Model is ChartForgeX.VisualBlocks.PacketLayoutBlock packet)
+                packet.WithSize(640, 280);
+            if (item.Key == "mermaid-source-font-size-group-header-fit" && result.Artifact.Model is ChartForgeX.Topology.TopologyChart grouped)
+                grouped.Groups[0].Subtitle = "Group description";
+            if (item.Key == "mermaid-source-font-size-axis-rotated-fit" && result.Artifact.Model is Chart rotated) {
+                rotated.WithSize(360, 420); rotated.Options.XAxis.LabelAngle = 90;
+            }
+            if (item.Key == "mermaid-source-font-size-actor-compact-fit" && result.Artifact.Model is ChartForgeX.Topology.TopologyChart actors) {
+                actors.Title = ""; actors.Subtitle = ""; actors.LayoutMode = ChartForgeX.Topology.TopologyLayoutMode.Manual;
+                actors.DefaultRenderOptions = new ChartForgeX.Topology.TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
+                ChartForgeX.Topology.TopologyChartExtensions.WithViewport(actors, 360, 240, 16);
+                for (var index = 0; index < actors.Nodes.Count; index++) {
+                    var node = actors.Nodes[index]; node.X = 60 + index * 160; node.Y = 70;
+                    node.DisplayMode = index == 0 ? ChartForgeX.Topology.TopologyNodeDisplayMode.Tile : ChartForgeX.Topology.TopologyNodeDisplayMode.Icon;
+                    node.ShowStatusBadge = false;
+                }
+            }
             if (item.Key == "mermaid-source-font-size-git-cherry-fit" && result.Artifact.Model is ChartForgeX.VisualBlocks.GitGraphBlock git) {
                 git.WithTitle("").WithSubtitle("").WithSize(320, 460).WithCommitLabels(false);
                 git.ShowBranchLabels = false;

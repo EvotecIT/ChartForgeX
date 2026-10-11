@@ -28,7 +28,7 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.FillRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color.WithAlpha(48));
             canvas.StrokeRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color, 1);
             if (packet.ShowBitNumbers && metrics.BitFontSize > 0) DrawPacketBitLabels(canvas, slice, x, rowY - metrics.BitBaselineOffset - canvas.TextAscent(metrics.BitFontSize, true), width, theme.MutedText, metrics.BitFontSize);
-            var fontSize = metrics.FieldFontSize;
+            var fontSize = Math.Min(metrics.FieldFontSize, VisualBlockRendering.PacketFieldFontSize(packet, slice, width, rowHeight));
             DrawAlignedTextAtBaseline(canvas, slice.Field.Label, x + 5, rowY + rowHeight * .58, Math.Max(1, width - 10), TextAlignment.Center, theme.Text, fontSize, true);
         }
     }

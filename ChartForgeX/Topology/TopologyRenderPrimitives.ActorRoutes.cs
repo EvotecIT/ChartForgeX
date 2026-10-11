@@ -90,6 +90,6 @@ internal static partial class TopologyRenderPrimitives {
     public static IReadOnlyList<string> DiagramNodeLabelLines(TopologyNode node, TopologyRenderOptions options) =>
         NodeTextLines(node.Label, node.Width * .65, 12, true, options.MaxNodeLabelLines, options, node.MaximumLabelCharacters ?? NodeLabelMaxLength);
 
-    public static double DiagramNodeLabelCenterY(TopologyNode node) => node.Shape == TopologyNodeShape.Actor ? node.Y + 84
+    public static double DiagramNodeLabelCenterY(TopologyNode node) => node.Shape == TopologyNodeShape.Actor ? node.Y + 68 * TopologyNodeShapeGeometry.ActorScale(node) + 16
         : node.Details.Count > 0 || !string.IsNullOrWhiteSpace(node.Subtitle) ? node.Y + 24 : CenterY(node);
 }

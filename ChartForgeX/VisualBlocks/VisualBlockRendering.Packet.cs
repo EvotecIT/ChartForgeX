@@ -45,6 +45,11 @@ internal static partial class VisualBlockRendering {
     public static double PacketBitInset(double width) => Math.Min(LabelPlacementService.DefaultGap / 2, width / 4);
     public static double PacketBitBaselineOffset(double labelTop, double fontSize) => Math.Min(labelTop * .25, Math.Max(4, fontSize * .3));
 
+    // The same measured cell fitting serves both exporters; ordinary long fields keep truncation.
+    public static double PacketFieldFontSize(PacketLayoutBlock packet, PacketLayoutSlice slice, double width, double height) =>
+        FitBodyTextStyle(packet.Options.Theme, slice.Field.Label, Math.Max(9, Math.Min(13.5, height * .31)),
+            Math.Max(1, width - 10), height * .6, 700).FontSize;
+
     public readonly struct PacketRowMetrics {
         public PacketRowMetrics(double labelTop, double gap, double height, double bitFontSize, double fieldFontSize) {
             LabelTop = labelTop; Gap = gap; Height = height; BitFontSize = bitFontSize; FieldFontSize = fieldFontSize;
