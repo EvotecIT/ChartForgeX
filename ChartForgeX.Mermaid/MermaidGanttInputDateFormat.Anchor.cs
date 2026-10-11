@@ -9,7 +9,7 @@ internal static partial class MermaidGanttInputDateFormat {
         format = format.Trim();
         if (format == "X" || format == "x") return false;
         var fields = Parts(format);
-        if (UsesMermaidFields(fields)) return !fields.Exists(part => part.Token == "YYYY" || part.Token == "YY");
+        if (UsesMermaidFields(fields)) return !fields.Exists(part => part.Token == "YYYY" || part.Token == "YY" || part.Token == "X" || part.Token == "x");
         DateFields(ExpandNativeFormat(MermaidGanttParser.ToDotNetDateFormat(format)), out var year, out _, out _, out _);
         return !year;
     }

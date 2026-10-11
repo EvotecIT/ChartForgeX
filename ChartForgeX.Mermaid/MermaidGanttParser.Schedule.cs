@@ -108,15 +108,18 @@ internal static partial class MermaidGanttParser {
                 return;
             }
             task.RenderEnd = renderEnd;
-        } else if (TryParseDuration(task.EndSpec, out var amount, out var unit)) {
-            if (!TryResolveDurationEnd(taskStart, amount, unit, document, out end, out var renderEnd)) {
-                Fail(slot, result, "Gantt duration exceeds the supported date range or exclusion calendar has no reachable working day.");
+        } else if (!MermaidGanttInputDateFormat.TryParseConfigured(task.EndSpec, document.DateFormat, out end, document.DateAnchor)) {
+            // An explicitly formatted end date can contain a duration-like literal suffix.
+            if (TryParseDuration(task.EndSpec, out var amount, out var unit)) {
+                if (!TryResolveDurationEnd(taskStart, amount, unit, document, out end, out var renderEnd)) {
+                    Fail(slot, result, "Gantt duration exceeds the supported date range or exclusion calendar has no reachable working day.");
+                    return;
+                }
+                task.RenderEnd = renderEnd;
+            } else if (!TryParseDate(task.EndSpec, document.DateFormat, out end, document.DateAnchor)) {
+                Fail(slot, result, "Gantt task end values must be dates, durations or until clauses." + AnchorHint(document));
                 return;
             }
-            task.RenderEnd = renderEnd;
-        } else if (!TryParseDate(task.EndSpec, document.DateFormat, out end, document.DateAnchor)) {
-            Fail(slot, result, "Gantt task end values must be dates, durations or until clauses." + AnchorHint(document));
-            return;
         }
         if (end < taskStart) Fail(slot, result, "Gantt task end must be greater than or equal to start.");
         else slot.Value = end;
