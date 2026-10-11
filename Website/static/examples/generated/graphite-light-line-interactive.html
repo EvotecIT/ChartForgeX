@@ -865,7 +865,9 @@ body {
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
+  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"]');
   const isInteractiveTarget = (node) => {
+    if (isPassiveTarget(node)) return false;
     const role = (node.dataset || {}).cfxRole;
     if (role === 'legend-entry-omitted') return false;
     if (role === 'legend-item') return true;
@@ -877,7 +879,7 @@ body {
     return !!(data.cfxTargetKind && data.cfxTargetId
       && (data.cfxTargetKind !== ownerData.cfxTargetKind || data.cfxTargetId !== ownerData.cfxTargetId));
   };
-  const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
+  const interactiveTargets = (root, selector = targetSelector) => Array.from(root.querySelectorAll(selector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
     // Only the renderer-owned cell link is a mark's alternate keyboard target.
     const link = node.parentElement;
@@ -892,7 +894,7 @@ body {
       ? { targetKind: data.cfxLegendTargetKind, targetId: data.cfxLegendTargetId } : null;
   };
   const referencedTargetNode = (root, target) => Array.from(root.querySelectorAll('[data-cfx-target-kind][data-cfx-target-id]'))
-    .find((node) => (node.dataset || {}).cfxRole !== 'legend-item'
+    .find((node) => isInteractiveTarget(node) && (node.dataset || {}).cfxRole !== 'legend-item'
       && node.dataset.cfxTargetKind === target.targetKind && node.dataset.cfxTargetId === target.targetId
       && (!target.seriesKey || seriesKey(node) === target.seriesKey));
   const seriesLegend = (node) => {
@@ -1227,7 +1229,7 @@ body {
   const compareItems = (root) => {
     const items = [];
     const seen = new Set();
-    root.querySelectorAll('.cfx-selected').forEach((node) => {
+    interactiveTargets(root, '.cfx-selected').forEach((node) => {
       const target = targetIdentity(node);
       const key = targetKey(target);
       if (!key || seen.has(key)) return;
@@ -2955,7 +2957,7 @@ body {
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
     if (!target) return false;
-    const nodes = Array.from(root.querySelectorAll(targetSelector));
+    const nodes = interactiveTargets(root);
     const localNode = nodes.find((node) => matchesTargetIdentity(node, target));
     if (!localNode && target.targetKind && target.targetId) return false;
     // A peer's equivalent mark may have a different local point ordinal or series position.
@@ -2996,7 +2998,7 @@ body {
     root._cfxFocusTrail = targets;
     root.dataset.cfxTrailCount = String(targets.length);
     targets.forEach((target, index) => {
-      root.querySelectorAll(targetSelector).forEach((node) => {
+      interactiveTargets(root).forEach((node) => {
         if (!matchesTargetIdentity(node, target)) return;
         node.classList.add('cfx-trail');
         node.dataset.cfxTrailIndex = String(index + 1);
@@ -3059,7 +3061,7 @@ body {
     layer.replaceChildren();
     layer.hidden = false;
     (nodes || []).forEach((node) => {
-      if (!node || !stage.contains(node) || node.closest('[data-cfx-role="legend-item"]')) return;
+      if (!node || !isInteractiveTarget(node) || !stage.contains(node) || node.closest('[data-cfx-role="legend-item"]')) return;
       const target = targetIdentity(node);
       const labelText = revealText(node, target);
       const key = [labelText, target.series ?? '', target.point ?? '', target.value || ''].join('|');
@@ -3112,7 +3114,7 @@ body {
     const nodes = [];
     const seen = new Set();
     targets.forEach((target) => {
-      root.querySelectorAll(targetSelector).forEach((node) => {
+      interactiveTargets(root).forEach((node) => {
         if (!matchesTargetIdentity(node, target)) return;
         const key = targetKey(targetIdentity(node));
         if (!key || seen.has(key)) return;
@@ -3170,11 +3172,11 @@ body {
     const svg = stage.querySelector('svg');
     const plotSurface = event.target === stage || event.target === svg || event.target instanceof SVGElement
       && svg?.contains(event.target) && !event.target.closest('foreignObject')
-      && inferredPlotSurfaceRoles.has(event.target.dataset.cfxRole);
+      && (isPassiveTarget(event.target) || inferredPlotSurfaceRoles.has(event.target.dataset.cfxRole));
     if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (!usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
+      if (!isInteractiveTarget(node) || !usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
       const x = box.left + box.width / 2, y = box.top + box.height / 2;
@@ -3269,7 +3271,7 @@ body {
   };
   const applySelectionByLabel = (root, label, selected) => {
     if (!label) return;
-    root.querySelectorAll(targetSelector).forEach((node) => {
+    interactiveTargets(root).forEach((node) => {
       if (text(node) === label) setNodeSelected(node, selected);
     });
     syncResetControl(root);
@@ -3293,7 +3295,7 @@ body {
   const applySelectionByTarget = (root, target, selected) => {
     if (!target) return false;
     let matched = false;
-    root.querySelectorAll(targetSelector).forEach((node) => {
+    interactiveTargets(root).forEach((node) => {
       if (!matchesTargetIdentity(node, target)) return;
       matched = true;
       setNodeSelected(node, selected);
@@ -3328,7 +3330,7 @@ body {
     if (!hasFeature(root, 'Selection')) return [];
     if (!append) clearSelections(root);
     const targets = [];
-    root.querySelectorAll(lassoSelector).forEach((node) => {
+    interactiveTargets(root, lassoSelector).forEach((node) => {
       if (node.closest('[data-cfx-role="legend-item"]')) return;
       if (!nodeCenterInRect(node, rect)) return;
       setNodeSelected(node, true);
