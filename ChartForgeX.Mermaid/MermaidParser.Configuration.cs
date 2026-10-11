@@ -148,7 +148,7 @@ public sealed partial class MermaidParser {
             double.TryParse(value.EndsWith("px", StringComparison.OrdinalIgnoreCase) ? value.Substring(0, value.Length - 2) : value,
                 NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var size) && size >= 1 && size <= 256) return size;
         if (setting.IsString && value != null && value.Length <= 4096 &&
-            Regex.IsMatch(value, @"^(?:\+?(?:[0-9]*\.[0-9]+|[0-9]+)(?:[eE][+-]?[0-9]+)?(?:em|rem|pt|pc|in|cm|mm|vh|vw|vmin|vmax|ch|ex|%)|(?:calc|var|min|max|clamp|env)\(.+\)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger|inherit|initial|unset|revert|revert-layer)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)) return null;
+            Regex.IsMatch(value, @"^(?:\+?(?:[0-9]*\.[0-9]+|[0-9]+)(?:[eE][+-]?[0-9]+)?(?:r?(?:em|ex|cap|ch|ic|lh)|pt|pc|in|cm|mm|q|[sld]?v(?:h|w|i|b|min|max)|cq(?:h|w|i|b|min|max)|%)|(?:calc|var|min|max|clamp|env)\(.+\)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger|inherit|initial|unset|revert|revert-layer)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)) return null;
         invalid = true;
         ConfigurationError(result, setting.Span, "Mermaid configuration 'themeVariables.fontSize' must be a pixel size from 1 through 256, such as 18 or '18px'.");
         return null;

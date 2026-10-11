@@ -18,17 +18,18 @@ public sealed partial class PngVisualBlockRenderer {
         foreach (var branch in layout.Branches) DrawFishboneBranch(canvas, branch, theme);
         canvas.FillRoundedRect(layout.Head.X, layout.Head.Y, layout.Head.Width, layout.Head.Height, Math.Min(16, layout.Head.Height * 0.28), theme.PlotBackground);
         canvas.StrokeRoundedRect(layout.Head.X, layout.Head.Y, layout.Head.Width, layout.Head.Height, Math.Min(16, layout.Head.Height * 0.28), VisualBlockRendering.PaletteAt(theme, 0), 2);
-        DrawCenteredTextMiddle(canvas, block.Effect, layout.Head.X + layout.Head.Width / 2, layout.Head.Y + layout.Head.Height / 2, VisualBlockRendering.BodyFontSize(theme, 13.5), theme.Text, true, layout.Head.Width - 20);
+        var effectStyle = VisualBlockRendering.FitBodyTextStyle(theme, block.Effect, 13.5, layout.Head.Width - 20, layout.Head.Height - 16, 800);
+        DrawFittedBodyText(canvas, block.Effect, layout.Head.X + 10, VisualBlockRendering.BlockLayoutBaseline(effectStyle, layout.Head.Y + layout.Head.Height / 2), layout.Head.Width - 20, layout.Head.Height - 16, TextAlignment.Center, theme.Text, theme, 13.5, 800);
     }
 
     private static void DrawFishboneBranch(RgbaCanvas canvas, VisualBlockRendering.FishboneBranchPlacement branch, ChartForgeX.Themes.ChartTheme theme) {
         var color = VisualBlockRendering.PaletteAt(theme, branch.Index);
         canvas.DrawLine(branch.BaseX, branch.BaseY, branch.EndX, branch.EndY, color, 2);
-        DrawCenteredTextMiddle(canvas, branch.Cause.Label, branch.LabelX + branch.LabelWidth / 2, branch.LabelY, VisualBlockRendering.BodyFontSize(theme, 12.5), theme.Text, true, branch.LabelWidth);
+        DrawFittedBodyText(canvas, branch.Cause.Label, branch.LabelX, branch.LabelY, branch.LabelWidth, 24, TextAlignment.Center, theme.Text, theme, 12.5, 750);
         for (var index = 0; index < branch.Children.Count; index++) {
             var child = branch.Children[index];
             canvas.DrawLine(child.AnchorX, child.AnchorY, child.EndX, child.EndY, theme.Axis.WithAlpha(145), Math.Max(1, 1.5 - child.Depth * 0.08));
-            DrawAlignedTextAtBaseline(canvas, child.Cause.Label, child.LabelX, child.LabelY, child.LabelWidth, TextAlignment.Right, theme.MutedText, VisualBlockRendering.BodyFontSize(theme, Math.Max(8.5, 12.5 - child.Depth)), true);
+            DrawFittedBodyText(canvas, child.Cause.Label, child.LabelX, child.LabelY, child.LabelWidth, 20, TextAlignment.Right, theme.MutedText, theme, Math.Max(8.5, 12.5 - child.Depth), 600);
         }
     }
 }

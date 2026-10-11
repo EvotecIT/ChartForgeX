@@ -149,6 +149,13 @@ public sealed class MermaidFontSizeTests {
     [InlineData(".5vh")]
     [InlineData("5e-1em")]
     [InlineData("18pt")]
+    [InlineData("1lh")]
+    [InlineData("1rlh")]
+    [InlineData("1dvh")]
+    [InlineData("1Q")]
+    [InlineData(".5rcap")]
+    [InlineData("1svmin")]
+    [InlineData("1cqi")]
     [InlineData("var(--label-size)")]
     public void UnsupportedCssSizingRetainsItsDeclarationAndWarning(string value) {
         var result = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontSize':'" + value + "'}}}%%\nflowchart LR\nA --> B");

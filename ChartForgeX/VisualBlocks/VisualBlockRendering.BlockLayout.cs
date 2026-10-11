@@ -24,8 +24,8 @@ internal static partial class VisualBlockRendering {
         FitBodyTextStyle(theme, text, defaultSize, width, height, 700);
 
     public static double BlockLayoutBaseline(TextStyle style, double centerY) {
-        var ascent = TypographyFontResolver.ResolveFace(style.Font).Font?.Ascent(style.FontSize) ?? style.FontSize * .82;
-        return centerY - ChartLabelScene.MeasureText("Mg", style).Height / 2 + ascent;
+        var ascent = VisualBlockRendering.TextAscent(style);
+        return centerY - TextLayoutEngine.Measure("Mg", style).Height / 2 + ascent;
     }
 
     public static void ValidateBlockLayout(BlockLayoutBlock block) {
