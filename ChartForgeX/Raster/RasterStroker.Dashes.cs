@@ -6,10 +6,14 @@ namespace ChartForgeX.Raster;
 
 internal static partial class RasterStroker {
     private const int MaximumDashPieces = 100000;
+    private const int MaximumDashWork = 500000;
 
     internal sealed class DashBudget {
         private readonly HashSet<(int Path, int Segment, double Cycle, int Entry)> _pieces = new();
+        private int _work;
         internal void Consume(int path, int segment, double cycle, int entry) {
+            // Unique geometry bounds memory; repeated tile regeneration also needs an aggregate work guard.
+            if (++_work > MaximumDashWork) throw new InvalidOperationException("The stroke exceeds the raster dash-work limit.");
             // Tile bleed may revisit a dash. Its contour, segment and pattern identity remain unchanged.
             if (_pieces.Add((path, segment, cycle, entry)) && _pieces.Count > MaximumDashPieces)
                 throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");

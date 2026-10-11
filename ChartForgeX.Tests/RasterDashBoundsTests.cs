@@ -8,6 +8,10 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class RasterDashBoundsTests {
+    [Fact]
+    public void SvgOverlappingTilesRetainAnAggregateWorkLimit() => Assert.Throws<System.NotSupportedException>(() =>
+        SvgRasterizer.Rasterize("<svg xmlns='http://www.w3.org/2000/svg' width='1048576' height='1'><path d='M0 .5 H2048' fill='none' stroke='#000' stroke-width='1048576' stroke-dasharray='1 1'/></svg>"));
+
     [Theory]
     [InlineData(64)]
     [InlineData(256)]
