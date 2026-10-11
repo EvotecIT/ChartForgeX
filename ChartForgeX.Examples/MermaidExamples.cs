@@ -5,6 +5,7 @@ using ChartForgeX.VisualArtifacts;
 internal static class MermaidExamples {
     internal static void Write(string output) {
         var examples = new Dictionary<string, string> {
+            ["mermaid-source-font-size-axis-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nxychart-beta\nx-axis Month [Jan,Feb,Mar]\ny-axis Count 0 --> 100\nbar [20,50,80]\n",
             ["mermaid-source-font-size-actor-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':'+2.56e2px'}}}%%\nusecase-beta\ndirection LR\nactor API\nactor UI\n",
             ["mermaid-source-font-size-tile-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nflowchart LR\nAPI\nUI\n",
             ["mermaid-source-font-size-git-cherry-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\ngitGraph\ncommit id: \"base\"\nbranch dev\ncommit id: \"work\"\ncheckout main\ncherry-pick id: \"work\"\n",

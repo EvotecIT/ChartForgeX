@@ -5090,6 +5090,30 @@
       }
     },
     {
+      "name": "mermaid-source-font-size-axis-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 520,
+      "logicalWidth": 900.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 233998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 532,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-source-font-size-block",
       "layout": {
         "heightMode": "fixed",
