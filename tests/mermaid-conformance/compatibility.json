@@ -15,28 +15,6 @@
     }
   },
   "fixtures": {
-    "fixtures/packet-source-options.mmd": {
-      "syntax": {
-        "10": "rejected",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored row splitting and label visibility case from https://mermaid.js.org/syntax/packet.html and the packet configuration schema; pinned references qualify resolved row ranges and retained source settings."
-    },
-    "fixtures/packet-descending.mmd": {
-      "syntax": {
-        "10": "rejected",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored descending row case from https://mermaid.js.org/syntax/packet.html#bit-numbering-order-v12-0-0. The accepting references resolve identical inclusive field ranges; auxiliary split-field bits counters are excluded because they disagree with those ranges.",
-      "expectedByReference": {
-        "11": "packet-descending.expected.11.json"
-      },
-      "notes": {
-        "11": "The pinned Mermaid 11 engine removes bitOrder and paints ascending rows. The pinned Mermaid 12 engine retains descending order; source ranges remain identical."
-      }
-    },
     "fixtures/theme-variable-font-size.mmd": {
       "syntax": {
         "10": "accepted",
@@ -601,6 +579,76 @@
         "12": "accepted"
       },
       "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
+    },
+    "fixtures/packet-source-options.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored row splitting and label visibility case from https://mermaid.js.org/syntax/packet.html and the packet configuration schema; pinned references qualify resolved row ranges and retained source settings."
+    },
+    "fixtures/packet-descending.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored descending row case from https://mermaid.js.org/syntax/packet.html#bit-numbering-order-v12-0-0. The accepting references resolve identical inclusive field ranges; auxiliary split-field bits counters are excluded because they disagree with those ranges.",
+      "expectedByReference": {
+        "11": "packet-descending.expected.11.json"
+      },
+      "notes": {
+        "11": "The pinned Mermaid 11 engine removes bitOrder and paints ascending rows. The pinned Mermaid 12 engine retains descending order; source ranges remain identical."
+      }
+    },
+    "fixtures/radar-capped-circle.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-capped-polygon.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-circle.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-fractional-guides.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html and pinned Mermaid 11/12 renderer: fractional ticks retain the authored radial spacing divisor; 2.5 draws three guides at 0.4, 0.8 and 1.2 times the axis radius."
+    },
+    "fixtures/radar-polygon.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-zero-guides.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/radar.html: zero hides concentric guides while preserving axes, observations and source configuration; pinned Mermaid 11 and 12 accept the case."
     }
   }
 }

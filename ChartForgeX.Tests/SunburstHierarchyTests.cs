@@ -174,6 +174,6 @@ public sealed class SunburstHierarchyTests {
         }
         var treemap = new[] { new ChartHierarchyItem("group", "Group", value: 10), new ChartHierarchyItem("leaf", "Leaf", "group", 2) };
         Assert.Throws<ArgumentException>(() => Chart.Create().AddTreemap("Still aggregated", treemap));
-        Assert.Null(Chart.Create().Options.Sunburst.ColorScale); Assert.True(Chart.Create().Options.Sunburst.ShowColorScaleLegend);
+        Assert.Null(Chart.Create().Options.Sunburst.ColorScale); Assert.True(Chart.Create().Options.Sunburst.ColorDimension.ShowLegend);
     }
 }

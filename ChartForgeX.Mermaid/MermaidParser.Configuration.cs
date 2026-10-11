@@ -107,14 +107,19 @@ public sealed partial class MermaidParser {
             return scoped != null && IsUnusableAppearance(key, scoped)
                 ? configuration.Last(key) ?? scoped : scoped ?? configuration.Last(key);
         }
+        void ValidateString(MermaidConfigurationSetting? setting) {
+            if (setting != null && !IsConfigurationStringValue(setting)) {
+                ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' must be a non-empty string of at most 4096 characters.");
+            }
+        }
+        foreach (var key in new[] { "theme", "layout", "look" }) {
+            ValidateString(configuration.Last(key));
+            ValidateString(configuration.Last(scope + "." + key));
+        }
         string? ReadString(string key) {
             var setting = Selected(key);
-            if (setting == null) return null;
-            if (!setting.IsString || string.IsNullOrWhiteSpace(setting.Value) || setting.Value!.Length > 4096) {
-                ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' must be a non-empty string of at most 4096 characters.");
-                return null;
-            }
-            return setting.Value;
+            if (key == "fontFamily") ValidateString(setting);
+            return setting != null && IsConfigurationStringValue(setting) ? setting.Value : null;
         }
         configuration.Theme = ReadString("theme");
         configuration.Layout = ReadString("layout");
@@ -179,9 +184,16 @@ public sealed partial class MermaidParser {
     private static bool IsNativeTheme(string? value) => string.Equals(value, "dark", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(value, "default", StringComparison.OrdinalIgnoreCase);
 
+    private static bool IsConfigurationStringValue(MermaidConfigurationSetting setting) =>
+        setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) && setting.Value!.Length <= 4096;
+
+    private static bool IsRecognizedTheme(string? value) => IsNativeTheme(value) || value == "base" || value == "forest" ||
+        value == "neutral" || value == "null" || value == "neo" || value == "neo-dark" || value == "redux" ||
+        value == "redux-dark" || value == "redux-color" || value == "redux-dark-color";
+
     private static bool IsUnusableAppearance(string key, MermaidConfigurationSetting setting) {
-        if (!setting.IsString || string.IsNullOrWhiteSpace(setting.Value) || setting.Value!.Length > 4096) return false;
-        return key == "theme" ? !IsNativeTheme(setting.Value) && setting.Value != "base" && setting.Value != "forest" && setting.Value != "neutral" && setting.Value != "null"
+        if (!IsConfigurationStringValue(setting)) return false;
+        return key == "theme" ? !IsRecognizedTheme(setting.Value)
             : key == "look" && setting.Value != "classic" && setting.Value != "handDrawn" && setting.Value != "neo";
     }
 
