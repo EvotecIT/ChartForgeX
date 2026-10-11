@@ -158,7 +158,7 @@ public sealed class PairedObservationClipBrowserTests {
         Assert.Equal(1, await guide.CountAsync());
         await MoveToAsync(page, Point(0, 1));
         Assert.False(await guide.IsHiddenAsync());
-        Assert.Equal("paired:1", await root.GetAttributeAsync("data-cfx-crosshair"));
+        Assert.StartsWith("point|paired:1|", await root.GetAttributeAsync("data-cfx-crosshair") ?? "");
         var position = await page.Locator("[data-cfx-role=difference-second]").EvaluateAsync<double[]>("""
             path=>{
               const matrix=path.getScreenCTM(),anchor=path.getPointAtLength(0).matrixTransform(matrix);
