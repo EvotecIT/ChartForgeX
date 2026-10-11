@@ -1,0 +1,12 @@
+{
+  "treemap": {
+    "nodes": [
+      ["Root", null, null],
+      ["Measured", 1234.5, 0],
+      ["Nested", null, 0],
+      ["Measured", 123.5, 2],
+      ["Zero", 0, 2],
+      ["Repeated separators", 1234, 0]
+    ]
+  }
+}
