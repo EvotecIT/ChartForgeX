@@ -11,6 +11,19 @@ internal static partial class VisualBlockRendering {
     public static double TextAscent(TextStyle style) =>
         TypographyFontResolver.ResolveFace(style.Font).Font?.Ascent(style.FontSize) ?? TextLayoutEngine.Measure("Mg", style).LineHeight;
 
+    // The native fallback has discrete advances, so evaluate candidates instead
+    // of extrapolating from a one-pixel probe.
+    public static double FitFontSize(double minimum, double preferred, Func<double, bool> fits) {
+        if (fits(preferred)) return preferred;
+        var upper = preferred;
+        for (var iteration = 0; iteration < 18; iteration++) {
+            var candidate = (minimum + upper) / 2;
+            if (fits(candidate)) minimum = candidate;
+            else upper = candidate;
+        }
+        return Math.Floor(minimum * 1000) / 1000;
+    }
+
     // Ordinary long captions retain truncation at their default size. Larger requested
     // sizes fit the measured width and height of their semantic cell first.
     public static TextStyle FitBodyTextStyle(ChartTheme theme, string text, double defaultSize, double width, double height, int weight) {
@@ -25,12 +38,7 @@ internal static partial class VisualBlockRendering {
         var preserveWidth = preferred > defaultSize || Fits(minimum, true);
         var lower = Fits(minimum, preserveWidth) ? minimum : 0;
         var upper = preserveWidth ? preferred : minimum;
-        for (var iteration = 0; iteration < 18; iteration++) {
-            var candidate = (lower + upper) / 2;
-            if (Fits(candidate, preserveWidth)) lower = candidate;
-            else upper = candidate;
-        }
-        style.FontSize = Math.Max(.001, Math.Floor(lower * 1000) / 1000);
+        style.FontSize = Math.Max(.001, FitFontSize(lower, upper, size => Fits(size, preserveWidth)));
         return style;
 
         bool Fits(double size, bool includeWidth) {

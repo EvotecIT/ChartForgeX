@@ -70,10 +70,13 @@ internal static partial class VisualBlockRendering {
     }
 
     public static double GitFontSize(GitGraphLayout layout, ChartTheme theme, string text, double defaultSize, double width) {
-        var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = 1, LineHeight = 1 };
-        var measured = TextLayoutEngine.Measure(SingleLineText(text), style).Width;
-        var fitted = measured > 0 ? Math.Max(defaultSize, Math.Max(1, width) / measured) : defaultSize;
-        return Math.Min(defaultSize * layout.FontScale, fitted);
+        var preferred = defaultSize * layout.FontScale;
+        var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = preferred, LineHeight = 1 };
+        var normalized = SingleLineText(text);
+        return FitFontSize(Math.Min(defaultSize, preferred), preferred, size => {
+            style.FontSize = size;
+            return TextLayoutEngine.Measure(normalized, style).Width <= Math.Max(1, width);
+        });
     }
 
     public static GitTagMetrics GitTag(GitGraphLayout layout, ChartTheme theme, string tag, double x, double y, double radius) {

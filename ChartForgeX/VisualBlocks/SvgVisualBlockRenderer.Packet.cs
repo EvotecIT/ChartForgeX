@@ -39,7 +39,7 @@ public sealed partial class SvgVisualBlockRenderer {
                 .EndEmptyElement()
                 .Line();
 
-            if (packet.ShowBitNumbers) WritePacketBitLabels(writer, packet, slice, x, rowY - metrics.BitBaselineOffset, width, theme, metrics.BitFontSize);
+            if (packet.ShowBitNumbers && metrics.BitFontSize > 0) WritePacketBitLabels(writer, packet, slice, x, rowY - metrics.BitBaselineOffset, width, theme, metrics.BitFontSize);
             var fontSize = metrics.FieldFontSize;
             WriteText(writer, slice.Field.Label, x + 5, rowY + rowHeight * 0.58, Math.Max(1, width - 10), TextAlignment.Center, theme.Text, theme.FontFamily, fontSize, "700");
         }
