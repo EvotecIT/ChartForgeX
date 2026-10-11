@@ -34,15 +34,18 @@ internal sealed partial class RgbaCanvas {
     /// painting, so a translucent stroke keeps an even tone. A polyline whose last point repeats
     /// its first is closed.
     /// </summary>
-    internal void StrokePolylines(IReadOnlyList<IReadOnlyList<ChartPoint>> polylines, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin, IReadOnlyList<double>? dashArray = null, double miterLimit = DefaultMiterLimit) {
+    internal void StrokePolylines(IReadOnlyList<IReadOnlyList<ChartPoint>> polylines, ChartColor color, double thickness, RasterLineCap lineCap, RasterLineJoin lineJoin, IReadOnlyList<double>? dashArray = null, double miterLimit = DefaultMiterLimit, double dashOffset = 0) {
         if (polylines == null) throw new ArgumentNullException(nameof(polylines));
         if (color.A == 0 || !(thickness > 0)) return;
         // Outline in device pixels, so the outline is built once at the resolution it is filled at.
         var width = thickness * _scale;
         double[]? pattern = null;
+        var phase = 0d;
         if (dashArray != null && dashArray.Count > 0) {
             pattern = new double[dashArray.Count];
             for (var i = 0; i < pattern.Length; i++) pattern[i] = dashArray[i] * _scale;
+            // Normalize before scaling so a finite large phase cannot overflow in device pixels.
+            phase = ChartStrokeDashes.NormalizeOffset(dashArray, dashOffset) * _scale;
         }
 
         var outline = new List<List<ChartPoint>>();
@@ -56,7 +59,7 @@ internal sealed partial class RgbaCanvas {
             }
 
             double padding = width * Math.Max(1, miterLimit);
-            foreach (var dash in RasterStroker.Dash(device, pattern, -padding, -padding, _pixelWidth + padding, _pixelHeight + padding))
+            foreach (var dash in RasterStroker.Dash(device, pattern, -padding, -padding, _pixelWidth + padding, _pixelHeight + padding, phase))
                 RasterStroker.AppendOutline(dash, width, lineCap, lineJoin, miterLimit, 1, outline);
         }
 

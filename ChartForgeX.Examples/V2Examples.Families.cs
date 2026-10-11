@@ -33,6 +33,7 @@ public static partial class V2Examples {
                 variants.Add("color-dimension"); variants.Add("compact-color-dimension");
             }
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
+            if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) { variants.Add("dashed"); variants.Add("compact-dashed"); }
             if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
                 variants.Add("axis-labels"); variants.Add("compact-axis-labels");
                 variants.Add("all-labels"); variants.Add("compact-all-labels");
@@ -68,6 +69,7 @@ public static partial class V2Examples {
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
                 var subtitle = precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
+                    : variant is "dashed" or "compact-dashed" ? "Direction-specific dash patterns and phase preserve the source prices"
                     : variant is "axis-labels" or "compact-axis-labels" ? "Upright axis-relative labels with independent density"
                     : variant is "all-labels" or "compact-all-labels" ? "All captions fit individually; caption overlaps are intentional"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"

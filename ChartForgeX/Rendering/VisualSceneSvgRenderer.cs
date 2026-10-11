@@ -84,6 +84,8 @@ internal static partial class VisualSceneSvgRenderer {
                     var dash = new StringBuilder();
                     foreach (var length in line.Dash) { if (dash.Length > 0) dash.Append(' '); dash.Append(N(length)); }
                     writer.Attribute("stroke-dasharray", dash.ToString());
+                    var phase = ChartStrokeDashes.NormalizeOffset(line.Dash, line.DashOffset);
+                    if (phase != 0) writer.Attribute("stroke-dashoffset", phase);
                 }
                 writer.EndEmptyElement();
             } else if (node is VisualScenePath path) {
@@ -151,6 +153,10 @@ internal static partial class VisualSceneSvgRenderer {
         if (mark is VisualScenePath path && path.Cap != VisualStrokeCap.Round) writer.Attribute("stroke-linecap", path.Cap.ToString().ToLowerInvariant());
         if (mark is VisualScenePath joined && joined.Join != VisualStrokeJoin.Round) writer.Attribute("stroke-linejoin", joined.Join.ToString().ToLowerInvariant());
         if (mark is VisualScenePath dashed && dashed.Dash != null) writer.Attribute("stroke-dasharray", string.Join(" ", System.Linq.Enumerable.Select(dashed.Dash, N)));
+        if (mark is VisualScenePath phased) {
+            var phase = ChartStrokeDashes.NormalizeOffset(phased.Dash, phased.DashOffset);
+            if (phase != 0) writer.Attribute("stroke-dashoffset", phase);
+        }
     }
 
     private static void Semantics(SvgMarkupWriter writer, VisualSceneNode node, string prefix, int index) {
@@ -260,6 +266,7 @@ internal static partial class VisualSceneSvgRenderer {
                     Point(writer, line.Start); Point(writer, line.End);
                     writer.Write(line.Dash?.Count ?? 0);
                     if (line.Dash != null) foreach (var length in line.Dash) writer.Write(length);
+                    WriteDashOffsetIdentity(writer, line.DashOffset);
                 } else if (node is VisualScenePath path) {
                     WritePathIdentity(writer, path);
                 } else if (node is VisualSceneSlice slice) {
