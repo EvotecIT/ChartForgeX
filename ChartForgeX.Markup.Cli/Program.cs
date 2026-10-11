@@ -186,7 +186,8 @@ internal static class Program {
     private static void WriteDiagnostics(VisualMarkupParseResult result) {
         foreach (var diagnostic in result.Diagnostics) {
             var line = diagnostic.Line > 0 ? "(" + diagnostic.Line.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")" : string.Empty;
-            var text = diagnostic.Severity.ToString().ToLowerInvariant() + line + ": " + diagnostic.Message;
+            var code = string.IsNullOrWhiteSpace(diagnostic.Code) ? string.Empty : " " + diagnostic.Code;
+            var text = diagnostic.Severity.ToString().ToLowerInvariant() + code + line + ": " + diagnostic.Message;
             Console.Error.WriteLine(text);
         }
     }

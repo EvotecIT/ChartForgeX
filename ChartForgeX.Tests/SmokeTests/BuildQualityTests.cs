@@ -106,6 +106,13 @@ internal static partial class SmokeTests {
         using var projectBuild = JsonDocument.Parse(File.ReadAllText(Path.Combine(FindRepositoryRoot(), "Build", "project.build.json")));
         var projectBuildRoot = projectBuild.RootElement;
         Assert(projectBuildRoot.GetProperty("ExpectedVersionMapAsInclude").GetBoolean(), "Build-Project manifest should treat ExpectedVersionMap as the tracked package include list.");
+        Assert(projectBuildRoot.GetProperty("AlignPackageVersions").GetBoolean(), "Build-Project should resolve one release version across the package family.");
+        Assert(projectBuildRoot.GetProperty("UpdateVersions").GetBoolean(), "Build-Project should synchronize source versions to the coordinated release.");
+        Assert(projectBuildRoot.GetProperty("PackStrategy").GetString() == "PerProject", "Build-Project should package the selected libraries and dotnet tool individually.");
+        var sharedVersionBinding = projectBuildRoot.GetProperty("VersionBindings").EnumerateArray().Single();
+        Assert(sharedVersionBinding.GetProperty("Path").GetString() == "Directory.Build.props" &&
+               sharedVersionBinding.GetProperty("Project").GetString() == "ChartForgeX",
+            "Build-Project should bind shared assembly and package metadata to the core release version.");
         var expectedVersionMap = projectBuildRoot.GetProperty("ExpectedVersionMap");
         foreach (var packageProject in new[] {
             "ChartForgeX",
@@ -115,7 +122,8 @@ internal static partial class SmokeTests {
             "ChartForgeX.Interactivity.Html",
             "ChartForgeX.Markup",
             "ChartForgeX.Mermaid",
-            "ChartForgeX.Markup.Mermaid"
+            "ChartForgeX.Markup.Mermaid",
+            "ChartForgeX.Markup.Cli"
         }) {
             Assert(expectedVersionMap.TryGetProperty(packageProject, out var expectedVersion) && string.Equals(expectedVersion.GetString(), expectedReleaseLane, StringComparison.Ordinal), "Build-Project manifest should track the current product release lane for package project: " + packageProject + ".");
             var projectFile = File.ReadAllText(Path.Combine(FindRepositoryRoot(), packageProject, packageProject + ".csproj"));
