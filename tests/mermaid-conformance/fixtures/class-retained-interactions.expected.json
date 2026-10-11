@@ -1,0 +1,5 @@
+{
+  "classes": ["A", "B"],
+  "direction": "RL",
+  "nativeRetainedStatements": ["note for A \"Keep: https://example.invalid\"", "click A href \"https://example.invalid\" \"Open\""]
+}

@@ -166,12 +166,60 @@
     "family-box-plot-compact-dark.svg",
     "family-box-plot-compact-dark.thumbnail.png",
     "family-box-plot-compact-dark.thumbnail.svg",
+    "family-box-plot-compact-horizontal-dark.csharp.txt",
+    "family-box-plot-compact-horizontal-dark.html",
+    "family-box-plot-compact-horizontal-dark.png",
+    "family-box-plot-compact-horizontal-dark.svg",
+    "family-box-plot-compact-horizontal-dark.thumbnail.png",
+    "family-box-plot-compact-horizontal-dark.thumbnail.svg",
+    "family-box-plot-compact-horizontal-light.csharp.txt",
+    "family-box-plot-compact-horizontal-light.html",
+    "family-box-plot-compact-horizontal-light.png",
+    "family-box-plot-compact-horizontal-light.svg",
+    "family-box-plot-compact-horizontal-light.thumbnail.png",
+    "family-box-plot-compact-horizontal-light.thumbnail.svg",
     "family-box-plot-compact-light.csharp.txt",
     "family-box-plot-compact-light.html",
     "family-box-plot-compact-light.png",
     "family-box-plot-compact-light.svg",
     "family-box-plot-compact-light.thumbnail.png",
     "family-box-plot-compact-light.thumbnail.svg",
+    "family-box-plot-compact-options-dark.csharp.txt",
+    "family-box-plot-compact-options-dark.html",
+    "family-box-plot-compact-options-dark.png",
+    "family-box-plot-compact-options-dark.svg",
+    "family-box-plot-compact-options-dark.thumbnail.png",
+    "family-box-plot-compact-options-dark.thumbnail.svg",
+    "family-box-plot-compact-options-light.csharp.txt",
+    "family-box-plot-compact-options-light.html",
+    "family-box-plot-compact-options-light.png",
+    "family-box-plot-compact-options-light.svg",
+    "family-box-plot-compact-options-light.thumbnail.png",
+    "family-box-plot-compact-options-light.thumbnail.svg",
+    "family-box-plot-horizontal-dark.csharp.txt",
+    "family-box-plot-horizontal-dark.html",
+    "family-box-plot-horizontal-dark.png",
+    "family-box-plot-horizontal-dark.svg",
+    "family-box-plot-horizontal-dark.thumbnail.png",
+    "family-box-plot-horizontal-dark.thumbnail.svg",
+    "family-box-plot-horizontal-light.csharp.txt",
+    "family-box-plot-horizontal-light.html",
+    "family-box-plot-horizontal-light.png",
+    "family-box-plot-horizontal-light.svg",
+    "family-box-plot-horizontal-light.thumbnail.png",
+    "family-box-plot-horizontal-light.thumbnail.svg",
+    "family-box-plot-options-dark.csharp.txt",
+    "family-box-plot-options-dark.html",
+    "family-box-plot-options-dark.png",
+    "family-box-plot-options-dark.svg",
+    "family-box-plot-options-dark.thumbnail.png",
+    "family-box-plot-options-dark.thumbnail.svg",
+    "family-box-plot-options-light.csharp.txt",
+    "family-box-plot-options-light.html",
+    "family-box-plot-options-light.png",
+    "family-box-plot-options-light.svg",
+    "family-box-plot-options-light.thumbnail.png",
+    "family-box-plot-options-light.thumbnail.svg",
     "family-box-plot-wide-dark.csharp.txt",
     "family-box-plot-wide-dark.html",
     "family-box-plot-wide-dark.png",
@@ -382,6 +430,18 @@
     "family-candlestick-compact-dark.svg",
     "family-candlestick-compact-dark.thumbnail.png",
     "family-candlestick-compact-dark.thumbnail.svg",
+    "family-candlestick-compact-dashed-dark.csharp.txt",
+    "family-candlestick-compact-dashed-dark.html",
+    "family-candlestick-compact-dashed-dark.png",
+    "family-candlestick-compact-dashed-dark.svg",
+    "family-candlestick-compact-dashed-dark.thumbnail.png",
+    "family-candlestick-compact-dashed-dark.thumbnail.svg",
+    "family-candlestick-compact-dashed-light.csharp.txt",
+    "family-candlestick-compact-dashed-light.html",
+    "family-candlestick-compact-dashed-light.png",
+    "family-candlestick-compact-dashed-light.svg",
+    "family-candlestick-compact-dashed-light.thumbnail.png",
+    "family-candlestick-compact-dashed-light.thumbnail.svg",
     "family-candlestick-compact-light.csharp.txt",
     "family-candlestick-compact-light.html",
     "family-candlestick-compact-light.png",
@@ -400,6 +460,18 @@
     "family-candlestick-compact-options-light.svg",
     "family-candlestick-compact-options-light.thumbnail.png",
     "family-candlestick-compact-options-light.thumbnail.svg",
+    "family-candlestick-dashed-dark.csharp.txt",
+    "family-candlestick-dashed-dark.html",
+    "family-candlestick-dashed-dark.png",
+    "family-candlestick-dashed-dark.svg",
+    "family-candlestick-dashed-dark.thumbnail.png",
+    "family-candlestick-dashed-dark.thumbnail.svg",
+    "family-candlestick-dashed-light.csharp.txt",
+    "family-candlestick-dashed-light.html",
+    "family-candlestick-dashed-light.png",
+    "family-candlestick-dashed-light.svg",
+    "family-candlestick-dashed-light.thumbnail.png",
+    "family-candlestick-dashed-light.thumbnail.svg",
     "family-candlestick-options-dark.csharp.txt",
     "family-candlestick-options-dark.html",
     "family-candlestick-options-dark.png",
@@ -484,6 +556,54 @@
     "family-circle-wide-light.svg",
     "family-circle-wide-light.thumbnail.png",
     "family-circle-wide-light.thumbnail.svg",
+    "family-difference-area-compact-dark.csharp.txt",
+    "family-difference-area-compact-dark.html",
+    "family-difference-area-compact-dark.png",
+    "family-difference-area-compact-dark.svg",
+    "family-difference-area-compact-dark.thumbnail.png",
+    "family-difference-area-compact-dark.thumbnail.svg",
+    "family-difference-area-compact-dated-gaps-dark.csharp.txt",
+    "family-difference-area-compact-dated-gaps-dark.html",
+    "family-difference-area-compact-dated-gaps-dark.png",
+    "family-difference-area-compact-dated-gaps-dark.svg",
+    "family-difference-area-compact-dated-gaps-dark.thumbnail.png",
+    "family-difference-area-compact-dated-gaps-dark.thumbnail.svg",
+    "family-difference-area-compact-dated-gaps-light.csharp.txt",
+    "family-difference-area-compact-dated-gaps-light.html",
+    "family-difference-area-compact-dated-gaps-light.png",
+    "family-difference-area-compact-dated-gaps-light.svg",
+    "family-difference-area-compact-dated-gaps-light.thumbnail.png",
+    "family-difference-area-compact-dated-gaps-light.thumbnail.svg",
+    "family-difference-area-compact-light.csharp.txt",
+    "family-difference-area-compact-light.html",
+    "family-difference-area-compact-light.png",
+    "family-difference-area-compact-light.svg",
+    "family-difference-area-compact-light.thumbnail.png",
+    "family-difference-area-compact-light.thumbnail.svg",
+    "family-difference-area-dated-gaps-dark.csharp.txt",
+    "family-difference-area-dated-gaps-dark.html",
+    "family-difference-area-dated-gaps-dark.png",
+    "family-difference-area-dated-gaps-dark.svg",
+    "family-difference-area-dated-gaps-dark.thumbnail.png",
+    "family-difference-area-dated-gaps-dark.thumbnail.svg",
+    "family-difference-area-dated-gaps-light.csharp.txt",
+    "family-difference-area-dated-gaps-light.html",
+    "family-difference-area-dated-gaps-light.png",
+    "family-difference-area-dated-gaps-light.svg",
+    "family-difference-area-dated-gaps-light.thumbnail.png",
+    "family-difference-area-dated-gaps-light.thumbnail.svg",
+    "family-difference-area-wide-dark.csharp.txt",
+    "family-difference-area-wide-dark.html",
+    "family-difference-area-wide-dark.png",
+    "family-difference-area-wide-dark.svg",
+    "family-difference-area-wide-dark.thumbnail.png",
+    "family-difference-area-wide-dark.thumbnail.svg",
+    "family-difference-area-wide-light.csharp.txt",
+    "family-difference-area-wide-light.html",
+    "family-difference-area-wide-light.png",
+    "family-difference-area-wide-light.svg",
+    "family-difference-area-wide-light.thumbnail.png",
+    "family-difference-area-wide-light.thumbnail.svg",
     "family-donut-compact-dark.csharp.txt",
     "family-donut-compact-dark.html",
     "family-donut-compact-dark.png",
@@ -1090,6 +1210,18 @@
     "family-ohlc-compact-dark.svg",
     "family-ohlc-compact-dark.thumbnail.png",
     "family-ohlc-compact-dark.thumbnail.svg",
+    "family-ohlc-compact-dashed-dark.csharp.txt",
+    "family-ohlc-compact-dashed-dark.html",
+    "family-ohlc-compact-dashed-dark.png",
+    "family-ohlc-compact-dashed-dark.svg",
+    "family-ohlc-compact-dashed-dark.thumbnail.png",
+    "family-ohlc-compact-dashed-dark.thumbnail.svg",
+    "family-ohlc-compact-dashed-light.csharp.txt",
+    "family-ohlc-compact-dashed-light.html",
+    "family-ohlc-compact-dashed-light.png",
+    "family-ohlc-compact-dashed-light.svg",
+    "family-ohlc-compact-dashed-light.thumbnail.png",
+    "family-ohlc-compact-dashed-light.thumbnail.svg",
     "family-ohlc-compact-light.csharp.txt",
     "family-ohlc-compact-light.html",
     "family-ohlc-compact-light.png",
@@ -1108,6 +1240,18 @@
     "family-ohlc-compact-options-light.svg",
     "family-ohlc-compact-options-light.thumbnail.png",
     "family-ohlc-compact-options-light.thumbnail.svg",
+    "family-ohlc-dashed-dark.csharp.txt",
+    "family-ohlc-dashed-dark.html",
+    "family-ohlc-dashed-dark.png",
+    "family-ohlc-dashed-dark.svg",
+    "family-ohlc-dashed-dark.thumbnail.png",
+    "family-ohlc-dashed-dark.thumbnail.svg",
+    "family-ohlc-dashed-light.csharp.txt",
+    "family-ohlc-dashed-light.html",
+    "family-ohlc-dashed-light.png",
+    "family-ohlc-dashed-light.svg",
+    "family-ohlc-dashed-light.thumbnail.png",
+    "family-ohlc-dashed-light.thumbnail.svg",
     "family-ohlc-options-dark.csharp.txt",
     "family-ohlc-options-dark.html",
     "family-ohlc-options-dark.png",
@@ -1180,6 +1324,42 @@
     "family-pie-wide-light.svg",
     "family-pie-wide-light.thumbnail.png",
     "family-pie-wide-light.thumbnail.svg",
+    "family-polar-angular-reversal-dark.csharp.txt",
+    "family-polar-angular-reversal-dark.html",
+    "family-polar-angular-reversal-dark.png",
+    "family-polar-angular-reversal-dark.svg",
+    "family-polar-angular-reversal-dark.thumbnail.png",
+    "family-polar-angular-reversal-dark.thumbnail.svg",
+    "family-polar-angular-reversal-light.csharp.txt",
+    "family-polar-angular-reversal-light.html",
+    "family-polar-angular-reversal-light.png",
+    "family-polar-angular-reversal-light.svg",
+    "family-polar-angular-reversal-light.thumbnail.png",
+    "family-polar-angular-reversal-light.thumbnail.svg",
+    "family-polar-area-angular-reversal-dark.csharp.txt",
+    "family-polar-area-angular-reversal-dark.html",
+    "family-polar-area-angular-reversal-dark.png",
+    "family-polar-area-angular-reversal-dark.svg",
+    "family-polar-area-angular-reversal-dark.thumbnail.png",
+    "family-polar-area-angular-reversal-dark.thumbnail.svg",
+    "family-polar-area-angular-reversal-light.csharp.txt",
+    "family-polar-area-angular-reversal-light.html",
+    "family-polar-area-angular-reversal-light.png",
+    "family-polar-area-angular-reversal-light.svg",
+    "family-polar-area-angular-reversal-light.thumbnail.png",
+    "family-polar-area-angular-reversal-light.thumbnail.svg",
+    "family-polar-area-compact-angular-reversal-dark.csharp.txt",
+    "family-polar-area-compact-angular-reversal-dark.html",
+    "family-polar-area-compact-angular-reversal-dark.png",
+    "family-polar-area-compact-angular-reversal-dark.svg",
+    "family-polar-area-compact-angular-reversal-dark.thumbnail.png",
+    "family-polar-area-compact-angular-reversal-dark.thumbnail.svg",
+    "family-polar-area-compact-angular-reversal-light.csharp.txt",
+    "family-polar-area-compact-angular-reversal-light.html",
+    "family-polar-area-compact-angular-reversal-light.png",
+    "family-polar-area-compact-angular-reversal-light.svg",
+    "family-polar-area-compact-angular-reversal-light.thumbnail.png",
+    "family-polar-area-compact-angular-reversal-light.thumbnail.svg",
     "family-polar-area-compact-dark.csharp.txt",
     "family-polar-area-compact-dark.html",
     "family-polar-area-compact-dark.png",
@@ -1204,6 +1384,18 @@
     "family-polar-area-wide-light.svg",
     "family-polar-area-wide-light.thumbnail.png",
     "family-polar-area-wide-light.thumbnail.svg",
+    "family-polar-compact-angular-reversal-dark.csharp.txt",
+    "family-polar-compact-angular-reversal-dark.html",
+    "family-polar-compact-angular-reversal-dark.png",
+    "family-polar-compact-angular-reversal-dark.svg",
+    "family-polar-compact-angular-reversal-dark.thumbnail.png",
+    "family-polar-compact-angular-reversal-dark.thumbnail.svg",
+    "family-polar-compact-angular-reversal-light.csharp.txt",
+    "family-polar-compact-angular-reversal-light.html",
+    "family-polar-compact-angular-reversal-light.png",
+    "family-polar-compact-angular-reversal-light.svg",
+    "family-polar-compact-angular-reversal-light.thumbnail.png",
+    "family-polar-compact-angular-reversal-light.thumbnail.svg",
     "family-polar-compact-dark.csharp.txt",
     "family-polar-compact-dark.html",
     "family-polar-compact-dark.png",
@@ -1324,6 +1516,30 @@
     "family-pyramid-wide-light.svg",
     "family-pyramid-wide-light.thumbnail.png",
     "family-pyramid-wide-light.thumbnail.svg",
+    "family-radar-angular-reversal-dark.csharp.txt",
+    "family-radar-angular-reversal-dark.html",
+    "family-radar-angular-reversal-dark.png",
+    "family-radar-angular-reversal-dark.svg",
+    "family-radar-angular-reversal-dark.thumbnail.png",
+    "family-radar-angular-reversal-dark.thumbnail.svg",
+    "family-radar-angular-reversal-light.csharp.txt",
+    "family-radar-angular-reversal-light.html",
+    "family-radar-angular-reversal-light.png",
+    "family-radar-angular-reversal-light.svg",
+    "family-radar-angular-reversal-light.thumbnail.png",
+    "family-radar-angular-reversal-light.thumbnail.svg",
+    "family-radar-compact-angular-reversal-dark.csharp.txt",
+    "family-radar-compact-angular-reversal-dark.html",
+    "family-radar-compact-angular-reversal-dark.png",
+    "family-radar-compact-angular-reversal-dark.svg",
+    "family-radar-compact-angular-reversal-dark.thumbnail.png",
+    "family-radar-compact-angular-reversal-dark.thumbnail.svg",
+    "family-radar-compact-angular-reversal-light.csharp.txt",
+    "family-radar-compact-angular-reversal-light.html",
+    "family-radar-compact-angular-reversal-light.png",
+    "family-radar-compact-angular-reversal-light.svg",
+    "family-radar-compact-angular-reversal-light.thumbnail.png",
+    "family-radar-compact-angular-reversal-light.thumbnail.svg",
     "family-radar-compact-dark.csharp.txt",
     "family-radar-compact-dark.html",
     "family-radar-compact-dark.png",
@@ -1552,6 +1768,18 @@
     "family-radial-column-compact-light.svg",
     "family-radial-column-compact-light.thumbnail.png",
     "family-radial-column-compact-light.thumbnail.svg",
+    "family-radial-column-compact-mixed-angular-reversal-dark.csharp.txt",
+    "family-radial-column-compact-mixed-angular-reversal-dark.html",
+    "family-radial-column-compact-mixed-angular-reversal-dark.png",
+    "family-radial-column-compact-mixed-angular-reversal-dark.svg",
+    "family-radial-column-compact-mixed-angular-reversal-dark.thumbnail.png",
+    "family-radial-column-compact-mixed-angular-reversal-dark.thumbnail.svg",
+    "family-radial-column-compact-mixed-angular-reversal-light.csharp.txt",
+    "family-radial-column-compact-mixed-angular-reversal-light.html",
+    "family-radial-column-compact-mixed-angular-reversal-light.png",
+    "family-radial-column-compact-mixed-angular-reversal-light.svg",
+    "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.png",
+    "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.svg",
     "family-radial-column-compact-mixed-dark.csharp.txt",
     "family-radial-column-compact-mixed-dark.html",
     "family-radial-column-compact-mixed-dark.png",
@@ -1576,6 +1804,18 @@
     "family-radial-column-compact-options-light.svg",
     "family-radial-column-compact-options-light.thumbnail.png",
     "family-radial-column-compact-options-light.thumbnail.svg",
+    "family-radial-column-mixed-angular-reversal-dark.csharp.txt",
+    "family-radial-column-mixed-angular-reversal-dark.html",
+    "family-radial-column-mixed-angular-reversal-dark.png",
+    "family-radial-column-mixed-angular-reversal-dark.svg",
+    "family-radial-column-mixed-angular-reversal-dark.thumbnail.png",
+    "family-radial-column-mixed-angular-reversal-dark.thumbnail.svg",
+    "family-radial-column-mixed-angular-reversal-light.csharp.txt",
+    "family-radial-column-mixed-angular-reversal-light.html",
+    "family-radial-column-mixed-angular-reversal-light.png",
+    "family-radial-column-mixed-angular-reversal-light.svg",
+    "family-radial-column-mixed-angular-reversal-light.thumbnail.png",
+    "family-radial-column-mixed-angular-reversal-light.thumbnail.svg",
     "family-radial-column-mixed-dark.csharp.txt",
     "family-radial-column-mixed-dark.html",
     "family-radial-column-mixed-dark.png",
@@ -1690,12 +1930,108 @@
     "family-range-bar-compact-dark.svg",
     "family-range-bar-compact-dark.thumbnail.png",
     "family-range-bar-compact-dark.thumbnail.svg",
+    "family-range-bar-compact-endpoint-labels-dark.csharp.txt",
+    "family-range-bar-compact-endpoint-labels-dark.html",
+    "family-range-bar-compact-endpoint-labels-dark.png",
+    "family-range-bar-compact-endpoint-labels-dark.svg",
+    "family-range-bar-compact-endpoint-labels-dark.thumbnail.png",
+    "family-range-bar-compact-endpoint-labels-dark.thumbnail.svg",
+    "family-range-bar-compact-endpoint-labels-light.csharp.txt",
+    "family-range-bar-compact-endpoint-labels-light.html",
+    "family-range-bar-compact-endpoint-labels-light.png",
+    "family-range-bar-compact-endpoint-labels-light.svg",
+    "family-range-bar-compact-endpoint-labels-light.thumbnail.png",
+    "family-range-bar-compact-endpoint-labels-light.thumbnail.svg",
+    "family-range-bar-compact-horizontal-dark.csharp.txt",
+    "family-range-bar-compact-horizontal-dark.html",
+    "family-range-bar-compact-horizontal-dark.png",
+    "family-range-bar-compact-horizontal-dark.svg",
+    "family-range-bar-compact-horizontal-dark.thumbnail.png",
+    "family-range-bar-compact-horizontal-dark.thumbnail.svg",
+    "family-range-bar-compact-horizontal-endpoint-labels-dark.csharp.txt",
+    "family-range-bar-compact-horizontal-endpoint-labels-dark.html",
+    "family-range-bar-compact-horizontal-endpoint-labels-dark.png",
+    "family-range-bar-compact-horizontal-endpoint-labels-dark.svg",
+    "family-range-bar-compact-horizontal-endpoint-labels-dark.thumbnail.png",
+    "family-range-bar-compact-horizontal-endpoint-labels-dark.thumbnail.svg",
+    "family-range-bar-compact-horizontal-endpoint-labels-light.csharp.txt",
+    "family-range-bar-compact-horizontal-endpoint-labels-light.html",
+    "family-range-bar-compact-horizontal-endpoint-labels-light.png",
+    "family-range-bar-compact-horizontal-endpoint-labels-light.svg",
+    "family-range-bar-compact-horizontal-endpoint-labels-light.thumbnail.png",
+    "family-range-bar-compact-horizontal-endpoint-labels-light.thumbnail.svg",
+    "family-range-bar-compact-horizontal-light.csharp.txt",
+    "family-range-bar-compact-horizontal-light.html",
+    "family-range-bar-compact-horizontal-light.png",
+    "family-range-bar-compact-horizontal-light.svg",
+    "family-range-bar-compact-horizontal-light.thumbnail.png",
+    "family-range-bar-compact-horizontal-light.thumbnail.svg",
     "family-range-bar-compact-light.csharp.txt",
     "family-range-bar-compact-light.html",
     "family-range-bar-compact-light.png",
     "family-range-bar-compact-light.svg",
     "family-range-bar-compact-light.thumbnail.png",
     "family-range-bar-compact-light.thumbnail.svg",
+    "family-range-bar-compact-options-dark.csharp.txt",
+    "family-range-bar-compact-options-dark.html",
+    "family-range-bar-compact-options-dark.png",
+    "family-range-bar-compact-options-dark.svg",
+    "family-range-bar-compact-options-dark.thumbnail.png",
+    "family-range-bar-compact-options-dark.thumbnail.svg",
+    "family-range-bar-compact-options-light.csharp.txt",
+    "family-range-bar-compact-options-light.html",
+    "family-range-bar-compact-options-light.png",
+    "family-range-bar-compact-options-light.svg",
+    "family-range-bar-compact-options-light.thumbnail.png",
+    "family-range-bar-compact-options-light.thumbnail.svg",
+    "family-range-bar-endpoint-labels-dark.csharp.txt",
+    "family-range-bar-endpoint-labels-dark.html",
+    "family-range-bar-endpoint-labels-dark.png",
+    "family-range-bar-endpoint-labels-dark.svg",
+    "family-range-bar-endpoint-labels-dark.thumbnail.png",
+    "family-range-bar-endpoint-labels-dark.thumbnail.svg",
+    "family-range-bar-endpoint-labels-light.csharp.txt",
+    "family-range-bar-endpoint-labels-light.html",
+    "family-range-bar-endpoint-labels-light.png",
+    "family-range-bar-endpoint-labels-light.svg",
+    "family-range-bar-endpoint-labels-light.thumbnail.png",
+    "family-range-bar-endpoint-labels-light.thumbnail.svg",
+    "family-range-bar-horizontal-dark.csharp.txt",
+    "family-range-bar-horizontal-dark.html",
+    "family-range-bar-horizontal-dark.png",
+    "family-range-bar-horizontal-dark.svg",
+    "family-range-bar-horizontal-dark.thumbnail.png",
+    "family-range-bar-horizontal-dark.thumbnail.svg",
+    "family-range-bar-horizontal-endpoint-labels-dark.csharp.txt",
+    "family-range-bar-horizontal-endpoint-labels-dark.html",
+    "family-range-bar-horizontal-endpoint-labels-dark.png",
+    "family-range-bar-horizontal-endpoint-labels-dark.svg",
+    "family-range-bar-horizontal-endpoint-labels-dark.thumbnail.png",
+    "family-range-bar-horizontal-endpoint-labels-dark.thumbnail.svg",
+    "family-range-bar-horizontal-endpoint-labels-light.csharp.txt",
+    "family-range-bar-horizontal-endpoint-labels-light.html",
+    "family-range-bar-horizontal-endpoint-labels-light.png",
+    "family-range-bar-horizontal-endpoint-labels-light.svg",
+    "family-range-bar-horizontal-endpoint-labels-light.thumbnail.png",
+    "family-range-bar-horizontal-endpoint-labels-light.thumbnail.svg",
+    "family-range-bar-horizontal-light.csharp.txt",
+    "family-range-bar-horizontal-light.html",
+    "family-range-bar-horizontal-light.png",
+    "family-range-bar-horizontal-light.svg",
+    "family-range-bar-horizontal-light.thumbnail.png",
+    "family-range-bar-horizontal-light.thumbnail.svg",
+    "family-range-bar-options-dark.csharp.txt",
+    "family-range-bar-options-dark.html",
+    "family-range-bar-options-dark.png",
+    "family-range-bar-options-dark.svg",
+    "family-range-bar-options-dark.thumbnail.png",
+    "family-range-bar-options-dark.thumbnail.svg",
+    "family-range-bar-options-light.csharp.txt",
+    "family-range-bar-options-light.html",
+    "family-range-bar-options-light.png",
+    "family-range-bar-options-light.svg",
+    "family-range-bar-options-light.thumbnail.png",
+    "family-range-bar-options-light.thumbnail.svg",
     "family-range-bar-wide-dark.csharp.txt",
     "family-range-bar-wide-dark.html",
     "family-range-bar-wide-dark.png",
@@ -1864,6 +2200,18 @@
     "family-scatter-compact-options-light.svg",
     "family-scatter-compact-options-light.thumbnail.png",
     "family-scatter-compact-options-light.thumbnail.svg",
+    "family-scatter-compact-partial-color-range-dark.csharp.txt",
+    "family-scatter-compact-partial-color-range-dark.html",
+    "family-scatter-compact-partial-color-range-dark.png",
+    "family-scatter-compact-partial-color-range-dark.svg",
+    "family-scatter-compact-partial-color-range-dark.thumbnail.png",
+    "family-scatter-compact-partial-color-range-dark.thumbnail.svg",
+    "family-scatter-compact-partial-color-range-light.csharp.txt",
+    "family-scatter-compact-partial-color-range-light.html",
+    "family-scatter-compact-partial-color-range-light.png",
+    "family-scatter-compact-partial-color-range-light.svg",
+    "family-scatter-compact-partial-color-range-light.thumbnail.png",
+    "family-scatter-compact-partial-color-range-light.thumbnail.svg",
     "family-scatter-compact-positioned-color-scale-dark.csharp.txt",
     "family-scatter-compact-positioned-color-scale-dark.html",
     "family-scatter-compact-positioned-color-scale-dark.png",
@@ -1912,6 +2260,18 @@
     "family-scatter-options-light.svg",
     "family-scatter-options-light.thumbnail.png",
     "family-scatter-options-light.thumbnail.svg",
+    "family-scatter-partial-color-range-dark.csharp.txt",
+    "family-scatter-partial-color-range-dark.html",
+    "family-scatter-partial-color-range-dark.png",
+    "family-scatter-partial-color-range-dark.svg",
+    "family-scatter-partial-color-range-dark.thumbnail.png",
+    "family-scatter-partial-color-range-dark.thumbnail.svg",
+    "family-scatter-partial-color-range-light.csharp.txt",
+    "family-scatter-partial-color-range-light.html",
+    "family-scatter-partial-color-range-light.png",
+    "family-scatter-partial-color-range-light.svg",
+    "family-scatter-partial-color-range-light.thumbnail.png",
+    "family-scatter-partial-color-range-light.thumbnail.svg",
     "family-scatter-positioned-color-scale-dark.csharp.txt",
     "family-scatter-positioned-color-scale-dark.html",
     "family-scatter-positioned-color-scale-dark.png",
@@ -2212,6 +2572,18 @@
     "family-tile-map-compact-light.svg",
     "family-tile-map-compact-light.thumbnail.png",
     "family-tile-map-compact-light.thumbnail.svg",
+    "family-tile-map-compact-partial-color-range-dark.csharp.txt",
+    "family-tile-map-compact-partial-color-range-dark.html",
+    "family-tile-map-compact-partial-color-range-dark.png",
+    "family-tile-map-compact-partial-color-range-dark.svg",
+    "family-tile-map-compact-partial-color-range-dark.thumbnail.png",
+    "family-tile-map-compact-partial-color-range-dark.thumbnail.svg",
+    "family-tile-map-compact-partial-color-range-light.csharp.txt",
+    "family-tile-map-compact-partial-color-range-light.html",
+    "family-tile-map-compact-partial-color-range-light.png",
+    "family-tile-map-compact-partial-color-range-light.svg",
+    "family-tile-map-compact-partial-color-range-light.thumbnail.png",
+    "family-tile-map-compact-partial-color-range-light.thumbnail.svg",
     "family-tile-map-compact-positioned-color-scale-dark.csharp.txt",
     "family-tile-map-compact-positioned-color-scale-dark.html",
     "family-tile-map-compact-positioned-color-scale-dark.png",
@@ -2248,6 +2620,18 @@
     "family-tile-map-gradient-color-legend-light.svg",
     "family-tile-map-gradient-color-legend-light.thumbnail.png",
     "family-tile-map-gradient-color-legend-light.thumbnail.svg",
+    "family-tile-map-partial-color-range-dark.csharp.txt",
+    "family-tile-map-partial-color-range-dark.html",
+    "family-tile-map-partial-color-range-dark.png",
+    "family-tile-map-partial-color-range-dark.svg",
+    "family-tile-map-partial-color-range-dark.thumbnail.png",
+    "family-tile-map-partial-color-range-dark.thumbnail.svg",
+    "family-tile-map-partial-color-range-light.csharp.txt",
+    "family-tile-map-partial-color-range-light.html",
+    "family-tile-map-partial-color-range-light.png",
+    "family-tile-map-partial-color-range-light.svg",
+    "family-tile-map-partial-color-range-light.thumbnail.png",
+    "family-tile-map-partial-color-range-light.thumbnail.svg",
     "family-tile-map-positioned-color-scale-dark.csharp.txt",
     "family-tile-map-positioned-color-scale-dark.html",
     "family-tile-map-positioned-color-scale-dark.png",
@@ -2721,6 +3105,7 @@
     "Candlestick",
     "Chord",
     "Circle",
+    "DifferenceArea",
     "Donut",
     "DottedMap",
     "Dumbbell",
@@ -2844,7 +3229,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-compact-light",
@@ -2883,7 +3268,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-explicit-status-light",
@@ -2918,7 +3303,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-wide-dark",
@@ -2953,7 +3338,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-compact-dark",
@@ -2992,7 +3377,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "cartesian-explicit-status-dark",
@@ -3027,7 +3412,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "donut-wide-light",
@@ -3382,7 +3767,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-line-compact-light",
@@ -3415,7 +3800,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-line-options-light",
@@ -3448,7 +3833,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-line-compact-options-light",
@@ -3481,7 +3866,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-line-wide-dark",
@@ -3514,7 +3899,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-line-compact-dark",
@@ -3547,7 +3932,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-line-options-dark",
@@ -3580,7 +3965,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-line-compact-options-dark",
@@ -3613,7 +3998,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-step-line-wide-light",
@@ -3646,7 +4031,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-step-line-compact-light",
@@ -3679,7 +4064,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-step-line-wide-dark",
@@ -3712,7 +4097,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-step-line-compact-dark",
@@ -3745,7 +4130,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-area-wide-light",
@@ -3778,7 +4163,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-area-compact-light",
@@ -3811,7 +4196,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-area-wide-dark",
@@ -3844,7 +4229,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-area-compact-dark",
@@ -3877,7 +4262,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-wide-light",
@@ -3910,7 +4295,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-compact-light",
@@ -3943,7 +4328,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-wide-dark",
@@ -3976,7 +4361,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-step-area-compact-dark",
@@ -4009,7 +4394,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-scatter-wide-light",
@@ -4042,7 +4427,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-scatter-compact-light",
@@ -4075,7 +4460,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-scatter-color-scale-light",
@@ -4113,7 +4498,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-compact-color-scale-light",
@@ -4151,7 +4536,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-positioned-color-scale-light",
@@ -4188,7 +4573,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-scatter-compact-positioned-color-scale-light",
@@ -4225,7 +4610,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-scatter-color-dimension-light",
@@ -4262,7 +4647,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-color-dimension-light",
@@ -4299,7 +4684,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-gradient-color-legend-light",
@@ -4336,7 +4721,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-compact-gradient-color-legend-light",
@@ -4373,7 +4758,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-swatch-color-legend-light",
@@ -4410,7 +4795,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-swatch-color-legend-light",
@@ -4447,7 +4832,81 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
+    },
+    {
+      "id": "family-scatter-partial-color-range-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time and completion",
+      "variant": "partial-color-range",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-partial-color-range-light.csharp.txt",
+      "svg": "family-scatter-partial-color-range-light.svg",
+      "png": "family-scatter-partial-color-range-light.png",
+      "html": "family-scatter-partial-color-range-light.html",
+      "thumbnail": "family-scatter-partial-color-range-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-partial-color-range-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 33
+    },
+    {
+      "id": "family-scatter-compact-partial-color-range-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time and completion",
+      "variant": "compact-partial-color-range",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-partial-color-range-light.csharp.txt",
+      "svg": "family-scatter-compact-partial-color-range-light.svg",
+      "png": "family-scatter-compact-partial-color-range-light.png",
+      "html": "family-scatter-compact-partial-color-range-light.html",
+      "thumbnail": "family-scatter-compact-partial-color-range-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-partial-color-range-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-options-light",
@@ -4480,7 +4939,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-scatter-compact-options-light",
@@ -4513,7 +4972,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-scatter-wide-dark",
@@ -4546,7 +5005,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-scatter-compact-dark",
@@ -4579,7 +5038,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "family-scatter-color-scale-dark",
@@ -4617,7 +5076,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-compact-color-scale-dark",
@@ -4655,7 +5114,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 36
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-positioned-color-scale-dark",
@@ -4692,7 +5151,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-scatter-compact-positioned-color-scale-dark",
@@ -4729,7 +5188,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 41
+      "semanticRegions": 42
     },
     {
       "id": "family-scatter-color-dimension-dark",
@@ -4766,7 +5225,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-color-dimension-dark",
@@ -4803,7 +5262,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-gradient-color-legend-dark",
@@ -4840,7 +5299,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-compact-gradient-color-legend-dark",
@@ -4877,7 +5336,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-swatch-color-legend-dark",
@@ -4914,7 +5373,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-swatch-color-legend-dark",
@@ -4951,7 +5410,81 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
+    },
+    {
+      "id": "family-scatter-partial-color-range-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time and completion",
+      "variant": "partial-color-range",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-partial-color-range-dark.csharp.txt",
+      "svg": "family-scatter-partial-color-range-dark.svg",
+      "png": "family-scatter-partial-color-range-dark.png",
+      "html": "family-scatter-partial-color-range-dark.html",
+      "thumbnail": "family-scatter-partial-color-range-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-partial-color-range-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 33
+    },
+    {
+      "id": "family-scatter-compact-partial-color-range-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Processing time and completion",
+      "variant": "compact-partial-color-range",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-partial-color-range-dark.csharp.txt",
+      "svg": "family-scatter-compact-partial-color-range-dark.svg",
+      "png": "family-scatter-compact-partial-color-range-dark.png",
+      "html": "family-scatter-compact-partial-color-range-dark.html",
+      "thumbnail": "family-scatter-compact-partial-color-range-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-partial-color-range-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-options-dark",
@@ -4984,7 +5517,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-scatter-compact-options-dark",
@@ -5017,7 +5550,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-bubble-wide-light",
@@ -5050,7 +5583,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-bubble-compact-light",
@@ -5083,7 +5616,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-bubble-color-scale-light",
@@ -5121,7 +5654,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-bubble-compact-color-scale-light",
@@ -5159,7 +5692,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-bubble-color-dimension-light",
@@ -5196,7 +5729,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-compact-color-dimension-light",
@@ -5233,7 +5766,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-options-light",
@@ -5266,7 +5799,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-bubble-compact-options-light",
@@ -5303,7 +5836,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-bubble-wide-dark",
@@ -5336,7 +5869,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-bubble-compact-dark",
@@ -5369,7 +5902,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-bubble-color-scale-dark",
@@ -5407,7 +5940,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-bubble-compact-color-scale-dark",
@@ -5445,7 +5978,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 34
+      "semanticRegions": 35
     },
     {
       "id": "family-bubble-color-dimension-dark",
@@ -5482,7 +6015,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-compact-color-dimension-dark",
@@ -5519,7 +6052,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-options-dark",
@@ -5552,7 +6085,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-bubble-compact-options-dark",
@@ -5589,7 +6122,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-error-bar-wide-light",
@@ -5622,7 +6155,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-error-bar-compact-light",
@@ -5655,7 +6188,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-error-bar-wide-dark",
@@ -5688,7 +6221,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-error-bar-compact-dark",
@@ -5721,7 +6254,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-candlestick-wide-light",
@@ -5754,7 +6287,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-compact-light",
@@ -5787,7 +6320,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-options-light",
@@ -5820,7 +6353,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-compact-options-light",
@@ -5857,7 +6390,77 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-candlestick-dashed-light",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "dashed",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-candlestick-dashed-light.csharp.txt",
+      "svg": "family-candlestick-dashed-light.svg",
+      "png": "family-candlestick-dashed-light.png",
+      "html": "family-candlestick-dashed-light.html",
+      "thumbnail": "family-candlestick-dashed-light.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-dashed-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-candlestick-compact-dashed-light",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "compact-dashed",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-candlestick-compact-dashed-light.csharp.txt",
+      "svg": "family-candlestick-compact-dashed-light.svg",
+      "png": "family-candlestick-compact-dashed-light.png",
+      "html": "family-candlestick-compact-dashed-light.html",
+      "thumbnail": "family-candlestick-compact-dashed-light.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-compact-dashed-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-wide-dark",
@@ -5890,7 +6493,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-compact-dark",
@@ -5923,7 +6526,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-candlestick-options-dark",
@@ -5956,7 +6559,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-candlestick-compact-options-dark",
@@ -5993,7 +6596,77 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-candlestick-dashed-dark",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "dashed",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-candlestick-dashed-dark.csharp.txt",
+      "svg": "family-candlestick-dashed-dark.svg",
+      "png": "family-candlestick-dashed-dark.png",
+      "html": "family-candlestick-dashed-dark.html",
+      "thumbnail": "family-candlestick-dashed-dark.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-dashed-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-candlestick-compact-dashed-dark",
+      "family": "candlestick",
+      "familyLabel": "Candlestick",
+      "group": "distribution",
+      "title": "Daily opening and closing prices",
+      "variant": "compact-dashed",
+      "primary": false,
+      "seriesKinds": [
+        "Candlestick"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-candlestick-compact-dashed-dark.csharp.txt",
+      "svg": "family-candlestick-compact-dashed-dark.svg",
+      "png": "family-candlestick-compact-dashed-dark.png",
+      "html": "family-candlestick-compact-dashed-dark.html",
+      "thumbnail": "family-candlestick-compact-dashed-dark.thumbnail.svg",
+      "thumbnailPng": "family-candlestick-compact-dashed-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 24
     },
     {
       "id": "family-range-band-wide-light",
@@ -6026,7 +6699,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-band-compact-light",
@@ -6059,7 +6732,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-band-wide-dark",
@@ -6092,7 +6765,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-band-compact-dark",
@@ -6125,7 +6798,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-wide-light",
@@ -6158,7 +6831,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-compact-light",
@@ -6191,7 +6864,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-options-light",
@@ -6224,7 +6897,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-range-area-compact-options-light",
@@ -6261,7 +6934,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-range-area-wide-dark",
@@ -6294,7 +6967,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-compact-dark",
@@ -6327,7 +7000,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-area-options-dark",
@@ -6360,7 +7033,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-range-area-compact-options-dark",
@@ -6397,7 +7070,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-wide-light",
@@ -6430,7 +7103,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-compact-light",
@@ -6463,7 +7136,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-options-light",
@@ -6496,7 +7169,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-bar-compact-options-light",
@@ -6533,7 +7206,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-bar-wide-dark",
@@ -6566,7 +7239,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-compact-dark",
@@ -6599,7 +7272,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-bar-options-dark",
@@ -6632,7 +7305,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-bar-compact-options-dark",
@@ -6669,7 +7342,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-lollipop-wide-light",
@@ -6702,7 +7375,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-lollipop-compact-light",
@@ -6739,7 +7412,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-lollipop-wide-dark",
@@ -6772,7 +7445,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-lollipop-compact-dark",
@@ -6809,7 +7482,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-dumbbell-wide-light",
@@ -6842,7 +7515,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-dumbbell-compact-light",
@@ -6875,7 +7548,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-dumbbell-wide-dark",
@@ -6908,7 +7581,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-dumbbell-compact-dark",
@@ -6941,7 +7614,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-range-bar-wide-light",
@@ -6974,7 +7647,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-compact-light",
@@ -7007,7 +7680,289 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-range-bar-options-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-options-light.csharp.txt",
+      "svg": "family-range-bar-options-light.svg",
+      "png": "family-range-bar-options-light.png",
+      "html": "family-range-bar-options-light.html",
+      "thumbnail": "family-range-bar-options-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-compact-options-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-options-light.csharp.txt",
+      "svg": "family-range-bar-compact-options-light.svg",
+      "png": "family-range-bar-compact-options-light.png",
+      "html": "family-range-bar-compact-options-light.html",
+      "thumbnail": "family-range-bar-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-horizontal-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-horizontal-light.csharp.txt",
+      "svg": "family-range-bar-horizontal-light.svg",
+      "png": "family-range-bar-horizontal-light.png",
+      "html": "family-range-bar-horizontal-light.html",
+      "thumbnail": "family-range-bar-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-compact-horizontal-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-horizontal-light.csharp.txt",
+      "svg": "family-range-bar-compact-horizontal-light.svg",
+      "png": "family-range-bar-compact-horizontal-light.png",
+      "html": "family-range-bar-compact-horizontal-light.html",
+      "thumbnail": "family-range-bar-compact-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-endpoint-labels-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "endpoint-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-endpoint-labels-light.csharp.txt",
+      "svg": "family-range-bar-endpoint-labels-light.svg",
+      "png": "family-range-bar-endpoint-labels-light.png",
+      "html": "family-range-bar-endpoint-labels-light.html",
+      "thumbnail": "family-range-bar-endpoint-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-endpoint-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-compact-endpoint-labels-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-endpoint-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-endpoint-labels-light.csharp.txt",
+      "svg": "family-range-bar-compact-endpoint-labels-light.svg",
+      "png": "family-range-bar-compact-endpoint-labels-light.png",
+      "html": "family-range-bar-compact-endpoint-labels-light.html",
+      "thumbnail": "family-range-bar-compact-endpoint-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-endpoint-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-horizontal-endpoint-labels-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "horizontal-endpoint-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-horizontal-endpoint-labels-light.csharp.txt",
+      "svg": "family-range-bar-horizontal-endpoint-labels-light.svg",
+      "png": "family-range-bar-horizontal-endpoint-labels-light.png",
+      "html": "family-range-bar-horizontal-endpoint-labels-light.html",
+      "thumbnail": "family-range-bar-horizontal-endpoint-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-horizontal-endpoint-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-compact-horizontal-endpoint-labels-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-horizontal-endpoint-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-horizontal-endpoint-labels-light.csharp.txt",
+      "svg": "family-range-bar-compact-horizontal-endpoint-labels-light.svg",
+      "png": "family-range-bar-compact-horizontal-endpoint-labels-light.png",
+      "html": "family-range-bar-compact-horizontal-endpoint-labels-light.html",
+      "thumbnail": "family-range-bar-compact-horizontal-endpoint-labels-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-horizontal-endpoint-labels-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "family-range-bar-wide-dark",
@@ -7040,7 +7995,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-compact-dark",
@@ -7073,7 +8028,289 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-range-bar-options-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-options-dark.csharp.txt",
+      "svg": "family-range-bar-options-dark.svg",
+      "png": "family-range-bar-options-dark.png",
+      "html": "family-range-bar-options-dark.html",
+      "thumbnail": "family-range-bar-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-compact-options-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-options-dark.csharp.txt",
+      "svg": "family-range-bar-compact-options-dark.svg",
+      "png": "family-range-bar-compact-options-dark.png",
+      "html": "family-range-bar-compact-options-dark.html",
+      "thumbnail": "family-range-bar-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-horizontal-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-horizontal-dark.csharp.txt",
+      "svg": "family-range-bar-horizontal-dark.svg",
+      "png": "family-range-bar-horizontal-dark.png",
+      "html": "family-range-bar-horizontal-dark.html",
+      "thumbnail": "family-range-bar-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-compact-horizontal-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-horizontal-dark.csharp.txt",
+      "svg": "family-range-bar-compact-horizontal-dark.svg",
+      "png": "family-range-bar-compact-horizontal-dark.png",
+      "html": "family-range-bar-compact-horizontal-dark.html",
+      "thumbnail": "family-range-bar-compact-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-endpoint-labels-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "endpoint-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-endpoint-labels-dark.csharp.txt",
+      "svg": "family-range-bar-endpoint-labels-dark.svg",
+      "png": "family-range-bar-endpoint-labels-dark.png",
+      "html": "family-range-bar-endpoint-labels-dark.html",
+      "thumbnail": "family-range-bar-endpoint-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-endpoint-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-compact-endpoint-labels-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-endpoint-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-endpoint-labels-dark.csharp.txt",
+      "svg": "family-range-bar-compact-endpoint-labels-dark.svg",
+      "png": "family-range-bar-compact-endpoint-labels-dark.png",
+      "html": "family-range-bar-compact-endpoint-labels-dark.html",
+      "thumbnail": "family-range-bar-compact-endpoint-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-endpoint-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-range-bar-horizontal-endpoint-labels-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "horizontal-endpoint-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-range-bar-horizontal-endpoint-labels-dark.csharp.txt",
+      "svg": "family-range-bar-horizontal-endpoint-labels-dark.svg",
+      "png": "family-range-bar-horizontal-endpoint-labels-dark.png",
+      "html": "family-range-bar-horizontal-endpoint-labels-dark.html",
+      "thumbnail": "family-range-bar-horizontal-endpoint-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-horizontal-endpoint-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-range-bar-compact-horizontal-endpoint-labels-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-horizontal-endpoint-labels",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-range-bar-compact-horizontal-endpoint-labels-dark.csharp.txt",
+      "svg": "family-range-bar-compact-horizontal-endpoint-labels-dark.svg",
+      "png": "family-range-bar-compact-horizontal-endpoint-labels-dark.png",
+      "html": "family-range-bar-compact-horizontal-endpoint-labels-dark.html",
+      "thumbnail": "family-range-bar-compact-horizontal-endpoint-labels-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-horizontal-endpoint-labels-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "family-box-plot-wide-light",
@@ -7106,7 +8343,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-box-plot-compact-light",
@@ -7139,7 +8376,147 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-box-plot-options-light",
+      "family": "box-plot",
+      "familyLabel": "Box Plot",
+      "group": "distribution",
+      "title": "Delivery time by service level",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-box-plot-options-light.csharp.txt",
+      "svg": "family-box-plot-options-light.svg",
+      "png": "family-box-plot-options-light.png",
+      "html": "family-box-plot-options-light.html",
+      "thumbnail": "family-box-plot-options-light.thumbnail.svg",
+      "thumbnailPng": "family-box-plot-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-box-plot-compact-options-light",
+      "family": "box-plot",
+      "familyLabel": "Box Plot",
+      "group": "distribution",
+      "title": "Delivery time by service level",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-box-plot-compact-options-light.csharp.txt",
+      "svg": "family-box-plot-compact-options-light.svg",
+      "png": "family-box-plot-compact-options-light.png",
+      "html": "family-box-plot-compact-options-light.html",
+      "thumbnail": "family-box-plot-compact-options-light.thumbnail.svg",
+      "thumbnailPng": "family-box-plot-compact-options-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-box-plot-horizontal-light",
+      "family": "box-plot",
+      "familyLabel": "Box Plot",
+      "group": "distribution",
+      "title": "Delivery time by service level",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-box-plot-horizontal-light.csharp.txt",
+      "svg": "family-box-plot-horizontal-light.svg",
+      "png": "family-box-plot-horizontal-light.png",
+      "html": "family-box-plot-horizontal-light.html",
+      "thumbnail": "family-box-plot-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-box-plot-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-box-plot-compact-horizontal-light",
+      "family": "box-plot",
+      "familyLabel": "Box Plot",
+      "group": "distribution",
+      "title": "Delivery time by service level",
+      "variant": "compact-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-box-plot-compact-horizontal-light.csharp.txt",
+      "svg": "family-box-plot-compact-horizontal-light.svg",
+      "png": "family-box-plot-compact-horizontal-light.png",
+      "html": "family-box-plot-compact-horizontal-light.html",
+      "thumbnail": "family-box-plot-compact-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-box-plot-compact-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
     },
     {
       "id": "family-box-plot-wide-dark",
@@ -7172,7 +8549,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-box-plot-compact-dark",
@@ -7205,7 +8582,147 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
+    },
+    {
+      "id": "family-box-plot-options-dark",
+      "family": "box-plot",
+      "familyLabel": "Box Plot",
+      "group": "distribution",
+      "title": "Delivery time by service level",
+      "variant": "options",
+      "primary": false,
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-box-plot-options-dark.csharp.txt",
+      "svg": "family-box-plot-options-dark.svg",
+      "png": "family-box-plot-options-dark.png",
+      "html": "family-box-plot-options-dark.html",
+      "thumbnail": "family-box-plot-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-box-plot-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-box-plot-compact-options-dark",
+      "family": "box-plot",
+      "familyLabel": "Box Plot",
+      "group": "distribution",
+      "title": "Delivery time by service level",
+      "variant": "compact-options",
+      "primary": false,
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-box-plot-compact-options-dark.csharp.txt",
+      "svg": "family-box-plot-compact-options-dark.svg",
+      "png": "family-box-plot-compact-options-dark.png",
+      "html": "family-box-plot-compact-options-dark.html",
+      "thumbnail": "family-box-plot-compact-options-dark.thumbnail.svg",
+      "thumbnailPng": "family-box-plot-compact-options-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-box-plot-horizontal-dark",
+      "family": "box-plot",
+      "familyLabel": "Box Plot",
+      "group": "distribution",
+      "title": "Delivery time by service level",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-box-plot-horizontal-dark.csharp.txt",
+      "svg": "family-box-plot-horizontal-dark.svg",
+      "png": "family-box-plot-horizontal-dark.png",
+      "html": "family-box-plot-horizontal-dark.html",
+      "thumbnail": "family-box-plot-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-box-plot-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-box-plot-compact-horizontal-dark",
+      "family": "box-plot",
+      "familyLabel": "Box Plot",
+      "group": "distribution",
+      "title": "Delivery time by service level",
+      "variant": "compact-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "BoxPlot"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-box-plot-compact-horizontal-dark.csharp.txt",
+      "svg": "family-box-plot-compact-horizontal-dark.svg",
+      "png": "family-box-plot-compact-horizontal-dark.png",
+      "html": "family-box-plot-compact-horizontal-dark.html",
+      "thumbnail": "family-box-plot-compact-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-box-plot-compact-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 22
     },
     {
       "id": "family-horizontal-bar-wide-light",
@@ -7238,7 +8755,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-horizontal-bar-compact-light",
@@ -7271,7 +8788,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-horizontal-bar-options-light",
@@ -7304,7 +8821,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-horizontal-bar-compact-options-light",
@@ -7341,7 +8858,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-horizontal-bar-wide-dark",
@@ -7374,7 +8891,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-horizontal-bar-compact-dark",
@@ -7407,7 +8924,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-horizontal-bar-options-dark",
@@ -7440,7 +8957,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-horizontal-bar-compact-options-dark",
@@ -7477,7 +8994,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 39
+      "semanticRegions": 40
     },
     {
       "id": "family-heatmap-wide-light",
@@ -9866,6 +11383,160 @@
       "semanticRegions": 109
     },
     {
+      "id": "family-tile-map-partial-color-range-light",
+      "family": "tile-map",
+      "familyLabel": "Tile Map",
+      "group": "matrices-maps",
+      "title": "Requests by state",
+      "variant": "partial-color-range",
+      "primary": false,
+      "seriesKinds": [
+        "TileMap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-tile-map-partial-color-range-light.csharp.txt",
+      "svg": "family-tile-map-partial-color-range-light.svg",
+      "png": "family-tile-map-partial-color-range-light.png",
+      "html": "family-tile-map-partial-color-range-light.html",
+      "thumbnail": "family-tile-map-partial-color-range-light.thumbnail.svg",
+      "thumbnailPng": "family-tile-map-partial-color-range-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 107
+    },
+    {
+      "id": "family-tile-map-compact-partial-color-range-light",
+      "family": "tile-map",
+      "familyLabel": "Tile Map",
+      "group": "matrices-maps",
+      "title": "Requests by state",
+      "variant": "compact-partial-color-range",
+      "primary": false,
+      "seriesKinds": [
+        "TileMap"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-tile-map-compact-partial-color-range-light.csharp.txt",
+      "svg": "family-tile-map-compact-partial-color-range-light.svg",
+      "png": "family-tile-map-compact-partial-color-range-light.png",
+      "html": "family-tile-map-compact-partial-color-range-light.html",
+      "thumbnail": "family-tile-map-compact-partial-color-range-light.thumbnail.svg",
+      "thumbnailPng": "family-tile-map-compact-partial-color-range-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
+      ],
+      "semanticRegions": 107
+    },
+    {
       "id": "family-tile-map-wide-dark",
       "family": "tile-map",
       "familyLabel": "Tile Map",
@@ -10634,6 +12305,160 @@
         "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
       ],
       "semanticRegions": 109
+    },
+    {
+      "id": "family-tile-map-partial-color-range-dark",
+      "family": "tile-map",
+      "familyLabel": "Tile Map",
+      "group": "matrices-maps",
+      "title": "Requests by state",
+      "variant": "partial-color-range",
+      "primary": false,
+      "seriesKinds": [
+        "TileMap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-tile-map-partial-color-range-dark.csharp.txt",
+      "svg": "family-tile-map-partial-color-range-dark.svg",
+      "png": "family-tile-map-partial-color-range-dark.png",
+      "html": "family-tile-map-partial-color-range-dark.html",
+      "thumbnail": "family-tile-map-partial-color-range-dark.thumbnail.svg",
+      "thumbnailPng": "family-tile-map-partial-color-range-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 107
+    },
+    {
+      "id": "family-tile-map-compact-partial-color-range-dark",
+      "family": "tile-map",
+      "familyLabel": "Tile Map",
+      "group": "matrices-maps",
+      "title": "Requests by state",
+      "variant": "compact-partial-color-range",
+      "primary": false,
+      "seriesKinds": [
+        "TileMap"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-tile-map-compact-partial-color-range-dark.csharp.txt",
+      "svg": "family-tile-map-compact-partial-color-range-dark.svg",
+      "png": "family-tile-map-compact-partial-color-range-dark.png",
+      "html": "family-tile-map-compact-partial-color-range-dark.html",
+      "thumbnail": "family-tile-map-compact-partial-color-range-dark.thumbnail.svg",
+      "thumbnailPng": "family-tile-map-compact-partial-color-range-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow",
+        "map.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
+        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
+      ],
+      "semanticRegions": 107
     },
     {
       "id": "family-region-map-wide-light",
@@ -11598,7 +13423,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-waterfall-compact-light",
@@ -11631,7 +13456,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-waterfall-options-light",
@@ -11664,7 +13489,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-compact-options-light",
@@ -11703,7 +13528,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-horizontal-light",
@@ -11736,7 +13561,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-compact-horizontal-light",
@@ -11775,7 +13600,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-wide-dark",
@@ -11808,7 +13633,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-waterfall-compact-dark",
@@ -11841,7 +13666,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 16
+      "semanticRegions": 17
     },
     {
       "id": "family-waterfall-options-dark",
@@ -11874,7 +13699,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-compact-options-dark",
@@ -11913,7 +13738,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-horizontal-dark",
@@ -11946,7 +13771,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-waterfall-compact-horizontal-dark",
@@ -11985,7 +13810,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 23
     },
     {
       "id": "family-radar-wide-light",
@@ -12134,6 +13959,76 @@
       "semanticRegions": 24
     },
     {
+      "id": "family-radar-angular-reversal-light",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radar-angular-reversal-light.csharp.txt",
+      "svg": "family-radar-angular-reversal-light.svg",
+      "png": "family-radar-angular-reversal-light.png",
+      "html": "family-radar-angular-reversal-light.html",
+      "thumbnail": "family-radar-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-radar-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-radar-compact-angular-reversal-light",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radar-compact-angular-reversal-light.csharp.txt",
+      "svg": "family-radar-compact-angular-reversal-light.svg",
+      "png": "family-radar-compact-angular-reversal-light.png",
+      "html": "family-radar-compact-angular-reversal-light.html",
+      "thumbnail": "family-radar-compact-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-radar-compact-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
       "id": "family-radar-wide-dark",
       "family": "radar",
       "familyLabel": "Radar",
@@ -12278,6 +14173,76 @@
         "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 24
+    },
+    {
+      "id": "family-radar-angular-reversal-dark",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radar-angular-reversal-dark.csharp.txt",
+      "svg": "family-radar-angular-reversal-dark.svg",
+      "png": "family-radar-angular-reversal-dark.png",
+      "html": "family-radar-angular-reversal-dark.html",
+      "thumbnail": "family-radar-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-radar-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 18
+    },
+    {
+      "id": "family-radar-compact-angular-reversal-dark",
+      "family": "radar",
+      "familyLabel": "Radar",
+      "group": "distribution",
+      "title": "Observed and expected service levels",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radar-compact-angular-reversal-dark.csharp.txt",
+      "svg": "family-radar-compact-angular-reversal-dark.svg",
+      "png": "family-radar-compact-angular-reversal-dark.png",
+      "html": "family-radar-compact-angular-reversal-dark.html",
+      "thumbnail": "family-radar-compact-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-radar-compact-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 18
     },
     {
       "id": "family-funnel-wide-light",
@@ -14212,7 +16177,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-stacked-area-compact-light",
@@ -14245,7 +16210,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-stacked-area-options-light",
@@ -14278,7 +16243,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 25
     },
     {
       "id": "family-stacked-area-compact-options-light",
@@ -14311,7 +16276,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 25
     },
     {
       "id": "family-stacked-area-wide-dark",
@@ -14344,7 +16309,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-stacked-area-compact-dark",
@@ -14377,7 +16342,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 26
     },
     {
       "id": "family-stacked-area-options-dark",
@@ -14410,7 +16375,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 25
     },
     {
       "id": "family-stacked-area-compact-options-dark",
@@ -14443,7 +16408,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 25
     },
     {
       "id": "family-slope-wide-light",
@@ -14476,7 +16441,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-slope-compact-light",
@@ -14513,7 +16478,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-slope-wide-dark",
@@ -14546,7 +16511,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-slope-compact-dark",
@@ -14583,7 +16548,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 18
+      "semanticRegions": 19
     },
     {
       "id": "family-treemap-wide-light",
@@ -15410,7 +17375,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-compact-light",
@@ -15443,7 +17408,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-options-light",
@@ -15476,7 +17441,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-compact-options-light",
@@ -15513,7 +17478,77 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-ohlc-dashed-light",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "dashed",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-ohlc-dashed-light.csharp.txt",
+      "svg": "family-ohlc-dashed-light.svg",
+      "png": "family-ohlc-dashed-light.png",
+      "html": "family-ohlc-dashed-light.html",
+      "thumbnail": "family-ohlc-dashed-light.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-dashed-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-ohlc-compact-dashed-light",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "compact-dashed",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-ohlc-compact-dashed-light.csharp.txt",
+      "svg": "family-ohlc-compact-dashed-light.svg",
+      "png": "family-ohlc-compact-dashed-light.png",
+      "html": "family-ohlc-compact-dashed-light.html",
+      "thumbnail": "family-ohlc-compact-dashed-light.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-compact-dashed-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-wide-dark",
@@ -15546,7 +17581,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-compact-dark",
@@ -15579,7 +17614,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 18
     },
     {
       "id": "family-ohlc-options-dark",
@@ -15612,7 +17647,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 24
     },
     {
       "id": "family-ohlc-compact-options-dark",
@@ -15649,7 +17684,77 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-ohlc-dashed-dark",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "dashed",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-ohlc-dashed-dark.csharp.txt",
+      "svg": "family-ohlc-dashed-dark.svg",
+      "png": "family-ohlc-dashed-dark.png",
+      "html": "family-ohlc-dashed-dark.html",
+      "thumbnail": "family-ohlc-dashed-dark.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-dashed-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-ohlc-compact-dashed-dark",
+      "family": "ohlc",
+      "familyLabel": "OHLC",
+      "group": "distribution",
+      "title": "Daily market price ranges",
+      "variant": "compact-dashed",
+      "primary": false,
+      "seriesKinds": [
+        "Ohlc"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-ohlc-compact-dashed-dark.csharp.txt",
+      "svg": "family-ohlc-compact-dashed-dark.svg",
+      "png": "family-ohlc-compact-dashed-dark.png",
+      "html": "family-ohlc-compact-dashed-dark.html",
+      "thumbnail": "family-ohlc-compact-dashed-dark.thumbnail.svg",
+      "thumbnailPng": "family-ohlc-compact-dashed-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 24
     },
     {
       "id": "family-polar-area-wide-light",
@@ -15718,6 +17823,72 @@
       "semanticRegions": 12
     },
     {
+      "id": "family-polar-area-angular-reversal-light",
+      "family": "polar-area",
+      "familyLabel": "Polar Area",
+      "group": "proportion",
+      "title": "Service revenue in radial segments",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-area-angular-reversal-light.csharp.txt",
+      "svg": "family-polar-area-angular-reversal-light.svg",
+      "png": "family-polar-area-angular-reversal-light.png",
+      "html": "family-polar-area-angular-reversal-light.html",
+      "thumbnail": "family-polar-area-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-polar-area-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-polar-area-compact-angular-reversal-light",
+      "family": "polar-area",
+      "familyLabel": "Polar Area",
+      "group": "proportion",
+      "title": "Service revenue in radial segments",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-polar-area-compact-angular-reversal-light.csharp.txt",
+      "svg": "family-polar-area-compact-angular-reversal-light.svg",
+      "png": "family-polar-area-compact-angular-reversal-light.png",
+      "html": "family-polar-area-compact-angular-reversal-light.html",
+      "thumbnail": "family-polar-area-compact-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-polar-area-compact-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
       "id": "family-polar-area-wide-dark",
       "family": "polar-area",
       "familyLabel": "Polar Area",
@@ -15784,6 +17955,72 @@
       "semanticRegions": 12
     },
     {
+      "id": "family-polar-area-angular-reversal-dark",
+      "family": "polar-area",
+      "familyLabel": "Polar Area",
+      "group": "proportion",
+      "title": "Service revenue in radial segments",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-area-angular-reversal-dark.csharp.txt",
+      "svg": "family-polar-area-angular-reversal-dark.svg",
+      "png": "family-polar-area-angular-reversal-dark.png",
+      "html": "family-polar-area-angular-reversal-dark.html",
+      "thumbnail": "family-polar-area-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-polar-area-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-polar-area-compact-angular-reversal-dark",
+      "family": "polar-area",
+      "familyLabel": "Polar Area",
+      "group": "proportion",
+      "title": "Service revenue in radial segments",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "PolarArea"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-polar-area-compact-angular-reversal-dark.csharp.txt",
+      "svg": "family-polar-area-compact-angular-reversal-dark.svg",
+      "png": "family-polar-area-compact-angular-reversal-dark.png",
+      "html": "family-polar-area-compact-angular-reversal-dark.html",
+      "thumbnail": "family-polar-area-compact-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-polar-area-compact-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
       "id": "family-trend-line-wide-light",
       "family": "trend-line",
       "familyLabel": "Trend Line",
@@ -15815,7 +18052,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-trend-line-compact-light",
@@ -15849,7 +18086,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-trend-line-precision-light",
@@ -15882,7 +18119,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 14
     },
     {
       "id": "family-trend-line-compact-precision-light",
@@ -15915,7 +18152,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 14
     },
     {
       "id": "family-trend-line-wide-dark",
@@ -15949,7 +18186,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-trend-line-compact-dark",
@@ -15983,7 +18220,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 22
     },
     {
       "id": "family-trend-line-precision-dark",
@@ -16016,7 +18253,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 14
     },
     {
       "id": "family-trend-line-compact-precision-dark",
@@ -16049,7 +18286,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 13
+      "semanticRegions": 14
     },
     {
       "id": "family-polar-wide-light",
@@ -16124,6 +18361,76 @@
       "semanticRegions": 17
     },
     {
+      "id": "family-polar-angular-reversal-light",
+      "family": "polar",
+      "familyLabel": "Polar",
+      "group": "distribution",
+      "title": "Directional sensor readings",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-angular-reversal-light.csharp.txt",
+      "svg": "family-polar-angular-reversal-light.svg",
+      "png": "family-polar-angular-reversal-light.png",
+      "html": "family-polar-angular-reversal-light.html",
+      "thumbnail": "family-polar-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-polar-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-polar-compact-angular-reversal-light",
+      "family": "polar",
+      "familyLabel": "Polar",
+      "group": "distribution",
+      "title": "Directional sensor readings",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-polar-compact-angular-reversal-light.csharp.txt",
+      "svg": "family-polar-compact-angular-reversal-light.svg",
+      "png": "family-polar-compact-angular-reversal-light.png",
+      "html": "family-polar-compact-angular-reversal-light.html",
+      "thumbnail": "family-polar-compact-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-polar-compact-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 24
+    },
+    {
       "id": "family-polar-wide-dark",
       "family": "polar",
       "familyLabel": "Polar",
@@ -16194,6 +18501,76 @@
         "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 17
+    },
+    {
+      "id": "family-polar-angular-reversal-dark",
+      "family": "polar",
+      "familyLabel": "Polar",
+      "group": "distribution",
+      "title": "Directional sensor readings",
+      "variant": "angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-polar-angular-reversal-dark.csharp.txt",
+      "svg": "family-polar-angular-reversal-dark.svg",
+      "png": "family-polar-angular-reversal-dark.png",
+      "html": "family-polar-angular-reversal-dark.html",
+      "thumbnail": "family-polar-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-polar-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-polar-compact-angular-reversal-dark",
+      "family": "polar",
+      "familyLabel": "Polar",
+      "group": "distribution",
+      "title": "Directional sensor readings",
+      "variant": "compact-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "Polar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-polar-compact-angular-reversal-dark.csharp.txt",
+      "svg": "family-polar-compact-angular-reversal-dark.svg",
+      "png": "family-polar-compact-angular-reversal-dark.png",
+      "html": "family-polar-compact-angular-reversal-dark.html",
+      "thumbnail": "family-polar-compact-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-polar-compact-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "polar.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 24
     },
     {
       "id": "family-state-timeline-wide-light",
@@ -18742,6 +21119,290 @@
       "semanticRegions": 13
     },
     {
+      "id": "family-difference-area-wide-light",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "wide",
+      "primary": true,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-difference-area-wide-light.csharp.txt",
+      "svg": "family-difference-area-wide-light.svg",
+      "png": "family-difference-area-wide-light.png",
+      "html": "family-difference-area-wide-light.html",
+      "thumbnail": "family-difference-area-wide-light.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-wide-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-difference-area-compact-light",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "compact",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-difference-area-compact-light.csharp.txt",
+      "svg": "family-difference-area-compact-light.svg",
+      "png": "family-difference-area-compact-light.png",
+      "html": "family-difference-area-compact-light.html",
+      "thumbnail": "family-difference-area-compact-light.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-compact-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-difference-area-dated-gaps-light",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "dated-gaps",
+      "primary": false,
+      "seriesKinds": [
+        "Line",
+        "DifferenceArea"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-difference-area-dated-gaps-light.csharp.txt",
+      "svg": "family-difference-area-dated-gaps-light.svg",
+      "png": "family-difference-area-dated-gaps-light.png",
+      "html": "family-difference-area-dated-gaps-light.html",
+      "thumbnail": "family-difference-area-dated-gaps-light.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-dated-gaps-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 29
+    },
+    {
+      "id": "family-difference-area-compact-dated-gaps-light",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "compact-dated-gaps",
+      "primary": false,
+      "seriesKinds": [
+        "Line",
+        "DifferenceArea"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-difference-area-compact-dated-gaps-light.csharp.txt",
+      "svg": "family-difference-area-compact-dated-gaps-light.svg",
+      "png": "family-difference-area-compact-dated-gaps-light.png",
+      "html": "family-difference-area-compact-dated-gaps-light.html",
+      "thumbnail": "family-difference-area-compact-dated-gaps-light.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-compact-dated-gaps-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 29
+    },
+    {
+      "id": "family-difference-area-wide-dark",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "wide",
+      "primary": true,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-difference-area-wide-dark.csharp.txt",
+      "svg": "family-difference-area-wide-dark.svg",
+      "png": "family-difference-area-wide-dark.png",
+      "html": "family-difference-area-wide-dark.html",
+      "thumbnail": "family-difference-area-wide-dark.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-wide-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-difference-area-compact-dark",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "compact",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-difference-area-compact-dark.csharp.txt",
+      "svg": "family-difference-area-compact-dark.svg",
+      "png": "family-difference-area-compact-dark.png",
+      "html": "family-difference-area-compact-dark.html",
+      "thumbnail": "family-difference-area-compact-dark.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-compact-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
+    },
+    {
+      "id": "family-difference-area-dated-gaps-dark",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "dated-gaps",
+      "primary": false,
+      "seriesKinds": [
+        "Line",
+        "DifferenceArea"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-difference-area-dated-gaps-dark.csharp.txt",
+      "svg": "family-difference-area-dated-gaps-dark.svg",
+      "png": "family-difference-area-dated-gaps-dark.png",
+      "html": "family-difference-area-dated-gaps-dark.html",
+      "thumbnail": "family-difference-area-dated-gaps-dark.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-dated-gaps-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 29
+    },
+    {
+      "id": "family-difference-area-compact-dated-gaps-dark",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "compact-dated-gaps",
+      "primary": false,
+      "seriesKinds": [
+        "Line",
+        "DifferenceArea"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-difference-area-compact-dated-gaps-dark.csharp.txt",
+      "svg": "family-difference-area-compact-dated-gaps-dark.svg",
+      "png": "family-difference-area-compact-dated-gaps-dark.png",
+      "html": "family-difference-area-compact-dated-gaps-dark.html",
+      "thumbnail": "family-difference-area-compact-dated-gaps-dark.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-compact-dated-gaps-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow",
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Axis labels were shortened or omitted to remain within the available frame.",
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 29
+    },
+    {
       "id": "family-radial-column-mixed-light",
       "family": "radial-column",
       "familyLabel": "Radial Column",
@@ -18764,6 +21425,54 @@
       "html": "family-radial-column-mixed-light.html",
       "thumbnail": "family-radial-column-mixed-light.thumbnail.svg",
       "thumbnailPng": "family-radial-column-mixed-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
+      "id": "family-radial-column-mixed-angular-reversal-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "mixed-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-mixed-angular-reversal-light.csharp.txt",
+      "svg": "family-radial-column-mixed-angular-reversal-light.svg",
+      "png": "family-radial-column-mixed-angular-reversal-light.png",
+      "html": "family-radial-column-mixed-angular-reversal-light.html",
+      "thumbnail": "family-radial-column-mixed-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-mixed-angular-reversal-light.thumbnail.png",
       "thumbnailWidth": 400,
       "thumbnailHeight": 280,
       "supportedOutputs": [
@@ -18838,6 +21547,54 @@
       "semanticRegions": 26
     },
     {
+      "id": "family-radial-column-compact-mixed-angular-reversal-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "compact-mixed-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-mixed-angular-reversal-light.csharp.txt",
+      "svg": "family-radial-column-compact-mixed-angular-reversal-light.svg",
+      "png": "family-radial-column-compact-mixed-angular-reversal-light.png",
+      "html": "family-radial-column-compact-mixed-angular-reversal-light.html",
+      "thumbnail": "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
       "id": "family-radial-column-mixed-dark",
       "family": "radial-column",
       "familyLabel": "Radial Column",
@@ -18860,6 +21617,54 @@
       "html": "family-radial-column-mixed-dark.html",
       "thumbnail": "family-radial-column-mixed-dark.thumbnail.svg",
       "thumbnailPng": "family-radial-column-mixed-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
+      "id": "family-radial-column-mixed-angular-reversal-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "mixed-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-mixed-angular-reversal-dark.csharp.txt",
+      "svg": "family-radial-column-mixed-angular-reversal-dark.svg",
+      "png": "family-radial-column-mixed-angular-reversal-dark.png",
+      "html": "family-radial-column-mixed-angular-reversal-dark.html",
+      "thumbnail": "family-radial-column-mixed-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-mixed-angular-reversal-dark.thumbnail.png",
       "thumbnailWidth": 400,
       "thumbnailHeight": 280,
       "supportedOutputs": [
@@ -18934,6 +21739,54 @@
       "semanticRegions": 26
     },
     {
+      "id": "family-radial-column-compact-mixed-angular-reversal-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "compact-mixed-angular-reversal",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-mixed-angular-reversal-dark.csharp.txt",
+      "svg": "family-radial-column-compact-mixed-angular-reversal-dark.svg",
+      "png": "family-radial-column-compact-mixed-angular-reversal-dark.png",
+      "html": "family-radial-column-compact-mixed-angular-reversal-dark.html",
+      "thumbnail": "family-radial-column-compact-mixed-angular-reversal-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-mixed-angular-reversal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
       "id": "chart-grid-wide-light",
       "family": "chart-grid",
       "familyLabel": "Chart grid",
@@ -18966,7 +21819,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 57
+      "semanticRegions": 60
     },
     {
       "id": "topology-expanded-light",
@@ -19098,7 +21951,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 57
+      "semanticRegions": 60
     },
     {
       "id": "topology-expanded-dark",
@@ -19228,7 +22081,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-light",
@@ -19267,7 +22120,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-density-light",
@@ -19300,7 +22153,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-density-light",
@@ -19337,7 +22190,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-sum-light",
@@ -19370,7 +22223,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-sum-light",
@@ -19403,7 +22256,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-mean-light",
@@ -19436,7 +22289,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-mean-light",
@@ -19469,7 +22322,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-wide-dark",
@@ -19502,7 +22355,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-dark",
@@ -19541,7 +22394,7 @@
         "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-density-dark",
@@ -19574,7 +22427,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-density-dark",
@@ -19611,7 +22464,7 @@
       "diagnosticMessages": [
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-sum-dark",
@@ -19644,7 +22497,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-sum-dark",
@@ -19677,7 +22530,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-mean-dark",
@@ -19710,7 +22563,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     },
     {
       "id": "histogram-compact-mean-dark",
@@ -19743,7 +22596,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 20
     }
   ]
 }

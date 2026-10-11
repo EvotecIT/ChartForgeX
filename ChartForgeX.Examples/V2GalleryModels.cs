@@ -9,19 +9,24 @@ using ChartForgeX.Themes;
 public static partial class V2GalleryModels {
     /// <summary>Creates an actual source model for every chart kind, without selecting a renderer or export backend.</summary>
     public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var differenceGapVariant = (variant is "dated-gaps" or "compact-dated-gaps") && kind == ChartSeriesKind.DifferenceArea;
         var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
         var precisionVariant = (variant is "precision" or "compact-precision") && kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is "authored-total" or "compact-authored-total") && kind == ChartSeriesKind.Sunburst;
-        var horizontalWaterfall = (variant is "horizontal" or "compact-horizontal") && kind == ChartSeriesKind.Waterfall;
+        var horizontalCartesian = (variant is "horizontal" or "compact-horizontal") && kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot;
+        var endpointLabels = kind == ChartSeriesKind.RangeBar && variant is "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels";
+        var angularReversalVariant = (variant is "angular-reversal" or "compact-angular-reversal") && kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar or ChartSeriesKind.PolarArea;
+        var financialDashVariant = (variant is "dashed" or "compact-dashed") && kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc;
         var radialLabelVariant = (variant is "axis-labels" or "compact-axis-labels" or "all-labels" or "compact-all-labels") && kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
         var colorScaleVariant = (variant is "color-scale" or "compact-color-scale") && kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
         var positionedColorVariant = (variant is "positioned-color-scale" or "compact-positioned-color-scale") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
         var colorDimensionVariant = (variant is "color-dimension" or "compact-color-dimension") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
         var colorLegendVariant = (variant is "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalWaterfall && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant && !colorLegendVariant)
+        var partialColorVariant = (variant is "partial-color-range" or "compact-partial-color-range") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter;
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalCartesian && !angularReversalVariant && !financialDashVariant && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant && !colorLegendVariant && !endpointLabels && !partialColorVariant && !differenceGapVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
-            ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
+        var chart = (endpointLabels ? RangeBarEndpointLabels(variant) : null) ?? (angularReversalVariant ? AngularReversal(kind) : null) ?? (financialDashVariant ? FinancialDashes(kind) : null) ?? (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant || horizontalCartesian ? GeometryOptions(kind, variant) : null)
+            ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Differences(kind, variant) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant && !colorDimensionVariant && !colorLegendVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
         if (variant == "options" && kind == ChartSeriesKind.Area) {
@@ -42,7 +47,7 @@ public static partial class V2GalleryModels {
         ChartSeriesKind.Lollipop => "Orders at each delivery stage", ChartSeriesKind.Candlestick => "Daily opening and closing prices",
         ChartSeriesKind.Ohlc => "Daily market price ranges", ChartSeriesKind.ErrorBar => "Delivery time and uncertainty",
         ChartSeriesKind.BoxPlot => "Delivery time by service level", ChartSeriesKind.RangeBand => "Expected temperature band",
-        ChartSeriesKind.RangeArea => "Expected operating range", ChartSeriesKind.RangeBar => "Minimum and maximum delivery times",
+        ChartSeriesKind.DifferenceArea => "Actual and forecast requests", ChartSeriesKind.RangeArea => "Expected operating range", ChartSeriesKind.RangeBar => "Minimum and maximum delivery times",
         ChartSeriesKind.Dumbbell => "Service capacity before and after", ChartSeriesKind.Slope => "Capacity change across teams",
         ChartSeriesKind.Heatmap => "Coverage across service areas", ChartSeriesKind.HexbinHeatmap => "Service coverage in hexagonal cells",
         ChartSeriesKind.CalendarHeatmap => "Daily activity across four months", ChartSeriesKind.DottedMap => "Service routes across Europe",

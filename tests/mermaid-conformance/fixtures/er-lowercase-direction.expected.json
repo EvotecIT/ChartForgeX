@@ -1,0 +1,5 @@
+{
+  "entities": ["A", "B", "direction"],
+  "direction": "BT",
+  "nativeRetainedStatements": []
+}

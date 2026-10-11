@@ -57,6 +57,8 @@ public sealed class GraphiteFrameTypographyTests {
             case ChartSeriesKind.Ohlc: return chart.AddOhlc("Measure", candles);
             case ChartSeriesKind.RangeBand: return chart.AddRangeBand("Measure", ranges);
             case ChartSeriesKind.RangeArea: return chart.AddRangeArea("Measure", ranges);
+            case ChartSeriesKind.DifferenceArea:
+                return chart.AddDifferenceArea("Measure", new[] { new ChartDifferencePoint(1, 30, 10), new ChartDifferencePoint(2, 15, 25) });
             case ChartSeriesKind.Dumbbell: return chart.AddDumbbell("Measure", new[] { new ChartDumbbell(1, 10, 30) });
             case ChartSeriesKind.RangeBar: return chart.AddRangeBar("Measure", new[] { new ChartInterval(1, 10, 30) });
             case ChartSeriesKind.BoxPlot: return chart.AddBoxPlot("Measure", 1, new[] { 10d, 15, 20, 25, 30 });
