@@ -63,7 +63,8 @@ public sealed class CartesianPlotRegionPaintTests {
     }
 
     private static string Paint(XDocument svg, string role) => svg.Descendants()
-        .Single(element => (string?)element.Attribute("data-cfx-role") == role).Attribute("fill")!.Value;
+        .Single(element => (string?)element.Attribute("data-cfx-role") == role).DescendantsAndSelf()
+        .Single(element => element.Attribute("fill") != null).Attribute("fill")!.Value;
 
     private static void AssertPixel(RgbaImage image, double x, double y, ChartColor expected) {
         var offset = ((int)y * image.Width + (int)x) * 4;
