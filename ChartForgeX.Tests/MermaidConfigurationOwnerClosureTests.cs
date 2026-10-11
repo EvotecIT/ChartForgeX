@@ -6,7 +6,7 @@ namespace ChartForgeX.Tests;
 public sealed class MermaidConfigurationOwnerClosureTests {
     [Fact]
     public void MultilineRootFlowMappingsRetainNestedStringsAndLeaveFollowingFrontmatterSeparate() {
-        var parsed = new MermaidParser().Parse("---\nconfig: {\n  \"theme\": \"dark\",\n  \"flowchart\": {\"fontFamily\": \"A}B\"}\n}\ntitle: Flow mapping\n---\nflowchart LR\nA --> B");
+        var parsed = new MermaidParser().Parse("---\nconfig: {\n  \"theme\": \"dark\",\n  \"fontFamily\": \"A}B\",\n  \"flowchart\": {\"look\": \"classic\"}\n}\ntitle: Flow mapping\n---\nflowchart LR\nA --> B");
         Assert.False(parsed.HasErrors);
         Assert.Equal("dark", parsed.Document!.Configuration.Theme);
         Assert.Equal("A}B", parsed.Document.Configuration.FontFamily);
