@@ -52,6 +52,7 @@ public sealed partial class MermaidParser {
             if (key == null || raw.Substring(0, indent).IndexOf('\t') >= 0) {
                 Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Warning,
                     "Mermaid frontmatter configuration supports space-indented mappings with scalar values; this declaration is retained without application.", MermaidDiagnosticCodes.UnsupportedConfiguration);
+                opaqueIndent = indent;
                 continue;
             }
             var path = parents.Count == 0 ? string.Empty : parents[parents.Count - 1].Path;
