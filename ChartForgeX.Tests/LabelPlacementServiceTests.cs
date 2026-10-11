@@ -31,6 +31,39 @@ public sealed class LabelPlacementServiceTests {
         Assert.Equal(first.LeaderEnd, second.LeaderEnd);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LargerRequestedGapIsPreservedAcrossSpatialCellsInEitherOrder(bool reverse) {
+        // The first box occupies cell zero; the second occupies cell one. Its own
+        // zero gap would miss the first box's required forty-pixel separation.
+        var relaxed = new LabelPlacementRequest("A", new ChartPoint(30, 20), Style, new[] { new LabelCandidate(0, 0) }) {
+            MinimumLabelGap = 40, MeasuredSize = new TextMetrics(10, 10, 10), Fallback = LabelFallbackRule.Drop
+        };
+        var dense = new LabelPlacementRequest("B", new ChartPoint(70, 20), Style, new[] { new LabelCandidate(0, 0) }) {
+            MinimumLabelGap = 0, MeasuredSize = new TextMetrics(10, 10, 10), Fallback = LabelFallbackRule.Drop
+        };
+        var results = new LabelPlacementService().Place(reverse ? new[] { dense, relaxed } : new[] { relaxed, dense }, new ChartRect(0, 0, 200, 100));
+        Assert.False(results[0].IsDropped); Assert.True(results[1].IsDropped);
+    }
+
+    [Fact]
+    public void AcceptedCaptionOverlapsStillAvoidMarksAndBlockLaterLabels() {
+        LabelPlacementRequest Caption(string text, double x, int priority, double width = 40) => new(text, new ChartPoint(x, 20), Style,
+            new[] { new LabelCandidate(0, 0) }, priority) {
+            AllowLabelOverlap = true, MinimumLabelGap = 0, MeasuredSize = new TextMetrics(width, 10, 10), Fallback = LabelFallbackRule.Drop
+        };
+        var first = Caption("First axis", 20, 100); var second = Caption("Second axis", 40, 90);
+        var data = Caption("Data", 70, 40, 10); data.AllowLabelOverlap = false;
+        var mark = Caption("Blocked by mark", 105, 90, 5);
+        var outside = Caption("Outside viewport", 195, 90, 10);
+        var results = new LabelPlacementService().Place(new[] { first, second, data, mark, outside }, new ChartRect(0, 0, 200, 100),
+            new[] { new LabelObstacle("mark", new ChartRect(100, 10, 20, 30)) });
+        Assert.False(results[0].IsDropped); Assert.False(results[1].IsDropped);
+        Assert.All(results.Skip(2), result => Assert.True(result.IsDropped));
+        Assert.Equal("Data", results[2].Request.Text);
+    }
+
     [Fact]
     public void DisplayCasingIsAppliedOnceAndDoesNotReportEllipsis() {
         var service = new LabelPlacementService();
@@ -50,6 +83,31 @@ public sealed class LabelPlacementServiceTests {
         Assert.False(result.IsDropped); Assert.True(result.IsEllipsized); Assert.EndsWith("…", result.Text);
         Assert.True(result.Bounds.Width <= width + 0.0001);
         Assert.Equal(label.Text, result.Request.Text);
+    }
+
+    [Fact]
+    public void MixedAxisAnglesUseTheirOwnPreparedMetricsDuringEllipsisAndPainting() {
+        var style = Style.Clone(); style.TextCase = TextCaseTransform.ToggleCase;
+        // The retained prefix depends on glyph widths, so use the checked-in face on every platform.
+        style.Font = FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        Assert.Equal(style.Font.FilePath, TypographyFontResolver.ResolveFace(style.Font).Path);
+        var builder = new VisualSceneBuilder(new VisualSize(120, 100), style.Font);
+        var requests = new[] {
+            new LabelPlacementRequest("WWWiii long vertical caption", new ChartPoint(0, 0), style, new[] { new LabelCandidate(0, 0) }) { RotationDegrees = 450, Bounds = new ChartRect(0, 0, 30, 50) },
+            new LabelPlacementRequest("WWWiii long diagonal caption", new ChartPoint(40, 0), style, new[] { new LabelCandidate(0, 0) }) { RotationDegrees = -30, Bounds = new ChartRect(40, 0, 65, 60) }
+        };
+        foreach (var request in requests) request.MeasuredSize = builder.MeasureText(request.Text, request.Style);
+        var placed = new LabelPlacementService().Place(requests, new ChartRect(0, 0, 120, 100), null, 0, builder.MeasureText);
+        Assert.All(placed, result => { Assert.False(result.IsDropped); Assert.True(result.IsEllipsized); Assert.StartsWith("wwwIII", result.Text); });
+        for (var index = 0; index < placed.Count; index++) VisualAxisText.Draw(builder, placed[index], "axis-label", "label-" + index);
+        var painted = NumericRadialAxisTextTests.Footprints(builder.Build());
+        for (var index = 0; index < placed.Count; index++) {
+            Assert.Equal(placed[index].Bounds.Width, painted[index].Bounds.Width, 6);
+            Assert.Equal(placed[index].Bounds.Height, painted[index].Bounds.Height, 6);
+            Assert.Equal(placed[index].Bounds.Left, painted[index].Bounds.Left, 6);
+            Assert.Equal(placed[index].Bounds.Top, painted[index].Bounds.Top, 6);
+            Assert.True(LabelPlacementService.Contains(requests[index].Bounds!.Value, painted[index].Bounds));
+        }
     }
 
     [Fact]

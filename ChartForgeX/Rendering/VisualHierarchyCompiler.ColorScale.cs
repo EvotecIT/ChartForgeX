@@ -1,0 +1,111 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+
+namespace ChartForgeX.Rendering;
+
+internal static partial class VisualHierarchyCompiler {
+    private static bool HasHierarchyScale(Chart chart, VisualRenderContext context, ChartHierarchySurface surface) =>
+        surface.Scale != null && surface.ShowLegend && context.Frame.ShowLegend && chart.Series[0].ShowInLegend;
+
+    private static TextStyle HierarchyScaleStyle(VisualRenderContext context) => context.Frame.LegendStyle ?? new TextStyle {
+        Font = context.Font, FontSize = context.Theme.Typography.LegendSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
+    };
+
+    private static (ChartRect Content, ChartRect Scale) HierarchyScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
+        ChartRect plot, ChartHierarchySurface surface) {
+        if (!HasHierarchyScale(chart, context, surface)) return (plot, new ChartRect(plot.X, plot.Bottom, 0, 0));
+        var style = HierarchyScaleStyle(context); var row = builder.MeasureText("Mg", style).Height;
+        var scale = surface.Scale!;
+        var numeric = scale.Mode == ChartColorScaleMode.Discrete || surface.HasDomain;
+        var lines = numeric ? 2 + (scale.MidpointLabel != null ? 1 : 0) + (surface.HasMissing ? 1 : 0) : 2;
+        var height = Math.Min(plot.Height * .35, row * lines + (numeric ? row * .8 : 0) + context.Theme.Spacing);
+        var gap = Math.Min(context.Theme.Spacing, plot.Height * .05);
+        return (new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(0, plot.Height - height - gap)), new ChartRect(plot.X, plot.Bottom - height, plot.Width, height));
+    }
+
+    private static void DrawHierarchyScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect area,
+        ChartHierarchySurface surface, VisualThemeColors colors) {
+        if (!HasHierarchyScale(chart, context, surface) || area.Width <= 0 || area.Height <= 0) return;
+        var scale = surface.Scale!; var style = HierarchyScaleStyle(context); var row = builder.MeasureText("Mg", style).Height;
+        var title = surface.Title;
+        var metadata = new Dictionary<string, string> { ["data-cfx-scale-mode"] = scale.Mode.ToString().ToLowerInvariant() };
+        if (surface.HasDomain && scale.Mode != ChartColorScaleMode.Discrete) {
+            metadata["data-cfx-min-value"] = N(scale.EffectiveMinimum(surface.Minimum));
+            metadata["data-cfx-max-value"] = N(scale.EffectiveMaximum(surface.Maximum));
+            metadata["data-cfx-midpoint-value"] = N(scale.EffectiveMidpoint(surface.Minimum, surface.Maximum));
+        }
+        using (builder.PushGroup(surface.RolePrefix + "-color-scale", surface.RolePrefix + "-color-scale", metadata)) using (builder.PushClip(area)) {
+            VisualColorScaleLegendScene.PositionedStops(builder, scale, area, surface.RolePrefix + "-color-scale",
+                surface.Presentation.ScaleValues, surface.Presentation.HasOverrides ? surface.Title : null);
+            VisualRadialPrimitives.Text(builder, title, new ChartRect(area.X, area.Y, area.Width, Math.Min(row, area.Height)), style,
+                surface.RolePrefix + "-color-scale-title", surface.RolePrefix + "-color-scale-title", alignment: TextAlignment.Left);
+            var swatchY = Math.Min(area.Bottom, area.Y + row + 3);
+            var numeric = scale.Mode == ChartColorScaleMode.Discrete || surface.HasDomain;
+            var swatchHeight = numeric ? Math.Min(row * .7, Math.Max(0, area.Bottom - swatchY - row)) : 0;
+            var labelY = swatchY + swatchHeight + 3;
+            if (scale.Mode == ChartColorScaleMode.Discrete) {
+                var captions = ChartColorScaleLegend.BandCaptions(surface.Presentation.Labels, scale, surface.Presentation.ScaleValues);
+                for (var i = 0; i < scale.Bands.Count; i++) {
+                    var band = scale.Bands[i]; var width = area.Width / scale.Bands.Count;
+                    var source = new Dictionary<string, string> {
+                        ["data-cfx-band"] = N(i), ["data-cfx-label"] = captions[i],
+                        ["data-cfx-lower-bound"] = i == 0 ? "" : N(scale.Bands[i - 1].UpperBound!.Value),
+                        ["data-cfx-upper-bound"] = band.UpperBound.HasValue ? N(band.UpperBound.Value) : "",
+                        ["data-cfx-lower-inclusive"] = "true", ["data-cfx-upper-exclusive"] = "true"
+                    };
+                    if (band.Label != null) source["data-cfx-band-label"] = band.Label;
+                    using (builder.PushGroup(null, surface.RolePrefix + "-color-scale-step-source", source)) {
+                        var blend = ChartColorBlend.Solid(band.Color, SvgColorRole.Ramp);
+                        builder.Rect(new ChartRect(area.X + i * width, swatchY, width, swatchHeight), blend.Color,
+                            role: surface.RolePrefix + "-color-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                    }
+                    ScaleCaption(captions[i], area.X + i * width, labelY, width, TextAlignment.Center, "band-" + i);
+                }
+            } else if (surface.HasDomain) {
+                var steps = ChartColorScaleLegend.Steps(scale, surface.Minimum, surface.Maximum); var width = area.Width / steps.Length;
+                var captions = surface.Presentation.HasOverrides ? surface.Presentation.ScaleValues(steps) : null;
+                for (var i = 0; i < steps.Length; i++) {
+                    var source = new Dictionary<string, string> { ["data-cfx-value"] = N(steps[i]) };
+                    if (captions != null) {
+                        source["data-cfx-formatted-value"] = captions[i]; source["data-cfx-label-value"] = surface.Title;
+                    }
+                    using (builder.PushGroup(null, surface.RolePrefix + "-color-scale-step-source", source)) {
+                        var blend = scale.BlendFor(steps[i], surface.Minimum, surface.Maximum);
+                        builder.Rect(new ChartRect(area.X + i * width, swatchY, width, swatchHeight), blend.Color,
+                            role: surface.RolePrefix + "-color-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
+                    }
+                }
+                var values = surface.Presentation.ScaleValues(new[] { scale.EffectiveMinimum(surface.Minimum), scale.EffectiveMaximum(surface.Maximum) });
+                ScaleCaption((scale.LowLabel ?? surface.Presentation.Labels.Less) + " · " + values[0], area.X, labelY, area.Width / 2, TextAlignment.Left, "low");
+                ScaleCaption((scale.HighLabel ?? surface.Presentation.Labels.More) + " · " + values[1], area.X + area.Width / 2, labelY, area.Width / 2, TextAlignment.Right, "high");
+                if (scale.MidpointLabel != null) {
+                    var text = scale.MidpointLabel + " · " + surface.Presentation.ScaleValues(new[] { scale.EffectiveMidpoint(surface.Minimum, surface.Maximum) })[0];
+                    if (scale.HasPositionedStops && scale.Mode == ChartColorScaleMode.Diverging) {
+                        var center = area.X + (ChartColorScaleLegend.MidpointStep(scale, surface.Minimum, surface.Maximum, steps.Length) + .5) * width;
+                        var captionWidth = 2 * Math.Min(center - area.Left, area.Right - center);
+                        ScaleCaption(text, center - captionWidth / 2, labelY + row, captionWidth, TextAlignment.Center, "midpoint", fit: true);
+                    } else ScaleCaption(text, area.X, labelY + row, area.Width, TextAlignment.Center, "midpoint");
+                }
+            }
+            if (surface.HasMissing) {
+                var missingY = numeric ? area.Bottom - row : swatchY;
+                var height = Math.Min(row, Math.Max(0, area.Bottom - missingY));
+                var blend = ChartColorScaleSurface.NoData(scale, colors);
+                builder.Rect(new ChartRect(area.X, missingY + height * .15, height * .7, height * .7), blend.Color,
+                    role: surface.RolePrefix + "-color-scale-missing", paint: VisualChartPaint.Fill(blend.Paint));
+                ScaleCaption(surface.Presentation.NoData, area.X + height, missingY, Math.Max(0, area.Width - height), TextAlignment.Left, "missing");
+            }
+        }
+
+        void ScaleCaption(string full, double x, double y, double width, TextAlignment alignment, string id, bool fit = false) {
+            var captionStyle = fit ? VisualColorScaleLegendScene.FitCaptionStyle(builder, full, style, width) : style;
+            VisualRadialPrimitives.Text(builder, full, new ChartRect(x, y, width, Math.Min(row, Math.Max(0, area.Bottom - y))), captionStyle,
+                surface.RolePrefix + "-color-scale-label", surface.RolePrefix + "-color-scale-label-" + id, alignment: alignment);
+        }
+    }
+}

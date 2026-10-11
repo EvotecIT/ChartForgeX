@@ -5,6 +5,15 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
+    /// <summary>Configures the shared source-size domain and logical radius range for all bubble series.</summary>
+    /// <param name="configure">The configuration callback.</param>
+    /// <returns>The current chart.</returns>
+    public Chart ConfigureBubble(Action<ChartBubbleOptions> configure) {
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        configure(Options.Bubble);
+        return this;
+    }
+
     /// <summary>
     /// Adds a bubble chart series.
     /// </summary>
@@ -16,7 +25,7 @@ public sealed partial class Chart {
         if (bubbles == null) throw new ArgumentNullException(nameof(bubbles));
         var points = new List<ChartPoint>();
         foreach (var bubble in bubbles) {
-            points.Add(new ChartPoint(bubble.X, bubble.Y));
+            points.Add(new ChartPoint(bubble.X, bubble.Y).WithColorValue(bubble.ColorValue));
             points.Add(new ChartPoint(bubble.X, bubble.Size));
         }
 

@@ -123,6 +123,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var prepared = chart.Prepare(request.Context);
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
+        if (!Enum.IsDefined(typeof(HtmlChartTooltipMode), options.Tooltip.Mode)) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.Mode));
+        if (options.Tooltip.DelayMilliseconds < 0) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.DelayMilliseconds));
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
@@ -140,8 +142,20 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-scenario-playback", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "idle" : null)
             .Attribute("data-cfx-scenario-playback-delay", scenarioControls && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.StepPlayback) ? "900" : null)
             .Attribute("data-cfx-responsive-layout", options.ResponsiveLayout.ToString().ToLowerInvariant())
-            .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart))
-            .EndStartElement().Line();
+            .Attribute("data-cfx-tooltip-mode", options.Tooltip.Mode == HtmlChartTooltipMode.Single ? "single" : "shared-x")
+            .Attribute("data-cfx-tooltip-range", options.Tooltip.Range.SerializedKind)
+            .Attribute("data-cfx-tooltip-distance", options.Tooltip.Range.CssPixels?.ToString("R", CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-tooltip-delay", options.Tooltip.DelayMilliseconds.ToString(CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-tooltip-anchor", options.Tooltip.Position.Anchor.ToString().ToLowerInvariant())
+            .Attribute("data-cfx-tooltip-placements", options.Tooltip.Position.SerializedPlacements)
+            .Attribute("data-cfx-tooltip-gap", options.Tooltip.Position.Gap.ToString("R", CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-tooltip-offset-x", options.Tooltip.Position.OffsetX.ToString("R", CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-tooltip-offset-y", options.Tooltip.Position.OffsetY.ToString("R", CultureInfo.InvariantCulture))
+            .Attribute("data-cfx-crosshair-label", options.Crosshair.ShowLabel ? "true" : "false")
+            .Attribute("data-cfx-crosshair-styled", options.Crosshair.HasLineOverrides ? "true" : null)
+            .Attribute("style", "--cfx-native-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + chart.Options.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart) + CrosshairInteractionTokens(options.Crosshair));
+        WriteHighlightOptions(writer, options.Highlight);
+        writer.EndStartElement().Line();
         var toolbar = BuildToolbar(options);
         if (toolbar.Length > 0) {
             writer.StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", "Chart controls").EndStartElement()
@@ -155,7 +169,6 @@ public sealed partial class HtmlInteractiveChartRenderer {
         }
 
         writer.StartElement("div").Attribute("class", "cfx-frame").EndStartElement().Line()
-            .RawTrusted(BuildResetControl(options))
             .StartElement("div").Attribute("class", "cfx-stage").EndStartElement().Line()
             .RawTrusted(prepared.ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope), chart.Options.SvgColorVariables))).Line()
             .StartElement("div").Attribute("class", "cfx-brush-box").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
@@ -165,8 +178,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .StartElement("span").Attribute("class", "cfx-crosshair__label").Attribute("data-cfx-crosshair-label", "true").EndStartElement().EndElement()
             .EndElement().Line()
             .RawTrusted(BuildRevealLayer(options))
-            .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()
+            .RawTrusted(BuildResetControl(options))
+            .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .EndElement();

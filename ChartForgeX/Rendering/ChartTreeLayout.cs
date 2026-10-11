@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -10,32 +9,21 @@ namespace ChartForgeX.Rendering;
 internal static class ChartTreeLayout {
     public static ChartTreeModel Build(Chart chart, ChartRect plot, bool fitViewport = false) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Tree);
-        if (series == null || series.Points.Count < 2) return ChartTreeModel.Empty;
-        var nodeCount = chart.Options.TreeNodeLabels.Count;
+        if (series?.Relationships == null) return ChartTreeModel.Empty;
+        var facts = series.Relationships;
+        var nodeCount = facts.Nodes.Count;
         var links = new List<ChartTreeLayoutLink>();
-        for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-            var endpoints = series.Points[i];
-            var valuePoint = series.Points[i + 1];
-            var parent = Math.Max(0, (int)Math.Round(endpoints.X));
-            var child = Math.Max(0, (int)Math.Round(endpoints.Y));
-            var value = Math.Max(0.000001, valuePoint.Y);
-            nodeCount = Math.Max(nodeCount, Math.Max(parent, child) + 1);
-            links.Add(new ChartTreeLayoutLink(parent, child, value));
-        }
-
-        if (nodeCount == 0 || links.Count == 0) return ChartTreeModel.Empty;
+        for (var i = 0; i < facts.TreeLinks.Count; i++)
+            links.Add(new ChartTreeLayoutLink(i, facts.Source(i), facts.Target(i), facts.TreeLinks[i].Value));
         var nodes = new List<ChartTreeNode>();
-        for (var i = 0; i < nodeCount; i++) nodes.Add(new ChartTreeNode(i, TreeNodeLabel(chart, i)));
+        for (var i = 0; i < nodeCount; i++) nodes.Add(new ChartTreeNode(i, facts.Nodes[i].Id, facts.Nodes[i].Label));
         var children = new List<int>[nodeCount];
-        var incoming = new bool[nodeCount];
         for (var i = 0; i < nodeCount; i++) children[i] = new List<int>();
         foreach (var link in links) {
             children[link.Parent].Add(link.Child);
-            incoming[link.Child] = true;
         }
 
-        var root = 0;
-        for (var i = 0; i < incoming.Length; i++) if (!incoming[i]) { root = i; break; }
+        var root = facts.Root;
         ApplyDepths(nodes, children, root, 0);
         LayoutNodes(nodes, children, root, plot, fitViewport, out var nodeWidth, out var nodeHeight, out var maxDepth);
         var maxLinkValue = links.Max(link => link.Value);
@@ -83,13 +71,13 @@ internal static class ChartTreeLayout {
         }
     }
 
-    private static string TreeNodeLabel(Chart chart, int index) =>
-        index >= 0 && index < chart.Options.TreeNodeLabels.Count ? chart.Options.TreeNodeLabels[index] : "Node " + (index + 1).ToString(CultureInfo.InvariantCulture);
+
 }
 
 internal sealed class ChartTreeNode {
-    public ChartTreeNode(int index, string label) { Index = index; Label = label; }
+    public ChartTreeNode(int index, string id, string label) { Index = index; Id = id; Label = label; }
     public int Index { get; }
+    public string Id { get; }
     public string Label { get; }
     public int Depth { get; set; }
     public double X { get; set; }
@@ -97,7 +85,8 @@ internal sealed class ChartTreeNode {
 }
 
 internal readonly struct ChartTreeLayoutLink {
-    public ChartTreeLayoutLink(int parent, int child, double value) { Parent = parent; Child = child; Value = value; }
+    public ChartTreeLayoutLink(int index, int parent, int child, double value) { Index = index; Parent = parent; Child = child; Value = value; }
+    public int Index { get; }
     public int Parent { get; }
     public int Child { get; }
     public double Value { get; }

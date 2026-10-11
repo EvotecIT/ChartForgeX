@@ -12,7 +12,7 @@
 
 ## Consumer migration: Phase 5
 
-All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
+All implemented chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
 
 - [x] Inspect current owner and consumer branches, package boundaries and the public package state.
 - [x] Qualify the PowerBGInfo candidate with installed PowerShell 5.1/7 module types and observed wallpapers.
@@ -27,6 +27,7 @@ All 49 chart kinds, ChartGrid, topology, flow and sequence use the shared native
 ## Rendering Pipeline
 
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
+- Financial marks expose independent solid body/wick and OHLC colors, alpha, widths and hollow candles through `ChartSeries.Financial`. Keep financial dash controls and trading-session spacing as separate increments; session calendars must preserve source prices and date bounds across candle/OHLC views.
 - Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
 - Keep annotation captions clear of data marks in compact plots, including bar caps and nearby value labels.
 
@@ -62,6 +63,17 @@ SVG and PNG charts share measured label placement, including data labels, target
 
 - Keep marketing/poster chart matrices honest by checking each advertised family against public API, SVG renderer, PNG renderer, smoke tests, generated examples, and website gallery tags.
 - When adding a future chart family, update the README catalog, public model/API, SVG and PNG renderers, smoke tests, generated examples, gallery metadata, and promotional imagery together.
+
+The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation, pyramid partitions, typed Waterfall openings/checkpoints and orientation, shared Sunburst/Treemap hierarchy items, explicit Sunburst parent totals, Sankey alignment/order/node geometry/paint, shared Sankey/Chord flow styles and states, and numeric color scales for Scatter/Bubble observations, maps, hierarchies, rectangular/hexagonal matrices and calendars share native owners. Further work should retain that API and source-value boundary:
+
+- Extend Sunburst with further label fitting and sector padding controls. Opt-in HTML root-branch emphasis, rounded sectors, typed secondary captions, shared hierarchy facts, independent numeric colors, leaf aggregation and inclusive authored parent totals are implemented. Automatic caption shrinking remains a separate fitting policy.
+- Measured left/right/center labels and inside/outside edge policies are implemented. Any optional tiny-flow minimum-width treatment must preserve truthful weights and conservation; current alignment, ordering, node geometry and fill controls keep one proportional scale.
+- [ ] Extend numeric radial series with mixed radial families. Radar/polar angular reversal and schedule reversal retain separate projection work.
+- Improve TileMap code-label fitting at compact and wide sizes. Fixed-size trimming currently shortens most two-letter codes at wide sizes and omits them in compact views; preserve complete region identities and shared SVG/PNG geometry while adding a readable fitting policy.
+- Extend the shared numeric color owner with partly inferred continuous endpoints, arbitrary interior captions and independent gradient/discrete legend controls. Absolute positioned stops, Scatter/Bubble color values, automatic/fixed domains, missing-value paint, measured keys, typed dimension names/formats and raw readouts use the existing shared scale; Bubble size remains independent.
+- Extend weighted Chord with deliberate ordering strategies and an independent quantitative color dimension. Its native scene retains directed reciprocal, parallel, self, and raw zero flows in source order; circular span, node gaps/thickness, flow paint/state, target cues, and measured labels are configurable.
+- [ ] Add data-domain zoom policies to the HTML adapter; current zoom transforms the complete SVG. Typed crosshair line paint and label visibility are implemented without enabling features. Static legend display and browser muting/isolation have separate controls. Any future hide-versus-mute policy must be explicit and independent of palette choice.
+- [ ] Qualify each increment with compact/wide light/dark SVG and native PNG, then maintain the ledger's remaining gaps and evidence limits.
 
 ## Topology
 

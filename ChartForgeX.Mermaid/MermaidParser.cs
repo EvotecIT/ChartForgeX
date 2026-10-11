@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Mermaid;
 
@@ -285,7 +286,7 @@ public sealed partial class MermaidParser {
             Header = header.Text,
             HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
             FrontMatter = frontMatter.Text,
-            Orientation = Normalize(descriptor.Direction) == "horizontal" ? MermaidXYChartOrientation.Horizontal : MermaidXYChartOrientation.Vertical
+            Orientation = Normalize(descriptor.Direction) == "horizontal" ? ChartOrientation.Horizontal : ChartOrientation.Vertical
         };
 
         MermaidXYChartParser.ParseStatements(document, lines, header.Line + 1, result);

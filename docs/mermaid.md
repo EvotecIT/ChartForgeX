@@ -858,6 +858,7 @@ Supported treemap parsing includes:
 
 - `treemap-beta` headers.
 - Quoted section/parent nodes.
+- Sections with child nodes; an empty section without a size is rejected with its source span.
 - Quoted leaf nodes with finite non-negative numeric values.
 - Indentation-based hierarchy using spaces or tabs.
 - Optional `:::class` suffixes on section and leaf nodes.
@@ -890,7 +891,7 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for treemap diagrams is `Chart`. The typed AST preserves the hierarchy and class suffixes. The current static ChartForgeX preview renders valued leaves as native treemap tiles using full hierarchy paths as labels, while node counts, leaf counts, root counts, and class usage are retained in artifact metadata for hosts that need the original tree.
+The conversion target for treemap diagrams is `Chart`. Section nodes retain nested parent rectangles and measured headers, and their areas aggregate leaf sizes. Distinct source-order IDs keep repeated labels independent; display labels remain unchanged. The typed AST retains class suffixes, and artifact metadata retains node, leaf, root, and class counts. Class-to-paint styling remains a host policy.
 
 ## Git Graph Diagrams
 

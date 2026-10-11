@@ -11,7 +11,7 @@ internal static partial class ExpressiveExamples {
         .WithSize(960, 460)
         .WithXAxis("Font stack · Segoe UI Black · Segoe UI · Noto Sans Arabic")
         .WithYAxis("Samples")
-        .WithTickLabelStyle(style => style.WithFontFamily("'Segoe UI Black', 'Segoe UI', 'Noto Sans Arabic', sans-serif").WithWeight("900").WithFontSize(28))
+        .ConfigureTickLabelStyle(style => style.WithFontFamily("'Segoe UI Black', 'Segoe UI', 'Noto Sans Arabic', sans-serif").WithWeight("900").WithFontSize(28))
         .WithXLabels("Report", "مرحبا", "بِبّ", "Value 123")
         .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
     private static Chart CreateEmbeddedBitmapShowcase() {
@@ -22,7 +22,7 @@ internal static partial class ExpressiveExamples {
             .WithSize(960, 460)
             .WithXAxis("Calibri when installed · ordinary outlines otherwise")
             .WithYAxis("Samples")
-            .WithTickLabelStyle(style => style.WithFontFamily("Calibri, 'Noto Sans', sans-serif").WithFontSize(12))
+            .ConfigureTickLabelStyle(style => style.WithFontFamily("Calibri, 'Noto Sans', sans-serif").WithFontSize(12))
             .WithXLabels("Report 12", "Chart AV", "office", "Value 123")
             .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
         chart.Options.PngTextHinting = TextHinting.Full;
@@ -35,7 +35,7 @@ internal static partial class ExpressiveExamples {
         .WithSize(960, 460)
         .WithXAxis("Nabla when installed · ordinary fallback otherwise")
         .WithYAxis("Samples")
-        .WithTickLabelStyle(style => style.WithFontFamily("Nabla, system-ui, sans-serif").WithColorPalette(3).WithFontSize(28))
+        .ConfigureTickLabelStyle(style => style.WithFontFamily("Nabla, system-ui, sans-serif").WithColorPalette(3).WithFontSize(28))
         .WithXLabels("Report", "Chart", "Value", "Label")
         .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
     private static Chart CreateVariableFontShowcase() => Chart.Create()
@@ -45,7 +45,7 @@ internal static partial class ExpressiveExamples {
         .WithSize(960, 460)
         .WithXAxis("Selected axes · wght 650 · opsz 20")
         .WithYAxis("Samples")
-        .WithTickLabelStyle(style => style.WithFontFamily("'Segoe UI Variable', 'Source Serif 4', sans-serif").WithVariation("wght", 650).WithVariation("opsz", 20).WithFontSize(26))
+        .ConfigureTickLabelStyle(style => style.WithFontFamily("'Segoe UI Variable', 'Source Serif 4', sans-serif").WithVariation("wght", 650).WithVariation("opsz", 20).WithFontSize(26))
         .WithXLabels("Variable AV", "office", "Hé xÁ", "Report 123")
         .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
     private static Chart CreateSmallTextLayoutShowcase() {
@@ -56,8 +56,8 @@ internal static partial class ExpressiveExamples {
             .WithSize(960, 460)
             .WithXAxis("Labels at 12 logical pixels")
             .WithYAxis("Samples")
-            .WithTickLabelStyle(style => style.WithFontFamily("Arial, 'Noto Sans', sans-serif").WithFontSize(12))
-            .WithDataLabelStyle(style => style.WithFontSize(10))
+            .ConfigureTickLabelStyle(style => style.WithFontFamily("Arial, 'Noto Sans', sans-serif").WithFontSize(12))
+            .ConfigureDataLabelStyle(style => style.WithFontSize(10))
             .WithXLabels("a\u0301", "i\u0307", "a\u0301\u0300", "بِبّ")
             .WithDataLabels()
             .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
@@ -73,7 +73,7 @@ internal static partial class ExpressiveExamples {
         .WithSize(960, 460)
         .WithXAxis("Serbian labels · selected font language")
         .WithYAxis("Samples")
-        .WithTickLabelStyle(style => style.WithFontFamily("Calibri, 'Segoe UI', 'Noto Sans', sans-serif").WithItalic().WithOpenTypeLanguage("SRB").WithFontSize(28))
+        .ConfigureTickLabelStyle(style => style.WithFontFamily("Calibri, 'Segoe UI', 'Noto Sans', sans-serif").WithItalic().WithOpenTypeLanguage("SRB").WithFontSize(28))
         .WithXLabels("бгдпт", "Београд", "Нови Сад", "Крагујевац")
         .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
 
@@ -84,7 +84,7 @@ internal static partial class ExpressiveExamples {
         .WithSize(960, 460)
         .WithXAxis("Sinhala · Myanmar")
         .WithYAxis("Samples")
-        .WithTickLabelStyle(style => style.WithFontFamily("'Nirmala UI', 'Myanmar Text', 'Noto Sans Sinhala', 'Noto Sans Myanmar', sans-serif").WithFontSize(28))
+        .ConfigureTickLabelStyle(style => style.WithFontFamily("'Nirmala UI', 'Myanmar Text', 'Noto Sans Sinhala', 'Noto Sans Myanmar', sans-serif").WithFontSize(28))
         .WithXLabels("සිංහල", "ශ්‍රී ලංකාව", "မြန်မာ", "မင်္ဂလာပါ")
         .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
 
@@ -95,7 +95,7 @@ internal static partial class ExpressiveExamples {
         .WithSize(960, 460)
         .WithXAxis("Faces · symbols · joined sequences")
         .WithYAxis("Samples")
-        .WithTickLabelStyle(style => style.WithFontFamily("'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif").WithFontSize(32))
+        .ConfigureTickLabelStyle(style => style.WithFontFamily("'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif").WithFontSize(32))
         .WithXLabels("😀", "❤️", "👩‍💻", "👨‍👩‍👧‍👦", "🏳️‍🌈")
         .AddBar("Observed", Points(32, 48, 43, 66, 51), ChartColor.FromHex("#2563eb"));
 
@@ -106,7 +106,7 @@ internal static partial class ExpressiveExamples {
         .WithSize(860, 440)
         .WithXAxis("Labels in the selected font stack")
         .WithYAxis("Samples")
-        .WithTickLabelStyle(style => style.WithFontFamily("Arial, 'Leelawadee UI', sans-serif").WithFontSize(24))
+        .ConfigureTickLabelStyle(style => style.WithFontFamily("Arial, 'Leelawadee UI', sans-serif").WithFontSize(24))
         .WithXLabels("office", "affine", "بِبّ", "สวัสดี")
         .AddBar("Observed", Points(32, 48, 43, 66), ChartColor.FromHex("#2563eb"));
 
@@ -117,7 +117,7 @@ internal static partial class ExpressiveExamples {
         .WithSize(960, 460)
         .WithXAxis("Devanagari · Bengali · Tamil · Thai · Khmer")
         .WithYAxis("Samples")
-        .WithTickLabelStyle(style => style.WithFontFamily("'Nirmala UI', 'Leelawadee UI', 'Noto Sans Devanagari', 'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Thai', 'Noto Sans Khmer', sans-serif").WithFontSize(28))
+        .ConfigureTickLabelStyle(style => style.WithFontFamily("'Nirmala UI', 'Leelawadee UI', 'Noto Sans Devanagari', 'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Thai', 'Noto Sans Khmer', sans-serif").WithFontSize(28))
         .WithXLabels("क्षेत्र", "ক্ষেত্র", "தமிழ்", "น้ำ", "ខ្មែរ")
         .AddBar("Observed", Points(32, 48, 43, 66, 51), ChartColor.FromHex("#2563eb"));
 
@@ -185,17 +185,17 @@ internal static partial class ExpressiveExamples {
             .WithLegendPosition(ChartLegendPosition.TopRight)
             .WithDataLabels()
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-            .WithTitleStyle(style => style.WithColor("#be123c").WithFontFamily("Georgia, 'Times New Roman', serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithTextCase(TextCaseTransform.TitleCase))
-            .WithSubtitleStyle(style => style.WithColor("#0e7490").WithItalic())
-            .WithAxisTitleStyle(style => style.WithColor("#7c3aed").WithUnderline(TextDecorationStyle.Double))
-            .WithTickLabelStyle(style => style.WithColor("#2563eb").WithItalic().WithTextCase(TextCaseTransform.Uppercase))
-            .WithLegendStyle(style => style.WithColor("#15803d").WithUnderline())
-            .WithDataLabelStyle(style => style.WithColor("#b45309").WithWeight("800").WithFontSize(15))
+            .ConfigureTitleStyle(style => style.WithColor("#be123c").WithFontFamily("Georgia, 'Times New Roman', serif").WithWeight("900").WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithTextCase(TextCaseTransform.TitleCase))
+            .ConfigureSubtitleStyle(style => style.WithColor("#0e7490").WithItalic())
+            .ConfigureAxisTitleStyle(style => style.WithColor("#7c3aed").WithUnderline(TextDecorationStyle.Double))
+            .ConfigureTickLabelStyle(style => style.WithColor("#2563eb").WithItalic().WithTextCase(TextCaseTransform.Uppercase))
+            .ConfigureLegendStyle(style => style.WithColor("#15803d").WithUnderline())
+            .ConfigureDataLabelStyle(style => style.WithColor("#b45309").WithWeight("800").WithFontSize(15))
             .WithXLabels("Trial", "First value", "Power user", "Advocate")
             .AddBar("Activation share", Points(38, 54, 72, 84), ChartColor.FromHex("#f472b6"))
             .AddSmoothLine("Referral lift", Points(20, 36, 55, 69), ChartColor.FromHex("#14b8a6"));
-        chart.Series[0].WithPointDataLabelStyle(2, style => style.WithFontSize(15).WithSuperscript());
-        chart.Series[1].WithDataLabelStyle(style => style.WithColor("#0f766e").WithWeight("900").WithFontSize(15).WithUnderline(TextDecorationStyle.Dotted).WithStrikethrough(TextDecorationStyle.Single).WithSubscript());
+        chart.Series[0].ConfigurePointDataLabelStyle(2, style => style.WithFontSize(15).WithSuperscript());
+        chart.Series[1].ConfigureDataLabelStyle(style => style.WithColor("#0f766e").WithWeight("900").WithFontSize(15).WithUnderline(TextDecorationStyle.Dotted).WithStrikethrough(TextDecorationStyle.Single).WithSubscript());
         return chart;
     }
 

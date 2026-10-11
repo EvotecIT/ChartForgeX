@@ -45,6 +45,29 @@ internal static class ChartGuards {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.ValidateHourWeekdayHeatmapOwnership();
         ValidateRenderableChart(chart, preparing);
+        if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap))
+            throw new InvalidOperationException("Map color presentation requires numeric region or tile maps.");
+        if (chart.Options.HeatmapColorDimension.HasOverrides && chart.Series.Any(series => series.IsCategoricalHeatmapRow
+            || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
+            throw new InvalidOperationException("Heatmap color presentation requires numeric rectangular, hexagonal or calendar heatmaps.");
+        if (chart.Options.Treemap.ColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.Treemap))
+            throw new InvalidOperationException("Treemap color presentation requires a Treemap chart.");
+        if (chart.Options.Sunburst.ColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
+            throw new InvalidOperationException("Sunburst color presentation requires a Sunburst chart.");
+        if (chart.Options.HeatmapColorScale != null && chart.Series.Any(series => series.IsCategoricalHeatmapRow
+            || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
+            throw new InvalidOperationException("Heatmap color scales require numeric rectangular, hexagonal or calendar heatmaps.");
+        if (chart.Options.RadialGeometry.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn))
+            throw new InvalidOperationException("Radial geometry corner radius requires numeric radial bars or columns.");
+        if (chart.Options.Sunburst.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
+            throw new InvalidOperationException("Sunburst corner radius requires a Sunburst chart.");
+        if (chart.Options.Sunburst.SecondaryLabelFormatter != null && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
+            throw new InvalidOperationException("Sunburst secondary labels require a Sunburst chart.");
+        if ((chart.Options.XAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
+            || chart.Options.YAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
+            || chart.Options.SecondaryYAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed)
+            && (chart.Series.Count == 0 || chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn)))
+            throw new NotSupportedException("Relative axis label orientation requires numeric radial bars or columns.");
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
@@ -59,7 +82,7 @@ internal static class ChartGuards {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts require at least one positive value.");
         }
 
-        if (!preparing && exclusiveKinds[0] == ChartSeriesKind.Waterfall && chart.Series[0].Points.Count == 0) {
+        if (!preparing && exclusiveKinds[0] == ChartSeriesKind.Waterfall && !chart.Series[0].HasSourceData) {
             throw new InvalidOperationException("Waterfall charts require at least one value.");
         }
 
@@ -89,6 +112,15 @@ internal static class ChartGuards {
         for (var i = 0; i < chart.Series.Count; i++) {
             if (chart.Series[i] == null) throw new InvalidOperationException("Chart series collection must not contain null entries.");
             ValidateSeriesShape(chart.Series[i], preparing);
+            if (preparing && chart.Series[i].Kind == ChartSeriesKind.Sunburst && chart.Series[i].Relationships != null)
+                _ = chart.Series[i].Relationships!.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
+            if (chart.Series[i].IsHistogramDensity) {
+                var valueAxis = chart.Series[i].YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+                if ((chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time) || valueAxis.Scale != ChartScaleKind.Linear)
+                    throw new InvalidOperationException("Histogram density requires a linear measurement and value scale; a time measurement scale is also supported.");
+                if (chart.Series[i].NormalizedTo.HasValue)
+                    throw new InvalidOperationException("Histogram density cannot be normalized because rectangular area must retain the raw aggregate.");
+            }
         }
 
         for (var i = 0; i < chart.Annotations.Count; i++) {
@@ -107,6 +139,12 @@ internal static class ChartGuards {
     }
 
     private static void ValidateSeriesShape(ChartSeries series, bool preparing) {
+        series.ValidateWaterfall();
+        series.ValidateInterpolation();
+        series.ValidateMarkerAndRadarOptions();
+        series.ValidateFinancialOptions();
+        series.ValidateColorValues();
+        if (ChartSeries.IsRelationshipKind(series.Kind)) series.ValidateRelationships(preparing);
         if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
             && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea)
             throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, stacked-area, range-band, range-area, and scatter series.");
@@ -176,8 +214,8 @@ internal static class ChartGuards {
         }
 
         for (var index = 0; index < series.Points.Count; index++) {
-            if (series.Points[index].X != layout.GetCenter(index)) {
-                throw new InvalidOperationException("Histogram series points must retain their layout bin order and center coordinates.");
+            if (series.Points[index].X != layout.GetCenter(index) || series.Points[index].Y != (series.HistogramBins[index].Value ?? 0)) {
+                throw new InvalidOperationException("Histogram series points must retain their layout order, centers and raw aggregates; rebuild the histogram to change observations.");
             }
         }
     }
@@ -200,7 +238,7 @@ internal static class ChartGuards {
             // A categorical matrix may list entities nothing is known about, so it can be empty; a numeric one cannot.
             if (!preparing && !chart.Series.Any(series => series.Points.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
             if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
-            if (chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
+            if (chart.Options.HeatmapColorScale == null && chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
                 throw new InvalidOperationException("Relative (count) heatmaps use a neutral sequential scale; the semantic status scale is reserved for status data.");
             }
         }
@@ -214,7 +252,7 @@ internal static class ChartGuards {
             ValidateNonNegativeValues(chart.Series[0], kind);
         }
         else if (kind == ChartSeriesKind.Gauge || kind == ChartSeriesKind.Circle) ValidateScalePair(chart.Series[0], kind.ToString());
-        else if (kind == ChartSeriesKind.RadialBar) ValidateRadialBar(chart.Series[0], preparing);
+        else if (kind == ChartSeriesKind.ProgressRing) ValidateProgressRing(chart.Series[0], preparing);
         else if (kind == ChartSeriesKind.LayeredRadial) ValidateLayeredRadial(chart.Series[0], preparing);
         else if (kind == ChartSeriesKind.Polar) {
             if (!preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
@@ -225,9 +263,8 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.StateTimeline) ValidateStateTimeline(chart);
         else if (kind == ChartSeriesKind.GanttLane) ValidateGanttLanes(chart);
         else if (kind == ChartSeriesKind.Gantt) ValidateGantt(chart.Series);
-        else if (kind == ChartSeriesKind.Sankey && (!preparing || chart.Series[0].Points.Count > 0)) ValidateSankey(chart.Series[0]);
-        else if ((kind == ChartSeriesKind.Tree || kind == ChartSeriesKind.Sunburst) && (!preparing || chart.Series[0].Points.Count > 0)) ValidateTree(chart.Series[0]);
-        else if (kind == ChartSeriesKind.Funnel || kind == ChartSeriesKind.Treemap || kind == ChartSeriesKind.Pie || kind == ChartSeriesKind.Donut || kind == ChartSeriesKind.PolarArea || kind == ChartSeriesKind.Pictorial || kind == ChartSeriesKind.ProgressBar || kind == ChartSeriesKind.WordCloud) ValidateNonNegativeValues(chart.Series[0], kind);
+        else if (kind == ChartSeriesKind.Pyramid) ChartPyramidWeights.Total(chart.Series[0].Points);
+        else if (kind == ChartSeriesKind.Funnel || kind == ChartSeriesKind.Pie || kind == ChartSeriesKind.Donut || kind == ChartSeriesKind.PolarArea || kind == ChartSeriesKind.Pictorial || kind == ChartSeriesKind.ProgressBar || kind == ChartSeriesKind.WordCloud) ValidateNonNegativeValues(chart.Series[0], kind);
     }
 
     private static void ValidateNonNegativeValues(ChartSeries series, ChartSeriesKind kind) {
@@ -241,10 +278,10 @@ internal static class ChartGuards {
         if (series.Points[1].X <= series.Points[0].X) throw new InvalidOperationException(chartName + " chart maximum must be greater than minimum.");
     }
 
-    private static void ValidateRadialBar(ChartSeries series, bool preparing) {
-        if (!preparing && series.Points.Count == 0) throw new InvalidOperationException("RadialBar charts require at least one value.");
+    private static void ValidateProgressRing(ChartSeries series, bool preparing) {
+        if (!preparing && series.Points.Count == 0) throw new InvalidOperationException("ProgressRing charts require at least one value.");
         foreach (var point in series.Points) {
-            if (point.Y < 0 || point.Y > 100) throw new InvalidOperationException("RadialBar chart values must be between zero and 100.");
+            if (point.Y < 0 || point.Y > 100) throw new InvalidOperationException("ProgressRing chart values must be between zero and 100.");
         }
     }
 
@@ -336,83 +373,10 @@ internal static class ChartGuards {
         }
     }
 
-    private static void ValidateSankey(ChartSeries series) {
-        if (series.Points.Count < 2 || series.Points.Count % 2 != 0) throw new InvalidOperationException("Sankey charts require complete source-target/value point pairs.");
-        var nodeCount = 0;
-        var outgoing = new Dictionary<int, List<int>>();
-        for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-            var source = RoundedNonNegativeIndex(series.Points[i].X, "Sankey source indexes");
-            var target = RoundedNonNegativeIndex(series.Points[i].Y, "Sankey target indexes");
-            if (source == target) throw new InvalidOperationException("Sankey links must connect distinct source and target nodes.");
-            if (series.Points[i + 1].Y <= 0) throw new InvalidOperationException("Sankey link values must be positive.");
-            nodeCount = Math.Max(nodeCount, Math.Max(source, target) + 1);
-            AddEdge(outgoing, source, target);
-        }
-
-        ValidateAcyclic(outgoing, nodeCount, "Sankey links must not contain cycles.");
-    }
-
-    private static void ValidateTree(ChartSeries series) {
-        if (series.Points.Count < 2 || series.Points.Count % 2 != 0) throw new InvalidOperationException("Tree charts require complete parent-child/value point pairs.");
-        var nodeCount = 0;
-        var outgoing = new Dictionary<int, List<int>>();
-        var parents = new Dictionary<int, int>();
-        for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-            var parent = RoundedNonNegativeIndex(series.Points[i].X, "Tree parent indexes");
-            var child = RoundedNonNegativeIndex(series.Points[i].Y, "Tree child indexes");
-            if (parent == child) throw new InvalidOperationException("Tree links must connect distinct parent and child nodes.");
-            if (series.Points[i + 1].Y <= 0) throw new InvalidOperationException("Tree link values must be positive.");
-            if (parents.ContainsKey(child)) throw new InvalidOperationException("Tree child nodes can only have one parent.");
-            parents[child] = parent;
-            nodeCount = Math.Max(nodeCount, Math.Max(parent, child) + 1);
-            AddEdge(outgoing, parent, child);
-        }
-
-        var roots = Enumerable.Range(0, nodeCount).Where(index => !parents.ContainsKey(index)).ToArray();
-        if (roots.Length != 1) throw new InvalidOperationException("Tree charts require exactly one root node.");
-        ValidateAcyclic(outgoing, nodeCount, "Tree links must not contain cycles.");
-        var visited = new bool[nodeCount];
-        VisitConnected(roots[0]);
-        if (visited.Any(value => !value)) throw new InvalidOperationException("Tree links must form one connected hierarchy.");
-
-        void VisitConnected(int node) {
-            if (visited[node]) return;
-            visited[node] = true;
-            if (outgoing.TryGetValue(node, out var children)) foreach (var child in children) VisitConnected(child);
-        }
-    }
-
-    private static int RoundedNonNegativeIndex(double value, string message) {
-        var index = WholeNumberIndex(value, message);
-        if (index < 0) throw new InvalidOperationException(message + " must be non-negative.");
-        return index;
-    }
-
     private static int WholeNumberIndex(double value, string message) {
         var index = (int)Math.Round(value);
         if (Math.Abs(value - index) > 0.000001) throw new InvalidOperationException(message + " must be whole-number indexes.");
         return index;
     }
 
-    private static void AddEdge(Dictionary<int, List<int>> outgoing, int source, int target) {
-        if (!outgoing.TryGetValue(source, out var targets)) {
-            targets = new List<int>();
-            outgoing[source] = targets;
-        }
-
-        targets.Add(target);
-    }
-
-    private static void ValidateAcyclic(Dictionary<int, List<int>> outgoing, int nodeCount, string message) {
-        var state = new int[nodeCount];
-        for (var i = 0; i < state.Length; i++) Visit(i);
-
-        void Visit(int node) {
-            if (state[node] == 1) throw new InvalidOperationException(message);
-            if (state[node] == 2) return;
-            state[node] = 1;
-            if (outgoing.TryGetValue(node, out var targets)) foreach (var target in targets) Visit(target);
-            state[node] = 2;
-        }
-    }
 }

@@ -23,8 +23,6 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static bool Horizontal(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.HorizontalBar);
-
     private static int ObservationStride(ChartSeriesKind kind) {
         switch (kind) {
             case ChartSeriesKind.Bubble: case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
@@ -37,7 +35,8 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawExtensionSeries(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
+        ChartBubbleSizeScale? bubbleScale, IReadOnlyDictionary<double, string>? waterfallCategories, ChartSeriesColorSurface? colorSurface = null) {
         var series = chart.Series[index];
         switch (series.Kind) {
             case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
@@ -47,10 +46,10 @@ internal static partial class VisualCartesianCompiler {
             case ChartSeriesKind.RangeBar:
                 DrawRangeBars(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
             case ChartSeriesKind.HorizontalBar:
-                DrawPreparedHorizontalBars(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+                DrawPreparedHorizontalBars(chart, context, builder, plot, map, stacks, index, colors, labels, obstacles); break;
             case ChartSeriesKind.Waterfall:
-                DrawPreparedWaterfall(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
-            default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+                DrawPreparedWaterfall(chart, context, builder, plot, map, index, colors, labels, obstacles, waterfallCategories!); break;
+            default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles, bubbleScale, colorSurface); break;
         }
     }
 
@@ -65,7 +64,20 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
-        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, params (string Name, double Value)[] values) {
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, params (string Name, double Value)[] values) =>
+        ObservationGroup(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, (ChartStackPoint?)null, values);
+
+    private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartStackPoint? stack, params (string Name, double Value)[] values) {
+        return ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, stack, null, values);
+    }
+
+    private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartSeriesColorSurface colorSurface, params (string Name, double Value)[] values) =>
+        ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, colorSurface, values);
+
+    private static IDisposable ObservationGroupCore(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartStackPoint? stack, ChartSeriesColorSurface? colorSurface, params (string Name, double Value)[] values) {
         var id = PointId(seriesIndex, observation);
         var description = series.Name + ": " + label.DisplayedText;
         var metadata = new Dictionary<string, string> {
@@ -79,16 +91,18 @@ internal static partial class VisualCartesianCompiler {
             var raw = rawStart + member;
             var point = series.Points[raw];
             var prefix = "data-cfx-source-" + Number(member);
-            metadata[prefix + "-index"] = Number(series.TrendSourcePoints.Count > 0 || series.BoxPlotSourceSamples.Count > 0 ? -1 : raw < series.SourcePointIndices.Count ? series.SourcePointIndices[raw] : raw);
+            metadata[prefix + "-index"] = Number(series.TrendLineSourcePoints.Count > 0 || series.BoxPlotSourceSamples.Count > 0 ? -1 : raw < series.SourcePointIndices.Count ? series.SourcePointIndices[raw] : raw);
             metadata[prefix + "-x"] = Number(point.X); metadata[prefix + "-y"] = Number(point.Y);
             metadata[prefix + "-break"] = point.BreakBefore ? "true" : "false";
         }
-        if (series.TrendSourcePoints.Count > 0) metadata["data-cfx-derived"] = "regression-endpoint";
+        if (series.TrendLineSourcePoints.Count > 0) metadata["data-cfx-derived"] = "regression-endpoint";
         if (series.BoxPlotSourceSamples.Count > 0) metadata["data-cfx-derived"] = "five-number-summary";
         foreach (var value in values) {
             metadata["data-cfx-" + value.Name] = Number(value.Value);
             description += " " + value.Name + "=" + Number(value.Value);
         }
+        if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
+        if (colorSurface != null) description = colorSurface.AddFacts(metadata, observation, description);
         metadata["aria-label"] = description;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, description));
         return builder.PushGroup(id, "point", metadata);
@@ -108,9 +122,11 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void ObservationLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int observation,
-        ChartPoint anchor, ChartRect bounds, double value, ResolvedPointLabel label, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartPoint anchor, ChartRect bounds, double value, ResolvedPointLabel label, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
+        double? barDirection = null, ChartColor? markFill = null, SvgPaint? markFillPaint = null) {
         obstacles.Add(new LabelObstacle(PointId(seriesIndex, observation), bounds));
-        AddLabel(chart, context, series, seriesIndex, observation, anchor, bounds, label, labels, value);
+        AddLabel(chart, context, series, seriesIndex, observation, anchor, bounds, label, labels, value, barDirection: barDirection,
+            markFill: markFill, markFillPaint: markFillPaint);
     }
 
     private static ChartRect Extents(double x1, double y1, double x2, double y2, double inflate = 0) =>
@@ -119,14 +135,14 @@ internal static partial class VisualCartesianCompiler {
     private static string Value(Chart chart, double value) => ChartNumericFormatter.FormatValue(chart.Options, value);
 
     private static bool HasSeriesPaint(ChartSeries series, int observation) => series.Color.HasValue || series.StateRole != ChartSeriesState.None
-        || observation < series.PointColors.Count && series.PointColors[observation].HasValue;
+        || observation >= 0 && observation < series.PointColors.Count && series.PointColors[observation].HasValue;
 
     private static SvgColorRole SemanticMarkPaintRole(ChartSeries series, int observation) =>
         HasSeriesPaint(series, observation) ? VisualChartPaint.SeriesRole(series, observation) : SvgColorRole.Status;
 
     private static ChartColor FinancialColor(ChartSeries series, int seriesIndex, int observation, bool rising, VisualThemeColors colors) {
         if (HasSeriesPaint(series, observation))
-            return PointColor(series, seriesIndex, observation, colors);
+            return observation >= 0 ? PointColor(series, seriesIndex, observation, colors) : Color(series, seriesIndex, colors);
         return rising ? colors.Status.Pass.Fill : colors.Status.Critical.Fill;
     }
 }

@@ -6,9 +6,9 @@ These rules govern the shared prepared-rendering contracts and their model entry
 
 | Operation | Meaning | Example / rule |
 | --- | --- | --- |
-| `With*` | Set configuration on a mutable model builder and return that builder. Do not add data. | `chart.WithTitle("Capacity")` |
+| `With*` | Set a scalar value or configuration object on a mutable model builder and return that builder. Do not add data. | `chart.WithTitle("Capacity")`, `chart.WithBarVisualStyle(style)` |
 | `Add*` | Add model data or a semantic child and return the builder. Do not silently replace configuration. | `chart.AddLine("Used", points)` |
-| `Configure*` | Pass the existing sub-object to a typed callback, then return the builder. | `chart.ConfigureXAxis(axis => axis.Minimum = 0)` |
+| `Configure*` | Configure a sub-object through a typed callback, preserving the operation's ownership rules, then return the builder. | `chart.ConfigureXAxis(axis => axis.Minimum = 0)` |
 | `Prepare` | Validate and compile a model with an explicit render context; return a detached prepared result. | `chart.Prepare(context)` |
 | `To*` | Return an in-memory representation without writing a file or changing the model. | `prepared.ToSvg()`, `prepared.ToPng()`, `prepared.ToRgba()` |
 | `Save*` | Write to an explicitly supplied path or stream. Keep file ownership and format options visible. | File-saving helpers are outside the Phase 1 prepared contract. |
@@ -17,7 +17,15 @@ These rules govern the shared prepared-rendering contracts and their model entry
 
 Use domain names after prefixes. Avoid interchangeable `Set`, `Use`, `Build`, `Render`, `Options`, `Configure` and `With` methods for the same operation. A meaningful operation such as preparing, importing or exporting is not forced into a configuration prefix.
 
+Typed `Action<T>` configuration callbacks use `Configure*`, including callbacks that select a row, step or point by index or ID. Value and object setters keep `With*`; for example, `WithLineVisualStyle(style)` supplies a style while `ConfigureLineVisualStyle(style => ...)` configures it. The immutable `ChartColorScale.WithLabels(string?...)` copy operation retains its value arguments and name.
+
+The prefix does not promise uniform object identity or rollback. Axes, family options, labels, gauge options, accessibility and getter-owned text styles are edited in place. `ConfigureBarVisualStyle`, `ConfigureLineVisualStyle` and `ConfigureGridStyle` configure a clone of the current style, then install it through the copying setter after the callback succeeds. Retaining that working style does not give access to the installed copy. Point-label styling reuses an existing override or installs a newly configured one after success; its style list can expand before the callback runs.
+
+Chart and topology `ConfigureTheme` callbacks edit their stored theme in place. Chart-grid and visual-grid callbacks use the existing theme, or create a light theme when none is set and install it after success. Changes to an existing theme remain if the callback throws; a newly created grid theme is not installed on failure. Other callbacks that edit existing objects can also retain changes made before an exception. These ownership rules are preserved by the naming change.
+
 Immutable render requests use constructors and read-only properties. They do not expose `Add*` or `Configure*` mutation. The reviewed `VisualTheme.WithTypography(VisualTypography)` exception returns an independent paired theme with a replacement typography scale, preserving both palettes, geometry and effects without editing the source. Other immutable `With*` APIs need the same explicit copy-return contract and review. Existing mutable `FontSpec`, `VisualDesignTokens`, status-token and accessibility objects enter this boundary through snapshots or leave it through independent copies.
+
+HTML interaction presentation stays in the optional adapter. `HtmlChartInteractionOptions.Highlight` and `HtmlInteractiveDashboardOptions.Highlight` are getter-owned mutable `HtmlChartHighlightOptions`; their four getter-owned `HtmlChartHighlightStyle` groups contain nullable `ChartColor`/numeric overrides. Dashboard rendering copies values into independent child groups. The explicit `RootBranch` mode uses immutable Core hierarchy membership only for Sunburst node targets; it does not add transient paint settings to Core or introduce a second interaction model. See [HTML Sunburst branch emphasis](migration.md#html-sunburst-branch-emphasis) for composition, defaults and native-export boundaries.
 
 ## Shared requests and ownership
 
@@ -33,10 +41,25 @@ Immutable render requests use constructors and read-only properties. They do not
 | `VisualRenderOptions` | Raster scale, supersampling and working pixel budget. These do not change logical layout. |
 | `VisualDiagnostic` | A stable code, human explanation and the existing shared `Diagnostics.VisualDiagnosticSeverity`. |
 | `VisualSemanticRegion` | Stable ID, role, descriptive rectangular extent and optional text. It is not an exact hit-test shape. |
+| `ChartNode` / `ChartFlowLink` | Immutable authored relationship identities and raw finite non-negative flow facts. Chart families validate their graph and weight constraints before adding a series. |
+| `ChartSeries.WithNodeState(id, state)` | Mutable semantic styling keyed by an existing authored node ID, scoped to that series. `NodeStates` exposes a read-only view; preparation snapshots the resulting paint. |
+| `ChartFlowStyle` / `ChartSeries.WithFlowStyle(id, style)` | Immutable fill, opacity, pattern and outline overrides for an existing Sankey or Chord flow ID. `FlowStyles` is read-only; null removes an override. |
+| `ChartSeries.WithFlowState(id, state)` | Semantic state for an existing Sankey or Chord flow ID. `FlowStates` is read-only; null restores source-node/series inheritance and `None` suppresses it. |
+| `ChartOptions.Chord` | Typed circular span/start, node geometry, opacity, direction and label settings over the canonical weighted-flow facts. See [weighted chord charts](../chord.md). |
+| `ChartOptions.Sankey` | Getter-owned mutable alignment, ordering, node geometry and flow paint options. `ConfigureSankey` edits the existing object and returns the chart. |
+| `ChartOptions.Bubble` | Getter-owned mutable size-domain, radius endpoints and reversal settings shared by every bubble series. `ConfigureBubble` edits the existing object and returns the chart. |
 
 Keep the numeric scene and painter implementation internal. Public signatures use core-owned types and do not reference Visuals, Stories, browser hosts, their encoders or their policy objects. Static rendering is script-free. Optional animation, interaction and composition have the ownership described in the architecture and [consumer migration guide](migration.md).
 
 `ChartColor` is the color value type. Palette collections contain that type; do not introduce another RGB wrapper for the prepared pipeline. Diagnostic severity reuses the existing enum. Finding severity, test outcome and operational state remain distinct domain vocabularies even where their presentation uses the same colors.
+
+## Numeric color presentation
+
+`ChartColorDimensionOptions` has nullable `Name` and `ValueFormat` properties. Each supported owner exposes one getter-owned instance: `ChartSeries.ColorDimension` for Scatter/Bubble, `ChartOptions.MapColorDimension` for RegionMap/TileMap, `ChartOptions.HeatmapColorDimension` for numeric matrices/calendars, and the Treemap/Sunburst options' `ColorDimension`. Configure those instances with the corresponding `ConfigureColorDimension`, `ConfigureMapColorDimension`, `ConfigureHeatmapColorDimension` or existing hierarchy callback. Unsupported family combinations fail preparation.
+
+Null restores each property's family default independently. A supplied name must contain non-whitespace text. Scatter/Bubble color uses `ChartLabels.Color` and neutral numeric formatting by default. Map, heatmap and hierarchy color retain their existing value-format defaults, including the chart's `ValueFormat`. Explicit color formatting changes their numeric labels, keys and readouts. It leaves Cartesian Y, Bubble size, hierarchy size, explicit point labels and authored secondary captions unchanged. A map or heatmap observation has one numeric value, so its readout does not add a duplicate Color row.
+
+The shared prepared presentation captures names and display strings. An explicit format runs once per distinct finite measurement during preparation; measurement, SVG/PNG export and HTML readouts reuse the result. Missing measurements retain localized no-data text without invoking a numeric formatter. Custom empty output remains authoritative, and formatter exceptions propagate. Raw observations, numeric scale mapping and selection identities remain separate from display text.
 
 ## Configuration precedence
 
@@ -49,6 +72,8 @@ Prepared Cartesian guides default to horizontal lines independently of the model
 Prepared Cartesian point semantics retain the complete resolved display label, even when visible placement shortens or omits it. Explicit point labels take precedence over the value formatter. Formatting runs once per point during preparation and the detached metadata reuses that result; exporting a prepared visual does not call the formatter again. Numeric coordinates and source identities remain separate metadata fields.
 
 Visible Cartesian axes retain a descriptive region for each configured or generated tick and each axis title, including text shortened or omitted by placement. Tick regions include the complete resolved display text and numeric value. Each axis formatter runs once per tick during preparation; measurement, placement and semantics reuse the same result. These descriptive extents do not promise an exact hit-test shape.
+
+Automatic numeric axes keep compact captions when they distinguish ticks, and increase precision when small nonzero values round to zero or distinct ticks share a caption. Default mark values also retain small nonzero observations instead of displaying zero. Authored labels and axis or chart value formats remain authoritative. Precision affects display text; numeric values and prepared SVG/PNG snapshots remain unchanged by later model edits.
 
 Frame headings and legends fit within the resolved size. Overflow is reported through diagnostics; a fixed render request never grows silently. Full textual values remain available through accessible metadata and descriptive regions where provided. A PNG requires concrete dimensions. Responsive hosts measure their viewport and prepare a new result; proportional SVG scaling does not claim compact-layout reflow.
 
@@ -99,8 +124,286 @@ All chart families use the shared prepared export route. Invalid family combinat
 
 Requested font weights retain their exact CSS value from 1 through 1000. Selecting the nearest available font face does not rewrite the requested weight. Automatic chart text alternatives use `ChartLabels.AccessibleTextFormatter` and its render-neutral facts; explicit accessibility names and descriptions remain authoritative. Hiding or fitting a heading does not discard the complete source text.
 
+## Chart geometry
+
+`ChartSeries.Interpolation` selects `Linear`, `Smooth` or `Step` for connected line, area and range boundaries. `WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle)` places transitions halfway between mapped observations; `Start` and `End` place them at the preceding and following x positions. `AddStepLine` and `AddStepArea` default to End. Existing smooth helpers use the same setting. Explicit interpolation overrides a convenience entry point, and preparation rejects unsupported families or a step position without step interpolation. Regression and slope lines retain their straight-line meaning and reject non-linear interpolation. Segment breaks remain gaps in every mode.
+
+`ChartSeries.StackGroup` assigns independent Cartesian bar, numeric radial bar/column or stacked-area groups. Named groups stack even with grouped bar mode, while unnamed grouped series remain separate. Stacks partition by series kind and axis. `WithNormalization(100)` normalizes positive and negative subtotals independently to +100 and -100. Every member of a stack must declare the same normalization target; unstacked normalization is rejected. Stacked-area members must also share interpolation and step placement so their touching boundaries align; use a separate group or axis for independent choices. All-zero coordinates stay at the baseline and report `cartesian.stack-zero-total` or `numeric-radial.stack-zero-total`.
+
+Normalization changes geometry, bounds and total positions together. Raw observations, labels and `data-cfx-y` remain source values. `data-cfx-rendered-y`, `data-cfx-base` and `data-cfx-stack-end` describe the displayed contribution and extent. Format the relevant value axis as percentages when using a target of 100; source labels still describe counts or other authored units. Normalized stacks retain each series' existing segment breaks; an authored stacked-missing-observation policy remains separate work.
+
+`ChartOptions.Funnel` selects `StageBars` or `Cone` and `Vertical` or `Horizontal`. StageBars is the default: each stage's cross-axis extent is exactly its value divided by the largest value. Cone uses one value-bearing line per source stage and connects adjacent lines. Zero stages retain source slots and semantics without an invented width. A single cone stage has no connection region. Both forms use the shared prepared geometry in SVG and PNG.
+
+`AddPyramid` partitions a triangle in authored category order. `ChartOptions.Pyramid.ValueEncoding` defaults to `Height`: 50/30/20 uses .5/.3/.2 of the tip-to-base length. `Area` uses square-root cumulative boundaries so the polygon areas, rather than their lengths, follow those shares. `Orientation` selects vertical or horizontal output; `Reversed` mirrors the geometry while retaining source ordinals and category order. `AspectRatio` is base width divided by tip-to-base length in either orientation; a positive finite value fits and centers the triangle in the content remaining after measured label rails.
+
+```csharp
+var pyramid = Chart.Create().WithXLabels("Services", "Platform", "Support").WithDataLabels()
+    .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
+    .ConfigurePyramid(options => {
+        options.ValueEncoding = ChartPyramidValueEncoding.Area;
+        options.Orientation = ChartOrientation.Horizontal;
+        options.Reversed = true;
+        options.AspectRatio = .75;
+    });
+```
+
+Pyramid values and their aggregate must be finite and non-negative. Zero values retain source facts and zero geometry; all-zero input emits a no-data diagnostic. A singleton occupies the entire triangle. Series/point paints, patterns, data-label styles and placement preferences use the common controls. Labels use a safe inner rectangle when readable and a measured outer rail otherwise. SVG metadata records the declared encoding, source value, value share, normalized length and normalized area; geometric shares never replace source values in tooltips or detached artifacts. A positive partition below floating-point boundary or coordinate precision retains its source value and emits a precision diagnostic rather than receiving an invented minimum size.
+
+`ChartOrientation` is the shared core orientation type, including `MermaidXYChartDocument.Orientation`. Replace `MermaidXYChartOrientation` references with `ChartForgeX.Core.ChartOrientation` when migrating parsed XY chart code.
+
+## Waterfall opening balances and checkpoints
+
+`AddWaterfall(name, IEnumerable<ChartWaterfallItem>)` accepts immutable `OpeningBalance(x, value)`, `Delta(x, value)`, `Subtotal(x)` and `Total(x)` items, with `double` or `DateTime` coordinates. Items accumulate in input order and each has a distinct display coordinate. An optional opening balance must be first and may occur only once. Its finite positive, negative or zero value is drawn from zero and seeds the running balance. Opening-only input is valid. Without an opening item, accumulation starts at zero.
+
+A subtotal spans the opening balance or preceding checkpoint balance to the current balance and reports only the changes since that anchor. A total spans zero to the current balance, including the opening balance. Both retain the running balance for the next change. Typed input renders exactly the supplied items; it appends no total. The `ChartPoint` overload retains its signed-delta behavior and automatically appended final total.
+
+```csharp
+var waterfall = Chart.Create().WithXLabels("Opening", "Costs", "Stage", "Adjustment", "Balance")
+    .AddWaterfall("Movement", new[] {
+        ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+        ChartWaterfallItem.Delta(4, 10), ChartWaterfallItem.Total(5)
+    }).WithDataLabels();
+waterfall.Series[0].WithPointColor(2, "#A5358A");
+```
+
+Typed input lives in the immutable `ChartSeries.WaterfallItems` snapshot; `Points` is empty and cannot be mixed into that series. `Value` holds an authored opening balance or delta and is null on calculated checkpoints. `SourcePointCount` counts the opening balance and deltas, while point colors, labels, fill patterns, data-label styles and point legends index all authored items. Invalid item order is rejected before the series is added. Existing axis labels and formatters own category captions; `ChartOptions.Labels.OpeningBalance`, `.Change`, `.Subtotal` and `.Total` localize the default readout and captions. Opening balances and checkpoints use neutral paint unless series or point paint overrides it. Bar paint and stroke use the shared series controls.
+
+`ChartOptions.Waterfall.Orientation` defaults to `ChartOrientation.Vertical`. Configure a horizontal waterfall before or after adding either input form:
+
+```csharp
+waterfall.ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
+    .WithXAxis("Running balance").WithYAxis("Stage");
+waterfall.Options.XAxis.WithBounds(-50, 150);
+waterfall.Options.YAxis.WithReversal();
+```
+
+The physical X axis owns horizontal values, bounds, scale, reversal and tick formatting. The physical Y axis owns categories, bounds, reversal and category captions. Each item's `X` remains its category coordinate; orientation never sorts items or changes accumulation. Explicit Y category labels take precedence; `WithXLabels` supplies a fallback when Y has no explicit labels. Resolved category captions agree across the native axis, marks, point legends and HTML readouts, including custom formatters and time categories. Horizontal waterfalls require one series on the primary axis. Vertical secondary-axis behavior is unchanged.
+
+Native marks and point legends preserve the distinction between item positions and numeric source ordinals. An opening balance or delta retains its raw value and `data-cfx-source-point`; only deltas expose `data-cfx-delta`. A checkpoint exposes its kind, calculated value and contributor ordinals through `data-cfx-derived` and `data-cfx-source-points`, with no invented source point or delta. Total contributors include the opening observation; subtotal contributors contain only changes since the anchor. `data-cfx-category-label` carries the resolved caption and `data-cfx-orientation` records the layout. Captions refer to the owning mark. Prepared SVG/PNG and static artifact output retain those facts after model changes. Portable editable chart-series interchange remains a separate capability.
+
+## Sankey layout
+
+`ChartOptions.Sankey` configures the shared native SVG/PNG geometry without changing authored nodes, flows or values:
+
+```csharp
+chart.ConfigureSankey(options => {
+    options.Alignment = ChartSankeyAlignment.Center;
+    options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
+    options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
+    options.NodeWidth = 16;
+    options.NodeGap = 12;
+    options.NodeCornerRadius = 1;
+    options.RibbonFill = ChartColor.FromHex("#607DAA");
+    options.RibbonOpacity = .45;
+});
+```
+
+| Option | Default and meaning |
+| --- | --- |
+| `Alignment` | `Justify` retains longest source depths and moves sinks to the final layer. `Left`, `Right` and `Center` select other feasible layers. |
+| `VerticalAlignment` | `Center` splits each column's unused space equally; `Top` and `Bottom` place it against the corresponding content edge. |
+| `NodeOrder` | `Auto` uses bounded weighted ordering passes. `Input` retains input order per layer; `LabelAscending` and `LabelDescending` compare labels ordinally and preserve input order for ties. |
+| `LabelPlacement` | `Right` places measured labels to the right of node bars. `Left` places them to the left; `Center` centers them over the bars with the existing readable backdrop. |
+| `EdgeLabelPlacement` | `Outside` keeps first-column labels on the left and last-column labels on the right. `Inside` reverses those sides. `null` applies `LabelPlacement` to both edge columns. |
+| `NodeWidth` | `10` logical units; must be finite and positive. |
+| `NodeGap` | `null` uses `max(12, theme.Spacing * 1.5)`; an explicit gap must be finite and non-negative. |
+| `NodeCornerRadius` | `null` uses `theme.BarRadius`; an explicit radius must be finite and non-negative and is bounded to half the bar's smaller dimension. |
+| `NodeFill` | `null` retains series/state/theme paint, including neutral default bars. |
+| `RibbonFill` | `null` retains source-node series/state/palette paint. |
+| `RibbonOpacity` | `.35`; accepts 0–1 for filled ribbons. An authored pattern overlay keeps its separate opacity. |
+
+The earliest feasible layer is the longest path depth from any source. The latest is the graph's final layer minus the longest remaining path to a sink. `Left` uses the earliest layer, `Right` the latest, and `Center` uses `floor((earliest + latest) / 2)`. This midpoint policy also applies to disconnected components and keeps every edge directed to a later layer.
+
+Explicit point colors take precedence over the corresponding family fill, then series colors and state/theme fallbacks. Layout order never reorders `Nodes` or `FlowLinks`, changes source ordinals, or reassigns point styles and ID-keyed states. All node and ribbon thicknesses use the same scale; gaps and widths do not inflate small weights. Preparation rejects node widths or gaps that cannot fit the supplied viewport.
+
+Label placement uses the same node and ribbon geometry under every policy. Opposing labels share the available gap in separate slots; the shared measured label placer avoids caption collisions. Captions wrap, shorten or omit when space is insufficient, while full node text and raw flow facts remain available in native semantics and interactive readouts. Point-specific typography and colors apply under every placement. Any truthful minimum-width treatment remains separate work.
+
+## Flow paint and semantic state
+
+Sankey and Chord share `ChartFlowStyle` and ID-keyed series overrides. Style values are immutable; `FlowStyles` and `FlowStates` expose read-only live views of the mutable series builder. IDs are case-sensitive, scoped to the series, and must match an existing authored `ChartFlowLink.Id`. Parallel flows can have separate paint and state even when their endpoints and labels match.
+
+```csharp
+var series = chart.Series[0];
+series.WithFlowStyle("priority", new ChartFlowStyle(
+    fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
+    fillPattern: ChartFillPattern.DiagonalForward,
+    stroke: ChartColor.FromHex("#764415"), strokeWidth: 1));
+series.WithFlowState("priority", ChartSeriesState.Warning);
+series.WithFlowState("standard", ChartSeriesState.None); // Suppress inherited semantic state.
+series.WithFlowStyle("priority", null); // Restore inherited paint.
+series.WithFlowState("priority", null); // Restore source-node/series state.
+```
+
+Fill precedence is explicit flow fill, source-node point color, family ribbon fill where available, series color, explicit flow semantic state, source-node/series semantic state, then the source-node palette color. Explicit colors retain precedence when a semantic state is present; the resolved state still appears in flow metadata. `None` uses categorical paint instead of inheriting the source-node or series state. Styling never changes source/target identity, raw weight, layout order or ribbon geometry.
+
+`FillOpacity` replaces the family's ribbon opacity and multiplies the resolved color alpha. Null retains the family default. A null `FillPattern` inherits the source-node point pattern or series pattern; `ChartFillPattern.None` disables it. Sankey patterns keep their separate .6 opacity, while Chord patterns follow the resolved fill opacity. Chord target cues use the resolved base flow color and retain its alpha independently of fill opacity.
+
+An explicit `Stroke` enables a one-unit outline. A positive `StrokeWidth` enables an outline using `Stroke` or the resolved base flow color; zero disables it. `StrokeOpacity` multiplies the outline color alpha and defaults to one. Fill, pattern or opacity settings alone do not enable an outline. Dimensions must be finite and non-negative, opacities must be finite values from zero to one, and enum values must be defined.
+
+Existing charts need no migration and retain their paint defaults without overrides. Prepared SVG and PNG remain detached from later style/state edits. These C# overrides do not add a relationship authoring grammar to chart markup.
+
+## Histogram ingestion
+
+`ChartHistogramBinLayout` is the immutable interval owner for scalar and typed data. `FromCount` and `FromWidth` retain automatic decimal rounding; `FromBoundaries` preserves unequal adjacent intervals, and `FromIntervals` permits ordered nonoverlapping intervals with gaps. Authored intervals require positive finite widths. Bins include their lower edge and exclude their upper edge, except the final upper edge is included. Measurements outside the layout or inside a gap are rejected. Explicit layouts accept empty input; inferred layouts require observations. Exact bounds with constant data retain the existing zero-width value bin; density requires positive widths.
+
+```csharp
+var values = new[] { 0.2, 0.4, 1.2, 2.5, 5.0 };
+var observations = new[] {
+    new ChartPoint(0.2, 10), new ChartPoint(0.4, -4),
+    new ChartPoint(1.2, 8), new ChartPoint(2.5, 12)
+};
+var bins = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6 });
+var counts = Chart.Create().AddHistogram("Measurements", values, bins);
+var density = Chart.Create().AddHistogram("Measurements", values, bins,
+    ChartHistogramEncoding.Density);
+var means = Chart.Create().AddHistogram("Quantity", observations, bins,
+    ChartHistogramAggregation.Mean); // ChartPoint.X is measurement; Y is quantity.
+```
+
+`Count` counts observations, `Sum` adds signed quantities, and `Mean` computes their arithmetic mean. `ChartSeries.HistogramBins` retains each bin's raw nullable `Value`, `RenderedValue`, `Count`, actual `Width` and original `SourceIndices`. Empty counts and sums equal zero; an empty mean has `Value == null`, a zero-height placeholder and no numeric label. An observed zero mean remains a defined value. SVG metadata and accessible bin descriptions retain this distinction and the source facts.
+
+`Value` uses the aggregate as height. `Density` divides it by the bin width and uses a full rectangular interval without decorative inset or capsule styling, so area represents the signed aggregate. Density requires linear value and measurement scales. Compatible density series can share one stack with exactly matching intervals, aggregation and axis; normalization and grouped subdivisions are rejected. Authored axis bounds can crop marks, and authored `XAxisLabels` remain authoritative.
+
+Typed data uses `dataset.Bin(selector, layout)` and `AddHistogram(name, bins, encoding)`. Typed and scalar count layouts share the same rounding. A typed histogram requires the complete ordered partition and retains source rows; use `AddBar` for a selected or reordered set of bins.
+
+`ChartSeries.HistogramSourcePoints` retains an immutable copy of the input observations in their original order. Each bin's `SourceIndices` indexes that collection; X is the measurement and Y is the supplied quantity, or one for scalar count input. Input array changes and edits to the series' aggregate points do not change this source snapshot. Prepared bin extents, aggregate values and contributor identities also remain detached from later model edits.
+
+Migration: replace the former global `layout.Width` with `layout.GetWidth(index)`, because the last regular bin and authored bins can have different widths. Histogram layout, aggregation and encoding are read-only series facts. Labels, paints and styles can change after ingestion; to change bin X/Y aggregates, rebuild from observations so source statistics stay consistent.
+
+## Aggregate source snapshots
+
+`ChartSeries.TrendLineSourcePoints` retains the original regression observations in input order, and `ChartSeries.BoxPlotSourceSamples` retains the unsorted samples supplied to the raw-value box plot overload. These read-only collections are independent of caller-owned arrays and the fitted endpoints or summary points. A box plot built from authored five-number summaries has an empty raw sample collection.
+
+Migration: use these typed source collections and `HistogramSourcePoints` in place of raw `source-observation` or `source-sample` region labels. Retain the series' collection when original rows are needed after preparation. `PreparedVisual.Regions` describes rendered aggregate marks; it does not expose a typed raw observation store. Its mark facts and exported SVG/PNG remain detached, and interactive histogram events retain each bin's contributor indices. Keeping source data separate avoids creating and embedding a rendering-region object for every unrendered row.
+
+## Point markers and radial forms
+
+`ChartSeries.Markers` is the shared point-marker configuration for connected Cartesian series, scatter, bubble, radar and polar. `ConfigureMarkers` configures one of nine built-in shapes, visibility, fill and outline. Ordinary point glyphs also accept a logical radius override. Null dimensions and paints preserve the family defaults; explicit point colors retain precedence over the marker fill. `MarkerRadius`, `WithMarkerRadius` and `UseThemeMarkerRadius` use the same radius value. Bubble series require a null marker radius and use `ChartOptions.Bubble` for size mapping. Dotted maps retain their existing radius override; their map geometry does not accept the other marker options.
+
+```csharp
+chart.Series[0].ConfigureMarkers(markers => {
+    markers.Shape = ChartMarkerShape.Diamond;
+    markers.Radius = 5;
+    markers.StrokeWidth = 1;
+});
+```
+
+`Enabled = false` hides glyphs while retaining source descriptions and connected lines or areas. Ordinary marker radii of zero also hide glyphs. Different shapes can paint different areas at the same logical radius. SVG, native PNG and legend markers use the same shape geometry. Custom marker paths and dashed marker outlines remain separate options.
+
+`ChartForgeX.Core.ChartLineAreaForm` is the shared form type for `ChartSeries.Radar.Form` and `MetricCard.MiniSparklineStyle`. Its values are `Area = 0` and `Line = 1`; both models default to Area. Metric cards select the same form through `WithMiniSparklineStyle`.
+
+`AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `ConfigureRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity. Missing categories retain the existing zero-imputation behavior; an explicit missing-category policy is separate work.
+
+Numeric radial `ChartPoint.X` identifies an ordinal category; `Y` is the signed source value. The numeric domain belongs to `YAxis` or `SecondaryYAxis` in both angular-bar and radial-column orientations. `ChartRadialGeometryOptions` owns finite clockwise start/end angles, inner radius and category/series spacing. Reversal belongs to the corresponding `ChartAxis`, so tick placement and mark projection agree. Fixed nonzero numeric bounds constrain visible geometry without rewriting observations. Percent rings use the separate `AddProgressRing` API and retain their 0–100 contract.
+
+Numeric radial `Inside` and `Center` captions fit entirely within their painted sector. Captions that cannot fit are shortened or omitted with `numeric-radial.label-overflow`; their full source values remain in descriptive regions and point metadata. Outside captions avoid painted marks, and automatic inside ink resolves contrast against the composited fill. Explicit label colors remain caller-controlled.
+
+Numeric radial axis text uses the existing chart options. `WithXAxis`, `WithYAxis` and `WithSecondaryYAxis` place horizontal titles in measured strips inside the shared frame. Primary and secondary value titles share the top strip; the category title uses the bottom strip. A value title participates when that axis has observations or a complete authored domain. `AxisTitleStyle` controls all title text; shortened or omitted titles report `numeric-radial.axis-title-overflow` and retain their full descriptive text. An entirely empty chart keeps its no-data surface.
+
+`ConfigureXAxis`, `ConfigureYAxis` and `ConfigureSecondaryYAxis` set each axis's independent `LabelOrientation` and `LabelAngle`. `Fixed`, the default orientation, uses screen degrees: zero is horizontal, and equivalent full turns normalize before layout and paint. `Parallel` follows the local axis track; `Perpendicular` uses the direction across it. An angular axis follows its local tangent, while a radius axis follows its spoke. For radial bars the category axis is radial and the value axes are angular; radial columns use the opposite arrangement. Relative modes add `LabelAngle` as an offset, then keep the baseline upright. Reversal uses the projected position, and primary and secondary value axes keep independent settings. Other chart families reject a nonfixed orientation during preparation.
+
+Numeric radial `LabelDensity` controls caption spacing independently on each axis. `Auto` keeps the balanced spacing; `Dense` accepts touching captions; `Relaxed` reserves more separation. `All` accepts caption overlaps without collision thinning, while each label still fits the viewport and avoids painted marks. Text may therefore be shortened or omitted when no safe footprint fits. The coincident first/last tick of a full turn retains one seam caption. Every fitted axis caption remains an obstacle for later ordinary captions, stack totals and data labels. Complete text remains in descriptive regions. Orientation and density do not rotate titles or data labels. `ShowAxes = false` or an axis's `Visible = false` excludes its text and spacing; `ShowLine = false` controls only the axis rule.
+
+```csharp
+chart.ConfigureXAxis(axis => {
+    axis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
+    axis.LabelAngle = 10;
+    axis.LabelDensity = ChartLabelDensity.Relaxed;
+}).ConfigureYAxis(axis => {
+    axis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular;
+    axis.LabelDensity = ChartLabelDensity.Dense;
+});
+```
+
+If measured text leaves no plotted radius, `numeric-radial.insufficient-space` reports the omitted geometry. Point identities, values and descriptive regions remain available with `data-cfx-geometry-status="layout-collapse"`; the HTML adapter retains keyboard readouts without creating pointer hit areas.
+
+`ChartRadialGeometryOptions.CornerRadius` rounds numeric radial bars and columns. `ChartSunburstOptions.CornerRadius` rounds Sunburst sectors through `ConfigureSunburst`. Both values are finite, nonnegative maximum radii in logical pixels and default to zero. The native outline is shared by SVG, PNG, patterns, gradients and label fitting.
+
+```csharp
+var bars = Chart.Create()
+    .WithRadialGeometry(new ChartRadialGeometryOptions(
+        startAngleDegrees: -90, endAngleDegrees: 180, cornerRadius: 6))
+    .AddRadialBar("Requests", observations);
+var sunburst = Chart.Create()
+    .ConfigureSunburst(options => options.CornerRadius = 6)
+    .AddSunburst("Allocation", hierarchy);
+```
+
+Rounding stays inside each projected sector and clamps independently at its outer and inner corners to the thickness and angular space available. Each painted stack segment rounds separately, including clipped or reversed segments. The scale extents and source values remain unchanged. A zero inner radius retains its sharp central apex; a full circle or annulus has no corners and keeps its seamless outline. Zero-size or encoded-collapsed sectors retain facts without a minimum painted size.
+
+These options apply to their named families. A positive numeric radial radius on another populated family, or a positive Sunburst radius on a different family, fails preparation. Pie, Donut, PolarArea and Chord keep their existing sector geometry; progress rings keep their separate line-cap treatment.
+
+## Financial marks
+
+`ChartSeries.Financial` owns direction-specific `Rising` and `Falling` options for candlestick and OHLC series. A close greater than or equal to the open selects Rising, including doji. `ConfigureFinancial` configures body fill, outline and wick or the OHLC stem and ticks without changing the validated source prices.
+
+```csharp
+chart.Series[0].ConfigureFinancial(financial => {
+    financial.Rising.FillOpacity = 0;
+    financial.Rising.Stroke = ChartColor.FromHex("#2A967B");
+    financial.Rising.StrokeWidth = 2.4;
+    financial.Rising.Wick.Stroke = ChartColor.FromHex("#729BB7");
+    financial.Rising.Wick.StrokeWidth = 1.2;
+    financial.Falling.FillOpacity = .65;
+});
+```
+
+Null paints and numeric options inherit the existing family behavior. Body fills keep their rising/falling alpha defaults unless `FillOpacity` is supplied. `StrokeOpacity` and `FillOpacity` multiply the chosen color's alpha and accept finite values from zero to one. Stroke widths accept finite nonnegative logical pixels; zero hides the corresponding stroke. Wick values inherit the item's stroke color, alpha multiplier and width. Item widths inherit an explicit series `StrokeWidth` before the family default. An observation's `PointColors` entry takes precedence over every financial part color; part widths and alpha multipliers remain independent. OHLC supports the item's stroke settings and rejects fill or wick settings. Configured financial options on other series kinds also fail preparation.
+
+A zero fill multiplier or a transparent effective fill creates a hollow candlestick with no interior wick or hatch. SVG, native PNG and configured financial legend glyphs consume the same resolved styles. A point legend shows its observation's direction; a series legend shows rising and falling glyphs under one series action. Bounds cover the painted body and strokes, including minimum-height and all-equal bodies. Preparation freezes styles, geometry, regions and legend output independently of later option changes. Session-time spacing, financial dash controls and datum style callbacks remain separate work.
+
+HTML financial tooltips expose Open, High, Low and Close rows, including zero prices, through the ordinary and pinned readout. Shared-X mode uses the existing single-target fallback for financial tuples. Financial readouts retain raw metadata and accessible descriptions and omit a generic Y row, which would otherwise describe only the opening member.
+
+## Bubble size scale
+
+`ChartOptions.Bubble` owns one size domain for every bubble series, including series on the secondary Y axis and series with hidden glyphs. Automatic bounds use the minimum and maximum positive source sizes across those series; empty tuple series contribute no extent. Equal source sizes therefore map to equal logical radii. Adding an observation outside the automatic domain changes that domain. Pin both the domain and radius endpoints when sizes must remain stable across additional series or viewport changes.
+
+```csharp
+chart.ConfigureBubble(bubble => {
+    bubble.WithSizeDomain(0, 100);
+    bubble.MinimumRadius = 3;
+    bubble.MaximumRadius = 24;
+});
+chart.Series[0].ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
+```
+
+`WithSizeDomain(minimumValue, maximumValue)` atomically installs finite, non-negative, increasing bounds; `MinimumValue` and `MaximumValue` expose them read-only. `UseAutomaticSizeDomain()` clears both. Source `ChartBubble.Size` values remain finite and positive. An explicit domain can start at zero, but does not admit zero-valued observations.
+
+`MinimumRadius` defaults to six logical pixels. A null `MaximumRadius` uses 7.5% of the smaller final plot dimension, bounded between 14 and 32 pixels and raised to the minimum radius when needed. Explicit radius endpoints are finite and non-negative, and the maximum must be at least the minimum during preparation. Equal endpoints select a fixed radius; two zero endpoints suppress bubble and legend glyphs while retaining source facts and legend text. Use `Markers.Enabled = false` to hide only one series.
+
+The existing square-root interpolation of the radius range is preserved: for a nonconstant domain, `t = Clamp((size - minimumValue) / (maximumValue - minimumValue), 0, 1)` and `radius = minimumRadius + Sqrt(t) * (maximumRadius - minimumRadius)`. `Reversed = true` replaces `t` with `1 - t` before taking the square root. Sizes outside an explicit domain use its endpoint radii. A constant automatic domain uses the arithmetic radius midpoint, including when reversed. This mapping does not promise proportional painted areas or equal areas across different marker shapes.
+
+Preparation snapshots the domain and radius settings once. Mark drawing, automatic paint bounds and legend glyph eligibility use that snapshot; the ordinary legend remains a fixed-size style key. Prepared SVG, native PNG, descriptive regions and raw `data-cfx-size` metadata stay detached from later source or option changes. Point-label overrides still change display text without changing raw sizes.
+
+## Sunburst secondary captions
+
+`ChartSunburstOptions.SecondaryLabelFormatter` supplies optional authored text beneath each primary caption. Keep text in your own data keyed by `ChartHierarchyItem.Id`; the shared hierarchy input and its numeric size and color observations stay independent.
+
+```csharp
+var captions = new Dictionary<string, string> {
+    ["engineering"] = "Delivery teams",
+    ["operations-support"] = "Shared service"
+};
+var chart = Chart.Create().WithDataLabels()
+    .ConfigureSunburst(options => {
+        options.SecondaryLabelFormatter = context =>
+            captions.TryGetValue(context.Item.Id, out var text) ? text : null;
+        options.SecondaryLabelStyle.FontSize = 10;
+        options.SecondaryLabelSpacing = 2;
+    })
+    .AddSunburst("Allocation", hierarchy);
+```
+
+`ChartSunburstLabelContext.Item` is the copied authored item, whose nullable `Value` retains the supplied size. The context's `Value` is the size resolved under `ParentValuePolicy`; `FormattedValue` uses the existing chart value format. A formatter can include that formatted size deliberately, but its returned text never becomes a numeric observation.
+
+The formatter runs once for each compiled node, including nodes with hidden captions, zero sizes or collapsed geometry. Null, empty or whitespace output suppresses secondary text and preserves the primary-only SVG and PNG. Preparation snapshots text and resolved styles; later changes to a callback, its captured data or styling do not change a prepared export. Formatter exceptions propagate.
+
+Secondary typography inherits chart, series and ordinal node data-label styling at 80% of the primary font size, then applies `SecondaryLabelStyle`. Explicit secondary colors override inherited ink. `SecondaryLabelSpacing` defaults to two logical pixels and accepts finite, nonnegative values. Both runs share horizontal or upright tangential placement and fit inside the actual sector, including rounded corners. Primary content takes priority: secondary text wraps, shortens at text-element boundaries or is omitted before the primary caption loses content. Font sizes stay fixed; automatic shrinking and configurable sector padding are separate policies.
+
+Full secondary text remains in `data-cfx-secondary-label` and descriptive node regions even when no caption fits. The optional HTML adapter exposes it as plain text in pointer and keyboard tooltips, separately from size, color, supplied totals and remainders. IDs, numeric metadata and target counts stay unchanged. A non-null formatter on a populated non-Sunburst chart fails preparation; style or spacing configuration without a formatter remains inactive. Treemap retains its own label and numeric-value captions.
+
 ## Enforcement boundary
 
-`V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.
+`V2ApiConventionTests` checks the reviewed immutable contracts, their operation roles, canonical color/severity types, core-only public signatures, in-memory export signatures and detached request/output lifetime. It also checks the selected mutable chart bridge's `With*`, `Add*` and `Configure*` behavior. Public typed configuration callbacks on the Core and Visuals `With*`/`Configure*` builder boundary must use `Configure*` and return their receiver. Data-adding callbacks and substantive exports keep their operation names. Focused family and diagram fixtures protect preparation, retained semantics and explicit limits. These are compiled API and observable-output checks; they do not read this document or enforce editorial wording.
 
 Each migrated family expands the reviewed API selection and adds its own data/layout/output fixtures. The old surface remains inventoried rather than being subjected to a blanket prefix rule during a partial migration. Do not weaken a current contract merely to pass the naming test, and do not claim that a naming check proves visual quality, package publication or consumer compatibility.

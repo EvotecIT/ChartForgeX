@@ -5882,6 +5882,30 @@
       }
     },
     {
+      "name": "revenue-tile-map-discrete-bands-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 980,
+      "height": 500,
+      "logicalWidth": 980.0,
+      "logicalHeight": 500.0,
+      "svg": {
+        "minVisualNodes": 60,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 929270,
+        "minTransparentPixels": 50730,
+        "minDistinctColors": 1270,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "revenue-tile-map-us-states-light",
       "layout": {
         "heightMode": "fixed",
