@@ -109,7 +109,7 @@ internal static partial class VisualScheduleCompiler {
             }
             if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             // Links are foreground annotations: successor fills must not cover their arrowheads.
-            if (gantt) Dependencies(chart, context, builder, plot, items, links, Project, slot, height);
+            if (gantt) Dependencies(chart, context, builder, plot, items, links, Project, slot, height, min, max);
         }
     }
 
