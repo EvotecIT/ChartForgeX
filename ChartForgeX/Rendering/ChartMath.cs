@@ -25,6 +25,17 @@ internal static class ChartMath {
         return IsFinite(span) ? minimum + span * ratio : minimum * (1 - ratio) + maximum * ratio;
     }
 
+    /// <summary>Uses the range interpolation contract inside the window and linear extrapolation outside it.</summary>
+    internal static double InterpolateOrExtrapolateRange(double minimum, double maximum, double ratio) {
+        if (ratio >= 0 && ratio <= 1) return InterpolateRange(minimum, maximum, ratio);
+        var span = maximum - minimum;
+        var result = IsFinite(span) ? minimum + span * ratio : minimum * (1 - ratio) + maximum * ratio;
+        if (IsFinite(result)) return result;
+        // Cancellation can yield a finite extrapolation even when the unscaled product overflows.
+        var scale = Math.Max(Math.Abs(minimum), Math.Abs(maximum));
+        return (minimum / scale + (maximum / scale - minimum / scale) * ratio) * scale;
+    }
+
     internal static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
 
     internal static (double Minimum, double Maximum) ResolveFiniteLaneWindow(double minimum, double maximum, bool minimumExplicit, bool maximumExplicit) {

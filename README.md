@@ -94,6 +94,8 @@ string svg = prepared.ToSvg("report-checks");
 byte[] png = prepared.ToPng();
 ```
 
+For numeric Line and StepLine charts, `chart.Prepare(context, new ChartXViewport(2, 8))` prepares an exact X window with fresh ticks and clipped marks. The authored axes, source observations and full-data Y domains stay intact. `prepared.XProjection` captures the visible and full X domains, reversal and measured plot bounds for coordinate conversion. See the [viewport contract](docs/v2/api-conventions.md#numeric-x-viewports).
+
 See the [architecture and phase boundaries](docs/v2/architecture.md), [API conventions](docs/v2/api-conventions.md), [consumer migration guide](docs/v2/migration.md) and [family capability roadmap](docs/v2/chart-capabilities.csv). Generate the isolated review catalog with `dotnet run --project ChartForgeX.Examples -c Release -- --v2-only --output <directory>`.
 
 ## Visual Tour

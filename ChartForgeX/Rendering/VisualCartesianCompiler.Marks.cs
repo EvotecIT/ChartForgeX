@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
-        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null) {
+        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true) {
         var series = chart.Series[index];
         var points = new List<ChartPoint>(series.Points.Count);
         var lower = new List<ChartPoint>(series.Points.Count);
@@ -23,7 +23,7 @@ internal static partial class VisualCartesianCompiler {
         var color = Color(series, index, colors);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
         if (series.Kind != ChartSeriesKind.Scatter && points.Count > 0) {
-            using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null) {
+            using (clipMarks ? builder.PushClip(plot) : null) {
                 if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea) {
                     // Each disconnected segment closes independently; smoothing uses the existing path algorithm.
                     var offset = 0;
@@ -51,7 +51,7 @@ internal static partial class VisualCartesianCompiler {
                 if (chart.Series.Any(item => item.ShowDataLabels ?? chart.Options.ShowDataLabels)
                     || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)) {
                     var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
-                    obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, chart.Options.ClipMarksToPlot ? plot : null)));
+                    obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, clipMarks ? plot : null)));
                 }
             }
         }
@@ -61,7 +61,7 @@ internal static partial class VisualCartesianCompiler {
             var point = points[pointIndex];
             var bounds = VisualMarkerScene.Bounds(point.X, point.Y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
-            var visible = radius > 0 && (!chart.Options.ClipMarksToPlot || inside)
+            var visible = radius > 0 && (!clipMarks || inside)
                 && ShowMarker(chart, series, pointIndex);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             var pointColor = PointColor(series, index, pointIndex, colors);
