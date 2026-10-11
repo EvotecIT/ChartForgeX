@@ -5,19 +5,21 @@ namespace ChartForgeX.Rendering;
 /// <summary>Shared entry-count policy for series, slice, point and categorical legends.</summary>
 internal static class ChartLegendVisibility {
     /// <summary>Continuous scales carry information even when the family has no categorical legend entries.</summary>
-    internal static bool ForPreparedContent(Chart chart, int entryCount) {
+    internal static bool ForPreparedContent(Chart chart, int entryCount, ChartColorPresentationSet? colorScales = null) {
         if (!chart.Options.ShowLegend) return false;
         if (!chart.Options.HasExplicitLegend && chart.Series.Count > 0
             && chart.Series[0].Kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet) return false;
-        foreach (var series in chart.Series) {
+        colorScales ??= new ChartColorPresentationSet(chart);
+        for (var index = 0; index < chart.Series.Count; index++) {
+            var series = chart.Series[index];
             if (series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble && series.ColorScale != null
-                && series.ShowInLegend && series.AuthoredObservationCount > 0) return true;
-            if (chart.Options.ShowHeatmapScale && (series.Kind == ChartSeriesKind.CalendarHeatmap
+                && colorScales[index]!.Presentation.ShowLegend && series.AuthoredObservationCount > 0) return true;
+            if (colorScales.Heatmap.ShowLegend && (series.Kind == ChartSeriesKind.CalendarHeatmap
                 || (series.Kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap) && !series.IsCategoricalHeatmapRow)) return true;
-            if (chart.Options.ShowMapScaleLegend && series.Kind is ChartSeriesKind.DottedMap or ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) return true;
-            if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst && series.ShowInLegend) {
+            if (colorScales.Map.ShowLegend && series.Kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) return true;
+            if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
                 var sunburst = series.Kind == ChartSeriesKind.Sunburst;
-                var showScale = sunburst ? chart.Options.Sunburst.ShowColorScaleLegend : chart.Options.Treemap.ShowColorScaleLegend;
+                var showScale = colorScales.Hierarchy.ShowLegend;
                 var scale = sunburst ? chart.Options.Sunburst.ColorScale : chart.Options.Treemap.ColorScale;
                 if (showScale && (scale != null || System.Linq.Enumerable.Any(series.HierarchyItems, item => item.ColorValue.HasValue))) return true;
             }
