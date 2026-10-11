@@ -22,7 +22,9 @@ internal sealed class ChartRange {
         var range = new ChartRange();
         var barXValues = new List<double>();
         var bubbleXValues = new List<double>();
-        var horizontalBarYValues = new List<double>();
+        // Padding and mark thickness must use the same category identities.
+        // Raw observations remain the range/metadata facts, including numeric equivalents.
+        var horizontalBarYValues = stacks.HorizontalCategories.ToList();
         var hasHorizontalSeries = ChartCartesianOrientation.IsHorizontal(chart);
         var usesHorizontalBaseline = false;
         var usesVerticalBaseline = false;
@@ -59,7 +61,8 @@ internal sealed class ChartRange {
             if (series.YAxis == ChartAxisSide.Secondary && !ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
                 IncludeSeriesX(range, series);
                 if (RequiresMarkWidth(series.Kind) && series.HistogramBinLayout == null)
-                    barXValues.AddRange(series.Points.Select(point => point.X));
+                    barXValues.AddRange(series.Points.Select((point, pointIndex) => series.Kind == ChartSeriesKind.Bar
+                        ? coordinateMap.Resolve(seriesIndex, pointIndex).Value : point.X));
                 continue;
             }
 
@@ -141,12 +144,11 @@ internal sealed class ChartRange {
                     range.IncludeX(p.Y);
                     range.IncludeY(p.X);
                 } else if (ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
-                    horizontalBarYValues.Add(p.X);
                     range.IncludeX(stacks.Point(seriesIndex, pointIndex).End);
                     range.IncludeY(p.X);
                     if (UsesZeroBaseline(chart.Options.XAxis)) range.IncludeX(0);
                 } else if (series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.Lollipop || series.Kind == ChartSeriesKind.RangeBar || series.Kind == ChartSeriesKind.BoxPlot || series.Kind == ChartSeriesKind.Slope) {
-                    barXValues.Add(p.X);
+                    barXValues.Add(series.Kind == ChartSeriesKind.Bar ? coordinateMap.Resolve(seriesIndex, pointIndex).Value : p.X);
                     range.IncludeX(p.X);
                     range.IncludeY(series.Kind == ChartSeriesKind.Bar ? stacks.Point(seriesIndex, pointIndex).End : p.Y);
                 } else if (series.Kind == ChartSeriesKind.StackedArea) {
