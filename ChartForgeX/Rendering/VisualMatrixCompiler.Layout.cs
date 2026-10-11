@@ -55,7 +55,7 @@ internal static partial class VisualMatrixCompiler {
             }
         }
         var plotLeft = viewport.Left + left + (ChartHeatmapColumnLabels.EndsAtColumn(chart) ? side : 0);
-        var scaleHeight = !categorical && ScaleVisible(chart, context)
+        var scaleHeight = !categorical && ScaleVisible(context, presentation)
             ? chart.Options.HeatmapColorScale != null
                 ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left - side), viewport.Height * .35, presentation)
                 : Math.Min(viewport.Height * .22, lineHeight * 2 + gap + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null)) : 0;

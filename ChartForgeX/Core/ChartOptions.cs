@@ -257,9 +257,9 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether heatmap scale legends are rendered.
+    /// Gets or sets whether categorical heatmap state keys are rendered when the chart legend is enabled. Numeric keys use HeatmapColorDimension.ShowLegend.
     /// </summary>
-    public bool ShowHeatmapScale { get; set; } = true;
+    public bool ShowHeatmapCategoryLegend { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether heatmap column labels are rendered.

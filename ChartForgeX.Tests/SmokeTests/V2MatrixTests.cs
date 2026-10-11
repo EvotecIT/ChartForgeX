@@ -32,7 +32,7 @@ public sealed class V2MatrixTests {
     [InlineData(true, VisualThemeMode.Light)]
     [InlineData(true, VisualThemeMode.Dark)]
     public void NativeMatricesPreserveMasksPointColorsBoundsAndDetachedExports(bool hexagonal, VisualThemeMode mode) {
-        var chart = Chart.Create().WithXLabels("A", "B", "C", "D").WithHeatmapScaleLegend(false);
+        var chart = Chart.Create().WithXLabels("A", "B", "C", "D").ConfigureHeatmapColorDimension(options => options.ShowLegend = false);
         if (hexagonal) chart.AddHexbinHeatmapRow("Service", new double?[] { 0, null, 20, null });
         else chart.AddHeatmapRow("Service", new double?[] { 0, null, 20, null });
         var color = ChartColor.FromHex("#d4302f"); chart.Series[0].PointColors.Add(color);
