@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawExtensionPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
-        ChartBubbleSizeScale? bubbleScale) {
+        ChartBubbleSizeScale? bubbleScale, ChartSeriesColorSurface? colorSurface) {
         var series = chart.Series[index];
         if (series.Kind == ChartSeriesKind.Slope || series.Kind == ChartSeriesKind.TrendLine) {
             DrawEndpointLine(chart, context, builder, plot, map, index, colors, labels, obstacles);
@@ -24,20 +24,25 @@ internal static partial class VisualCartesianCompiler {
             var x = map.X(point.X); var y = map.Y(point.Y);
             var color = PointColor(series, index, item, colors);
             var sourcePaint = VisualChartPaint.Series(series, color, item);
+            if (colorSurface != null) (color, sourcePaint) = colorSurface.Paint(series, index, item, colors);
             var radius = ResolveMarkerRadius(series, context);
             if (series.Kind == ChartSeriesKind.Bubble) {
                 var size = series.Points[raw + 1].Y;
                 radius = VisualMarkerScene.Enabled(series) ? bubbleScale!.Radius(size, plot) : 0;
                 var bounds = Extents(x, y, x, y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, size));
-                using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("y", point.Y), ("size", size))) {
-                    var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleFillOpacity);
+                var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleFillOpacity);
+                var fillPaint = sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BubbleFillOpacity);
+                using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, colorSurface!, ("x", point.X), ("y", point.Y), ("size", size))) {
                     var outline = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleStrokeOpacity);
-                    VisualMarkerScene.Draw(builder, series, item, x, y, radius, fill, sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BubbleFillOpacity),
+                    VisualMarkerScene.Draw(builder, series, item, x, y, radius, fill, fillPaint,
                         "bubble", outline, VisualMarkerScene.FamilyStrokeWidth(series), sourcePaint.WithOpacity(outline, ChartVisualPrimitives.BubbleStrokeOpacity),
                         ObservationPattern(series, item), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "bubble-pattern");
                 }
-                ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y - radius), bounds, size, label, labels, obstacles);
+                var actualFill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, item, fill, fillPaint)
+                    : ((ChartColor Color, SvgPaint Paint)?)null;
+                ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y - radius), bounds, size, label, labels, obstacles,
+                    markFill: actualFill?.Color, markFillPaint: actualFill?.Paint);
             } else if (series.Kind == ChartSeriesKind.ErrorBar) {
                 var lower = series.Points[raw + 1].Y; var upper = series.Points[raw + 2].Y;
                 var lowerY = map.Y(lower); var upperY = map.Y(upper);
