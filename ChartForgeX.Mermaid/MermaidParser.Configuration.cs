@@ -135,7 +135,7 @@ public sealed partial class MermaidParser {
         invalid = false;
         if (setting == null) return null;
         var value = setting.Value?.Trim();
-        if (!setting.IsString && value != null && double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var numeric) &&
+        if (setting.TryGetNumber(out var numeric) &&
             numeric >= 1 && numeric <= 256) return numeric;
         if (value != null && value.Length <= 32 &&
             Regex.IsMatch(value, @"^[0-9]+(?:\.[0-9]+)?(?:px)?$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) &&
