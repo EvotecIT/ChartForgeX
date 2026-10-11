@@ -101,7 +101,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
         var end = html.IndexOf("</svg>", start, StringComparison.Ordinal) + 6;
         var svg = XElement.Parse(html.Substring(start, end - start));
         var point = svg.Descendants().Single(n => (string?)n.Attribute("data-cfx-role") == "point" && (string?)n.Attribute("data-cfx-point") == "0");
-        var detail = point.Descendants().First(n => n.Name.LocalName == "circle");
+        var detail = point.Descendants().Single(n => (string?)n.Attribute("data-cfx-role") == "marker");
         detail.SetAttributeValue("id", "observed-detail");
         detail.SetAttributeValue("aria-label", "Observed detail");
         svg.Descendants().Single(n => (string?)n.Attribute("data-cfx-role") == "plot-region").SetAttributeValue("id", "guidance-group");
