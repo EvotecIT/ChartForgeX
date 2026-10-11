@@ -4,6 +4,9 @@ namespace ChartForgeX.Markup;
 /// Describes a markup parser diagnostic.
 /// </summary>
 public sealed class MarkupDiagnostic {
+    /// <summary>Gets or sets the originating parser's stable identifier, or an empty string for an unclassified diagnostic.</summary>
+    public string Code { get; set; } = string.Empty;
+
     /// <summary>Gets or sets the one-based source line.</summary>
     public int Line { get; set; }
 
