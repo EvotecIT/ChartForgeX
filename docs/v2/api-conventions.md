@@ -181,6 +181,22 @@ The physical X axis owns horizontal values, bounds, scale, reversal and tick for
 
 Native marks and point legends preserve the distinction between item positions and numeric source ordinals. An opening balance or delta retains its raw value and `data-cfx-source-point`; only deltas expose `data-cfx-delta`. A checkpoint exposes its kind, calculated value and contributor ordinals through `data-cfx-derived` and `data-cfx-source-points`, with no invented source point or delta. Total contributors include the opening observation; subtotal contributors contain only changes since the anchor. `data-cfx-category-label` carries the resolved caption and `data-cfx-orientation` records the layout. Captions refer to the owning mark. Prepared SVG/PNG and static artifact output retain those facts after model changes. Portable editable chart-series interchange remains a separate capability.
 
+## Grouped range bars and orientation
+
+`AddRangeBar` groups multiple interval series into distinct category slots, including their end caps. Each `ChartInterval.X` remains its category coordinate; the authored `Start` and `End` retain their order even when the interval runs from a larger value to a smaller one. Point colors, patterns, labels and interaction keys index intervals rather than individual endpoints.
+
+```csharp
+var ranges = Chart.Create().WithXLabels("Standard", "Express")
+    .ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal)
+    .AddRangeBar("Expected", new[] { new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30) })
+    .AddRangeBar("Observed", new[] { new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12) });
+ranges.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+```
+
+`ChartOptions.RangeBar.Orientation` defaults to `Vertical` and may be configured before or after adding series. Horizontal range bars use the primary physical X value axis and physical Y category axis, including their bounds and reversal. Explicit Y category labels take precedence; `WithXLabels` supplies a fallback when Y has no explicit labels. Category formatters and point legends use the same resolved captions as the axis and HTML readout. `ChartOptions.Labels.Category`, `.Start` and `.End` localize interval tooltip row names while numeric metadata retains the raw endpoints.
+
+Horizontal range-bar charts accept only range-bar series on the primary axis. Vertical Cartesian mixtures and secondary Y axes retain their existing support. `ChartBarMode` does not stack intervals, and per-series stack configuration remains unsupported for range bars. Multiple range-bar series that previously overlapped now appear side by side; an overlap layout is not provided.
+
 ## Sankey layout
 
 `ChartOptions.Sankey` configures the shared native SVG/PNG geometry without changing authored nodes, flows or values:

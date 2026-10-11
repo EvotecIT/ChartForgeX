@@ -121,18 +121,10 @@ internal static partial class VisualCartesianCompiler {
         var barIndices = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.Bar
             && (chart.Series[i].HistogramBinLayout == null || chart.Series[i].HistogramBinLayout!.Minimum == chart.Series[i].HistogramBinLayout!.Maximum)).ToArray();
         var slot = stacks.Slot(barIndices, index);
-        var count = slot.Count;
-        var position = slot.Position;
-        var centers = barIndices.SelectMany(i => chart.Series[i].Points.Select(point => map.X(point.X))).Distinct().OrderBy(value => value).ToArray();
         var sampleSlots = chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0;
-        var spacing = sampleSlots > 0 ? plot.Width / sampleSlots : plot.Width;
-        if (sampleSlots == 0)
-            for (var point = 1; point < centers.Length; point++) spacing = Math.Min(spacing, centers[point] - centers[point - 1]);
-        var occupied = spacing * .68;
-        var gap = count > 1 ? Math.Min(context.Theme.Spacing / 2, occupied / (count * 4)) : 0;
-        var width = Math.Max(sampleSlots > 0 ? 0 : .1, (occupied - gap * (count - 1)) / count);
-        var offset = (position - (count - 1) / 2d) * (width + gap);
-        return (width, offset);
+        var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].Points.Select(point => map.X(point.X))),
+            plot.Width, context.Theme.Spacing, slot.Count, slot.Position, minimumThickness: sampleSlots > 0 ? 0 : .1, sampleSlots: sampleSlots);
+        return (layout.Thickness, layout.Offset);
     }
 
     private static bool ShowMarker(Chart chart, ChartSeries series, int pointIndex) {

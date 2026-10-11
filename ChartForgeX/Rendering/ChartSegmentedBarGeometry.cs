@@ -52,18 +52,23 @@ internal readonly struct ChartSegmentedBarGeometry {
             new ChartSegmentedLine(highlightX, y + capInset + capThickness * ChartVisualPrimitives.SegmentedCapHighlightInsetRatio, highlightX, y + height - capInset - capThickness * ChartVisualPrimitives.SegmentedCapHighlightInsetRatio));
     }
 
-    public static ChartSegmentedBarGeometry RangeCap(ChartBarVisualStyle style, double x, double y, double width) {
+    public static ChartSegmentedBarGeometry RangeCap(ChartBarVisualStyle style, double x, double y, double width, bool horizontal = false) {
+        var category = horizontal ? y : x; var value = horizontal ? x : y;
         var capWidth = Math.Max(2, Math.Min(width * 1.7, width + style.CapThickness * 2.2));
         var capInset = Math.Min(style.CapInset, capWidth / 2.0);
         var capThickness = Math.Min(style.CapThickness, Math.Max(2, width * 0.45));
-        var highlightY = y - HighlightOffset(capThickness);
+        var highlight = value - HighlightOffset(capThickness);
         return new ChartSegmentedBarGeometry(
             Math.Min(style.CornerRadius, width / 2.0),
             capThickness,
-            new ChartSegmentedLine(x - capWidth / 2.0 + capInset, y + style.CapShadowOffset + style.CapShadowSpread, x + capWidth / 2.0 - capInset, y + style.CapShadowOffset + style.CapShadowSpread),
-            new ChartSegmentedLine(x - capWidth / 2.0 + capInset, y + style.CapShadowOffset, x + capWidth / 2.0 - capInset, y + style.CapShadowOffset),
-            new ChartSegmentedLine(x - capWidth / 2.0 + capInset, y, x + capWidth / 2.0 - capInset, y),
-            new ChartSegmentedLine(x - capWidth / 2.0 + capInset + capThickness * ChartVisualPrimitives.SegmentedCapHighlightInsetRatio, highlightY, x + capWidth / 2.0 - capInset - capThickness * ChartVisualPrimitives.SegmentedCapHighlightInsetRatio, highlightY));
+            Line(category - capWidth / 2.0 + capInset, value + style.CapShadowOffset + style.CapShadowSpread, category + capWidth / 2.0 - capInset, value + style.CapShadowOffset + style.CapShadowSpread),
+            Line(category - capWidth / 2.0 + capInset, value + style.CapShadowOffset, category + capWidth / 2.0 - capInset, value + style.CapShadowOffset),
+            Line(category - capWidth / 2.0 + capInset, value, category + capWidth / 2.0 - capInset, value),
+            Line(category - capWidth / 2.0 + capInset + capThickness * ChartVisualPrimitives.SegmentedCapHighlightInsetRatio, highlight, category + capWidth / 2.0 - capInset - capThickness * ChartVisualPrimitives.SegmentedCapHighlightInsetRatio, highlight));
+
+        ChartSegmentedLine Line(double categoryStart, double valueStart, double categoryEnd, double valueEnd) => horizontal
+            ? new ChartSegmentedLine(valueStart, categoryStart, valueEnd, categoryEnd)
+            : new ChartSegmentedLine(categoryStart, valueStart, categoryEnd, valueEnd);
     }
 
     private static double HighlightOffset(double capThickness) => Math.Max(ChartVisualPrimitives.SegmentedCapHighlightMinOffset, capThickness * ChartVisualPrimitives.SegmentedCapHighlightOffsetRatio);

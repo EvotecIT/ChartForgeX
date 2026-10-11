@@ -34,6 +34,17 @@ public static partial class V2GalleryModels {
             chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
             return chart;
         }
+        if (kind == ChartSeriesKind.RangeBar) {
+            var horizontal = variant is "horizontal" or "compact-horizontal";
+            var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk")
+                .AddRangeBar("Expected", new[] { new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30), new ChartInterval(3, 15, 35), new ChartInterval(4, 25, 50) })
+                .AddRangeBar("Observed", new[] { new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55) })
+                .ConfigureRangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithDataLabels();
+            if (horizontal) chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+            else chart.WithYAxis("Delivery time (minutes)");
+            return chart;
+        }
         if (kind == ChartSeriesKind.Waterfall) {
             var horizontal = variant is "horizontal" or "compact-horizontal";
             var chart = Chart.Create().WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance")

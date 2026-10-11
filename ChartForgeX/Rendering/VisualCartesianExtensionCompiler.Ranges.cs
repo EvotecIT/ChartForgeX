@@ -73,32 +73,4 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static void DrawRangeBars(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
-        var series = chart.Series[index]; var count = series.Points.Count / 2;
-        var width = Math.Max(8, Math.Min(28, plot.Width / Math.Max(1, count * 4)));
-        var style = chart.Options.ResolvePreparedBarVisualStyle();
-        for (var item = 0; item < count; item++) {
-            var first = series.Points[item * 2]; var second = series.Points[item * 2 + 1];
-            var x = map.X(first.X); var firstY = map.Y(first.Y); var secondY = map.Y(second.Y);
-            var bounds = new ChartRect(x - width / 2, Math.Min(firstY, secondY), width, Math.Max(2, Math.Abs(firstY - secondY)));
-            var color = PointColor(series, index, item, colors);
-            var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, Math.Min(first.Y, second.Y)) + "–" + Value(chart, Math.Max(first.Y, second.Y)));
-            using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, ("x", first.X), ("start", first.Y), ("end", second.Y))) {
-                DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "range-bar", true);
-                var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth;
-                if (style.Kind == ChartBarStyle.SegmentedCapsule) {
-                    DrawRangeCap(firstY); DrawRangeCap(secondY);
-                } else {
-                    builder.Line(x - width * .75, firstY, x + width * .75, firstY, color, stroke, role: "range-bar-cap", paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, item)));
-                    builder.Line(x - width * .75, secondY, x + width * .75, secondY, color, stroke, role: "range-bar-cap", paint: VisualChartPaint.Stroke(VisualChartPaint.Series(series, color, item)));
-                }
-                void DrawRangeCap(double y) {
-                    var geometry = ChartSegmentedBarGeometry.RangeCap(style, x, y, bounds.Width);
-                    DrawSegmentedCap(builder, geometry, style, color, "range-bar", VisualChartPaint.Series(series, color, item));
-                }
-            }
-            ObservationLabel(chart, context, series, index, item, new ChartPoint(x, Math.Min(firstY, secondY)), bounds, Math.Max(first.Y, second.Y), label, labels, obstacles);
-        }
-    }
 }

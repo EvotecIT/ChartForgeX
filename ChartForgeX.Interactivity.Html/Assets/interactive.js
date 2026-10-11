@@ -248,6 +248,13 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
+    if ((data.cfxKind || '').toLowerCase() === 'rangebar') {
+      push(rowName(node, 'category', ''), data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX);
+      push(rowName(node, 'start', ''), data.cfxStart);
+      push(rowName(node, 'end', ''), data.cfxEnd);
+      metadataRows(node).forEach((row) => push(row.name, row.value));
+      return rows;
+    }
     if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
     else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);

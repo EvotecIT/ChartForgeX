@@ -21,6 +21,9 @@ public sealed class ChartLabels {
     private string _allValues = "All values";
     private string _value = "value";
     private string _change = "Change";
+    private string _category = "Category";
+    private string _start = "Start";
+    private string _end = "End";
     private string _openingBalance = "Opening balance";
     private string _subtotal = "Subtotal";
     private string _total = "Total";
@@ -80,6 +83,15 @@ public sealed class ChartLabels {
 
     /// <summary>Gets or sets the waterfall tooltip row name for a supplied change. Default <c>Change</c>.</summary>
     public string Change { get => _change; set => _change = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the range-bar tooltip row name for the category. Default <c>Category</c>.</summary>
+    public string Category { get => _category; set => _category = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the range-bar tooltip row name for the authored interval start. Default <c>Start</c>.</summary>
+    public string Start { get => _start; set => _start = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the range-bar tooltip row name for the authored interval end. Default <c>End</c>.</summary>
+    public string End { get => _end; set => _end = Required(value, nameof(value)); }
 
     /// <summary>Gets or sets the default waterfall opening-balance axis caption and tooltip row name. Default <c>Opening balance</c>.</summary>
     public string OpeningBalance { get => _openingBalance; set => _openingBalance = Required(value, nameof(value)); }

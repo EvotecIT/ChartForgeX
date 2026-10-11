@@ -8,7 +8,7 @@ namespace ChartForgeX.Core;
 /// </summary>
 public readonly struct ChartInterval {
     /// <summary>
-    /// Gets the horizontal coordinate.
+    /// Gets the category coordinate, mapped to X for vertical range bars and Y for horizontal range bars.
     /// </summary>
     public readonly double X;
 
@@ -25,7 +25,7 @@ public readonly struct ChartInterval {
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartInterval"/> struct.
     /// </summary>
-    /// <param name="x">The horizontal coordinate.</param>
+    /// <param name="x">The category coordinate.</param>
     /// <param name="start">The interval start value.</param>
     /// <param name="end">The interval end value.</param>
     public ChartInterval(double x, double start, double end) {
@@ -40,7 +40,7 @@ public readonly struct ChartInterval {
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartInterval"/> struct from a date/time x value.
     /// </summary>
-    /// <param name="x">The date/time x value.</param>
+    /// <param name="x">The date/time category coordinate.</param>
     /// <param name="start">The interval start value.</param>
     /// <param name="end">The interval end value.</param>
     public ChartInterval(DateTime x, double start, double end) : this(ChartDateTime.ToOADate(x), start, end) {

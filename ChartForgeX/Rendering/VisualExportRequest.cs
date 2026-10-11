@@ -21,7 +21,7 @@ internal sealed partial class VisualExportRequest {
         ChartGuards.RenderCompatibility(chart, preparing: true);
         var family = VisualChartCompiler.Family(chart);
         // Category captions are formatted during preparation, rather than while counting entries here.
-        var showLegend = family == VisualChartFamily.NumericRadial || family == VisualChartFamily.Cartesian && chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall
+        var showLegend = family == VisualChartFamily.NumericRadial || family == VisualChartFamily.Cartesian && chart.Series.Count == 1 && chart.Series[0].Kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar
             ? ChartLegendVisibility.ForSeries(chart)
             : ChartLegendVisibility.ForPreparedContent(chart, VisualChartCompiler.LegendEntries(family, chart, theme.Resolve(VisualThemeMode.Light)).Count);
         var frame = new VisualFrame(options.ShowHeader && !options.HostOwnsFrame ? chart.Title : string.Empty,
