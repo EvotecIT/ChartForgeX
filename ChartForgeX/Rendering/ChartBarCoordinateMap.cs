@@ -6,9 +6,9 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 /// <summary>
-/// Assigns one stable coordinate key to corresponding vertical bar points while preserving
-/// distinct histogram bins. The map is built once per chart operation so stacking, range
-/// calculation, and total labels share the same identity without repeated layout scans.
+/// Assigns one stable category key to corresponding bar points and mixed radar observations,
+/// while preserving distinct histogram bins. Stacking, range calculation, overlays and total
+/// labels share the same identity without repeated layout scans.
 /// </summary>
 internal sealed class ChartBarCoordinateMap {
     private readonly ChartBarCoordinateKey[][] _keys;
@@ -65,9 +65,11 @@ internal sealed class ChartBarCoordinateMap {
     }
 
     private static IEnumerable<CoordinateNode> CreateNodes(Chart chart) {
+        var mixedRadial = ChartSeriesKindTraits.IsMixedNumericRadial(chart);
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
-            if (series.Kind != ChartSeriesKind.Bar && series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn) continue;
+            if (series.Kind != ChartSeriesKind.Bar && series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn
+                && !(series.Kind == ChartSeriesKind.Radar && mixedRadial)) continue;
             for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
                 var layout = series.HistogramBinLayout;
                 var isHistogramBin = layout != null && layout.Minimum != layout.Maximum && pointIndex < layout.Count;

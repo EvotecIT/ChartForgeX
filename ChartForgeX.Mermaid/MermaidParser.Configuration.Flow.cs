@@ -10,8 +10,10 @@ public sealed partial class MermaidParser {
         var depth = 0;
         var quote = '\0';
         while (true) {
-            if (collected.Length > 0) collected.Append('\n');
-            collected.Append(value);
+            if (value.Length > 0 || quote != '\0') {
+                if (collected.Length > 0) collected.Append('\n');
+                collected.Append(value);
+            }
             for (var position = 0; position < value.Length; position++) {
                 var character = value[position];
                 if (quote != '\0') {
