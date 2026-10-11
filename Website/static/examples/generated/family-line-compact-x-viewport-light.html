@@ -1,0 +1,324 @@
+<!doctype html><html lang="en" data-output-view="svg" data-theme="light" data-catalog-page="example"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Requests, X 2–8 &#183; Line</title><style>:root{color-scheme:light;--bg:#F2F3F4;--surface:#F8F9FA;--ink:#16181C;--muted:#4D525B;--line:#E2E4E7;--link:#11776F}html[data-theme=dark]{color-scheme:dark;--bg:#0C0D10;--surface:#111317;--ink:#F2F3F5;--muted:#B0B4BC;--line:#272A30;--link:#37C9B8}</style><style data-gallery-style>@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Regular.ttf') format('truetype');font-weight:400;font-display:block}
+@font-face{font-family:'CFX Proof Carlito';src:url('fonts/Carlito-Bold.ttf') format('truetype');font-weight:700;font-display:block}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'CFX Proof Carlito',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:3px}
+button,input{font:inherit}
+button,a,input{touch-action:manipulation}
+button{cursor:pointer;color:var(--ink);border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:7px 12px;line-height:1.3}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--link);outline-offset:4px}
+button:hover{background:var(--surface)}
+button[aria-pressed=true]{color:var(--bg);border-color:var(--ink);background:var(--ink)}
+[hidden]{display:none!important}
+html[data-theme=light] [data-visual-theme=dark],html[data-theme=dark] [data-visual-theme=light]{display:none}
+html[data-output-view=svg] [data-output-format=png],html[data-output-view=png] [data-output-format=svg]{display:none}
+.skip-link{position:absolute;left:20px;top:-100px;z-index:10;background:var(--bg);padding:10px 16px;border:2px solid var(--link)}
+.skip-link:focus{top:12px}
+.gallery-header,.gallery-main,.example-header,.example-main,footer{width:min(100%,1360px);margin:0 auto;padding-left:32px;padding-right:32px}
+.gallery-header,.example-header{padding-top:28px;padding-bottom:28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px}
+.brand{font-size:22px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
+.theme-control{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.theme-control button{border:0;padding:7px 11px;background:transparent;font-size:14px}
+.theme-control button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.eyebrow{font-size:12px;line-height:1.4;letter-spacing:1.8px;font-weight:700;color:var(--link);margin:0 0 14px;text-transform:uppercase}
+h1,h2{letter-spacing:-.6px;line-height:1.14;margin:0}
+h1{font-size:clamp(32px,4.4vw,52px);max-width:1000px}
+.intro{max-width:760px;color:var(--muted);font-size:19px;line-height:1.5;margin:18px 0 0}
+.catalog-tools{padding:24px 0 22px;border-top:1px solid var(--line)}
+.search-label{display:block;max-width:480px;color:var(--ink);font-size:14px;font-weight:700}
+.search-label input{display:block;width:100%;font-size:16px;font-weight:400;margin-top:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.search-label input::placeholder{color:var(--muted);opacity:1}
+.family-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px}
+.family-nav button{font-size:14px;padding:8px 12px;border-radius:24px}
+.catalog-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:28px}
+.catalog-summary p{margin:0;color:var(--muted);font-size:14px}
+.text-button{font-size:14px;padding:4px 0;border:0;background:transparent;color:var(--link)}
+.text-button:hover{background:transparent;text-decoration:underline}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
+.tile{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease}
+.tile:hover{border-color:var(--link);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 6%,transparent)}
+.preview{display:block;aspect-ratio:10/7;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.preview svg{display:block;width:100%;height:100%}
+.caption{padding:20px 22px 22px;min-height:142px}
+.tile-family{margin:0 0 8px;color:var(--link);font-size:13px;font-weight:700}
+.caption h2{font-size:21px;line-height:1.25;letter-spacing:-.2px}
+.caption h2 a{text-decoration:none;color:var(--ink)}
+.caption h2 a:hover{text-decoration:underline}
+.tile-detail{margin:12px 0 0;font-size:13px;color:var(--muted)}
+.empty-results{text-align:center;padding:64px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.empty-results h2{font-size:25px}
+.empty-results p{color:var(--muted)}
+footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--line);margin-top:56px;padding-top:24px;padding-bottom:32px;color:var(--muted);font-size:14px}
+.back-link{font-size:15px;text-decoration:none}
+.example-header{padding-bottom:28px}
+.example-header h1{font-size:clamp(30px,4vw,44px)}
+.example-header .header-top{margin-bottom:36px}
+.variant-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.variant-nav a{display:block;padding:8px 13px;border:1px solid var(--line);border-radius:7px;color:var(--ink);font-size:14px;text-decoration:none}
+.variant-nav a:hover{border-color:var(--link)}
+.variant-nav .current-variant a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.example-surface{display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
+.output-control{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.output-control span{margin-right:8px}
+.output-control button{font-size:13px;padding:6px 12px}
+.full{width:100%;max-width:min(1100px,var(--example-width,1100px));min-width:0}
+.full svg,.full img{display:block;width:100%;height:auto}
+.export-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;padding:18px 0;color:var(--muted);font-size:14px}
+.export-row nav{display:flex;flex-wrap:wrap;gap:18px}
+.layout-notes{margin:12px 0 20px;padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px;color:var(--muted)}
+.layout-notes h2{font-size:18px;color:var(--ink);letter-spacing:0}
+.layout-notes ul{margin:10px 0 0;padding-left:20px}
+.source-section{margin-top:28px}
+.source-heading{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.source-heading h2{font-size:27px;margin-right:auto}
+.source-heading [role=status]{font-size:14px;color:var(--muted)}
+.source-section>p{color:var(--muted);font-size:15px}
+pre{max-height:640px;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:13px/1.6 Consolas,'Liberation Mono',monospace;tab-size:4}
+@media(max-width:1050px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gallery-header,.gallery-main,.example-header,.example-main,footer{padding-left:20px;padding-right:20px}.gallery-header,.example-header{padding-top:20px;padding-bottom:24px}.header-top{gap:12px;margin-bottom:24px}.brand{font-size:20px}.theme-control button{padding:7px 8px;font-size:13px}.intro{font-size:17px}.grid{grid-template-columns:minmax(0,1fr);gap:20px}.caption{padding:18px 20px 20px;min-height:130px}.family-nav{flex-wrap:nowrap;gap:7px;overflow-x:auto;padding:6px 4px 8px;margin:12px -4px 10px;scroll-padding:4px}.family-nav button{flex-shrink:0;white-space:nowrap;font-size:13px;padding:8px 11px}.example-surface{padding:8px}.example-header .header-top{margin-bottom:28px}.export-row{font-size:13px}.export-row nav{gap:14px}pre{padding:16px;font-size:12px}footer{flex-wrap:wrap;margin-top:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile{transition:none}}
+@media print{.theme-control,.catalog-tools,.variant-nav,.source-heading button,.skip-link{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{break-inside:avoid}footer{margin-top:24px}}
+</style></head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="example-header"><div class="header-top"><a class="back-link" href="catalog.html">← Gallery</a><div class="theme-control" role="group" aria-label="Color theme"><button type="button" data-set-theme="light" aria-pressed="false">Light</button><button type="button" data-set-theme="dark" aria-pressed="false">Dark</button><button type="button" data-set-theme="system" aria-pressed="false">System</button></div></div><p class="eyebrow">Line</p><h1>Requests, X 2–8</h1><p class="intro">Explore the example, download the output or use the C# source in your own project.</p></header><main id="main-content" class="example-main"><nav class="variant-nav" aria-label="Example variants"><span><a href="family-line-wide-light.html" data-theme-link data-light-href="family-line-wide-light.html" data-dark-href="family-line-wide-dark.html">Standard</a></span><span><a href="family-line-compact-light.html" data-theme-link data-light-href="family-line-compact-light.html" data-dark-href="family-line-compact-dark.html">Compact</a></span><span><a href="family-line-compact-options-light.html" data-theme-link data-light-href="family-line-compact-options-light.html" data-dark-href="family-line-compact-options-dark.html">Compact options</a></span><span class="current-variant"><a href="family-line-compact-x-viewport-light.html" data-theme-link data-light-href="family-line-compact-x-viewport-light.html" data-dark-href="family-line-compact-x-viewport-dark.html" aria-current="page">Compact X Viewport</a></span><span><a href="family-line-options-light.html" data-theme-link data-light-href="family-line-options-light.html" data-dark-href="family-line-options-dark.html">Configured options</a></span><span><a href="family-line-x-viewport-light.html" data-theme-link data-light-href="family-line-x-viewport-light.html" data-dark-href="family-line-x-viewport-dark.html">X Viewport</a></span></nav><div class="output-control" role="group" aria-label="Preview format"><span>Preview</span><button type="button" data-set-output="svg" aria-pressed="true">SVG</button><button type="button" data-set-output="png" aria-pressed="false">PNG</button></div><section class="example-surface" aria-label="Rendered example"><div class="full" style="--example-width:360px" data-visual-theme="light" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Requests, X 2–8" aria-labelledby="family-line-compact-x-viewport-light-title" aria-describedby="family-line-compact-x-viewport-light-description"><title id="family-line-compact-x-viewport-light-title">Requests, X 2–8</title><desc id="family-line-compact-x-viewport-light-description">Chart with 1 data series: Observed.</desc><defs><clipPath id="family-line-compact-x-viewport-light-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="family-line-compact-x-viewport-light-clip-5" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="260.35"/></clipPath><clipPath id="family-line-compact-x-viewport-light-clip-23" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="105.228" width="287.836" height="171.616"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#F2F3F4" stroke="none" stroke-width="1"/><g clip-path="url(#family-line-compact-x-viewport-light-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests, X 2–8</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Full-data Y range; an authored gap</text></g></g><g clip-path="url(#family-line-compact-x-viewport-light-clip-5)"><line x1="48.164" y1="276.844" x2="336" y2="276.844" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="230.371" x2="336" y2="230.371" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="183.898" x2="336" y2="183.898" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="137.425" x2="336" y2="137.425" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="48.164" y1="276.844" x2="336" y2="276.844" data-cfx-role="axis-x" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="48.164" y="300.27" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2</text></g><g data-cfx-role="axis-x-label"><text x="141.068" y="300.27" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">4</text></g><g data-cfx-role="axis-x-label"><text x="237.014" y="300.27" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">6</text></g><g data-cfx-role="axis-x-label"><text x="329.918" y="300.27" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">8</text></g><g data-cfx-role="axis-x-title"><text x="174.144" y="329.848" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Sample</text></g><line x1="48.164" y1="105.228" x2="48.164" y2="276.844" data-cfx-role="axis-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="270.691" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="233.007" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">25</text></g><g data-cfx-role="axis-y-label"><text x="24" y="186.534" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g><g data-cfx-role="axis-y-label"><text x="24" y="140.061" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">75</text></g><g data-cfx-role="axis-y-title"><text x="48.164" y="87.076" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests</text></g></g><g clip-path="url(#family-line-compact-x-viewport-light-clip-23)"></g><g clip-path="url(#family-line-compact-x-viewport-light-clip-23)"><g id="family-line-compact-x-viewport-light-node-26" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Observed" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Line" data-cfx-pin-state-colors="false" data-cfx-rendered-points="11" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Observed" data-cfx-series-name="Observed" data-cfx-source-points="11" data-cfx-state="none"><g clip-path="url(#family-line-compact-x-viewport-light-clip-23)"><path d="M -47.781 113.259 L 0.191 195.051 L 48.164 213.64 L 96.137 172.744 L 144.109 191.333 L 192.082 157.873 M 240.055 198.769 L 288.027 169.026 L 336 183.898 L 383.973 206.205 L 431.945 124.412" data-cfx-role="line" fill="none" stroke="#2A78D6" stroke-width="2"/></g><g id="family-line-compact-x-viewport-light-node-30" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Observed: 88 (0, 88)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="88" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="0" data-cfx-y="88"></g><g id="family-line-compact-x-viewport-light-node-32" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Observed: 44 (1, 44)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="44" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="1" data-cfx-y="44"></g><g id="family-line-compact-x-viewport-light-node-34" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Observed: 34 (2, 34)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="34" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="2" data-cfx-state="none" data-cfx-x="2" data-cfx-y="34"></g><g id="family-line-compact-x-viewport-light-node-36" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Observed: 56 (3, 56)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="56" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="3" data-cfx-state="none" data-cfx-x="3" data-cfx-y="56"></g><g id="family-line-compact-x-viewport-light-node-38" data-cfx-source-id="series-0-point-4" data-cfx-role="point" aria-label="Observed: 46 (4, 46)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="46" data-cfx-point="4" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="4" data-cfx-state="none" data-cfx-x="4" data-cfx-y="46"></g><g id="family-line-compact-x-viewport-light-node-40" data-cfx-source-id="series-0-point-5" data-cfx-role="point" aria-label="Observed: 64 (5, 64)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="64" data-cfx-point="5" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="5" data-cfx-state="none" data-cfx-x="5" data-cfx-y="64"></g><g id="family-line-compact-x-viewport-light-node-42" data-cfx-source-id="series-0-point-6" data-cfx-role="point" aria-label="Observed: 42 (6, 42)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="42" data-cfx-point="6" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="6" data-cfx-state="none" data-cfx-x="6" data-cfx-y="42"></g><g id="family-line-compact-x-viewport-light-node-44" data-cfx-source-id="series-0-point-7" data-cfx-role="point" aria-label="Observed: 58 (7, 58)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="58" data-cfx-point="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="7" data-cfx-state="none" data-cfx-x="7" data-cfx-y="58"></g><g id="family-line-compact-x-viewport-light-node-46" data-cfx-source-id="series-0-point-8" data-cfx-role="point" aria-label="Observed: 50 (8, 50)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="50" data-cfx-point="8" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="8" data-cfx-state="none" data-cfx-x="8" data-cfx-y="50"></g><g id="family-line-compact-x-viewport-light-node-48" data-cfx-source-id="series-0-point-9" data-cfx-role="point" aria-label="Observed: 38 (9, 38)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="38" data-cfx-point="9" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="9" data-cfx-state="none" data-cfx-x="9" data-cfx-y="38"></g><g id="family-line-compact-x-viewport-light-node-50" data-cfx-source-id="series-0-point-10" data-cfx-role="point" aria-label="Observed: 82 (10, 82)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="82" data-cfx-point="10" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="10" data-cfx-state="none" data-cfx-x="10" data-cfx-y="82"></g></g></g><g clip-path="url(#family-line-compact-x-viewport-light-clip-23)"></g><g clip-path="url(#family-line-compact-x-viewport-light-clip-23)"></g></svg></div><div class="full" style="--example-width:360px" data-visual-theme="light" data-output-format="png"><img src="family-line-compact-x-viewport-light.png" width="360" height="360" alt="Requests, X 2–8" loading="lazy" decoding="async"></div><div class="full" style="--example-width:360px" data-visual-theme="dark" data-output-format="svg"><svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Requests, X 2–8" aria-labelledby="family-line-compact-x-viewport-dark-title" aria-describedby="family-line-compact-x-viewport-dark-description"><title id="family-line-compact-x-viewport-dark-title">Requests, X 2–8</title><desc id="family-line-compact-x-viewport-dark-description">Chart with 1 data series: Observed.</desc><defs><clipPath id="family-line-compact-x-viewport-dark-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="312" height="312"/></clipPath><clipPath id="family-line-compact-x-viewport-dark-clip-5" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="312" height="260.35"/></clipPath><clipPath id="family-line-compact-x-viewport-dark-clip-23" clipPathUnits="userSpaceOnUse"><rect x="48.164" y="105.228" width="287.836" height="171.616"/></clipPath></defs><rect x="0" y="0" width="360" height="360" rx="0" data-cfx-role="background" fill="#0C0D10" stroke="none" stroke-width="1"/><g clip-path="url(#family-line-compact-x-viewport-dark-clip-1)"><g data-cfx-role="frame-heading"><text x="24" y="40.187" font-family="CFX Proof Carlito" font-size="17" font-weight="700" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests, X 2–8</text></g><g data-cfx-role="frame-heading"><text x="24" y="60.954" font-family="CFX Proof Carlito" font-size="13.5" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Full-data Y range; an authored gap</text></g></g><g clip-path="url(#family-line-compact-x-viewport-dark-clip-5)"><line x1="48.164" y1="276.844" x2="336" y2="276.844" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="230.371" x2="336" y2="230.371" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="183.898" x2="336" y2="183.898" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="137.425" x2="336" y2="137.425" data-cfx-role="grid-y" fill="none" stroke="#272A30" stroke-width="1"/><line x1="48.164" y1="276.844" x2="336" y2="276.844" data-cfx-role="axis-x" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="48.164" y="300.27" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2</text></g><g data-cfx-role="axis-x-label"><text x="141.068" y="300.27" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">4</text></g><g data-cfx-role="axis-x-label"><text x="237.014" y="300.27" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">6</text></g><g data-cfx-role="axis-x-label"><text x="329.918" y="300.27" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">8</text></g><g data-cfx-role="axis-x-title"><text x="174.144" y="329.848" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Sample</text></g><line x1="48.164" y1="105.228" x2="48.164" y2="276.844" data-cfx-role="axis-y" fill="none" stroke="#272A30" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="30.082" y="270.691" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="24" y="233.007" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">25</text></g><g data-cfx-role="axis-y-label"><text x="24" y="186.534" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">50</text></g><g data-cfx-role="axis-y-label"><text x="24" y="140.061" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#B0B4BC" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">75</text></g><g data-cfx-role="axis-y-title"><text x="48.164" y="87.076" font-family="CFX Proof Carlito" font-size="12" font-weight="400" font-style="normal" fill="#F2F3F5" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Requests</text></g></g><g clip-path="url(#family-line-compact-x-viewport-dark-clip-23)"></g><g clip-path="url(#family-line-compact-x-viewport-dark-clip-23)"><g id="family-line-compact-x-viewport-dark-node-26" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Observed" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Line" data-cfx-pin-state-colors="false" data-cfx-rendered-points="11" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="Observed" data-cfx-series-name="Observed" data-cfx-source-points="11" data-cfx-state="none"><g clip-path="url(#family-line-compact-x-viewport-dark-clip-23)"><path d="M -47.781 113.259 L 0.191 195.051 L 48.164 213.64 L 96.137 172.744 L 144.109 191.333 L 192.082 157.873 M 240.055 198.769 L 288.027 169.026 L 336 183.898 L 383.973 206.205 L 431.945 124.412" data-cfx-role="line" fill="none" stroke="#3987E5" stroke-width="2"/></g><g id="family-line-compact-x-viewport-dark-node-30" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Observed: 88 (0, 88)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="88" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="0" data-cfx-state="none" data-cfx-x="0" data-cfx-y="88"></g><g id="family-line-compact-x-viewport-dark-node-32" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Observed: 44 (1, 44)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="44" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="1" data-cfx-state="none" data-cfx-x="1" data-cfx-y="44"></g><g id="family-line-compact-x-viewport-dark-node-34" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Observed: 34 (2, 34)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="34" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="2" data-cfx-state="none" data-cfx-x="2" data-cfx-y="34"></g><g id="family-line-compact-x-viewport-dark-node-36" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Observed: 56 (3, 56)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="56" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="3" data-cfx-state="none" data-cfx-x="3" data-cfx-y="56"></g><g id="family-line-compact-x-viewport-dark-node-38" data-cfx-source-id="series-0-point-4" data-cfx-role="point" aria-label="Observed: 46 (4, 46)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="46" data-cfx-point="4" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="4" data-cfx-state="none" data-cfx-x="4" data-cfx-y="46"></g><g id="family-line-compact-x-viewport-dark-node-40" data-cfx-source-id="series-0-point-5" data-cfx-role="point" aria-label="Observed: 64 (5, 64)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="64" data-cfx-point="5" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="5" data-cfx-state="none" data-cfx-x="5" data-cfx-y="64"></g><g id="family-line-compact-x-viewport-dark-node-42" data-cfx-source-id="series-0-point-6" data-cfx-role="point" aria-label="Observed: 42 (6, 42)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="42" data-cfx-point="6" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="6" data-cfx-state="none" data-cfx-x="6" data-cfx-y="42"></g><g id="family-line-compact-x-viewport-dark-node-44" data-cfx-source-id="series-0-point-7" data-cfx-role="point" aria-label="Observed: 58 (7, 58)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="58" data-cfx-point="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="7" data-cfx-state="none" data-cfx-x="7" data-cfx-y="58"></g><g id="family-line-compact-x-viewport-dark-node-46" data-cfx-source-id="series-0-point-8" data-cfx-role="point" aria-label="Observed: 50 (8, 50)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="50" data-cfx-point="8" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="8" data-cfx-state="none" data-cfx-x="8" data-cfx-y="50"></g><g id="family-line-compact-x-viewport-dark-node-48" data-cfx-source-id="series-0-point-9" data-cfx-role="point" aria-label="Observed: 38 (9, 38)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="38" data-cfx-point="9" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="9" data-cfx-state="none" data-cfx-x="9" data-cfx-y="38"></g><g id="family-line-compact-x-viewport-dark-node-50" data-cfx-source-id="series-0-point-10" data-cfx-role="point" aria-label="Observed: 82 (10, 82)" data-cfx-axis="primary" data-cfx-fill-pattern="None" data-cfx-label="82" data-cfx-point="10" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-source-point="10" data-cfx-state="none" data-cfx-x="10" data-cfx-y="82"></g></g></g><g clip-path="url(#family-line-compact-x-viewport-dark-clip-23)"></g><g clip-path="url(#family-line-compact-x-viewport-dark-clip-23)"></g></svg></div><div class="full" style="--example-width:360px" data-visual-theme="dark" data-output-format="png"><img src="family-line-compact-x-viewport-dark.png" width="360" height="360" alt="Requests, X 2–8" loading="lazy" decoding="async"></div></section><div class="export-row"><span>360 × 360 pixels</span><nav aria-label="Download outputs"><a href="family-line-compact-x-viewport-light.svg" data-theme-link data-light-href="family-line-compact-x-viewport-light.svg" data-dark-href="family-line-compact-x-viewport-dark.svg" download>Download SVG</a><a href="family-line-compact-x-viewport-light.png" data-theme-link data-light-href="family-line-compact-x-viewport-light.png" data-dark-href="family-line-compact-x-viewport-dark.png" download>Download PNG</a><a href="family-line-compact-x-viewport-light.csharp.txt" data-theme-link data-light-href="family-line-compact-x-viewport-light.csharp.txt" data-dark-href="family-line-compact-x-viewport-dark.csharp.txt" download>Download C#</a></nav></div><section class="source-section" aria-labelledby="source-heading"><div class="source-heading"><h2 id="source-heading">Create this example</h2><button type="button" data-copy-source>Copy C#</button><span data-copy-status role="status"></span></div><p>Register the included Carlito font files to reproduce the exported typography.</p><pre data-visual-theme="light"><code data-example-source>using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+// The gallery includes these licensed font fixtures beside the outputs.
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var chart = Chart.Create().WithXAxis(&quot;Sample&quot;).WithYAxis(&quot;Requests&quot;).WithXAxisBounds(0, 10).WithDataLabels(false);
+chart.AddLine(&quot;Observed&quot;, new ChartPoint[] { new ChartPoint(0, 88), new ChartPoint(1, 44), new ChartPoint(2, 34), new ChartPoint(3, 56), new ChartPoint(4, 46), new ChartPoint(5, 64), new ChartPoint(6, 42, true), new ChartPoint(7, 58), new ChartPoint(8, 50), new ChartPoint(9, 38), new ChartPoint(10, 82) });
+chart.Series[0].WithMarkerRadius(3);
+chart.Options.XAxis.TickCount = 4;
+chart.Options.YAxis.TickCount = 4;
+// Preparation projects X 2–8. All authored points still determine the Y scales.
+var viewport = new ChartXViewport(2, 8);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Light,
+    new VisualFrame(&quot;Requests, X 2\u20138&quot;, &quot;Full-data Y range; an authored gap&quot;, showLegend: false), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = chart.Prepare(context, viewport);
+System.IO.File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg(&quot;family-line-compact-x-viewport-light&quot;));
+System.IO.File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+System.IO.File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;family-line-compact-x-viewport-light&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+// Prepare the same window at thumbnail size, rather than resizing the full scene.
+var thumbnailTheme = VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 13.5, legendSize: 13.5, dataLabelSize: 13.5));
+var thumbnailContext = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 280), 16), thumbnailTheme, VisualThemeMode.Light, new VisualFrame(&quot;&quot;, &quot;&quot;, showLegend: false), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var thumbnail = chart.Prepare(thumbnailContext, viewport);
+var artifact = thumbnail.ToArtifact(&quot;family-line-compact-x-viewport-light-thumbnail&quot;, VisualArtifactKind.Chart);
+artifact.Accessibility.Name = &quot;Requests, X 2\u20138&quot;;
+System.IO.File.WriteAllText(&quot;visual.thumbnail.svg&quot;, artifact.ToSvg());
+System.IO.File.WriteAllBytes(&quot;visual.thumbnail.png&quot;, thumbnail.ToPng());
+</code></pre><pre data-visual-theme="dark"><code data-example-source>using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+
+// The gallery includes these licensed font fixtures beside the outputs.
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Regular.ttf&quot;, 400);
+FontRegistry.Register(&quot;CFX Proof Carlito&quot;, &quot;fonts/Carlito-Bold.ttf&quot;, 700);
+var chart = Chart.Create().WithXAxis(&quot;Sample&quot;).WithYAxis(&quot;Requests&quot;).WithXAxisBounds(0, 10).WithDataLabels(false);
+chart.AddLine(&quot;Observed&quot;, new ChartPoint[] { new ChartPoint(0, 88), new ChartPoint(1, 44), new ChartPoint(2, 34), new ChartPoint(3, 56), new ChartPoint(4, 46), new ChartPoint(5, 64), new ChartPoint(6, 42, true), new ChartPoint(7, 58), new ChartPoint(8, 50), new ChartPoint(9, 38), new ChartPoint(10, 82) });
+chart.Series[0].WithMarkerRadius(3);
+chart.Options.XAxis.TickCount = 4;
+chart.Options.YAxis.TickCount = 4;
+// Preparation projects X 2–8. All authored points still determine the Y scales.
+var viewport = new ChartXViewport(2, 8);
+var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Dark,
+    new VisualFrame(&quot;Requests, X 2\u20138&quot;, &quot;Full-data Y range; an authored gap&quot;, showLegend: false), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var prepared = chart.Prepare(context, viewport);
+System.IO.File.WriteAllText(&quot;visual.svg&quot;, prepared.ToSvg(&quot;family-line-compact-x-viewport-dark&quot;));
+System.IO.File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
+System.IO.File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;family-line-compact-x-viewport-dark&quot;, VisualArtifactKind.Chart).ToHtmlPage());
+
+// Prepare the same window at thumbnail size, rather than resizing the full scene.
+var thumbnailTheme = VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 13.5, legendSize: 13.5, dataLabelSize: 13.5));
+var thumbnailContext = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 280), 16), thumbnailTheme, VisualThemeMode.Dark, new VisualFrame(&quot;&quot;, &quot;&quot;, showLegend: false), FontSpec.FromFamily(&quot;CFX Proof Carlito&quot;));
+var thumbnail = chart.Prepare(thumbnailContext, viewport);
+var artifact = thumbnail.ToArtifact(&quot;family-line-compact-x-viewport-dark-thumbnail&quot;, VisualArtifactKind.Chart);
+artifact.Accessibility.Name = &quot;Requests, X 2\u20138&quot;;
+System.IO.File.WriteAllText(&quot;visual.thumbnail.svg&quot;, artifact.ToSvg());
+System.IO.File.WriteAllBytes(&quot;visual.thumbnail.png&quot;, thumbnail.ToPng());
+</code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
+    'use strict';
+    const root = document.documentElement;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const compactMedia = window.matchMedia('(max-width: 600px)');
+    const themes = ['light', 'dark', 'system'];
+    const sourceUrl = (() => {
+        const supplied = document.querySelector('meta[name="html-preview-source-url"]')?.content;
+        try { return new URL(supplied || location.href); }
+        catch { return new URL(location.href); }
+    })();
+    const pageParams = sourceUrl.searchParams;
+    const canUpdateLocation = ['http:', 'https:'].includes(location.protocol);
+    const updateLocationQuery = () => {
+        if (!canUpdateLocation) return;
+        const next = new URL(location.href);
+        const nested = next.searchParams.get('url');
+        if (nested) {
+            const destination = new URL(nested, location.href);
+            destination.search = pageParams.toString();
+            next.searchParams.set('url', destination.href);
+        } else next.search = pageParams.toString();
+        history.replaceState(null, '', next);
+    };
+    const updateLinkQuery = (link, query) => {
+        const wrapper = new URL(link.href, document.baseURI);
+        const previewSource = wrapper.searchParams.get('url');
+        const destination = new URL(previewSource || wrapper.href);
+        destination.search = query;
+        if (previewSource) {
+            wrapper.searchParams.set('url', destination.href);
+            link.href = wrapper.href;
+        } else link.href = destination.href;
+    };
+    let output = pageParams.get('view') === 'png' ? 'png' : 'svg';
+    const readPreference = () => {
+        try { return localStorage.getItem('chartforgex-gallery-theme'); } catch { return null; }
+    };
+    let preference = themes.includes(pageParams.get('theme')) ? pageParams.get('theme') : readPreference();
+    if (!themes.includes(preference)) preference = root.dataset.catalogPage === 'example' ? root.dataset.theme : 'system';
+    const applyTheme = () => {
+        const mode = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
+        root.dataset.theme = mode;
+        for (const button of document.querySelectorAll('[data-set-theme]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setTheme === preference));
+        for (const link of document.querySelectorAll('[data-theme-link]')) {
+            const compact = compactMedia.matches && (mode === 'dark' ? link.dataset.darkCompactHref : link.dataset.lightCompactHref);
+            const href = compact || (mode === 'dark' ? link.dataset.darkHref : link.dataset.lightHref);
+            const currentLink = new URL(link.href, document.baseURI);
+            const previewSource = currentLink.searchParams.get('url');
+            const destination = new URL(href, previewSource || document.baseURI);
+            if (href.endsWith('.html')) {
+                if (output === 'png') destination.searchParams.set('view', 'png');
+                destination.searchParams.set('theme', preference);
+                if (pageParams.has('return')) destination.searchParams.set('return', pageParams.get('return'));
+                for (const parameter of ['q', 'family'])
+                    if (pageParams.has(parameter)) destination.searchParams.set(parameter, pageParams.get(parameter));
+            }
+            if (previewSource) {
+                currentLink.searchParams.set('url', destination.href);
+                link.href = currentLink.href;
+            } else {
+                link.href = destination.href;
+            }
+        }
+        for (const link of document.querySelectorAll('[data-gallery-return]')) {
+            const wrapper = new URL(link.href, document.baseURI);
+            const query = new URL(wrapper.searchParams.get('url') || wrapper.href).searchParams;
+            query.set('theme', preference);
+            updateLinkQuery(link, query.toString());
+        }
+    };
+    for (const button of document.querySelectorAll('[data-set-theme]')) {
+        button.addEventListener('click', () => {
+            preference = button.dataset.setTheme;
+            pageParams.set('theme', preference);
+            updateLocationQuery();
+            try { localStorage.setItem('chartforgex-gallery-theme', preference); } catch { /* The gallery works without storage. */ }
+            applyTheme();
+        });
+    }
+    media.addEventListener('change', () => { if (preference === 'system') applyTheme(); });
+    compactMedia.addEventListener('change', applyTheme);
+    applyTheme();
+
+    const applyOutput = () => {
+        root.dataset.outputView = output;
+        for (const button of document.querySelectorAll('[data-set-output]'))
+            button.setAttribute('aria-pressed', String(button.dataset.setOutput === output));
+        applyTheme();
+    };
+    for (const button of document.querySelectorAll('[data-set-output]')) button.addEventListener('click', () => {
+        output = button.dataset.setOutput;
+        if (output === 'png') pageParams.set('view', 'png'); else pageParams.delete('view');
+        updateLocationQuery();
+        applyOutput();
+    });
+    applyOutput();
+
+    const search = document.querySelector('[data-gallery-search]');
+    if (search) {
+        const params = pageParams;
+        const buttons = [...document.querySelectorAll('[data-gallery-group]')];
+        const tiles = [...document.querySelectorAll('[data-gallery-family]')];
+        let group = buttons.some(button => button.dataset.galleryGroup === params.get('family')) ? params.get('family') : 'all';
+        search.value = params.get('q') || '';
+        const filter = () => {
+            const terms = search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
+            let count = 0;
+            for (const tile of tiles) {
+                const text = tile.dataset.search.toLocaleLowerCase();
+                const visible = (group === 'all' || tile.dataset.group === group) && terms.every(term => text.includes(term));
+                tile.hidden = !visible;
+                if (visible) count++;
+            }
+            for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.galleryGroup === group));
+            document.querySelector('[data-gallery-count]').textContent = count + (count === 1 ? ' example' : ' examples');
+            document.querySelector('[data-gallery-empty]').hidden = count !== 0;
+            if (search.value.trim()) pageParams.set('q', search.value.trim()); else pageParams.delete('q');
+            if (group !== 'all') pageParams.set('family', group); else pageParams.delete('family');
+            updateLocationQuery();
+            try { sessionStorage.setItem('chartforgex-gallery-return', '?' + pageParams.toString()); } catch { /* Navigation does not require storage. */ }
+            applyTheme();
+        };
+        search.addEventListener('input', filter);
+        for (const button of buttons) button.addEventListener('click', () => { group = button.dataset.galleryGroup; filter(); });
+        document.querySelector('[data-gallery-reset]').addEventListener('click', () => { search.value = ''; group = 'all'; filter(); search.focus(); });
+        filter();
+    } else {
+        let hostReturn = false;
+        const returnPath = pageParams.get('return');
+        if (canUpdateLocation && returnPath && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+            const destination = new URL(returnPath, location.href);
+            if (destination.origin === location.origin && ['http:', 'https:'].includes(destination.protocol)) {
+                for (const link of document.querySelectorAll('a.back-link')) {
+                    link.href = destination.href;
+                    link.dataset.galleryReturn = '';
+                }
+                hostReturn = true;
+            }
+        }
+        if (!hostReturn) {
+            const query = new URLSearchParams();
+            for (const parameter of ['q', 'family', 'theme'])
+                if (pageParams.has(parameter)) query.set(parameter, pageParams.get(parameter));
+            try {
+                const stored = sessionStorage.getItem('chartforgex-gallery-return');
+                if (!query.has('q') && !query.has('family') && stored && /^\?/.test(stored)) {
+                    const previous = new URLSearchParams(stored);
+                    for (const parameter of ['q', 'family']) if (previous.has(parameter)) query.set(parameter, previous.get(parameter));
+                }
+            } catch { /* Query links work when the preview sandbox blocks storage. */ }
+            for (const link of document.querySelectorAll('a.back-link')) {
+                updateLinkQuery(link, query.toString());
+                link.dataset.galleryReturn = '';
+            }
+        }
+        applyTheme();
+    }
+
+    const copy = document.querySelector('[data-copy-source]');
+    if (copy) copy.addEventListener('click', async () => {
+        const source = [...document.querySelectorAll('[data-example-source]')].find(node => node.closest('[data-visual-theme]').dataset.visualTheme === root.dataset.theme);
+        const status = document.querySelector('[data-copy-status]');
+        try {
+            await navigator.clipboard.writeText(source.textContent);
+            status.textContent = 'C# copied';
+        } catch {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(source);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            status.textContent = 'Code selected — copy with your keyboard';
+        }
+    });
+})();
+</script></body></html>
