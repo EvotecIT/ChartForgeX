@@ -5,6 +5,17 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttCalendarFormatRegressionTests {
     [Theory]
+    [InlineData("excludes Jan 3, 2026", 3)]
+    [InlineData("excludes Jan 3, 2026, Jan 4, 2026", 4)]
+    [InlineData("excludes Jan 3, 2026\nexcludes Jan 4, 2026\nincludes Jan 4, 2026", 3)]
+    [InlineData("excludes Jan 3, 2026, Jan 3, 2026, monday\nincludes 2026-01-05", 3)]
+    public void FinalCalendarFormatPreservesLiteralCommasAcrossListsAndRepeatedDeclarations(string calendar, int days) {
+        var result = new MermaidParser().ParseGantt("gantt\n" + calendar + "\ndateFormat MMM D[,] YYYY\nTask :task,2026-01-02,2d");
+        Assert.Empty(result.Diagnostics);
+        Assert.Equal(new DateTime(2026, 1, 2).AddDays(days), Assert.Single(result.Document!.Tasks).End);
+    }
+
+    [Theory]
     [InlineData("q")]
     [InlineData("%")]
     [InlineData("'yyyy")]
