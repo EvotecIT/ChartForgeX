@@ -43,9 +43,11 @@ public sealed partial class PngVisualBlockRenderer {
         var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
         canvas.Clear(VisualBlockRendering.SurfaceBackground(options));
         if (options.ShowCard && theme.UseCard) {
-            canvas.FillRoundedRectVerticalGradient(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
-            canvas.StrokeRoundedRect(0.5, 0.5, Math.Max(1, options.Size.Width - 1), Math.Max(1, options.Size.Height - 1), theme.CornerRadius, theme.CardBorder, 1);
-            if (theme.CardBackground.A > 0) canvas.StrokeRoundedRect(ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightInset, Math.Max(1, options.Size.Width - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(1, options.Size.Height - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(0, theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset), ApplyOpacity(ChartColor.White, ChartVisualPrimitives.CardInnerHighlightOpacity), 1);
+            var radius = Math.Max(0, theme.CornerRadius - 0.5);
+            if (theme.FlatMarks) canvas.FillRoundedRect(0.5, 0.5, Math.Max(0, options.Size.Width - 1), Math.Max(0, options.Size.Height - 1), radius, theme.CardBackground);
+            else canvas.FillRoundedRectVerticalGradient(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
+            canvas.StrokeRoundedRect(0.5, 0.5, Math.Max(1, options.Size.Width - 1), Math.Max(1, options.Size.Height - 1), radius, theme.CardBorder, 1);
+            if (theme.CardBackground.A > 0 && !theme.FlatMarks) canvas.StrokeRoundedRect(ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightInset, Math.Max(1, options.Size.Width - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(1, options.Size.Height - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(0, theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset), ApplyOpacity(ChartColor.White, ChartVisualPrimitives.CardInnerHighlightOpacity), 1);
         }
 
         renderContent(canvas);

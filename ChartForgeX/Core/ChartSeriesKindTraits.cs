@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ChartForgeX.Core;
 
@@ -41,6 +42,15 @@ internal static class ChartSeriesKindTraits {
     };
 
     public static bool IsExclusive(ChartSeriesKind kind) => Array.IndexOf(ExclusiveKinds, kind) >= 0;
+
+    /// <summary>Identifies the bounded category-angle/numeric-radius composition.</summary>
+    internal static bool IsMixedNumericRadial(Chart chart) => chart.Series.Any(series => series.Kind == ChartSeriesKind.RadialColumn)
+        && chart.Series.Any(series => series.Kind == ChartSeriesKind.Radar)
+        && chart.Series.All(series => series.Kind is ChartSeriesKind.RadialColumn or ChartSeriesKind.Radar);
+
+    internal static bool UsesNumericRadialCoordinates(Chart chart) => chart.Series.Count > 0
+        && (chart.Series.All(series => series.Kind == ChartSeriesKind.RadialBar)
+            || chart.Series.All(series => series.Kind == ChartSeriesKind.RadialColumn) || IsMixedNumericRadial(chart));
 
     public static bool SupportsPointSeriesMapping(ChartSeriesKind kind) =>
         kind == ChartSeriesKind.Line ||

@@ -10,8 +10,13 @@ public sealed partial class MermaidParser {
         var depth = 0;
         var quote = '\0';
         while (true) {
-            if (collected.Length > 0) collected.Append('\n');
-            collected.Append(value);
+            if (value.Length > 0 || quote != '\0') {
+                // Retain one overflow character so the budget pre-scan still detects rejection.
+                var available = MaximumConfigurationLength + 1 - collected.Length;
+                if (collected.Length > 0 && available > 0) { collected.Append('\n'); available--; }
+                if (available > 0) collected.Append(value, 0, System.Math.Min(value.Length, available));
+            }
+            if (collected.Length > MaximumConfigurationLength) break;
             for (var position = 0; position < value.Length; position++) {
                 var character = value[position];
                 if (quote != '\0') {
@@ -21,10 +26,10 @@ public sealed partial class MermaidParser {
                 else if (character == '{') depth++;
                 else if (character == '}') depth--;
             }
-            if (depth <= 0 || collected.Length > MaximumConfigurationLength || index + 1 == lines.Length) break;
-            while (index + 1 < lines.Length && lines[index + 1].TrimStart().StartsWith("#", System.StringComparison.Ordinal)) index++;
+            if (depth <= 0 || index + 1 == lines.Length) break;
+            while (index + 1 < lines.Length && lines[index + 1].TrimStart(' ', '\t').StartsWith("#", System.StringComparison.Ordinal)) index++;
             if (index + 1 == lines.Length) break;
-            value = TrimYamlComment(lines[++index]).Trim();
+            value = TrimConfigurationYaml(TrimYamlComment(lines[++index], true));
         }
         return collected.ToString();
     }
