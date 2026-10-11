@@ -592,6 +592,17 @@ public static partial class V2GalleryModels {
             chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
             return chart;
         }
+        if (kind == ChartSeriesKind.RangeBar) {
+            var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
+            var chart = Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;)
+                .AddRangeBar(&quot;Expected&quot;, new[] { new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30), new ChartInterval(3, 15, 35), new ChartInterval(4, 25, 50) })
+                .AddRangeBar(&quot;Observed&quot;, new[] { new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55) })
+                .ConfigureRangeBar(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithDataLabels();
+            if (horizontal) chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
+            else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+            return chart;
+        }
         if (kind == ChartSeriesKind.Waterfall) {
             var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
             var chart = Chart.Create().WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;)
@@ -954,15 +965,15 @@ public static partial class V2GalleryModels {
         var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
         var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
-        var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
+        var horizontalCartesian = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
         var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
         var positionedColorVariant = (variant is &quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
         var colorDimensionVariant = (variant is &quot;color-dimension&quot; or &quot;compact-color-dimension&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
         var colorLegendVariant = (variant is &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot; or &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant)
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalCartesian &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
+        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalCartesian ? GeometryOptions(kind, variant) : null)
             ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
@@ -1553,6 +1564,17 @@ public static partial class V2GalleryModels {
             chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
             return chart;
         }
+        if (kind == ChartSeriesKind.RangeBar) {
+            var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
+            var chart = Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;)
+                .AddRangeBar(&quot;Expected&quot;, new[] { new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30), new ChartInterval(3, 15, 35), new ChartInterval(4, 25, 50) })
+                .AddRangeBar(&quot;Observed&quot;, new[] { new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55) })
+                .ConfigureRangeBar(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithDataLabels();
+            if (horizontal) chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
+            else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+            return chart;
+        }
         if (kind == ChartSeriesKind.Waterfall) {
             var horizontal = variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;;
             var chart = Chart.Create().WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;)
@@ -1915,15 +1937,15 @@ public static partial class V2GalleryModels {
         var funnelVariant = variant is &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;;
         var precisionVariant = (variant is &quot;precision&quot; or &quot;compact-precision&quot;) &amp;&amp; kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is &quot;authored-total&quot; or &quot;compact-authored-total&quot;) &amp;&amp; kind == ChartSeriesKind.Sunburst;
-        var horizontalWaterfall = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind == ChartSeriesKind.Waterfall;
+        var horizontalCartesian = (variant is &quot;horizontal&quot; or &quot;compact-horizontal&quot;) &amp;&amp; kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar;
         var radialLabelVariant = (variant is &quot;axis-labels&quot; or &quot;compact-axis-labels&quot; or &quot;all-labels&quot; or &quot;compact-all-labels&quot;) &amp;&amp; kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
         var colorScaleVariant = (variant is &quot;color-scale&quot; or &quot;compact-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
         var positionedColorVariant = (variant is &quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
         var colorDimensionVariant = (variant is &quot;color-dimension&quot; or &quot;compact-color-dimension&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
         var colorLegendVariant = (variant is &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot; or &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;) &amp;&amp; kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
-        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalWaterfall &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant)
+        if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;) &amp;&amp; !(funnelVariant &amp;&amp; kind == ChartSeriesKind.Funnel) &amp;&amp; !precisionVariant &amp;&amp; !authoredHierarchyVariant &amp;&amp; !horizontalCartesian &amp;&amp; !radialLabelVariant &amp;&amp; !colorScaleVariant &amp;&amp; !positionedColorVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalWaterfall ? GeometryOptions(kind, variant) : null)
+        var chart = (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is &quot;options&quot; or &quot;compact-options&quot; || funnelVariant || horizontalCartesian ? GeometryOptions(kind, variant) : null)
             ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
             ?? throw new ArgumentOutOfRangeException(nameof(kind));
         if (!precisionVariant &amp;&amp; !colorDimensionVariant &amp;&amp; !colorLegendVariant) chart.WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
