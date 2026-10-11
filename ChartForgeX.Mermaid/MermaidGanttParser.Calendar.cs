@@ -6,12 +6,12 @@ namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidGanttParser {
     // Duration-based ends advance past excluded calendar dates. Explicit ends remain authored dates.
-    private static bool TryResolveDurationEnd(DateTime start, TimeSpan duration, MermaidGanttDocument document, out DateTime end) {
+    private static bool TryResolveDurationEnd(DateTime start, double amount, string unit, MermaidGanttDocument document, out DateTime end) {
         end = start;
         try {
-            end = start.Add(duration);
+            end = AddDuration(start, amount, unit);
             var excluded = CalendarTokens(document.Excludes);
-            if (excluded.Count == 0 || duration == TimeSpan.Zero) return true;
+            if (excluded.Count == 0 || end - start < TimeSpan.FromDays(1)) return true;
             var included = CalendarTokens(document.Includes);
             var cursor = start.AddDays(1);
             var extension = 0;
@@ -27,10 +27,12 @@ internal static partial class MermaidGanttParser {
                     if (++extension > 10000) return false;
                     end = end.AddDays(1);
                 }
+                if (end - cursor < TimeSpan.FromDays(1)) break;
                 cursor = cursor.AddDays(1);
             }
             return true;
         } catch (ArgumentOutOfRangeException) { return false; }
+        catch (OverflowException) { return false; }
     }
 
     private static HashSet<string> CalendarTokens(string? value) => new(

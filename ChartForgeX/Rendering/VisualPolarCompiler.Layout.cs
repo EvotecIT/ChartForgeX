@@ -26,22 +26,29 @@ internal static partial class VisualPolarCompiler {
     }
 
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, PolarLayout geometry,
-        double[] categories, string[] axes, RadialValueScale scale, bool radar, List<PolarLabel> labels) {
+        double[] categories, string[] axes, Dictionary<ChartAxisSide, RadialValueScale> scales, bool radar, List<PolarLabel> labels) {
         var colors = context.Theme.Resolve(context.ThemeMode); var style = TickStyle(chart, context);
-        var formatTick = ChartAxisValueFormatter.Create(chart.Options.YAxis, scale.Ticks, chart.Options.ValueFormatter);
-        for (var index = 0; index < scale.Ticks.Count; index++) {
-            var tick = scale.Ticks[index]; if (scale.Normalize(tick) <= 0) continue;
-            var r = geometry.Radius * scale.Normalize(tick);
-            if (chart.Options.ShowGrid) {
-                if (radar) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, RadarAngle(i, categories.Length), r)).ToArray(), ChartInterpolation.Linear),
-                    stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: "radar-ring", close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
-                else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, "polar-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
-            }
-            if (chart.Options.ShowAxes && chart.Options.YAxis.Visible && r < geometry.Radius) {
-                var text = formatTick(tick);
-                var anchor = new ChartPoint(geometry.Cx + context.Theme.Spacing / 2, geometry.Cy - r);
-                AddLabel(builder, labels, text, anchor, style, (radar ? "radar" : "polar") + "-radius-label-" + index,
-                    radar ? "radar-ring-label" : "polar-radius-label", plot, new[] { new LabelCandidate(0, 0, 0, 0), new LabelCandidate(0, 0, 0, 1) }, 20);
+        var gridSide = scales.ContainsKey(ChartAxisSide.Primary) ? ChartAxisSide.Primary : ChartAxisSide.Secondary;
+        foreach (var pair in scales.OrderBy(pair => pair.Key)) {
+            var scale = pair.Value; var axis = RadialValueScale.Axis(chart, pair.Key);
+            var secondary = pair.Key == ChartAxisSide.Secondary;
+            var formatTick = ChartAxisValueFormatter.Create(axis, scale.Ticks,
+                secondary ? chart.Options.SecondaryYAxisValueFormatter : chart.Options.ValueFormatter);
+            for (var index = 0; index < scale.Ticks.Count; index++) {
+                var tick = scale.Ticks[index]; if (scale.Normalize(tick) <= 0) continue;
+                var r = geometry.Radius * scale.Normalize(tick);
+                if (chart.Options.ShowGrid && pair.Key == gridSide) {
+                    if (radar) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, RadarAngle(i, categories.Length), r)).ToArray(), ChartInterpolation.Linear),
+                        stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: "radar-ring", close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+                    else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, "polar-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+                }
+                if (chart.Options.ShowAxes && axis.Visible && r < geometry.Radius) {
+                    var text = formatTick(tick);
+                    var anchor = new ChartPoint(geometry.Cx + (secondary ? -1 : 1) * context.Theme.Spacing / 2, geometry.Cy - r);
+                    AddLabel(builder, labels, text, anchor, style, (radar ? "radar" : "polar") + "-radius-label-" + (secondary ? "secondary-" : "") + index,
+                        radar ? "radar-ring-label" : "polar-radius-label", plot,
+                        new[] { new LabelCandidate(0, 0, secondary ? 1 : 0, 0), new LabelCandidate(0, 0, secondary ? 1 : 0, 1) }, 20);
+                }
             }
         }
         for (var index = 0; index < categories.Length; index++) {

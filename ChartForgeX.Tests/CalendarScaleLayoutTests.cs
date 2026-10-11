@@ -55,7 +55,7 @@ public sealed class CalendarScaleLayoutTests {
         Assert.Equal("12", scaleMarks[^1].Attribute("data-cfx-value")?.Value);
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "calendar.scale-overflow");
 
-        chart.WithHeatmapScaleLegend(false);
+        chart.ConfigureHeatmapColorDimension(options => options.ShowLegend = false);
         var hidden = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(hidden.Regions, region => region.Role is "calendar-scale" or "calendar-scale-step");
         Assert.Equal(days.Select(day => day.Id), hidden.Regions.Where(region => region.Role == "calendar-cell").Select(day => day.Id));

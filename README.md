@@ -62,12 +62,16 @@ Color domains use each series' retained observations unless fixed bounds are sup
 ```csharp
 chart.Series[0].ConfigureColorDimension(options => {
     options.Name = "Temperature";
+    options.LegendStyle = ChartColorLegendStyle.Gradient;
+    options.ShowLegend = true;
     options.ValueFormat = ChartValueFormat.Number("0.0 '°C'",
         System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
 });
 ```
 
 The same `ChartColorDimensionOptions` configures numeric maps through `ConfigureMapColorDimension`, matrices and calendars through `ConfigureHeatmapColorDimension`, and hierarchies through `ConfigureTreemap` / `ConfigureSunburst` with `options.ColorDimension`. Map and heatmap values are their color measurement, so their numeric labels and readouts use that format without a duplicate color row. Hierarchy size and Cartesian Y keep their own formatting. Null `Name` or `ValueFormat` restores that family's default independently. Custom empty display text is preserved; raw numeric values and selection identities stay unchanged. A prepared visual captures the presentation for reuse by SVG, native PNG and HTML readouts.
+
+`ColorDimension.ShowLegend` controls the numeric key independently of the series' categorical `ShowInLegend` entry. `chart.WithLegend(false)` hides both. `LegendStyle.Auto` preserves the family's default key; `Gradient` draws a continuous key through every authored anchor, and `Swatches` draws bounded samples of a continuous scale or the exact intervals of a discrete scale. Presentation never changes mark colors or the data domain. Explicit styles require a resolved `ChartColorScale`; `Gradient` rejects discrete bands. Legacy map and heatmap coloring supports `Auto` until an explicit scale is supplied.
 
 The optional nullable color member increases `ChartPoint` and `ChartBubble` storage and participates in value equality; existing constructor signatures are unchanged.
 
@@ -204,7 +208,7 @@ Optional visual artifact, markup, Mermaid, and interaction support is split into
 | `ChartForgeX` | Charts, genuine diagrams, prepared scenes, semantic artifacts and still-image codecs. |
 | `ChartForgeX.Visuals` | Static canvas, image composition, metric tiles, tables, lists and ordered watermark decoration. |
 | `ChartForgeX.Stories` | Visual and terminal stories, transcripts, motion, animated topology and GIF/APNG output. |
-| `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with first-class flowchart, sequence, class, state, ER, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, and treemap rendering. |
+| `ChartForgeX.Mermaid` | Source-preserving Mermaid parser with native flowchart, sequence, class, state, ER, requirement, architecture, C4, git graph, block, packet, Venn, Ishikawa, Wardley, mindmap, tree view, event modeling, kanban, pie, journey, timeline, quadrant, Gantt, XY chart, Sankey, radar, treemap, swimlane, use case and Cynefin rendering. See the [support matrix](docs/mermaid-support-matrix.md) for syntax and fidelity limits. |
 | `ChartForgeX.Markup` | Markdown-friendly v1 ChartForgeX visual fences for chart, timeline, topology, flow, sequence, and table artifacts. |
 | `ChartForgeX.Markup.Mermaid` | Thin optional bridge that lets `ChartForgeX.Markup` parse Mermaid fences through `ChartForgeX.Mermaid`. |
 | `ChartForgeX.Interactivity` | Host-neutral interaction contracts. |
@@ -820,7 +824,9 @@ chart.Series[1].WithStackGroup("work");
 
 `ChartRadialGeometryOptions` sets clockwise start/end angles, inner radius, category spacing and series spacing. Series in the same named stack share a slot; positive and negative contributions stack separately. `ChartAxis.WithReversal()` reverses numeric projection or radial category order while keeping source values and tick labels aligned. Fixed nonzero bounds clip a baseline outside the visible domain. Numeric radial value axes support linear, logarithmic (positive values) and symmetric logarithmic scales.
 
-Use `WithXAxis`, `WithYAxis` and `WithSecondaryYAxis` for horizontal axis titles inside the chart frame. Each axis has its own fixed `LabelAngle`; titles use `ConfigureAxisTitleStyle`, and tick/category captions use `ConfigureTickLabelStyle`. Hidden axes reserve no text space, while `ShowLine = false` hides only their rules. Compact text may be shortened or omitted with a diagnostic; complete labels remain in descriptive regions. Relative radial/tangential text orientation, label-density policies, rounded sectors and mixed radial families remain separate options.
+Combine `AddRadialColumn`, `AddRadarArea` and `AddRadarLine` to compare observations, a reference area and a target line. Their union of categories shares whole-category angular centers and numeric radius scales; each series selects `YAxis` or `SecondaryYAxis` as usual. Radar overlays do not consume column slots or stack totals. Missing columns remain absent, while missing radar categories use zero and retain derived identities. Mixed charts require a full turn, at least three categories when radar has data, unique categories within each series and an unreversed category axis. `RadialBar`, continuous `Polar` and `PolarArea` use different coordinates and cannot join this composition. See [`CreateMixedRadial`](ChartForgeX.Examples/V2GalleryModels.NumericRadial.cs) for a complete example.
+
+Use `WithXAxis`, `WithYAxis` and `WithSecondaryYAxis` for horizontal axis titles inside the chart frame. Each axis has its own `LabelAngle`, `LabelOrientation` and `LabelDensity`; titles use `ConfigureAxisTitleStyle`, and tick/category captions use `ConfigureTickLabelStyle`. Hidden axes reserve no text space, while `ShowLine = false` hides only their rules. Compact text may be shortened or omitted with a diagnostic; complete labels remain in descriptive regions.
 
 `AddProgressRing` renders the circular 0–100 progress rings and their center average. Existing percent-ring callers migrate from `AddRadialBar` to `AddProgressRing`; see the [migration guide](docs/v2/migration.md#numeric-radial-series-and-progress-rings).
 
@@ -932,7 +938,7 @@ var colorAtTwo = sequential.ColorFor(2);
 
 The new sequential overload makes the invalid calls `ChartColorScale.Sequential(null)` and `Sequential(default)` ambiguous at compile time. Null-validation callers can select an overload with `(IEnumerable<ChartColor>)null!` or `(IEnumerable<ChartColorStop>)null!`; valid color-only calls keep their existing behavior.
 
-Numeric heatmaps share one color domain across all rows. An explicit scale maps every observed value, including zero, and overrides the legacy `HeatmapScale` and `HeatmapRelativeScale` coloring without changing those settings. Cell or day colors still take precedence. The measured key uses the same stops or named intervals, and `WithHeatmapScaleLegend(false)` hides it. Values remain in their original units in labels and tooltips; explicit scales do not attach legacy intensity levels or status meanings.
+Numeric heatmaps share one color domain across all rows. An explicit scale maps every observed value, including zero, and overrides the legacy `HeatmapScale` and `HeatmapRelativeScale` coloring without changing those settings. Cell or day colors still take precedence. The measured key uses the same stops or named intervals, and `ConfigureHeatmapColorDimension(options => options.ShowLegend = false)` hides it. `WithHeatmapCategoryLegend(false)` controls the separate categorical heatmap key. Values remain in their original units in labels and tooltips; explicit scales do not attach legacy intensity levels or status meanings.
 
 ```csharp
 var temperatures = Chart.Create()

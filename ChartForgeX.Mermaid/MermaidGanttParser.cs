@@ -116,8 +116,8 @@ internal static partial class MermaidGanttParser {
         }
 
         DateTime end;
-        if (TryParseDuration(endSpec, out var duration)) {
-            if (!TryResolveDurationEnd(start, duration, document, out end)) {
+        if (TryParseDuration(endSpec, out var amount, out var unit)) {
+            if (!TryResolveDurationEnd(start, amount, unit, document, out end)) {
                 Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt duration exceeds the supported date range or exclusion calendar has no reachable working day.");
                 return null;
             }
@@ -184,52 +184,6 @@ internal static partial class MermaidGanttParser {
         var fallbackFormats = new[] { "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss" };
         if (DateTime.TryParseExact(text.Trim(), fallbackFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value)) return true;
         return DateTime.TryParse(text.Trim(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value);
-    }
-
-    private static bool TryParseDuration(string text, out TimeSpan duration) {
-        text = text.Trim();
-        duration = default;
-        var index = 0;
-        while (index < text.Length && (char.IsDigit(text[index]) || text[index] == '.')) index++;
-        if (index == 0 || index == text.Length) return false;
-        if (!double.TryParse(text.Substring(0, index), NumberStyles.Float, CultureInfo.InvariantCulture, out var amount) || amount < 0 || double.IsInfinity(amount)) return false;
-        var unit = text.Substring(index).Trim().ToLowerInvariant();
-        try {
-            switch (unit) {
-                case "ms":
-                case "millisecond":
-                case "milliseconds":
-                    duration = TimeSpan.FromMilliseconds(amount);
-                    return true;
-                case "s":
-                case "second":
-                case "seconds":
-                    duration = TimeSpan.FromSeconds(amount);
-                    return true;
-                case "m":
-                case "minute":
-                case "minutes":
-                    duration = TimeSpan.FromMinutes(amount);
-                    return true;
-                case "h":
-                case "hour":
-                case "hours":
-                    duration = TimeSpan.FromHours(amount);
-                    return true;
-                case "d":
-                case "day":
-                case "days":
-                    duration = TimeSpan.FromDays(amount);
-                    return true;
-                case "w":
-                case "week":
-                case "weeks":
-                    duration = TimeSpan.FromDays(amount * 7);
-                    return true;
-                default:
-                    return false;
-            }
-        } catch (OverflowException) { return false; }
     }
 
     internal static string ToDotNetDateFormat(string value) {

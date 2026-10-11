@@ -3,6 +3,21 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 public static partial class V2GalleryModels {
+    /// <summary>Compares observed counts with an area reference and an unfilled target on shared radial categories.</summary>
+    public static Chart CreateMixedRadial() {
+        ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+        var chart = Chart.Create().WithXLabels("North", "East", "South", "West")
+            .WithYAxisBounds(0, 1600).WithDataLabels(false)
+            .WithRadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: .22, cornerRadius: 4))
+            .AddRadarArea("Reference", Points(1000, 900, 1100, 1000))
+            .AddRadialColumn("Observed", Points(1200, 700, 1050, 950))
+            .AddRadarLine("Target", Points(1400, 1200, 1300, 1250));
+        chart.Series[0].Radar.FillOpacity = .15;
+        chart.Series[0].Markers.Enabled = false;
+        chart.Series[2].ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 4; });
+        return chart;
+    }
+
     /// <summary>Compares request counts and resolution rates on independent radial value scales from a rightward start ray.</summary>
     public static Chart CreateRadialBarScales() {
         var chart = Chart.Create().WithXLabels("Overall").WithDataLabels(false)

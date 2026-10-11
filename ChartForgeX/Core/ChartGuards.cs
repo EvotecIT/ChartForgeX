@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Core;
 
@@ -54,10 +55,19 @@ internal static class ChartGuards {
             throw new InvalidOperationException("Treemap color presentation requires a Treemap chart.");
         if (chart.Options.Sunburst.ColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst color presentation requires a Sunburst chart.");
+        chart.Options.MapColorDimension.ValidateLegend(chart.Options.MapColorScale);
+        chart.Options.HeatmapColorDimension.ValidateLegend(chart.Options.HeatmapColorScale);
+        if (chart.Series.Count > 0 && chart.Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
+            var sunburst = chart.Series[0].Kind == ChartSeriesKind.Sunburst;
+            var dimension = sunburst ? chart.Options.Sunburst.ColorDimension : chart.Options.Treemap.ColorDimension;
+            var scale = sunburst ? chart.Options.Sunburst.ColorScale : chart.Options.Treemap.ColorScale;
+            // Authored hierarchy color values resolve the existing theme scale during preparation.
+            dimension.ValidateLegend(scale, chart.Series[0].HierarchyItems.Any(item => item.ColorValue.HasValue));
+        }
         if (chart.Options.HeatmapColorScale != null && chart.Series.Any(series => series.IsCategoricalHeatmapRow
             || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
             throw new InvalidOperationException("Heatmap color scales require numeric rectangular, hexagonal or calendar heatmaps.");
-        if (chart.Options.RadialGeometry.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn))
+        if (chart.Options.RadialGeometry.CornerRadius > 0 && chart.Series.Count > 0 && !ChartSeriesKindTraits.UsesNumericRadialCoordinates(chart))
             throw new InvalidOperationException("Radial geometry corner radius requires numeric radial bars or columns.");
         if (chart.Options.Sunburst.CornerRadius > 0 && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst corner radius requires a Sunburst chart.");
@@ -66,8 +76,12 @@ internal static class ChartGuards {
         if ((chart.Options.XAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
             || chart.Options.YAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed
             || chart.Options.SecondaryYAxis.LabelOrientation != ChartAxisLabelOrientation.Fixed)
-            && (chart.Series.Count == 0 || chart.Series.Any(series => series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn)))
+            && !ChartSeriesKindTraits.UsesNumericRadialCoordinates(chart))
             throw new NotSupportedException("Relative axis label orientation requires numeric radial bars or columns.");
+        if (ChartSeriesKindTraits.IsMixedNumericRadial(chart)) {
+            ValidateMixedNumericRadial(chart);
+            return;
+        }
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
@@ -96,7 +110,10 @@ internal static class ChartGuards {
         }
 
         if (exclusiveKinds[0] == ChartSeriesKind.Polar) {
-            if (chart.Options.YAxis.Minimum.HasValue && chart.Options.YAxis.Minimum.Value < 0) {
+            if (chart.Series.Any(series => {
+                var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
+                return axis.Minimum.HasValue && axis.Minimum.Value < 0;
+            })) {
                 throw new InvalidOperationException("Polar charts require a non-negative radial-axis minimum.");
             }
 
@@ -106,6 +123,25 @@ internal static class ChartGuards {
         }
 
         ValidateSpecializedShape(chart, exclusiveKinds[0], preparing);
+    }
+
+    private static void ValidateMixedNumericRadial(Chart chart) {
+        var geometry = chart.Options.RadialGeometry;
+        if (Math.Abs(geometry.EndAngleDegrees - geometry.StartAngleDegrees - 360) > 1e-9)
+            throw new NotSupportedException("Mixed radial columns and radar series require a full-turn radial viewport.");
+        if (chart.Options.XAxis.Reversed)
+            throw new NotSupportedException("Mixed radial columns and radar series do not support angular reversal.");
+        var categories = new List<double>();
+        foreach (var series in chart.Series) {
+            var ordered = series.Points.Select(point => point.X).OrderBy(value => value).ToArray();
+            for (var index = 0; index < ordered.Length; index++) {
+                if (index > 0 && ChartMath.SameCoordinate(ordered[index - 1], ordered[index]))
+                    throw new InvalidOperationException("Mixed radial series require unique categories within each series.");
+                if (!categories.Any(value => ChartMath.SameCoordinate(value, ordered[index]))) categories.Add(ordered[index]);
+            }
+        }
+        if (categories.Count < 3 && chart.Series.Any(series => series.Kind == ChartSeriesKind.Radar && series.Points.Count > 0))
+            throw new InvalidOperationException("Radar charts require at least three categories.");
     }
 
     private static void ValidateRenderableChart(Chart chart, bool preparing) {
