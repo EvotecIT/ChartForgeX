@@ -41,6 +41,24 @@ The core package renders SVG, script-free static HTML, PNG, JPEG, BMP, PPM, and 
 
 Point markers share one typed configuration across connected Cartesian series, scatter, bubble, radar and polar. Use `series.ConfigureMarkers(...)` for nine built-in shapes, visibility, fill and outline; SVG, native PNG and legends use the same geometry. Ordinary point glyphs also accept a radius override. Bubble sizes use one chart-wide domain and radius range through `chart.ConfigureBubble(...)`, so equal values share a logical radius across series. Set explicit bounds and radius endpoints to preserve that meaning when data or layout changes. `AddRadarLine` and `AddRadarArea` share categorical/radial axes and make the fill policy explicit. See [marker and radar options](docs/v2/api-conventions.md#point-markers-and-radial-forms) and [bubble sizing](docs/v2/api-conventions.md#bubble-size-scale) for defaults and limits.
 
+Scatter and Bubble observations accept an independent finite numeric color measurement, with null for missing data. `WithColorValue(...)` returns a new `ChartPoint` or `ChartBubble`, preserving coordinates and the point's segment boundary or bubble's size. Set the series' `ColorScale` with the shared sequential, diverging or named discrete `ChartColorScale`:
+
+```csharp
+var chart = Chart.Create()
+    .ConfigureLabels(labels => labels.Color = "Temperature (°C)")
+    .AddBubble("Recorded batches", new[] {
+        new ChartBubble(15, 28, 9).WithColorValue(-12),
+        new ChartBubble(30, 42, 36).WithColorValue(0),
+        new ChartBubble(45, 18, 81).WithColorValue(null)
+    });
+chart.Series[0].WithColorScale(ChartColorScale.Sequential(
+        ChartColor.FromHex("#2166AC"), ChartColor.FromHex("#B2182B"))
+    .WithValueRange(-15, 30)
+    .WithNoDataColor(ChartColor.FromHex("#9CA3AF")));
+```
+
+Color domains use each series' retained observations unless fixed bounds are supplied; use fixed bounds to compare series or preserve colors across decimation. Missing color keeps the observation's Y and size and uses the configured no-data color. Explicit point colors and marker fills take precedence. `series.WithColorScale(null)` restores ordinary paint and hides its numeric key while retaining authored color facts for readouts. Numeric keys share the legend budget and visibility policy; color captions use neutral numbers with the dimension/unit in `ChartLabels.Color`, independently of Y formatting. The optional nullable color member increases `ChartPoint` and `ChartBubble` storage and participates in value equality; existing constructor signatures are unchanged.
+
 ## Shared prepared rendering
 
 The prepared pipeline lays out a chart once, then exports SVG and native PNG from the same detached scene. All supported chart kinds, chart grids, topology, flow and sequence use this route. The shared context controls logical size, frame, light/dark palette and typography. Unsupported family combinations and options fail explicitly during preparation.
@@ -248,7 +266,7 @@ report.SaveSvg("cpu-by-site.svg");
 record CpuSample(string Site, double Minute, double Cpu);
 ```
 
-Legends with a single entry are hidden by default. Use `chart.WithLegend(true)` or assign `chart.Options.ShowLegend = true` to display one explicitly. Pie and donut names and percentages share one legend item, with the percentage directly after the name. Gauge swatches use the drawn value color.
+A single ordinary series without a numeric color scale hides its legend by default. Configured numeric color scales display their keys automatically. Use `chart.WithLegend(true)` or assign `chart.Options.ShowLegend = true` to display a legend explicitly; `chart.WithLegend(false)` hides ordinary legends and numeric keys together. Pie and donut names and percentages share one legend item, with the percentage directly after the name. Gauge swatches use the drawn value color.
 
 Legends reserve at most 35% of the chart height by default. Additional entries are summarized as `+ N more entries`; all data remains plotted. If a custom height budget cannot fit one readable row, ChartForgeX omits the legend instead of overlapping the plot. This applies to series, point, pie, progress-ring, and state-timeline legends in SVG and PNG. Use `chart.WithLegendBudget(maximumHeightFraction: 0.3, maximumRows: 4)` to tune the budget. For many distinct signals, a faceted grid usually communicates more clearly than placing every series on one axis. SVG exposes visible summaries as `data-cfx-role="legend-overflow"` with `data-cfx-omitted` for hosts.
 
