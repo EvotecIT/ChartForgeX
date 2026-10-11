@@ -144,6 +144,7 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 
 - [x] Correct Gantt duration-unit case semantics: `M` means calendar months and `m` means minutes. Shared upstream timestamp fixtures cover month-end/leap-year clamping, fractional units, exclusion calendars and dependent tasks.
 - [ ] Qualify hierarchical treemap behavior against the shared owner merged in PR #273; PR #271 is closed after consolidation. Close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
+- [x] Preserve comma-separated treemap magnitudes and native group/leaf captions through typed hierarchy conversion and static direct/fence output.
 - [ ] Qualify Mermaid Sankey label/configuration handling and XY series orientations against the shared identity and orientation owners merged in PRs #261, #251 and #273.
 - [x] Map radar graticule, curve appearance and scale options into shared polar geometry through PR #283. Native radar series forms are merged in PR #273; PR #257 is closed after consolidation. Combined qualification against the merged owner remains part of the consumer checks below.
 - [x] Resolve Gantt `until` end references, merge repeated calendar declarations, apply the final diagram calendar/date format and preserve milestone ranges for dependencies. Shared upstream fixtures cover source order, earliest referenced starts and included/excluded dates.
