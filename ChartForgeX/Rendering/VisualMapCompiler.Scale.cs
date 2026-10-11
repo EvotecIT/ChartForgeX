@@ -12,6 +12,8 @@ internal static partial class VisualMapCompiler {
     private static MapLayout ScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, double min, double max, ChartColorPresentation presentation) {
         if (!presentation.ShowLegend || !context.Frame.ShowLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
         if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) return DiscreteScaleLayout(chart, context, builder, plot, presentation);
+        if (chart.Options.MapColorScale is ChartColorScale scale && !MapHasDomain(chart, scale, min, max))
+            return MissingScaleLayout(chart, context, builder, plot, presentation);
         var values = new[] { ChartHeatmapSurface.MapScaleValue(chart, min, max, 1), ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), ChartHeatmapSurface.MapScaleValue(chart, min, max, 0) };
         var captions = presentation.ScaleValues(values);
         var texts = new[] { (chart.Options.MapColorScale?.HighLabel ?? presentation.Labels.More) + " · " + captions[0],
@@ -36,6 +38,10 @@ internal static partial class VisualMapCompiler {
         if (!presentation.ShowLegend || !context.Frame.ShowLegend) return;
         if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) {
             DrawDiscreteScale(chart, context, builder, layout, colors, presentation);
+            return;
+        }
+        if (chart.Options.MapColorScale is ChartColorScale configured && !MapHasDomain(chart, configured, min, max)) {
+            DrawMissingScale(chart, context, builder, layout, colors, configured, presentation);
             return;
         }
         var area = layout.Scale; var gap = context.Theme.Spacing; var style = TickStyle(chart, context);
