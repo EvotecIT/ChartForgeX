@@ -9,7 +9,7 @@ namespace ChartForgeX.Mermaid;
 
 public sealed partial class MermaidParser {
     private const int MaximumConfigurationLength = 65536;
-    private static readonly GeoJsonReadLimits ConfigurationJsonLimits = new GeoJsonReadLimits(1024, 256, 256).LimitDepth(8).RejectDuplicates();
+    private static readonly GeoJsonReadLimits ConfigurationJsonLimits = new GeoJsonReadLimits(1024, 256, 256).LimitDepth(8).RejectDuplicates().KeepNumberSpelling();
 
     private static MermaidSourceConfiguration ReadConfiguration(string source, string[] lines, int frontMatterEndLine, string? frontMatter,
         MermaidParseResult<MermaidDocument> result, out List<MermaidDirective> declarations) {
@@ -20,7 +20,7 @@ public sealed partial class MermaidParser {
         var budgetReported = length > MaximumConfigurationLength;
         if (budgetReported) {
             ConfigurationError(result, new MermaidSourceSpan(1, 1, 3), "Mermaid source configuration exceeds 65536 characters.");
-        } else if (frontMatter != null) ReadConfigurationYaml(frontMatter, configuration, result);
+        } else if (frontMatter != null) ReadConfigurationYaml(frontMatter, configuration, result, originalLineStarts);
 
         for (var index = frontMatterEndLine; index < lines.Length; index++) {
             var bodyLine = lines[index].Trim();
@@ -79,15 +79,16 @@ public sealed partial class MermaidParser {
     private static Match ConfigurationPrefix(string text) => Regex.Match(text, @"^\s*%%\s*\{\s*(?:init|initialize)\s*:", RegexOptions.CultureInvariant);
 
     private static void AddConfigurationJson(Dictionary<string, GeoJsonValue> values, string prefix,
-        MermaidSourceSpan span, MermaidSourceConfiguration configuration) {
+        MermaidSourceSpan span, MermaidSourceConfiguration configuration, Func<GeoJsonValue, MermaidSourceSpan>? propertySpan = null) {
         foreach (var pair in values) {
             var key = Regex.IsMatch(pair.Key, @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant) ? pair.Key : "[" + pair.Key + "]";
             var path = prefix + key;
+            var declarationSpan = propertySpan?.Invoke(pair.Value) ?? span;
             if (pair.Value.TryAsObject(out var nested) && nested.Count > 0) {
-                if (IsConfigurationScalarPath(path)) configuration.Add(new MermaidConfigurationSetting(path, null, false, span));
-                AddConfigurationJson(nested, path + ".", span, configuration);
+                if (IsConfigurationScalarPath(path)) configuration.Add(new MermaidConfigurationSetting(path, null, false, declarationSpan));
+                AddConfigurationJson(nested, path + ".", declarationSpan, configuration, propertySpan);
             }
-            else configuration.Add(new MermaidConfigurationSetting(path, pair.Value.AsOptionalString(), pair.Value.IsString, span));
+            else configuration.Add(new MermaidConfigurationSetting(path, pair.Value.AsOptionalString(), pair.Value.IsString, declarationSpan));
         }
     }
 
