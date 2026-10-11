@@ -1,0 +1,99 @@
+using System.Globalization;
+using System.Xml.Linq;
+using ChartForgeX.Mermaid;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.VisualBlocks;
+using Microsoft.Playwright;
+using Xunit;
+
+namespace ChartForgeX.Tests;
+
+public sealed class MermaidCaptionOwnerClosureTests {
+    [Theory]
+    [InlineData("1e2px", 100)]
+    [InlineData("+1.8e1px", 18)]
+    [InlineData("+.18e2PX", 18)]
+    [InlineData("1e0", 1)]
+    [InlineData("2.56e2px", 256)]
+    public void CssPixelNumbersApplySignedExponentGrammar(string value, double expected) {
+        var rendered = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontSize':'" + value + "'}}}%%\nflowchart LR\nA --> B");
+        Assert.Empty(rendered.Diagnostics);
+        Assert.Equal(expected, rendered.Document!.Configuration.FontSize);
+        Assert.Equal(expected.ToString(CultureInfo.InvariantCulture), rendered.Artifact!.Metadata["mermaid.config.fontSize"]);
+    }
+
+    [Theory]
+    [InlineData("1e3px")]
+    [InlineData("-1e1px")]
+    [InlineData("1e-2px")]
+    [InlineData("1e309px")]
+    public void CssPixelNumbersStillEnforceFiniteSupportedBounds(string value) {
+        var rendered = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontSize':'" + value + "'}}}%%\nflowchart LR\nA --> B");
+        Assert.True(rendered.HasErrors);
+        Assert.Null(rendered.Artifact);
+        Assert.Equal(MermaidDiagnosticCodes.InvalidConfiguration, Assert.Single(rendered.Diagnostics).Code);
+    }
+
+    [Theory]
+    [InlineData(false, false, 320)]
+    [InlineData(false, true, 960)]
+    [InlineData(true, false, 320)]
+    [InlineData(true, true, 960)]
+    public async Task MaximumFontKeepsLabelFreeEndpointMarkersInsideContent(bool graphite, bool branches, int width) {
+        var theme = ChartTheme.Light(); theme.FontFamily = "Arial"; theme.DataLabelFontSize = 256; theme.UseGraphiteLayout = graphite;
+        var block = GitGraphBlock.Create().WithSize(width, 460).WithTheme(theme).WithCard(false).WithCommitLabels(false)
+            .AddBranch("main").AddCommit("base", "main")
+            .AddCommit("pick", "main", new[] { "base" }, GitGraphCommitType.CherryPick, sourceCommitId: "base");
+        block.ShowBranchLabels = branches;
+        var svg = block.ToSvg(); var png = block.ToPng();
+        var circles = XDocument.Parse(svg).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "git-commit").ToArray();
+        Assert.Equal(2, circles.Length);
+        Assert.All(circles, circle => {
+            var x = (double)circle.Attribute("cx")!; var radius = (double)circle.Attribute("r")! + .75;
+            Assert.InRange(x - radius, block.Options.Padding.Left - .002, width);
+            Assert.InRange(x + radius, 0, width - block.Options.Padding.Right + .002);
+        });
+        Assert.True((double)circles[1].Attribute("r")! > 7.5);
+        await Observe(svg, png, width, 460, "git-label-free-" + graphite + "-" + branches + "-" + width, false);
+    }
+
+    [Theory]
+    [InlineData(false, false, 320)]
+    [InlineData(false, true, 320)]
+    [InlineData(true, false, 960)]
+    [InlineData(true, true, 960)]
+    public async Task MaximumSourceFontFitsActorAndTileCaptionCells(bool dark, bool tile, int width) {
+        var result = MermaidRenderer.Render("%%{init: {'theme':'" + (dark ? "dark" : "default")
+            + "','fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nusecase-beta\ndirection LR\nactor API\nactor UI");
+        Assert.Empty(result.Diagnostics);
+        var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
+        chart.Title = ""; chart.Subtitle = ""; chart.LayoutMode = TopologyLayoutMode.Manual;
+        chart.WithViewport(width, 360, 16);
+        for (var i = 0; i < chart.Nodes.Count; i++) {
+            var node = chart.Nodes[i];
+            node.X = 32 + i * (width - 144); node.Y = 90; node.Width = 80; node.Height = tile ? 48 : 108;
+            if (tile) { node.Shape = null; node.DisplayMode = TopologyNodeDisplayMode.Tile; node.Subtitle = "Ready"; }
+        }
+        var options = new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false, IncludeTileSubtitles = true, FitContentToViewport = true };
+        var svg = chart.ToSvg(options); var png = chart.ToPng(options);
+        var labels = XDocument.Parse(svg).Descendants().Where(e => e.Name.LocalName == "text" && e.AncestorsAndSelf().Any(a => (string?)a.Attribute("data-cfx-role") == "topology-node-label")).ToArray();
+        Assert.Equal(new[] { "API", "UI" }, labels.Select(e => e.Value));
+        Assert.All(labels, e => Assert.InRange((double)e.Attribute("font-size")!, .001, 15));
+        if (tile) Assert.Equal(2, XDocument.Parse(svg).Descendants().Count(e => e.Name.LocalName == "text" && e.AncestorsAndSelf().Any(a => (string?)a.Attribute("data-cfx-role") == "topology-subtitle-chip-text")));
+        await Observe(svg, png, width, 360, "topology-captions-" + dark + "-" + tile + "-" + width, true);
+    }
+
+    private static async Task Observe(string svg, byte[] png, int width, int height, string name, bool captions) {
+        Assert.NotEmpty(png);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captures)) { Directory.CreateDirectory(captures); File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), png); }
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, height);
+        Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('svg text, [data-cfx-role=git-commit]')].every(t=>{const b=t.getBoundingClientRect(); return b.width>0&&b.left>=-.01&&b.right<=innerWidth+.01&&b.top>=-.01&&b.bottom<=innerHeight+.01;})"));
+        if (captions) Assert.True(await session.Page.EvaluateAsync<bool>("() => {const boxes=[...document.querySelectorAll('[data-cfx-role=topology-node-label], [data-cfx-role=topology-subtitle-chip-text]')].map(t=>t.getBoundingClientRect());return boxes.every((a,i)=>boxes.slice(i+1).every(b=>Math.min(a.right,b.right)-Math.max(a.left,b.left)<=.1||Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)<=.1));}"));
+        if (captions) Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('[data-cfx-role=topology-node]')].every(n=>{const caption=n.querySelector('[data-cfx-role=topology-node-label]'), surfaces=[...n.querySelectorAll('[data-cfx-role=topology-node-surface]')];return !caption||surfaces.every(s=>s.getBoundingClientRect().bottom+2<=caption.getBoundingClientRect().top);})"), "Node captions must sit below their painted surfaces.");
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        if (!string.IsNullOrWhiteSpace(captures)) await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
+    }
+}

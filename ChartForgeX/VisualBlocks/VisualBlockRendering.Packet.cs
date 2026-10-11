@@ -19,7 +19,7 @@ internal static partial class VisualBlockRendering {
         var height = Math.Min(52, slot - labelTop);
         var bits = Math.Min(BodyFontSize(packet.Options.Theme, 9.5), labelTop * .75);
         var bitStyle = new TextStyle { Font = new FontSpec { Family = packet.Options.Theme.FontFamily, Weight = 700 }, FontSize = Math.Max(.001, bits), LineHeight = 1 };
-        if (bits > 0) bits = FitFontSize(0, bits, FitsBits);
+        if (bits > 0) bits = ChartTextFitting.FitFontSize(0, bits, FitsBits);
         if (bits > 0 && !FitsBits(bits)) bits = 0;
         var label = Math.Min(BodyFontSize(packet.Options.Theme, Math.Max(9, Math.Min(13.5, height * .31))), height * .6);
         return new PacketRowMetrics(labelTop, gap, height, bits, label);

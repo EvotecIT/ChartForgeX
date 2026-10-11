@@ -40,7 +40,9 @@ internal static partial class TopologyNodeShapeGeometry {
         }
         switch (node.Shape ?? TopologyNodeShape.Rounded) {
             case TopologyNodeShape.Actor:
-                var cx = x + w / 2; var unit = Math.Min(w / 48, h / 76);
+                // Actor routing and its caption use the canonical 48 by 76 figure.
+                // A larger node reserves label space rather than enlarging its limbs.
+                var cx = x + w / 2; var unit = Math.Min(1, Math.Min(w / 48, h / 76));
                 Ellipse(cx, y + unit * 15, unit * 9, unit * 9);
                 Open(cx, y + unit * 24, cx, y + unit * 50);
                 Open(cx - unit * 17, y + unit * 34, cx + unit * 17, y + unit * 34);
