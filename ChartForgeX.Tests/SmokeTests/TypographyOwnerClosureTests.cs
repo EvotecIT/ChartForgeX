@@ -26,7 +26,12 @@ internal static partial class SmokeTests {
 
         Assert(CountOccurrences(styled, "data-cfx-role=\"axis-x-label\"") < CountOccurrences(regular, "data-cfx-role=\"axis-x-label\""), "SVG tick density should measure resolved family, size, italic, and transformed casing before selecting labels.");
         Assert(GetAttribute(styled, "data-cfx-role=\"axis-x-label\"", "y") < GetAttribute(regular, "data-cfx-role=\"axis-x-label\"", "y"), "SVG plot allocation should move upward to reserve a larger styled axis title.");
-        Assert(styled.Contains(">DELIVERY STATUS</text>", StringComparison.Ordinal) && styled.Contains("font-size=\"32\"", StringComparison.Ordinal), "SVG axis titles should serialize their resolved text and size after layout.");
+        var title = XDocument.Parse(styled).Descendants()
+            .Single(element => (string?)element.Attribute("data-cfx-role") == "axis-x-title")
+            .Descendants().Single(element => element.Name.LocalName == "text");
+        var titleSize = double.Parse(title.Attribute("font-size")!.Value, CultureInfo.InvariantCulture);
+        Assert(title.Value == "DELIVERY STATUS" && titleSize <= 32 && titleSize >= 31.99,
+            "SVG axis titles should serialize their resolved text and size within the precision of measured layout.");
     }
 
     private static void SpecializedLegendsHonorRoleTypography() {
