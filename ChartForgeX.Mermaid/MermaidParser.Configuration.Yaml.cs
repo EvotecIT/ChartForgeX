@@ -50,6 +50,7 @@ public sealed partial class MermaidParser {
             if (keyError != null && (parents.Count > 0 || indent == rootIndent)) {
                 ConfigurationError(result, span, keyError);
                 opaqueIndent = indent;
+                if (SkipOpaqueConfigurationYamlNode(lines, ref index, trimmed)) opaqueScalarIndent = indent;
                 continue;
             }
             if (parents.Count == 0 && (indent != rootIndent || !match.Success || key != "config")) continue;
