@@ -74,7 +74,7 @@ internal sealed class ChartSeriesColorSurface {
         metadata["data-cfx-label-no-data"] = Presentation.NoData;
         if (_values[point] is double value) {
             metadata["data-cfx-color-value"] = VisualStateSceneTools.Number(value);
-            if (Presentation.HasOverrides) metadata["data-cfx-formatted-color-value"] = Presentation.Value(value);
+            if (Presentation.HasFormat) metadata["data-cfx-formatted-color-value"] = Presentation.Value(value);
             description += "; " + Presentation.Name + ": " + Presentation.Value(value);
         } else if (Scale != null) {
             metadata["data-cfx-color-missing"] = "true";
