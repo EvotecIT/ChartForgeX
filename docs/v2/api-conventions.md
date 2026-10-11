@@ -203,6 +203,24 @@ Horizontal range-bar charts accept only range-bar series on the primary axis. Ve
 
 Range-bar slots include the minimum body and cap-stroke footprint for flat styles, and the visible caps, shadows and highlights for segmented styles. If a category slot cannot fit the minimum painted footprint, rendering throws an actionable `InvalidOperationException`. Increase the category-axis space (height for horizontal intervals, width for vertical intervals), reduce grouped series, reduce stroke widths or cap effects, or choose a simpler mark style. Horizontal automatic value bounds also contain endpoint paint and the minimum interval body; explicit value bounds remain exact and may intentionally clip that paint.
 
+### Range-bar endpoint captions
+
+`ChartOptions.RangeBar.LabelContent` defaults to `Combined`: one formatted range caption, overridden by `WithPointLabel`. Select `Endpoints` to show separate captions at the authored Start and End. Descending intervals keep those identities even when Start is numerically greater than End or the value axis is reversed.
+
+```csharp
+ranges.WithDataLabels().ConfigureRangeBar(options => {
+    options.LabelContent = ChartRangeBarLabelContent.Endpoints;
+    options.EndpointLabelFormatter = label => label.FormattedValue
+        + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
+});
+```
+
+The optional formatter receives a readonly `ChartRangeBarEndpointLabelContext`: captured `SeriesName`, zero-based observation `PointIndex`, resolved `CategoryLabel`, authored `Interval`, `Endpoint`, computed raw `Value` and chart-formatted `FormattedValue`. A null formatter uses the chart's `ValueFormat`; axis-specific formatters affect ticks independently. A null, empty or whitespace result suppresses that endpoint caption. `WithPointLabel` continues to supply the observation heading and source caption in endpoint mode; it does not replace both endpoint captions.
+
+Preparation evaluates the endpoint formatter once for Start then End per authored observation, including hidden or subsequently omitted captions. Complete text remains in observation metadata. Exceptions propagate from preparation; detached SVG, PNG and HTML exports reuse captured strings without invoking callbacks again. Stateful callbacks remain responsible for their own captured state. Combined mode retains its existing lazy numeric formatting and does not invoke the endpoint formatter.
+
+Endpoint captions inherit chart, series and point label typography and visibility. They use the shared measured placement and overflow diagnostics. Auto/Outside begins at the actual endpoint in its outward direction; Inside/Center uses that endpoint's half of the interval. Short, coincident or clipped intervals may omit or shorten captions while preserving complete text and raw facts. Both captions remain associated with one original observation for browser hover, selection and muting.
+
 ## Grouped box plots and orientation
 
 `AddBoxPlot` accepts raw samples for one category or an enumerable of authored `ChartBoxPlot` summaries. Multiple box plot series use distinct category slots, including the body, median stroke and whisker caps. If the minimum painted footprint cannot fit, rendering throws an actionable `InvalidOperationException`: increase category-axis space (height for horizontal plots, width for vertical plots), reduce grouped series or use thinner strokes. Automatic horizontal value bounds contain complete paint, including minimum-width quartile bodies; explicit value bounds stay exact and may clip paint. Point labels, colors, patterns and interaction keys index complete summaries. The default data label is the median; a custom point label takes precedence.

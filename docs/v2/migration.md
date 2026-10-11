@@ -51,6 +51,12 @@ Configure tooltip content through `HtmlChartInteractionOptions.Tooltip.Mode` and
 
 The default range remains 120 CSS pixels. Enabling only `ChartInteractionFeatures.Tooltips` now also acquires nearby observations without requiring `Crosshair`. Choose `Exact` for direct pointer hits only. Crosshair labels default to visible for every palette; set `Crosshair.ShowLabel = false` to retain a compact label-free presentation. Keyboard and pinned readouts keep explicit target semantics.
 
+## Range-bar endpoint captions
+
+Existing range-bar models retain `LabelContent = Combined`, including custom point captions and lazy numeric formatting. Opt into `ChartRangeBarLabelContent.Endpoints` through `ConfigureRangeBar` to render authored Start and End separately. Use `EndpointLabelFormatter` for endpoint-specific text or suppression; its readonly context carries the complete interval and the existing chart-formatted numeric value. This adds no ingestion or source-index migration.
+
+In endpoint mode, `WithPointLabel` remains the observation heading rather than replacing both endpoint captions. Both captions share the original observation target and inherited label typography; their SVG element IDs are distinct. Callbacks run once per endpoint during preparation, including when labels are hidden or cannot fit, and exceptions propagate. Prepared exports remain detached. See [endpoint captions](api-conventions.md#range-bar-endpoint-captions).
+
 ## Box plot grouping and orientation
 
 Multiple box plot series at the same category now appear side by side instead of overlapping. Category pitch controls their thickness, so dense plots can use narrower bodies. Existing `AddBoxPlot` overloads and five-number summaries retain their values and source order; `ChartBarMode` does not stack them.

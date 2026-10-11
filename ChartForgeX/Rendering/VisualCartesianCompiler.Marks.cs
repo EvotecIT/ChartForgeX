@@ -163,7 +163,8 @@ internal static partial class VisualCartesianCompiler {
 
     private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,
         ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null,
-        TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false, ChartColor? markFill = null, SvgColorRole? markFillRole = null, SvgPaint? markFillPaint = null) {
+        TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false, ChartColor? markFill = null, SvgColorRole? markFillRole = null, SvgPaint? markFillPaint = null,
+        string? labelId = null) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
         if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue &&
             (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) return;
@@ -276,6 +277,7 @@ internal static partial class VisualCartesianCompiler {
         var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, style, candidates) {
             AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint
         };
+        if (labelId != null) ((CartesianLabels)labels).LabelIds.Add(request, labelId);
         if (inside) request.Bounds = mark;
         if (autoInside) ((CartesianLabels)labels).ContainedInk.Add(request, (mark, insideStyle, insidePaint));
         if (series.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.Scatter)
@@ -297,11 +299,12 @@ internal static partial class VisualCartesianCompiler {
             var outlined = ((CartesianLabels)labels).Outlined.Contains(label.Request);
             var surface = context.Theme.Resolve(context.ThemeMode).Surface;
             var total = label.Request.AssociatedMarkId?.StartsWith("stack-total-", StringComparison.Ordinal) == true;
-            using (builder.PushGroup(label.Request.AssociatedMarkId + "-label-source", total ? "stack-total-label-source" : "data-label-source",
+            var labelId = ((CartesianLabels)labels).LabelIds.TryGetValue(label.Request, out var distinctId) ? distinctId : label.Request.AssociatedMarkId;
+            using (builder.PushGroup(labelId + "-label-source", total ? "stack-total-label-source" : "data-label-source",
                 VisualMarkLabel.Metadata(label.Request.Text, total ? null : label.Request.AssociatedMarkId))) {
                 builder.Text(label.Text, label.Bounds.Left, label.Bounds.Top + builder.TextAscent(displayedStyle), displayedStyle,
                     role: total ? "stack-total-label" : "data-label",
-                    id: label.Request.AssociatedMarkId + "-label", paint: (contained ? insideInk.Paint : label.Request.Paint) ?? VisualChartPaint.Text(displayedStyle),
+                    id: labelId + "-label", paint: (contained ? insideInk.Paint : label.Request.Paint) ?? VisualChartPaint.Text(displayedStyle),
                     stroke: outlined ? surface : null, strokeWidth: outlined ? ChartTextHalo.SvgStrokeWidth(displayedStyle.EffectiveFontSize, displayedStyle.Font.Weight >= 700) : 0,
                     strokePaint: outlined ? SvgPaint.Of(surface, SvgColorRole.Surface) : null);
             }
