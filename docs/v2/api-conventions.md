@@ -408,15 +408,20 @@ chart.Series[0].ConfigureFinancial(financial => {
     financial.Rising.FillOpacity = 0;
     financial.Rising.Stroke = ChartColor.FromHex("#2A967B");
     financial.Rising.StrokeWidth = 2.4;
+    financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
+    financial.Rising.DashOffset = -3;
     financial.Rising.Wick.Stroke = ChartColor.FromHex("#729BB7");
     financial.Rising.Wick.StrokeWidth = 1.2;
+    financial.Rising.Wick.DashPattern = Array.Empty<double>(); // Solid wick, independent of the body.
     financial.Falling.FillOpacity = .65;
 });
 ```
 
 Null paints and numeric options inherit the existing family behavior. Body fills keep their rising/falling alpha defaults unless `FillOpacity` is supplied. `StrokeOpacity` and `FillOpacity` multiply the chosen color's alpha and accept finite values from zero to one. Stroke widths accept finite nonnegative logical pixels; zero hides the corresponding stroke. Wick values inherit the item's stroke color, alpha multiplier and width. Item widths inherit an explicit series `StrokeWidth` before the family default. An observation's `PointColors` entry takes precedence over every financial part color; part widths and alpha multipliers remain independent. OHLC supports the item's stroke settings and rejects fill or wick settings. Configured financial options on other series kinds also fail preparation.
 
-A zero fill multiplier or a transparent effective fill creates a hollow candlestick with no interior wick or hatch. SVG, native PNG and configured financial legend glyphs consume the same resolved styles. A point legend shows its observation's direction; a series legend shows rising and falling glyphs under one series action. Bounds cover the painted body and strokes, including minimum-height and all-equal bodies. Preparation freezes styles, geometry, regions and legend output independently of later option changes. Session-time spacing, financial dash controls and datum style callbacks remain separate work.
+`DashPattern` copies positive finite dash and gap lengths in logical pixels; odd-length patterns repeat twice and the complete period must remain finite. An item pattern of null or empty means solid. `DashOffset` accepts finite signed logical pixels, with null meaning zero on an item. Wick pattern and offset each inherit independently when null; an empty wick pattern explicitly restores a solid wick. Dash phase starts separately for each OHLC stem, open tick and close tick, and for each emitted wick segment. A candlestick body outline uses one continuous closed contour. Legend glyphs scale pattern lengths and phase with their geometry and stroke widths.
+
+A zero fill multiplier or a transparent effective fill creates a hollow candlestick with no interior wick or hatch. SVG, native PNG and configured financial legend glyphs consume the same captured pattern, phase and resolved paint. Zero widths and transparent strokes remain hidden regardless of dash settings. A point legend shows its observation's direction; a series legend shows rising and falling glyphs under one series action. Bounds cover the painted body and strokes, including minimum-height and all-equal bodies. Preparation freezes styles, geometry, regions and legend output independently of later option changes. Session-time spacing and datum style callbacks remain separate work.
 
 HTML financial tooltips expose Open, High, Low and Close rows, including zero prices, through the ordinary and pinned readout. Shared-X mode uses the existing single-target fallback for financial tuples. Financial readouts retain raw metadata and accessible descriptions and omit a generic Y row, which would otherwise describe only the opening member.
 

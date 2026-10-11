@@ -34,6 +34,7 @@ public static partial class V2Examples {
         "sparse" => "Sparse data", "shapes" => "Node shapes", "above-labels" => "Outer labels", "below-labels" => "Inner labels",
         "density" => "Density", "compact-density" => "Compact density", "sum" => "Sum", "compact-sum" => "Compact sum",
         "mean" => "Mean", "compact-mean" => "Compact mean",
+        "dashed" => "Dashed strokes", "compact-dashed" => "Compact dashed strokes",
         _ => FamilyLabel(variant)
     };
 }

@@ -40,6 +40,7 @@ public static partial class V2Examples {
             if (kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar or ChartSeriesKind.PolarArea) {
                 variants.Add("angular-reversal"); variants.Add("compact-angular-reversal");
             }
+            if (kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) { variants.Add("dashed"); variants.Add("compact-dashed"); }
             if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
                 variants.Add("axis-labels"); variants.Add("compact-axis-labels");
                 variants.Add("all-labels"); variants.Add("compact-all-labels");
@@ -79,6 +80,7 @@ public static partial class V2Examples {
                     : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"
                     : variant is "angular-reversal" or "compact-angular-reversal" ? kind == ChartSeriesKind.Polar ? "Clockwise authored radians retain their source directions and values"
                         : "Reversed category angles retain source labels, values and paint"
+                    : variant is "dashed" or "compact-dashed" ? "Direction-specific dash patterns and phase preserve the source prices"
                     : variant is "axis-labels" or "compact-axis-labels" ? "Upright axis-relative labels with independent density"
                     : variant is "all-labels" or "compact-all-labels" ? "All captions fit individually; caption overlaps are intentional"
                     : variant == "cone-vertical" ? "Vertical cone; stage lines encode source values"
