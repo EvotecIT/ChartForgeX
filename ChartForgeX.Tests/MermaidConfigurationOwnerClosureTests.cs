@@ -44,8 +44,8 @@ public sealed class MermaidConfigurationOwnerClosureTests {
     }
 
     [Fact]
-    public void MultilineRootFlowWhitespaceCountsTowardTheConfigurationBudget() {
-        var rendered = MermaidRenderer.Render("---\nconfig: {\n" + new string(' ', 65536) + "\n\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B");
+    public void MultilineRootFlowIndentedContentCountsTowardTheConfigurationBudget() {
+        var rendered = MermaidRenderer.Render("---\nconfig: {\n" + new string(' ', 65536) + "\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B");
         Assert.True(rendered.HasErrors);
         Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
     }
@@ -54,7 +54,7 @@ public sealed class MermaidConfigurationOwnerClosureTests {
     [InlineData("}")]
     [InlineData("\"")]
     public void OpeningLineCommentsCannotHideFlowContinuationFromTheBudget(string comment) {
-        var rendered = MermaidRenderer.Render("---\nconfig: { # " + comment + "\n" + new string(' ', 65536) + "\n\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B");
+        var rendered = MermaidRenderer.Render("---\nconfig: { # " + comment + "\n" + new string(' ', 65536) + "\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B");
         Assert.True(rendered.HasErrors);
         Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
     }

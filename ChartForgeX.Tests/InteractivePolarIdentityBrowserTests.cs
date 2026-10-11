@@ -42,6 +42,9 @@ public sealed class InteractivePolarIdentityBrowserTests {
         using (var hover = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.polarIdentityEvents.hover.filter(event => event.target.targetKind === 'point').at(-1))")))
             AssertTargetEvent(hover.RootElement);
         Assert.Contains("Target", await TooltipTextAsync(page));
+        var title = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
+        if (radar) Assert.Equal("Target, Latency: 7", title);
+        else Assert.Matches("^Target, [0-9.]+: 7$", title);
         await targetPoint.ClickAsync();
         using (var selection = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.polarIdentityEvents.selection.at(-1))")))
             AssertTargetEvent(selection.RootElement);

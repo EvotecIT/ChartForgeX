@@ -4,6 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.VisualBlocks;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -17,12 +18,21 @@ public sealed class GalleryPngSurfaceTests {
     [InlineData("shadow", 2)]
     [InlineData("grid", 1)]
     [InlineData("grid", 2)]
+    [InlineData("block-card", 1)]
+    [InlineData("block-card", 2)]
     public void DeclaredSurfacesRemainHealthyAndExtraEdgeMarksRemainObservable(string surface, int scale) {
         var chart = Chart.Create().WithSize(320, 220).WithTitle("Perimeter health")
             .AddBar("Observed", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50) });
         string svg;
         byte[] png;
-        if (surface == "fractional-background") {
+        if (surface == "block-card") {
+            var theme = ChartTheme.GraphiteLight(); theme.UseGraphiteLayout = false;
+            var block = BlockLayoutBlock.Create().WithSize(320, 220).WithTitle("Block card")
+                .WithTheme(theme).AddItem("a", "A");
+            block.Options.PngOutputScale = scale;
+            svg = block.ToSvg(); png = block.ToPng();
+            Assert.Contains("data-cfx-role=\"visual-card\"", svg);
+        } else if (surface == "fractional-background") {
             var prepared = chart.Prepare(new VisualRenderContext(
                 layout: new VisualLayoutOptions(new VisualSize(320, 220.553))));
             svg = prepared.ToSvg();
@@ -42,6 +52,10 @@ public sealed class GalleryPngSurfaceTests {
         Directory.CreateDirectory(output);
         try {
             var raster = RasterImageDecoder.Decode(png);
+            if (surface == "block-card") {
+                var offset = (180 * scale * raster.Width + 160 * scale) * 4;
+                Assert.Equal(new byte[] { 255, 255, 255, 255 }, raster.Pixels.Skip(offset).Take(4));
+            }
             foreach (var name in new[] { "normal", "extra-edge-mark" }) {
                 File.WriteAllText(Path.Combine(output, name + ".svg"), svg);
                 var canvas = new RgbaCanvas(raster.Width, raster.Height, 1);

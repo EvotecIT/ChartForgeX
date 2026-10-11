@@ -45,7 +45,7 @@ public sealed class InteractiveMissingCategoryBrowserTests {
         Assert.Equal(8, identities.Distinct().Count());
 
         await observedZero.FocusAsync();
-        Assert.Contains("Value 0", await page.Locator(".cfx-tooltip__title").InnerTextAsync(), StringComparison.Ordinal);
+        Assert.Equal("Target, 1: 0", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         foreach (var category in new[] { 2, 3 }) {
             var local = roots.Nth(0).Locator(Target(category));
             var peer = roots.Nth(1).Locator(Target(category));
