@@ -27,9 +27,9 @@ internal sealed class ChartHierarchySurface {
         RolePrefix = sunburst ? "sunburst" : "treemap";
         var observations = _series.HierarchyItems.Where(item => item.ColorValue.HasValue).Select(item => item.ColorValue!.Value).ToArray();
         Scale = configured ?? (observations.Length > 0 ? ChartColorScaleSurface.Default(colors) : null);
-        Minimum = observations.Length > 0 ? observations.Min() : Scale?.MinimumValue ?? 0;
-        Maximum = observations.Length > 0 ? observations.Max() : Scale?.MaximumValue ?? 0;
-        HasDomain = observations.Length > 0 || (Scale?.MinimumValue.HasValue == true && Scale.MaximumValue.HasValue);
+        Minimum = observations.Length > 0 ? observations.Min() : 0;
+        Maximum = observations.Length > 0 ? observations.Max() : 0;
+        HasDomain = ChartColorScaleSurface.HasDomain(Scale, observations.Length > 0 ? Minimum : null, observations.Length > 0 ? Maximum : null);
         HasMissing = _series.HierarchyItems.Any(item => !item.ColorValue.HasValue);
     }
 

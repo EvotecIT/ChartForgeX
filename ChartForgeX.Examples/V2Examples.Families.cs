@@ -36,6 +36,9 @@ public static partial class V2Examples {
                 variants.Add("gradient-color-legend"); variants.Add("compact-gradient-color-legend");
                 variants.Add("swatch-color-legend"); variants.Add("compact-swatch-color-legend");
             }
+            if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter) {
+                variants.Add("partial-color-range"); variants.Add("compact-partial-color-range");
+            }
             if (GeometryOptionFamilies.Contains(kind)) { variants.Add("options"); variants.Add("compact-options"); }
             if (kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn) {
                 variants.Add("axis-labels"); variants.Add("compact-axis-labels");
@@ -56,6 +59,7 @@ public static partial class V2Examples {
             foreach (var variant in variants) {
                 var precision = variant is "precision" or "compact-precision";
                 var chart = V2GalleryModels.Create(kind, variant, mode); var title = precision ? kind == ChartSeriesKind.Gauge ? "Measured tolerance" : "Small signed drift"
+                    : variant is "partial-color-range" or "compact-partial-color-range" ? kind == ChartSeriesKind.TileMap ? "Requests by state" : "Processing time and completion"
                     : variant is "positioned-color-scale" or "compact-positioned-color-scale" && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap
                         ? kind == ChartSeriesKind.TileMap ? "Temperature by state" : "Temperature across service areas"
                     : variant is "color-dimension" or "compact-color-dimension" or "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend" ? kind switch {
@@ -80,6 +84,8 @@ public static partial class V2Examples {
                     : kind == ChartSeriesKind.Sunburst && variant is "authored-total" or "compact-authored-total" ? "Inclusive parent totals retain unallocated remainder"
                     : kind == ChartSeriesKind.Sunburst && variant is "options" or "compact-options" ? "Leaf totals size sectors; measured color stays independent"
                     : kind == ChartSeriesKind.Sankey && variant is "options" or "compact-options" ? "Aligned and ordered weighted flows"
+                    : variant is "partial-color-range" or "compact-partial-color-range" ? kind == ChartSeriesKind.TileMap
+                        ? "Zero stays fixed; the color peak follows reported counts" : "The color ceiling stays at 100%; the lower bound follows observations"
                     : variant is "gradient-color-legend" or "compact-gradient-color-legend" ? "A continuous key retains every authored color anchor"
                     : variant is "swatch-color-legend" or "compact-swatch-color-legend" ? "A sampled key keeps the continuous measurement and its color domain"
                     : variant is "color-dimension" or "compact-color-dimension" ? "Temperature captions use their own format and culture"

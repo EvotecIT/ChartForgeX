@@ -56,7 +56,7 @@ internal sealed class ChartSeriesColorSurface {
     internal bool Missing { get; }
     internal double Minimum { get; }
     internal double Maximum { get; }
-    internal bool HasDomain => HasValues || Scale?.MinimumValue.HasValue == true || Scale?.Mode == ChartColorScaleMode.Discrete;
+    internal bool HasDomain => ChartColorScaleSurface.HasDomain(Scale, HasValues ? Minimum : null, HasValues ? Maximum : null);
 
     internal (ChartColor Color, SvgPaint Paint) Paint(ChartSeries series, int seriesIndex, int point, VisualThemeColors colors) {
         if (Scale != null && !(point < series.PointColors.Count && series.PointColors[point].HasValue)) {
