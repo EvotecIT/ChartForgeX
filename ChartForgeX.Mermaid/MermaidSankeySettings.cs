@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Xml;
 using ChartForgeX.Core;
 
 namespace ChartForgeX.Mermaid;
@@ -74,7 +75,13 @@ internal sealed class MermaidSankeySettings {
         string? Text(string key) {
             var setting = Select(key);
             if (setting == null) return null;
-            if (setting.IsString && setting.Value != null && setting.Value.Length <= 4096) return setting.Value;
+            if (setting.IsString && setting.Value != null && setting.Value.Length <= 4096) {
+                try { return XmlConvert.VerifyXmlChars(setting.Value); }
+                catch (XmlException) {
+                    Invalid(setting, "must contain complete XML-compatible Unicode characters");
+                    return null;
+                }
+            }
             Invalid(setting, "must be a string of at most 4096 characters");
             return null;
         }
