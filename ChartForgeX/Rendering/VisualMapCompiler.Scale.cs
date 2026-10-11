@@ -82,10 +82,17 @@ internal static partial class VisualMapCompiler {
                     Intersect(new ChartRect(area.Left + swatchWidth + gap, centers[index] - labelHeight / 2, textWidth, labelHeight), area), style, "map-scale-label", "map-scale-label-" + index);
                 if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, area.Bottom - row, area.Width, row), area), style, row, presentation.NoData);
             } else {
+                ChartRect? inlineMissing = null;
                 if (presentation.HasName) {
-                    VisualColorScaleLegendScene.Heading(builder, area, style, "map-scale", presentation.Name);
                     var heading = Math.Min(area.Height, VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.Name));
-                    area = new ChartRect(area.Left, area.Top + heading, area.Width, Math.Max(0, area.Height - heading));
+                    var keyArea = new ChartRect(area.Left, area.Top + heading, area.Width, Math.Max(0, area.Height - heading));
+                    if (missing) inlineMissing = MissingScaleHeadingBounds(builder, area, keyArea, style, row, gap,
+                        presentation.Name, presentation.NoData, ChartHeatmapSurface.MapMidpointLabel(chart) != null);
+                    var titleArea = inlineMissing.HasValue
+                        ? new ChartRect(area.Left, area.Top, Math.Max(0, inlineMissing.Value.Left - gap - area.Left), area.Height) : area;
+                    VisualColorScaleLegendScene.Heading(builder, titleArea, style, "map-scale", presentation.Name);
+                    if (inlineMissing.HasValue) MissingScale(chart, builder, colors, inlineMissing.Value, style, row, presentation.NoData);
+                    area = keyArea;
                 }
                 var swatchTop = Math.Min(area.Bottom, area.Top + row); var swatchHeight = Math.Min(row * .7, Math.Max(0, area.Bottom - swatchTop));
                 var swatchWidth = area.Width / steps.Length;
@@ -117,9 +124,23 @@ internal static partial class VisualMapCompiler {
                     }
                     next += row;
                 }
-                if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, next, area.Width, row), area), style, row, presentation.NoData);
+                if (missing && !inlineMissing.HasValue) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, next, area.Width, row), area), style, row, presentation.NoData);
             }
         }
+    }
+
+    private static ChartRect? MissingScaleHeadingBounds(VisualSceneBuilder builder, ChartRect headingArea, ChartRect keyArea,
+        TextStyle style, double row, double gap, string heading, string noData, bool midpoint) {
+        var stripHeight = Math.Min(row * .7, Math.Max(0, keyArea.Height - row));
+        var missingTop = Math.Min(keyArea.Height, row) + stripHeight + (midpoint ? row : 0);
+        var stackedHeight = Math.Min(row, Math.Max(0, keyArea.Height - missingTop));
+        var caption = builder.MeasureText(noData, style); var title = builder.MeasureText(heading, style);
+        var height = Math.Min(builder.MeasureText("Mg", style).Height, headingArea.Height);
+        var width = row * .7 + caption.Width + gap / 2;
+        // Reuse the heading only when both complete captions fit; the numeric key keeps its original bounds.
+        if (stackedHeight + .000001 >= caption.Height || Math.Max(caption.Height, title.Height) > height + .000001
+            || title.Width + gap + width > headingArea.Width) return null;
+        return new ChartRect(headingArea.Right - width, headingArea.Top, width, height);
     }
 
     private static void MissingScale(Chart chart, VisualSceneBuilder builder, VisualThemeColors colors, ChartRect area, TextStyle style, double size, string noData) {
