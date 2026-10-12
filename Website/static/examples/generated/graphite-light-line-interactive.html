@@ -1929,6 +1929,13 @@ body {
     top: [0, -1], 'top-right': [1, -1], right: [1, 0], 'bottom-right': [1, 1],
     bottom: [0, 1], 'bottom-left': [-1, 1], left: [-1, 0], 'top-left': [-1, -1]
   };
+  const unwatchTooltipPositionTrees = () => {
+    for (const tree of tooltipPositionTrees) {
+      tree.removeEventListener('scroll', queueTooltipPositionRefresh, true);
+      tree.removeEventListener('transitionend', queueTooltipPositionRefresh, true);
+    }
+    tooltipPositionTrees.clear();
+  };
   const forgetTooltipPosition = (tip) => {
     const state = tooltipPositions.get(tip);
     tooltipPositions.delete(tip);
@@ -1940,22 +1947,54 @@ body {
         // Drain surviving hosts' removals before rebuilding registrations to release unused shadow trees.
         checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
         if (!tooltipPositionObserver) return;
-        tooltipPositionObserver.disconnect(); tooltipPositionTrees.clear();
+        tooltipPositionObserver.disconnect(); unwatchTooltipPositionTrees();
         for (const current of activeTooltipPositions) watchTooltipPositionTrees(current);
       }
       return;
     }
-    if (tooltipPositionObserver) { tooltipPositionObserver.disconnect(); tooltipPositionObserver = null; tooltipPositionTrees.clear(); }
+    if (tooltipPositionObserver) { tooltipPositionObserver.disconnect(); tooltipPositionObserver = null; unwatchTooltipPositionTrees(); }
     if (tooltipPositionResize) { tooltipPositionResize.disconnect(); tooltipPositionResize = null; }
     window.removeEventListener('resize', queueTooltipPositionRefresh);
-    document.removeEventListener('scroll', queueTooltipPositionRefresh, true);
-    document.removeEventListener('transitionend', queueTooltipPositionRefresh, true);
     if (tooltipPositionFrame) { cancelAnimationFrame(tooltipPositionFrame); tooltipPositionFrame = 0; }
+  };
+  const tooltipSourceRect = (node) => {
+    if (node._cfxPairedRegion) return pairedExtentScreenBox(node);
+    const region = node._cfxNativeRegion, matrix = region && node.getScreenCTM();
+    if (matrix) {
+      const corners = [[region.x, region.y], [region.x + region.width, region.y],
+        [region.x, region.y + region.height], [region.x + region.width, region.y + region.height]]
+        .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+      return { left: Math.min(...corners.map(p => p.x)), right: Math.max(...corners.map(p => p.x)),
+        top: Math.min(...corners.map(p => p.y)), bottom: Math.max(...corners.map(p => p.y)) };
+    }
+    const rect = node.getBoundingClientRect();
+    // Unlocated retained keyboard facts have no painted box; their visible SVG remains the host boundary.
+    return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;
+  };
+  const tooltipSourceInView = (state) => {
+    if (state.paintChanged || !state.clippingAncestors) {
+      state.clippingAncestors = [];
+      for (let node = state.node.parentElement; node; node = node.parentElement || node.getRootNode().host) {
+        if (!(node instanceof HTMLElement)) continue;
+        const style = getComputedStyle(node), x = style.overflowX !== 'visible', y = style.overflowY !== 'visible';
+        if (x || y) state.clippingAncestors.push({ node, x, y });
+      }
+    }
+    // Keep geometry live while caching overflow axes until the existing paint invalidation fires.
+    let left = 0, top = 0, right = window.innerWidth, bottom = window.innerHeight;
+    for (const { node, x, y } of state.clippingAncestors) {
+      const rect = node.getBoundingClientRect(), scaleX = node.offsetWidth ? rect.width / node.offsetWidth : 1;
+      const scaleY = node.offsetHeight ? rect.height / node.offsetHeight : 1;
+      if (x) { left = Math.max(left, rect.left + node.clientLeft * scaleX); right = Math.min(right, rect.left + (node.clientLeft + node.clientWidth) * scaleX); }
+      if (y) { top = Math.max(top, rect.top + node.clientTop * scaleY); bottom = Math.min(bottom, rect.top + (node.clientTop + node.clientHeight) * scaleY); }
+    }
+    const source = tooltipSourceRect(state.node);
+    return source && right > left && bottom > top && source.right > left && source.left < right && source.bottom > top && source.top < bottom;
   };
   const tooltipPositionAvailable = (state) => state.root.isConnected && state.tip.isConnected && state.node.isConnected
     && state.root.contains(state.tip) && state.root.contains(state.node) && !state.tip.hidden && !state.root.hidden
     && hasFeature(state.root, 'Tooltips') && state.stage.getClientRects().length > 0
-    && (!state.paintChanged || tooltipReadoutAvailable(state.node, state.readoutEvent));
+    && (!state.paintChanged || tooltipReadoutAvailable(state.node, state.readoutEvent)) && tooltipSourceInView(state);
   const queueTooltipPositionRefresh = (invalidation) => {
     // Native geometry events can change clipping or responsive paint without a DOM attribute mutation.
     if (invalidation) for (const state of activeTooltipPositions) state.paintChanged = true;
@@ -1996,6 +2035,9 @@ body {
       if (tooltipPositionTrees.has(tree)) continue;
       tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
         attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
+      // Native geometry events do not cross a shadow boundary. Own them alongside the tree's observer.
+      tree.addEventListener('scroll', queueTooltipPositionRefresh, true);
+      tree.addEventListener('transitionend', queueTooltipPositionRefresh, true);
       tooltipPositionTrees.add(tree);
     }
   };
@@ -2005,8 +2047,6 @@ body {
     if (!tooltipPositionObserver) {
       // Shared listeners exist only while a readout is visible, including pointer and pinned readouts.
       window.addEventListener('resize', queueTooltipPositionRefresh);
-      document.addEventListener('scroll', queueTooltipPositionRefresh, true);
-      document.addEventListener('transitionend', queueTooltipPositionRefresh, true);
       tooltipPositionObserver = new MutationObserver(checkTooltipPositionMutations);
       if (typeof ResizeObserver !== 'undefined') tooltipPositionResize = new ResizeObserver(queueTooltipPositionRefresh);
     }
