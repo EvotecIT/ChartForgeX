@@ -247,8 +247,8 @@ public sealed partial class SvgColorVariables {
         paint = string.Empty;
         if (!TryVariable(color, role, out var variable)) return false;
         var literal = variable.Color.A == 255 ? variable.Color.ToHex() : variable.Color.ToHexRgba();
-        paint = "var(" + variable.Name + ", " + literal + ")";
-        if (variable.Color.A != 255) paint = "rgb(from " + paint + " r g b / 1)";
+        // The same exported SVG can later receive a translucent value for an initially opaque variable.
+        paint = "rgb(from var(" + variable.Name + ", " + literal + ") r g b / 1)";
         return true;
     }
 

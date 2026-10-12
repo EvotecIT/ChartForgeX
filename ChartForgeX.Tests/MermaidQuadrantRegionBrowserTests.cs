@@ -11,11 +11,13 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidQuadrantRegionBrowserTests {
     [Theory]
-    [InlineData(360)]
-    [InlineData(800)]
-    public async Task TranslucentPaletteCaptionTracksHostThemeWithoutRerendering(int width) {
+    [InlineData(360, 128)]
+    [InlineData(360, 255)]
+    [InlineData(800, 128)]
+    [InlineData(800, 255)]
+    public async Task TranslucentPaletteCaptionTracksHostThemeWithoutRerendering(int width, int initialAlpha) {
         if (!Enabled) return;
-        var color = ChartColor.FromRgba(224, 32, 48, 128);
+        var color = ChartColor.FromRgba(224, 32, 48, (byte)initialAlpha);
         var chart = new MermaidParser().ParseQuadrant("quadrantChart\nquadrant-1 Plan\n").Document!
             .ToChart(new MermaidQuadrantRenderOptions { Width = width, Height = 440 });
         chart.WithTheme(ChartTheme.GraphiteLight().WithPalette(new[] { color }));
@@ -39,8 +41,8 @@ public sealed class MermaidQuadrantRegionBrowserTests {
             var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
             if (!string.IsNullOrWhiteSpace(capture)) {
                 Directory.CreateDirectory(capture);
-                await File.WriteAllTextAsync(Path.Combine(capture, $"quadrant-translucent-host-{width}-{dark}.html"), await session.Page.ContentAsync());
-                await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, $"quadrant-translucent-host-{width}-{dark}.png") });
+                await File.WriteAllTextAsync(Path.Combine(capture, $"quadrant-translucent-host-{width}-{initialAlpha}-{dark}.html"), await session.Page.ContentAsync());
+                await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, $"quadrant-translucent-host-{width}-{initialAlpha}-{dark}.png") });
             }
             var ink = ChartForgeX.Rendering.ChartColorMath.AccessibleTextOnBackground(expected);
             Assert.Equal($"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").EvaluateAsync<string>("node => getComputedStyle(node).fill"));

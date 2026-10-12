@@ -71,7 +71,7 @@ public sealed class SvgColorVariablesTests {
         Assert.Equal(literal, SvgPaint.Resolve(literal, variables, keepLiterals: true));
         // A blend of a token and a derived colour mixes the property; without variables it is the blended literal.
         var mix = SvgPaint.Mix(ChartColor.FromHex("#3F85DA"), ChartColor.White, null, blue, SvgColorRole.Series, 0.9).Value!;
-        Assert.Equal("color-mix(in srgb, #FFFFFF, var(--series-1, #2A78D6) 90%)", SvgPaint.Resolve(mix, variables));
+        Assert.Equal("color-mix(in srgb, #FFFFFF, rgb(from var(--series-1, #2A78D6) r g b / 1) 90%)", SvgPaint.Resolve(mix, variables));
         Assert.Equal("#3F85DA", SvgPaint.Resolve(mix, null));
         // A blend of colours nothing maps stays a protected literal.
         Assert.Equal("#808080", SvgPaint.Resolve(SvgPaint.Mix(ChartColor.FromHex("#808080"), ChartColor.Black, null, ChartColor.White, null, 0.5).Value!, variables));

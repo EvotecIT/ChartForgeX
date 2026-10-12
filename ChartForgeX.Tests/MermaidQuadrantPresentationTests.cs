@@ -73,9 +73,11 @@ public sealed class MermaidQuadrantPresentationTests {
         Assert.Equal("Host-authored description", chart.Prepare(VisualExportRequest.ForChart(chart).Context).Accessibility.Description);
     }
 
-    [Fact]
-    public void TranslucentHostPaletteRetainsCaptionPaintAndContrastBindings() {
-        var color = ChartColor.FromRgba(224, 32, 48, 128);
+    [Theory]
+    [InlineData(128)]
+    [InlineData(255)]
+    public void TranslucentHostPaletteRetainsCaptionPaintAndContrastBindings(int initialAlpha) {
+        var color = ChartColor.FromRgba(224, 32, 48, (byte)initialAlpha);
         var chart = new MermaidParser().ParseQuadrant(Source).Document!.ToChart();
         chart.WithTheme(ChartTheme.GraphiteLight().WithPalette(new[] { color }));
         var context = VisualExportRequest.ForChart(chart).Context;
