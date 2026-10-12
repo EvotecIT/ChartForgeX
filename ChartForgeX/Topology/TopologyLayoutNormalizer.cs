@@ -217,7 +217,7 @@ internal static class TopologyLayoutNormalizer {
                 var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement, options.ResolvedIconLabelFontSize);
                 var labelCenter = CenterX(node);
                 var labelY = IconLabelPlateY(node);
-                bounds = bounds.Include(labelCenter - labelWidth / 2, labelY, labelCenter + labelWidth / 2, labelY + IconLabelPlateHeight(options.TextMeasurement, options.ResolvedIconLabelFontSize));
+                bounds = bounds.Include(labelCenter - labelWidth / 2, labelY, labelCenter + labelWidth / 2, labelY + IconLabelPlateHeight(node, options.TextMeasurement, options.ResolvedIconLabelFontSize));
             }
 
             return bounds;

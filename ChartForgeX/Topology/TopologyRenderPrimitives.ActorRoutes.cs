@@ -40,7 +40,7 @@ internal static partial class TopologyRenderPrimitives {
                 if (!options.IncludeIconLabels) return new ChartRect(node.X, node.Y, node.Width, 0);
                 var width = IconLabelPlateWidth(node, chart.TextMeasurement, options.ResolvedIconLabelFontSize);
                 return new ChartRect(CenterX(node) - width / 2, IconLabelPlateY(node), width,
-                    IconLabelPlateHeight(chart.TextMeasurement, options.ResolvedIconLabelFontSize));
+                    IconLabelPlateHeight(node, chart.TextMeasurement, options.ResolvedIconLabelFontSize));
             }
             if (mode == TopologyNodeDisplayMode.Tile) {
                 var caption = TopologyNodeFootprint.RenderedCaption(node, options, chart.TextMeasurement);

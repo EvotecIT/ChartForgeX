@@ -103,8 +103,8 @@ internal static partial class VisualSceneRasterRenderer {
                 var boldOffset = prepared.Face.SynthesizeBold ? RgbaCanvas.EmphasisOffset(prepared.Size) : 0;
                 if (prepared.Face.Font != null) prepared.Face.Font.DrawGlyphs(canvas, node.LineLeft(line), y, line.Glyphs,
                     node.Color, prepared.Size, prepared.Face.SynthesizeItalic, boldOffset);
-                else canvas.DrawTextTiny(node.LineLeft(line), y, line.Text, node.Color,
-                    VisualSceneTextFace.FallbackScale(prepared.Size), prepared.Face.SynthesizeItalic, boldOffset);
+                else canvas.DrawBitmapText(node.LineLeft(line), y, line.Text, node.Color,
+                    prepared.Size, prepared.Face.SynthesizeItalic, boldOffset);
             }
         } finally { canvas.TextHinting = oldHinting; }
     }

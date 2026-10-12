@@ -3,8 +3,7 @@ using System;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartTextFitting {
-    // The native fallback has discrete advances, so evaluate candidates instead
-    // of extrapolating from a one-pixel probe.
+    // Evaluate candidates with the selected face's measured advances.
     internal static double FitFontSize(double minimum, double preferred, Func<double, bool> fits) {
         if (fits(preferred)) return preferred;
         var upper = preferred;

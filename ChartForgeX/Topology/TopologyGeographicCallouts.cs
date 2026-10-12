@@ -302,7 +302,7 @@ internal static class TopologyGeographicCallouts {
                 var labelWidth = hasIconLabel ? IconLabelPlateWidth(node, options.TextMeasurement, options.ResolvedIconLabelFontSize) : node.Width;
                 var centerX = node.X + node.Width / 2;
                 if (!hasIconLabel) return FromRect(centerX - labelWidth / 2 - 8, node.Y - 8, labelWidth + 16, node.Height + 16);
-                var labelBottom = IconLabelPlateY(node) + IconLabelPlateHeight(options.TextMeasurement, options.ResolvedIconLabelFontSize);
+                var labelBottom = IconLabelPlateY(node) + IconLabelPlateHeight(node, options.TextMeasurement, options.ResolvedIconLabelFontSize);
                 return FromRect(centerX - labelWidth / 2 - 8, node.Y - 8, labelWidth + 16, labelBottom - node.Y + 8);
             }
 
