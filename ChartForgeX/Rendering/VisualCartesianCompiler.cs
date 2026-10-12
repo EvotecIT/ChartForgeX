@@ -84,6 +84,8 @@ internal static partial class VisualCartesianCompiler {
         var range = ChartRange.FromChart(chart, coordinates, stacks);
         var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range, stacks) : null;
+        var dataRange = range.Clone();
+        var secondaryDataRange = secondaryRange?.Clone();
         categoryLabels ??= new ChartAxisValueFormatter.Cache();
         var axisLabels = new AxisLabelCache(categoryLabels);
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
@@ -125,12 +127,13 @@ internal static partial class VisualCartesianCompiler {
             ? ResolveVerticalTotals(chart, context, builder, colors, stacks) : null;
         if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(chart, plot, horizontalTotals, context.Theme.Spacing);
         if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(chart, plot, verticalTotals, context.Theme.Spacing);
-        // Axis measurement and total lanes can change the final radius-to-plot ratio.
-        if (ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
-            if (!horizontal) {
-                axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
-                if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-            }
+        // Refit from the original data bounds: a guide may no longer fit after total lanes.
+        range = dataRange;
+        secondaryRange = secondaryDataRange;
+        ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale);
+        if (!horizontal) {
+            axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
+            if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
         }
         // Capture the final mapping extent after every measured axis and total lane.
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
