@@ -8,15 +8,16 @@ using ChartForgeX.VisualArtifacts;
 // The gallery includes these licensed font fixtures beside the outputs.
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
-var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels(false);
-chart.AddLine("Observed", new ChartPoint[] { new ChartPoint(0, 88), new ChartPoint(1, 44), new ChartPoint(2, 34), new ChartPoint(3, 56), new ChartPoint(4, 46), new ChartPoint(5, 64), new ChartPoint(6, 42, true), new ChartPoint(7, 58), new ChartPoint(8, 50), new ChartPoint(9, 38), new ChartPoint(10, 82) });
+var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels();
+chart.AddLine("Observed", new ChartPoint[] { new ChartPoint(0, 88), new ChartPoint(1.99, 44), new ChartPoint(2, 34), new ChartPoint(3, 56), new ChartPoint(4, 46), new ChartPoint(5, 64), new ChartPoint(6, 42, true), new ChartPoint(7, 58), new ChartPoint(8, 50), new ChartPoint(8.01, 38), new ChartPoint(10, 82) });
 chart.Series[0].WithMarkerRadius(3);
 chart.Options.XAxis.TickCount = 4;
 chart.Options.YAxis.TickCount = 4;
-// Preparation projects X 2–8. All authored points still determine the Y scales.
+// Only observations inside X 2–8 request labels; boundary observations remain eligible.
+// Authored observations at X 1.99 and 8.01 retain their source facts; all points determine the Y scales.
 var viewport = new ChartXViewport(2, 8);
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Dark,
-    new VisualFrame("Requests, X 2\u20138", "Full-data Y range; an authored gap", showLegend: false), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("Requests, X 2\u20138", "Full-data Y; gap at 6; labels in X 2\u20138", showLegend: false), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = chart.Prepare(context, viewport);
 System.IO.File.WriteAllText("visual.svg", prepared.ToSvg("family-line-compact-x-viewport-dark"));
 System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
