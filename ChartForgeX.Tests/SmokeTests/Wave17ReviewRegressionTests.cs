@@ -48,7 +48,14 @@ internal static partial class SmokeTests {
             var resolved = envelope.Nodes.Single(item => item.Id == node.Id);
             node.X = resolved.X!.Value; node.Y = resolved.Y!.Value; node.Width = resolved.Width!.Value; node.Height = resolved.Height!.Value;
         }
-        options.TextMeasurement = new ChartForgeX.Typography.TextMeasurementContext(ChartForgeX.Rendering.VisualExportRequest.ForTopology(chart, options).Context.Font, options.TextMeasurementMode);
+        var endpointContext = ChartForgeX.Rendering.VisualExportRequest.ForTopology(chart, options).Context;
+        options.TextMeasurement = new ChartForgeX.Typography.TextMeasurementContext(endpointContext.Font, options.TextMeasurementMode);
+        var endpointFace = new ChartForgeX.Rendering.VisualSceneTextFace(endpointContext.Font, 600);
+        options.ResolvedEndpointLabelMetrics = text => {
+            var size = endpointContext.Theme.Typography.DataLabelSize * .8;
+            var metrics = endpointFace.Prepare(text, size).Metrics;
+            return (size, metrics.Width + 6, metrics.Height + 6);
+        };
         var edge = resolvedChart.Edges.Single();
         var rendered = envelope.Edges.Single().ResolvedRoute.Select(point => new ChartForgeX.Primitives.ChartPoint(point.X, point.Y)).ToArray();
         var expectedSource = TopologyRenderPrimitives.EdgeEndpointLabelPoint(resolvedChart, options, rendered[0], rendered[1], edge.SourceLabel!);

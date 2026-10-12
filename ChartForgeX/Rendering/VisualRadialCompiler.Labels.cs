@@ -35,9 +35,26 @@ internal static partial class VisualRadialCompiler {
             return;
         }
         var maxWidth = Math.Min(radius * 0.9, Math.Max(0, Math.Min(x - plot.Left, plot.Right - x) * 2));
-        var fitted = Fit(text, style, maxWidth, builder);
         // A label must fit the angular width of its slice instead of overlapping a neighbouring value.
         var angularWidth = 2 * labelRadius * Math.Sin(Math.Min(Math.PI / 2, slice.Value / total * Math.PI));
+        var oversized = style.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize;
+        bool FitsSlice(TextMetrics metrics) {
+            var dx = x - sx; var dy = y - sy;
+            var farX = Math.Abs(dx) + metrics.Width / 2; var farY = Math.Abs(dy) + metrics.Height / 2;
+            var nearX = Math.Max(0, Math.Abs(dx) - metrics.Width / 2); var nearY = Math.Max(0, Math.Abs(dy) - metrics.Height / 2);
+            if (farX * farX + farY * farY > radius * radius || nearX * nearX + nearY * nearY < inner * inner) return false;
+            for (var horizontal = -1; horizontal <= 1; horizontal += 2)
+                for (var vertical = -1; vertical <= 1; vertical += 2) {
+                    var delta = Math.Atan2(dy + vertical * metrics.Height / 2, dx + horizontal * metrics.Width / 2) - angle;
+                    delta = (delta + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+                    if (Math.Abs(delta) > slice.Value / total * Math.PI) return false;
+                }
+            return true;
+        }
+        style = FitLabelStyle(builder, text, style, Math.Min(maxWidth, angularWidth),
+            Math.Min(radius * .5, Math.Max(0, Math.Min(y - plot.Top, plot.Bottom - y) * 2)), FitsSlice);
+        var fitted = Fit(text, style, maxWidth, builder);
+        if (oversized && !FitsSlice(builder.MeasureText(fitted, style))) return;
         if (builder.MeasureText(fitted, style).Width > angularWidth) return;
         if (fitted.Length == 0) return;
         style.Alignment = TextAlignment.Center;
@@ -56,6 +73,8 @@ internal static partial class VisualRadialCompiler {
         var top = above ? plot.Top : Math.Min(plot.Bottom, cy + extent + spacing);
         var bottom = above ? Math.Max(plot.Top, cy - extent - spacing) : plot.Bottom;
         var band = new ChartRect(plot.Left, top, plot.Width, bottom - top);
+        foreach (var label in labels) label.Style = FitLabelStyle(builder, label.Text, label.Style,
+            Math.Max(0, band.Width / labels.Count - spacing), band.Height);
         // Angular anchors may coincide. Resolve them together with backend measurements, outside every exploded slice.
         var metrics = labels.Select(label => builder.MeasureText(label.Text, label.Style)).ToArray();
         var step = Math.Max(1, Math.Min(band.Width / Math.Max(1, labels.Count), metrics.Max(value => value.Width) + spacing));
@@ -153,6 +172,9 @@ internal static partial class VisualRadialCompiler {
         foreach (var left in new[] { true, false }) {
             var lane = labels.Where(label => label.Left == left).OrderBy(label => label.Y).ToList();
             if (lane.Count == 0) continue;
+            foreach (var label in lane) label.Style = FitLabelStyle(builder, label.Text, label.Style,
+                left ? label.X - plot.Left - 4 : plot.Right - label.X - 4,
+                Math.Max(0, plot.Height / lane.Count - context.Theme.Spacing));
             var gap = lane.Max(label => builder.MeasureText(label.Text, label.Style).Height) + context.Theme.Spacing;
             var capacity = Math.Max(0, (int)Math.Floor(plot.Height / gap));
             if (lane.Count > capacity) {
@@ -238,6 +260,14 @@ internal static partial class VisualRadialCompiler {
     private static string Fit(string text, TextStyle style, double width, VisualSceneBuilder builder) =>
         ChartTextFitting.TrimEnd(text, style.FontSize, Math.Max(0, width), (value, _) => builder.MeasureText(value, style).Width);
 
+    private static TextStyle FitLabelStyle(VisualSceneBuilder builder, string text, TextStyle style, double width, double height,
+        Func<TextMetrics, bool>? contains = null) =>
+        style.EffectiveFontSize <= VisualTextFitting.MaximumOrdinaryFontSize || width <= 0 || height <= 0 ? style :
+        VisualTextFitting.FitOversized(builder, style, height, fitted => {
+            var metrics = builder.MeasureText(text, fitted);
+            return metrics.Width <= width && metrics.Height <= height && (contains == null || contains(metrics));
+        });
+
     private sealed class RadialLabel {
         internal RadialLabel(RadialSlice slice, string text, double angle, double x, double y, double sx, double sy, bool left, TextStyle style) {
             Slice = slice; Text = text; Angle = angle; X = x; Y = y; SliceX = sx; SliceY = sy; Left = left; Style = style;
@@ -250,6 +280,6 @@ internal static partial class VisualRadialCompiler {
         internal double SliceX { get; }
         internal double SliceY { get; }
         internal bool Left { get; }
-        internal TextStyle Style { get; }
+        internal TextStyle Style { get; set; }
     }
 }
