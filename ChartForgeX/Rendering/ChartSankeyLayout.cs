@@ -46,6 +46,8 @@ internal static class ChartSankeyLayout {
                 ChartSankeyAlignment.Right => latest,
                 ChartSankeyAlignment.Center => (node.Layer + latest) / 2,
                 ChartSankeyAlignment.Justify when outgoing[node.Index].Count == 0 => maxLayer,
+                ChartSankeyAlignment.CenterSources when node.Incoming == 0 && outgoing[node.Index].Count > 0
+                    => outgoing[node.Index].Min(target => nodes[target].Layer) - 1,
                 _ => node.Layer
             };
         }
