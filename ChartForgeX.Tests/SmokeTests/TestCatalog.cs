@@ -569,6 +569,8 @@ internal static partial class SmokeTests {
         ("Markup topology CLI rejects malformed automation inputs", MarkupTopologyCliRejectsMalformedAutomationInputs),
         ("Markup topology CLI reports render validation errors", MarkupTopologyCliReportsRenderValidationErrors),
         ("Markup CLI validates and previews generic visual artifacts", MarkupCliValidatesAndPreviewsGenericVisualArtifacts),
+        ("Markup CLI applies an explicit Gantt date anchor across rendering commands", MarkupCliAppliesGanttDateAnchor),
+        ("Markup CLI rejects missing or invalid Gantt date context", MarkupCliRejectsInvalidGanttDateAnchor),
         ("Mermaid parser detects flowchart header and source spans", MermaidParserDetectsFlowchartHeaderAndSourceSpans),
         ("Mermaid parser parses flowchart nodes, edges, and labels", MermaidParserParsesFlowchartNodesEdgesAndLabels),
         ("Mermaid parser reports dangling flowchart edges", MermaidParserReportsDanglingFlowchartEdges),

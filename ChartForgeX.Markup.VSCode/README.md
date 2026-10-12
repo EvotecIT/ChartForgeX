@@ -64,6 +64,7 @@ Set `chartforgexMarkup.cliPath` to use a custom executable, DLL, or `.csproj`.
 ## Settings
 
 - `chartforgexMarkup.cliPath`: custom CLI executable, DLL, or project path.
+- `chartforgexMarkup.ganttDateAnchor`: calendar date such as `2028-01-01` for yearless Mermaid Gantt input. Validation, preview and export use this explicit context; changing it refreshes open documents.
 - `chartforgexMarkup.validateDebounceMs`: validation delay after edits.
 - `chartforgexMarkup.previewAutoRefresh`: refresh previews while editing.
 - `chartforgexMarkup.previewDebounceMs`: preview refresh delay.

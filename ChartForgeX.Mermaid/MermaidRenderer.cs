@@ -9,7 +9,7 @@ namespace ChartForgeX.Mermaid;
 public static class MermaidRenderer {
     /// <summary>Produces a reusable artifact and located diagnostics. Source with errors never produces an artifact.</summary>
     public static MermaidRenderResult Render(string source, MermaidRenderOptions? options = null) {
-        var parsed = new MermaidParser().Parse(source);
+        var parsed = new MermaidParser().Parse(source, options?.ParseOptions);
         var result = new MermaidRenderResult { Document = parsed.Document };
         result.Diagnostics.AddRange(parsed.Diagnostics);
         if (parsed.HasErrors || parsed.Document == null || parsed.Document.IsDiagnosticOnly) return result;

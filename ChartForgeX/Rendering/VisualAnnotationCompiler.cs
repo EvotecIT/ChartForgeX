@@ -39,9 +39,11 @@ internal static class VisualAnnotationCompiler {
             } else if (visible) {
                 var start = horizontal ? new ChartPoint(plot.Left, position) : new ChartPoint(position, plot.Top);
                 var end = horizontal ? new ChartPoint(plot.Right, position) : new ChartPoint(position, plot.Bottom);
+                var stroke = VisualReferenceStroke.Paint(annotation.StrokeStyle, color, colorRole, out var strokeColor);
                 builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(end.X, end.Y) }),
-                    stroke: color, strokeWidth: context.Theme.AxisStrokeWidth, role: "annotation-line", cap: VisualStrokeCap.Butt,
-                    dash: new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: VisualChartPaint.Stroke(color, colorRole));
+                    stroke: strokeColor, strokeWidth: annotation.StrokeStyle?.Width ?? context.Theme.AxisStrokeWidth, role: "annotation-line", cap: VisualStrokeCap.Butt,
+                    dash: annotation.StrokeStyle?.ResolveDash(new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap })
+                        ?? new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: stroke);
             }
             if (describeAnnotations) builder.AddRegion(new VisualSemanticRegion(id, "annotation", bounds, description));
             if (visible && annotation.ShowLabel && !string.IsNullOrEmpty(annotation.Label)) {
