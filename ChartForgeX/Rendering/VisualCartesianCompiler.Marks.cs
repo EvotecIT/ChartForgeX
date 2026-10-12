@@ -10,7 +10,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
-        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true) {
+        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true,
+        ChartXViewport? xViewport = null) {
         var series = chart.Series[index];
         var points = new List<ChartPoint>(series.Points.Count);
         var lower = new List<ChartPoint>(series.Points.Count);
@@ -78,6 +79,9 @@ internal static partial class VisualCartesianCompiler {
                 }
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
+            // Off-window observations keep their source group, but cannot compete for a visible label lane.
+            var sourceX = series.Points[pointIndex].X;
+            if (xViewport != null && (sourceX < xViewport.Minimum || sourceX > xViewport.Maximum)) continue;
             var fill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, pointIndex, pointColor, pointPaint) : ((ChartColor Color, SvgPaint Paint)?)null;
             AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
                 calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null,

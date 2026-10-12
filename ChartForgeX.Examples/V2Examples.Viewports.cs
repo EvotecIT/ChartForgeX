@@ -17,7 +17,7 @@ public static partial class V2Examples {
                     var id = "family-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                     var width = compact ? 360 : 800; var height = compact ? 360 : 440;
                     var title = steps ? "Reversed steps, X 2–8" : "Requests, X 2–8";
-                    var subtitle = compact ? "Full-data Y range; an authored gap" : "Full-data Y scales remain independent; an authored gap at sample 6";
+                    var subtitle = compact ? "Full-data Y; gap at 6; labels in X 2–8" : "Utilization labels within X 2–8; full-data Y scales; gap at sample 6";
                     var chart = CreateViewportChart(steps, compact);
                     var viewport = new ChartXViewport(2, 8);
                     var model = new ViewportExample(chart, viewport);
@@ -34,12 +34,15 @@ public static partial class V2Examples {
     }
 
     private static Chart CreateViewportChart(bool steps, bool compact) {
-        ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index, value, index == 6)).ToArray();
-        var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels(false);
+        // Just-outside observations retain their source facts without painting labels into the window.
+        ChartPoint[] Points(params double[] values) => values.Select((value, index) =>
+            new ChartPoint(index == 1 ? 1.99 : index == 9 ? 8.01 : index, value, index == 6)).ToArray();
+        var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels();
         var observed = Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 38, 82);
         if (steps) chart.AddStepLine("Observed", observed);
         else chart.AddLine("Observed", observed);
         if (!compact) {
+            chart.Series[0].WithDataLabels(false);
             var utilization = Points(96, 72, 48, 61, 55, 76, 49, 67, 59, 84, 100);
             if (steps) chart.AddStepLine("Utilization", utilization);
             else chart.AddLine("Utilization", utilization);
@@ -71,7 +74,7 @@ public static partial class V2Examples {
         source.Append("// The gallery includes these licensed font fixtures beside the outputs.\nFontRegistry.Register(")
             .Append(Literal(ProofFont)).Append(", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(")
             .Append(Literal(ProofFont)).Append(", \"fonts/Carlito-Bold.ttf\", 700);\n")
-            .Append("var chart = Chart.Create().WithXAxis(\"Sample\").WithYAxis(\"Requests\").WithXAxisBounds(0, 10).WithDataLabels(false);\n");
+            .Append("var chart = Chart.Create().WithXAxis(\"Sample\").WithYAxis(\"Requests\").WithXAxisBounds(0, 10).WithDataLabels();\n");
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             var points = string.Join(", ", series.Points.Select(point => "new ChartPoint(" + point.X.ToString(CultureInfo.InvariantCulture) + ", "
@@ -81,6 +84,8 @@ public static partial class V2Examples {
                 .Append("chart.Series[").Append(index).Append("].WithMarkerRadius(3);\n");
             if (series.Kind == ChartSeriesKind.StepLine)
                 source.Append("chart.Series[").Append(index).Append("].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);\n");
+            if (series.ShowDataLabels == false)
+                source.Append("chart.Series[").Append(index).Append("].WithDataLabels(false);\n");
             if (series.YAxis == ChartAxisSide.Secondary)
                 source.Append("chart.Series[").Append(index).Append("].UseSecondaryYAxis();\n");
         }
@@ -88,7 +93,8 @@ public static partial class V2Examples {
             source.Append("chart.WithSecondaryYAxis(\"Utilization (%)\");\nchart.Options.SecondaryYAxis.TickCount = 4;\n");
         if (chart.Options.XAxis.Reversed) source.Append("chart.Options.XAxis.WithReversal();\n");
         source.Append("chart.Options.XAxis.TickCount = 4;\nchart.Options.YAxis.TickCount = 4;\n")
-            .Append("// Preparation projects X 2–8. All authored points still determine the Y scales.\nvar viewport = new ChartXViewport(2, 8);\n")
+            .Append("// Only observations inside X 2–8 request labels; boundary observations remain eligible.\n")
+            .Append("// Authored observations at X 1.99 and 8.01 retain their source facts; all points determine the Y scales.\nvar viewport = new ChartXViewport(2, 8);\n")
             .Append("var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(").Append(width).Append(", ").Append(height)
             .Append(")), VisualTheme.Graphite(), VisualThemeMode.").Append(mode).Append(",\n    new VisualFrame(").Append(Literal(title)).Append(", ")
             .Append(Literal(subtitle)).Append(", showLegend: ").Append(legend ? "true" : "false").Append("), FontSpec.FromFamily(").Append(Literal(ProofFont)).Append("));\n")
