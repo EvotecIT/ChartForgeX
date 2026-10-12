@@ -41,12 +41,9 @@ internal sealed partial class VisualTopologyCompiler {
         }
     }
 
-    private bool ShouldFitGroupHeader(string? subtitle) {
-        var size = _context.Theme.Typography.DataLabelSize;
-        return size > VisualTextFitting.MaximumOrdinaryFontSize
-            || _builder.MeasureText("Ag", size * _scale, 600).LineHeight > 24 * _scale
-            || !string.IsNullOrWhiteSpace(subtitle) && _builder.MeasureText("Ag", size * .85 * _scale).LineHeight > 18 * _scale;
-    }
+    private bool ShouldFitHeaderLine(double size, double height, int weight = 400) =>
+        _context.Theme.Typography.DataLabelSize > VisualTextFitting.MaximumOrdinaryFontSize
+        || _builder.MeasureText("Ag", size * _scale, weight).LineHeight > height * _scale;
 
     private void BuildGroups() {
         if (_options.IncludeGroups) foreach (var group in _chart.Groups) {
@@ -69,9 +66,10 @@ internal sealed partial class VisualTopologyCompiler {
                     var symbol = group.Symbol ?? icon?.Symbol;
                     var reserve = string.IsNullOrWhiteSpace(symbol) && string.IsNullOrWhiteSpace(group.IconId) ? 0 : 28;
                     if (reserve > 0) BuildGlyph(new TopologyNode { IconId = group.IconId, Symbol = symbol, Kind = icon?.NodeKind ?? TopologyNodeKind.Hub, Color = authoredAccent, Status = group.Status }, group.X + 22, group.Y + 21, accent, .8, accentRole, artworkOpacity: HighlightFactor(active));
-                    var fitHeader = ShouldFitGroupHeader(group.Subtitle);
-                    Text(group.Label, Bounds(group.X + 12 + reserve, group.Y + 9, Math.Max(0, group.Width - 24 - reserve), 24), _context.Theme.Typography.DataLabelSize, Highlight(_colors.Foreground, active), 600, "topology-group-label", opacity: HighlightFactor(active), fitSingleLine: fitHeader);
-                    if (!string.IsNullOrWhiteSpace(group.Subtitle)) Text(group.Subtitle!, Bounds(group.X + 12 + reserve, group.Y + (fitHeader ? 33 : 31), Math.Max(0, group.Width - 24 - reserve), 18), _context.Theme.Typography.DataLabelSize * .85, Highlight(_colors.MutedForeground, active), 400, "topology-group-subtitle", paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)), fitSingleLine: fitHeader);
+                    var fitTitle = ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize, 24, 600);
+                    var fitSubtitle = ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize * .85, 18);
+                    Text(group.Label, Bounds(group.X + 12 + reserve, group.Y + 9, Math.Max(0, group.Width - 24 - reserve), 24), _context.Theme.Typography.DataLabelSize, Highlight(_colors.Foreground, active), 600, "topology-group-label", opacity: HighlightFactor(active), fitSingleLine: fitTitle);
+                    if (!string.IsNullOrWhiteSpace(group.Subtitle)) Text(group.Subtitle!, Bounds(group.X + 12 + reserve, group.Y + (fitTitle || fitSubtitle ? 33 : 31), Math.Max(0, group.Width - 24 - reserve), 18), _context.Theme.Typography.DataLabelSize * .85, Highlight(_colors.MutedForeground, active), 400, "topology-group-subtitle", paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)), fitSingleLine: fitSubtitle);
                     if (_options.IncludeGroupStatusDots) {
                         var status = Highlight(Status(group.Status), active);
                         using (PinnedState()) _builder.Ellipse(bounds.Right - 12 * _scale, bounds.Y + 16 * _scale, 4 * _scale, 4 * _scale, status, role: "topology-group-status", paint: new VisualScenePaintBinding(StatusPaint(group.Status, status, HighlightFactor(active))));
@@ -128,15 +126,14 @@ internal sealed partial class VisualTopologyCompiler {
                 paint: new VisualScenePaintBinding(stroke: GroupAccentPaint(callout.Group, leaderInk, active, leaderStyle.StrokeOpacity)));
             _builder.Rect(bounds, _colors.Surface, accent, _context.Theme.AxisStrokeWidth * _scale, _context.Theme.BarRadius * _scale, "topology-callout", paint: new VisualScenePaintBinding(CardPaint(_colors.Surface), GroupAccentPaint(callout.Group, accent, active)));
             BuildCalloutPreview(callout, accent, accentRole);
-            var fitText = ShouldFitGroupHeader(callout.Subtitle);
-            Text(callout.Label, Bounds(callout.X + 12, callout.Y + 8, callout.Width - 80, 24), _context.Theme.Typography.DataLabelSize, _colors.Foreground, 600, "topology-callout-title", fitSingleLine: fitText);
-            Text(callout.Subtitle, Bounds(callout.X + 12, callout.Y + 32, callout.Width - 80, 18), _context.Theme.Typography.DataLabelSize * .85, _colors.MutedForeground, 400, "topology-callout-subtitle", paint: MutedPaint(_colors.MutedForeground), fitSingleLine: fitText);
+            Text(callout.Label, Bounds(callout.X + 12, callout.Y + 8, callout.Width - 80, 24), _context.Theme.Typography.DataLabelSize, _colors.Foreground, 600, "topology-callout-title", fitSingleLine: ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize, 24, 600));
+            Text(callout.Subtitle, Bounds(callout.X + 12, callout.Y + 32, callout.Width - 80, 18), _context.Theme.Typography.DataLabelSize * .85, _colors.MutedForeground, 400, "topology-callout-subtitle", paint: MutedPaint(_colors.MutedForeground), fitSingleLine: ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize * .85, 18));
             var counts = new[] { callout.HealthyCount, callout.WarningCount, callout.CriticalCount, callout.UnknownCount + callout.DisabledCount };
             var statuses = new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown };
             for (var i = 0; i < counts.Length; i++) {
                 var b = Bounds(callout.X + 12 + i * 42, callout.Y + 58, 36, 22);
                 using (PinnedState()) _builder.Rect(b, ChartColorMath.WithOpacity(Status(statuses[i]), .1), Status(statuses[i]), _context.Theme.AxisStrokeWidth * _scale, b.Height / 2, "topology-callout-status", paint: new VisualScenePaintBinding(StatusPaint(statuses[i], ChartColorMath.WithOpacity(Status(statuses[i]), .1), .1), StatusPaint(statuses[i], Status(statuses[i]))));
-                Text(counts[i].ToString(System.Globalization.CultureInfo.InvariantCulture), b, _context.Theme.Typography.DataLabelSize * .8, _colors.Foreground, 400, "topology-callout-count", centered: true, fitSingleLine: fitText);
+                Text(counts[i].ToString(System.Globalization.CultureInfo.InvariantCulture), b, _context.Theme.Typography.DataLabelSize * .8, _colors.Foreground, 400, "topology-callout-count", centered: true, fitSingleLine: ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize * .8, 22));
             }
             _builder.AddRegion(new VisualSemanticRegion(callout.Group.Id + "-callout", "topology-callout", bounds, callout.Label));
         }
