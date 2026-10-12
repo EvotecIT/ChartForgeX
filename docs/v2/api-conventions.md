@@ -83,6 +83,8 @@ Prepared Cartesian point semantics retain the complete resolved display label, e
 
 Use `new ChartPlotRegion(paletteIndex, ...)` to bind a region to the active render theme's categorical palette. Indices are zero-based, wrap to the palette length, and cannot be negative. Both the fill and caption contrast resolve during preparation; SVG series color variables retain that binding. Literal-color regions keep their authored color. `ChartPlotRegion.Color` is nullable for palette-backed regions; inspect `PaletteIndex` to distinguish the two forms. Automatic accessible descriptions and `ChartDescriptionFacts.PlotRegionLabels` retain authored captions even when the chart has no points.
 
+Rebuild previously compiled callers of `ChartPlotRegion.Color` and the `ChartDescriptionFacts` constructor when upgrading: the nullable getter and the constructor's added optional argument change their binary signatures.
+
 Four regions express quadrants at any numeric pivot:
 
 ```csharp
