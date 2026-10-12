@@ -11,7 +11,7 @@ internal static partial class RasterStroker {
         var outline = new List<List<ChartPoint>>();
         if (!(width > 0) || double.IsInfinity(width)) return outline;
         if (!(miter >= 1) || double.IsInfinity(miter)) miter = 4;
-        double padding = width * Math.Max(1, miter);
+        double padding = DashPadding(width, miter);
         var dashPieces = 0;
         foreach (var path in paths) {
             if (path == null || path.Count == 0) continue;

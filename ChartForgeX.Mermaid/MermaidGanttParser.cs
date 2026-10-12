@@ -144,6 +144,15 @@ internal static partial class MermaidGanttParser {
             if (!string.IsNullOrWhiteSpace(chunks[first])) prefix.Add(chunks[first].Trim());
             first++;
         }
+        // An authored complete end date takes precedence over fallback parsing of its
+        // comma-separated pieces as an explicit start/end pair.
+        if (first < chunks.Length && chunks.Length - first <= maximumCommas + 1) {
+            var end = string.Join(",", chunks, first, chunks.Length - first).Trim();
+            if (MermaidGanttInputDateFormat.TryParseConfigured(end, document.DateFormat, out _)) {
+                prefix.Add(end);
+                return prefix;
+            }
+        }
         // Prefer complete configured dates over fallback suffixes that look like an optional ID.
         // Equal matches preserve the explicit-ID arrangement, including numeric IDs.
         List<string>? selected = null;
