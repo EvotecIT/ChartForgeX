@@ -25,7 +25,7 @@ internal static partial class SvgRasterRenderer {
         var objectPaint = new SvgRasterObjectPaint(SvgRasterGradientValues.Bounds(objectContours),matrix);
         var tiled = RasterStroker.ShouldTileDashes(local, style.StrokeDashArray, style.StrokeWidth, style.StrokeMiterLimit,
             clip.Left, clip.Top, clip.Left + clip.Width, clip.Top + clip.Height);
-        canvas.PaintStrokeTiles(tiled, (bounds, budget) => {
+        canvas.PaintStrokeTiles(tiled, RasterStroker.DashPadding(style.StrokeWidth, style.StrokeMiterLimit) * scale, (bounds, budget) => {
             var tileCorners = new List<List<ChartPoint>> { new List<ChartPoint> {
                 inverse.Transform(new ChartPoint(bounds.Left,bounds.Top)),inverse.Transform(new ChartPoint(bounds.Right,bounds.Top)),
                 inverse.Transform(new ChartPoint(bounds.Left,bounds.Bottom)),inverse.Transform(new ChartPoint(bounds.Right,bounds.Bottom)) } };

@@ -165,9 +165,11 @@ public sealed class RasterDashBoundsTests {
         Assert.Contains(canvas.Pixels, value => value > 0);
     }
 
-    [Fact]
-    public void SvgThickDashesUseTheSamePaintedGeometryBudget() {
-        var result = SvgRasterizer.Rasterize("<svg xmlns='http://www.w3.org/2000/svg' width='30000' height='4'><path d='M0 2 H30000' fill='none' stroke='#000' stroke-width='1024' stroke-dasharray='.25 .25'/></svg>");
+    [Theory]
+    [InlineData(30000)]
+    [InlineData(1000000)]
+    public void SvgThickDashesUseTheSamePaintedGeometryBudget(int width) {
+        var result = SvgRasterizer.Rasterize("<svg xmlns='http://www.w3.org/2000/svg' width='" + width + "' height='4'><path d='M0 2 H" + width + "' fill='none' stroke='#000' stroke-width='1024' stroke-dasharray='.25 .25'/></svg>");
         Assert.Empty(result.Diagnostics);
         Assert.Contains(result.Image.Pixels, value => value > 0);
     }

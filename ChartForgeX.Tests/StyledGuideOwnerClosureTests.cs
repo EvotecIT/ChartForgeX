@@ -7,13 +7,15 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class StyledGuideOwnerClosureTests {
-    [Fact]
-    public void QuarterPixelDashesRenderAtTheMaximumAcceptedChartWidth() {
+    [Theory]
+    [InlineData(1)]
+    [InlineData(1024)]
+    public void QuarterPixelDashesRenderAtTheMaximumAcceptedChartWidth(double strokeWidth) {
         var chart = Chart.Create().WithSize(1000000, 16).WithHeader(false).WithLegend(false)
             .AddLine("Values", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) }).AddHorizontalLine(1.5, "");
         chart.Options.ShowAxes = false;
         chart.Options.ShowGrid = false;
-        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 1, dash: new[] { .25, .25 });
+        chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: strokeWidth, dash: new[] { .25, .25 });
         Assert.Contains("stroke-dasharray=\"0.25 0.25\"", chart.ToSvg());
         Assert.True(chart.ToPng().Length > 64);
     }
