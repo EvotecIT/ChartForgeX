@@ -64,7 +64,10 @@ public sealed class InteractiveChordBrowserTests {
             }
         }
         var zero = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=zero-transfer]");
-        await zero.FocusAsync(); await page.Keyboard.PressAsync("Space"); // Unpin after the full-page capture before checking native link hover.
+        Assert.True(await page.Locator(".cfx-tooltip").IsVisibleAsync());
+        Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
+        await zero.FocusAsync(); await page.Keyboard.PressAsync("Space"); // Unpin before checking native link hover.
+        Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
         await zero.EvaluateAsync("node => node.blur()");
         foreach (var id in new[] { "north-standard", "north-priority", "support-internal" }) {
             var link = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id='" + id + "']");
@@ -258,6 +261,7 @@ public sealed class InteractiveChordBrowserTests {
             await File.WriteAllTextAsync(Path.Combine(directory, name + "-native.svg"), prepared.ToSvg());
             await File.WriteAllTextAsync(Path.Combine(directory, name + ".html"), html);
         }
-        await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png"), FullPage = true });
+        // Full-page capture can resize Chromium and dismiss a correctly clipped pin.
+        await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png"), FullPage = false });
     }
 }

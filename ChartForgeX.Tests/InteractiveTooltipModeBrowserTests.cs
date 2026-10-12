@@ -119,7 +119,9 @@ public sealed class InteractiveTooltipModeBrowserTests {
         Assert.Equal("0", await latency.GetAttributeAsync("data-cfx-tooltip-series"));
         Assert.Equal("3", await latency.GetAttributeAsync("data-cfx-tooltip-point"));
         Assert.Equal(chart.Series[0].SourcePointIndices[3].ToString(CultureInfo.InvariantCulture), await latency.GetAttributeAsync("data-cfx-tooltip-source-point"));
-        Assert.Equal(await page.Locator(Point(0, 3)).GetAttributeAsync("data-cfx-y"), await latency.Locator("+ dd").InnerTextAsync());
+        var rawLatency = await page.Locator(Point(0, 3)).GetAttributeAsync("data-cfx-y");
+        Assert.Equal(chart.Series[0].Points[3].Y, double.Parse(rawLatency!, CultureInfo.InvariantCulture));
+        Assert.Equal(chart.Series[0].Points[3].Y.ToString("R", CultureInfo.InvariantCulture), await latency.Locator("+ dd").InnerTextAsync());
         Assert.Equal(0, await page.Locator(".cfx-tooltip img").CountAsync());
         AssertNoConsoleErrors(session);
     }

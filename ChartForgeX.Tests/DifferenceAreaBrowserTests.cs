@@ -11,17 +11,21 @@ namespace ChartForgeX.Tests;
 /// <summary>Checks paired native readouts, logical source selection and shared-X rows through the HTML adapter.</summary>
 public sealed class DifferenceAreaBrowserTests {
     [Theory]
-    [InlineData(false, false, HtmlChartTooltipMode.Single)]
-    [InlineData(true, false, HtmlChartTooltipMode.Single)]
-    [InlineData(false, true, HtmlChartTooltipMode.Single)]
-    [InlineData(true, true, HtmlChartTooltipMode.Single)]
-    [InlineData(false, false, HtmlChartTooltipMode.SharedX)]
-    [InlineData(true, false, HtmlChartTooltipMode.SharedX)]
-    [InlineData(false, true, HtmlChartTooltipMode.SharedX)]
-    [InlineData(true, true, HtmlChartTooltipMode.SharedX)]
-    public async Task NamedCrossingPairsKeepBothReadoutsAndOneSelectionIdentity(bool compact, bool dark, HtmlChartTooltipMode mode) {
+    [InlineData(false, false, HtmlChartTooltipMode.Single, false)]
+    [InlineData(true, false, HtmlChartTooltipMode.Single, false)]
+    [InlineData(false, true, HtmlChartTooltipMode.Single, false)]
+    [InlineData(true, true, HtmlChartTooltipMode.Single, false)]
+    [InlineData(false, false, HtmlChartTooltipMode.SharedX, false)]
+    [InlineData(true, false, HtmlChartTooltipMode.SharedX, false)]
+    [InlineData(false, true, HtmlChartTooltipMode.SharedX, false)]
+    [InlineData(true, true, HtmlChartTooltipMode.SharedX, false)]
+    [InlineData(false, false, HtmlChartTooltipMode.Single, true)]
+    [InlineData(true, true, HtmlChartTooltipMode.Single, true)]
+    [InlineData(false, true, HtmlChartTooltipMode.SharedX, true)]
+    [InlineData(true, false, HtmlChartTooltipMode.SharedX, true)]
+    public async Task NamedPairsKeepBothReadoutsAndOneSelectionIdentity(bool compact, bool dark, HtmlChartTooltipMode mode, bool stepped) {
         if (!Enabled) return;
-        var chart = V2GalleryModels.Create(ChartSeriesKind.DifferenceArea)
+        var chart = V2GalleryModels.Create(ChartSeriesKind.DifferenceArea, stepped ? "step-middle" : "wide")
             .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend().WithTitle("Actual and forecast")
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
         chart.Series[0].WithInteractionKey("comparison");
@@ -29,14 +33,15 @@ public sealed class DifferenceAreaBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode),
             compact ? 390 : 880, compact ? 560 : 600);
         var page = session.Page; var point = page.Locator(Point(0, 2));
+        var first = stepped ? "78" : "48"; var second = stepped ? "62" : "60";
         await point.Locator("[data-cfx-role='difference-marker']").First.HoverAsync();
         var rows = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync();
         Assert.Contains(rows, row => row.Contains("Actual", StringComparison.Ordinal));
         Assert.Contains(rows, row => row.Contains("Forecast", StringComparison.Ordinal));
-        Assert.Contains("48", await TooltipTextAsync(page)); Assert.Contains("60", await TooltipTextAsync(page));
+        Assert.Contains(first, await TooltipTextAsync(page)); Assert.Contains(second, await TooltipTextAsync(page));
         if (mode == HtmlChartTooltipMode.SharedX) Assert.Contains("Reference", await TooltipTextAsync(page));
-        Assert.Equal("48", await point.GetAttributeAsync("data-cfx-first"));
-        Assert.Equal("60", await point.GetAttributeAsync("data-cfx-second"));
+        Assert.Equal(first, await point.GetAttributeAsync("data-cfx-first"));
+        Assert.Equal(second, await point.GetAttributeAsync("data-cfx-second"));
         await point.FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await point.GetAttributeAsync("aria-selected"));
         Assert.Equal("comparison:2", await point.GetAttributeAsync("data-cfx-target-id"));
@@ -45,7 +50,7 @@ public sealed class DifferenceAreaBrowserTests {
         if (!string.IsNullOrWhiteSpace(capture)) {
             Directory.CreateDirectory(capture);
             await page.ScreenshotAsync(new PageScreenshotOptions {
-                Path = Path.Combine(capture, $"difference-area-{(compact ? "compact" : "wide")}-{(dark ? "dark" : "light")}-{mode}.png")
+                Path = Path.Combine(capture, $"difference-area-{(stepped ? "step" : "linear")}-{(compact ? "compact" : "wide")}-{(dark ? "dark" : "light")}-{mode}.png")
             });
         }
         await page.Keyboard.PressAsync("ArrowRight");
@@ -54,8 +59,8 @@ public sealed class DifferenceAreaBrowserTests {
         Assert.Equal("true", await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
         Assert.True(await point.EvaluateAsync<bool>("node => !!node.closest('.cfx-series-muted')"));
         Assert.Equal(0, await page.Locator("[data-cfx-role='point'][data-cfx-series='0'][tabindex='0']").CountAsync());
-        Assert.Equal("48", await point.GetAttributeAsync("data-cfx-first"));
-        Assert.Equal("60", await point.GetAttributeAsync("data-cfx-second"));
+        Assert.Equal(first, await point.GetAttributeAsync("data-cfx-first"));
+        Assert.Equal(second, await point.GetAttributeAsync("data-cfx-second"));
         await page.Locator("[data-cfx-reset]").ClickAsync();
         Assert.Equal(0, await page.Locator("[data-cfx-point][aria-selected='true']").CountAsync());
         Assert.Equal(0, await page.Locator(".cfx-series-muted").CountAsync());
