@@ -22,7 +22,9 @@ internal static partial class MermaidGanttInputDateFormat {
     };
     private static readonly string[] CompleteTimeSuffixes = {
         " H:mm", " H:mm:ss", " H:mm:ss.FFFFFFF", " h:mm tt", " h:mm:ss tt", " h:mm:ss.FFFFFFF tt",
-        " H:mmK", " H:mm:ss.FFFFFFFK", " H:mm zzz", " H:mm:ss.FFFFFFF zzz"
+        " H:mmK", " H:mm:ss.FFFFFFFK", " H:mm zzz", " H:mm:ss.FFFFFFF zzz",
+        " h:mm ttK", " h:mm:ss ttK", " h:mm:ss.FFFFFFF ttK",
+        " h:mm tt zzz", " h:mm:ss tt zzz", " h:mm:ss.FFFFFFF tt zzz"
     };
 
     internal static bool TryParseCompleteFallback(string input, out DateTime value) {

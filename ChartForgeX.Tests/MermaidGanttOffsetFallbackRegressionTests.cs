@@ -25,6 +25,10 @@ public sealed class MermaidGanttOffsetFallbackRegressionTests {
     [InlineData("2026-01-02 0:30:12-12:00", "2026-01-02T12:30:12.0000000")]
     [InlineData("2026-01-02 00:30:00Z", "2026-01-02T00:30:00.0000000")]
     [InlineData("2026-01-02T0:30:12.1234567+14:00", "2026-01-01T10:30:12.1234567")]
+    [InlineData("Jan 2, 2026 1:30 PM +02:00", "2026-01-02T11:30:00.0000000")]
+    [InlineData("January 2 2026 1:30:12.1234567 PM +14:00", "2026-01-01T23:30:12.1234567")]
+    [InlineData("1/2/2026 1:30 AM -12:00", "2026-01-02T13:30:00.0000000")]
+    [InlineData("2 Jan 2026 1:30:12 PMZ", "2026-01-02T13:30:12.0000000")]
     public void CompleteOffsetFallbackRetainsSecondsFractionAndUtcMeaning(string input, string expected) {
         var result = new MermaidParser().ParseGantt("gantt\ndateFormat MM-DD\nTask :task," + input + ",1d");
         Assert.Empty(result.Diagnostics);
