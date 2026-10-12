@@ -19,12 +19,16 @@ public static class MermaidGanttRendering {
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(ResolveSubtitle(document, options))
-            .WithSize(options.Width, options.Height)
-            .WithXAxisValueFormatter(value => FormatAxisValue(value, document));
-        if (options.Today.HasValue) chart.WithGanttToday(options.Today.Value);
+            .WithSize(options.Width, options.Height);
+        if (!string.IsNullOrWhiteSpace(document.AxisFormat))
+            chart.WithXAxisValueFormatter(value => FormatAxisValue(value, document, null, chart.Options.XAxis.TimeZone));
+        chart.Options.XAxis.TimeTickLabelFormatter = (value, effectiveInterval) => FormatAxisValue(value, document, effectiveInterval, chart.Options.XAxis.TimeZone);
+        if (options.Today.HasValue && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase)) chart.WithGanttToday(options.Today.Value);
+        chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
         foreach (var task in document.Tasks) {
             var name = string.IsNullOrWhiteSpace(task.Section) ? task.Title : task.Section + " / " + task.Title;
-            if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2));
+            if (task.IsVerticalMarker) chart.AddGanttMarker(name, task.Start, task.End);
+            else if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2));
             else chart.AddGanttTask(name, task.Start, task.RenderEnd, task.Progress);
         }
         var ids = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -60,11 +64,15 @@ public static class MermaidGanttRendering {
         artifact.Metadata["mermaid.tasks"] = document.Tasks.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.sections"] = document.Sections.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.milestones"] = MilestoneCount(document).ToString(CultureInfo.InvariantCulture);
+        var verticalMarkers = 0;
+        foreach (var task in document.Tasks) if (task.IsVerticalMarker) verticalMarkers++;
+        artifact.Metadata["mermaid.verticalMarkers"] = verticalMarkers.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.dependencies"] = DependencyCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.untilReferences"] = UntilReferenceCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.dateFormat"] = document.DateFormat;
         if (!string.IsNullOrWhiteSpace(document.AxisFormat)) artifact.Metadata["mermaid.axisFormat"] = document.AxisFormat!;
         if (!string.IsNullOrWhiteSpace(document.TickInterval)) artifact.Metadata["mermaid.tickInterval"] = document.TickInterval!;
+        artifact.Metadata["mermaid.weekday"] = document.Weekday.ToString().ToLowerInvariant();
         if (!string.IsNullOrWhiteSpace(document.Excludes)) artifact.Metadata["mermaid.excludes"] = document.Excludes!;
         if (!string.IsNullOrWhiteSpace(document.TodayMarker)) artifact.Metadata["mermaid.todayMarker"] = document.TodayMarker!;
         artifact.Metadata["render.model"] = nameof(Chart);
@@ -94,12 +102,22 @@ public static class MermaidGanttRendering {
         return document.Header;
     }
 
-    private static string FormatAxisValue(double value, MermaidGanttDocument document) {
+    private static string FormatAxisValue(double value, MermaidGanttDocument document, ChartTimeTickUnit? effectiveInterval, TimeZoneInfo? displayZone) {
         try {
-            var format = string.IsNullOrWhiteSpace(document.AxisFormat) ? "%Y-%m-%d" : document.AxisFormat!;
-            return MermaidGanttAxisFormat.Format(DateTime.FromOADate(value), format);
+            var format = string.IsNullOrWhiteSpace(document.AxisFormat) ? DefaultAxisFormat(effectiveInterval) : document.AxisFormat!;
+            return MermaidGanttAxisFormat.Format(DateTime.FromOADate(value), format, displayZone);
         } catch (ArgumentException) {
             return value.ToString("0.##", CultureInfo.InvariantCulture);
+        }
+    }
+
+    private static string DefaultAxisFormat(ChartTimeTickUnit? effectiveInterval) {
+        switch (effectiveInterval) {
+            case ChartTimeTickUnit.Millisecond: return "%Y-%m-%d %H:%M:%S.%L";
+            case ChartTimeTickUnit.Second: return "%Y-%m-%d %H:%M:%S";
+            case ChartTimeTickUnit.Minute:
+            case ChartTimeTickUnit.Hour: return "%Y-%m-%d %H:%M";
+            default: return "%Y-%m-%d";
         }
     }
 
