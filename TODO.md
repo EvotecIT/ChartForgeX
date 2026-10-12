@@ -48,6 +48,8 @@ SVG and PNG charts share measured label placement, including data labels, target
 
 ## Interactivity
 
+Tooltip visibility and keyboard reveal use native painted source extents, accessible shadow-slot ancestry and the visual viewport. Disconnected area fills stay tied to their own source observations. The [HTML adapter guide](docs/interactivity.md#tooltip-position) documents closed shadow-host limits.
+
 - Keep super-topology parity aligned with `docs/super-topology-parity.md`: preserve the `TopologyChart` static/export owner, route large interactive exploration through `GraphScene`, and validate parity claims across API, generated artifacts, smoke tests, and performance evidence.
 - Broaden rich tooltip payloads with chart-family-specific diagnostics where renderers already expose useful `data-cfx-*` attributes, while keeping the static SVG output script-free.
 - Broaden pinned tooltip, nearest-point crosshair, brush-to-lasso selection, one-series focus, selected-target compare, and keyboard traversal coverage across more chart families as the shared rendered-target contract grows.
