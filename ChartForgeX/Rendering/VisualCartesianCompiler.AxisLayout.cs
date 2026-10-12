@@ -31,6 +31,8 @@ internal static partial class VisualCartesianCompiler {
         ChartRect plot, ChartRect viewport, bool measureAxes, ChartRange range, ChartRange? secondaryRange,
         ChartStackLayout stacks, ChartBubbleSizeScale? bubbleScale, VisualThemeColors colors,
         ChartAxisValueFormatter.Cache? categoryLabels, bool expandMarkers) {
+        var dataRange = range.Copy();
+        var secondaryDataRange = secondaryRange?.Copy();
         categoryLabels ??= new ChartAxisValueFormatter.Cache();
         var axisLabels = new AxisLabelCache(categoryLabels);
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
@@ -72,8 +74,15 @@ internal static partial class VisualCartesianCompiler {
             ? ResolveVerticalTotals(chart, context, builder, colors, stacks) : null;
         if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(chart, plot, horizontalTotals, context.Theme.Spacing);
         if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(chart, plot, verticalTotals, context.Theme.Spacing);
-        // Axis measurement and total lanes can change the final radius-to-plot ratio.
-        if (expandMarkers && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
+        // Refit from the original bounds: a guide may no longer fit after total lanes.
+        if (expandMarkers) {
+            range.SetXBounds(dataRange.MinX, dataRange.MaxX);
+            range.SetYBounds(dataRange.MinY, dataRange.MaxY);
+            if (secondaryRange != null && secondaryDataRange != null) {
+                secondaryRange.SetXBounds(secondaryDataRange.MinX, secondaryDataRange.MaxX);
+                secondaryRange.SetYBounds(secondaryDataRange.MinY, secondaryDataRange.MaxY);
+            }
+            ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale);
             if (!horizontal) {
                 axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
                 if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
