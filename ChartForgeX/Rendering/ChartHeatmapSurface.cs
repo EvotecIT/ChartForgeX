@@ -116,9 +116,7 @@ internal static class ChartHeatmapSurface {
         if (scale == null) return Ratio(chart, value, min, max);
         if (scale.Mode == ChartColorScaleMode.Discrete)
             return scale.Bands.Count == 1 ? 0 : scale.BandIndex(value) / (double)(scale.Bands.Count - 1);
-        var effectiveMin = scale.EffectiveMinimum(min);
-        var effectiveMax = scale.EffectiveMaximum(max);
-        return ContinuousRatio(value, effectiveMin, effectiveMax);
+        return scale.DomainRatio(value, min, max);
     }
 
     public static double MapScaleValue(Chart chart, double min, double max, double ratio) {
@@ -293,6 +291,4 @@ internal static class ChartHeatmapSurface {
         return value > max ? max : value;
     }
 
-    private static double ContinuousRatio(double value, double min, double max) =>
-        max <= min ? 0 : ObservedRangeRatio(value, min, max);
 }

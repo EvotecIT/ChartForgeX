@@ -19,6 +19,8 @@ internal static partial class VisualCartesianCompiler {
             && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].RenderedPointCount > 1) {
             var series = chart.Series[0];
             if (series.Kind == ChartSeriesKind.Waterfall) return WaterfallLegendEntries(chart, series, colors, axisLabels ?? new ChartAxisValueFormatter.Cache());
+            if (series.Kind == ChartSeriesKind.RangeBar) return RangeBarLegendEntries(chart, series, colors, axisLabels ?? new ChartAxisValueFormatter.Cache());
+            if (series.Kind == ChartSeriesKind.BoxPlot) return BoxPlotLegendEntries(chart, series, colors, axisLabels ?? new ChartAxisValueFormatter.Cache());
             var stride = ObservationStride(series.Kind);
             var numericRadial = series.Kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
             if (numericRadial) axisLabels ??= new ChartAxisValueFormatter.Cache();
@@ -91,16 +93,22 @@ internal static partial class VisualCartesianCompiler {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
         }
-        IReadOnlyDictionary<double, string>? waterfallCategories = null;
+        IReadOnlyDictionary<double, string>? categoryCaptions = null;
         if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall) {
-            waterfallCategories = ChartWaterfallCategoryLabels.Resolve(chart, categoryLabels);
+            categoryCaptions = ChartWaterfallCategoryLabels.Resolve(chart, categoryLabels);
+        } else if (chart.Series.Any(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot)) {
+            categoryCaptions = ChartCartesianCategoryLabels.Resolve(chart,
+                chart.Series.Where(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot).SelectMany(series => series.Points.Select(point => point.X)), categoryLabels);
+        }
+        if (categoryCaptions != null) {
             var categoryAxis = horizontal ? HorizontalAxes(chart, axisLabels).Category : chart.Options.XAxis;
-            axisLabels.SetTicks(categoryAxis, waterfallCategories.Keys.OrderBy(value => value).ToArray());
-            foreach (var category in waterfallCategories) axisLabels.Set(categoryAxis, category.Key, category.Value);
+            if (horizontal || chart.Series.All(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.Waterfall))
+                axisLabels.SetTicks(categoryAxis, categoryCaptions.Keys.OrderBy(value => value).ToArray());
+            foreach (var category in categoryCaptions) axisLabels.Set(categoryAxis, category.Key, category.Value);
         }
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
-        if (ExpandCartesianRanges(chart, context, plot, range, secondaryRange, horizontal, stacks, bubbleScale)) {
+        if (ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
             if (!horizontal) {
                 axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
                 if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
@@ -122,11 +130,14 @@ internal static partial class VisualCartesianCompiler {
         // Refit from the original data bounds: a guide may no longer fit after total lanes.
         range = dataRange;
         secondaryRange = secondaryDataRange;
-        ExpandCartesianRanges(chart, context, plot, range, secondaryRange, horizontal, stacks, bubbleScale);
+        ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale);
         if (!horizontal) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
         }
+        // Capture the final mapping extent after every measured axis and total lane.
+        // Hosts project this logical rectangle; mark clipping remains an independent choice.
+        builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         using (builder.PushClip(viewport)) {
@@ -162,7 +173,7 @@ internal static partial class VisualCartesianCompiler {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
                         DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index]);
-                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, waterfallCategories, colorScales[index]);
+                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index]);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
@@ -181,6 +192,12 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void Validate(Chart chart) {
+        if (chart.Series.Any(series => series.Kind == ChartSeriesKind.BoxPlot && ChartCartesianOrientation.IsHorizontal(chart, series))
+            && chart.Series.Any(series => series.Kind != ChartSeriesKind.BoxPlot || series.YAxis != ChartAxisSide.Primary))
+            throw new NotSupportedException("Horizontal box plots require only box plot series on the primary X value axis.");
+        if (chart.Series.Any(series => series.Kind == ChartSeriesKind.RangeBar && ChartCartesianOrientation.IsHorizontal(chart, series))
+            && chart.Series.Any(series => series.Kind != ChartSeriesKind.RangeBar || series.YAxis != ChartAxisSide.Primary))
+            throw new NotSupportedException("Horizontal range-bar charts require only range-bar series on the primary X value axis.");
         if (ChartCartesianOrientation.IsHorizontal(chart) && chart.Series.Any(series => !ChartCartesianOrientation.IsHorizontal(chart, series)
             || series.YAxis != ChartAxisSide.Primary))
             throw new NotSupportedException("Horizontal Cartesian charts require homogeneous series on the primary horizontal value axis.");

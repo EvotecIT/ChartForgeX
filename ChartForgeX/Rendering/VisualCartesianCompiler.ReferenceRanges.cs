@@ -4,28 +4,6 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
-    private static bool ExpandCartesianRanges(Chart chart, VisualRenderContext context, ChartRect plot,
-        ChartRange range, ChartRange? secondaryRange, bool horizontalBars, ChartStackLayout stacks, ChartBubbleSizeScale? bubbleScale) {
-        return horizontalBars
-            ? ExpandReferenceRanges(chart, context, plot, range, secondaryRange, horizontalBars)
-            : ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale);
-    }
-
-    private static bool ExpandReferenceRanges(Chart chart, VisualRenderContext context, ChartRect plot,
-        ChartRange range, ChartRange? secondaryRange, bool horizontalBars) {
-        var x = new MarkerExtents();
-        var y = new MarkerExtents();
-        // Horizontal-bar category positions use the mapper's linear category axis.
-        var yAxis = horizontalBars ? new ChartAxis { Minimum = chart.Options.YAxis.Minimum, Maximum = chart.Options.YAxis.Maximum } : chart.Options.YAxis;
-        IncludeReferenceExtents(chart, context, x, y, yAxis);
-        var changed = ExpandMarkerAxis(chart.Options.XAxis, x, plot.Width, range.MinX, range.MaxX, out var minX, out var maxX);
-        range.SetXBounds(minX, maxX);
-        secondaryRange?.SetXBounds(minX, maxX);
-        changed |= ExpandMarkerAxis(yAxis, y, plot.Height, range.MinY, range.MaxY, out var minY, out var maxY);
-        range.SetYBounds(minY, maxY);
-        return changed;
-    }
-
     private static void IncludeReferenceExtents(Chart chart, VisualRenderContext context,
         MarkerExtents x, MarkerExtents y, ChartAxis yAxis) {
         foreach (var annotation in chart.Annotations) {

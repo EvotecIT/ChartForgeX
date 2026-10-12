@@ -56,6 +56,7 @@
         return;
       }
       node.classList.toggle('cfx-series-muted', muted);
+      pointLabelSurfaces(root, node).forEach(label => label.classList.toggle('cfx-series-muted', muted));
     });
     refreshKeyboardNavigation(root);
     syncResetControl(root);
@@ -82,6 +83,10 @@
       const pointContainer = target && target.point !== undefined && data.cfxSeries === String(target.series)
         && role === 'series' && data.cfxPoint === undefined;
       node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
+      pointLabelSurfaces(root, node).forEach(label => {
+        label.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
+        label.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
+      });
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
@@ -416,13 +421,29 @@
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
-    const local = stagePoint(stage, point);
-    positionStageViewport(stage, crosshair);
+    const bounds = visibleCartesianPlot(root, stage), local = stagePoint(stage, point);
+    if (!bounds || !Number.isFinite(local.x) || !Number.isFinite(local.y)
+      || local.x < bounds.left - bounds.precisionX || local.x > bounds.left + bounds.width + bounds.precisionX
+      || local.y < bounds.top - bounds.precisionY || local.y > bounds.top + bounds.height + bounds.precisionY) {
+      hideCrosshair(root, crosshair);
+      return;
+    }
+    crosshair.style.left = bounds.left + 'px';
+    crosshair.style.top = bounds.top + 'px';
+    crosshair.style.width = bounds.width + 'px';
+    crosshair.style.height = bounds.height + 'px';
+    // Only SVG-sized rounding excursions reach here. Keep their anchors on the actual visible plot.
+    const x = clamp(local.x - bounds.left, 0, bounds.width), y = clamp(local.y - bounds.top, 0, bounds.height);
+    crosshair.style.setProperty('--cfx-crosshair-x', x + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', y + 'px');
     crosshair.hidden = false;
-    crosshair.style.setProperty('--cfx-crosshair-x', (local.x - stage.scrollLeft) + 'px');
-    crosshair.style.setProperty('--cfx-crosshair-y', (local.y - stage.scrollTop) + 'px');
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
-    if (label) label.textContent = text(point.node);
+    if (label) {
+      label.textContent = text(point.node);
+      // Measure the constrained label, including its border/padding, before placing it in a narrow plot.
+      label.style.left = clamp(x + 10, 0, Math.max(0, bounds.width - label.offsetWidth)) + 'px';
+      label.style.top = clamp(y - label.offsetHeight - 6, 0, Math.max(0, bounds.height - label.offsetHeight)) + 'px';
+    }
     const target = targetIdentity(point.node);
     const key = targetKey(target), mode = crosshairHoverMode(event, point.node);
     // A native summary can stay unchanged while its independently inferred guide advances.

@@ -31,13 +31,14 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     internal void Line(double x1, double y1, double x2, double y2, ChartColor color, double width = 1,
-        string? role = null, string? id = null, double[]? dash = null, VisualScenePaintBinding? paint = null) {
+        string? role = null, string? id = null, double[]? dash = null, VisualScenePaintBinding? paint = null, double dashOffset = 0) {
         NonNegative(width, nameof(width));
+        ChartGuards.Finite(dashOffset, nameof(dashOffset));
         if (dash != null) foreach (var length in dash) {
             ChartGuards.Finite(length, nameof(dash));
             if (length <= 0) throw new ArgumentOutOfRangeException(nameof(dash), "Dash lengths must be positive.");
         }
-        _nodes.Add(new VisualSceneLine(new ChartPoint(x1, y1), new ChartPoint(x2, y2), color, width, role, id, dash, paint));
+        _nodes.Add(new VisualSceneLine(new ChartPoint(x1, y1), new ChartPoint(x2, y2), color, width, role, id, dash, paint, dashOffset));
     }
 
     internal void Ellipse(double cx, double cy, double rx, double ry, ChartColor? fill, ChartColor? stroke = null,
@@ -49,9 +50,10 @@ internal sealed partial class VisualSceneBuilder {
 
     internal void Path(ChartPath path, ChartColor? fill = null, ChartColor? stroke = null, double strokeWidth = 1,
         string? role = null, string? id = null, bool close = false, double[]? dash = null,
-        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round, VisualScenePaintBinding? paint = null) {
+        VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round, VisualScenePaintBinding? paint = null, double dashOffset = 0) {
         if (path == null) throw new ArgumentNullException(nameof(path));
         NonNegative(strokeWidth, nameof(strokeWidth));
+        ChartGuards.Finite(dashOffset, nameof(dashOffset));
         if (!Enum.IsDefined(typeof(VisualStrokeCap), cap)) throw new ArgumentOutOfRangeException(nameof(cap));
         if (!Enum.IsDefined(typeof(VisualStrokeJoin), join)) throw new ArgumentOutOfRangeException(nameof(join));
         if (dash != null) foreach (var length in dash) VisualSize.Positive(length, nameof(dash));
@@ -61,7 +63,7 @@ internal sealed partial class VisualSceneBuilder {
             ChartGuards.Finite(command.Control1X, nameof(path)); ChartGuards.Finite(command.Control1Y, nameof(path));
             ChartGuards.Finite(command.Control2X, nameof(path)); ChartGuards.Finite(command.Control2Y, nameof(path));
         }
-        _nodes.Add(new VisualScenePath(path, close, fill, stroke, strokeWidth, role, id, dash, cap, join, paint));
+        _nodes.Add(new VisualScenePath(path, close, fill, stroke, strokeWidth, role, id, dash, cap, join, paint, dashOffset));
     }
 
     /// <summary>Adds a clockwise slice in radians, including a full-ring case without a radial seam.</summary>

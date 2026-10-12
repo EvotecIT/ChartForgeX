@@ -130,8 +130,6 @@ internal static class ChartGuards {
         var geometry = chart.Options.RadialGeometry;
         if (Math.Abs(geometry.EndAngleDegrees - geometry.StartAngleDegrees - 360) > 1e-9)
             throw new NotSupportedException("Mixed radial columns and radar series require a full-turn radial viewport.");
-        if (chart.Options.XAxis.Reversed)
-            throw new NotSupportedException("Mixed radial columns and radar series do not support angular reversal.");
         var categories = new List<double>();
         foreach (var series in chart.Series) {
             var ordered = series.Points.Select(point => point.X).OrderBy(value => value).ToArray();
@@ -149,6 +147,7 @@ internal static class ChartGuards {
         for (var i = 0; i < chart.Series.Count; i++) {
             if (chart.Series[i] == null) throw new InvalidOperationException("Chart series collection must not contain null entries.");
             ValidateSeriesShape(chart.Series[i], preparing);
+            chart.Series[i].ValidateDifferenceArea(chart.Options);
             if (preparing && chart.Series[i].Kind == ChartSeriesKind.Sunburst && chart.Series[i].Relationships != null)
                 _ = chart.Series[i].Relationships!.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
             if (chart.Series[i].IsHistogramDensity) {
@@ -183,8 +182,8 @@ internal static class ChartGuards {
         series.ValidateColorValues();
         if (ChartSeries.IsRelationshipKind(series.Kind)) series.ValidateRelationships(preparing);
         if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
-            && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea)
-            throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, stacked-area, range-band, range-area, and scatter series.");
+            && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea && series.Kind != ChartSeriesKind.DifferenceArea)
+            throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, stacked-area, range-band, range-area, difference-area, and scatter series.");
         if (series.HistogramBinLayout != null) ValidateHistogramSeries(series);
         // An empty tuple series is a native no-data scene; incomplete nonempty tuples
         // still pass through the same canonical shape validation below.
