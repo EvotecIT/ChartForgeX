@@ -71,6 +71,11 @@ internal static class Program {
         var treemapChart = treemap.Document.ToChart();
         if (treemapChart.Series[0].HierarchyItems[1].Value != 1234.5 || !treemapChart.ToSvg().Contains("data-cfx-role=\"treemap-label\"", StringComparison.Ordinal)) throw new InvalidOperationException("Packed treemap values or native captions were lost.");
         PackageAssertions.Png(treemapChart.ToPng());
+        var hiddenTreemap = MermaidRenderer.Render("---\nconfig:\n  treemap:\n    showValues: false\n---\ntreemap-beta\n\"Storage\"\n  \"Documents\": 7\n  \"Media\": 3\n");
+        if (hiddenTreemap.HasErrors || hiddenTreemap.Artifact?.Model is not ChartForgeX.Core.Chart hiddenChart || hiddenChart.Options.Treemap.ShowValues) throw new InvalidOperationException("Packed treemap source visibility was lost.");
+        var hostTreemap = new MermaidParser().ParseTreemap(hiddenTreemap.Document!.SourceText).Document!.ToChart(new MermaidTreemapRenderOptions { ShowValues = true });
+        if (!hostTreemap.Options.Treemap.ShowValues || hostTreemap.Series[0].HierarchyItems[1].Value != 7) throw new InvalidOperationException("Packed treemap host visibility or semantic values were lost.");
+        PackageAssertions.Png(hiddenTreemap.Artifact.ToPng());
         if (VisualArtifactInterchangeEnvelope.FromJson(useCaseJson).ToJson() != useCaseJson) throw new InvalidOperationException("Mermaid source package interchange failed.");
 
         const string packetSource = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    showBits: false\n    bitOrder: descending\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"";

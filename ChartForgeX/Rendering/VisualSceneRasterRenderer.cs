@@ -45,7 +45,7 @@ internal static partial class VisualSceneRasterRenderer {
                     if (ellipse.Stroke.HasValue && ellipse.StrokeWidth > 0) canvas.StrokeEllipse(ellipse.Cx, ellipse.Cy, ellipse.Rx, ellipse.Ry, ellipse.Stroke.Value, ellipse.StrokeWidth);
                 } else if (node is VisualSceneLine line) {
                     if (line.StrokeWidth > 0) canvas.StrokePolylines(new IReadOnlyList<ChartPoint>[] { new[] { line.Start, line.End } },
-                        line.Stroke!.Value, line.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, line.Dash);
+                        line.Stroke!.Value, line.StrokeWidth, RasterLineCap.Round, RasterLineJoin.Round, line.Dash, dashOffset: line.DashOffset);
                 } else if (node is VisualScenePath path) PaintContours(canvas, VisualSceneGeometry.Flatten(path, canvas.PixelsPerUnit), path);
                 else if (node is VisualSceneSlice slice) PaintContours(canvas, VisualSceneGeometry.Flatten(slice, canvas.PixelsPerUnit), slice);
                 else if (node is VisualSceneText text) {
@@ -89,7 +89,8 @@ internal static partial class VisualSceneRasterRenderer {
             canvas.StrokePolylines(lines, mark.Stroke.Value, mark.StrokeWidth,
                 mark is VisualScenePath path ? (RasterLineCap)path.Cap : RasterLineCap.Round,
                 mark is VisualScenePath joined ? (RasterLineJoin)joined.Join : RasterLineJoin.Round,
-                mark is VisualSceneLine line ? line.Dash : mark is VisualScenePath dashed ? dashed.Dash : null);
+                mark is VisualSceneLine line ? line.Dash : mark is VisualScenePath dashed ? dashed.Dash : null,
+                dashOffset: mark is VisualSceneLine phasedLine ? phasedLine.DashOffset : mark is VisualScenePath phasedPath ? phasedPath.DashOffset : 0);
         }
     }
 

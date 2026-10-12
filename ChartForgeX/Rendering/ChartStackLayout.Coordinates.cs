@@ -6,8 +6,9 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 internal sealed partial class ChartStackLayout {
-    private static int[][] CoordinateIds(Chart chart, ChartBarCoordinateMap bars) {
+    private static int[][] CoordinateIds(Chart chart, ChartBarCoordinateMap bars, out double[] horizontalCategories) {
         var ids = chart.Series.Select(series => Supports(series.Kind) ? new int[series.Points.Count] : Array.Empty<int>()).ToArray();
+        var horizontal = new List<double>();
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             if (chart.Series[seriesIndex].Kind != ChartSeriesKind.Bar && chart.Series[seriesIndex].Kind != ChartSeriesKind.RadialBar
                 && chart.Series[seriesIndex].Kind != ChartSeriesKind.RadialColumn) continue;
@@ -24,11 +25,15 @@ internal sealed partial class ChartStackLayout {
             foreach (var observation in observations) {
                 active.RemoveAll(group => !ChartMath.SameCoordinate(group.Last, observation.Coordinate));
                 var group = active.FirstOrDefault(candidate => !candidate.Series.Contains(observation.Series));
-                if (group == null) { group = new CoordinateGroup(ordinal++); active.Add(group); }
+                if (group == null) {
+                    group = new CoordinateGroup(ordinal++); active.Add(group);
+                    if (kind == ChartSeriesKind.HorizontalBar) horizontal.Add(observation.Coordinate);
+                }
                 group.Last = observation.Coordinate; group.Series.Add(observation.Series);
                 ids[observation.Series][observation.Point] = group.Id;
             }
         }
+        horizontalCategories = horizontal.ToArray();
         return ids;
     }
 
