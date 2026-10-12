@@ -74,6 +74,31 @@ public sealed class MermaidQuadrantPresentationTests {
     }
 
     [Fact]
+    public void TranslucentHostPaletteRetainsCaptionPaintAndContrastBindings() {
+        var color = ChartColor.FromRgba(224, 32, 48, 128);
+        var chart = new MermaidParser().ParseQuadrant(Source).Document!.ToChart();
+        chart.WithTheme(ChartTheme.GraphiteLight().WithPalette(new[] { color }));
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var surface = context.Theme.Resolve(context.ThemeMode).Surface;
+        var prepared = chart.Prepare(context);
+        var variables = new SvgColorVariables().Add("--surface", surface, SvgColorRole.Surface)
+            .Add("--region", color, SvgColorRole.Series);
+        var svg = prepared.ToSvg(new VisualSvgOptions("translucent-quadrant", variables));
+        Assert.Contains("var(--region,", Paints(XDocument.Parse(svg), "plot-region-fill")[0]);
+        Assert.Contains("var(--region,", Paints(XDocument.Parse(svg), "plot-region-label-backplate")[0]);
+        var otherColor = ChartColor.FromRgba(16, 160, 224, 64);
+        var other = new SvgColorVariables().Add("--surface", ChartColor.Black, SvgColorRole.Surface)
+            .Add("--region", otherColor, SvgColorRole.Series);
+        var expectedPlate = ChartColorMath.Blend(ChartColor.Black,
+            ChartColor.FromRgb(otherColor.R, otherColor.G, otherColor.B), .12);
+        var inks = other.GetVariablesForSvg(svg).Where(variable => variable.Name.StartsWith("--cfx-derived-ink-", StringComparison.Ordinal)).ToArray();
+        Assert.NotEmpty(inks);
+        Assert.All(inks, variable => Assert.Equal(ChartColorMath.AccessibleTextOnBackground(expectedPlate), variable.Color));
+        var fallbackPlate = ChartColorMath.Blend(surface, ChartColor.FromRgb(color.R, color.G, color.B), .12);
+        Assert.Equal(fallbackPlate.ToCss(), Paints(XDocument.Parse(prepared.ToSvg()), "plot-region-label-backplate")[0]);
+    }
+
+    [Fact]
     public void PaletteIndicesWrapAndRejectNegativeValues() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartPlotRegion(-1));
         var chart = new MermaidParser().ParseQuadrant(Source).Document!.ToChart();

@@ -244,8 +244,8 @@ internal readonly partial struct SvgPaint {
         if (from.A != 255 || to.A != 255) return false;
         var fromPaint = string.Empty;
         var toPaint = string.Empty;
-        var fromMapped = fromRole.HasValue && variables.TryPaint(from, fromRole.Value, out fromPaint);
-        var toMapped = toRole.HasValue && variables.TryPaint(to, toRole.Value, out toPaint);
+        var fromMapped = fromRole.HasValue && variables.TryOpaquePaint(from, fromRole.Value, out fromPaint);
+        var toMapped = toRole.HasValue && variables.TryOpaquePaint(to, toRole.Value, out toPaint);
         if (!fromMapped && !toMapped) return false;
         if (!fromMapped) fromPaint = from.ToHex();
         if (!toMapped) toPaint = to.ToHex();

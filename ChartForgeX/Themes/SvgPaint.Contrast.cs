@@ -41,8 +41,8 @@ internal readonly partial struct SvgPaint {
         if (!double.TryParse(body.Substring(26), NumberStyles.Float, CultureInfo.InvariantCulture, out var amount)) return false;
         var mapped = false;
         string Operand(ChartColor color, SvgColorRole? role) {
-            if (role.HasValue && variables.TryVariable(color, role.Value, out var variable) && variable.Color.A == 255) {
-                mapped = true; return "V" + variable.Name;
+            if (role.HasValue && variables.TryVariable(color, role.Value, out var variable)) {
+                mapped = true; return "O" + variable.Name;
             }
             return "L" + Hex(color);
         }

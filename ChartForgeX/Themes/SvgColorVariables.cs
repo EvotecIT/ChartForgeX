@@ -242,6 +242,16 @@ public sealed partial class SvgColorVariables {
         return TryVariable(color, role, out var variable) && TryWrite(variable, color.A / 255.0, out paint);
     }
 
+    /// <summary>Maps the RGB operand of an opaque derived tint without adopting the source variable's alpha.</summary>
+    internal bool TryOpaquePaint(ChartColor color, SvgColorRole role, out string paint) {
+        paint = string.Empty;
+        if (!TryVariable(color, role, out var variable)) return false;
+        var literal = variable.Color.A == 255 ? variable.Color.ToHex() : variable.Color.ToHexRgba();
+        paint = "var(" + variable.Name + ", " + literal + ")";
+        if (variable.Color.A != 255) paint = "rgb(from " + paint + " r g b / 1)";
+        return true;
+    }
+
     internal bool TryVariable(ChartColor color, SvgColorRole role, out SvgColorVariable variable) {
         var key = Rgb(color.R, color.G, color.B);
         if (!(role != SvgColorRole.Any && _byRole.TryGetValue(RoleKey(role, key), out variable)) &&
