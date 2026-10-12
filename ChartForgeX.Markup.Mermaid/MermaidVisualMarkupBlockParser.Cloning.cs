@@ -121,7 +121,8 @@ public sealed partial class MermaidVisualMarkupBlockParser {
             Subtitle = options.Subtitle,
             SeriesName = options.SeriesName,
             Width = options.Width,
-            Height = options.Height
+            Height = options.Height,
+            ShowValues = options.ShowValues
         };
 
     private static MermaidGanttRenderOptions Clone(MermaidGanttRenderOptions options) =>
