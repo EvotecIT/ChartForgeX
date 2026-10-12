@@ -44,6 +44,14 @@ internal static partial class MermaidGanttInputDateFormat {
         return false;
     }
 
+    internal static bool IsWeekdayName(string input) {
+        var format = CultureInfo.InvariantCulture.DateTimeFormat;
+        for (var day = 0; day < 7; day++)
+            if (string.Equals(input, format.GetDayName((DayOfWeek)day), StringComparison.OrdinalIgnoreCase)
+                || string.Equals(input, format.GetAbbreviatedDayName((DayOfWeek)day), StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
     private static bool TryParseNative(string input, string format, out DateTime value, DateTime? anchor, bool allowWhiteSpaces = false) {
         var formats = IsNativeStandardFormat(format)
             ? CultureInfo.InvariantCulture.DateTimeFormat.GetAllDateTimePatterns(format[0]) : new[] { format };

@@ -157,6 +157,7 @@ internal static partial class MermaidGanttParser {
         // commas. Equal matches preserve explicit IDs, including numeric IDs.
         List<string>? selected = null;
         var bestScore = -1;
+        var weekdayPrefix = first < chunks.Length && MermaidGanttInputDateFormat.IsWeekdayName(chunks[first].Trim());
         foreach (var hasId in new[] { true, false }) {
             var startIndex = first + (hasId ? 1 : 0);
             if (startIndex + 1 >= chunks.Length || hasId && string.IsNullOrWhiteSpace(chunks[first])) continue;
@@ -169,7 +170,9 @@ internal static partial class MermaidGanttParser {
                 if (!IsStart(start.Trim()) || !IsEnd(end)) continue;
                 var matches = (MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _, document.DateAnchor) ? 1 : 0)
                     + (MermaidGanttInputDateFormat.TryParseConfigured(end, document.DateFormat, out _, document.DateAnchor) ? 1 : 0);
-                var score = matches * 3 + (start.IndexOf(',') >= 0 ? 1 : 0) + (end.IndexOf(',') >= 0 ? 1 : 0);
+                // A new weekday-prefixed fallback must not consume an existing viable task ID.
+                var score = matches * 3 + (start.IndexOf(',') >= 0 ? 1 : 0) + (end.IndexOf(',') >= 0 ? 1 : 0)
+                    + (hasId && weekdayPrefix ? 1 : 0);
                 if (score <= bestScore) continue;
                 var parts = new List<string>(prefix);
                 if (hasId) parts.Add(chunks[first].Trim());
