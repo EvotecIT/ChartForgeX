@@ -1,0 +1,18 @@
+flowchart LR
+A o-- publishes --o B
+A x-- fails --x B
+A <-- returns --> B
+A o== publishes ==o B
+A x== fails ==x B
+A <== returns ==> B
+A o-. publishes .-o B
+A x-. fails .-x B
+A <-. returns .-> B
+A -- ordinary --> B
+A -. dotted .-> B
+A == thick ==> B
+A o-- "x --> y" --o B
+A o-- oxford --o B
+A o-- publishes --o B --> C
+A o--o|publishes|B
+A -- first --o B -- second --> C

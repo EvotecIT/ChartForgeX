@@ -143,6 +143,10 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/flowchart-inline-endpoints.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "provenance": "Authored inline-label fixture using the official flowchart link grammar; node identities, labels and endpoint types verified with pinned Mermaid 10.9.8, 11.17.2 and 12.1.0."
+    },
     "fixtures/flowchart-endpoints.mmd": {
       "syntax": {
         "10": "accepted",

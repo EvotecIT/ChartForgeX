@@ -4789,7 +4789,7 @@
       "logicalWidth": 640.0,
       "logicalHeight": 510.0,
       "svg": {
-        "minVisualNodes": 21,
+        "minVisualNodes": 23,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4797,7 +4797,7 @@
         "outputScale": 1,
         "minVisiblePixels": 163200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 401,
+        "minDistinctColors": 475,
         "maxEdgeInkPixels": 0
       }
     },

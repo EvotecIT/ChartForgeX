@@ -15,6 +15,36 @@ internal static class MermaidFlowchartOperators {
         return end;
     }
 
+    /// <summary>Reads the open half of a labelled link without consuming a complete link token.</summary>
+    public static int ReadLabelPrefixEnd(string text, int start) {
+        var body = start;
+        if (body < text.Length && (text[body] == '<' || text[body] == 'o' || text[body] == 'x')) body++;
+        if (body + 1 >= text.Length) return start;
+        var first = text[body]; var second = text[body + 1];
+        if (!((first == '-' && (second == '-' || second == '.')) || (first == '=' && second == '='))) return start;
+        var end = body + 2;
+        if (end < text.Length && (text[end] == '-' || text[end] == '.' || text[end] == '='
+            || text[end] == '>' || text[end] == 'o' || text[end] == 'x')) return start;
+        return end;
+    }
+
+    /// <summary>Reads the closing half in the same normal, thick or dotted link family.</summary>
+    public static int ReadLabelSuffixEnd(string text, int start, char family) {
+        var end = start;
+        if (family == '.') {
+            if (end < text.Length && text[end] == '-') end++;
+            var dots = end;
+            while (end < text.Length && text[end] == '.') end++;
+            if (end == dots || end >= text.Length || text[end] != '-') return start;
+            end++;
+        } else {
+            while (end < text.Length && text[end] == family) end++;
+            if (end - start < 2) return start;
+        }
+        if (end < text.Length && (text[end] == '>' || text[end] == 'o' || text[end] == 'x')) return end + 1;
+        return family == '.' || end - start >= 3 ? end : start;
+    }
+
     public static VisualLinkDirection Direction(string edgeOperator) {
         var source = Marker(edgeOperator, true) != TopologyMarkerKind.None;
         var target = Marker(edgeOperator, false) != TopologyMarkerKind.None;

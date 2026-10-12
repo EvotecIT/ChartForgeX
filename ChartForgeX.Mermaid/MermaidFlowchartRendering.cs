@@ -220,8 +220,8 @@ public static class MermaidFlowchartRendering {
     }
 
     private static TopologyEdgeLineStyle ToLineStyle(string edgeOperator) {
-        if (edgeOperator.IndexOf(".", StringComparison.Ordinal) >= 0) return TopologyEdgeLineStyle.Dotted;
-        if (edgeOperator.IndexOf("=", StringComparison.Ordinal) >= 0) return TopologyEdgeLineStyle.Solid;
+        var prefixEnd = MermaidFlowchartOperators.ReadEnd(edgeOperator, 0);
+        if (edgeOperator.IndexOf('.', 0, prefixEnd) >= 0) return TopologyEdgeLineStyle.Dotted;
         return TopologyEdgeLineStyle.Solid;
     }
 

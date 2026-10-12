@@ -4,8 +4,6 @@ using System.Collections.Generic;
 namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidFlowchartParser {
-    private static readonly string[] LabelSuffixOperators = { "-.->", "-->", "==>", "---", "--o", "--x" };
-
     public static void ParseStatements(MermaidFlowchartDocument document, string[] lines, int firstBodyLine, MermaidParseResult<MermaidDocument> result, int firstOffset = 0) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         if (lines == null) throw new ArgumentNullException(nameof(lines));
@@ -313,22 +311,28 @@ internal static partial class MermaidFlowchartParser {
         edgeOperator = string.Empty;
         label = null;
         var start = position;
-        if (!StartsWith(text, start, "--") && !StartsWith(text, start, "==")) return false;
-        if (start + 2 < text.Length && IsOperatorCharacter(text[start + 2])) return false;
-
-        foreach (var suffix in LabelSuffixOperators) {
-            var suffixIndex = text.IndexOf(suffix, start + 2, StringComparison.Ordinal);
-            if (suffixIndex < 0) continue;
-
-            var candidateLabel = text.Substring(start + 2, suffixIndex - start - 2).Trim();
+        var labelStart = MermaidFlowchartOperators.ReadLabelPrefixEnd(text, start);
+        if (labelStart == start) return false;
+        var family = text[labelStart - 1];
+        var firstText = labelStart;
+        SkipWhitespace(text, ref firstText);
+        char quote = '\0';
+        for (var suffixIndex = firstText; suffixIndex < text.Length; suffixIndex++) {
+            var ch = text[suffixIndex];
+            if (quote != '\0') {
+                if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, suffixIndex)) quote = '\0';
+                continue;
+            }
+            if (ch == '"' || (ch == '\'' && suffixIndex == firstText)) { quote = ch; continue; }
+            var end = MermaidFlowchartOperators.ReadLabelSuffixEnd(text, suffixIndex, family);
+            if (end == suffixIndex) continue;
+            var candidateLabel = text.Substring(labelStart, suffixIndex - labelStart).Trim();
             if (candidateLabel.Length == 0) continue;
-
-            edgeOperator = text.Substring(start, suffixIndex + suffix.Length - start).Trim();
+            edgeOperator = text.Substring(start, end - start).Trim();
             label = Unquote(candidateLabel);
-            position = suffixIndex + suffix.Length;
+            position = end;
             return true;
         }
-
         return false;
     }
 
