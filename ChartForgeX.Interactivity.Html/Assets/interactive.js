@@ -11,7 +11,9 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
+  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"]');
   const isInteractiveTarget = (node) => {
+    if (isPassiveTarget(node)) return false;
     const role = (node.dataset || {}).cfxRole;
     if (role === 'legend-entry-omitted') return false;
     if (role === 'legend-item') return true;
@@ -23,7 +25,7 @@
     return !!(data.cfxTargetKind && data.cfxTargetId
       && (data.cfxTargetKind !== ownerData.cfxTargetKind || data.cfxTargetId !== ownerData.cfxTargetId));
   };
-  const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
+  const interactiveTargets = (root, selector = targetSelector) => Array.from(root.querySelectorAll(selector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
     // Only the renderer-owned cell link is a mark's alternate keyboard target.
     const link = node.parentElement;
@@ -38,7 +40,7 @@
       ? { targetKind: data.cfxLegendTargetKind, targetId: data.cfxLegendTargetId } : null;
   };
   const referencedTargetNode = (root, target) => Array.from(root.querySelectorAll('[data-cfx-target-kind][data-cfx-target-id]'))
-    .find((node) => (node.dataset || {}).cfxRole !== 'legend-item'
+    .find((node) => isInteractiveTarget(node) && (node.dataset || {}).cfxRole !== 'legend-item'
       && node.dataset.cfxTargetKind === target.targetKind && node.dataset.cfxTargetId === target.targetId
       && (!target.seriesKey || seriesKey(node) === target.seriesKey));
   const seriesLegend = (node) => {
@@ -165,6 +167,8 @@
   const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
+    if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
+      return [seriesLabel(node), data.cfxLabel].filter(Boolean).join(': ');
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
     const label = data.cfxLabel || data.cfxText || '';
@@ -241,6 +245,29 @@
       { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
       .filter((row) => row.value !== undefined && row.value !== '');
   };
+  const boxPlotTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'boxplot') return null;
+    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX }]
+      .concat(['minimum', 'q1', 'median', 'q3', 'maximum'].map((key) => ({
+        name: rowName(node, key, ''), value: data['cfx' + key.charAt(0).toUpperCase() + key.slice(1)]
+      }))).filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
+  const rangeBarTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
+    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
+      { name: rowName(node, 'start', ''), value: data.cfxStart }, { name: rowName(node, 'end', ''), value: data.cfxEnd }]
+      .filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
+  const differenceTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'differencearea') return null;
+    return ['First', 'Second'].map((part) => ({
+      name: rowName(node, part.toLowerCase(), part),
+      value: capturedText(data, 'cfxFormatted' + part, data['cfx' + part])
+    }));
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -248,6 +275,17 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
+    const boxPlotRows = boxPlotTooltipRows(node);
+    if (boxPlotRows) return rows.concat(boxPlotRows, metadataRows(node));
+    const rangeBarRows = rangeBarTooltipRows(node);
+    if (rangeBarRows) return rows.concat(rangeBarRows, metadataRows(node));
+    const differenceRows = differenceTooltipRows(node);
+    if (differenceRows) {
+      push('X', data.cfxX);
+      differenceRows.forEach((row) => push(row.name, row.value));
+      metadataRows(node).forEach((row) => push(row.name, row.value));
+      return rows;
+    }
     if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
     else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);
@@ -337,7 +375,7 @@
   const compareItems = (root) => {
     const items = [];
     const seen = new Set();
-    root.querySelectorAll('.cfx-selected').forEach((node) => {
+    interactiveTargets(root, '.cfx-selected').forEach((node) => {
       const target = targetIdentity(node);
       const key = targetKey(target);
       if (!key || seen.has(key)) return;
@@ -445,6 +483,12 @@
     moveTip(tip, event, node);
     emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
   };
+  // SVG coordinates have three decimals. Bound screen-space comparisons by one logical
+  // quantization step, projected through the live transform, plus a small screen rounding allowance.
+  const svgCoordinatePrecision = matrix => ({
+    x: .001 * (Math.abs(matrix.a) + Math.abs(matrix.c)) + .0001,
+    y: .001 * (Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001
+  });
   // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
   // Both readout lifetime and keyboard availability follow the same native paint inputs.
@@ -500,39 +544,108 @@
     }
     return null;
   };
-  // Native producers use rectangular user-space clips. A retained fact or path box can lie outside them.
-  const paintWithinNativeClips = (node, subject = node) => {
-    let box;
+  // These Cartesian observations describe both boundaries, rather than one source Y location.
+  const pairedExtentObservation = (node) => node.hasAttribute('data-cfx-point')
+    && ['differencearea', 'rangearea', 'rangeband'].includes((node.dataset.cfxKind || '').toLowerCase());
+  const pairedConnectedSpan = (node, owner) => {
+    const index = Number(node.dataset.cfxPoint);
+    const followsPrevious = (point) => point
+      && point.getAttribute('data-cfx-source-0-break') !== 'true'
+      && point.getAttribute('data-cfx-source-1-break') !== 'true';
+    const previous = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index - 1) + '"]');
+    const next = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index + 1) + '"]');
+    // Native paired fills need a connected span; isolated observations can still paint their own markers or caps.
+    return !!(previous && followsPrevious(node) || followsPrevious(next));
+  };
+  const pairedExtentScreenBox = (node) => {
+    const region = node._cfxPairedRegion, matrix = node.getScreenCTM();
+    if (!region || !matrix) return null;
+    // Use the captured native extent, excluding the minimum-size transparent browser hit area.
+    const corners = [[region.x, region.y], [region.x + region.width, region.y],
+      [region.x, region.y + region.height], [region.x + region.width, region.y + region.height]]
+      .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+    return { left: Math.min(...corners.map(p => p.x)), right: Math.max(...corners.map(p => p.x)),
+      top: Math.min(...corners.map(p => p.y)), bottom: Math.max(...corners.map(p => p.y)) };
+  };
+  // Native producers use rectangular user-space clips, in the live transform of their owning group.
+  const nativePaintClips = (node) => {
+    const clips = [];
     for (let parent = node; parent && parent.ownerSVGElement; parent = parent.parentElement) {
       const reference = /^url\(#([^)]*)\)$/.exec(parent.getAttribute('clip-path') || '');
       if (!reference) continue;
       const clip = parent.ownerSVGElement.getElementById(reference[1]);
       if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
         || !clip.firstElementChild.matches('rect')) continue;
-      const matrix = parent.getScreenCTM();
-      if (!matrix) return false;
-      const rect = clip.firstElementChild.getBBox();
-      if (!(rect.width > 0 && rect.height > 0)) return false;
+      const matrix = parent.getScreenCTM(), rect = clip.firstElementChild.getBBox();
+      if (!matrix || !(rect.width > 0 && rect.height > 0)) return null;
+      clips.push({ rect, matrix });
+    }
+    return clips;
+  };
+  // A retained fact or a path's box can lie outside the native clips.
+  const paintWithinNativeClips = (node, subject = node) => {
+    const paired = subject !== node && pairedExtentObservation(subject);
+    const clips = nativePaintClips(node);
+    if (!clips) return false;
+    let box;
+    for (const { rect, matrix } of clips) {
       const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
         .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
       const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
       const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
       // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
-      const precision = .001 * Math.max(Math.abs(matrix.a) + Math.abs(matrix.c), Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001;
-      box ||= subject.getBoundingClientRect();
+      const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
+      box ||= paired ? pairedExtentScreenBox(subject) : subject.getBoundingClientRect();
+      if (!box) return false;
       if (subject !== node) {
-        // A marker-free observation uses its source location, not another visible part of the series path.
-        const x = box.left + box.width / 2, y = box.top + box.height / 2;
-        if (x < left - precision || x > right + precision || y < top - precision || y > bottom + precision) return false;
+        // Connected paired fills use their own extent. Single-point line/radar paint keeps its source-location contract.
+        const x = (box.left + box.right) / 2, y = (box.top + box.bottom) / 2;
+        if (x < left - precision || x > right + precision
+          || (paired ? box.bottom < top - precision || box.top > bottom + precision : y < top - precision || y > bottom + precision)) return false;
       } else if (box.right < left - precision || box.left > right + precision || box.bottom < top - precision || box.top > bottom + precision) return false;
     }
     return true;
   };
+  const pairedBoundaryRole = (node) => /^(difference-(first|second)|range-(upper|lower|midline))$/.test(node.dataset.cfxRole || '');
+  const pairedBoundaryInk = (node, subject, paint) => {
+    const region = subject._cfxPairedRegion, sourceMatrix = subject.getScreenCTM(), shapeMatrix = node.getScreenCTM();
+    const clips = nativePaintClips(node);
+    if (!region || !sourceMatrix || !shapeMatrix || !clips || typeof node.isPointInStroke !== 'function') return false;
+    // Captured paired extents include equal marker inflation on each side. Remove it to locate the actual boundaries.
+    const x = region.x + region.width / 2;
+    const ys = node.dataset.cfxRole === 'range-midline' ? [Number(subject.dataset.cfxMidlineY)]
+      : [region.y + region.width / 2, region.y + region.height - region.width / 2];
+    for (const y of ys) {
+      if (!Number.isFinite(y)) continue;
+      // Query the exported three-decimal geometry as well as the full-precision captured location.
+      for (const [px, py] of [[x, y], [Number(x.toFixed(3)), Number(y.toFixed(3))]]) {
+        let point = new DOMPoint(px, py).matrixTransform(sourceMatrix);
+        const source = point.matrixTransform(shapeMatrix.inverse());
+        // The nearest point inside the clip can still be real cap ink when its source centre lies just outside.
+        for (const { rect, matrix } of clips) {
+          const local = point.matrixTransform(matrix.inverse());
+          point = new DOMPoint(Math.max(rect.x, Math.min(rect.x + rect.width, local.x)),
+            Math.max(rect.y, Math.min(rect.y + rect.height, local.y))).matrixTransform(matrix);
+        }
+        if (clips.some(({ rect, matrix }) => {
+          const local = point.matrixTransform(matrix.inverse());
+          // Use the same native three-decimal coordinate precision as the clip availability check.
+          return local.x < rect.x - .001 || local.x > rect.x + rect.width + .001
+            || local.y < rect.y - .001 || local.y > rect.y + rect.height + .001;
+        })) continue;
+        const sample = point.matrixTransform(shapeMatrix.inverse());
+        const radius = parseFloat(paint.strokeWidth) / 2 * (paint.strokeLinecap === 'square' ? Math.SQRT2 : 1);
+        // Clamping must stay within this source endpoint's stroke footprint, not follow a remote connected span.
+        if (Math.hypot(sample.x - source.x, sample.y - source.y) <= radius + .001 && node.isPointInStroke(sample)) return true;
+      }
+    }
+    return false;
+  };
   const shapePaint = (node, styles, subject = node) => {
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
+    const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
-      || !paintNodeVisible(node, styles) || !paintWithinNativeClips(node)
-      || subject !== node && !paintWithinNativeClips(node, subject)) return null;
+      || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node)) return null;
     // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
     if (node.matches('circle,ellipse')) {
       const box = node.getBBox();
@@ -540,9 +653,12 @@
     }
     const paint = paintStyle(node, styles);
     const stroke = parseFloat(paint.strokeWidth) > 0 ? paintValue(node, paint.stroke, paint.strokeOpacity, styles) : null;
+    // A series-wide boundary box cannot establish paint at this observation, connected or isolated.
+    if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
     // Open line marks never paint their inherited default black fill.
-    if (/^(line|polyline)$/i.test(node.tagName)) return stroke;
-    return (node.dataset.cfxFillArea !== 'false' && paintValue(node, paint.fill, paint.fillOpacity, styles)) || stroke;
+    const resolved = /^(line|polyline)$/i.test(node.tagName) ? stroke
+      : (node.dataset.cfxFillArea !== 'false' && paintValue(node, paint.fill, paint.fillOpacity, styles)) || stroke;
+    return resolved && (subject === node || paintWithinNativeClips(node, subject)) ? resolved : null;
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
@@ -583,11 +699,24 @@
   const seriesPaint = (node, styles) => {
     const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
     if (!owner) return null;
-    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
+    const data = node.dataset || {};
+    const paired = (data.cfxKind || '').toLowerCase() === 'differencearea' && data.cfxPoint !== undefined;
+    const connected = !pairedExtentObservation(node) || pairedConnectedSpan(node, owner);
+    const relevant = (layer) => {
+      const role = layer.dataset.cfxRole || '';
+      if (!connected && /^(difference-(positive|negative)|range-(area|band))(-pattern)?$/.test(role)) return false;
+      if (!paired) return true;
+      if (role === 'difference-positive' || role === 'difference-positive-pattern') return Number(data.cfxFirst) > Number(data.cfxSecond);
+      if (role === 'difference-negative' || role === 'difference-negative-pattern') return Number(data.cfxFirst) < Number(data.cfxSecond);
+      return true;
+    };
+    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="range-upper"],[data-cfx-role="range-lower"],[data-cfx-role="range-midline"],[data-cfx-role="difference-positive"],[data-cfx-role="difference-negative"],[data-cfx-role="difference-first"],[data-cfx-role="difference-second"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
+      if (!relevant(layer)) continue;
       const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
     }
-    for (const layer of owner.querySelectorAll('[data-cfx-role="area-pattern"],[data-cfx-role="range-area-pattern"],[data-cfx-role="range-band-pattern"],[data-cfx-role="radar-pattern"]')) {
+    for (const layer of owner.querySelectorAll('[data-cfx-role="area-pattern"],[data-cfx-role="range-area-pattern"],[data-cfx-role="range-band-pattern"],[data-cfx-role="difference-positive-pattern"],[data-cfx-role="difference-negative-pattern"],[data-cfx-role="radar-pattern"]')) {
+      if (!relevant(layer)) continue;
       const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
     }
@@ -624,19 +753,20 @@
     return fallback && fallback.colour || '';
   };
   // The prepared kind names distinguish source quantities from map/grid coordinates and tuple summaries.
-  const sharedXSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'scatter', 'bubble', 'errorbar', 'slope', 'trendline', 'waterfall']);
+  const sharedXSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'scatter', 'bubble', 'errorbar', 'slope', 'trendline', 'waterfall', 'differencearea']);
   const sharedXObservation = (data) => sharedXSeriesKinds.has((data.cfxKind || '').toLowerCase()) && !data.cfxDerived;
   const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
+  const sharedXValue = (data) => (data.cfxKind || '').toLowerCase() === 'differencearea' ? data.cfxFirst : data.cfxY;
   const renderSharedXTip = (tip, node, root) => {
     const data = node.dataset || {};
     const svg = node.closest('svg');
-    if (!svg || !sharedXObservation(data) || !tooltipNumber(data.cfxX) || !tooltipNumber(data.cfxY)) return false;
+    if (!svg || !sharedXObservation(data) || !tooltipNumber(data.cfxX) || !tooltipNumber(sharedXValue(data))) return false;
     const points = new Map();
     const x = Number(data.cfxX), styles = new Map();
     const addObservation = (point) => {
       const candidate = point.dataset;
       // Reject unrelated coordinates and duplicate series before resolving any computed mark styles.
-      if (!sharedXObservation(candidate) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(candidate.cfxY)
+      if (!sharedXObservation(candidate) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(sharedXValue(candidate))
         || Number(candidate.cfxX) !== x || points.has(candidate.cfxSeries) || !isInteractiveTarget(point)
         || point.closest('.cfx-series-muted,[data-cfx-role="legend-item"]')) return;
       const paint = pointerTargetPaint(point, styles);
@@ -644,11 +774,11 @@
       const index = candidate.cfxSeries;
       points.set(index, { point, index, key: seriesKey(point), source: sourcePointIndex(point), name: seriesLabel(point),
         state: candidate.cfxState || svg.getAttribute('data-cfx-series-state-' + index) || 'none',
-        value: Number(candidate.cfxY), rawValue: candidate.cfxY, colour: paint.colour || paintColour(point, styles) });
+        value: Number(sharedXValue(candidate)), rawValue: sharedXValue(candidate), colour: paint.colour || paintColour(point, styles) });
     };
     // Duplicate x coordinates are valid: retain the observation the reader actually interacted with.
     addObservation(node);
-    svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x][data-cfx-y]').forEach(addObservation);
+    svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x]').forEach(addObservation);
     const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };
     const rows = Array.from(points.values()).sort((a, b) => (priority[b.state] || 0) - (priority[a.state] || 0) || b.value - a.value);
     if (!rows.length) return false;
@@ -660,13 +790,17 @@
       const name = document.createElement('dt'); const value = document.createElement('dd');
       name.dataset.cfxTooltipSeries = row.index; name.dataset.cfxTooltipSeriesKey = row.key;
       name.dataset.cfxTooltipPoint = row.point.dataset.cfxPoint; name.dataset.cfxTooltipSourcePoint = row.source;
-      name.textContent = row.name; value.textContent = row.rawValue;
+      const difference = differenceTooltipRows(row.point);
+      name.textContent = row.name + (difference ? ' · ' + difference[0].name : '');
+      value.textContent = difference ? difference[0].value : row.rawValue;
       const swatch = document.createElement('span'); swatch.className = 'cfx-tooltip__swatch';
       if (row.colour) swatch.style.backgroundColor = row.colour;
       swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);
       if (row.state === 'quiet' || row.state === 'success') { name.className = 'cfx-tooltip__quiet'; value.className = 'cfx-tooltip__quiet'; }
       list.append(name, value);
-      dimensionTooltipRows(row.point).forEach((dimension) => {
+      const dimensions = dimensionTooltipRows(row.point);
+      if (difference) dimensions.unshift({ ...difference[1], dimension: 'second' });
+      dimensions.forEach((dimension) => {
         const term = document.createElement('dt'), measurement = document.createElement('dd');
         term.dataset.cfxTooltipDimension = dimension.dimension;
         term.dataset.cfxTooltipObservation = row.key;
@@ -988,6 +1122,11 @@
     const series = metadata.series || [];
     const xLabels = new Map((metadata.xLabels || []).map((item) => [item.value, item.text]));
     const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
+    // Only the renderer's unambiguous final Cartesian map can bound a guide.
+    const plots = (metadata.regions || []).filter(region => region.role === 'cartesian-plot');
+    const plot = plots.length === 1 ? plots[0] : null;
+    root._cfxCartesianPlot = plot && [plot.x, plot.y, plot.width, plot.height, plot.x + plot.width, plot.y + plot.height].every(Number.isFinite)
+      && plot.width > 0 && plot.height > 0 ? plot : null;
     series.forEach((item, index) => {
       svg.setAttribute('data-cfx-series-name-' + index, item.name);
       svg.setAttribute('data-cfx-series-key-' + index, item.key);
@@ -1063,6 +1202,7 @@
         && !node.hasAttribute('aria-label') && !node.hasAttribute('data-cfx-label'))
         node.setAttribute('aria-label', region.label || item.name);
       if (!region || (data.cfxPoint === undefined && data.cfxRegion === undefined)) return;
+      if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -1229,6 +1369,17 @@
     return Array.from(values.values()).sort((a, b) => a.point - b.point);
   };
   const summaryValue = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 12 });
+  const comparisonLegendRows = (node) => {
+    const data = node.dataset || {}, kind = (data.cfxKind || '').toLowerCase();
+    if (!['dumbbell', 'errorbar'].includes(kind)) return null;
+    const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX;
+    const rows = [{ name: rowName(node, 'category', 'Category'), value: category }];
+    if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: data.cfxStart },
+      { name: rowName(node, 'end', 'End'), value: data.cfxEnd }, { name: rowName(node, 'delta', 'Delta'), value: data.cfxDelta });
+    else rows.push({ name: rowName(node, 'value', 'Value'), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
+      { name: rowName(node, 'lower', 'Lower'), value: data.cfxLower }, { name: rowName(node, 'upper', 'Upper'), value: data.cfxUpper });
+    return rows.filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
     if (data.cfxWaterfallKind) return waterfallTooltipRows(item);
@@ -1236,6 +1387,12 @@
     const pointReference = reference || (data.cfxPoint !== undefined ? { targetKind: 'point', targetId: pointTargetId(item) } : null);
     const svg = item.closest('svg');
     const mark = svg && pointReference && referencedTargetNode(svg, { ...pointReference, seriesKey: seriesKey(item) });
+    const rangeBarRows = mark && rangeBarTooltipRows(mark);
+    if (rangeBarRows) return rangeBarRows.concat(dimensionTooltipRows(mark));
+    const boxPlotRows = mark && boxPlotTooltipRows(mark);
+    if (boxPlotRows) return boxPlotRows.concat(dimensionTooltipRows(mark));
+    const comparisonRows = mark && comparisonLegendRows(mark);
+    if (comparisonRows) return comparisonRows.concat(dimensionTooltipRows(mark));
     const financialRows = mark && financialTooltipRows(mark);
     if (financialRows) return financialRows.concat(dimensionTooltipRows(mark));
     if (reference) {
@@ -1288,10 +1445,12 @@
   };
   // Absolute overlays and SVG pan translations use stage CSS pixels, including its scroll origin.
   // Browser hit geometry stays in screen pixels; account for axis-aligned host scaling and the stage border.
-  const stagePoint = (stage, point, bounded = false) => {
+  const stageProjection = stage => {
     const rect = stage.getBoundingClientRect();
-    const scaleX = rect.width / stage.offsetWidth || 1;
-    const scaleY = rect.height / stage.offsetHeight || 1;
+    return { rect, scaleX: rect.width / stage.offsetWidth || 1, scaleY: rect.height / stage.offsetHeight || 1 };
+  };
+  const stagePoint = (stage, point, bounded = false) => {
+    const { rect, scaleX, scaleY } = stageProjection(stage);
     const x = (point.x - rect.left) / scaleX - stage.clientLeft + stage.scrollLeft;
     const y = (point.y - rect.top) / scaleY - stage.clientTop + stage.scrollTop;
     return bounded ? {
@@ -1300,12 +1459,25 @@
     } : { x, y };
   };
   const stagePointer = (stage, event, bounded = false) => stagePoint(stage, { x: event.clientX, y: event.clientY }, bounded);
-  // The guide spans only the visible viewport, so a Readable overlay cannot add scrollable content.
-  const positionStageViewport = (stage, overlay) => {
-    overlay.style.left = stage.scrollLeft + 'px';
-    overlay.style.top = stage.scrollTop + 'px';
-    overlay.style.width = stage.clientWidth + 'px';
-    overlay.style.height = stage.clientHeight + 'px';
+  // The core owns layout. Project its captured plot through the live SVG transform, including pan/zoom.
+  // Intersect with the visible scroller so the overlay cannot create new scrollable content.
+  const visibleCartesianPlot = (root, stage) => {
+    const plot = root._cfxCartesianPlot, svg = stage.querySelector('svg');
+    if (!plot || !svg || stage.clientWidth <= 0 || stage.clientHeight <= 0) return null;
+    const matrix = svg.getScreenCTM();
+    // stagePoint supports positive axis-aligned host scaling, not rotated/skewed/perspective hosts.
+    if (!matrix || matrix.is2D === false || matrix.b !== 0 || matrix.c !== 0 || matrix.a <= 0 || matrix.d <= 0) return null;
+    const corners = [[plot.x, plot.y], [plot.x + plot.width, plot.y],
+      [plot.x, plot.y + plot.height], [plot.x + plot.width, plot.y + plot.height]]
+      .map(([x, y]) => stagePoint(stage, new DOMPoint(x, y).matrixTransform(matrix)));
+    if (!corners.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) return null;
+    const left = Math.max(stage.scrollLeft, Math.min(...corners.map(point => point.x)));
+    const top = Math.max(stage.scrollTop, Math.min(...corners.map(point => point.y)));
+    const right = Math.min(stage.scrollLeft + stage.clientWidth, Math.max(...corners.map(point => point.x)));
+    const bottom = Math.min(stage.scrollTop + stage.clientHeight, Math.max(...corners.map(point => point.y)));
+    const precision = svgCoordinatePrecision(matrix), { scaleX, scaleY } = stageProjection(stage);
+    return right > left && bottom > top ? { left, top, width: right - left, height: bottom - top,
+      precisionX: precision.x / scaleX, precisionY: precision.y / scaleY } : null;
   };
   // A guide belongs to the current viewport. Discard stale dimensions before they can enlarge a resized scroller.
   // Share the existing resize lifecycle with keyboard availability, including initially hidden fragment hosts.
@@ -1315,6 +1487,10 @@
     let frame = 0;
     let observer;
     const hideGuide = () => hideCrosshair(root, crosshair);
+    // A pointer can acquire a guide during a CSS pan/zoom transition; discard that intermediate projection.
+    const finishViewport = event => {
+      if (event.target === stage.querySelector('svg') && event.propertyName === 'transform') hideGuide();
+    };
     const queueRefresh = () => {
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
@@ -1323,6 +1499,8 @@
           if (observer) observer.disconnect();
           window.removeEventListener('resize', queueRefresh);
           stage.removeEventListener('scroll', hideGuide);
+          stage.removeEventListener('transitionend', finishViewport);
+          stage.removeEventListener('transitioncancel', finishViewport);
           return;
         }
         if (width !== stage.clientWidth || height !== stage.clientHeight) hideGuide();
@@ -1332,6 +1510,8 @@
       });
     };
     stage.addEventListener('scroll', hideGuide, { passive: true });
+    stage.addEventListener('transitionend', finishViewport);
+    stage.addEventListener('transitioncancel', finishViewport);
     window.addEventListener('resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
       observer = new ResizeObserver(queueRefresh);
@@ -1354,6 +1534,7 @@
     syncResetControl(root);
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
+    hideCrosshair(root, root.querySelector('.cfx-crosshair'));
     stage.style.setProperty('--cfx-zoom', state.zoom);
     stage.style.setProperty('--cfx-pan-x', state.panX + 'px');
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
@@ -1797,6 +1978,7 @@
         return;
       }
       node.classList.toggle('cfx-series-muted', muted);
+      pointLabelSurfaces(root, node).forEach(label => label.classList.toggle('cfx-series-muted', muted));
     });
     refreshKeyboardNavigation(root);
     syncResetControl(root);
@@ -1823,6 +2005,10 @@
       const pointContainer = target && target.point !== undefined && data.cfxSeries === String(target.series)
         && role === 'series' && data.cfxPoint === undefined;
       node.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
+      pointLabelSurfaces(root, node).forEach(label => {
+        label.classList.toggle('cfx-series-isolated-in', isolated && sameSeries);
+        label.classList.toggle('cfx-series-isolated-out', isolated && !sameSeries && !context && !pointContainer);
+      });
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
@@ -1917,7 +2103,7 @@
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
     if (!target) return false;
-    const nodes = Array.from(root.querySelectorAll(targetSelector));
+    const nodes = interactiveTargets(root);
     const localNode = nodes.find((node) => matchesTargetIdentity(node, target));
     if (!localNode && target.targetKind && target.targetId) return false;
     // A peer's equivalent mark may have a different local point ordinal or series position.
@@ -1958,7 +2144,7 @@
     root._cfxFocusTrail = targets;
     root.dataset.cfxTrailCount = String(targets.length);
     targets.forEach((target, index) => {
-      root.querySelectorAll(targetSelector).forEach((node) => {
+      interactiveTargets(root).forEach((node) => {
         if (!matchesTargetIdentity(node, target)) return;
         node.classList.add('cfx-trail');
         node.dataset.cfxTrailIndex = String(index + 1);
@@ -2021,7 +2207,7 @@
     layer.replaceChildren();
     layer.hidden = false;
     (nodes || []).forEach((node) => {
-      if (!node || !stage.contains(node) || node.closest('[data-cfx-role="legend-item"]')) return;
+      if (!node || isPassiveTarget(node) || !stage.contains(node) || node.closest('[data-cfx-role="legend-item"]')) return;
       const target = targetIdentity(node);
       const labelText = revealText(node, target);
       const key = [labelText, target.series ?? '', target.point ?? '', target.value || ''].join('|');
@@ -2074,7 +2260,7 @@
     const nodes = [];
     const seen = new Set();
     targets.forEach((target) => {
-      root.querySelectorAll(targetSelector).forEach((node) => {
+      interactiveTargets(root).forEach((node) => {
         if (!matchesTargetIdentity(node, target)) return;
         const key = targetKey(targetIdentity(node));
         if (!key || seen.has(key)) return;
@@ -2132,11 +2318,11 @@
     const svg = stage.querySelector('svg');
     const plotSurface = event.target === stage || event.target === svg || event.target instanceof SVGElement
       && svg?.contains(event.target) && !event.target.closest('foreignObject')
-      && inferredPlotSurfaceRoles.has(event.target.dataset.cfxRole);
+      && (isPassiveTarget(event.target) || inferredPlotSurfaceRoles.has(event.target.dataset.cfxRole));
     if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (!usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
+      if (!isInteractiveTarget(node) || !usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
       const x = box.left + box.width / 2, y = box.top + box.height / 2;
@@ -2157,13 +2343,29 @@
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
-    const local = stagePoint(stage, point);
-    positionStageViewport(stage, crosshair);
+    const bounds = visibleCartesianPlot(root, stage), local = stagePoint(stage, point);
+    if (!bounds || !Number.isFinite(local.x) || !Number.isFinite(local.y)
+      || local.x < bounds.left - bounds.precisionX || local.x > bounds.left + bounds.width + bounds.precisionX
+      || local.y < bounds.top - bounds.precisionY || local.y > bounds.top + bounds.height + bounds.precisionY) {
+      hideCrosshair(root, crosshair);
+      return;
+    }
+    crosshair.style.left = bounds.left + 'px';
+    crosshair.style.top = bounds.top + 'px';
+    crosshair.style.width = bounds.width + 'px';
+    crosshair.style.height = bounds.height + 'px';
+    // Only SVG-sized rounding excursions reach here. Keep their anchors on the actual visible plot.
+    const x = clamp(local.x - bounds.left, 0, bounds.width), y = clamp(local.y - bounds.top, 0, bounds.height);
+    crosshair.style.setProperty('--cfx-crosshair-x', x + 'px');
+    crosshair.style.setProperty('--cfx-crosshair-y', y + 'px');
     crosshair.hidden = false;
-    crosshair.style.setProperty('--cfx-crosshair-x', (local.x - stage.scrollLeft) + 'px');
-    crosshair.style.setProperty('--cfx-crosshair-y', (local.y - stage.scrollTop) + 'px');
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
-    if (label) label.textContent = text(point.node);
+    if (label) {
+      label.textContent = text(point.node);
+      // Measure the constrained label, including its border/padding, before placing it in a narrow plot.
+      label.style.left = clamp(x + 10, 0, Math.max(0, bounds.width - label.offsetWidth)) + 'px';
+      label.style.top = clamp(y - label.offsetHeight - 6, 0, Math.max(0, bounds.height - label.offsetHeight)) + 'px';
+    }
     const target = targetIdentity(point.node);
     const key = targetKey(target), mode = crosshairHoverMode(event, point.node);
     // A native summary can stay unchanged while its independently inferred guide advances.
@@ -2215,7 +2417,7 @@
   };
   const applySelectionByLabel = (root, label, selected) => {
     if (!label) return;
-    root.querySelectorAll(targetSelector).forEach((node) => {
+    interactiveTargets(root).forEach((node) => {
       if (text(node) === label) setNodeSelected(node, selected);
     });
     syncResetControl(root);
@@ -2239,7 +2441,7 @@
   const applySelectionByTarget = (root, target, selected) => {
     if (!target) return false;
     let matched = false;
-    root.querySelectorAll(targetSelector).forEach((node) => {
+    interactiveTargets(root).forEach((node) => {
       if (!matchesTargetIdentity(node, target)) return;
       matched = true;
       setNodeSelected(node, selected);
@@ -2274,7 +2476,7 @@
     if (!hasFeature(root, 'Selection')) return [];
     if (!append) clearSelections(root);
     const targets = [];
-    root.querySelectorAll(lassoSelector).forEach((node) => {
+    interactiveTargets(root, lassoSelector).forEach((node) => {
       if (node.closest('[data-cfx-role="legend-item"]')) return;
       if (!nodeCenterInRect(node, rect)) return;
       setNodeSelected(node, true);
@@ -2408,7 +2610,7 @@
         candidates.add(node);
       });
     }
-    return Array.from(candidates);
+    return Array.from(candidates).filter((node) => !isPassiveTarget(node));
   };
   const scenarioTargets = (root, route, stepIndex) => {
     const matches = new Set();

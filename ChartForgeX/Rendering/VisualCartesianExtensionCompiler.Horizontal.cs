@@ -29,15 +29,10 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static (double Height, double Offset, double Pitch) ResolveHorizontalBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, ChartStackLayout stacks, int index) {
-        var centers = chart.Series.SelectMany(s => s.Points.Select(point => map.Y(point.X))).Distinct().OrderBy(value => value).ToArray();
-        var spacing = plot.Height;
-        for (var i = 1; i < centers.Length; i++) spacing = Math.Min(spacing, centers[i] - centers[i - 1]);
         var slot = stacks.Slot(Enumerable.Range(0, chart.Series.Count).ToArray(), index);
-        var count = slot.Count; var occupied = spacing * .68;
-        var gap = count > 1 ? Math.Min(context.Theme.Spacing / 2, occupied / (count * 4)) : 0;
-        var height = Math.Max(.1, Math.Min(30, (occupied - gap * (count - 1)) / count));
-        var offset = (slot.Position - (count - 1) / 2d) * (height + gap);
-        return (height, offset, spacing);
+        var layout = ChartCategorySlotLayout.Create(stacks.HorizontalCategories.Select(map.Y),
+            plot.Height, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false, maximumThickness: 30);
+        return (layout.Thickness, layout.Offset, layout.Pitch);
     }
 
     private static void AddHorizontalLabel(Chart chart, VisualRenderContext context, ChartSeries series, int index, int item, ChartPoint anchor,

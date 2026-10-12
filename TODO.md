@@ -27,8 +27,9 @@ All implemented chart kinds, ChartGrid, topology, flow and sequence use the shar
 ## Rendering Pipeline
 
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
-- Financial marks expose independent solid body/wick and OHLC colors, alpha, widths and hollow candles through `ChartSeries.Financial`. Keep financial dash controls and trading-session spacing as separate increments; session calendars must preserve source prices and date bounds across candle/OHLC views.
+- Financial marks expose independent body/wick and OHLC colors, alpha, widths, dash patterns and phase, plus hollow candles through `ChartSeries.Financial`. Trading-session spacing remains separate work; session calendars must preserve source prices and date bounds across candle/OHLC views.
 - Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
+- Cartesian plot regions provide passive, bounded background guidance and arbitrary quadrants with primary/secondary axes, interior captions and shared SVG/PNG geometry. Mermaid quadrant conversion remains separate work.
 - Keep annotation captions clear of data marks in compact plots, including bar caps and nearby value labels.
 
 SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
@@ -66,10 +67,12 @@ SVG and PNG charts share measured label placement, including data labels, target
 
 The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation, pyramid partitions, typed Waterfall openings/checkpoints and orientation, shared Sunburst/Treemap hierarchy items, explicit Sunburst parent totals, Sankey alignment/order/node geometry/paint, shared Sankey/Chord flow styles and states, and numeric color scales share native owners. Further work should retain that API and source-value boundary:
 
+- Difference areas retain two named authored values with separate positive/negative fills at linear crossings, explicit gaps and independent primary/secondary value axes. Smooth/Step crossing semantics, nonlinear scales and nullable paired ingestion remain separate work; ordered range-area intervals keep their existing contract.
 - Extend Sunburst with further label fitting and sector padding controls. Opt-in HTML root-branch emphasis, rounded sectors, typed secondary captions, shared hierarchy facts, independent numeric colors, leaf aggregation and inclusive authored parent totals are implemented. Automatic caption shrinking remains a separate fitting policy.
 - Measured left/right/center labels and inside/outside edge policies are implemented. Any optional tiny-flow minimum-width treatment must preserve truthful weights and conservation; current alignment, ordering, node geometry and fill controls keep one proportional scale.
-- Full-turn radial columns combine with radar Line/Area through the existing series calls, shared categories and independent value axes. Broader radial mixtures, partial mixed sweeps, radar/polar angular reversal and schedule reversal retain separate projection work.
-- Extend the shared numeric color owner with partly inferred continuous endpoints and arbitrary interior captions. Absolute positioned stops, Scatter/Bubble color values, automatic/fixed domains, missing-value paint, measured keys, typed dimension names/formats, independent key visibility, continuous gradient or sampled/exact-band keys and raw readouts use the existing shared scale; Bubble size remains independent.
+- Full-turn radial columns combine with radar Line/Area through the existing series calls, shared categories and independent value axes. `XAxis.WithReversal()` reverses standalone and mixed radar categories, continuous Polar angles and PolarArea category slots while retaining source identities. Broader radial mixtures, partial mixed sweeps, PolarArea radius reversal and schedule reversal retain separate projection work.
+- Range bars and box plots group multiple series with vertical or horizontal value direction. Range bars also support authored Start/End captions. Each horizontal family uses the primary value axis independently; horizontal mixtures and secondary value axes retain separate slot and axis work. Box plots retain interpolated quartiles and min/max whiskers; optional IQR/outlier policies and separate per-statistic data labels remain open.
+- Extend the shared numeric color owner with arbitrary interior captions. Absolute positioned stops, Scatter/Bubble color values, automatic, fixed and partly inferred domains, missing-value paint, measured keys, typed dimension names/formats, independent key visibility, continuous gradient or sampled/exact-band keys and raw readouts use the existing shared scale; Bubble size remains independent.
 - Extend weighted Chord with deliberate ordering strategies and an independent quantitative color dimension. Its native scene retains directed reciprocal, parallel, self, and raw zero flows in source order; circular span, node gaps/thickness, flow paint/state, target cues, and measured labels are configurable.
 - [ ] Extend typed adapter crosshair styles, legend visibility and data-domain zoom policies; palette choice must not decide interaction behavior.
 - [ ] Qualify each increment with compact/wide light/dark SVG and native PNG, then maintain the ledger's remaining gaps and evidence limits.
@@ -99,6 +102,24 @@ The [support matrix](docs/mermaid-support-matrix.md) records current parsing, re
 The compatibility goal is to adopt newer documented Mermaid syntax while preserving supported older syntax through regression fixtures. Start with explicit Mermaid 10, 11 and 12 reference versions; qualify the promised window before publishing it. Keep one semantic model where old and new spellings mean the same thing. Record deliberate grammar changes and migration guidance rather than maintaining separate renderer forks. Older majors and beta syntax need evidence for their individual contracts.
 
 The stages set the default work order. Independent family fixes can proceed once their own fixtures and owner APIs are available; chart/calendar correctness does not depend on completing unrelated graph notation.
+
+### Active owner PRs
+
+The following implementation PRs are open as of 12 October 2026. Each owns a distinct part of the remaining roadmap. Their local qualification does not establish merged support or public package availability; review and CI remain gates for the exact published candidate.
+
+| Active owner | Reusable contribution | Remaining qualification or scope |
+| --- | --- | --- |
+| [#295](https://github.com/EvotecIT/ChartForgeX/pull/295) | Native sequence presentation through the prepared sequence owner | Complete the sequence grammar and visible notation gaps listed above without losing unsupported source. |
+| [#296](https://github.com/EvotecIT/ChartForgeX/pull/296) | Shared HTML sizing that preserves readable sequence text | Qualify compact host scrolling, explicit fit sizing and export behavior. |
+| [#297](https://github.com/EvotecIT/ChartForgeX/pull/297), [#311](https://github.com/EvotecIT/ChartForgeX/pull/311) | Native source font families and sizes across chart, topology, sequence and block output | Qualify compact/dense content and explicit host precedence; broader color and theme-variable mapping remains open. |
+| [#300](https://github.com/EvotecIT/ChartForgeX/pull/300), [#301](https://github.com/EvotecIT/ChartForgeX/pull/301), [#304](https://github.com/EvotecIT/ChartForgeX/pull/304), [#305](https://github.com/EvotecIT/ChartForgeX/pull/305), [#306](https://github.com/EvotecIT/ChartForgeX/pull/306), [#307](https://github.com/EvotecIT/ChartForgeX/pull/307), [#308](https://github.com/EvotecIT/ChartForgeX/pull/308), [#310](https://github.com/EvotecIT/ChartForgeX/pull/310) | Gantt dependencies, date/axis/tick formats, markers, guide strokes and explicit calendar anchors | Settle the dependency-ordered chain with resolved-date, native export, host and resource-bound proof. |
+| [#313](https://github.com/EvotecIT/ChartForgeX/pull/313) | Sankey source geometry and value-label settings over the native flow owner | Qualify CSV identities, source precedence, Unicode affixes and visible labels. |
+| [#318](https://github.com/EvotecIT/ChartForgeX/pull/318), [#321](https://github.com/EvotecIT/ChartForgeX/pull/321) | Packet row/bit-number settings and shared packet geometry | Qualify dimensions, fields crossing rows and source/host precedence. |
+| [#337](https://github.com/EvotecIT/ChartForgeX/pull/337) | Horizontal XY line geometry through the shared Cartesian orientation owner | Qualify continuous numeric/time categories, reversal, labels, zones and both orientations. |
+| [#339](https://github.com/EvotecIT/ChartForgeX/pull/339) | Treemap value-caption visibility through the merged hierarchy owner | Complete remaining source classes/styles and value formatting; keep hierarchy construction in the shared owner. |
+| [#341](https://github.com/EvotecIT/ChartForgeX/pull/341), [#342](https://github.com/EvotecIT/ChartForgeX/pull/342) | Closed radar curves, graticules, dimensions, margins and native polar-axis layout | Settle curve/layout proof and complete source theme mapping without duplicating polar geometry. |
+| [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) | Flowchart circle/cross endpoint operators and bidirectional markers through shared topology geometry | Current-main native SVG/PNG, Markdown, serialization and versioned edge-type fixtures pass locally. Complete the remaining edge IDs/properties, length and compound-layout contracts separately. |
+| [#347](https://github.com/EvotecIT/ChartForgeX/pull/347) | Additional flowchart metadata shape aliases over existing native shapes | Versioned parser and native-shape fixtures cover the mapped aliases. The wider shape catalog, icon/image metadata and shape-specific notation remain open. |
 
 ### 1. Compatibility evidence and honest results
 
@@ -132,7 +153,7 @@ Completion: source presentation produces consistent SVG/PNG scenes or specific d
 
 ### 3. Core diagram semantics
 
-- [ ] Complete flowchart shape aliases and the expanded shape catalog, icon/image metadata, edge IDs, circle/cross/bidirectional markers, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
+- [ ] Settle the versioned circle/cross/bidirectional endpoint owner in [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) and metadata shape-alias owner in [#347](https://github.com/EvotecIT/ChartForgeX/pull/347). Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
 - [ ] Complete sequence participant creation/destruction, participant boxes, supported message variants, nested parallel/critical branches, branch labels, notes, activations and autonumber behavior. Keep actor menus and links as safe host-facing data.
 - [ ] Complete class generics, visibility/static/abstract members, lollipop and two-way relationships, labeled/nested namespaces, notes, styling and safe link metadata.
 - [ ] Complete state choice/fork/join notation, concurrent regions, nested composites, multiline notes and classes; keep transition and start/end meaning visible.
@@ -146,10 +167,14 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [x] Correct Gantt duration-unit case semantics: `M` means calendar months and `m` means minutes. Shared upstream timestamp fixtures cover month-end/leap-year clamping, fractional units, exclusion calendars and dependent tasks.
 - [ ] Qualify hierarchical treemap behavior against the shared owner merged in PR #273; PR #271 is closed after consolidation. Close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
 - [x] Preserve comma-separated treemap magnitudes and native group/leaf captions through typed hierarchy conversion and static direct/fence output.
+- [x] Honor treemap value-caption visibility through the native hierarchy owner, source configuration and nullable host overrides while retaining semantic values and labels.
 - [ ] Reuse the stable Sankey identity work in PR #261 and the shared XY orientation work in #251, also integrated in #273. Qualify Mermaid label/configuration handling and all series orientations against the settled owner APIs.
-- [ ] Map radar graticule, curve appearance and scale options into shared polar geometry. PR #257 supplies native series forms but does not apply Mermaid graticule metadata; that mapping remains separate work.
+- [ ] Map radar graticule, curve appearance, spacing, scale and theme options into shared polar geometry. Reuse the native radar forms and the curve/layout owners in [#341](https://github.com/EvotecIT/ChartForgeX/pull/341) and [#342](https://github.com/EvotecIT/ChartForgeX/pull/342); complete authored theme mapping and upstream conformance.
 - [x] Resolve Gantt `until` end references, merge repeated calendar declarations, apply the final diagram calendar/date format and preserve milestone ranges for dependencies. Shared upstream fixtures cover source order, earliest referenced starts and included/excluded dates.
-- [ ] Complete Gantt date/axis/tick formats, forward `after` connectors through the native relation owner, vertical markers and explicit today-marker behavior. Preserve month/year and excludes/includes/weekend calculations and compare resolved dates against upstream.
+- [x] Resolve forward `after` references without reordering source rows, and render every predecessor through the shared native Gantt dependency owner. Qualify duplicate links, graph cycles, direct conversion and Markdown fences against pinned reference dates.
+- [x] Keep Gantt dependency arrowheads visible over successor bars and beside milestone boundaries, including automatic window endpoints; qualify the shared schedule scene in SVG and PNG.
+- [ ] Complete Gantt date/axis/tick formats, vertical markers and explicit today-marker behavior. Preserve month/year and excludes/includes/weekend calculations and compare resolved dates against upstream.
+- [x] Apply English D3 Gantt axis directives, padding and literal text through the native axis formatter; qualify shared weekday, clock and ISO/week boundary labels independently of host culture.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene, quadrant regions and their labels as chart geometry, and timeline sections/events in both directions. Keep the current score-bar/scatter/ordered-time mappings explicit until replaced.
 - [ ] Broaden pie/show-data, XY numeric/category axes and legends, and Sankey CSV/configuration/colors.
 - [x] Apply packet source `bitsPerRow`, `showBits` and `bitOrder` through the native packet owner, with independent host overrides, mirrored partial rows and shared SVG/PNG bit labels. Pinned reference fixtures cover configuration retention and resolved row ranges.
@@ -170,8 +195,10 @@ Completion: each row's retained-only or approximate features either have tested 
 
 ### 6. Missing language families
 
-- [ ] Recognize `agentflow-beta` with retained source and a deliberate unsupported diagnostic, then add typed flows/global scope, collapsed containers, metadata, connectors and sequence/reference/failure edges. Reuse topology scene primitives; model/instruction/connector metadata is data, never executable work.
-- [ ] Recognize `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta` and `railroad-peg-beta`, then implement one reusable grammar-diagram model with distinct front ends for each notation. Qualify rule references, alternatives, repetition, recursion and bounded layout before enabling rendering.
+- [x] Recognize `agentflow-beta` with retained source and an explicit unsupported-rendering diagnostic through direct and Markdown parsing.
+- [ ] Add typed Agentflow flows/global scope, collapsed containers, metadata, connectors and sequence/reference/failure edges. Reuse topology scene primitives; model/instruction/connector metadata is data, never executable work.
+- [x] Recognize `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta` and `railroad-peg-beta` with retained source and an explicit unsupported-rendering diagnostic.
+- [ ] Implement one reusable grammar-diagram model with distinct front ends for each railroad notation. Qualify rule references, alternatives, repetition, recursion and bounded layout before enabling rendering.
 - [ ] Evaluate ZenUML grammar, licensing and semantic differences against `SequenceArtifact`. Implement a native mapping only after that evaluation; keep the existing diagnostic-only result until then. A JavaScript plugin is not a runtime fallback.
 
 Completion: each new family passes the same source/model/diagnostic/scene/export/fence/version gates as existing families. No new production dependency is implied by this roadmap.

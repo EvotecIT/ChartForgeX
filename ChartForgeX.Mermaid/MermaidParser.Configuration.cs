@@ -97,7 +97,7 @@ public sealed partial class MermaidParser {
     private static bool IsConfigurationScalarPath(string path) {
         if (MermaidPacketSettings.IsPath(path)) return true;
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look";
+        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look" || MermaidTreemapSettings.IsScalarPath(path);
     }
 
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
@@ -132,8 +132,11 @@ public sealed partial class MermaidParser {
         configuration.FontSize = ReadConfigurationFontSize(fontSize, result, out var invalidFontSize);
         if (kind == MermaidDiagramKind.Packet) configuration.Packet = MermaidPacketSettings.Read(configuration,
             (setting, reason) => ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' " + reason + "."));
+        if (kind == MermaidDiagramKind.Treemap)
+            configuration.Treemap = MermaidTreemapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         foreach (var setting in configuration.Settings) {
             if (kind == MermaidDiagramKind.Packet && MermaidPacketSettings.IsHandledPath(setting.Path)) continue;
+            if (configuration.Treemap?.Handles(setting.Path) == true) continue;
             var theme = Selected("theme");
             var font = Selected("fontFamily");
             if (setting.Path == "themeVariables.fontSize" && !ReferenceEquals(setting, fontSize)) continue;

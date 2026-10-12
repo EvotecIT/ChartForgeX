@@ -55,6 +55,10 @@ Keep the numeric scene and painter implementation internal. Public signatures us
 
 ## Numeric color presentation
 
+`ChartColorScale.WithValueRange(double? minimumValue, double? maximumValue)` fixes each uniform continuous endpoint independently. Use `WithValueRange(0, null)` to pin a count scale's floor while its peak follows observations, `WithValueRange(null, 100)` to pin a ceiling, or `WithValueRange(null, null)` to restore automatic bounds. Two supplied bounds must be finite and strictly ascending. Positioned stops require both fixed endpoints; discrete bands reject this method.
+
+An inferred endpoint cannot cross its fixed counterpart. If all observations lie at or below a sole fixed minimum, they use `LowColor`; at or above a sole fixed maximum, they use `HighColor`. Automatic constant domains retain `LowColor`. With no observations, an inferred endpoint stays unresolved: retained keys show missing data without a fabricated numeric extent. Fully fixed continuous ranges and discrete bands retain their authored key domain. `ColorFor(value)` requires two fixed continuous endpoints; partial ranges use `ColorFor(value, sourceMinimum, sourceMaximum)`.
+
 `ChartColorDimensionOptions` owns nullable `Name` and `ValueFormat`, `ShowLegend` (default true), and validated `LegendStyle` (`Auto`, `Gradient`, `Swatches`). Each supported owner exposes one getter-owned instance: `ChartSeries.ColorDimension` for Scatter/Bubble, `ChartOptions.MapColorDimension` for RegionMap/TileMap, `ChartOptions.HeatmapColorDimension` for numeric matrices/calendars, and the Treemap/Sunburst options' `ColorDimension`. Configure those instances with the corresponding `ConfigureColorDimension`, `ConfigureMapColorDimension`, `ConfigureHeatmapColorDimension` or existing hierarchy callback. Unsupported family combinations fail preparation.
 
 Null restores each name/format property's family default independently. A supplied name must contain non-whitespace text. Scatter/Bubble color uses `ChartLabels.Color` and neutral numeric formatting by default. Map, heatmap and hierarchy color retain their existing value-format defaults, including the chart's `ValueFormat`. Explicit color formatting changes their numeric labels, keys and readouts. It leaves Cartesian Y, Bubble size, hierarchy size, explicit point labels and authored secondary captions unchanged. A map or heatmap observation has one numeric value, so its readout does not add a duplicate Color row.
@@ -74,6 +78,17 @@ The model's title and subtitle supply fallbacks when the corresponding `VisualFr
 Prepared Cartesian guides default to horizontal lines independently of the model's legacy theme. Assigning `chart.Options.GridLineStyle` supplies a complete explicit style. Direct mutations of the returned style preserve values that differ from that legacy default, applied over the prepared defaults; this bridge cannot distinguish assigning a property its existing default value from leaving it unset. Use a whole-style assignment when that distinction matters, such as enabling vertical guides through a legacy style that already enables them. Configured grid stroke widths override the context's default width. If both legacy default style objects were modified, differing Graphite properties take precedence over differing classic properties; a whole-style assignment removes that ambiguity.
 
 Prepared Cartesian point semantics retain the complete resolved display label, even when visible placement shortens or omits it. Explicit point labels take precedence over the value formatter. Formatting runs once per point during preparation and the detached metadata reuses that result; exporting a prepared visual does not call the formatter again. Numeric coordinates and source identities remain separate metadata fields.
+
+`Chart.AddPlotRegion(new ChartPlotRegion(color, ...))` adds a passive solid background rectangle to a Cartesian chart. `Chart.PlotRegions` owns its immutable definitions in paint order. Nullable `xMinimum`, `xMaximum`, `yMinimum` and `yMaximum` extend to the corresponding final domain end; regions never expand domains. `yAxis` selects primary or secondary Y. Bounds follow physical X and Y. Horizontal charts use value coordinates for X and linear category slots for Y. Time bounds use OLE Automation dates, and logarithmic value bounds must be positive. A secondary region requires a secondary-axis series.
+
+Four regions express quadrants at any numeric pivot:
+
+```csharp
+chart.AddPlotRegion(new ChartPlotRegion(ChartColor.FromHex("#328c68"),
+    xMaximum: 4, yMinimum: 6, label: "Prioritize", opacity: .18));
+```
+
+The visible intersection follows the selected scales and axis reversal while authored bounds and captions remain in metadata, including empty intersections. Optional captions use fitted opaque backplates inside that intersection and avoid data marks; shortening or omission reports `cartesian.plot-region-label-overflow`. Prepared SVG and PNG share frozen geometry and paint. HTML regions and their captions remain descriptive backgrounds: points retain pointer, selection and keyboard actions. Other chart families reject plot regions.
 
 Visible Cartesian axes retain a descriptive region for each configured or generated tick and each axis title, including text shortened or omitted by placement. Tick regions include the complete resolved display text and numeric value. Each axis formatter runs once per tick during preparation; measurement, placement and semantics reuse the same result. These descriptive extents do not promise an exact hit-test shape.
 
@@ -155,6 +170,31 @@ Pyramid values and their aggregate must be finite and non-negative. Zero values 
 
 `ChartOrientation` is the shared core orientation type, including `MermaidXYChartDocument.Orientation`. Replace `MermaidXYChartOrientation` references with `ChartForgeX.Core.ChartOrientation` when migrating parsed XY chart code.
 
+## Difference areas
+
+`AddDifferenceArea` retains two authored values at every X, using `ChartDifferencePoint(X, First, Second, BreakBefore)`. The first value can be above or below the second; it is never renamed or swapped into a lower/upper bound. Positive fill means `First > Second`; negative fill means `First < Second`. Ties have no filled area and remain source observations. `RangeBand` and `RangeArea` keep their ordered lower/upper interval contract and existing output.
+
+```csharp
+var chart = Chart.Create().AddDifferenceArea("Actual and forecast", new[] {
+    new ChartDifferencePoint(1, 42, 56),
+    new ChartDifferencePoint(2, 68, 54),
+    new ChartDifferencePoint(4, 48, 60, breakBefore: true),
+    new ChartDifferencePoint(5, 64, 52)
+});
+chart.Series[0].ConfigureDifferenceArea(options => {
+    options.FirstName = "Actual";
+    options.SecondName = "Forecast";
+    options.PositiveFill = ChartColor.FromHex("#267EAB");
+    options.NegativeFill = ChartColor.FromHex("#D47A34");
+    options.PositiveFillOpacity = .48;
+    options.NegativeFillOpacity = .48;
+});
+```
+
+Names default to First/Second. Null fill overrides inherit explicit series color or semantic-state paint; otherwise positive uses the series palette color and negative the next palette color. Null opacity inherits the area theme; opacity multiplies color alpha once. The series pattern applies to both fills, and a zero-opacity fill has no pattern. Point color/pattern overrides apply to boundary markers. The split legend swatch remains one series target. Both named values, authored source indices and breaks are retained in SVG facts, accessible labels and single/shared-X HTML readouts. Derived crossing vertices are paint geometry and never become source observations.
+
+Difference areas support Linear interpolation with numeric/time X and a linear primary or secondary Y axis. The DateTime constructor uses the existing UTC conversion policy. X must increase within each connected segment; explicit `BreakBefore` starts a new segment and cuts both boundaries and fill. A break on either raw encoded tuple member has the same effect. Either axis can be reversed without changing fill polarity. Bounds and clipping use both values and the selected value axis. Smooth/Step interpolation, nonlinear axes, duplicate/backtracking X within a segment, stacking and normalization are rejected. Nullable paired ingestion and automatic alignment of separately supplied series remain separate work; use finite pairs and explicit breaks for missing sections.
+
 ## Waterfall opening balances and checkpoints
 
 `AddWaterfall(name, IEnumerable<ChartWaterfallItem>)` accepts immutable `OpeningBalance(x, value)`, `Delta(x, value)`, `Subtotal(x)` and `Total(x)` items, with `double` or `DateTime` coordinates. Items accumulate in input order and each has a distinct display coordinate. An optional opening balance must be first and may occur only once. Its finite positive, negative or zero value is drawn from zero and seeds the running balance. Opening-only input is valid. Without an opening item, accumulation starts at zero.
@@ -184,6 +224,60 @@ waterfall.Options.YAxis.WithReversal();
 The physical X axis owns horizontal values, bounds, scale, reversal and tick formatting. The physical Y axis owns categories, bounds, reversal and category captions. Each item's `X` remains its category coordinate; orientation never sorts items or changes accumulation. Explicit Y category labels take precedence; `WithXLabels` supplies a fallback when Y has no explicit labels. Resolved category captions agree across the native axis, marks, point legends and HTML readouts, including custom formatters and time categories. Horizontal waterfalls require one series on the primary axis. Vertical secondary-axis behavior is unchanged.
 
 Native marks and point legends preserve the distinction between item positions and numeric source ordinals. An opening balance or delta retains its raw value and `data-cfx-source-point`; only deltas expose `data-cfx-delta`. A checkpoint exposes its kind, calculated value and contributor ordinals through `data-cfx-derived` and `data-cfx-source-points`, with no invented source point or delta. Total contributors include the opening observation; subtotal contributors contain only changes since the anchor. `data-cfx-category-label` carries the resolved caption and `data-cfx-orientation` records the layout. Captions refer to the owning mark. Prepared SVG/PNG and static artifact output retain those facts after model changes. Portable editable chart-series interchange remains a separate capability.
+
+## Grouped range bars and orientation
+
+`AddRangeBar` groups multiple interval series into distinct category slots, including their end caps. Each `ChartInterval.X` remains its category coordinate; the authored `Start` and `End` retain their order even when the interval runs from a larger value to a smaller one. Point colors, patterns, labels and interaction keys index intervals rather than individual endpoints.
+
+```csharp
+var ranges = Chart.Create().WithXLabels("Standard", "Express")
+    .ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal)
+    .AddRangeBar("Expected", new[] { new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30) })
+    .AddRangeBar("Observed", new[] { new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12) });
+ranges.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+```
+
+`ChartOptions.RangeBar.Orientation` defaults to `Vertical` and may be configured before or after adding series. Horizontal range bars use the primary physical X value axis and physical Y category axis, including their bounds and reversal. Explicit Y category labels take precedence; `WithXLabels` supplies a fallback when Y has no explicit labels. Category formatters and point legends use the same resolved captions as the axis and HTML readout. `ChartOptions.Labels.Category`, `.Start` and `.End` localize interval tooltip row names while numeric metadata retains the raw endpoints.
+
+Horizontal range-bar charts accept only range-bar series on the primary axis. Vertical Cartesian mixtures and secondary Y axes retain their existing support. `ChartBarMode` does not stack intervals, and per-series stack configuration remains unsupported for range bars. Multiple range-bar series that previously overlapped now appear side by side; an overlap layout is not provided.
+
+Range-bar slots include the minimum body and cap-stroke footprint for flat styles, and the visible caps, shadows and highlights for segmented styles. If a category slot cannot fit the minimum painted footprint, rendering throws an actionable `InvalidOperationException`. Increase the category-axis space (height for horizontal intervals, width for vertical intervals), reduce grouped series, reduce stroke widths or cap effects, or choose a simpler mark style. Automatic value bounds in both orientations also contain endpoint paint and the minimum interval body; explicit value bounds remain exact and may intentionally clip that paint.
+
+### Range-bar endpoint captions
+
+`ChartOptions.RangeBar.LabelContent` defaults to `Combined`: one formatted range caption, overridden by `WithPointLabel`. Select `Endpoints` to show separate captions at the authored Start and End. Descending intervals keep those identities even when Start is numerically greater than End or the value axis is reversed.
+
+```csharp
+ranges.WithDataLabels().ConfigureRangeBar(options => {
+    options.LabelContent = ChartRangeBarLabelContent.Endpoints;
+    options.EndpointLabelFormatter = label => label.FormattedValue
+        + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
+});
+```
+
+The optional formatter receives a readonly `ChartRangeBarEndpointLabelContext`: captured `SeriesName`, zero-based observation `PointIndex`, resolved `CategoryLabel`, authored `Interval`, `Endpoint`, computed raw `Value` and chart-formatted `FormattedValue`. A null formatter uses the chart's `ValueFormat`; axis-specific formatters affect ticks independently. A null, empty or whitespace result suppresses that endpoint caption. `WithPointLabel` continues to supply the observation heading and source caption in endpoint mode; it does not replace both endpoint captions.
+
+Preparation evaluates the endpoint formatter once for Start then End per authored observation, including hidden or subsequently omitted captions. Complete text remains in observation metadata. Exceptions propagate from preparation; detached SVG, PNG and HTML exports reuse captured strings without invoking callbacks again. Stateful callbacks remain responsible for their own captured state. Combined mode retains its existing lazy numeric formatting and does not invoke the endpoint formatter.
+
+Endpoint captions inherit chart, series and point label typography and visibility. They use the shared measured placement and overflow diagnostics. Auto/Outside begins at the actual endpoint in its outward direction; Inside/Center uses that endpoint's half of the interval. Short, coincident or clipped intervals may omit or shorten captions while preserving complete text and raw facts. Both captions remain associated with one original observation for browser hover, selection and muting.
+
+## Grouped box plots and orientation
+
+`AddBoxPlot` accepts raw samples for one category or an enumerable of authored `ChartBoxPlot` summaries. Multiple box plot series use distinct category slots, including the body, median stroke and whisker caps. If the minimum painted footprint cannot fit, rendering throws an actionable `InvalidOperationException`: increase category-axis space (height for horizontal plots, width for vertical plots), reduce grouped series or use thinner strokes. Automatic value bounds in both orientations contain complete paint, including minimum-width quartile bodies; explicit value bounds stay exact and may clip paint. Point labels, colors, patterns and interaction keys index complete summaries. The default data label is the median; a custom point label takes precedence.
+
+```csharp
+var distributions = Chart.Create().WithXLabels("Standard", "Express")
+    .ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal)
+    .AddBoxPlot("Expected", new[] { new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35) })
+    .AddBoxPlot("Observed", new[] { new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42) })
+    .WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+```
+
+`ChartOptions.BoxPlot.Orientation` defaults to `Vertical` and may be configured before or after adding series. `ChartBoxPlot.X` always denotes the category coordinate. Horizontal box plots use the primary physical X value axis and Y category axis, including bounds and reversal. Move value scales and tick formatting to `XAxis` and category formatting to `YAxis`; explicit Y labels win, with `WithXLabels` as a fallback when Y has no explicit labels. Positive logarithmic values use the existing value-axis scale without an invented zero baseline. Horizontal charts require only box plot series on the primary axis. Existing vertical Cartesian mixtures and secondary Y axes remain supported. Box plots do not participate in scalar bar stacking or normalization.
+
+Raw samples are sorted for calculation. For probability `p`, the quantile interpolates between adjacent sorted samples at zero-based position `(n - 1) * p`, with `p` equal to 0.25, 0.5 and 0.75. Thus samples `[30, 0, 20, 10]` produce minimum `0`, Q1 `7.5`, median `15`, Q3 `22.5` and maximum `30`. A single sample supplies all five values. Whiskers reach the sample minimum and maximum; no IQR fence or outlier filtering is applied. Authored summaries retain their supplied five values exactly and must satisfy `Minimum <= Q1 <= Median <= Q3 <= Maximum`.
+
+`ChartOptions.Labels.Category`, `.Minimum`, `.Q1`, `.Median`, `.Q3` and `.Maximum` localize HTML readout rows. The readout exposes all five raw statistics; its heading uses the captured series name and median or custom point label. Raw sample summaries retain their derived identity and immutable `BoxPlotSourceSamples`; they do not acquire invented sample indices. Prepared geometry, labels and metadata remain detached from later model changes. Multi-category raw ingestion, IQR/outlier policies and separate per-statistic data labels remain separate work.
 
 ## Sankey layout
 
@@ -278,7 +372,9 @@ Migration: replace the former global `layout.Width` with `layout.GetWidth(index)
 
 `ChartSeries.TrendLineSourcePoints` retains the original regression observations in input order, and `ChartSeries.BoxPlotSourceSamples` retains the unsorted samples supplied to the raw-value box plot overload. These read-only collections are independent of caller-owned arrays and the fitted endpoints or summary points. A box plot built from authored five-number summaries has an empty raw sample collection.
 
-Migration: use these typed source collections and `HistogramSourcePoints` in place of raw `source-observation` or `source-sample` region labels. Retain the series' collection when original rows are needed after preparation. `PreparedVisual.Regions` describes rendered aggregate marks; it does not expose a typed raw observation store. Its mark facts and exported SVG/PNG remain detached, and interactive histogram events retain each bin's contributor indices. Keeping source data separate avoids creating and embedding a rendering-region object for every unrendered row.
+Migration: use these typed source collections and `HistogramSourcePoints` in place of raw `source-observation` or `source-sample` region labels. Retain the series' collection when original rows are needed after preparation. `PreparedVisual.Regions` describes rendered marks and semantic layout extents; it does not expose a typed raw observation store. Its mark facts and exported SVG/PNG remain detached, and interactive histogram events retain each bin's contributor indices. Keeping source data separate avoids creating and embedding a rendering-region object for every unrendered row.
+
+Filter `prepared.Regions.Where(region => region.Role == "point")` when counting or selecting Cartesian observations. Layout regions also affect the unfiltered collection's count and order. A usable Cartesian chart exposes a `cartesian-plot` region for its final mapping rectangle; composed panels translate its bounds and prefix its ID. This region supplies host guide bounds independently of mark clipping and has no observation label.
 
 ## Point markers and radial forms
 
@@ -299,9 +395,14 @@ chart.Series[0].ConfigureMarkers(markers => {
 `AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `ConfigureRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity. Missing categories retain the existing zero-imputation behavior; an explicit missing-category policy is separate work.
 
 `WithPolarGridShape(ChartPolarGridShape.Circle)` selects circular guides for radar or polar line charts. `Polygon` joins the spokes; `Automatic` preserves native radar polygons and polar circles. `Options.PolarGridRingCount` optionally requests zero through one hundred equally spaced guides in the configured linear, logarithmic or symmetric-logarithmic scale. Zero hides concentric guides while retaining spokes and observations. Null preserves generated axis ticks. Guide settings preserve source values and series forms and use the same prepared geometry for SVG and PNG. Fractional guide counts can extend beyond the data-axis radius, so fitting the outer guide can resize the plot and change rendered observation coordinates. Observation coordinates remain unchanged when the plot layout is unchanged.
-These radar forms also combine with `AddRadialColumn` through the existing series calls. The native numeric radial owner aligns every series to the union of category X identifiers and places radar vertices at whole-category centers, regardless of grouped column slots. Each value axis builds its domain from column segment endpoints and the raw values of its radar series; radar contributes neither stack slots nor normalized totals. `UseSecondaryYAxis()` selects an independent numeric domain and reversal for radar in both standalone and mixed charts. Standalone radar retains its first category at the top; mixed charts use the column viewport's category centers.
 
-Mixed column/radar charts require a full-turn `ChartRadialGeometryOptions` viewport and reject `XAxis.Reversed`. Each series must have unique category identifiers; a populated radar needs at least three categories across the composition. Missing column observations remain absent. Missing radar observations retain zero-imputation with derived identities and no source contributors. The inner radius clips radar fills, patterns, lines and glyphs in both native exporters. `RadialBar`, continuous `Polar`, `PolarArea` and Cartesian series cannot join this composition. Radar/polar angular reversal remains separate work.
+These radar forms also combine with `AddRadialColumn` through the existing series calls. The native numeric radial owner aligns every series to the union of category X identifiers and places radar vertices at whole-category centers, regardless of grouped column slots. Each value axis builds its domain from column segment endpoints and the raw values of its radar series; radar contributes neither stack slots nor normalized totals. `UseSecondaryYAxis()` selects an independent numeric domain and reversal for radar in both standalone and mixed charts. Standalone radar starts its first category at the top; mixed charts use the column viewport's category centers. `ConfigureXAxis(axis => axis.WithReversal())` reverses those category positions together with their spokes and captions. Standalone radar then starts its last category at the top. Source observations, category labels, point colors and missing-category identities keep their original associations.
+
+Mixed column/radar charts require a full-turn `ChartRadialGeometryOptions` viewport. Each series must have unique category identifiers; a populated radar needs at least three categories across the composition. Missing column observations remain absent. Missing radar observations retain zero-imputation with derived identities and no source contributors. The inner radius clips radar fills, patterns, lines and glyphs in both native exporters. `RadialBar`, continuous `Polar`, `PolarArea` and Cartesian series cannot join this composition.
+
+Continuous `Polar` uses authored `ChartPoint.X` radians from the positive horizontal ray. Its default direction is counter-clockwise; `XAxis.WithReversal()` makes increasing radians advance clockwise. Points, angular spokes and captions use the same projection, while angle metadata and readouts retain the authored radians. `YAxis` and `SecondaryYAxis` control numeric radius reversal independently.
+
+`PolarArea` uses source order for its equal-angle category slots; X values identify their labels. `XAxis.WithReversal()` reverses those slots together with their source paints, patterns and data captions. The last source category then occupies the first slot clockwise from the top ray. Source indices, values, percentages and zero-slot identities remain stable. Radii retain the square-root mapping that makes sector areas proportional to values; `YAxis.WithReversal()` is unsupported and rejects during preparation.
 
 Numeric radial `ChartPoint.X` identifies an ordinal category; `Y` is the signed source value. The numeric domain belongs to `YAxis` or `SecondaryYAxis` in both angular-bar and radial-column orientations. `ChartRadialGeometryOptions` owns finite clockwise start/end angles, inner radius and category/series spacing. Reversal belongs to the corresponding `ChartAxis`, so tick placement and mark projection agree. Fixed nonzero numeric bounds constrain visible geometry without rewriting observations. Percent rings use the separate `AddProgressRing` API and retain their 0–100 contract.
 
@@ -351,15 +452,20 @@ chart.Series[0].ConfigureFinancial(financial => {
     financial.Rising.FillOpacity = 0;
     financial.Rising.Stroke = ChartColor.FromHex("#2A967B");
     financial.Rising.StrokeWidth = 2.4;
+    financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
+    financial.Rising.DashOffset = -3;
     financial.Rising.Wick.Stroke = ChartColor.FromHex("#729BB7");
     financial.Rising.Wick.StrokeWidth = 1.2;
+    financial.Rising.Wick.DashPattern = Array.Empty<double>(); // Solid wick, independent of the body.
     financial.Falling.FillOpacity = .65;
 });
 ```
 
 Null paints and numeric options inherit the existing family behavior. Body fills keep their rising/falling alpha defaults unless `FillOpacity` is supplied. `StrokeOpacity` and `FillOpacity` multiply the chosen color's alpha and accept finite values from zero to one. Stroke widths accept finite nonnegative logical pixels; zero hides the corresponding stroke. Wick values inherit the item's stroke color, alpha multiplier and width. Item widths inherit an explicit series `StrokeWidth` before the family default. An observation's `PointColors` entry takes precedence over every financial part color; part widths and alpha multipliers remain independent. OHLC supports the item's stroke settings and rejects fill or wick settings. Configured financial options on other series kinds also fail preparation.
 
-A zero fill multiplier or a transparent effective fill creates a hollow candlestick with no interior wick or hatch. SVG, native PNG and configured financial legend glyphs consume the same resolved styles. A point legend shows its observation's direction; a series legend shows rising and falling glyphs under one series action. Bounds cover the painted body and strokes, including minimum-height and all-equal bodies. Preparation freezes styles, geometry, regions and legend output independently of later option changes. Session-time spacing, financial dash controls and datum style callbacks remain separate work.
+`DashPattern` copies positive finite dash and gap lengths in logical pixels; odd-length patterns repeat twice and the complete period must remain finite. An item pattern of null or empty means solid. `DashOffset` accepts finite signed logical pixels, with null meaning zero on an item. Wick pattern and offset each inherit independently when null; an empty wick pattern explicitly restores a solid wick. Dash phase starts separately for each OHLC stem, open tick and close tick, and for each emitted wick segment. A candlestick body outline uses one continuous closed contour. Legend glyphs scale pattern lengths and phase with their geometry and stroke widths.
+
+A zero fill multiplier or a transparent effective fill creates a hollow candlestick with no interior wick or hatch. SVG, native PNG and configured financial legend glyphs consume the same captured pattern, phase and resolved paint. Zero widths and transparent strokes remain hidden regardless of dash settings. A point legend shows its observation's direction; a series legend shows rising and falling glyphs under one series action. Bounds cover the painted body and strokes, including minimum-height and all-equal bodies. Preparation freezes styles, geometry, regions and legend output independently of later option changes. Session-time spacing and datum style callbacks remain separate work.
 
 HTML financial tooltips expose Open, High, Low and Close rows, including zero prices, through the ordinary and pinned readout. Shared-X mode uses the existing single-target fallback for financial tuples. Financial readouts retain raw metadata and accessible descriptions and omit a generic Y row, which would otherwise describe only the opening member.
 

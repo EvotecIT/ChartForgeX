@@ -1,0 +1,6 @@
+{
+  "configuration": { "treemap.showValues": false },
+  "treemap": {
+    "nodes": [["Storage", null, null], ["Documents", 1234.5, 0], ["Media", 765.5, 0]]
+  }
+}

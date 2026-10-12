@@ -19,13 +19,23 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
     [InlineData(ChartSeriesKind.Ohlc, 360, true)]
     [InlineData(ChartSeriesKind.Ohlc, 800, false)]
     [InlineData(ChartSeriesKind.Ohlc, 800, true)]
-    public async Task FinancialMarksRetainPointerKeyboardSelectionLegendAndSourceFacts(ChartSeriesKind kind, int width, bool dark) {
+    public Task FinancialMarksRetainPointerKeyboardSelectionLegendAndSourceFacts(ChartSeriesKind kind, int width, bool dark) =>
+        ExerciseFinancialMarks(kind, width, dark, dashed: false);
+
+    [Theory]
+    [InlineData(ChartSeriesKind.Candlestick, 360, true)]
+    [InlineData(ChartSeriesKind.Ohlc, 800, false)]
+    public Task DashedFinancialMarksRetainPointerKeyboardSelectionLegendAndSourceFacts(ChartSeriesKind kind, int width, bool dark) =>
+        ExerciseFinancialMarks(kind, width, dark, dashed: true);
+
+    private static async Task ExerciseFinancialMarks(ChartSeriesKind kind, int width, bool dark, bool dashed) {
         if (!Enabled) return;
         var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
-        var chart = V2GalleryModels.Create(kind, width == 360 ? "compact-options" : "options", mode)
+        var variant = dashed ? width == 360 ? "compact-dashed" : "dashed" : width == 360 ? "compact-options" : "options";
+        var chart = V2GalleryModels.Create(kind, variant, mode)
             .WithSize(width, width == 360 ? 360 : 440).WithTitle(V2GalleryModels.Title(kind))
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLegend(true);
-        var name = "financial-" + kind.ToString().ToLowerInvariant() + "-" + width + "-" + (dark ? "dark" : "light");
+        var name = "financial-" + (dashed ? "dash-" : "") + kind.ToString().ToLowerInvariant() + "-" + width + "-" + (dark ? "dark" : "light");
         var directory = CaptureDirectory();
         if (directory != null) {
             await File.WriteAllTextAsync(Path.Combine(directory, name + ".svg"), chart.ToSvg());
@@ -44,9 +54,19 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         foreach (var fact in new[] { "open=44", "high=58", "low=38", "close=53" }) Assert.Contains(fact, label);
         if (kind == ChartSeriesKind.Candlestick)
             Assert.Equal("none", await target.Locator("[data-cfx-role='candlestick-body']").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+        if (dashed) {
+            var mark = target.Locator(kind == ChartSeriesKind.Candlestick ? "[data-cfx-role='candlestick-body']" : "[data-cfx-role='ohlc-stem']");
+            Assert.Equal("7 5 2", await mark.GetAttributeAsync("stroke-dasharray"));
+            Assert.Equal("-3", await mark.GetAttributeAsync("stroke-dashoffset"));
+            if (kind == ChartSeriesKind.Candlestick) {
+                Assert.Equal("path", await mark.EvaluateAsync<string>("node => node.localName"));
+                Assert.Equal(1, await target.Locator("[data-cfx-browser-hit-area]").CountAsync());
+            }
+        }
         await MoveToAsync(page, Point(0, 0));
         Assert.Contains("cfx-hovered", await target.GetAttributeAsync("class"));
         Assert.NotEmpty(await TooltipTextAsync(page));
+        if (dashed) await CaptureAsync(page, directory, name + ".hover.png");
         var priceRows = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync();
         Assert.DoesNotContain("Y", priceRows);
         foreach (var (part, price) in new[] { ("Open", "44"), ("High", "58"), ("Low", "38"), ("Close", "53") }) {

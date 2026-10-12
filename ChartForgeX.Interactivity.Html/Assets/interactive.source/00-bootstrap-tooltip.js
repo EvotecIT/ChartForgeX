@@ -11,7 +11,9 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
+  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"]');
   const isInteractiveTarget = (node) => {
+    if (isPassiveTarget(node)) return false;
     const role = (node.dataset || {}).cfxRole;
     if (role === 'legend-entry-omitted') return false;
     if (role === 'legend-item') return true;
@@ -23,7 +25,7 @@
     return !!(data.cfxTargetKind && data.cfxTargetId
       && (data.cfxTargetKind !== ownerData.cfxTargetKind || data.cfxTargetId !== ownerData.cfxTargetId));
   };
-  const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
+  const interactiveTargets = (root, selector = targetSelector) => Array.from(root.querySelectorAll(selector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
     // Only the renderer-owned cell link is a mark's alternate keyboard target.
     const link = node.parentElement;
@@ -38,7 +40,7 @@
       ? { targetKind: data.cfxLegendTargetKind, targetId: data.cfxLegendTargetId } : null;
   };
   const referencedTargetNode = (root, target) => Array.from(root.querySelectorAll('[data-cfx-target-kind][data-cfx-target-id]'))
-    .find((node) => (node.dataset || {}).cfxRole !== 'legend-item'
+    .find((node) => isInteractiveTarget(node) && (node.dataset || {}).cfxRole !== 'legend-item'
       && node.dataset.cfxTargetKind === target.targetKind && node.dataset.cfxTargetId === target.targetId
       && (!target.seriesKey || seriesKey(node) === target.seriesKey));
   const seriesLegend = (node) => {
@@ -165,6 +167,8 @@
   const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
+    if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
+      return [seriesLabel(node), data.cfxLabel].filter(Boolean).join(': ');
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
     const label = data.cfxLabel || data.cfxText || '';
@@ -241,6 +245,29 @@
       { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
       .filter((row) => row.value !== undefined && row.value !== '');
   };
+  const boxPlotTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'boxplot') return null;
+    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX }]
+      .concat(['minimum', 'q1', 'median', 'q3', 'maximum'].map((key) => ({
+        name: rowName(node, key, ''), value: data['cfx' + key.charAt(0).toUpperCase() + key.slice(1)]
+      }))).filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
+  const rangeBarTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
+    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
+      { name: rowName(node, 'start', ''), value: data.cfxStart }, { name: rowName(node, 'end', ''), value: data.cfxEnd }]
+      .filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+  };
+  const differenceTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'differencearea') return null;
+    return ['First', 'Second'].map((part) => ({
+      name: rowName(node, part.toLowerCase(), part),
+      value: capturedText(data, 'cfxFormatted' + part, data['cfx' + part])
+    }));
+  };
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -248,6 +275,17 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     push('Series', seriesLabel(node));
+    const boxPlotRows = boxPlotTooltipRows(node);
+    if (boxPlotRows) return rows.concat(boxPlotRows, metadataRows(node));
+    const rangeBarRows = rangeBarTooltipRows(node);
+    if (rangeBarRows) return rows.concat(rangeBarRows, metadataRows(node));
+    const differenceRows = differenceTooltipRows(node);
+    if (differenceRows) {
+      push('X', data.cfxX);
+      differenceRows.forEach((row) => push(row.name, row.value));
+      metadataRows(node).forEach((row) => push(row.name, row.value));
+      return rows;
+    }
     if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
     else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
     const financialRows = financialTooltipRows(node);
@@ -337,7 +375,7 @@
   const compareItems = (root) => {
     const items = [];
     const seen = new Set();
-    root.querySelectorAll('.cfx-selected').forEach((node) => {
+    interactiveTargets(root, '.cfx-selected').forEach((node) => {
       const target = targetIdentity(node);
       const key = targetKey(target);
       if (!key || seen.has(key)) return;
