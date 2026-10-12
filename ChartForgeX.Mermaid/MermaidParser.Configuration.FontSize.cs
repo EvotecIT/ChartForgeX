@@ -10,6 +10,7 @@ public sealed partial class MermaidParser {
         invalid = false;
         if (setting == null) return null;
         var value = setting.Value?.Trim();
+        if (setting.IsString && value != null && value.Length <= 4096) value = TrimFontSizeTrivia(value);
         if (setting.TryGetNumber(out var numeric) &&
             numeric >= 1 && numeric <= 256) return numeric;
         if (value != null && value.Length <= 32 &&
@@ -21,6 +22,32 @@ public sealed partial class MermaidParser {
         invalid = true;
         ConfigurationError(result, setting.Span, "Mermaid configuration 'themeVariables.fontSize' must be a pixel size from 1 through 256, such as 18 or '18px'.");
         return null;
+    }
+
+    // Discard only surrounding CSS whitespace/comments. Keep internal token boundaries,
+    // quoted comment markers and the original setting value intact.
+    private static string? TrimFontSizeTrivia(string value) {
+        var start = -1;
+        var end = 0;
+        var quote = '\0';
+        for (var index = 0; index < value.Length; index++) {
+            var character = value[index];
+            if (quote == '\0') {
+                if (character == ' ' || character == '\t' || character == '\r' || character == '\n' || character == '\f') continue;
+                if (character == '/' && index + 1 < value.Length && value[index + 1] == '*') {
+                    var close = value.IndexOf("*/", index + 2, StringComparison.Ordinal);
+                    if (close < 0) return null;
+                    index = close + 1;
+                    continue;
+                }
+            }
+            if (start < 0) start = index;
+            if (character == '\\' && index + 1 < value.Length) index++;
+            else if (character == quote) quote = '\0';
+            else if (quote == '\0' && (character == '\'' || character == '"')) quote = character;
+            end = index + 1;
+        }
+        return start < 0 ? null : value.Substring(start, end - start);
     }
 
     // Functions remain unapplied metadata. Check their lexical boundary without evaluating CSS expressions.
