@@ -25,7 +25,12 @@ public static class MermaidRadarRendering {
             .WithPolarGridShape(GraticuleShape(document));
         chart.Options.PolarGridRingCount = Math.Min(document.Ticks ?? 5, 32);
         chart.WithYAxisBounds(document.Minimum ?? 0, document.Maximum ?? ResolveMaximum(document));
-        foreach (var curve in document.Curves) chart.AddRadar(curve.Label, Points(document, curve));
+        var tension = options.CurveTension ?? (string.Equals(document.Graticule, "polygon", StringComparison.OrdinalIgnoreCase)
+            ? 0 : document.Configuration.RadarCurveTension ?? .17);
+        foreach (var curve in document.Curves) {
+            chart.AddRadar(curve.Label, Points(document, curve));
+            chart.Series[chart.Series.Count - 1].Radar.CurveTension = tension;
+        }
         return MermaidPresentation.Apply(chart, document);
     }
 
@@ -113,6 +118,17 @@ public static class MermaidRadarRendering {
 /// Defines conversion and rendering defaults for Mermaid radar diagrams.
 /// </summary>
 public sealed class MermaidRadarRenderOptions {
+    private double? _curveTension;
+
+    /// <summary>Gets or sets host curve tension from zero through one. Null uses source configuration with circular graticules, or straight edges with polygonal graticules. An explicit value overrides either source policy.</summary>
+    public double? CurveTension {
+        get => _curveTension;
+        set {
+            if (value.HasValue && (double.IsNaN(value.Value) || value.Value < 0 || value.Value > 1)) throw new ArgumentOutOfRangeException(nameof(value));
+            _curveTension = value;
+        }
+    }
+
     /// <summary>Gets or sets the artifact id.</summary>
     public string? Id { get; set; }
 
