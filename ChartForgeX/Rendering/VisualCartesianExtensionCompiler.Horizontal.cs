@@ -69,7 +69,8 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static IReadOnlyList<double> HorizontalCategoryTicks(Chart chart, ChartRange range, ChartAxis axis) =>
-        chart.Series.All(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
+        chart.Series.Where(series => ChartCartesianOrientation.Categories(series).Any())
+            .All(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
             ? ChartTicks.ForAxis(axis, range.MinY, range.MaxY)
             : chart.Series.SelectMany(ChartCartesianOrientation.Categories)
                 .Where(value => value >= range.MinY && value <= range.MaxY).Distinct().OrderBy(value => value).ToArray();

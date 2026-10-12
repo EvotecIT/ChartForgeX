@@ -97,13 +97,16 @@ public sealed class HorizontalLineAxisContractTests {
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ContinuousCategoryTicksUseTheAuthoredScaleAndTickCount(bool time) {
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void ContinuousCategoryTicksUseTheAuthoredScaleAndTickCount(bool time, bool emptyBar) {
         var first = time ? new DateTime(2026, 10, 11, 12, 0, 0, DateTimeKind.Utc).ToOADate() : 2;
         var last = first + 6;
         var chart = Model(new[] { new ChartPoint(first + .25, 20) });
         chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        if (emptyBar) chart.AddHorizontalBar("Empty", Array.Empty<ChartPoint>());
         chart.WithYAxisBounds(first, last);
         var axis = chart.Options.YAxis;
         axis.Scale = time ? ChartScaleKind.Time : ChartScaleKind.Linear;
