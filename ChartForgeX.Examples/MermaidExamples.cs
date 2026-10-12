@@ -6,6 +6,9 @@ internal static class MermaidExamples {
     internal static void Write(string output) {
         var examples = new Dictionary<string, string> {
             ["mermaid-quadrant-regions"] = "quadrantChart\ntitle Work priorities\nx-axis Low effort --> High effort\ny-axis Low impact --> High impact\nquadrant-1 Plan\nquadrant-2 Prioritize\nquadrant-3 Consider\nquadrant-4 Reassess\nOpportunity: [0.2, 0.8]\nInvestment: [0.8, 0.8]\nRoutine: [0.2, 0.2]\nReview: [0.8, 0.2]\n",
+            ["mermaid-radar-curves"] = "---\nconfig:\n  radar:\n    curveTension: 0.25\n---\nradar-beta\ntitle Closed radar curves\naxis a[\"Coverage\"], b[\"Policy\"], c[\"Response\"], d[\"Recovery\"]\ncurve current[\"Current\"]{90, 45, 80, 60}\ncurve target[\"Target\"]{95, 85, 90, 80}\nmin 0\nmax 100\ngraticule circle\n",
+            ["mermaid-radar-maximum-tension"] = "---\nconfig:\n  radar:\n    curveTension: 1\n---\nradar-beta\ntitle Full curve fits the viewport\naxis a[\"Coverage\"], b[\"Policy\"], c[\"Response\"], d[\"Recovery\"]\ncurve current[\"Current\"]{100, 100, 100, 100}\nmin 0\nmax 100\n",
+            ["mermaid-radar-polygon-curves"] = "---\nconfig:\n  radar:\n    curveTension: 1\n---\nradar-beta\ntitle Polygonal curves retain straight edges\naxis a[\"Coverage\"], b[\"Policy\"], c[\"Response\"], d[\"Recovery\"]\ncurve current[\"Current\"]{90, 45, 80, 60}\nmin 0\nmax 100\ngraticule polygon\n",
             ["mermaid-gantt-ticks-clock"] = "gantt\ntitle Millisecond boundaries\ntickInterval 100millisecond\nTask :2026-01-01, 300ms\n",
             ["mermaid-treemap-labels"] = "---\nconfig:\n  treemap:\n    showValues: false\n---\ntreemap-beta\n\"Storage\"\n  \"Documents\": 1,234.5\n  \"Media\": 765.5\n",
             ["mermaid-treemap-values"] = "treemap-beta\n\"Storage\"\n  \"Documents\": 1,234.5\n  \"Media\": 765.5\n  \"Archive\"\n    \"Documents\": 240\n    \"Media\": 160\n",

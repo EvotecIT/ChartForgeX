@@ -11,6 +11,47 @@ internal sealed class ChartPath {
 
     public IReadOnlyList<ChartPathCommand> Commands { get; }
 
+    /// <summary>Measures endpoints and cubic extrema rather than their control-point hull.</summary>
+    internal ChartRect Bounds() {
+        if (Commands.Count == 0) return new ChartRect(0, 0, 0, 0);
+        var left = double.PositiveInfinity; var top = double.PositiveInfinity;
+        var right = double.NegativeInfinity; var bottom = double.NegativeInfinity;
+        void Include(ChartPoint point) {
+            left = Math.Min(left, point.X); top = Math.Min(top, point.Y);
+            right = Math.Max(right, point.X); bottom = Math.Max(bottom, point.Y);
+        }
+        var current = default(ChartPoint);
+        foreach (var command in Commands) {
+            var end = new ChartPoint(command.X, command.Y);
+            if (command.Kind == ChartPathCommandKind.CubicTo) {
+                var start = current;
+                var first = new ChartPoint(command.Control1X, command.Control1Y);
+                var second = new ChartPoint(command.Control2X, command.Control2Y);
+                void IncludeAt(double t) { if (t > 0 && t < 1) Include(CubicPoint(start, first, second, end, t)); }
+                CubicExtrema(start.X, first.X, second.X, end.X, IncludeAt);
+                CubicExtrema(start.Y, first.Y, second.Y, end.Y, IncludeAt);
+            }
+            Include(end); current = end;
+        }
+        return new ChartRect(left, top, right - left, bottom - top);
+    }
+
+    private static void CubicExtrema(double start, double first, double second, double end, Action<double> include) {
+        var a = end - start + 3 * (first - second);
+        var b = 2 * (start - 2 * first + second);
+        var c = first - start;
+        var scale = Math.Max(Math.Abs(a), Math.Max(Math.Abs(b), Math.Abs(c)));
+        if (scale == 0) return;
+        a /= scale; b /= scale; c /= scale;
+        if (a == 0) { if (b != 0) include(-c / b); return; }
+        var discriminant = b * b - 4 * a * c;
+        if (discriminant < 0) return;
+        var root = Math.Sqrt(discriminant);
+        var q = -.5 * (b + (b < 0 ? -root : root));
+        if (q == 0) { include(-b / (2 * a)); return; }
+        include(q / a); include(c / q);
+    }
+
     public List<ChartPoint> Flatten(double maxSegmentLength = 18) {
         var points = new List<ChartPoint>();
         var current = default(ChartPoint);

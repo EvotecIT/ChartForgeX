@@ -226,6 +226,15 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/gantt-date-anchor.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "referenceClockUtc": "2028-02-20T00:00:00.000Z",
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: partial fields qualified with a fixture-scoped upstream clock; native parsing receives the equivalent explicit caller anchor"
+    },
     "fixtures/gantt-duration-calendar.mmd": {
       "syntax": {
         "10": "accepted",
@@ -250,6 +259,14 @@
       },
       "provenance": "Authored forward and multiple after-reference regression from https://mermaid.js.org/syntax/gantt.html; resolved dates verified against all three pinned reference engines."
     },
+    "fixtures/gantt-input-dates.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: explicit fields and resolved timestamps shared across the three pinned reference engines"
+    },
     "fixtures/gantt-milestone-dependencies.mmd": {
       "syntax": {
         "10": "accepted",
@@ -257,6 +274,14 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/gantt-offset-fallback.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored complete ISO-date fallback examples with space-separated offsets, seconds and millisecond fractions; qualified with pinned official Mermaid parsers in UTC."
     },
     "fixtures/gantt-render-calendar.mmd": {
       "syntax": {
@@ -287,6 +312,28 @@
         "12": "accepted"
       },
       "provenance": "https://mermaid.js.org/syntax/gantt.html and https://d3js.org/d3-time#interval_every: authored weekly ticks and UTC calendar boundary cases"
+    },
+    "fixtures/gantt-today-style.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#today-marker: authored stroke declarations and deterministic native caller time"
+    },
+    "fixtures/gantt-unix-seconds.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "expectedByReference": {
+        "10": "gantt-unix-seconds.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid10 interprets X starts as seconds. Mermaid11/12 incorrectly interpret integer X starts as milliseconds while ends remain seconds. CFX follows the documented seconds meaning for both endpoints."
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: Unix seconds; native and reference outcomes deliberately recorded separately"
     },
     "fixtures/gantt-until.mmd": {
       "syntax": {
@@ -413,6 +460,14 @@
         "12": "accepted"
       },
       "provenance": "https://mermaid.js.org/syntax/radar.html: existing polar owner fixture with authored guide count, bounds and graticule shape"
+    },
+    "fixtures/radar-curve-tension.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX closed-curve configuration example; qualified against the pinned official Mermaid parsers and radar renderer."
     },
     "fixtures/radar-fractional-guides.mmd": {
       "syntax": {
@@ -683,53 +738,6 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
-    },
-    "fixtures/gantt-unix-seconds.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "expectedByReference": {
-        "10": "gantt-unix-seconds.expected.10.json"
-      },
-      "notes": {
-        "10": "Mermaid10 interprets X starts as seconds. Mermaid11/12 incorrectly interpret integer X starts as milliseconds while ends remain seconds. CFX follows the documented seconds meaning for both endpoints."
-      },
-      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: Unix seconds; native and reference outcomes deliberately recorded separately"
-    },
-    "fixtures/gantt-input-dates.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: explicit fields and resolved timestamps shared across the three pinned reference engines"
-    },
-    "fixtures/gantt-today-style.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "https://mermaid.js.org/syntax/gantt.html#today-marker: authored stroke declarations and deterministic native caller time"
-    },
-    "fixtures/gantt-offset-fallback.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored complete ISO-date fallback examples with space-separated offsets, seconds and millisecond fractions; qualified with pinned official Mermaid parsers in UTC."
-    },
-    "fixtures/gantt-date-anchor.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "referenceClockUtc": "2028-02-20T00:00:00.000Z",
-      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: partial fields qualified with a fixture-scoped upstream clock; native parsing receives the equivalent explicit caller anchor"
     }
   },
   "references": {
