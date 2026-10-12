@@ -107,22 +107,27 @@ The stages set the default work order. Independent family fixes can proceed once
 
 - [ ] Expand the conformance corpus from representative examples into feature coverage for every supported family, using upstream documentation and parser regressions with recorded version and provenance.
 - [x] Qualify isolated test-time lanes for Mermaid 10.9.8, 11.17.2 and 12.1.0. `compatibility.json` records each fixture's accepted/rejected versions. The Gantt endpoint-calendar expectation records Mermaid 10's different scheduling result explicitly; ChartForgeX follows the current 11/12 result.
-- [ ] Compare typed semantic facts in both implementations: nodes, edges, nesting, labels, styles, time calculations, attributes and values. The current upstream harness checks syntax for every fixture and semantic expectations for selected flowchart and Gantt fixtures; extend both upstream and .NET assertions deliberately.
+- [ ] Compare typed semantic facts in both implementations: nodes, edges, nesting, labels, styles, time calculations, attributes and values. The upstream harness checks syntax for every fixture and selected flowchart/Gantt facts plus class/state/ER identities and directions; extend both upstream and .NET assertions deliberately.
 - [ ] Distinguish invalid source, recognized-but-unimplemented features, retained metadata, approximate rendering and exact semantic mapping in parse/render results. Give diagnostics stable identities and original source spans, including through front matter, compact statements and Markdown fences.
-- [ ] Close silent fall-through paths where unsupported statements can become ordinary class/state/ER nodes or labels. Add focused regression cases that preserve useful raw source without reporting misleading success.
+- [x] Guard class notes/interactions, state note bodies and ER presentation/grouping statements before node/relationship parsing. Preserve raw source with `CFXM007`; invalid directions and unmatched state/ER boundaries report `CFXM008`. Qualify global directions against observed SVG geometry and native PNG output.
+- [ ] Extend statement classification across the remaining family grammar, including compact source forms and typed styling/interaction metadata. Retention warnings do not establish complete notation support.
 - [x] Inventory the registered upstream families and header aliases, including Agentflow, the four Railroad dialects and `flowchart-elk`. Known families without native implementations preserve source and report `CFXM002`; unknown headers report `CFXM001`, and the static ELK-header flowchart fallback reports `CFXM003`.
 
 Completion: every advertised feature has versioned positive and meaningful negative fixtures, preserved semantic facts, and an explicit rendering or diagnostic outcome. Parser acceptance alone cannot mark a family complete.
 
 ### 2. Shared presentation, layout and host policy
 
-- [ ] Replace scalar-only source theme handling with typed, bounded front-matter and legacy `%%{init}%%` configuration handling. Define precedence between host options, source settings and family defaults; diagnose unmapped keys.
-- [ ] Map supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Cover sequence themes too; current sequence previews retain a fixed palette.
+- [x] Parse bounded source configuration into inspectable settings. Space-indented YAML scalar mappings and single-line/multiline legacy `init`/`initialize` declarations share limits and preserve declaration spans; legacy JSON reuses the core reader.
+- [x] Qualify frontmatter-before-directive precedence, last declarations and family-scoped theme overrides. Apply native `dark`/`default` palettes and root font stacks where supported; retain unsupported family font keys and other layout, appearance and configuration settings with stable diagnostics.
+- [ ] Define a coherent precedence and policy for host presentation overrides, source settings and family defaults through the existing native export owners.
+- [x] Apply sequence source theme/font defaults through `SequenceArtifact` and its prepared scene. Explicit host contexts override authored defaults; portable presentation records the actual colors and font. Qualify direct rendering, typed conversion, Markdown fences and native/browser output.
+- [ ] Map supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Sequence source theme/font defaults use the native owner; theme variables and further family options remain open.
 - [ ] Handle Mermaid 12 `theme`/`look`/`layout` changes deliberately. Preserve older `defaultRenderer` declarations with a documented diagnostic or mapping. Keep deterministic CFX layout and appearance explicit; reproducing ELK or browser paint is a separate fidelity goal.
 - [ ] Extend the existing safe label/text pipeline for escaped text, entities, multiline labels and Mermaid Markdown strings. Specify literal fallback and diagnostics for HTML labels and math until a native implementation has artifact proof.
 - [ ] Apply supported `classDef`, default classes, `class`, `style`, `linkStyle` and edge-ID styling consistently across families. Preserve inheritance and source order; report properties retained without visible effect.
 - [ ] Extend shared topology layout for nested compound groups, group endpoints, local direction, ports, self-loops, parallel edges and obstacle-aware label routing where fixtures expose gaps. Preserve identical scene geometry in SVG and PNG.
 - [ ] Add a coherent host policy for accepted diagram families, source styling, safe links/assets and bounded source/model/render size. Reuse existing SVG, URI and artwork safety owners; prove script-free output and deterministic rejection without fetching remote assets or invoking source callbacks.
+- [ ] Keep sequence labels readable at compact host widths through the shared HTML/export sizing owner. The current static wrapper scales a 960px convenience viewport down to the page; a 320px capture shows very small labels even though source theme/font application is correct.
 
 Completion: source presentation produces consistent SVG/PNG scenes or specific diagnostics, host policy has a single reusable owner, and compact/dense fixtures remain readable and bounded.
 

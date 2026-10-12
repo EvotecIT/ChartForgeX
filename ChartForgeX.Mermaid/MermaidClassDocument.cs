@@ -7,6 +7,9 @@ namespace ChartForgeX.Mermaid;
 /// Describes a parsed Mermaid class diagram.
 /// </summary>
 public sealed class MermaidClassDocument : MermaidDocument {
+    /// <summary>Gets or sets the authored whole-diagram direction.</summary>
+    public string? Direction { get; set; }
+
     /// <summary>Gets classes in source order.</summary>
     public List<MermaidClassNode> Classes { get; } = new();
 
