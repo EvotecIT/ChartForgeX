@@ -103,6 +103,24 @@ The compatibility goal is to adopt newer documented Mermaid syntax while preserv
 
 The stages set the default work order. Independent family fixes can proceed once their own fixtures and owner APIs are available; chart/calendar correctness does not depend on completing unrelated graph notation.
 
+### Active owner PRs
+
+The following implementation PRs are open as of 12 October 2026. Each owns a distinct part of the remaining roadmap. Their local qualification does not establish merged support or public package availability; review and CI remain gates for the exact published candidate.
+
+| Active owner | Reusable contribution | Remaining qualification or scope |
+| --- | --- | --- |
+| [#295](https://github.com/EvotecIT/ChartForgeX/pull/295) | Native sequence presentation through the prepared sequence owner | Complete the sequence grammar and visible notation gaps listed above without losing unsupported source. |
+| [#296](https://github.com/EvotecIT/ChartForgeX/pull/296) | Shared HTML sizing that preserves readable sequence text | Qualify compact host scrolling, explicit fit sizing and export behavior. |
+| [#297](https://github.com/EvotecIT/ChartForgeX/pull/297), [#311](https://github.com/EvotecIT/ChartForgeX/pull/311) | Native source font families and sizes across chart, topology, sequence and block output | Qualify compact/dense content and explicit host precedence; broader color and theme-variable mapping remains open. |
+| [#300](https://github.com/EvotecIT/ChartForgeX/pull/300), [#301](https://github.com/EvotecIT/ChartForgeX/pull/301), [#304](https://github.com/EvotecIT/ChartForgeX/pull/304), [#305](https://github.com/EvotecIT/ChartForgeX/pull/305), [#306](https://github.com/EvotecIT/ChartForgeX/pull/306), [#307](https://github.com/EvotecIT/ChartForgeX/pull/307), [#308](https://github.com/EvotecIT/ChartForgeX/pull/308), [#310](https://github.com/EvotecIT/ChartForgeX/pull/310) | Gantt dependencies, date/axis/tick formats, markers, guide strokes and explicit calendar anchors | Settle the dependency-ordered chain with resolved-date, native export, host and resource-bound proof. |
+| [#313](https://github.com/EvotecIT/ChartForgeX/pull/313) | Sankey source geometry and value-label settings over the native flow owner | Qualify CSV identities, source precedence, Unicode affixes and visible labels. |
+| [#318](https://github.com/EvotecIT/ChartForgeX/pull/318), [#321](https://github.com/EvotecIT/ChartForgeX/pull/321) | Packet row/bit-number settings and shared packet geometry | Qualify dimensions, fields crossing rows and source/host precedence. |
+| [#337](https://github.com/EvotecIT/ChartForgeX/pull/337) | Horizontal XY line geometry through the shared Cartesian orientation owner | Qualify continuous numeric/time categories, reversal, labels, zones and both orientations. |
+| [#339](https://github.com/EvotecIT/ChartForgeX/pull/339) | Treemap value-caption visibility through the merged hierarchy owner | Complete remaining source classes/styles and value formatting; keep hierarchy construction in the shared owner. |
+| [#341](https://github.com/EvotecIT/ChartForgeX/pull/341), [#342](https://github.com/EvotecIT/ChartForgeX/pull/342) | Closed radar curves, graticules, dimensions, margins and native polar-axis layout | Settle curve/layout proof and complete source theme mapping without duplicating polar geometry. |
+| [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) | Flowchart circle/cross endpoint operators and bidirectional markers through shared topology geometry | Current-main native SVG/PNG, Markdown, serialization and versioned edge-type fixtures pass locally. Complete the remaining edge IDs/properties, length and compound-layout contracts separately. |
+| [#347](https://github.com/EvotecIT/ChartForgeX/pull/347) | Additional flowchart metadata shape aliases over existing native shapes | Versioned parser and native-shape fixtures cover the mapped aliases. The wider shape catalog, icon/image metadata and shape-specific notation remain open. |
+
 ### 1. Compatibility evidence and honest results
 
 - [ ] Expand the conformance corpus from representative examples into feature coverage for every supported family, using upstream documentation and parser regressions with recorded version and provenance.
@@ -121,19 +139,20 @@ Completion: every advertised feature has versioned positive and meaningful negat
 - [x] Qualify frontmatter-before-directive precedence, last declarations and family-scoped theme overrides. Apply native `dark`/`default` palettes and root font stacks where supported; retain unsupported family font keys and other layout, appearance and configuration settings with stable diagnostics.
 - [ ] Define a coherent precedence and policy for host presentation overrides, source settings and family defaults through the existing native export owners.
 - [x] Apply sequence source theme/font defaults through `SequenceArtifact` and its prepared scene. Explicit host contexts override authored defaults; portable presentation records the actual colors and font. Qualify direct rendering, typed conversion, Markdown fences and native/browser output.
-- [ ] Map supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Sequence source theme/font defaults use the native owner; theme variables and further family options remain open.
+- [x] Map `themeVariables.fontFamily` into existing native typography defaults, retaining the original declarations and qualifying root/variable precedence and unsupported family-key diagnostics through direct and Markdown conversion.
+- [ ] Map remaining supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Source font stacks use the native owners; color variables, font sizes and further family options remain open.
 - [ ] Handle Mermaid 12 `theme`/`look`/`layout` changes deliberately. Preserve older `defaultRenderer` declarations with a documented diagnostic or mapping. Keep deterministic CFX layout and appearance explicit; reproducing ELK or browser paint is a separate fidelity goal.
 - [ ] Extend the existing safe label/text pipeline for escaped text, entities, multiline labels and Mermaid Markdown strings. Specify literal fallback and diagnostics for HTML labels and math until a native implementation has artifact proof.
 - [ ] Apply supported `classDef`, default classes, `class`, `style`, `linkStyle` and edge-ID styling consistently across families. Preserve inheritance and source order; report properties retained without visible effect.
 - [ ] Extend shared topology layout for nested compound groups, group endpoints, local direction, ports, self-loops, parallel edges and obstacle-aware label routing where fixtures expose gaps. Preserve identical scene geometry in SVG and PNG.
 - [ ] Add a coherent host policy for accepted diagram families, source styling, safe links/assets and bounded source/model/render size. Reuse existing SVG, URI and artwork safety owners; prove script-free output and deterministic rejection without fetching remote assets or invoking source callbacks.
-- [ ] Keep sequence labels readable at compact host widths through the shared HTML/export sizing owner. The current static wrapper scales a 960px convenience viewport down to the page; a 320px capture shows very small labels even though source theme/font application is correct.
+- [x] Keep sequence labels at their logical font size through shared HTML host sizing. Source and prepared artifacts use a contained keyboard-accessible scroll region at compact widths; hosts can explicitly select `FitToWidth`. SVG/PNG scene geometry remains unchanged, and print output fits the page.
 
 Completion: source presentation produces consistent SVG/PNG scenes or specific diagnostics, host policy has a single reusable owner, and compact/dense fixtures remain readable and bounded.
 
 ### 3. Core diagram semantics
 
-- [ ] Complete flowchart shape aliases and the expanded shape catalog, icon/image metadata, edge IDs, circle/cross/bidirectional markers, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
+- [ ] Settle the versioned circle/cross/bidirectional endpoint owner in [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) and metadata shape-alias owner in [#347](https://github.com/EvotecIT/ChartForgeX/pull/347). Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
 - [ ] Complete sequence participant creation/destruction, participant boxes, supported message variants, nested parallel/critical branches, branch labels, notes, activations and autonumber behavior. Keep actor menus and links as safe host-facing data.
 - [ ] Complete class generics, visibility/static/abstract members, lollipop and two-way relationships, labeled/nested namespaces, notes, styling and safe link metadata.
 - [ ] Complete state choice/fork/join notation, concurrent regions, nested composites, multiline notes and classes; keep transition and start/end meaning visible.
@@ -147,10 +166,14 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [x] Correct Gantt duration-unit case semantics: `M` means calendar months and `m` means minutes. Shared upstream timestamp fixtures cover month-end/leap-year clamping, fractional units, exclusion calendars and dependent tasks.
 - [ ] Qualify hierarchical treemap behavior against the shared owner merged in PR #273; PR #271 is closed after consolidation. Close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
 - [x] Preserve comma-separated treemap magnitudes and native group/leaf captions through typed hierarchy conversion and static direct/fence output.
+- [x] Honor treemap value-caption visibility through the native hierarchy owner, source configuration and nullable host overrides while retaining semantic values and labels.
 - [ ] Reuse the stable Sankey identity work in PR #261 and the shared XY orientation work in #251, also integrated in #273. Qualify Mermaid label/configuration handling and all series orientations against the settled owner APIs.
-- [ ] Map radar graticule, curve appearance and scale options into shared polar geometry. PR #257 supplies native series forms but does not apply Mermaid graticule metadata; that mapping remains separate work.
+- [ ] Map radar graticule, curve appearance, spacing, scale and theme options into shared polar geometry. Reuse the native radar forms and the curve/layout owners in [#341](https://github.com/EvotecIT/ChartForgeX/pull/341) and [#342](https://github.com/EvotecIT/ChartForgeX/pull/342); complete authored theme mapping and upstream conformance.
 - [x] Resolve Gantt `until` end references, merge repeated calendar declarations, apply the final diagram calendar/date format and preserve milestone ranges for dependencies. Shared upstream fixtures cover source order, earliest referenced starts and included/excluded dates.
-- [ ] Complete Gantt date/axis/tick formats, forward `after` connectors through the native relation owner, vertical markers and explicit today-marker behavior. Preserve month/year and excludes/includes/weekend calculations and compare resolved dates against upstream.
+- [x] Resolve forward `after` references without reordering source rows, and render every predecessor through the shared native Gantt dependency owner. Qualify duplicate links, graph cycles, direct conversion and Markdown fences against pinned reference dates.
+- [x] Keep Gantt dependency arrowheads visible over successor bars and beside milestone boundaries, including automatic window endpoints; qualify the shared schedule scene in SVG and PNG.
+- [ ] Complete Gantt date/axis/tick formats, vertical markers and explicit today-marker behavior. Preserve month/year and excludes/includes/weekend calculations and compare resolved dates against upstream.
+- [x] Apply English D3 Gantt axis directives, padding and literal text through the native axis formatter; qualify shared weekday, clock and ISO/week boundary labels independently of host culture.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene, quadrant regions and their labels as chart geometry, and timeline sections/events in both directions. Keep the current score-bar/scatter/ordered-time mappings explicit until replaced.
 - [ ] Broaden pie/show-data, XY numeric/category axes and legends, Sankey CSV/configuration/colors, and packet row/label/configuration cases, including Mermaid 12 bit-numbering direction.
 
@@ -169,8 +192,10 @@ Completion: each row's retained-only or approximate features either have tested 
 
 ### 6. Missing language families
 
-- [ ] Recognize `agentflow-beta` with retained source and a deliberate unsupported diagnostic, then add typed flows/global scope, collapsed containers, metadata, connectors and sequence/reference/failure edges. Reuse topology scene primitives; model/instruction/connector metadata is data, never executable work.
-- [ ] Recognize `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta` and `railroad-peg-beta`, then implement one reusable grammar-diagram model with distinct front ends for each notation. Qualify rule references, alternatives, repetition, recursion and bounded layout before enabling rendering.
+- [x] Recognize `agentflow-beta` with retained source and an explicit unsupported-rendering diagnostic through direct and Markdown parsing.
+- [ ] Add typed Agentflow flows/global scope, collapsed containers, metadata, connectors and sequence/reference/failure edges. Reuse topology scene primitives; model/instruction/connector metadata is data, never executable work.
+- [x] Recognize `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta` and `railroad-peg-beta` with retained source and an explicit unsupported-rendering diagnostic.
+- [ ] Implement one reusable grammar-diagram model with distinct front ends for each railroad notation. Qualify rule references, alternatives, repetition, recursion and bounded layout before enabling rendering.
 - [ ] Evaluate ZenUML grammar, licensing and semantic differences against `SequenceArtifact`. Implement a native mapping only after that evaluation; keep the existing diagnostic-only result until then. A JavaScript plugin is not a runtime fallback.
 
 Completion: each new family passes the same source/model/diagnostic/scene/export/fence/version gates as existing families. No new production dependency is implied by this roadmap.
