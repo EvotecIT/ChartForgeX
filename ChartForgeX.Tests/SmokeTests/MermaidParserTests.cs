@@ -573,7 +573,9 @@ ticks 5";
         var png = document.ToPng(new MermaidRadarRenderOptions { Id = "capability-radar" });
         var radarPrepared = PreparedFamily(chart);
         var areas = radarPrepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualScenePath>().Where(path => path.Role == "radar-area").ToArray();
-        Assert(areas.Length == 2 && areas.All(path => path.Close && path.Commands.Count == 3), "Mermaid radar curves should produce two closed native three-axis polygons.");
+        Assert(areas.Length == 2 && areas.All(path => path.Close && path.Commands.Count == 4 &&
+            path.Commands.Skip(1).All(command => command.Kind == ChartForgeX.Rendering.ChartPathCommandKind.CubicTo)),
+            "Mermaid radar should produce two closed native curves through the three source axes.");
         var marks = radarPrepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneEllipse>().Where(mark => mark.Role == "radar-point").ToArray();
         Assert(marks.Length == 6 && marks.All(mark => mark.Rx > 0 && mark.Ry > 0), "Mermaid radar should retain a visible native marker for each curve/axis value.");
         var sourcePoints = FamilyGroups(radarPrepared, "radar-point-source");
@@ -581,7 +583,7 @@ ticks 5";
         var svgRoot = System.Xml.Linq.XDocument.Parse(svg);
         Assert(svgRoot.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radar-area") == 2 &&
             svgRoot.Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "radar-point") == 6,
-            "Mermaid SVG should serialize the native radar polygons and markers.");
+            "Mermaid SVG should serialize the native radar curves and markers.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid radar PNG rendering should emit a valid PNG.");
     }
 

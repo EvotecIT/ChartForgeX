@@ -97,7 +97,7 @@ public sealed partial class MermaidParser {
     private static bool IsConfigurationScalarPath(string path) {
         if (MermaidPacketSettings.IsPath(path)) return true;
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look" ||
+        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look"  || path == "radar.curveTension" ||
             MermaidSankeySettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path);
     }
 
@@ -133,12 +133,20 @@ public sealed partial class MermaidParser {
         configuration.FontSize = ReadConfigurationFontSize(fontSize, result, out var invalidFontSize);
         if (kind == MermaidDiagramKind.Packet) configuration.Packet = MermaidPacketSettings.Read(configuration,
             (setting, reason) => ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' " + reason + "."));
+        if (kind == MermaidDiagramKind.Radar) {
+            var tension = configuration.Last("radar.curveTension");
+            if (tension != null) {
+                if (tension.TryGetNumber(out var number) && number >= 0 && number <= 1) configuration.RadarCurveTension = number;
+                else ConfigurationError(result, tension.Span, "Mermaid configuration 'radar.curveTension' must be a finite number from zero through one.");
+            }
+        }
         if (kind == MermaidDiagramKind.Sankey)
             configuration.Sankey = MermaidSankeySettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Treemap)
             configuration.Treemap = MermaidTreemapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         foreach (var setting in configuration.Settings) {
             if (kind == MermaidDiagramKind.Packet && MermaidPacketSettings.IsHandledPath(setting.Path)) continue;
+            if (kind == MermaidDiagramKind.Radar && setting.Path == "radar.curveTension") continue;
             if (configuration.Sankey?.Handles(setting.Path) == true || configuration.Treemap?.Handles(setting.Path) == true) continue;
             var theme = Selected("theme");
             var font = Selected("fontFamily");
@@ -164,6 +172,14 @@ public sealed partial class MermaidParser {
         }
     }
 
+    private static void ReportRadarCurvePolicy(MermaidDocument document, MermaidParseResult<MermaidDocument> result) {
+        if (!(document is MermaidRadarDocument radar) || !string.Equals(radar.Graticule, "polygon", StringComparison.OrdinalIgnoreCase)
+            || !document.Configuration.RadarCurveTension.HasValue) return;
+        var setting = document.Configuration.Last("radar.curveTension")!;
+        Add(result, setting.Span.Line, setting.Span.Column, setting.Span.Length, MermaidDiagnosticSeverity.Warning,
+            "Mermaid source configuration 'radar.curveTension' is retained but polygon graticules use straight curves unless a host override is supplied.",
+            MermaidDiagnosticCodes.UnsupportedConfiguration);
+    }
 
     private static string? ConfigurationScope(MermaidDiagramKind kind) => kind switch {
         MermaidDiagramKind.Flowchart => "flowchart", MermaidDiagramKind.Swimlane => "swimlane", MermaidDiagramKind.UseCase => "usecase",

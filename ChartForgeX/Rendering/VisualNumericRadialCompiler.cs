@@ -36,6 +36,7 @@ internal static partial class VisualNumericRadialCompiler {
         });
         plot = AxisTitles(chart, context, builder, plot, scales);
         var geometry = Layout(chart, context, builder, plot, categoryLabels, tickLabels, scales, bars);
+        geometry = FitRadarCurves(chart, geometry, coordinates, categories, scales);
         if (geometry.Outer <= 0) {
             builder.AddDiagnostic(new VisualDiagnostic("numeric-radial.insufficient-space", "The frame leaves no space for numeric radial marks."));
         }

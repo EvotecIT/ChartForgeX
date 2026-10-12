@@ -110,6 +110,7 @@ public sealed partial class MermaidVisualMarkupBlockParser {
             Id = options.Id,
             Title = options.Title,
             Subtitle = options.Subtitle,
+            CurveTension = options.CurveTension,
             Width = options.Width,
             Height = options.Height
         };
