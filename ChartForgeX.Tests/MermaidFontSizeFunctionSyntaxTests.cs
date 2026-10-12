@@ -32,6 +32,9 @@ public sealed class MermaidFontSizeFunctionSyntaxTests {
     [InlineData("rem(1em, 3px)", true)]
     [InlineData("hypot(1em, 2px)", true)]
     [InlineData("abs(-1em)", true)]
+    [InlineData("attr(data-size px, 18px)", true)]
+    [InlineData("attr(data-size type(<length>), 18px)", true)]
+    [InlineData("attr(data-size type(<length>), 18px))", false)]
     public void UnsupportedFunctionsRequireBalancedDelimitersThroughBothSourceForms(string value, bool valid) {
         var quoted = JsonSerializer.Serialize(value);
         foreach (var directive in new[] { false, true }) {
