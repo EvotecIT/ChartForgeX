@@ -83,6 +83,25 @@ public sealed class ArtifactHtmlSizingTests {
     }
 
     [Theory]
+    [InlineData(VisualArtifactHtmlSizing.PreserveSize)]
+    [InlineData(VisualArtifactHtmlSizing.FitToWidth)]
+    public async Task HostSizingLeavesNestedSvgConstraintsIntact(VisualArtifactHtmlSizing sizing) {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var artifact = Chart.Create().WithSize(960, 560).AddBar("Counts", new[] { new ChartPoint(1, 2) }).ToVisualArtifact();
+        const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" style=\"max-width:100%\"><svg id=\"nested\" x=\"20\" y=\"20\" width=\"200\" height=\"100\" style=\"max-width:60px\"><rect width=\"200\" height=\"100\" fill=\"#2563eb\"/></svg></svg>";
+        var html = artifact.ToWatermarkedHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = sizing }, svg, VisualWatermark.FromText("REVIEW"));
+        await using var session = await InteractiveChartBrowser.OpenAsync(html, 320, 620);
+        foreach (var medium in new[] { Media.Screen, Media.Print }) {
+            await session.Page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = medium });
+            Assert.Equal("60px", await session.Page.Locator("#nested").EvaluateAsync<string>("element => getComputedStyle(element).maxWidth"));
+            var rootWidth = await session.Page.Locator(".chartforgex-visual-artifact > svg").EvaluateAsync<double>("element => element.getBoundingClientRect().width");
+            Assert.Equal(sizing == VisualArtifactHtmlSizing.PreserveSize && medium == Media.Screen, rootWidth > 320);
+            await Capture(session.Page, "artifact-html-nested-" + sizing + "-" + medium);
+        }
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExplicitFitToWidthOverridesSequenceDefaultsWithoutChangingItsScene(bool trustedWatermarkedSvg) {

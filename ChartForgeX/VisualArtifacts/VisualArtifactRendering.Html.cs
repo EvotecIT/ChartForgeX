@@ -26,7 +26,7 @@ public static partial class VisualArtifactRendering {
             ? " data-cfx-html-sizing=\"preserve-size\" tabindex=\"0\" role=\"region\" aria-label=\"" + EscapeHtml(safeTitle) + "\""
             : string.Empty;
         return "<!doctype html><html lang=\"" + EscapeHtml(safeLanguage) + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + EscapeHtml(safeTitle) + "</title><style>" + body + host +
-            ".chartforgex-visual-artifact svg{display:block;max-width:" + (preserve ? "none!important" : "100%") + ";height:auto;overflow:" + svgOverflow + "}" +
-            "@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-artifact{max-width:none" + (preserve ? ";overflow:visible" : string.Empty) + "}.chartforgex-visual-artifact svg{max-width:100%" + (preserve ? "!important" : string.Empty) + "}}</style></head><body><div class=\"chartforgex-visual-artifact\"" + attributes + ">" + svg + "</div></body></html>";
+            ".chartforgex-visual-artifact>svg{display:block;max-width:" + (preserve ? "none!important" : "100%") + ";height:auto;overflow:" + svgOverflow + "}" +
+            "@media print{html,body{background:transparent}body{padding:0}.chartforgex-visual-artifact{max-width:none" + (preserve ? ";overflow:visible" : string.Empty) + "}.chartforgex-visual-artifact>svg{max-width:100%" + (preserve ? "!important" : string.Empty) + "}}</style></head><body><div class=\"chartforgex-visual-artifact\"" + attributes + ">" + svg + "</div></body></html>";
     }
 }
