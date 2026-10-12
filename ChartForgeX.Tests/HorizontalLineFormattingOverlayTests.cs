@@ -111,6 +111,16 @@ public sealed class HorizontalLineFormattingOverlayTests {
         var guides = prepared.Regions.Where(region => region.Role == "annotation").ToArray();
         Assert.Equal(3, guides.Length);
         Assert.All(guides, guide => Assert.True(guide.Bounds.Height > 200));
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture);
+            var name = "statistics-category-range-" + (step ? "step" : "line") + (configureFirst ? "-first" : "-last");
+            File.WriteAllText(Path.Combine(capture, name + ".svg"), prepared.ToSvg());
+            File.WriteAllBytes(Path.Combine(capture, name + ".native.png"), prepared.ToPng());
+        }
+        var observations = prepared.Regions.Where(region => region.Role == "point").ToArray();
+        var categorySpan = observations.Max(point => point.Bounds.Y) - observations.Min(point => point.Bounds.Y);
+        Assert.True(categorySpan > guides[0].Bounds.Height * .8, "Statistical reference fitting must preserve the observation category domain.");
         Assert.Equal(2, guides.Count(guide => guide.Bounds.Width == 0));
         var band = Assert.Single(guides, guide => guide.Bounds.Width > 0);
         Assert.True(band.Bounds.Width > 50);
