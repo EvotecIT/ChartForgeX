@@ -52,6 +52,15 @@ export function activate(context: vscode.ExtensionContext): void {
   }));
   context.subscriptions.push(vscode.workspace.onDidSaveTextDocument((document) => schedulePreviewRefresh(context, document, 0)));
 
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((event) => {
+    for (const document of vscode.workspace.textDocuments) {
+      if (event.affectsConfiguration('chartforgexMarkup.ganttDateAnchor', document.uri)) {
+        scheduleValidation(context, document, 0);
+        schedulePreviewRefresh(context, document, 0, true);
+      }
+    }
+  }));
+
   for (const document of vscode.workspace.textDocuments) {
     scheduleValidation(context, document, 0);
   }
@@ -99,13 +108,14 @@ async function previewActiveDocument(context: vscode.ExtensionContext, resource?
 
 async function refreshPreview(context: vscode.ExtensionContext, document: vscode.TextDocument, panel: vscode.WebviewPanel): Promise<void> {
   const requestVersion = document.version;
+  const requestDateAnchor = ganttDateAnchor(document);
   if (!isChartForgeXMarkup(document)) {
     panel.webview.html = renderMessage('No versioned ChartForgeX visual block was found in this document.');
     return;
   }
 
   const result = await runCli(context, document, 'preview');
-  if (document.version !== requestVersion) {
+  if (document.version !== requestVersion || ganttDateAnchor(document) !== requestDateAnchor) {
     return;
   }
 
@@ -124,13 +134,14 @@ async function validateActiveDocument(context: vscode.ExtensionContext, showStat
   }
 
   const requestVersion = document.version;
+  const requestDateAnchor = ganttDateAnchor(document);
   if (!isChartForgeXMarkup(document)) {
     diagnostics.delete(document.uri);
     return false;
   }
 
   const result = await runCli(context, document, 'validate');
-  if (document.version !== requestVersion) {
+  if (document.version !== requestVersion || ganttDateAnchor(document) !== requestDateAnchor) {
     return false;
   }
 
@@ -233,8 +244,8 @@ function scheduleValidation(context: vscode.ExtensionContext, document: vscode.T
   }, wait));
 }
 
-function schedulePreviewRefresh(context: vscode.ExtensionContext, document: vscode.TextDocument, delay?: number): void {
-  if (!vscode.workspace.getConfiguration('chartforgexMarkup').get<boolean>('previewAutoRefresh', true)) {
+function schedulePreviewRefresh(context: vscode.ExtensionContext, document: vscode.TextDocument, delay?: number, configurationChanged = false): void {
+  if (!configurationChanged && !vscode.workspace.getConfiguration('chartforgexMarkup').get<boolean>('previewAutoRefresh', true)) {
     return;
   }
 
@@ -285,6 +296,10 @@ function isChartForgeXMarkup(document: vscode.TextDocument): boolean {
     /~~~+\s*mermaid\b/i.test(document.getText());
 }
 
+function ganttDateAnchor(document: vscode.TextDocument): string {
+  return vscode.workspace.getConfiguration('chartforgexMarkup', document.uri).get<string>('ganttDateAnchor', '').trim();
+}
+
 async function runCli(context: vscode.ExtensionContext, document: vscode.TextDocument, command: string, extraArgs: string[] = []): Promise<CliResult> {
   let cli: CliCommand;
   try {
@@ -297,11 +312,13 @@ async function runCli(context: vscode.ExtensionContext, document: vscode.TextDoc
   const tempFile = path.join(tempRoot, tempDocumentName(document));
   fs.writeFileSync(tempFile, document.getText(), 'utf8');
   try {
-    const args = [...cli.args, command, tempFile, ...extraArgs];
+    const anchor = ganttDateAnchor(document);
+    const renderArgs = command !== 'emit' && anchor ? ['--gantt-date-anchor', anchor, ...extraArgs] : extraArgs;
+    const args = [...cli.args, command, tempFile, ...renderArgs];
     let result = await spawnProcess(cli.command, args, documentWorkingDirectory(document, tempRoot));
     for (const fallback of cli.fallbacks ?? []) {
       if (!result.spawnError) break;
-      const fallbackArgs = [...fallback.args, command, tempFile, ...extraArgs];
+      const fallbackArgs = [...fallback.args, command, tempFile, ...renderArgs];
       result = await spawnProcess(fallback.command, fallbackArgs, documentWorkingDirectory(document, tempRoot));
     }
 
