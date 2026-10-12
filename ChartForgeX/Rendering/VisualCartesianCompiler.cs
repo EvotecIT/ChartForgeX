@@ -208,6 +208,13 @@ internal static partial class VisualCartesianCompiler {
     private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
 
+    // Non-paint ownership uses observation indexes, including one index per paired observation.
+    // Fill and hatch share the range even when disconnected segments repeat coordinates.
+    private static IDisposable FillSegment(VisualSceneBuilder builder, int start, int count) =>
+        builder.PushGroup(null, "fill-segment", new Dictionary<string, string> {
+            ["data-cfx-fill-point-start"] = Number(start), ["data-cfx-fill-point-count"] = Number(count)
+        });
+
     private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null) {
         var point = series.Points[pointIndex];
         var id = PointId(seriesIndex, pointIndex);

@@ -39,8 +39,10 @@ internal static partial class VisualCartesianCompiler {
                             for (var point = lowerPath.Count - 1; point >= 0; point--) commands.Add(ChartPathCommand.LineTo(lowerPath[point].X, lowerPath[point].Y));
                             var area = new ChartPath(commands);
                             var fill = ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity);
-                            builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaOpacity)));
-                            DrawPattern(builder, area, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "area-pattern");
+                            using (FillSegment(builder, offset, segment.Count)) {
+                                builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaOpacity)));
+                                DrawPattern(builder, area, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "area-pattern");
+                            }
                         }
                         offset += segment.Count;
                     }
