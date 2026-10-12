@@ -78,7 +78,7 @@
         candidates.add(node);
       });
     }
-    return Array.from(candidates);
+    return Array.from(candidates).filter((node) => !isPassiveTarget(node));
   };
   const scenarioTargets = (root, route, stepIndex) => {
     const matches = new Set();

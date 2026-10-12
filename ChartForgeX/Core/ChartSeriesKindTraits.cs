@@ -68,7 +68,7 @@ internal static class ChartSeriesKindTraits {
     public static bool SupportsMarkers(ChartSeriesKind kind) => kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine
         or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.Scatter
         or ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop
-        or ChartSeriesKind.Slope or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.Radar or ChartSeriesKind.Polar;
+        or ChartSeriesKind.Slope or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea or ChartSeriesKind.Radar or ChartSeriesKind.Polar;
 
     public static bool SupportsPointLegend(ChartSeriesKind kind) =>
         kind == ChartSeriesKind.Scatter ||
@@ -178,6 +178,7 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.Slope ||
         kind == ChartSeriesKind.RangeBand ||
         kind == ChartSeriesKind.RangeArea ||
+        kind == ChartSeriesKind.DifferenceArea ||
         kind == ChartSeriesKind.Lollipop ||
         kind == ChartSeriesKind.Dumbbell ||
         kind == ChartSeriesKind.ErrorBar ||

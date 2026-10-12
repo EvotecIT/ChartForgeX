@@ -15,7 +15,7 @@ internal static partial class VisualCartesianCompiler {
             case ChartSeriesKind.Line: case ChartSeriesKind.StepLine: case ChartSeriesKind.Area:
             case ChartSeriesKind.StepArea: case ChartSeriesKind.StackedArea: case ChartSeriesKind.Bar:
             case ChartSeriesKind.Scatter: case ChartSeriesKind.Bubble: case ChartSeriesKind.ErrorBar:
-            case ChartSeriesKind.Candlestick: case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
+            case ChartSeriesKind.Candlestick: case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea: case ChartSeriesKind.DifferenceArea:
             case ChartSeriesKind.Lollipop: case ChartSeriesKind.Dumbbell: case ChartSeriesKind.RangeBar:
             case ChartSeriesKind.BoxPlot: case ChartSeriesKind.HorizontalBar: case ChartSeriesKind.Waterfall:
             case ChartSeriesKind.Slope: case ChartSeriesKind.Ohlc: case ChartSeriesKind.TrendLine: return true;
@@ -25,7 +25,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static int ObservationStride(ChartSeriesKind kind) {
         switch (kind) {
-            case ChartSeriesKind.Bubble: case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
+            case ChartSeriesKind.Bubble: case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea: case ChartSeriesKind.DifferenceArea:
             case ChartSeriesKind.Dumbbell: case ChartSeriesKind.RangeBar: return 2;
             case ChartSeriesKind.ErrorBar: return 3;
             case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc: return 4;
@@ -36,19 +36,23 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawExtensionSeries(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
-        ChartBubbleSizeScale? bubbleScale, IReadOnlyDictionary<double, string>? waterfallCategories, ChartSeriesColorSurface? colorSurface = null) {
+        ChartBubbleSizeScale? bubbleScale, IReadOnlyDictionary<double, string>? categoryCaptions, ChartSeriesColorSurface? colorSurface = null) {
         var series = chart.Series[index];
         switch (series.Kind) {
+            case ChartSeriesKind.DifferenceArea:
+                DrawDifferenceArea(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
             case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
                 DrawRangeEnvelope(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
-            case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc: case ChartSeriesKind.BoxPlot:
+            case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc:
                 DrawFinancial(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+            case ChartSeriesKind.BoxPlot:
+                DrawBoxPlots(chart, context, builder, plot, map, index, colors, labels, obstacles, categoryCaptions!); break;
             case ChartSeriesKind.RangeBar:
-                DrawRangeBars(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+                DrawRangeBars(chart, context, builder, plot, map, index, colors, labels, obstacles, categoryCaptions!); break;
             case ChartSeriesKind.HorizontalBar:
                 DrawPreparedHorizontalBars(chart, context, builder, plot, map, stacks, index, colors, labels, obstacles); break;
             case ChartSeriesKind.Waterfall:
-                DrawPreparedWaterfall(chart, context, builder, plot, map, index, colors, labels, obstacles, waterfallCategories!); break;
+                DrawPreparedWaterfall(chart, context, builder, plot, map, index, colors, labels, obstacles, categoryCaptions!); break;
             default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles, bubbleScale, colorSurface); break;
         }
     }
@@ -76,8 +80,13 @@ internal static partial class VisualCartesianCompiler {
         int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartSeriesColorSurface colorSurface, params (string Name, double Value)[] values) =>
         ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, colorSurface, values);
 
+    private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, IReadOnlyDictionary<string, string> facts, params (string Name, double Value)[] values) =>
+        ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, null, values, facts);
+
     private static IDisposable ObservationGroupCore(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
-        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartStackPoint? stack, ChartSeriesColorSurface? colorSurface, params (string Name, double Value)[] values) {
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartStackPoint? stack, ChartSeriesColorSurface? colorSurface,
+        (string Name, double Value)[] values, IReadOnlyDictionary<string, string>? facts = null) {
         var id = PointId(seriesIndex, observation);
         var description = series.Name + ": " + label.DisplayedText;
         var metadata = new Dictionary<string, string> {
@@ -103,6 +112,10 @@ internal static partial class VisualCartesianCompiler {
         }
         if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
         if (colorSurface != null) description = colorSurface.AddFacts(metadata, observation, description);
+        if (facts != null) {
+            foreach (var fact in facts) metadata[fact.Key] = fact.Value;
+            if (facts.TryGetValue("data-cfx-category-label", out var category)) description += " " + category;
+        }
         metadata["aria-label"] = description;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, description));
         return builder.PushGroup(id, "point", metadata);
@@ -131,6 +144,12 @@ internal static partial class VisualCartesianCompiler {
 
     private static ChartRect Extents(double x1, double y1, double x2, double y2, double inflate = 0) =>
         new(Math.Min(x1, x2) - inflate, Math.Min(y1, y2) - inflate, Math.Abs(x2 - x1) + inflate * 2, Math.Abs(y2 - y1) + inflate * 2);
+
+    /// <summary>Centers only a forced minimum body length on the mapped interval.</summary>
+    private static (double Minimum, double Length) MinimumBodySpan(double first, double second, double minimumLength) {
+        var minimum = Math.Min(first, second); var length = Math.Abs(first - second);
+        return length >= minimumLength ? (minimum, length) : (minimum - (minimumLength - length) / 2, minimumLength);
+    }
 
     private static string Value(Chart chart, double value) => ChartNumericFormatter.FormatValue(chart.Options, value);
 

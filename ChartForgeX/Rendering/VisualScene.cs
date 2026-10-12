@@ -89,28 +89,32 @@ internal sealed class VisualSceneEllipse : VisualSceneMark {
 
 internal sealed class VisualSceneLine : VisualSceneMark {
     internal VisualSceneLine(ChartPoint start, ChartPoint end, ChartColor color, double width,
-        string? role, string? id, double[]? dash, VisualScenePaintBinding? paint = null) : base(null, color, width, role, id, paint) {
+        string? role, string? id, double[]? dash, VisualScenePaintBinding? paint = null, double dashOffset = 0) : base(null, color, width, role, id, paint) {
         Start = start; End = end;
         Dash = dash == null ? null : Array.AsReadOnly((double[])dash.Clone());
+        DashOffset = dashOffset;
     }
     internal ChartPoint Start { get; }
     internal ChartPoint End { get; }
     internal IReadOnlyList<double>? Dash { get; }
+    internal double DashOffset { get; }
 }
 
 internal sealed class VisualScenePath : VisualSceneMark {
     internal VisualScenePath(ChartPath path, bool close, ChartColor? fill, ChartColor? stroke,
         double strokeWidth, string? role, string? id, double[]? dash = null,
         VisualStrokeCap cap = VisualStrokeCap.Round, VisualStrokeJoin join = VisualStrokeJoin.Round,
-        VisualScenePaintBinding? paint = null) : base(fill, stroke, strokeWidth, role, id, paint) {
+        VisualScenePaintBinding? paint = null, double dashOffset = 0) : base(fill, stroke, strokeWidth, role, id, paint) {
         var copy = new ChartPathCommand[path.Commands.Count];
         for (var i = 0; i < copy.Length; i++) copy[i] = path.Commands[i];
         Commands = Array.AsReadOnly(copy); Close = close;
         Dash = dash == null ? null : Array.AsReadOnly((double[])dash.Clone()); Cap = cap; Join = join;
+        DashOffset = dashOffset;
     }
     internal IReadOnlyList<ChartPathCommand> Commands { get; }
     internal bool Close { get; }
     internal IReadOnlyList<double>? Dash { get; }
+    internal double DashOffset { get; }
     internal VisualStrokeCap Cap { get; }
     internal VisualStrokeJoin Join { get; }
 }

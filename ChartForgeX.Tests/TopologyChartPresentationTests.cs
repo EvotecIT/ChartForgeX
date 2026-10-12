@@ -88,6 +88,19 @@ public sealed class TopologyChartPresentationTests {
         Assert.Contains("\"lineStyle\":\"Dashed\"", chart.ToVisualArtifact().ToInterchangeJson().Replace(" ", string.Empty), StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(.0001, .0001)]
+    [InlineData(.123456789, 1e-20)]
+    public void CustomEdgeDashesPreserveAcceptedNumericValuesAcrossExports(double dash, double gap) {
+        var chart = Chart().WithLegend(null);
+        foreach (var edge in chart.Edges) chart.WithEdgeStroke(edge.Id, dashPattern: new[] { dash, gap });
+        var patterns = XDocument.Parse(chart.ToSvg()).Descendants().Attributes("stroke-dasharray").ToArray();
+        Assert.NotEmpty(patterns);
+        Assert.All(patterns, pattern => Assert.Equal(new[] { dash, gap }, pattern.Value.Split(' ')
+            .Select(value => double.Parse(value, System.Globalization.CultureInfo.InvariantCulture))));
+        Assert.True(chart.ToPng().Length > 64);
+    }
+
     [Fact]
     public void LegendEdgeSample_IsSolidWhenEdgesOfTheKindDiffer() {
         var chart = Chart().WithLegend(TopologyLegend.Create("Legend").AddEdgeKind("Replication", TopologyEdgeKind.Replication));

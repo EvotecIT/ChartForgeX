@@ -19,6 +19,8 @@ public sealed class ChartTreemapOptions {
     }
     /// <summary>Gets or sets whether measured group headers are reserved and drawn. Default: true.</summary>
     public bool ShowGroupLabels { get; set; } = true;
+    /// <summary>Gets or sets whether group and leaf captions include magnitudes. Labels and semantic values are retained. Default: true.</summary>
+    public bool ShowValues { get; set; } = true;
     /// <summary>Gets or sets the numeric color scale. When omitted, supplied color values use the theme's sequential ramp.</summary>
     public ChartColorScale? ColorScale { get; set; }
     /// <summary>Gets the independent color measurement's name and number display policy.</summary>

@@ -25,6 +25,13 @@ public sealed class HtmlPreparedInteractionTests {
         Assert.Equal(new[] { "First", "Second", "Third" }, metadata.RootElement.GetProperty("xLabels").EnumerateArray().Select(item => item.GetProperty("text").GetString()));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(prepared.Regions.Count, metadata.RootElement.GetProperty("regions").GetArrayLength());
+        var plot = Assert.Single(prepared.Regions, item => item.Role == "cartesian-plot");
+        var hostPlot = Assert.Single(metadata.RootElement.GetProperty("regions").EnumerateArray(), item => item.GetProperty("role").GetString() == "cartesian-plot");
+        Assert.Equal(plot.Id, hostPlot.GetProperty("id").GetString());
+        Assert.Equal(plot.Bounds.Left, hostPlot.GetProperty("x").GetDouble());
+        Assert.Equal(plot.Bounds.Top, hostPlot.GetProperty("y").GetDouble());
+        Assert.Equal(plot.Bounds.Width, hostPlot.GetProperty("width").GetDouble());
+        Assert.Equal(plot.Bounds.Height, hostPlot.GetProperty("height").GetDouble());
         var svg = EmbeddedSvg(html);
         var points = svg.Descendants().Where(item => (string?)item.Attribute("data-cfx-role") == "point").ToArray();
         Assert.Equal(3, points.Length);
