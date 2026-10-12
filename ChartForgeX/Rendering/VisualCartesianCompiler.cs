@@ -134,7 +134,7 @@ internal static partial class VisualCartesianCompiler {
         {
             if (ReferenceEquals(seriesBuilder, builder)) {
                 using (clipMarks ? builder.PushClip(plot) : null)
-                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null);
+                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
             }
             foreach (var index in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[index];
@@ -159,11 +159,11 @@ internal static partial class VisualCartesianCompiler {
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
                 using (clipMarks ? builder.PushClip(plot) : null)
-                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null);
+                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
                 builder.Append(seriesBuilder.Build());
             }
             using (clipMarks ? builder.PushClip(plot) : null)
-                DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null);
+                DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
         }
         if (chart.Options.ShowStackTotals && stacks.HasBarStacks) {
             if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, stacks, labels);
