@@ -147,7 +147,7 @@
     const stage = root.querySelector('.cfx-stage');
     if (!stage || !stage.contains(node)) return;
     const scrollAxis = (overflow, extent, available, offset, start, end, itemStart, itemEnd) => {
-      if (!['auto', 'scroll'].includes(overflow) || extent <= available) return offset;
+      if (!['auto', 'scroll', 'hidden'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
       if (itemEnd - itemStart > end - start) {
         // Keep the visible portion of a wide mark: pointer focus must not move it between down and up.
@@ -164,9 +164,15 @@
       const start = stagePoint(clip, { x: box.left, y: box.top });
       const end = stagePoint(clip, { x: box.right, y: box.bottom });
       const left = clip.scrollLeft + 8, top = clip.scrollTop + 8;
-      clip.scrollLeft = scrollAxis(style.overflowX, clip.scrollWidth, clip.clientWidth, clip.scrollLeft, left, left + clip.clientWidth - 16, start.x, end.x);
-      clip.scrollTop = scrollAxis(style.overflowY, clip.scrollHeight, clip.clientHeight, clip.scrollTop, top, top + clip.clientHeight - 16, start.y, end.y);
+      clip.scrollTo({ behavior: 'instant',
+        left: scrollAxis(style.overflowX, clip.scrollWidth, clip.clientWidth, clip.scrollLeft, left, left + clip.clientWidth - 16, start.x, end.x),
+        top: scrollAxis(style.overflowY, clip.scrollHeight, clip.clientHeight, clip.scrollTop, top, top + clip.clientHeight - 16, start.y, end.y) });
     }
+    const box = node.getBoundingClientRect(), viewport = stage.getBoundingClientRect();
+    // Native scrolling can reveal a small focus mark through an opaque slot's internal scroller.
+    // Preserve the precise manual policy for wide marks that already have a visible portion.
+    if (box.width <= viewport.width - 16 && box.height <= viewport.height - 16)
+      node.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
   };
   const focusKeyboardTarget = (root, node) => {
     const focusNode = targetFocusNode(node);
