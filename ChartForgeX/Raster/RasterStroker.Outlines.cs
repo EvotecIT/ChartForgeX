@@ -12,13 +12,17 @@ internal static partial class RasterStroker {
         if (!(width > 0) || double.IsInfinity(width)) return outline;
         if (!(miter >= 1) || double.IsInfinity(miter)) miter = 4;
         double padding = width * Math.Max(1, miter);
+        var dashPieces = 0;
         foreach (var path in paths) {
             if (path == null || path.Count == 0) continue;
             if (pattern == null || pattern.Count == 0) AppendOutline(path, width, cap, join, miter, pixelsPerUnit, outline);
             else if (TryAppendDenseCapOutline(path, pattern, width, cap, join, miter, offset, pixelsPerUnit,
                 left-padding, top-padding, right+padding, bottom+padding, outline)) continue;
-            else foreach (var dash in Dash(path, pattern, left-padding, top-padding, right+padding, bottom+padding, offset, pixelsPerUnit, width, cap))
+            else foreach (var dash in Dash(path, pattern, left-padding, top-padding, right+padding, bottom+padding, offset, pixelsPerUnit, width, cap)) {
+                if (++dashPieces > MaximumDashPieces)
+                    throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");
                 AppendOutline(dash, width, cap, join, miter, pixelsPerUnit, outline);
+            }
         }
         return outline;
     }
