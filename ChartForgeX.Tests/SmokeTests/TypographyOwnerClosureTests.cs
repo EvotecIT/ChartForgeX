@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
 
         var regular = AxisChart().ToSvg();
         var styledChart = AxisChart()
-            .ConfigureTickLabelStyle(style => style.WithFontFamily("monospace").WithFontSize(26).WithItalic().WithTextCase(TextCaseTransform.Uppercase))
+            .ConfigureTickLabelStyle(style => style.WithFontFamily("monospace").WithFontSize(18).WithItalic().WithTextCase(TextCaseTransform.Uppercase))
             .ConfigureAxisTitleStyle(style => style.WithFontFamily("serif").WithFontSize(32).WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithTextCase(TextCaseTransform.Uppercase));
         var styled = styledChart.ToSvg();
 
