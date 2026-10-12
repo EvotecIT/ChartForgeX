@@ -467,9 +467,10 @@ internal sealed partial class RgbaCanvas {
         return startAngle <= endAngle ? angle >= startAngle && angle <= endAngle : angle >= startAngle || angle <= endAngle;
     }
 
-    private void DrawGlyph(int x, int y, char ch, ChartColor color, int scale, bool italic, double boldOffset = 0) {
+    private void DrawGlyph(double x, double y, char ch, ChartColor color, double scale, bool italic, double boldOffset = 0,
+        double maximumThickness = double.PositiveInfinity) {
         var glyph = TinyFont.GetBitmap(ch);
-        var thickness = Math.Max(1.4, scale * 0.8);
+        var thickness = Math.Min(maximumThickness, Math.Max(1.4, scale * 0.8));
         var paths = new List<IReadOnlyList<ChartPoint>>();
         for (var row = 0; row < TinyFont.Height; row++) {
             for (var col = 0; col < TinyFont.Width; col++) {

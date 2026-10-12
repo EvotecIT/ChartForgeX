@@ -35,6 +35,17 @@ internal sealed partial class RgbaCanvas {
         }
     }
 
+    /// <summary>Draws the selected bitmap fallback at its logical size without resolving another outline face.</summary>
+    internal void DrawBitmapText(double x, double y, string text, ChartColor color, double fontSize, bool italic, double boldOffset = 0) {
+        if (SuppressText) return;
+        var cursor = x * _scale;
+        var glyphScale = TinyFont.ScaleForFontSize(fontSize) * _scale;
+        foreach (var ch in text) {
+            DrawGlyph(cursor, y * _scale, ch, color, glyphScale, italic, boldOffset, glyphScale);
+            cursor += TinyFont.AdvanceFor(ch) * glyphScale;
+        }
+    }
+
     public void DrawText(double x, double y, string text, ChartColor color, double fontSize) => DrawText(x, y, text, color, fontSize, _outlineFont);
 
     internal double TextAscent(double fontSize, bool emphasized) =>
@@ -50,7 +61,7 @@ internal sealed partial class RgbaCanvas {
     internal void DrawText(double x, double y, string text, ChartColor color, double fontSize, TrueTypeFont? font, bool italic) {
         if (SuppressText) return;
         if (font != null && font.Draw(this, x, y, text, color, Math.Max(1, fontSize), italic)) return;
-        DrawTextTiny(x, y, text, color, FallbackScaleForFontSize(fontSize), italic);
+        DrawBitmapText(x, y, text, color, fontSize, italic);
     }
 
     internal void DrawTextFitted(double x, double y, string text, ChartColor color, double fontSize, double maximumWidth) {
@@ -117,7 +128,7 @@ internal sealed partial class RgbaCanvas {
         }
 
         if (font != null && font.Draw(this, x, y, text, color, Math.Max(1, fontSize), italic, EmphasisOffset(fontSize))) return;
-        DrawTextTiny(x, y, text, color, FallbackScaleForFontSize(fontSize), italic, EmphasisOffset(fontSize));
+        DrawBitmapText(x, y, text, color, fontSize, italic, EmphasisOffset(fontSize));
     }
 
     public static double MeasureTextTinyWidth(string text, int scale) => MeasureTextTinyWidth(text, scale, null);
@@ -132,7 +143,7 @@ internal sealed partial class RgbaCanvas {
     internal static double MeasureTextWidth(string text, double fontSize, TrueTypeFont? outlineFont, bool italic) {
         var font = outlineFont ?? DefaultOutlineFont;
         if (font != null) return font.Measure(text, Math.Max(1, fontSize), italic);
-        var width = MeasureTextTinyWidth(text, FallbackScaleForFontSize(fontSize), null);
+        var width = MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize));
         return width + (italic && text.Length > 0 ? TrueTypeFont.ItalicOverhang(fontSize) : 0);
     }
 
@@ -175,7 +186,8 @@ internal sealed partial class RgbaCanvas {
         return font != null ? font.LineHeight(Math.Max(1, fontSize)) : TinyFont.Height * FallbackScaleForFontSize(fontSize);
     }
 
-    internal double MeasureTextHeight(double fontSize) => MeasureTextHeight(fontSize, _outlineFont);
+    internal double MeasureTextHeight(double fontSize) => _outlineFont?.LineHeight(Math.Max(1, fontSize))
+        ?? TinyFont.Height * FallbackScaleForFontSize(fontSize);
 
     public static double MeasureTextTinyHeight(int scale) => MeasureTextTinyHeight(scale, null);
 
@@ -185,12 +197,12 @@ internal sealed partial class RgbaCanvas {
     }
 
     private static double OutlineFontSize(int scale) => TinyFont.Height * Math.Max(1, scale) * 1.45;
-    private static int FallbackScaleForFontSize(double fontSize) => Math.Max(1, (int)Math.Round(Math.Max(1, fontSize) / OutlineFontSize(1)));
+    private static double FallbackScaleForFontSize(double fontSize) => TinyFont.ScaleForFontSize(fontSize);
     internal static double EmphasisOffset(double fontSize) => Math.Max(0.24, Math.Min(0.58, fontSize * 0.025));
 
-    private static double MeasureTinyFallbackWidth(string text, int scale) {
+    private static double MeasureTinyFallbackWidth(string text, double scale) {
         var width = 0;
         foreach (var ch in text) width += TinyFont.AdvanceFor(ch);
-        return width * Math.Max(1, scale);
+        return width * scale;
     }
 }

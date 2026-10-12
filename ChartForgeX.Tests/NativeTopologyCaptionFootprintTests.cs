@@ -11,6 +11,23 @@ namespace ChartForgeX.Tests;
 
 public sealed class NativeTopologyCaptionFootprintTests {
     [Theory]
+    [InlineData(48)]
+    [InlineData(155.2)]
+    public void GeographicCalloutObstaclesReserveBothPreservedIconAndCaption(double width) {
+        var node = new TopologyNode { Id = "api", Label = "Payments API", X = 32, Y = 40, Width = width, Height = 42,
+            DisplayMode = TopologyNodeDisplayMode.Icon, PreserveDisplayModeSize = true };
+        var options = new TopologyRenderOptions { IncludeIconLabels = true };
+        var obstacle = TopologyGeographicCallouts.CalloutBox.FromNodeVisual(node, options);
+        var paintedNode = TopologyGeographicCallouts.CalloutBox.FromRect(node.X, node.Y, node.Width, node.Height);
+        Assert.Equal(node.Width * node.Height, obstacle.OverlapArea(paintedNode), 6);
+        var plateWidth = TopologyRenderPrimitives.IconLabelPlateWidth(node);
+        var plateHeight = TopologyRenderPrimitives.IconLabelPlateHeight(node);
+        var paintedPlate = TopologyGeographicCallouts.CalloutBox.FromRect(node.X + node.Width / 2 - plateWidth / 2,
+            TopologyRenderPrimitives.IconLabelPlateY(node), plateWidth, plateHeight);
+        Assert.Equal(plateWidth * plateHeight, obstacle.OverlapArea(paintedPlate), 6);
+    }
+
+    [Theory]
     [InlineData(false, true)]
     [InlineData(true, false)]
     public void DetailedCardFitsItsHeaderAndOnlyPaintsADividerWithACompleteDetailLine(bool preserveSize, bool detailFits) {
@@ -51,15 +68,17 @@ public sealed class NativeTopologyCaptionFootprintTests {
         var plate = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-node-icon-label");
         var x = (double)plate.Attribute("x")!; var y = (double)plate.Attribute("y")!;
         var width = (double)plate.Attribute("width")!; var height = (double)plate.Attribute("height")!;
-        Assert.True(width > 34 && height > 20);
+        Assert.True(width > 34 && height >= 15);
         Assert.True(x >= 20 && y >= 20 && x + width <= 680 && y + height <= 360);
         var label = Assert.Single(prepared.SemanticInterchange!.Edges).ResolvedLabelBounds!.Value;
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "64 ms"
             && Math.Abs((double)element.Attribute("font-size")! - 28) < .001);
         Assert.True(label.Right <= x || label.Left >= x + width || label.Bottom <= y || label.Top >= y + height,
             "An edge caption must avoid the complete plate drawn at the selected typography scale.");
-        Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") == "topology-node-label")
-            && Math.Abs((double)element.Attribute("font-size")! - 28 * 10.5 / 11) < .001);
+        var caption = Assert.Single(svg.Descendants(), element => element.Name.LocalName == "text" && element.Ancestors().Any(parent =>
+            (string?)parent.Attribute("data-cfx-role") == "topology-node-label") && element.Value.StartsWith("Payments", StringComparison.Ordinal));
+        Assert.InRange((double)caption.Attribute("font-size")!, 10.5, 28 * 10.5 / 11);
+        Assert.True((double)caption.Attribute("y")! >= y && (double)caption.Attribute("y")! <= y + height);
         Assert.NotEmpty(prepared.ToPng());
         Assert.Equal(88, chart.Nodes.Single(node => node.Id == "owner").Y);
     }

@@ -9,6 +9,8 @@ internal static class MermaidExamples {
             ["mermaid-packet-preferred-row-gap"] = "---\nconfig:\n  packet:\n    bitsPerRow: 8\n    rowHeight: 20\n    paddingY: 100\n    showBits: false\n---\npacket-beta\n0-7: \"Header\"\n8-15: \"Payload\"\n",
             ["mermaid-packet-descending"] = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    bitOrder: descending\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"\n+1: \"Ready\"\n+5: \"Tail\"\n",
             ["mermaid-packet-source-options"] = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    showBits: false\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"\n+1: \"Ready\"\n+5: \"Tail\"\n",
+            ["mermaid-source-font-size-icon-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':32}}}%%\nflowchart LR\napi[Payments API]\n",
+            ["mermaid-source-font-size-icon-maximum-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nflowchart LR\napi[Payments API]\n",
             ["mermaid-source-font-size-c4-subtitle-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':32}}}%%\nC4Container\nContainer(api, \"API\", \"HTTP\", \"Service\")\n",
             ["mermaid-source-font-size-requirement-subtitle-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nrequirementDiagram\nrequirement API {\n text: HTTP\n}\n",
             ["mermaid-source-font-size-group-header-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nflowchart LR\nsubgraph Service[Service group]\n A --> B\nend\n",
@@ -70,6 +72,12 @@ internal static class MermaidExamples {
                 packet.WithSize(640, 280);
             if (item.Key == "mermaid-source-font-size-group-header-fit" && result.Artifact.Model is ChartForgeX.Topology.TopologyChart grouped)
                 grouped.Groups[0].Subtitle = "Group description";
+            if (item.Key.StartsWith("mermaid-source-font-size-icon-", StringComparison.Ordinal) && result.Artifact.Model is ChartForgeX.Topology.TopologyChart icons) {
+                icons.Title = ""; icons.Subtitle = "";
+                icons.DefaultRenderOptions = new ChartForgeX.Topology.TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
+                icons.Nodes[0].DisplayMode = ChartForgeX.Topology.TopologyNodeDisplayMode.Icon;
+                ChartForgeX.Topology.TopologyChartExtensions.WithViewport(icons, 360, 240, 16);
+            }
             if (item.Key == "mermaid-source-font-size-axis-rotated-fit" && result.Artifact.Model is Chart rotated) {
                 rotated.WithSize(360, 420); rotated.Options.XAxis.LabelAngle = 90;
             }
