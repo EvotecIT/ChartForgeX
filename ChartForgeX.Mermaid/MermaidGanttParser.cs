@@ -40,7 +40,8 @@ internal static partial class MermaidGanttParser {
             }
             else if (StartsWithKeyword(trimmed, "todayMarker")) {
                 document.TodayMarker = trimmed.Substring(11).Trim();
-                if (document.TodayMarker.Length > 0 && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase))
+                MermaidGanttTodayStyle.Parse(document.TodayMarker, out var supportedStyle);
+                if (!supportedStyle)
                     MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "Gantt today-marker styling");
             }
             else if (StartsWithKeyword(trimmed, "section")) {

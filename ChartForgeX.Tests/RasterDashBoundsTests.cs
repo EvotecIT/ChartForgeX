@@ -144,6 +144,92 @@ public sealed class RasterDashBoundsTests {
     }
 
     [Fact]
+    public void SvgWideStrokeBleedUsesItsBoundedVisibleGeometry() {
+        var result = SvgRasterizer.Rasterize("<svg xmlns='http://www.w3.org/2000/svg' width='1048576' height='1'><path d='M0 .5 H2048' fill='none' stroke='#000' stroke-width='1048576' stroke-dasharray='1 1'/></svg>");
+        Assert.Empty(result.Diagnostics);
+        Assert.Equal(4 * 1048576, result.Image.Pixels.Length);
+        Assert.True(result.Image.Pixels[3] > 0);
+        Assert.Equal(0, result.Image.Pixels[(1048576 - 1) * 4 + 3]);
+    }
+
+    [Theory]
+    [InlineData(64, 1)]
+    [InlineData(256, 1)]
+    [InlineData(1024, 1)]
+    [InlineData(1024, 2)]
+    [InlineData(1024, 4)]
+    public void ThickAcceptedDashesShareOnePaintedGeometryBudget(double width, int density) {
+        var canvas = new RgbaCanvas(30000, 4, density);
+        canvas.StrokePolylines(new[] { new[] { new ChartPoint(0, 2), new ChartPoint(30000, 2) } },
+            ChartColors.Black, width, RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .25, .25 });
+        Assert.Contains(canvas.Pixels, value => value > 0);
+    }
+
+    [Theory]
+    [InlineData(30000)]
+    [InlineData(1000000)]
+    public void SvgThickDashesUseTheSamePaintedGeometryBudget(int width) {
+        var result = SvgRasterizer.Rasterize("<svg xmlns='http://www.w3.org/2000/svg' width='" + width + "' height='4'><path d='M0 2 H" + width + "' fill='none' stroke='#000' stroke-width='1024' stroke-dasharray='.25 .25'/></svg>");
+        Assert.Empty(result.Diagnostics);
+        Assert.Contains(result.Image.Pixels, value => value > 0);
+    }
+
+    [Fact]
+    public void ResolvedDashWorkLimitAppliesAcrossWideAndMultipleContours() {
+        var canvas = new RgbaCanvas(300000, 4, 1);
+        var wide = new[] { new[] { new ChartPoint(0, 2), new ChartPoint(300000, 2) } };
+        Assert.Throws<InvalidOperationException>(() => canvas.StrokePolylines(wide, ChartColors.Black, 1,
+            RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .05, .05 }));
+        canvas = new RgbaCanvas(3000, 8, 1);
+        var lines = Enumerable.Range(1, 7).Select(y => (System.Collections.Generic.IReadOnlyList<ChartPoint>)new[] { new ChartPoint(0, y), new ChartPoint(3000, y) }).ToArray();
+        Assert.Throws<InvalidOperationException>(() => canvas.StrokePolylines(lines, ChartColors.Black, 1,
+            RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .05, .05 }));
+    }
+
+    [Fact]
+    public void SvgSubpixelStrokesRetainTheResolvedGeometryLimit() => Assert.Throws<NotSupportedException>(() =>
+        SvgRasterizer.Rasterize("<svg xmlns='http://www.w3.org/2000/svg' width='300000' height='4'><path d='M0 2 H300000' fill='none' stroke='#000' stroke-width='1' stroke-dasharray='.05 .05'/></svg>"));
+
+    [Fact]
+    public void AcceptedQuarterPixelDashesRenderOnALargeValidCanvas() {
+        var canvas = new RgbaCanvas(30000, 4, 1);
+        canvas.StrokePolylines(new[] { new[] { new ChartPoint(0, 2), new ChartPoint(30000, 2) } },
+            ChartColors.Black, 1, RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .25, .25 });
+        Assert.Contains(canvas.Pixels, value => value > 0);
+    }
+
+    [Fact]
+    public void TileBoundariesPreserveDashPhaseAndTranslucentStrokeUnions() {
+        var actual = new RgbaCanvas(4200, 12, 1);
+        var color = new ChartColor(11, 40, 90, 128);
+        var line = new[] { new ChartPoint(-5.13, 6), new ChartPoint(4210, 6) };
+        actual.StrokePolylines(new[] { line, line }, color, 2.5, RasterLineCap.Round, RasterLineJoin.Miter, new[] { 3.3, 4.7 });
+        foreach (var boundary in new[] { 2048, 4096 }) {
+            var left = boundary - 20;
+            var expected = new RgbaCanvas(40, 12, 1);
+            var translated = new[] { new ChartPoint(-5.13 - left, 6), new ChartPoint(4210 - left, 6) };
+            expected.StrokePolylines(new[] { translated, translated }, color, 2.5, RasterLineCap.Round, RasterLineJoin.Miter, new[] { 3.3, 4.7 });
+            for (var y = 0; y < 12; y++) for (var x = 0; x < 40; x++) {
+                var alpha = actual.Pixels[(y * 4200 + left + x) * 4 + 3];
+                Assert.InRange(alpha, 0, 128);
+                Assert.InRange(System.Math.Abs(alpha - expected.Pixels[(y * 40 + x) * 4 + 3]), 0, 1);
+            }
+        }
+    }
+
+    [Fact]
+    public void UntrustedSubpixelDashesResolveWithinABoundedOutline() {
+        var canvas = new RgbaCanvas(120, 4, 1);
+        var line = new[] { new[] { new ChartPoint(0, 2), new ChartPoint(120, 2) } };
+        var outline = RasterStroker.CreateOutline(line, 1, RasterLineCap.Butt, RasterLineJoin.Miter, 4,
+            new[] { .00001, .00001 }, 0, 1, 0, 0, 120, 4);
+        // One period per eighth pixel plus the two clipped boundaries, with four vertices per butt dash.
+        Assert.InRange(outline.Sum(contour => contour.Count), 1, 4 * (120 * 8 + 2));
+        canvas.StrokePolylines(line, ChartColors.Black, 1, RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .00001, .00001 });
+        Assert.Contains(canvas.Pixels, value => value > 0);
+    }
+
+    [Fact]
     public void FractionalDashLengthsFinishRoundedBoundaries() {
         var canvas = new RgbaCanvas(120, 40, 1);
         canvas.StrokePolylines(new[] { new[] { new ChartPoint(3.7, 10), new ChartPoint(53.8, 10), new ChartPoint(116.3, 10) } },
