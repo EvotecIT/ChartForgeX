@@ -208,7 +208,7 @@ internal static partial class SvgRasterRenderer {
         }
         if (canvas == null) throw new InvalidOperationException("SVG text rendering requires a target canvas.");
         var renderScale = ResolveTextRenderScale(canvas, text, style, matrix.ScaleFactor, glyphs);
-        var fontSize = Math.Max(1, style.FontSize * renderScale);
+        var fontSize = Math.Max(double.Epsilon, style.FontSize * renderScale);
         var face = SvgTextFace(style);
         var font = face.Font;
         // A real bold or italic face draws as it is; only a missing one is synthesized on the nearest face.
@@ -311,7 +311,7 @@ internal static partial class SvgRasterRenderer {
         glyphs ??= face.Font is TrueTypeFont shapingFace ? TextShaper.Shape(shapingFace, text, style.FontSize) : null;
         var italic = IsItalic(style.FontStyle);
         for (var attempt = 0; attempt < 8; attempt++) {
-            var fontSize = Math.Max(1, style.FontSize * scale);
+            var fontSize = Math.Max(double.Epsilon, style.FontSize * scale);
             var width = Math.Max(1, PreparedPaintWidth(text, fontSize, face, italic, glyphs));
             var height = Math.Max(1, RgbaCanvas.MeasureTextHeight(fontSize, face.Font));
             if (HasUnderline(style.TextDecoration)) {
