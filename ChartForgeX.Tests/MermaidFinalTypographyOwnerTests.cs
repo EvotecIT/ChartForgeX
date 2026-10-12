@@ -38,6 +38,14 @@ public sealed class MermaidFinalTypographyOwnerTests {
             Assert.InRange((double)circle.Attribute("cx")!, radius, width - radius);
             Assert.InRange((double)circle.Attribute("cy")!, radius, 320 - radius);
         }
+        if (fontSize > 16) {
+            var bottom = circles.Max(e => (double)e.Attribute("cy")! + (double)e.Attribute("r")! + .5);
+            var builder = new VisualSceneBuilder(new VisualSize(width, 320), FontSpec.FromFamily("Arial"));
+            var stages = XDocument.Parse(svg).Descendants().Where(e => e.Name.LocalName == "text" &&
+                new[] { "Genesis", "Custom", "Product", "Commodity" }.Contains(e.Value)).ToArray();
+            Assert.Equal(4, stages.Length);
+            Assert.All(stages, label => Assert.True((double)label.Attribute("y")! - builder.TextAscent((double)label.Attribute("font-size")!, 600) > bottom));
+        }
     }
 
     [Theory]

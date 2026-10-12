@@ -35,11 +35,12 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.StartElement("line").Attribute("data-cfx-role", "wardley-axis-x").Attribute("x1", F(plot.X)).Attribute("y1", F(plot.Bottom)).Attribute("x2", F(plot.Right)).Attribute("y2", F(plot.Bottom)).Attribute("stroke", theme.Axis.ToCss()).Attribute("stroke-width", 1.4).EndEmptyElement().Line();
         writer.StartElement("line").Attribute("data-cfx-role", "wardley-axis-y").Attribute("x1", F(plot.X)).Attribute("y1", F(plot.Y)).Attribute("x2", F(plot.X)).Attribute("y2", F(plot.Bottom)).Attribute("stroke", theme.Axis.ToCss()).Attribute("stroke-width", 1.4).EndEmptyElement().Line();
         WriteFittedBodyText(writer, "Visibility", Math.Max(0, plot.X - 54), plot.Y + plot.Height * 0.50, 48, 20, TextAlignment.Center, theme.MutedText, theme, 11.5, 700);
-        WriteFittedBodyText(writer, "Evolution", plot.X + plot.Width * 0.38, plot.Bottom + 38, plot.Width * 0.24, 20, TextAlignment.Center, theme.MutedText, theme, 11.5, 700);
+        var stageLabelOffset = VisualBlockRendering.WardleyStageLabelOffset(map);
+        WriteFittedBodyText(writer, "Evolution", plot.X + plot.Width * 0.38, plot.Bottom + stageLabelOffset + 20, plot.Width * 0.24, 20, TextAlignment.Center, theme.MutedText, theme, 11.5, 700);
         var stages = map.Stages.Count == 0 ? new[] { "Genesis", "Custom", "Product", "Commodity" } : map.Stages;
         for (var index = 0; index < stages.Count; index++) {
             var x = plot.X + plot.Width * (index + 0.5) / stages.Count;
-            WriteFittedBodyText(writer, stages[index], x - plot.Width / stages.Count / 2 + 4, plot.Bottom + 18, plot.Width / stages.Count - 8, 16, TextAlignment.Center, theme.MutedText, theme, 10.5, 600);
+            WriteFittedBodyText(writer, stages[index], x - plot.Width / stages.Count / 2 + 4, plot.Bottom + stageLabelOffset, plot.Width / stages.Count - 8, VisualBlockRendering.WardleyStageLabelHeight, TextAlignment.Center, theme.MutedText, theme, 10.5, 600);
         }
     }
 
