@@ -107,7 +107,7 @@ The stages set the default work order. Independent family fixes can proceed once
 
 These implementation PRs are open as of 12 October 2026. Reuse their existing owners for remaining work. Local qualification, merged source and public package availability are separate states; each published candidate retains its CI and review gates.
 
-Merged support includes Gantt month/minute duration semantics, dependency/calendar resolution, English D3 axis directives, calendar tick intervals, vertical markers, explicit today-marker suppression and dependency arrows; native sequence presentation; source font families; readable sequence HTML sizing; treemap value-caption visibility; and Sankey source geometry and value-caption controls. Completed owners are removed from this table. Broader grammar and presentation work remains below.
+Merged support includes Gantt month/minute duration semantics, dependency/calendar resolution, English D3 axis directives, calendar tick intervals, vertical markers, explicit today-marker suppression and dependency arrows; native sequence presentation; source font families; readable sequence HTML sizing and root-only host sizing that preserves nested SVG constraints; treemap value-caption visibility; and Sankey source geometry and value-caption controls. Completed owners are removed from this table. Broader grammar and presentation work remains below.
 
 | Active owner | Reusable contribution | Remaining qualification or scope |
 | --- | --- | --- |
@@ -119,9 +119,8 @@ Merged support includes Gantt month/minute duration semantics, dependency/calend
 | [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) | Flowchart endpoints, literal captions and metadata source locations | Local native SVG/PNG, Markdown, serialization and versioned fixtures pass; settle current-head CI and review. |
 | [#347](https://github.com/EvotecIT/ChartForgeX/pull/347) | Additional flowchart metadata shape aliases over existing native shapes | Versioned parser and native-shape qualification passes; settle current-head CI and review. The wider shape catalog and icon/image notation remain open. |
 | [#350](https://github.com/EvotecIT/ChartForgeX/pull/350) | Native quadrant regions, labels and accessible palette mappings | Initially equal palette entries retain distinct host bindings through region fills, caption tints and contrast. Focused native/browser checks, bounded closure and the serialized full-suite, reference, gallery and package gate pass. The capability ledger records implemented regions and remaining limits; settle current-head CI and review. |
-| [#352](https://github.com/EvotecIT/ChartForgeX/pull/352) | Explicit preserved-size SVGs in contained HTML hosts | Root-only sizing preserves authored nested-SVG constraints in screen and print media. Browser, full-suite, reference, gallery and package checks pass; settle current-head CI and review. |
 
-Two implementation candidates reuse these owners without duplicating their work: flowchart minimum edge lengths have full local versioned/render/export qualification and await #346 plus the corrected HTML owner; radar source-theme mapping awaits the settled font, Gantt and radar owners. Neither candidate is counted as merged support.
+Two implementation candidates reuse these owners without duplicating their work: flowchart minimum edge lengths have full local versioned/render/export qualification and await #346; radar source-theme mapping awaits the settled font, Gantt and radar owners. Neither candidate is counted as merged support.
 
 Outstanding PR settlement continues while new roadmap implementation is paused:
 
