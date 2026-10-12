@@ -156,6 +156,11 @@ for (const { folder, file, hasExpected } of files) {
         assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);
         assert.deepEqual(diagram.db.getEdges().map(edge => [edge.start, edge.end]), expected.edges);
       }
+      if (expected.sankey) {
+        const graph = diagram.db.getGraph();
+        assert.deepEqual(graph.nodes.map(node => node.id), expected.sankey.nodes);
+        assert.deepEqual(graph.links.map(link => [link.source, link.target, link.value]), expected.sankey.links);
+      }
       if (expected.tasks) {
         const day = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
         assert.deepEqual(diagram.db.getTasks().map((task, index) => [expected.tasks[index][0] === null ? null : task.id, day(task.startTime), day(task.endTime)]), expected.tasks);
