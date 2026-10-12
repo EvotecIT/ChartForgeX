@@ -38,11 +38,12 @@ public sealed partial class PngVisualBlockRenderer {
         canvas.DrawLine(plot.X, plot.Bottom, plot.Right, plot.Bottom, theme.Axis, 1.4, RasterLineCap.Butt);
         canvas.DrawLine(plot.X, plot.Y, plot.X, plot.Bottom, theme.Axis, 1.4, RasterLineCap.Butt);
         DrawFittedBodyText(canvas, "Visibility", Math.Max(0, plot.X - 54), plot.Y + plot.Height * 0.50, 48, 20, TextAlignment.Center, theme.MutedText, theme, 11.5, 700);
-        DrawFittedBodyText(canvas, "Evolution", plot.X + plot.Width * 0.38, plot.Bottom + 38, plot.Width * 0.24, 20, TextAlignment.Center, theme.MutedText, theme, 11.5, 700);
+        var stageLabelOffset = VisualBlockRendering.WardleyStageLabelOffset(map);
+        DrawFittedBodyText(canvas, "Evolution", plot.X + plot.Width * 0.38, plot.Bottom + stageLabelOffset + 20, plot.Width * 0.24, 20, TextAlignment.Center, theme.MutedText, theme, 11.5, 700);
         var stages = map.Stages.Count == 0 ? new[] { "Genesis", "Custom", "Product", "Commodity" } : map.Stages;
         for (var index = 0; index < stages.Count; index++) {
             var x = plot.X + plot.Width * (index + 0.5) / stages.Count;
-            DrawFittedBodyText(canvas, stages[index], x - plot.Width / stages.Count * 0.5 + 4, plot.Bottom + 18, plot.Width / stages.Count - 8, 16, TextAlignment.Center, theme.MutedText, theme, 10.5, 600);
+            DrawFittedBodyText(canvas, stages[index], x - plot.Width / stages.Count * 0.5 + 4, plot.Bottom + stageLabelOffset, plot.Width / stages.Count - 8, VisualBlockRendering.WardleyStageLabelHeight, TextAlignment.Center, theme.MutedText, theme, 10.5, 600);
         }
     }
 

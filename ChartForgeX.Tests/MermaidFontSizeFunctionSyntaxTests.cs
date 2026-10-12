@@ -45,6 +45,14 @@ public sealed class MermaidFontSizeFunctionSyntaxTests {
     [InlineData("calc(1px\\\f + 2px)", false)]
     [InlineData("var(--size, \"before\\\fafter\")", true)]
     [InlineData("calc(1px /* before\\\nafter */ + 2px)", true)]
+    [InlineData("var(--size, \"\\61\n\")", true)]
+    [InlineData("var(--size, \"\\61\r\")", true)]
+    [InlineData("var(--size, \"\\61\r\n\")", true)]
+    [InlineData("var(--size, \"\\61\f\")", true)]
+    [InlineData("var(--size, \"\\000061\n\")", true)]
+    [InlineData("var(--size, \"\\0000611\n\")", false)]
+    [InlineData("var(--size, \"\\61\n\n\")", false)]
+    [InlineData("calc(\\31\npx + 2px)", true)]
     public void UnsupportedFunctionsRequireBalancedDelimitersThroughBothSourceForms(string value, bool valid) {
         var quoted = JsonSerializer.Serialize(value);
         foreach (var directive in new[] { false, true }) {

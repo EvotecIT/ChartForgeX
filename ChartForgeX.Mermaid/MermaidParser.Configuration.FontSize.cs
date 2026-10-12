@@ -34,6 +34,11 @@ public sealed partial class MermaidParser {
             if (character == '\\') {
                 if (++index == value.Length) return false;
                 if (quote == '\0' && (value[index] == '\r' || value[index] == '\n' || value[index] == '\f')) return false;
+                if (Uri.IsHexDigit(value[index])) {
+                    for (var digits = 1; digits < 6 && index + 1 < value.Length && Uri.IsHexDigit(value[index + 1]); digits++) index++;
+                    if (index + 1 < value.Length && (value[index + 1] == ' ' || value[index + 1] == '\t' ||
+                        value[index + 1] == '\r' || value[index + 1] == '\n' || value[index + 1] == '\f')) index++;
+                }
                 if (value[index] == '\r' && index + 1 < value.Length && value[index + 1] == '\n') index++;
                 continue;
             }
