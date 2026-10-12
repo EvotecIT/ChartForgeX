@@ -16,6 +16,11 @@ namespace ChartForgeX.Tests;
 public sealed class MermaidFinalTypographyOwnerTests {
     [Theory]
     [InlineData(10.5, 360, true, false)]
+    [InlineData(16.79, 360, true, false)]
+    [InlineData(16.8, 360, true, false)]
+    [InlineData(16.81, 360, true, false)]
+    [InlineData(16.8, 800, true, true)]
+    [InlineData(16.8, 360, false, true)]
     [InlineData(256, 360, true, false)]
     [InlineData(256, 800, true, true)]
     [InlineData(256, 360, false, true)]
@@ -29,16 +34,17 @@ public sealed class MermaidFinalTypographyOwnerTests {
         map.AddAnnotation(2, "", 1, 0);
         map.AddAnnotation(3, "", 0, 1);
         map.AddAnnotation(4, "", 0, 0);
+        map.AddAnnotation(5, "", 0, .125);
         var svg = map.ToSvg(); var png = map.ToPng();
         await Capture(svg, png, "wardley-boundary-" + fontSize + "-" + width + "-" + hostOwnsFrame + "-" + dark, width, 320);
         var circles = XDocument.Parse(svg).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "wardley-annotation").ToArray();
-        Assert.Equal(4, circles.Length);
+        Assert.Equal(5, circles.Length);
         foreach (var circle in circles) {
             var radius = (double)circle.Attribute("r")! + .5;
             Assert.InRange((double)circle.Attribute("cx")!, radius, width - radius);
             Assert.InRange((double)circle.Attribute("cy")!, radius, 320 - radius);
         }
-        if (fontSize > 16) {
+        {
             var bottom = circles.Max(e => (double)e.Attribute("cy")! + (double)e.Attribute("r")! + .5);
             var builder = new VisualSceneBuilder(new VisualSize(width, 320), FontSpec.FromFamily("Arial"));
             var stages = XDocument.Parse(svg).Descendants().Where(e => e.Name.LocalName == "text" &&

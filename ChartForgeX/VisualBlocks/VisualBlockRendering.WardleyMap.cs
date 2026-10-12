@@ -88,8 +88,9 @@ internal static partial class VisualBlockRendering {
 
     internal static double WardleyStageLabelOffset(WardleyMapBlock map) {
         var radius = map.Annotations.Count == 0 ? 0 : WardleyAnnotationRadius(map.Options.Theme);
-        // Keep the fitted stage line below the enlarged circle and its stroke.
-        return radius > 16 ? radius + WardleyStageLabelHeight + 1 : 18;
+        // Reserve the complete fitted stage line below the circle and its stroke at
+        // every radius, including the boundary of the ordinary plot inset.
+        return Math.Max(18, radius + WardleyStageLabelHeight + 1);
     }
 
     /// <summary>Complete triangular head of an evolution overlay.</summary>
