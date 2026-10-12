@@ -13,8 +13,8 @@ public sealed class SvgRasterFractionalFontTests {
     public void FractionalFontAtHigherOutputDensityMatchesItsExplicitPixelSize(double size) {
         var logicalSize = size.ToString("R", CultureInfo.InvariantCulture);
         var pixelSize = (size * 16).ToString("R", CultureInfo.InvariantCulture);
-        var actual = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='12'><text x='4' y='4' font-size='" + logicalSize + "'>HHH</text></svg>", 512, 192);
-        var expected = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='512' height='192'><text x='64' y='64' font-size='" + pixelSize + "'>HHH</text></svg>");
+        var actual = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='12'><rect width='32' height='12' fill='white'/><text x='4' y='4' font-size='" + logicalSize + "'>HHH</text></svg>", 512, 192);
+        var expected = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='512' height='192'><rect width='512' height='192' fill='white'/><text x='64' y='64' font-size='" + pixelSize + "'>HHH</text></svg>");
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrEmpty(capture)) {
             Directory.CreateDirectory(capture);
