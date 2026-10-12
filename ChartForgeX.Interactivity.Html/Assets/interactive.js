@@ -611,7 +611,16 @@
   const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
     'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
     'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
-    'stop-color', 'stop-opacity', 'font-size', 'fill-rule', 'clip-rule'];
+    'stop-color', 'stop-opacity', 'font-size', 'fill-rule', 'clip-rule', 'slot', 'name'];
+  // Paint, clipping and focus share the browser's accessible flattened ancestry.
+  const composedParent = (node) => node.assignedSlot || node.parentElement || node.getRootNode().host;
+  const composedAncestry = (root) => {
+    const nodes = [], trees = new Set();
+    for (let node = root; node; node = composedParent(node)) {
+      nodes.push(node); trees.add(node.getRootNode());
+    }
+    return { nodes, trees: Array.from(trees) };
+  };
   // Cache only for this render: host CSS can change between successive focus and pointer events.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
@@ -619,7 +628,7 @@
   };
   const paintAncestorsVisible = (node, styles) => {
     if (!node || node.closest('defs,[hidden]')) return false;
-    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement || ancestor.getRootNode().host) {
+    for (let ancestor = node; ancestor; ancestor = composedParent(ancestor)) {
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }
@@ -1079,6 +1088,7 @@
     for (const tree of tooltipPositionTrees) {
       tree.removeEventListener('scroll', queueTooltipPositionRefresh, true);
       tree.removeEventListener('transitionend', queueTooltipPositionRefresh, true);
+      tree.removeEventListener('slotchange', queueTooltipPositionRefresh, true);
     }
     tooltipPositionTrees.clear();
   };
@@ -1120,25 +1130,27 @@
     // Unlocated retained keyboard facts have no painted box; their visible SVG remains the host boundary.
     return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;
   };
-  const tooltipComposedParent = (node) => node.assignedSlot || node.parentElement || node.getRootNode().host;
-  const tooltipPositionAncestry = (root) => {
-    const nodes = [], trees = new Set();
-    for (let node = root; node; node = tooltipComposedParent(node)) {
-      nodes.push(node); trees.add(node.getRootNode());
-    }
-    return { nodes, trees: Array.from(trees) };
+  const tooltipShadowContainingBlock = (node, position, source) => {
+    if (!(node instanceof HTMLElement) || node.getRootNode() === source.getRootNode()) return false;
+    // offsetParent can hide a slotted node's internal containing block. Inspect the accessible flat tree.
+    const style = getComputedStyle(node);
+    return position === 'absolute' && style.position !== 'static'
+      || ['transform', 'translate', 'rotate', 'scale', 'perspective', 'filter', 'backdropFilter'].some(key => style[key] && style[key] !== 'none')
+      || /\b(layout|paint|content|strict)\b/.test(style.contain)
+      || /\b(transform|translate|rotate|scale|perspective|filter|backdrop-filter)\b/.test(style.willChange)
+      || style.contentVisibility === 'auto';
   };
   const tooltipClippingAncestors = (source) => {
     const ancestors = [];
-    let positioned = false, containingBlock = null;
-    for (let child = source, node = tooltipComposedParent(child); node; child = node, node = tooltipComposedParent(node)) {
-      if (child instanceof HTMLElement && ['absolute', 'fixed'].includes(getComputedStyle(child).position)) {
-        positioned = true; containingBlock = child.offsetParent;
+    let positioned = null, containingBlock = null;
+    for (let child = source, node = composedParent(child); node; child = node, node = composedParent(node)) {
+      if (!positioned && child instanceof HTMLElement && ['absolute', 'fixed'].includes(getComputedStyle(child).position)) {
+        positioned = getComputedStyle(child).position; containingBlock = child.offsetParent;
       }
       if (positioned) {
         // Native offsetParent includes transformed/paint-contained blocks. Overflow below it is bypassed.
-        if (node !== containingBlock) continue;
-        positioned = false;
+        if (node !== containingBlock && !tooltipShadowContainingBlock(node, positioned, source)) continue;
+        positioned = null;
       }
       if (!(node instanceof HTMLElement) || !node.getClientRects().length) continue;
       const style = getComputedStyle(node);
@@ -1183,6 +1195,18 @@
     if (tooltipPositionFrame || !activeTooltipPositions.size) return;
     tooltipPositionFrame = requestAnimationFrame(() => {
       tooltipPositionFrame = 0;
+      const changes = Array.from(activeTooltipPositions).filter(state => state.paintChanged).map(state =>
+        ({ state, ancestry: composedAncestry(state.root) })).filter(({ state, ancestry }) =>
+        state.nodes.length !== ancestry.nodes.length || state.nodes.some((node, index) => node !== ancestry.nodes[index]));
+      if (changes.length && tooltipPositionObserver) {
+        // Preserve queued detach records before rebinding a moved slot's containing block and trees.
+        checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
+        if (tooltipPositionObserver) {
+          for (const { state, ancestry } of changes) if (activeTooltipPositions.has(state)) Object.assign(state, ancestry);
+          tooltipPositionObserver.disconnect(); unwatchTooltipPositionTrees();
+          for (const state of activeTooltipPositions) watchTooltipPositionTrees(state);
+        }
+      }
       for (const state of Array.from(activeTooltipPositions)) {
         if (state.tip.hidden) { forgetTooltipPosition(state.tip); continue; }
         if (!tooltipPositionAvailable(state)) { hideTip(state.root, state.tip, true); continue; }
@@ -1220,6 +1244,7 @@
       // Native geometry events do not cross a shadow boundary. Own them alongside the tree's observer.
       tree.addEventListener('scroll', queueTooltipPositionRefresh, true);
       tree.addEventListener('transitionend', queueTooltipPositionRefresh, true);
+      tree.addEventListener('slotchange', queueTooltipPositionRefresh, true);
       tooltipPositionTrees.add(tree);
     }
   };
@@ -1310,7 +1335,7 @@
     if (!root || !stage || !node) return;
     let state = tooltipPositions.get(tip);
     const pinned = state && root.dataset.cfxTooltipPinned === 'true' && state.key === root.dataset.cfxPinnedTarget;
-    if (!state) { state = { root, tip, stage, ...tooltipPositionAncestry(root) }; tooltipPositions.set(tip, state); }
+    if (!state) { state = { root, tip, stage, ...composedAncestry(root) }; tooltipPositions.set(tip, state); }
     // A pin retains its acquisition mode: later pointer movement must not invalidate a keyboard-only fact.
     if (!pinned) {
       if (state.node !== node) state.nativeIntersecting = undefined;
@@ -2036,6 +2061,19 @@
     let frame = 0;
     let resizeObserver;
     let paintObserver;
+    let ancestry = { nodes: [], trees: [] };
+    const unwatchSlots = () => ancestry.trees.forEach(tree => tree.removeEventListener('slotchange', queueRefresh, true));
+    const watchAncestry = () => {
+      const next = composedAncestry(root);
+      if (next.nodes.length === ancestry.nodes.length && next.nodes.every((node, index) => node === ancestry.nodes[index])) return;
+      paintObserver.disconnect(); unwatchSlots(); ancestry = next;
+      paintObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: paintAvailabilityAttributes });
+      for (const node of new Set([...ancestry.nodes.slice(1), ...ancestry.trees])) {
+        paintObserver.observe(node, { childList: true,
+          ...(node instanceof Element ? { attributes: true, attributeFilter: paintAvailabilityAttributes } : {}) });
+      }
+      ancestry.trees.forEach(tree => tree.addEventListener('slotchange', queueRefresh, true));
+    };
     const queueRefresh = () => {
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
@@ -2043,10 +2081,11 @@
         if (!root.isConnected) {
           if (resizeObserver) resizeObserver.disconnect();
           if (paintObserver) paintObserver.disconnect();
+          unwatchSlots();
           window.removeEventListener('resize', queueRefresh);
           return;
         }
-        refreshKeyboardNavigation(root);
+        watchAncestry(); refreshKeyboardNavigation(root);
       });
     };
     window.addEventListener('resize', queueRefresh);
@@ -2056,12 +2095,14 @@
       resizeObserver.observe(stage);
     }
     // Native paint and host styles can change without a resize. Tab and arrow availability share this owner.
-    paintObserver = new MutationObserver(() => {
+    paintObserver = new MutationObserver(records => {
       if (!root.isConnected) { queueRefresh(); return; }
+      if (!records.some(record => root.contains(record.target) || record.type === 'attributes' && ancestry.nodes.includes(record.target)
+        || record.type === 'childList' && Array.from(record.removedNodes).some(node => ancestry.nodes.some(boundary => node.contains(boundary))))) return;
+      watchAncestry();
       refreshKeyboardNavigation(root);
     });
-    paintObserver.observe(root, { subtree: true, attributes: true,
-      attributeFilter: paintAvailabilityAttributes });
+    watchAncestry();
   };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) {
@@ -2089,12 +2130,15 @@
       if (itemEnd > end) return offset + itemEnd - end;
       return offset;
     };
+    let preserveVisiblePortion = false;
     // Scroll inner clips first, then remeasure through each outer clip, including closed shadow hosts.
-    for (const { node: clip } of tooltipClippingAncestors(node)) {
+    for (const { node: clip, x, y } of tooltipClippingAncestors(node)) {
       const style = getComputedStyle(clip), box = node.getBoundingClientRect();
       const start = stagePoint(clip, { x: box.left, y: box.top });
       const end = stagePoint(clip, { x: box.right, y: box.bottom });
       const left = clip.scrollLeft + 8, top = clip.scrollTop + 8;
+      preserveVisiblePortion ||= x && end.x - start.x > clip.clientWidth - 16 && end.x > left && start.x < left + clip.clientWidth - 16
+        || y && end.y - start.y > clip.clientHeight - 16 && end.y > top && start.y < top + clip.clientHeight - 16;
       clip.scrollTo({ behavior: 'instant',
         left: scrollAxis(style.overflowX, clip.scrollWidth, clip.clientWidth, clip.scrollLeft, left, left + clip.clientWidth - 16, start.x, end.x),
         top: scrollAxis(style.overflowY, clip.scrollHeight, clip.clientHeight, clip.scrollTop, top, top + clip.clientHeight - 16, start.y, end.y) });
@@ -2102,7 +2146,7 @@
     const box = node.getBoundingClientRect(), viewport = stage.getBoundingClientRect();
     // Native scrolling can reveal a small focus mark through an opaque slot's internal scroller.
     // Preserve the precise manual policy for wide marks that already have a visible portion.
-    if (box.width <= viewport.width - 16 && box.height <= viewport.height - 16)
+    if (!preserveVisiblePortion && box.width <= viewport.width - 16 && box.height <= viewport.height - 16)
       node.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
   };
   const focusKeyboardTarget = (root, node) => {

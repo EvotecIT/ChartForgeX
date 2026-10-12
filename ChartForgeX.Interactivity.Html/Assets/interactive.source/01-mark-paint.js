@@ -5,7 +5,16 @@
   const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
     'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
     'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
-    'stop-color', 'stop-opacity', 'font-size', 'fill-rule', 'clip-rule'];
+    'stop-color', 'stop-opacity', 'font-size', 'fill-rule', 'clip-rule', 'slot', 'name'];
+  // Paint, clipping and focus share the browser's accessible flattened ancestry.
+  const composedParent = (node) => node.assignedSlot || node.parentElement || node.getRootNode().host;
+  const composedAncestry = (root) => {
+    const nodes = [], trees = new Set();
+    for (let node = root; node; node = composedParent(node)) {
+      nodes.push(node); trees.add(node.getRootNode());
+    }
+    return { nodes, trees: Array.from(trees) };
+  };
   // Cache only for this render: host CSS can change between successive focus and pointer events.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
@@ -13,7 +22,7 @@
   };
   const paintAncestorsVisible = (node, styles) => {
     if (!node || node.closest('defs,[hidden]')) return false;
-    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement || ancestor.getRootNode().host) {
+    for (let ancestor = node; ancestor; ancestor = composedParent(ancestor)) {
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }
