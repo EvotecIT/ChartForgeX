@@ -17,7 +17,7 @@ public sealed partial class MermaidParser {
             double.TryParse(value.EndsWith("px", StringComparison.OrdinalIgnoreCase) ? value.Substring(0, value.Length - 2) : value,
                 NumberStyles.Float, CultureInfo.InvariantCulture, out var size) && size >= 1 && size <= 256) return size;
         if (setting.IsString && value != null && value.Length <= 4096 &&
-            Regex.IsMatch(value, @"^(?:\+?(?:[0-9]*\.[0-9]+|[0-9]+)(?:[eE][+-]?[0-9]+)?(?:r?(?:em|ex|cap|ch|ic|lh)|pt|pc|in|cm|mm|q|[sld]?v(?:h|w|i|b|min|max)|cq(?:h|w|i|b|min|max)|%)|(?:calc|var|min|max|clamp|env|round|mod|rem|hypot|abs)\(.+\)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger|math|inherit|initial|unset|revert|revert-layer)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline) && HasBalancedFontSizeFunction(value)) return null;
+            Regex.IsMatch(value, @"^(?:\+?(?:[0-9]*\.[0-9]+|[0-9]+)(?:[eE][+-]?[0-9]+)?(?:r?(?:em|ex|cap|ch|ic|lh)|pt|pc|in|cm|mm|q|[sld]?v(?:h|w|i|b|min|max)|cq(?:h|w|i|b|min|max)|%)|(?:calc|var|min|max|clamp|env|round|mod|rem|hypot|abs|attr)\(.+\)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger|math|inherit|initial|unset|revert|revert-layer)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline) && HasBalancedFontSizeFunction(value)) return null;
         invalid = true;
         ConfigurationError(result, setting.Span, "Mermaid configuration 'themeVariables.fontSize' must be a pixel size from 1 through 256, such as 18 or '18px'.");
         return null;
