@@ -16,6 +16,8 @@ internal static partial class VisualCartesianCompiler {
         ChartRange range, ChartRange? secondaryRange, ChartStackLayout stacks, ChartBubbleSizeScale? bubbleScale) {
         var x = new MarkerExtents(); var primaryY = new MarkerExtents(); var secondaryY = new MarkerExtents();
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
+        // Horizontal categories are mapped linearly, including reference stroke footprints.
+        var primaryAxis = horizontal ? new ChartAxis { Minimum = chart.Options.YAxis.Minimum, Maximum = chart.Options.YAxis.Maximum } : chart.Options.YAxis;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             if (series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot) {
@@ -57,10 +59,10 @@ internal static partial class VisualCartesianCompiler {
             }
         }
         // References and markers share one fit: extending one side must preserve the other's pixel gutter.
-        IncludeReferenceExtents(chart, context, x, primaryY, chart.Options.YAxis);
+        IncludeReferenceExtents(chart, context, x, primaryY, primaryAxis);
         var changed = ExpandMarkerAxis(chart.Options.XAxis, x, plot.Width, range.MinX, range.MaxX, out var minX, out var maxX);
         range.SetXBounds(minX, maxX);
-        changed |= ExpandMarkerAxis(chart.Options.YAxis, primaryY, plot.Height, range.MinY, range.MaxY, out var minY, out var maxY);
+        changed |= ExpandMarkerAxis(primaryAxis, primaryY, plot.Height, range.MinY, range.MaxY, out var minY, out var maxY);
         range.SetYBounds(minY, maxY);
         if (secondaryRange != null) {
             secondaryRange.SetXBounds(minX, maxX);

@@ -108,7 +108,7 @@ internal static partial class VisualCartesianCompiler {
         }
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
-        if (ExpandCartesianRanges(chart, context, plot, range, secondaryRange, horizontal, stacks, bubbleScale)) {
+        if (ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
             if (!horizontal) {
                 axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
                 if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
@@ -130,7 +130,7 @@ internal static partial class VisualCartesianCompiler {
         // Refit from the original data bounds: a guide may no longer fit after total lanes.
         range = dataRange;
         secondaryRange = secondaryDataRange;
-        ExpandCartesianRanges(chart, context, plot, range, secondaryRange, horizontal, stacks, bubbleScale);
+        ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale);
         if (!horizontal) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
