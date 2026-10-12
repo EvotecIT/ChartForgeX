@@ -61,32 +61,26 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         if (!Enabled) return;
         await using var session = await OpenAsync(Observations(false).ToInteractiveHtmlPage(options => ConfigureDelay(options, "exact")), 950, 760);
         var page = session.Page;
-        await TraceAsync(page);
+        await MountFragmentAsync(page, "light");
+        await RecordHostExpiryAsync(page);
+        await ArmQueuedHostMutationAsync(page, change);
         await PointerAsync(page, Point(0, 0));
-        Assert.True(await TipHiddenAsync(page));
-        await page.EvaluateAsync("""
-            change => {
-                const root=document.querySelector('.cfx-interactive-chart'), target=root.querySelector('[data-cfx-role=point][data-cfx-series="0"][data-cfx-point="0"]');
-                window.suspendedRoot=root;
-                if(change==='target-paint') target.style.setProperty('opacity','0','important');
-                else if(change==='root-hidden') root.hidden=true;
-                else if(change==='root-removed') root.remove();
-                else if(change==='target-removed') target.remove();
-                else root.dataset.cfxInteractionFeatures='None';
-            }
-            """, change);
+        var mutation = await WaitForHostMutationAsync(page);
         if (change == "target-paint") Assert.Equal("0", await page.Locator(Point(0, 0)).EvaluateAsync<string>("node=>getComputedStyle(node).opacity"));
         await Task.Delay(Delay + 80);
-        Assert.True(await page.EvaluateAsync<bool>("() => window.suspendedRoot.querySelector('.cfx-tooltip').hidden"));
+        var receipt = await HostReceiptAsync(page);
+        AssertQueuedHostCancellation(mutation, receipt);
+        Assert.True(receipt.GetProperty("hidden").GetBoolean());
         if (change == "root-hidden") {
             // Restoring a host beneath the pointer can legitimately start a fresh native hover.
             // Keep the pointer away so this assertion checks cancellation of the old queued readout.
             await MoveAwayAsync(page);
-            await page.EvaluateAsync("() => window.suspendedRoot.hidden=false");
+            await page.EvaluateAsync("() => window.hostedChart.hidden=false");
             await Task.Delay(60);
             Assert.True(await TipHiddenAsync(page));
         }
         Assert.Empty((await TraceStateAsync(page)).GetProperty("shown").EnumerateArray());
+        await CaptureDelayAsync(page, "delay-host-invalidation-" + change, await HostReceiptAsync(page), session);
         AssertNoConsoleErrors(session);
     }
 
@@ -97,16 +91,16 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         var page = session.Page;
         await MountFragmentAsync(page, "light");
         await RecordHostExpiryAsync(page);
+        await ArmQueuedHostMutationAsync(page, "detach-root");
         await PointerAsync(page, Point(0, 0));
-        await page.EvaluateAsync("() => { const root=window.hostedChart, parent=root.parentElement; window.detachedTimer=window.hostTimerTrace.queued.at(-1); root.remove(); parent.append(root); }");
+        var mutation = await WaitForHostMutationAsync(page);
+        // Reinsertion may legitimately acquire a new hover; cancellation belongs to the original timer.
+        await MoveAwayAsync(page);
         await Task.Delay(Delay + 80);
         var canceled = await HostReceiptAsync(page);
         await CaptureDelayAsync(page, "delay-light-detach-reattach", canceled, session);
-        var timer = canceled.GetProperty("detachedTimer").GetInt32();
-        Assert.Contains(timer, canceled.GetProperty("timers").GetProperty("canceled").EnumerateArray().Select(item => item.GetInt32()));
-        Assert.DoesNotContain(timer, canceled.GetProperty("timers").GetProperty("fired").EnumerateArray().Select(item => item.GetInt32()));
+        AssertQueuedHostCancellation(mutation, canceled);
         // A real new pointerenter after reinsertion owns a fresh request, independently of the canceled timer.
-        await MoveAwayAsync(page);
         Assert.True(await TipHiddenAsync(page));
         await PointerAsync(page, Point(0, 0));
         Assert.True(await TipHiddenAsync(page));

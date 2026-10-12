@@ -49,6 +49,83 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         }
         """);
 
+    // Run host invalidation after the engine's native pointer handlers, before any timer task can expire.
+    private static Task ArmQueuedHostMutationAsync(IPage page, string change, bool restore = false) => page.EvaluateAsync("""
+        ({change,restore}) => {
+            const root=window.hostedChart, tip=root.querySelector('.cfx-tooltip');
+            window.hostMutation=null;
+            root.addEventListener('pointermove',event => {
+                const pointerAt=performance.now();
+                queueMicrotask(async () => {
+                    const target=root.querySelector('[data-cfx-role=point][data-cfx-series="0"][data-cfx-point="0"]');
+                    const timers=window.hostTimerTrace, timer=timers.queued.at(-1);
+                    const before={timer:timer??null,hidden:tip.hidden,rootConnected:root.isConnected,targetConnected:target.isConnected,
+                        shown:window.delayTrace.shown.length,queued:timer!==undefined&&!timers.canceled.includes(timer)&&!timers.fired.includes(timer)};
+                    const mutation=window.hostMutation={change,restore,pointerAt,mutationAt:performance.now(),before,complete:false};
+                    try {
+                        if(!before.hidden||!before.rootConnected||!before.targetConnected||!before.queued||before.shown)
+                            throw new Error('Native pointer did not leave one hidden queued readout');
+                        if(change.startsWith('detach-')) {
+                            const subject=change.slice(7), node=subject==='root'?root:subject==='target'?target:
+                                subject==='inner-host'?root.getRootNode().host:document.getElementById('outer-chart-host');
+                            const parent=node.parentNode, next=node.nextSibling;
+                            window.detachedTimer=timer;
+                            node.remove(); mutation.unavailable=!node.isConnected; mutation.unavailableAt=performance.now();
+                            parent.insertBefore(node,next); mutation.restoredAt=performance.now();
+                        } else {
+                            const host=root.getRootNode().host, features=root.dataset.cfxInteractionFeatures;
+                            if(change==='target-paint') target.style.setProperty('opacity','0','important');
+                            else if(change==='root-hidden') root.hidden=true;
+                            else if(change==='root-removed') root.remove();
+                            else if(change==='target-removed') target.remove();
+                            else if(change==='shadow-host-opacity') host.style.opacity='0';
+                            else if(change==='features') root.dataset.cfxInteractionFeatures='None';
+                            else throw new Error('Unknown host invalidation');
+                            mutation.unavailable=change==='root-hidden'?root.hidden:change==='root-removed'?!root.isConnected:
+                                change==='target-removed'?!target.isConnected:change==='features'?root.dataset.cfxInteractionFeatures==='None':
+                                getComputedStyle(change==='target-paint'?target:host).opacity==='0';
+                            mutation.unavailableAt=performance.now();
+                            if(restore) {
+                                // Mutation delivery must see the unavailable state before this host restores it.
+                                await Promise.resolve();
+                                if(change==='root-hidden') root.hidden=false;
+                                else if(change==='target-paint') target.style.removeProperty('opacity');
+                                else if(change==='shadow-host-opacity') host.style.removeProperty('opacity');
+                                else root.dataset.cfxInteractionFeatures=features;
+                                mutation.restoredAt=performance.now();
+                            }
+                        }
+                        if(!mutation.unavailable) throw new Error('Host fixture remained available');
+                    } catch(error) { mutation.error=String(error); }
+                    mutation.completedAt=performance.now(); mutation.complete=true;
+                });
+            },{once:true});
+        }
+        """, new { change, restore });
+
+    private static async Task<JsonElement> WaitForHostMutationAsync(IPage page) {
+        await page.WaitForFunctionAsync("() => window.hostMutation?.complete", null, new PageWaitForFunctionOptions { Timeout = 5000 });
+        return await page.EvaluateAsync<JsonElement>("() => window.hostMutation");
+    }
+
+    private static void AssertQueuedHostCancellation(JsonElement mutation, JsonElement receipt) {
+        Assert.False(mutation.TryGetProperty("error", out var error), error.ValueKind == JsonValueKind.String ? error.GetString() : null);
+        var before = mutation.GetProperty("before");
+        Assert.True(before.GetProperty("hidden").GetBoolean());
+        Assert.True(before.GetProperty("rootConnected").GetBoolean());
+        Assert.True(before.GetProperty("targetConnected").GetBoolean());
+        Assert.True(before.GetProperty("queued").GetBoolean());
+        Assert.Equal(0, before.GetProperty("shown").GetInt32());
+        Assert.True(mutation.GetProperty("unavailable").GetBoolean());
+        Assert.True(mutation.GetProperty("pointerAt").GetDouble() <= mutation.GetProperty("mutationAt").GetDouble());
+        Assert.True(mutation.GetProperty("mutationAt").GetDouble() <= mutation.GetProperty("unavailableAt").GetDouble());
+        var timer = before.GetProperty("timer").GetInt32();
+        var timers = receipt.GetProperty("timers");
+        Assert.Contains(timer, timers.GetProperty("queued").EnumerateArray().Select(item => item.GetInt32()));
+        Assert.Contains(timer, timers.GetProperty("canceled").EnumerateArray().Select(item => item.GetInt32()));
+        Assert.DoesNotContain(timer, timers.GetProperty("fired").EnumerateArray().Select(item => item.GetInt32()));
+    }
+
     private static void AssertDelay(JsonElement trace) {
         var elapsed = trace.GetProperty("shown")[0].GetProperty("t").GetDouble() - trace.GetProperty("hover")[0].GetProperty("t").GetDouble();
         Assert.InRange(elapsed, Delay - 4, 5000);
