@@ -304,6 +304,18 @@
     "family-bubble-compact-options-light.svg",
     "family-bubble-compact-options-light.thumbnail.png",
     "family-bubble-compact-options-light.thumbnail.svg",
+    "family-bubble-compact-plot-regions-dark.csharp.txt",
+    "family-bubble-compact-plot-regions-dark.html",
+    "family-bubble-compact-plot-regions-dark.png",
+    "family-bubble-compact-plot-regions-dark.svg",
+    "family-bubble-compact-plot-regions-dark.thumbnail.png",
+    "family-bubble-compact-plot-regions-dark.thumbnail.svg",
+    "family-bubble-compact-plot-regions-light.csharp.txt",
+    "family-bubble-compact-plot-regions-light.html",
+    "family-bubble-compact-plot-regions-light.png",
+    "family-bubble-compact-plot-regions-light.svg",
+    "family-bubble-compact-plot-regions-light.thumbnail.png",
+    "family-bubble-compact-plot-regions-light.thumbnail.svg",
     "family-bubble-options-dark.csharp.txt",
     "family-bubble-options-dark.html",
     "family-bubble-options-dark.png",
@@ -316,6 +328,18 @@
     "family-bubble-options-light.svg",
     "family-bubble-options-light.thumbnail.png",
     "family-bubble-options-light.thumbnail.svg",
+    "family-bubble-plot-regions-dark.csharp.txt",
+    "family-bubble-plot-regions-dark.html",
+    "family-bubble-plot-regions-dark.png",
+    "family-bubble-plot-regions-dark.svg",
+    "family-bubble-plot-regions-dark.thumbnail.png",
+    "family-bubble-plot-regions-dark.thumbnail.svg",
+    "family-bubble-plot-regions-light.csharp.txt",
+    "family-bubble-plot-regions-light.html",
+    "family-bubble-plot-regions-light.png",
+    "family-bubble-plot-regions-light.svg",
+    "family-bubble-plot-regions-light.thumbnail.png",
+    "family-bubble-plot-regions-light.thumbnail.svg",
     "family-bubble-wide-dark.csharp.txt",
     "family-bubble-wide-dark.html",
     "family-bubble-wide-dark.png",
@@ -2224,6 +2248,18 @@
     "family-scatter-compact-positioned-color-scale-light.svg",
     "family-scatter-compact-positioned-color-scale-light.thumbnail.png",
     "family-scatter-compact-positioned-color-scale-light.thumbnail.svg",
+    "family-scatter-compact-quadrants-dark.csharp.txt",
+    "family-scatter-compact-quadrants-dark.html",
+    "family-scatter-compact-quadrants-dark.png",
+    "family-scatter-compact-quadrants-dark.svg",
+    "family-scatter-compact-quadrants-dark.thumbnail.png",
+    "family-scatter-compact-quadrants-dark.thumbnail.svg",
+    "family-scatter-compact-quadrants-light.csharp.txt",
+    "family-scatter-compact-quadrants-light.html",
+    "family-scatter-compact-quadrants-light.png",
+    "family-scatter-compact-quadrants-light.svg",
+    "family-scatter-compact-quadrants-light.thumbnail.png",
+    "family-scatter-compact-quadrants-light.thumbnail.svg",
     "family-scatter-compact-swatch-color-legend-dark.csharp.txt",
     "family-scatter-compact-swatch-color-legend-dark.html",
     "family-scatter-compact-swatch-color-legend-dark.png",
@@ -2284,6 +2320,18 @@
     "family-scatter-positioned-color-scale-light.svg",
     "family-scatter-positioned-color-scale-light.thumbnail.png",
     "family-scatter-positioned-color-scale-light.thumbnail.svg",
+    "family-scatter-quadrants-dark.csharp.txt",
+    "family-scatter-quadrants-dark.html",
+    "family-scatter-quadrants-dark.png",
+    "family-scatter-quadrants-dark.svg",
+    "family-scatter-quadrants-dark.thumbnail.png",
+    "family-scatter-quadrants-dark.thumbnail.svg",
+    "family-scatter-quadrants-light.csharp.txt",
+    "family-scatter-quadrants-light.html",
+    "family-scatter-quadrants-light.png",
+    "family-scatter-quadrants-light.svg",
+    "family-scatter-quadrants-light.thumbnail.png",
+    "family-scatter-quadrants-light.thumbnail.svg",
     "family-scatter-swatch-color-legend-dark.csharp.txt",
     "family-scatter-swatch-color-legend-dark.html",
     "family-scatter-swatch-color-legend-dark.png",
@@ -4835,6 +4883,76 @@
       "semanticRegions": 35
     },
     {
+      "id": "family-scatter-quadrants-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Effort and impact",
+      "variant": "quadrants",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-quadrants-light.csharp.txt",
+      "svg": "family-scatter-quadrants-light.svg",
+      "png": "family-scatter-quadrants-light.png",
+      "html": "family-scatter-quadrants-light.html",
+      "thumbnail": "family-scatter-quadrants-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-quadrants-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 25
+    },
+    {
+      "id": "family-scatter-compact-quadrants-light",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Effort and impact",
+      "variant": "compact-quadrants",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-quadrants-light.csharp.txt",
+      "svg": "family-scatter-compact-quadrants-light.svg",
+      "png": "family-scatter-compact-quadrants-light.png",
+      "html": "family-scatter-compact-quadrants-light.html",
+      "thumbnail": "family-scatter-compact-quadrants-light.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-quadrants-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 25
+    },
+    {
       "id": "family-scatter-partial-color-range-light",
       "family": "scatter",
       "familyLabel": "Scatter",
@@ -5413,6 +5531,76 @@
       "semanticRegions": 35
     },
     {
+      "id": "family-scatter-quadrants-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Effort and impact",
+      "variant": "quadrants",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-scatter-quadrants-dark.csharp.txt",
+      "svg": "family-scatter-quadrants-dark.svg",
+      "png": "family-scatter-quadrants-dark.png",
+      "html": "family-scatter-quadrants-dark.html",
+      "thumbnail": "family-scatter-quadrants-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-quadrants-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 25
+    },
+    {
+      "id": "family-scatter-compact-quadrants-dark",
+      "family": "scatter",
+      "familyLabel": "Scatter",
+      "group": "distribution",
+      "title": "Effort and impact",
+      "variant": "compact-quadrants",
+      "primary": false,
+      "seriesKinds": [
+        "Scatter"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-scatter-compact-quadrants-dark.csharp.txt",
+      "svg": "family-scatter-compact-quadrants-dark.svg",
+      "png": "family-scatter-compact-quadrants-dark.png",
+      "html": "family-scatter-compact-quadrants-dark.html",
+      "thumbnail": "family-scatter-compact-quadrants-dark.thumbnail.svg",
+      "thumbnailPng": "family-scatter-compact-quadrants-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 25
+    },
+    {
       "id": "family-scatter-partial-color-range-dark",
       "family": "scatter",
       "familyLabel": "Scatter",
@@ -5769,6 +5957,76 @@
       "semanticRegions": 32
     },
     {
+      "id": "family-bubble-plot-regions-light",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Capacity and delay",
+      "variant": "plot-regions",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-plot-regions-light.csharp.txt",
+      "svg": "family-bubble-plot-regions-light.svg",
+      "png": "family-bubble-plot-regions-light.png",
+      "html": "family-bubble-plot-regions-light.html",
+      "thumbnail": "family-bubble-plot-regions-light.thumbnail.svg",
+      "thumbnailPng": "family-bubble-plot-regions-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-bubble-compact-plot-regions-light",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Capacity and delay",
+      "variant": "compact-plot-regions",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-bubble-compact-plot-regions-light.csharp.txt",
+      "svg": "family-bubble-compact-plot-regions-light.svg",
+      "png": "family-bubble-compact-plot-regions-light.png",
+      "html": "family-bubble-compact-plot-regions-light.html",
+      "thumbnail": "family-bubble-compact-plot-regions-light.thumbnail.svg",
+      "thumbnailPng": "family-bubble-compact-plot-regions-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 22
+    },
+    {
       "id": "family-bubble-options-light",
       "family": "bubble",
       "familyLabel": "Bubble",
@@ -6053,6 +6311,76 @@
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
       "semanticRegions": 32
+    },
+    {
+      "id": "family-bubble-plot-regions-dark",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Capacity and delay",
+      "variant": "plot-regions",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-bubble-plot-regions-dark.csharp.txt",
+      "svg": "family-bubble-plot-regions-dark.svg",
+      "png": "family-bubble-plot-regions-dark.png",
+      "html": "family-bubble-plot-regions-dark.html",
+      "thumbnail": "family-bubble-plot-regions-dark.thumbnail.svg",
+      "thumbnailPng": "family-bubble-plot-regions-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-bubble-compact-plot-regions-dark",
+      "family": "bubble",
+      "familyLabel": "Bubble",
+      "group": "distribution",
+      "title": "Capacity and delay",
+      "variant": "compact-plot-regions",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-bubble-compact-plot-regions-dark.csharp.txt",
+      "svg": "family-bubble-compact-plot-regions-dark.svg",
+      "png": "family-bubble-compact-plot-regions-dark.png",
+      "html": "family-bubble-compact-plot-regions-dark.html",
+      "thumbnail": "family-bubble-compact-plot-regions-dark.thumbnail.svg",
+      "thumbnailPng": "family-bubble-compact-plot-regions-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.axis-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Axis labels were shortened or omitted to remain within the available frame."
+      ],
+      "semanticRegions": 22
     },
     {
       "id": "family-bubble-options-dark",
