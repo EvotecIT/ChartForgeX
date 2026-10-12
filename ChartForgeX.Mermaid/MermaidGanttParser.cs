@@ -177,11 +177,13 @@ internal static partial class MermaidGanttParser {
                 bestScore = score;
             }
         }
-        if (selected != null) return selected;
-        if (first < chunks.Length && chunks.Length - first <= maximumCommas + 1) {
+        // A complete fallback end inherits the previous task's end. Do not split its
+        // date and time into an explicit pair unless a configured format wins.
+        if (bestScore < 3 && first < chunks.Length && chunks.Length - first <= maximumCommas + 1) {
             var end = string.Join(",", chunks, first, chunks.Length - first).Trim();
             if (IsEnd(end)) { prefix.Add(end); return prefix; }
         }
+        if (selected != null) return selected;
         // Preserve existing error locations and diagnostics when no complete arrangement parses.
         var original = new List<string>();
         foreach (var chunk in chunks) if (chunk.Trim().Length > 0) original.Add(chunk.Trim());
