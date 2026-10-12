@@ -172,9 +172,9 @@
     {
       "name": "cartesian-automatic-category-margins",
       "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
+        "heightMode": "natural",
+        "frameFontRequest": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|400|normal|12.5|\n-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|700|normal|25|",
+        "frameFontFingerprint": "6463EE6F0CE3F0D34535225E0347079AE23F8296CD516C16E8CAE8200604CCE6"
       },
       "width": 1108,
       "height": 470,
