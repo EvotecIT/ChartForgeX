@@ -63,6 +63,42 @@ public sealed class PacketPreferredRowGapTests {
         Assert.NotEmpty(block.ToPng());
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SuppressedBitNumbersReleaseTheirSpaceForThePreferredGap(bool numbers) {
+        var source = "---\nconfig:\n  packet:\n    bitsPerRow: 512\n    rowHeight: 20\n    paddingY: 300\n    showBits: " + (numbers ? "true" : "false") + "\n---\npacket-beta\n0-1: \"Tag\"\n2-511: \"Payload\"\n512-513: \"Footer\"";
+        var options = new MermaidPacketRenderOptions { Width = 520, Height = 400, Padding = 20 };
+        var parsed = new MermaidParser().ParsePacket(source);
+        Assert.Empty(parsed.Diagnostics);
+        var converted = parsed.Document!.ToPacketLayoutBlock(options).WithTitle("").WithSubtitle("");
+        var markup = new MermaidVisualMarkupParser(new MermaidRenderOptions { Packet = options }).Parse("```mermaid\n" + source + "\n```");
+        Assert.Empty(markup.Diagnostics);
+        var fenced = Assert.IsType<PacketLayoutBlock>(Assert.Single(markup.Artifacts).Model).WithTitle("").WithSubtitle("");
+        var native = PacketLayoutBlock.Create().WithSize(520, 400).WithPadding(20).WithBitsPerRow(512)
+            .WithBitNumbers(numbers).WithRowHeight(20).WithRowGap(300)
+            .AddField(0, 1, "Tag").AddField(2, 511, "Payload").AddField(512, 513, "Footer");
+        foreach (var block in new[] { native, converted, fenced }) {
+            var fields = Fields(block);
+            Assert.Equal(3, fields.Length);
+            Assert.Equal(20, Number(fields[0], "y"));
+            Assert.All(fields, field => Assert.Equal(20, Number(field, "height")));
+            Assert.InRange(Number(fields[2], "y") - Number(fields[0], "y") - 20, 299.998, 300.002);
+            Assert.NotEmpty(block.ToPng());
+        }
+        if (!InteractiveChartBrowser.Enabled) return;
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + converted.ToSvg() + "</body></html>", 520, 400);
+        var separation = await session.Page.EvaluateAsync<double>("() => { const f=[...document.querySelectorAll('[data-cfx-role=packet-field]')].map(n=>n.getBoundingClientRect()); return f[2].top-f[0].bottom; }");
+        Assert.InRange(separation, 299.998, 300.002);
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(captures)) return;
+        Directory.CreateDirectory(captures);
+        var name = "packet-suppressed-bit-gap-" + numbers;
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png") });
+        File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), converted.ToPng());
+    }
+
     private static XElement[] Fields(PacketLayoutBlock block) => XDocument.Parse(block.ToSvg()).Descendants()
         .Where(element => (string?)element.Attribute("data-cfx-role") == "packet-field").ToArray();
     private static double Number(XElement element, string attribute) => double.Parse(element.Attribute(attribute)!.Value, CultureInfo.InvariantCulture);

@@ -14,22 +14,28 @@ internal static partial class VisualBlockRendering {
     public static PacketRowMetrics PacketRows(PacketLayoutBlock packet, ChartRect content, double top, int rows, IReadOnlyList<PacketLayoutSlice> slices) {
         var remaining = Math.Max(0, content.Bottom - top);
         var preferredLabelTop = packet.ShowBitNumbers ? BodyFontSize(packet.Options.Theme, 16) : 0;
-        var gapBudget = packet.RowGap.HasValue && rows > 1
-            ? Math.Max(0, remaining / rows - (packet.RowHeight ?? 52) - preferredLabelTop) * rows / (rows - 1)
-            : remaining / (rows * 2);
-        var gap = Math.Min(packet.RowGap ?? Math.Min(12, Math.Max(5, content.Height * .025)), gapBudget);
-        var slot = Math.Max(0, (remaining - gap * Math.Max(0, rows - 1)) / rows);
-        var labelBudget = packet.RowHeight.HasValue ? Math.Max(slot * .4, slot - packet.RowHeight.Value) : slot * .4;
-        var labelTop = Math.Min(preferredLabelTop, labelBudget);
-        var height = Math.Min(packet.RowHeight ?? 52, slot - labelTop);
+        double gap = 0, labelTop = 0, height = 0;
+        FitRows(preferredLabelTop);
         var bitWidth = Math.Min(packet.BitWidth ?? content.Width / packet.BitsPerRow, content.Width / packet.BitsPerRow);
         var fieldGap = packet.FieldGap ?? 1;
         var bits = Math.Min(BodyFontSize(packet.Options.Theme, 9.5), labelTop * .75);
         var bitStyle = new TextStyle { Font = new FontSpec { Family = packet.Options.Theme.FontFamily, Weight = 700 }, FontSize = Math.Max(.001, bits), LineHeight = 1 };
         if (bits > 0) bits = ChartTextFitting.FitFontSize(0, bits, FitsBits);
         if (bits > 0 && !FitsBits(bits)) bits = 0;
+        if (bits == 0 && labelTop > 0) FitRows(0);
         var label = Math.Min(BodyFontSize(packet.Options.Theme, Math.Max(9, Math.Min(13.5, height * .31))), height * .6);
         return new PacketRowMetrics(labelTop, gap, height, bits, label, bitWidth, fieldGap);
+
+        void FitRows(double preferredTop) {
+            var gapBudget = packet.RowGap.HasValue && rows > 1
+                ? Math.Max(0, remaining / rows - (packet.RowHeight ?? 52) - preferredTop) * rows / (rows - 1)
+                : remaining / (rows * 2);
+            gap = Math.Min(packet.RowGap ?? Math.Min(12, Math.Max(5, content.Height * .025)), gapBudget);
+            var slot = Math.Max(0, (remaining - gap * Math.Max(0, rows - 1)) / rows);
+            var labelBudget = packet.RowHeight.HasValue ? Math.Max(slot * .4, slot - packet.RowHeight.Value) : slot * .4;
+            labelTop = Math.Min(preferredTop, labelBudget);
+            height = Math.Min(packet.RowHeight ?? 52, slot - labelTop);
+        }
 
         bool FitsBits(double size) {
             bitStyle.FontSize = size;
