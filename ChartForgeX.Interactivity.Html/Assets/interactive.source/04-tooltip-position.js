@@ -49,15 +49,18 @@
     // Unlocated retained keyboard facts have no painted box; their visible SVG remains the host boundary.
     return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;
   };
-  const tooltipSourceInView = (state) => {
-    if (state.paintChanged || !state.clippingAncestors) {
-      state.clippingAncestors = [];
-      for (let node = state.node.parentElement; node; node = node.parentElement || node.getRootNode().host) {
-        if (!(node instanceof HTMLElement)) continue;
-        const style = getComputedStyle(node), x = style.overflowX !== 'visible', y = style.overflowY !== 'visible';
-        if (x || y) state.clippingAncestors.push({ node, x, y });
-      }
+  const tooltipClippingAncestors = (source) => {
+    const ancestors = [];
+    for (let node = source.parentElement; node; node = node.parentElement || node.getRootNode().host) {
+      // display:contents has no layout box. A real zero-sized box still clips its descendants.
+      if (!(node instanceof HTMLElement) || !node.getClientRects().length) continue;
+      const style = getComputedStyle(node), x = style.overflowX !== 'visible', y = style.overflowY !== 'visible';
+      if (x || y) ancestors.push({ node, x, y });
     }
+    return ancestors;
+  };
+  const tooltipSourceInView = (state) => {
+    if (state.paintChanged || !state.clippingAncestors) state.clippingAncestors = tooltipClippingAncestors(state.node);
     // Keep geometry live while caching overflow axes until the existing paint invalidation fires.
     let left = 0, top = 0, right = window.innerWidth, bottom = window.innerHeight;
     for (const { node, x, y } of state.clippingAncestors) {

@@ -1117,15 +1117,18 @@
     // Unlocated retained keyboard facts have no painted box; their visible SVG remains the host boundary.
     return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;
   };
-  const tooltipSourceInView = (state) => {
-    if (state.paintChanged || !state.clippingAncestors) {
-      state.clippingAncestors = [];
-      for (let node = state.node.parentElement; node; node = node.parentElement || node.getRootNode().host) {
-        if (!(node instanceof HTMLElement)) continue;
-        const style = getComputedStyle(node), x = style.overflowX !== 'visible', y = style.overflowY !== 'visible';
-        if (x || y) state.clippingAncestors.push({ node, x, y });
-      }
+  const tooltipClippingAncestors = (source) => {
+    const ancestors = [];
+    for (let node = source.parentElement; node; node = node.parentElement || node.getRootNode().host) {
+      // display:contents has no layout box. A real zero-sized box still clips its descendants.
+      if (!(node instanceof HTMLElement) || !node.getClientRects().length) continue;
+      const style = getComputedStyle(node), x = style.overflowX !== 'visible', y = style.overflowY !== 'visible';
+      if (x || y) ancestors.push({ node, x, y });
     }
+    return ancestors;
+  };
+  const tooltipSourceInView = (state) => {
+    if (state.paintChanged || !state.clippingAncestors) state.clippingAncestors = tooltipClippingAncestors(state.node);
     // Keep geometry live while caching overflow axes until the existing paint invalidation fires.
     let left = 0, top = 0, right = window.innerWidth, bottom = window.innerHeight;
     for (const { node, x, y } of state.clippingAncestors) {
@@ -2020,10 +2023,6 @@
   const scrollKeyboardTargetIntoView = (root, node) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage || !stage.contains(node)) return;
-    const style = getComputedStyle(stage);
-    const box = node.getBoundingClientRect();
-    const start = stagePoint(stage, { x: box.left, y: box.top });
-    const end = stagePoint(stage, { x: box.right, y: box.bottom });
     const scrollAxis = (overflow, extent, available, offset, start, end, itemStart, itemEnd) => {
       if (!['auto', 'scroll'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
@@ -2036,10 +2035,15 @@
       if (itemEnd > end) return offset + itemEnd - end;
       return offset;
     };
-    const left = stage.scrollLeft + 8;
-    const top = stage.scrollTop + 8;
-    stage.scrollLeft = scrollAxis(style.overflowX, stage.scrollWidth, stage.clientWidth, stage.scrollLeft, left, left + stage.clientWidth - 16, start.x, end.x);
-    stage.scrollTop = scrollAxis(style.overflowY, stage.scrollHeight, stage.clientHeight, stage.scrollTop, top, top + stage.clientHeight - 16, start.y, end.y);
+    // Scroll inner clips first, then remeasure through each outer clip, including closed shadow hosts.
+    for (const { node: clip } of tooltipClippingAncestors(node)) {
+      const style = getComputedStyle(clip), box = node.getBoundingClientRect();
+      const start = stagePoint(clip, { x: box.left, y: box.top });
+      const end = stagePoint(clip, { x: box.right, y: box.bottom });
+      const left = clip.scrollLeft + 8, top = clip.scrollTop + 8;
+      clip.scrollLeft = scrollAxis(style.overflowX, clip.scrollWidth, clip.clientWidth, clip.scrollLeft, left, left + clip.clientWidth - 16, start.x, end.x);
+      clip.scrollTop = scrollAxis(style.overflowY, clip.scrollHeight, clip.clientHeight, clip.scrollTop, top, top + clip.clientHeight - 16, start.y, end.y);
+    }
   };
   const focusKeyboardTarget = (root, node) => {
     const focusNode = targetFocusNode(node);
