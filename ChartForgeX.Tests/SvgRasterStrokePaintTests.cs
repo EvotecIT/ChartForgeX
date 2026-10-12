@@ -38,6 +38,23 @@ public sealed class SvgRasterStrokePaintTests {
         Assert.InRange(pixels[middle+3],(byte)127,(byte)128);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TiledSvgStrokeRetainsItsTransformedGradientFrame(bool userSpace) {
+        const int width = 300000;
+        var coordinates = userSpace ? "gradientUnits='userSpaceOnUse' x1='0' x2='150000'" : "x1='0' x2='1'";
+        var body = "<defs><linearGradient id='g' " + coordinates + "><stop offset='0' stop-color='red'/><stop offset='1' stop-color='blue'/></linearGradient></defs>"
+            + "<path transform='matrix(2 .00001 .2 1.5 .125 -3)' d='M-5.13 5 L150010 5 M-5.13 7 L150010 7' fill='none' stroke='url(#g)' stroke-width='1.25' stroke-opacity='.5' stroke-linecap='round' stroke-dasharray='.625 .75' stroke-dashoffset='-.375'/>";
+        var actual = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='300000' height='16'>" + body + "</svg>");
+        foreach (var boundary in new[] { 2048, 65536, 299008 }) {
+            var left = boundary - 20;
+            var expected = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='40' height='16' viewBox='" + left + " 0 40 16'>" + body + "</svg>");
+            for (var y = 0; y < 16; y++) for (var x = 0; x < 40; x++) for (var channel = 0; channel < 4; channel++)
+                Assert.InRange(System.Math.Abs(actual.Pixels[(y * width + left + x) * 4 + channel] - expected.Pixels[(y * 40 + x) * 4 + channel]), 0, 1);
+        }
+    }
+
     [Fact]
     public void NonUniformStrokeTransformPreservesTheLocalOutline() {
         var image=SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='80' height='40'><path transform='scale(2 1)' d='M10 10 L10 30' fill='none' stroke='black' stroke-width='2' stroke-linecap='butt'/></svg>");
