@@ -714,6 +714,20 @@
         "10": "Mermaid 10 treats vert as an ordinary task id; current 11/12 interpretation is a vertical marker without a task row."
       },
       "provenance": "https://mermaid.js.org/syntax/gantt.html#vertical-markers: authored marker scheduling range and explicit off directive"
+    },
+    "fixtures/sankey-source-options.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored source settings and flow facts from the official Mermaid Sankey configuration and syntax documentation; checked with pinned reference parsers.",
+      "expectedByReference": {
+        "10": "sankey-source-options.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10.9.8 drops nodeWidth and nodePadding from effective configuration. Other retained settings and node/flow facts are compared; pixel equality is not claimed. ChartForgeX applies the documented current node geometry options."
+      }
     }
   }
 }
