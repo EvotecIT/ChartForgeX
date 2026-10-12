@@ -22,7 +22,10 @@ public static class MermaidTreemapRendering {
             .WithSize(options.Width, options.Height)
             .WithDataLabels()
             .AddTreemap(string.IsNullOrWhiteSpace(options.SeriesName) ? "Treemap" : options.SeriesName!, ToItems(document));
-        return MermaidPresentation.Apply(chart, document);
+        MermaidPresentation.Apply(chart, document);
+        document.Configuration.Treemap?.Apply(chart);
+        if (options.ShowValues.HasValue) chart.Options.Treemap.ShowValues = options.ShowValues.Value;
+        return chart;
     }
 
     /// <summary>
@@ -111,4 +114,6 @@ public sealed class MermaidTreemapRenderOptions {
 
     /// <summary>Gets or sets the natural preview height.</summary>
     public int Height { get; set; } = 560;
+    /// <summary>Gets or sets an explicit host override for value captions. Null uses source configuration or the native default.</summary>
+    public bool? ShowValues { get; set; }
 }

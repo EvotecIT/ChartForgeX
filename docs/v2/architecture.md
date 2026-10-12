@@ -48,6 +48,8 @@ typed model + resolved viewport + immutable theme + font request
 
 The shared command set covers groups, rectangular and path clips, rectangles, ellipses, paths, numeric pie/ring slices, image nodes, linear gradients and positioned shaped text. Rigid transforms and glyph outlines preserve diagram and chart requirements in both SVG and native raster output. Scene commands remain internal; the public boundary is the typed model and immutable prepared output. Composition capabilities migrate with their owner and acceptance fixtures.
 
+`SequenceArtifact.Theme` and `ThemeMode` supply authored presentation defaults for convenience exports. An explicit `Prepare(VisualRenderContext)` call uses the host's complete theme and font request. Prepared interchange captures those resolved colors and font independently from subsequent model changes; authored interchange preserves model defaults. Source adapters map supported presentation into this owner.
+
 ## Size, frame and overflow
 
 Logical bounds are exact. Raster dimensions round each positive logical dimension multiplied by output scale upward. Supersampling affects working coverage and allocation, not text positions or the logical scene. The pixel budget includes supersampled working pixels and is checked before allocation; the existing raster allocation guard supplies its independent byte ceiling.
