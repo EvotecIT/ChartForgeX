@@ -179,7 +179,7 @@ public sealed class RasterDashBoundsTests {
         Assert.Throws<InvalidOperationException>(() => canvas.StrokePolylines(wide, ChartColors.Black, 1,
             RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .05, .05 }));
         canvas = new RgbaCanvas(3000, 8, 1);
-        var lines = Enumerable.Range(1, 5).Select(y => (System.Collections.Generic.IReadOnlyList<ChartPoint>)new[] { new ChartPoint(0, y), new ChartPoint(3000, y) }).ToArray();
+        var lines = Enumerable.Range(1, 7).Select(y => (System.Collections.Generic.IReadOnlyList<ChartPoint>)new[] { new ChartPoint(0, y), new ChartPoint(3000, y) }).ToArray();
         Assert.Throws<InvalidOperationException>(() => canvas.StrokePolylines(lines, ChartColors.Black, 1,
             RasterLineCap.Butt, RasterLineJoin.Miter, new[] { .05, .05 }));
     }

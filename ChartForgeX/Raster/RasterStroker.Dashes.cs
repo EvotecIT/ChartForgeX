@@ -10,7 +10,7 @@ internal static partial class RasterStroker {
     /// <summary>Clips invisible lengths before splitting dashes, retaining their phase and joins.</summary>
     internal static List<List<ChartPoint>> Dash(IReadOnlyList<ChartPoint> points, IReadOnlyList<double> pattern,
         double left, double top, double right, double bottom, double dashOffset = 0, double pixelsPerUnit = 1,
-        double strokeWidth = 0, RasterLineCap cap = RasterLineCap.Butt) {
+        double strokeWidth = 0, RasterLineCap cap = RasterLineCap.Butt, DashBudget? budget = null) {
         if (!TryDashPattern(pattern, out var lengths, out double total))
             return new List<List<ChartPoint>> { new List<ChartPoint>(points) };
         double phase = double.IsNaN(dashOffset) || double.IsInfinity(dashOffset) ? 0 : dashOffset % total;
@@ -52,7 +52,10 @@ internal static partial class RasterStroker {
             while (index < segmentLengths.Count - 1 && offset > 0 && offset >= segmentLengths[index]) offset -= segmentLengths[index++];
             while (position < end) {
                 // Bound painted entries; alternating gaps allocate no outline geometry.
-                if ((index & 1) == 0 && ++pieces > MaximumDashPieces) throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");
+                if ((index & 1) == 0) {
+                    if (++pieces > MaximumDashPieces) throw new InvalidOperationException("The visible stroke exceeds the raster dash-piece limit.");
+                    budget?.Consume();
+                }
                 double remaining = segmentLengths[index] - offset;
                 if (remaining <= 0) {
                     if (segmentLengths[index] == 0 && (index & 1) == 0) runs.Add(new List<ChartPoint> { DashPoint(a, b, position / length) });
