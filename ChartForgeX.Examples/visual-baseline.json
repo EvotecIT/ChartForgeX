@@ -4802,6 +4802,30 @@
       }
     },
     {
+      "name": "mermaid-gantt-axis",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 404,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-gantt-calendar",
       "layout": {
         "heightMode": "fixed",
@@ -4822,6 +4846,30 @@
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
         "minDistinctColors": 511,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-gantt-forward",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 27,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 449,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5134,6 +5182,30 @@
         "minVisiblePixels": 236269,
         "minTransparentPixels": 0,
         "minDistinctColors": 603,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-treemap-labels",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 7,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 470,
         "maxEdgeInkPixels": 0
       }
     },
