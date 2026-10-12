@@ -130,7 +130,9 @@ public sealed class TextLanguageTests {
             var right = Number(axis, "x2");
             var selectedSize = Number(selected, "font-size");
             var localizedFont = Font().WithLanguage("BGR ");
-            Assert.True(localizedFont.Measure(sourceLabel, selectedSize) > right - left, "The fixture must require fitting.");
+            Assert.True(localizedFont.Measure(sourceLabel, 100) > right - left, "The authored label must require fitting.");
+            Assert.True(selectedSize < 100 && localizedFont.Measure(sourceLabel, selectedSize) <= right - left,
+                "Oversized text must fit the complete label using localized glyph advances.");
             var displayedWidth = localizedFont.Measure(selected.Value, selectedSize);
             Assert.True(Number(selected, "x") >= left - 1 && Number(selected, "x") + displayedWidth <= right + 1,
                 "The visible label must fit its axis strip using localized glyph advances.");
