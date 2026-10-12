@@ -179,6 +179,7 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [x] Render the four normalized quadrant regions and their labels through the shared Cartesian plot-region owner, including charts without points. Preserve scatter coordinates through direct and Markdown rendering; qualify labels and positions with pinned Mermaid 10, 11 and 12 references.
 - [ ] Complete quadrant point/class styling, theme variables, source dimensions and separate axis endpoint labels. Native region captions use the shared bounded placement policy.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene and timeline sections/events in both directions. Keep the current score-bar/ordered-time mappings explicit until replaced.
+- [x] Map Sankey source dimensions, node geometry/alignment and value-label visibility/affixes through the native owners. Qualify direct/fence host overrides and the same node/flow facts across pinned Mermaid 10, 11 and 12; retain unsupported paint settings as diagnostics.
 - [ ] Broaden pie/show-data, XY numeric/category axes and legends, Sankey CSV/configuration/colors, and packet row/label/configuration cases, including Mermaid 12 bit-numbering direction.
 
 Completion: values, dates, hierarchy, direction and requested encodings survive conversion and are visibly represented. Existing owner PRs supply shared capability; they do not by themselves complete Mermaid configuration or compatibility proof.
