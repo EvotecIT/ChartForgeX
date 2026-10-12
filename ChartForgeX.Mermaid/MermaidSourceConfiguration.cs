@@ -6,6 +6,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>Retains bounded source configuration and the effective settings for the parsed diagram family.</summary>
 public sealed class MermaidSourceConfiguration {
     private readonly List<MermaidConfigurationSetting> _settings = new();
+    internal MermaidTreemapSettings? Treemap { get; set; }
 
     /// <summary>Gets the effective source theme; MermaidDocument.Theme can also set this value for direct conversion.</summary>
     public string? Theme { get; internal set; }
@@ -13,7 +14,7 @@ public sealed class MermaidSourceConfiguration {
     public string? Layout { get; internal set; }
     /// <summary>Gets the requested appearance, retained independently from native scene styling.</summary>
     public string? Look { get; internal set; }
-    /// <summary>Gets the requested font stack; native font resolution does not fetch remote fonts.</summary>
+    /// <summary>Gets the effective font stack from the theme variable or root setting, in that order; native font resolution does not fetch remote fonts.</summary>
     public string? FontFamily { get; internal set; }
     /// <summary>Gets declarations in source precedence order: frontmatter, then legacy directives.</summary>
     public IReadOnlyList<MermaidConfigurationSetting> Settings => _settings.AsReadOnly();

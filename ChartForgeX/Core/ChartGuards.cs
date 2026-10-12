@@ -45,6 +45,7 @@ internal static class ChartGuards {
     public static void RenderCompatibility(Chart chart, bool preparing = false) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.ValidateHourWeekdayHeatmapOwnership();
+        chart.ValidateExplicitGanttDependencies();
         ValidateRenderableChart(chart, preparing);
         chart.ValidatePlotRegions();
         if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap))
