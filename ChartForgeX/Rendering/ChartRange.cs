@@ -28,14 +28,16 @@ internal sealed class ChartRange {
         var horizontalBarYValues = new List<double>();
         var horizontalScalarCategories = stacks.HorizontalCategories.ToList();
         var hasHorizontalSeries = ChartCartesianOrientation.IsHorizontal(chart);
+        var hasObservations = chart.Series.Any(series => series.Points.Count > 0);
         var usesHorizontalBaseline = false;
         var usesVerticalBaseline = false;
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
-            if (ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) usesHorizontalBaseline = true;
+            var contributesBaseline = series.Points.Count > 0 || !hasObservations;
+            if (contributesBaseline && ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) usesHorizontalBaseline = true;
             if (series.Kind == ChartSeriesKind.Waterfall) {
                 var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
-                if (horizontal) usesHorizontalBaseline = true;
+                if (horizontal && contributesBaseline) usesHorizontalBaseline = true;
                 var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
                 foreach (var step in ChartWaterfallSteps.Create(series)) {
                     if (horizontal) {
@@ -70,7 +72,7 @@ internal sealed class ChartRange {
                 continue;
             }
 
-            if (ChartSeriesKindTraits.UsesVerticalBaseline(series.Kind)) usesVerticalBaseline = true;
+            if (contributesBaseline && ChartSeriesKindTraits.UsesVerticalBaseline(series.Kind)) usesVerticalBaseline = true;
 
             if (series.Kind == ChartSeriesKind.Bar && series.HistogramBinLayout != null) {
                 if (series.HistogramBinLayout.Minimum == series.HistogramBinLayout.Maximum) {
@@ -201,10 +203,12 @@ internal sealed class ChartRange {
 
     internal static ChartRange FromSecondaryYAxis(Chart chart, ChartRange primaryRange, ChartStackLayout stacks, bool applyOptionBounds = true) {
         var range = new ChartRange();
+        var hasObservations = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary && series.Points.Count > 0);
         var usesVerticalBaseline = false;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             if (series.YAxis != ChartAxisSide.Secondary) continue;
+            if (series.Points.Count == 0 && hasObservations) continue;
             if (series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.StackedArea) {
                 for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) range.IncludeY(stacks.Point(index, pointIndex).End);
                 if (UsesZeroBaseline(chart.Options.SecondaryYAxis)) range.IncludeY(0);
