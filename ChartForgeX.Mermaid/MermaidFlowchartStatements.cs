@@ -19,10 +19,12 @@ internal static class MermaidFlowchartStatements {
                         if (c == quote && !IsEscaped(text, index)) quote = '\0';
                         continue;
                     }
-                    if (c == '"' || (c == '\'' && (index == start || char.IsWhiteSpace(text[index - 1]) || "[({=".IndexOf(text[index - 1]) >= 0))) { quote = c; continue; }
+                    // Apostrophes are label text; single-quoted scalar syntax belongs only to node metadata.
+                    if (c == '"' || (c == '\'' && openings.Count > 0 && openings.Peek() == '@')) { quote = c; continue; }
                     if (c == '|' && openings.Count == 0) { pipe = !pipe; continue; }
-                    if (c == '[' || c == '(' || c == '{' || (c == '>' && index > start && char.IsLetterOrDigit(text[index - 1]))) openings.Push(c);
-                    else if (openings.Count > 0 && ((c == ']' && (openings.Peek() == '[' || openings.Peek() == '>')) || (c == ')' && openings.Peek() == '(') || (c == '}' && openings.Peek() == '{'))) openings.Pop();
+                    if (c == '[' || c == '(' || c == '{' || (c == '>' && index > start && char.IsLetterOrDigit(text[index - 1])))
+                        openings.Push(c == '{' && index > start && text[index - 1] == '@' ? '@' : c);
+                    else if (openings.Count > 0 && ((c == ']' && (openings.Peek() == '[' || openings.Peek() == '>')) || (c == ')' && openings.Peek() == '(') || (c == '}' && (openings.Peek() == '{' || openings.Peek() == '@')))) openings.Pop();
                     if (openings.Count != 0 || pipe) continue;
                     if (c == '%' && index + 1 < text.Length && text[index + 1] == '%') end = true;
                     else if (c != ';') continue;

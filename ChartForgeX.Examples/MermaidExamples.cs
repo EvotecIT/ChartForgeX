@@ -13,7 +13,7 @@ internal static class MermaidExamples {
             ["mermaid-radar-hidden-fractional-guides"] = "radar-beta\naxis Reliability, Performance, Security, Usability, Operations\ncurve current[\"Current\"]{75, 60, 85, 65, 80}\ncurve target[\"Target\"]{90, 85, 90, 80, 90}\nmax 100\nticks 2.5\ngraticule polygon\n",
             ["mermaid-block-circle-routes"] = "block-beta\ncolumns 2\napi[API] worker((Worker))\nstore[(Store)] queue((Queue))\napi --> worker\nworker --> queue\nqueue --> store\n",
             ["mermaid-flowchart-modern"] = "flowchart LR\nA@{ shape: cloud, label: \"API, cloud\" } & B --> C & D --> E\n",
-            ["mermaid-flowchart-endpoints"] = "flowchart LR\nA[Publish] ---o B[Event]\nC[Cancel] ---x D[Stop]\nE[Peer] o-- exchanges --o F[Peer]\nG[Blocked] x-. rejects .-x H[Blocked]\n",
+            ["mermaid-flowchart-endpoints"] = "flowchart LR\nA[Publish] ---o B[Event]\nC[Cancel] ---x D[Stop]\nE[Peer] o-- 'til exchanged --o F[Peer]\nG[Blocked] x-. rejects .-x H[Blocked]\n",
             ["mermaid-accessibility-dark"] = "---\nconfig:\n  theme: dark\n---\nflowchart LR\naccTitle: Service path\naccDescr {\n API to storage\n}\nA --> B\n",
             ["mermaid-source-font"] = "---\nconfig:\n  theme: dark\n  fontFamily: Georgia, serif\n---\nflowchart LR\nA[Source typography] --> B[Shared native scene]\n",
             ["mermaid-sequence-presentation"] = "---\nconfig:\n  theme: dark\n  fontFamily: Georgia, serif\n---\nsequenceDiagram\nparticipant API\nparticipant Store\nAPI->>Store: Save request\nNote right of Store: Stored record\nStore-->>API: Complete\n",

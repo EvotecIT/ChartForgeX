@@ -230,7 +230,7 @@ internal static partial class MermaidFlowchartParser {
                 if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, index)) quote = '\0';
                 continue;
             }
-            if (ch == '"' || (ch == '\'' && index == contentStart)) { quote = ch; continue; }
+            if (ch == '"') { quote = ch; continue; }
             if (text[index + 1] != ']') continue;
             if (text[index] != '/' && text[index] != '\\') continue;
 
@@ -255,7 +255,7 @@ internal static partial class MermaidFlowchartParser {
             var ch = text[index];
             if (quote != '\0') {
                 if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, index)) quote = '\0';
-            } else if (ch == '"' || (ch == '\'' && index == contentStart)) quote = ch;
+            } else if (ch == '"') quote = ch;
             else if (StartsWith(text, index, close)) { closeIndex = index; break; }
         }
         if (closeIndex < 0) {
@@ -323,7 +323,7 @@ internal static partial class MermaidFlowchartParser {
                 if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, suffixIndex)) quote = '\0';
                 continue;
             }
-            if (ch == '"' || (ch == '\'' && suffixIndex == firstText)) { quote = ch; continue; }
+            if (ch == '"') { quote = ch; continue; }
             var end = MermaidFlowchartOperators.ReadLabelSuffixEnd(text, suffixIndex, family);
             if (end == suffixIndex) continue;
             var candidateLabel = text.Substring(labelStart, suffixIndex - labelStart).Trim();

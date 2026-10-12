@@ -66,17 +66,17 @@ public sealed class MermaidFlowchartInlineEndpointTests {
     [InlineData(true)]
     public async Task InlineEndpointsAndCaptionsRenderInNativeAndBrowserOutput(bool dark) {
         var source = (dark ? "%%{init: {'theme':'dark'}}%%\n" : "")
-            + "flowchart LR\nA o-- publishes --o B\nC x-. fails .-x D\nE <== returns ==> F";
+            + "flowchart LR\nA o-- 'til published --o B\nC x-. fails .-x D\nE <== returns ==> F";
         var result = MermaidRenderer.Render(source);
         Assert.Empty(result.Diagnostics);
         var artifact = result.Artifact!;
         var chart = Assert.IsType<TopologyChart>(artifact.Model);
         Assert.Equal(6, chart.Nodes.Count);
-        Assert.Equal(new[] { "publishes", "fails", "returns" }, chart.Edges.Select(edge => edge.Label));
+        Assert.Equal(new[] { "'til published", "fails", "returns" }, chart.Edges.Select(edge => edge.Label));
         Assert.All(chart.Edges, edge => Assert.Equal(VisualLinkDirection.Bidirectional, edge.Direction));
         var svg = artifact.ToSvg();
         var png = artifact.ToPng();
-        foreach (var caption in new[] { "publishes", "fails", "returns" }) Assert.Contains(caption, svg);
+        foreach (var caption in new[] { "'til published", "fails", "returns" }) Assert.Contains(caption, svg);
         Assert.NotEmpty(png);
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>");
