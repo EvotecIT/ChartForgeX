@@ -11,28 +11,41 @@ namespace ChartForgeX.Interactivity.Html;
 public sealed partial class HtmlInteractiveChartRenderer {
     // Scalar fills already contain flattened native contours. Interior witnesses are adapter
     // metadata only: live native fill, clipping and paint remain the browser's authority.
+    // Non-paint area-segment ranges use the same observation indexes as point groups,
+    // so a repeated coordinate never makes another disconnected path an owner.
     private static Dictionary<string, List<ChartRect>> PreparedFillInteriors(PreparedVisual prepared) {
         var results = new Dictionary<string, List<ChartRect>>(StringComparer.Ordinal);
-        var regions = new Dictionary<string, List<VisualSemanticRegion>>(StringComparer.Ordinal);
+        var regions = new Dictionary<string, List<(int Index, VisualSemanticRegion Region)>>(StringComparer.Ordinal);
         foreach (var region in prepared.Regions) {
             if (region.Role != "point") continue;
             var separator = region.Id.IndexOf("-point-", StringComparison.Ordinal);
             if (separator < 0) continue;
+            if (!int.TryParse(region.Id.Substring(separator + 7), NumberStyles.None, CultureInfo.InvariantCulture, out var index)) continue;
             var series = region.Id.Substring(0, separator);
-            if (!regions.TryGetValue(series, out var points)) regions.Add(series, points = new List<VisualSemanticRegion>());
-            points.Add(region);
+            if (!regions.TryGetValue(series, out var points)) regions.Add(series, points = new List<(int, VisualSemanticRegion)>());
+            points.Add((index, region));
         }
         string? owner = null; ChartRect? clip = null;
-        var stack = new Stack<(string? Owner, ChartRect? Clip)>();
+        (int Start, int Count)? segment = null;
+        var stack = new Stack<(string? Owner, ChartRect? Clip, (int Start, int Count)? Segment)>();
         foreach (var node in prepared.Scene.Nodes) {
             if (node is VisualSceneGroup group) {
-                stack.Push((owner, clip));
+                stack.Push((owner, clip, segment));
                 if (group.Clip.HasValue) clip = clip.HasValue ? IntersectFillFootprint(clip.Value, group.Clip.Value) : group.Clip;
-                if (group.Role == "series") owner = group.Metadata.TryGetValue("data-cfx-kind", out var kind)
-                    && (kind == "Area" || kind == "StepArea" || kind == "StackedArea") ? group.Id : null;
+                if (group.Role == "series") {
+                    owner = group.Metadata.TryGetValue("data-cfx-kind", out var kind)
+                        && (kind == "Area" || kind == "StepArea" || kind == "StackedArea") ? group.Id : null;
+                    segment = null;
+                } else if (group.Role == "area-segment") {
+                    segment = group.Metadata.TryGetValue("data-cfx-area-point-start", out var start)
+                        && group.Metadata.TryGetValue("data-cfx-area-point-count", out var count)
+                        && int.TryParse(start, NumberStyles.None, CultureInfo.InvariantCulture, out var first)
+                        && int.TryParse(count, NumberStyles.None, CultureInfo.InvariantCulture, out var length)
+                        && length > 0 ? (first, length) : null;
+                }
             } else if (node is VisualSceneEndGroup) {
-                var previous = stack.Pop(); owner = previous.Owner; clip = previous.Clip;
-            } else if (owner != null && node is VisualScenePath path && path.Role == "area" && regions.TryGetValue(owner, out var points)) {
+                var previous = stack.Pop(); owner = previous.Owner; clip = previous.Clip; segment = previous.Segment;
+            } else if (owner != null && segment.HasValue && node is VisualScenePath path && path.Role == "area" && regions.TryGetValue(owner, out var points)) {
                 var contours = VisualSceneGeometry.Flatten(path, 1);
                 var left = double.PositiveInfinity; var top = double.PositiveInfinity;
                 var right = double.NegativeInfinity; var bottom = double.NegativeInfinity;
@@ -46,10 +59,11 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 if (right <= left || bottom <= top) continue;
                 var footprints = new List<ChartRect>(); var identities = new List<string>();
                 foreach (var point in points) {
-                    var bounds = IntersectFillFootprint(point.Bounds, left, top, right, bottom);
+                    if (point.Index < segment.Value.Start || point.Index - segment.Value.Start >= segment.Value.Count) continue;
+                    var bounds = IntersectFillFootprint(point.Region.Bounds, left, top, right, bottom);
                     if (clip.HasValue) bounds = IntersectFillFootprint(bounds, clip.Value);
                     if (bounds.Width <= 0 || bounds.Height <= 0) continue;
-                    footprints.Add(bounds); identities.Add(point.Id);
+                    footprints.Add(bounds); identities.Add(point.Region.Id);
                 }
                 var interiors = VisualSceneGeometry.FindFillInteriors(contours, footprints, .000125);
                 for (var index = 0; index < interiors.Length; index++) if (interiors[index].HasValue) {

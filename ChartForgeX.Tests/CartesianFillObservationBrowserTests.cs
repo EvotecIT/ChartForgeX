@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 /// <summary>Series fill availability follows the native surface at an authored observation.</summary>
-public sealed class CartesianFillObservationBrowserTests {
+public sealed partial class CartesianFillObservationBrowserTests {
     [Theory]
     [InlineData(ChartStepPosition.Start, false, false)]
     [InlineData(ChartStepPosition.End, false, false)]

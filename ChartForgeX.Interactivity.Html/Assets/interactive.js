@@ -492,7 +492,18 @@
   const cartesianFillObservation = (node, subject) => subject !== node && subject.hasAttribute('data-cfx-point')
     && ['area', 'steparea', 'stackedarea', 'differencearea', 'rangearea', 'rangeband'].includes((subject.dataset.cfxKind || '').toLowerCase())
     && /^(area|difference-(positive|negative)|range-(area|band))(-pattern)?$/.test(node.dataset.cfxRole || '');
+  const cartesianFillOwnsObservation = (node, subject) => {
+    if (!['area', 'steparea', 'stackedarea'].includes((subject.dataset.cfxKind || '').toLowerCase())) return true;
+    // Fill and hatch share non-paint ownership by observation index, independently of their coordinates.
+    const segment = node.closest('[data-cfx-role="area-segment"]');
+    if (!segment) return false;
+    const first = Number(segment.dataset.cfxAreaPointStart), count = Number(segment.dataset.cfxAreaPointCount);
+    const index = Number(subject.dataset.cfxPoint);
+    return Number.isInteger(first) && Number.isInteger(count) && Number.isInteger(index)
+      && first >= 0 && count > 0 && index >= first && index - first < count;
+  };
   const cartesianFillStrokeInk = (node, subject, paint) => {
+    if (!cartesianFillOwnsObservation(node, subject)) return false;
     if (pairedExtentObservation(subject)) return pairedBoundaryInk(node, subject, paint);
     const region = subject._cfxNativeRegion;
     // Reuse the source-bounded stroke/clip query with this scalar's captured centre as both endpoints.
@@ -532,6 +543,7 @@
     return null;
   };
   const cartesianFillInk = (node, subject, styles) => {
+    if (!cartesianFillOwnsObservation(node, subject)) return false;
     const surface = nativeFillEnvelope(node, styles), region = subject._cfxNativeRegion;
     const sourceMatrix = subject.getScreenCTM(), shapeMatrix = surface && surface.matrix, clips = nativePaintClips(node);
     if (!surface || !region || !sourceMatrix || !shapeMatrix || !clips) return false;
