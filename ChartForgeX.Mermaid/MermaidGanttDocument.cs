@@ -16,6 +16,9 @@ public sealed class MermaidGanttDocument : MermaidDocument {
     /// <summary>Gets or sets the Mermaid dateFormat directive.</summary>
     public string DateFormat { get; set; } = "YYYY-MM-DD";
 
+    /// <summary>Gets the explicit calendar date used when resolving input fields without a year.</summary>
+    public DateTime? DateAnchor { get; internal set; }
+
     /// <summary>Gets or sets the optional Mermaid axisFormat directive.</summary>
     public string? AxisFormat { get; set; }
 

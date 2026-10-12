@@ -6008,9 +6008,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 360,
+      "width": 420,
       "height": 320,
-      "logicalWidth": 360.0,
+      "logicalWidth": 420.0,
       "logicalHeight": 320.0,
       "svg": {
         "minVisualNodes": 13,
@@ -6019,9 +6019,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 57600,
+        "minVisiblePixels": 67200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 489,
+        "minDistinctColors": 507,
         "maxEdgeInkPixels": 0
       }
     },
@@ -9142,6 +9142,54 @@
         "minVisiblePixels": 710470,
         "minTransparentPixels": 43930,
         "minDistinctColors": 1448,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-gantt-date-anchor",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 538,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-gantt-today-style",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 20,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 501,
         "maxEdgeInkPixels": 0
       }
     }
