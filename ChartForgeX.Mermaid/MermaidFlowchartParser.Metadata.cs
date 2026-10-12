@@ -33,7 +33,8 @@ internal static partial class MermaidFlowchartParser {
             var ch = text[position];
             if (MermaidFlowchartText.ReadQuotedCharacter(text, ref position, ref quote, metadata: true)) { position++; continue; }
             if (ch == ',' || ch == '}') {
-                AddNodeProperty(text.Substring(propertyStart, position - propertyStart), node, span, result);
+                AddNodeProperty(text.Substring(propertyStart, position - propertyStart), node,
+                    new MermaidSourceSpan(span.Line, span.Column + propertyStart, position - propertyStart), result);
                 position++;
                 if (ch == '}') return;
                 propertyStart = position;
@@ -52,11 +53,18 @@ internal static partial class MermaidFlowchartParser {
             return;
         }
         string key, value;
+        var scalar = property.Substring(0, colon);
+        var scalarStart = scalar.Length - scalar.TrimStart().Length;
+        scalar = scalar.Trim();
         try {
-            key = ReadPropertyScalar(property.Substring(0, colon).Trim());
-            value = ReadPropertyScalar(property.Substring(colon + 1).Trim());
+            key = ReadPropertyScalar(scalar);
+            scalar = property.Substring(colon + 1);
+            scalarStart = colon + 1 + scalar.Length - scalar.TrimStart().Length;
+            scalar = scalar.Trim();
+            value = ReadPropertyScalar(scalar);
         } catch (ArgumentException exception) {
-            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, exception.Message);
+            MermaidParserUtilities.Add(result, new MermaidSourceSpan(span.Line, span.Column + scalarStart, Math.Max(1, scalar.Length)),
+                MermaidDiagnosticSeverity.Error, exception.Message);
             return;
         }
         node.Properties[key] = value;

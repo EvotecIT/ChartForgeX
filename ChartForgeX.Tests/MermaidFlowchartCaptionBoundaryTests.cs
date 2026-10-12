@@ -112,4 +112,17 @@ public sealed class MermaidFlowchartCaptionBoundaryTests {
         File.WriteAllText(name + ".svg", svg); File.WriteAllBytes(name + ".native.png", png);
         await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = name + ".browser.png", FullPage = true });
     }
+
+    [Theory]
+    [InlineData("A@{label: 'can' t} --> B", "'can' t")]
+    [InlineData("A@{shape: rect, label:   'can' t} --> B", "'can' t")]
+    [InlineData("X --> Y; A@{label: 'can' t} --> B", "'can' t")]
+    [InlineData("A@{'label' x: Value} --> B", "'label' x")]
+    public void InvalidMetadataScalarReportsItsOriginalLocation(string line, string scalar) {
+        var parsed = new MermaidParser().ParseFlowchart("flowchart LR\n" + line);
+        var diagnostic = Assert.Single(parsed.Diagnostics, item => item.Severity == MermaidDiagnosticSeverity.Error);
+        Assert.Equal(2, diagnostic.Span.Line);
+        Assert.Equal(line.IndexOf(scalar, StringComparison.Ordinal) + 1, diagnostic.Span.Column);
+        Assert.Equal(scalar.Length, diagnostic.Span.Length);
+    }
 }
