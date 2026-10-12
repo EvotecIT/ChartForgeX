@@ -33,6 +33,7 @@ public sealed partial class MermaidParser {
             var character = value[index];
             if (character == '\\') {
                 if (++index == value.Length) return false;
+                if (quote == '\0' && (value[index] == '\r' || value[index] == '\n' || value[index] == '\f')) return false;
                 if (value[index] == '\r' && index + 1 < value.Length && value[index + 1] == '\n') index++;
                 continue;
             }

@@ -64,7 +64,8 @@ internal static partial class VisualBlockRendering {
 
     public static WardleyMapLayout BuildWardleyMapLayout(WardleyMapBlock map, ChartRect content, double y, double bottomPadding, double totalHeight) {
         var body = new ChartRect(content.X, y, content.Width, Math.Max(1, totalHeight - bottomPadding - y));
-        var plot = new ChartRect(body.X + 56, body.Y + 16, Math.Max(1, body.Width - 72), Math.Max(1, body.Height - 70));
+        var annotationInset = map.Annotations.Count == 0 ? 16 : Math.Max(16, WardleyAnnotationRadius(map.Options.Theme) + 1);
+        var plot = new ChartRect(body.X + 56, body.Y + annotationInset, Math.Max(1, body.Width - 56 - annotationInset), Math.Max(1, body.Height - 54 - annotationInset));
         var nodes = new List<WardleyNodePlacement>(map.Nodes.Count);
         var lookup = new Dictionary<string, WardleyNodePlacement>(StringComparer.Ordinal);
         for (var index = 0; index < map.Nodes.Count; index++) {
@@ -80,6 +81,8 @@ internal static partial class VisualBlockRendering {
     public static double ProjectWardleyX(ChartRect plot, double evolution) => plot.X + Math.Max(0, Math.Min(1, evolution)) * plot.Width;
 
     public static double ProjectWardleyY(ChartRect plot, double visibility) => plot.Y + (1 - Math.Max(0, Math.Min(1, visibility))) * plot.Height;
+
+    internal static double WardleyAnnotationRadius(ChartForgeX.Themes.ChartTheme theme) => Math.Min(24, BodyFontSize(theme, 10));
 
     /// <summary>Complete triangular head of an evolution overlay.</summary>
     internal static string WardleyEvolutionArrowPath(double x, double y) => "M " + WardleyF(x) + " " + WardleyF(y) + " l -7 -4 v 8 z";
