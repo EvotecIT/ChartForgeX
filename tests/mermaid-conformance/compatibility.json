@@ -694,6 +694,42 @@
         "12": "accepted"
       },
       "provenance": "Authored flowchart node metadata scalar examples; modern node metadata is supported by the pinned Mermaid 11 and 12 parsers."
+    },
+    "fixtures/sankey-source-options.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored source settings and flow facts from the official Mermaid Sankey configuration and syntax documentation; checked with pinned reference parsers.",
+      "expectedByReference": {
+        "10": "sankey-source-options.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10.9.8 drops nodeWidth and nodePadding from effective configuration. Other retained settings and node/flow facts are compared; pixel equality is not claimed. ChartForgeX applies the documented current node geometry options."
+      }
+    },
+    "fixtures/gantt-tick-interval.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html and https://d3js.org/d3-time#interval_every: authored weekly ticks and UTC calendar boundary cases"
+    },
+    "fixtures/gantt-vertical-marker.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "expectedByReference": {
+        "10": "gantt-vertical-marker.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10 treats vert as an ordinary task id; current 11/12 interpretation is a vertical marker without a task row."
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#vertical-markers: authored marker scheduling range and explicit off directive"
     }
   }
 }
