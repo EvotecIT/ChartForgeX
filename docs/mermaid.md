@@ -119,6 +119,7 @@ Supported flowchart parsing includes:
 - Common node references and labels.
 - Common node shapes, including rectangle, rounded, stadium, subroutine, cylinder, circle, double circle, rhombus, hexagon, and parallelogram variants.
 - Edge operators, pipe labels, inline labels, dotted operators, and chained edges.
+- Quoted pipe captions retain embedded pipes. Inline captions retain comparison signs, brackets, and semicolons. Node metadata decodes YAML single-quoted scalars, including doubled apostrophes and literal backslashes, while apostrophes in ordinary captions remain text.
 - `subgraph ... end` groups.
 - `classDef`, `class`, and inline `:::class` node classes.
 - `style` node declarations.

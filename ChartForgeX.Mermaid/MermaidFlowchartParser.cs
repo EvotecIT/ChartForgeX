@@ -225,12 +225,7 @@ internal static partial class MermaidFlowchartParser {
         var contentStart = position + 2;
         char quote = '\0';
         for (var index = contentStart; index < text.Length - 1; index++) {
-            var ch = text[index];
-            if (quote != '\0') {
-                if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, index)) quote = '\0';
-                continue;
-            }
-            if (ch == '"') { quote = ch; continue; }
+            if (MermaidFlowchartText.ReadQuotedCharacter(text, ref index, ref quote)) continue;
             if (text[index + 1] != ']') continue;
             if (text[index] != '/' && text[index] != '\\') continue;
 
@@ -249,15 +244,7 @@ internal static partial class MermaidFlowchartParser {
 
     private static bool ReadDelimited(string text, ref int position, string open, string close, MermaidFlowchartNodeShape nodeShape, out MermaidFlowchartNodeShape shape, out string? label) {
         var contentStart = position + open.Length;
-        var closeIndex = -1;
-        char quote = '\0';
-        for (var index = contentStart; index < text.Length; index++) {
-            var ch = text[index];
-            if (quote != '\0') {
-                if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, index)) quote = '\0';
-            } else if (ch == '"') quote = ch;
-            else if (StartsWith(text, index, close)) { closeIndex = index; break; }
-        }
+        var closeIndex = FindLabelDelimiter(text, contentStart, close);
         if (closeIndex < 0) {
             shape = MermaidFlowchartNodeShape.Default;
             label = null;
@@ -268,6 +255,15 @@ internal static partial class MermaidFlowchartParser {
         shape = nodeShape;
         position = closeIndex + close.Length;
         return true;
+    }
+
+    private static int FindLabelDelimiter(string text, int start, string delimiter) {
+        char quote = '\0';
+        for (var index = start; index < text.Length; index++) {
+            if (MermaidFlowchartText.ReadQuotedCharacter(text, ref index, ref quote)) continue;
+            if (StartsWith(text, index, delimiter)) return index;
+        }
+        return -1;
     }
 
     private static bool TryParseEdgeOperator(string text, ref int position, out string edgeOperator, out string? label) {
@@ -298,7 +294,7 @@ internal static partial class MermaidFlowchartParser {
         var firstPipe = end;
         SkipWhitespace(text, ref firstPipe);
         if (firstPipe >= text.Length || text[firstPipe] != '|') return false;
-        var secondPipe = text.IndexOf('|', firstPipe + 1);
+        var secondPipe = FindLabelDelimiter(text, firstPipe + 1, "|");
         if (secondPipe < 0) return false;
 
         edgeOperator = text.Substring(start, end - start);
@@ -311,29 +307,11 @@ internal static partial class MermaidFlowchartParser {
         edgeOperator = string.Empty;
         label = null;
         var start = position;
-        var labelStart = MermaidFlowchartOperators.ReadLabelPrefixEnd(text, start);
-        if (labelStart == start) return false;
-        var family = text[labelStart - 1];
-        var firstText = labelStart;
-        SkipWhitespace(text, ref firstText);
-        char quote = '\0';
-        for (var suffixIndex = firstText; suffixIndex < text.Length; suffixIndex++) {
-            var ch = text[suffixIndex];
-            if (quote != '\0') {
-                if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, suffixIndex)) quote = '\0';
-                continue;
-            }
-            if (ch == '"') { quote = ch; continue; }
-            var end = MermaidFlowchartOperators.ReadLabelSuffixEnd(text, suffixIndex, family);
-            if (end == suffixIndex) continue;
-            var candidateLabel = text.Substring(labelStart, suffixIndex - labelStart).Trim();
-            if (candidateLabel.Length == 0) continue;
-            edgeOperator = text.Substring(start, end - start).Trim();
-            label = Unquote(candidateLabel);
-            position = end;
-            return true;
-        }
-        return false;
+        if (!MermaidFlowchartOperators.TryReadInlineLabel(text, start, out var labelStart, out var labelEnd, out var end)) return false;
+        edgeOperator = text.Substring(start, end - start).Trim();
+        label = Unquote(text.Substring(labelStart, labelEnd - labelStart).Trim());
+        position = end;
+        return true;
     }
 
     private static bool LooksLikeOperator(string text) {

@@ -13,7 +13,7 @@ public sealed partial class MermaidParser {
         var key = match.Groups[1].Value;
         try {
             return key[0] == '"' ? ReadDoubleQuotedConfigurationYaml(key)
-                : key[0] == '\'' ? ReadSingleQuotedConfigurationYaml(key) : key;
+                : key[0] == '\'' ? MermaidYamlScalar.ReadSingleQuoted(key) : key;
         } catch (ArgumentException exception) { error = exception.Message; return null; }
     }
 

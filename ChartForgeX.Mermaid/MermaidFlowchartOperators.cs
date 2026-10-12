@@ -45,6 +45,26 @@ internal static class MermaidFlowchartOperators {
         return family == '.' || end - start >= 3 ? end : start;
     }
 
+    /// <summary>Finds one inline caption and its matching suffix without interpreting caption punctuation as node syntax.</summary>
+    public static bool TryReadInlineLabel(string text, int start, out int labelStart, out int labelEnd, out int edgeEnd) {
+        labelStart = ReadLabelPrefixEnd(text, start);
+        labelEnd = edgeEnd = start;
+        if (labelStart == start) return false;
+        var family = text[labelStart - 1];
+        var firstText = labelStart;
+        while (firstText < text.Length && char.IsWhiteSpace(text[firstText])) firstText++;
+        char quote = '\0';
+        for (var index = firstText; index < text.Length; index++) {
+            if (MermaidFlowchartText.ReadQuotedCharacter(text, ref index, ref quote)) continue;
+            var end = ReadLabelSuffixEnd(text, index, family);
+            if (end == index || index == firstText) continue;
+            labelEnd = index;
+            edgeEnd = end;
+            return true;
+        }
+        return false;
+    }
+
     public static VisualLinkDirection Direction(string edgeOperator) {
         var source = Marker(edgeOperator, true) != TopologyMarkerKind.None;
         var target = Marker(edgeOperator, false) != TopologyMarkerKind.None;

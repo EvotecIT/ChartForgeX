@@ -643,6 +643,22 @@
         "12": "accepted"
       },
       "provenance": "Source value visibility from https://mermaid.js.org/syntax/treemap.html; typed configuration and hierarchy magnitudes are independent of caption presentation."
+    },
+    "fixtures/flowchart-caption-boundaries.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored flowchart caption, quoted delimiter and compact statement examples; verified with the pinned official Mermaid parsers."
+    },
+    "fixtures/flowchart-metadata-scalars.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored flowchart node metadata scalar examples; modern node metadata is supported by the pinned Mermaid 11 and 12 parsers."
     }
   }
 }
