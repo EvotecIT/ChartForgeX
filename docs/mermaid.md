@@ -890,6 +890,35 @@ var png = document.ToPng();
 
 The conversion target for Sankey diagrams is `Chart`. Link order, source labels, target labels, positive values, link counts, and source spans are retained in the AST or artifact metadata. Static rendering uses ChartForgeX's dependency-free Sankey layout and SVG/PNG renderers.
 
+Source configuration maps `sankey.width`, `height`, `nodeWidth`, `nodePadding`, `nodeAlignment`, `showValues`, `prefix` and `suffix` to the native chart. Front matter is applied before legacy directives, and the last declaration wins. Width and height are positive whole pixels; node width is positive and node padding is non-negative. Invalid values produce a located configuration error.
+
+```mermaid
+---
+config:
+  sankey:
+    width: 800
+    height: 480
+    nodeWidth: 18
+    nodePadding: 24
+    nodeAlignment: center
+    showValues: false
+    prefix: '$'
+    suffix: ' units'
+---
+sankey-beta
+Intake,Review,6
+Review,Build,6
+Build,Delivery,6
+Fast,Delivery,4
+Intake,Deferred,2
+```
+
+Alignment accepts `left`, `right`, `center` and `justify`. Mermaid `center` maps to `ChartSankeyAlignment.CenterSources`, placing a source directly before its earliest target; the existing native `Center` alignment retains its midpoint policy. `showValues: false` hides values in visible node labels while preserving numeric flow facts and full accessible labels. Prefix and suffix wrap the existing native value formatter as literal text. Native node padding, font fitting and value formatting remain ChartForgeX policies; this mapping does not reproduce browser layout pixel for pixel.
+
+Explicit `MermaidSankeyRenderOptions.Width` and `Height` override source dimensions. An unspecified dimension uses the source value, then the native fallback of 960 by 560 pixels. The same precedence applies to Markdown fences. These two options are nullable; callers that previously read their integer defaults should resolve their own fallback or inspect the resulting chart's `Options.Size`. Existing integer assignments remain valid.
+
+Source link colors and gradients, node color arrays, label-style variants and browser sizing options remain diagnostic-only. Their declarations are retained with unsupported-configuration warnings. The pinned reference fixtures record Mermaid 10's omission of `nodeWidth` and `nodePadding` while checking the same authored nodes and flows across versions 10, 11 and 12.
+
 ## Radar Diagrams
 
 Radar diagrams are parsed into `MermaidRadarDocument` and converted to native ChartForgeX radar charts.

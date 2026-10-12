@@ -5210,6 +5210,54 @@
       }
     },
     {
+      "name": "mermaid-sankey-configured",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 800,
+      "height": 480,
+      "logicalWidth": 800.0,
+      "logicalHeight": 480.0,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 191998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 733,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-sankey-values",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 800,
+      "height": 480,
+      "logicalWidth": 800.0,
+      "logicalHeight": 480.0,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 191998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 1013,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-sequence-presentation",
       "layout": {
         "heightMode": "fixed",
