@@ -49,26 +49,37 @@
     // Unlocated retained keyboard facts have no painted box; their visible SVG remains the host boundary.
     return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;
   };
-  const tooltipClippingAncestors = (source) => {
+  const tooltipClippingAncestors = (source, boundary) => {
     const ancestors = [];
+    let reachedBoundary = !boundary;
     for (let node = source.parentElement; node; node = node.parentElement || node.getRootNode().host) {
+      if (node === boundary) reachedBoundary = true;
       // display:contents has no layout box. A real zero-sized box still clips its descendants.
-      if (!(node instanceof HTMLElement) || !node.getClientRects().length) continue;
+      if (!reachedBoundary || !(node instanceof HTMLElement) || !node.getClientRects().length) continue;
       const style = getComputedStyle(node), x = style.overflowX !== 'visible', y = style.overflowY !== 'visible';
       if (x || y) ancestors.push({ node, x, y });
     }
     return ancestors;
   };
-  const tooltipSourceInView = (state) => {
-    if (state.paintChanged || !state.clippingAncestors) state.clippingAncestors = tooltipClippingAncestors(state.node);
-    // Keep geometry live while caching overflow axes until the existing paint invalidation fires.
+  const tooltipClippingBounds = (ancestors) => {
     let left = 0, top = 0, right = window.innerWidth, bottom = window.innerHeight;
-    for (const { node, x, y } of state.clippingAncestors) {
+    for (const { node, x, y } of ancestors) {
       const rect = node.getBoundingClientRect(), scaleX = node.offsetWidth ? rect.width / node.offsetWidth : 1;
       const scaleY = node.offsetHeight ? rect.height / node.offsetHeight : 1;
       if (x) { left = Math.max(left, rect.left + node.clientLeft * scaleX); right = Math.min(right, rect.left + (node.clientLeft + node.clientWidth) * scaleX); }
       if (y) { top = Math.max(top, rect.top + node.clientTop * scaleY); bottom = Math.min(bottom, rect.top + (node.clientTop + node.clientHeight) * scaleY); }
     }
+    return { left, top, right, bottom };
+  };
+  const tooltipSourceInView = (state) => {
+    if (state.paintChanged || !state.clippingAncestors) {
+      state.clippingAncestors = tooltipClippingAncestors(state.node);
+      // A fixed card escapes overflow below its native containing block. A null offsetParent means viewport-fixed.
+      const containingBlock = state.tip.offsetParent;
+      state.placementClippingAncestors = containingBlock ? tooltipClippingAncestors(state.tip, containingBlock) : [];
+    }
+    // Keep geometry live while caching overflow axes until the existing paint invalidation fires.
+    const { left, top, right, bottom } = tooltipClippingBounds(state.clippingAncestors);
     const source = tooltipSourceRect(state.node);
     return source && right > left && bottom > top && source.right > left && source.left < right && source.bottom > top && source.top < bottom;
   };
@@ -147,14 +158,15 @@
     if (!Number.isFinite(x) || !Number.isFinite(y)) { x = 24; y = 24; }
     return { left: x, right: x, top: y, bottom: y, width: 0, height: 0 };
   };
-  const tooltipPositionGeometry = (state, anchor) => {
+  const tooltipPositionGeometry = (state, anchor, bounds) => {
     const stage = state.stage.getBoundingClientRect(), tip = state.tip.getBoundingClientRect();
     return [anchor.left, anchor.top, anchor.width, anchor.height, stage.left, stage.top, stage.width, stage.height,
-      tip.left, tip.top, tip.width, tip.height, window.innerWidth, window.innerHeight];
+      tip.left, tip.top, tip.width, tip.height, bounds.left, bounds.top, bounds.right, bounds.bottom];
   };
   const placeTooltip = (state, skipUnchanged = false) => {
     const { root, tip } = state, anchor = tooltipAnchorRect(state);
-    const geometry = tooltipPositionGeometry(state, anchor);
+    const bounds = tooltipClippingBounds(state.placementClippingAncestors);
+    const geometry = tooltipPositionGeometry(state, anchor, bounds);
     if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
     // Measure at a stable origin, then keep the measured width while positioning. This prevents
     // fixed-position shrink-to-fit from changing the readout as it approaches a containing block's edge.
@@ -176,14 +188,14 @@
         y: (dy > 0 ? anchor.bottom + gap : dy < 0 ? anchor.top - gap - unit.height : anchor.top + (anchor.height - unit.height) / 2) + offsetY
       };
     });
-    const position = candidates.find(candidate => candidate.x >= 8 && candidate.y >= 8
-      && candidate.x + unit.width <= window.innerWidth - 8 && candidate.y + unit.height <= window.innerHeight - 8) || candidates[0];
-    const x = clamp(position.x, 8, Math.max(8, window.innerWidth - unit.width - 8));
-    const y = clamp(position.y, 8, Math.max(8, window.innerHeight - unit.height - 8));
+    const position = candidates.find(candidate => candidate.x >= bounds.left + 8 && candidate.y >= bounds.top + 8
+      && candidate.x + unit.width <= bounds.right - 8 && candidate.y + unit.height <= bounds.bottom - 8) || candidates[0];
+    const x = clamp(position.x, bounds.left + 8, Math.max(bounds.left + 8, bounds.right - unit.width - 8));
+    const y = clamp(position.y, bounds.top + 8, Math.max(bounds.top + 8, bounds.bottom - unit.height - 8));
     tip.style.left = (x - origin.left) / scaleX + 'px';
     tip.style.top = (y - origin.top) / scaleY + 'px';
     state.style = tip.getAttribute('style');
-    state.geometry = tooltipPositionGeometry(state, anchor);
+    state.geometry = tooltipPositionGeometry(state, anchor, bounds);
   };
   const positionTooltip = (tip, event, node) => {
     if (tip.hidden) return;
