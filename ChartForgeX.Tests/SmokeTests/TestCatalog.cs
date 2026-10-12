@@ -766,6 +766,7 @@ internal static partial class SmokeTests {
         ("Polar honors radial options and validation", PolarHonorsRadialOptionsAndValidation),
         ("Polar-area series render radial segments", PolarAreaSeriesRenderRadialSegments),
         ("Polar-area honors grid visibility", PolarAreaHonorsGridVisibility),
+        ("Radial angular reversal exports supported families", RadialAngularReversalExportsSupportedFamilies),
         ("Funnel series render staged segments", FunnelSeriesRenderStagedSegments),
         ("Pyramid series render proportional partitions", PyramidSeriesRenderProportionalPartitions),
         ("Treemap items render proportional tiles", HierarchyItemsRenderProportionalTiles),

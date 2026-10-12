@@ -10,6 +10,22 @@ internal static partial class VisualMarkerScene {
     internal static Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? Legend(Chart chart, ChartSeries series,
         ChartColor color, SvgPaint paint, int point = -1, ChartFillPattern pattern = ChartFillPattern.None, ChartBubbleSizeScale? bubbleScale = null) {
         if (!ChartSeriesKindTraits.SupportsMarkers(series.Kind)) return null;
+        if (series.Kind == ChartSeriesKind.DifferenceArea) return (builder, bounds, context) => {
+            var colors = context.Theme.Resolve(context.ThemeMode);
+            foreach (var positive in new[] { true, false }) {
+                var half = new ChartRect(bounds.Left + (positive ? 0 : bounds.Width / 2), bounds.Top, bounds.Width / 2, bounds.Height);
+                var (fill, fillPaint) = VisualCartesianCompiler.DifferenceFill(series, chart.Series.IndexOf(series), positive, colors, context);
+                builder.Rect(half, fill, role: positive ? "legend-difference-positive" : "legend-difference-negative", paint: VisualChartPaint.Fill(fillPaint));
+                if (fill.A > 0) VisualFrameLayout.DrawLegendPattern(builder, half, pattern, context, role: "legend-area-pattern");
+            }
+            var y = bounds.Top + bounds.Height / 2;
+            builder.Line(bounds.Left, y, bounds.Right, y, color, series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth,
+                role: "legend-line", paint: VisualChartPaint.Stroke(paint));
+            if (Enabled(series, series.MarkerRadius.HasValue || series.PointColors.Any(value => value.HasValue)
+                || series.PointFillPatterns.Any(value => value.HasValue)) && Radius(series, context) > 0)
+                Draw(builder, series, point, bounds.Left + bounds.Width / 2, y, Math.Min(bounds.Width, bounds.Height) * .4,
+                    color, paint, "legend-swatch", pattern: pattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame));
+        };
         var connected = series.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area
             or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.RangeArea or ChartSeriesKind.RangeBand;
         var radarArea = series.Kind == ChartSeriesKind.Radar && series.Radar.Form == ChartLineAreaForm.Area;

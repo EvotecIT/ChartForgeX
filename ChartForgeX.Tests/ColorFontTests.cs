@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 /// <summary>Observable palette, paint, strike and layout contracts using original portable fonts.</summary>
+[Collection(nameof(FontRegistryCollection))]
 public sealed class ColorFontTests {
     private static byte[] Bytes(string name) {
         using var stream = typeof(ColorFontTests).Assembly.GetManifestResourceStream("ChartForgeX.Tests.Fixtures.OpenType." + name + ".ttf")!;

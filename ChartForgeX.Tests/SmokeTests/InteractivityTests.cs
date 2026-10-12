@@ -88,7 +88,8 @@ internal static partial class SmokeTests {
                     .AddSeriesStep("0", "Passed", configure: step => step.WithDuration(1400).WithMetadata("unit", "checks"))
                     .AddSeriesStep("1", "Failed")
                     .AddPointStep("1:2", "Failed Friday")
-                    .AddAnnotationStep("horizontal-line", "Threshold"))
+                    .AddAnnotationStep("horizontal-line", "Threshold")
+                    .AddElementStep("authored-mark-detail", "Mark detail"))
                 .WithActiveScenario("ops-route")
                 .WithDeepLinkState();
         });
@@ -128,6 +129,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-scenario-panel=\"true\"", StringComparison.Ordinal), "Interactive HTML should include a reusable scenario panel when scenarios are configured.");
         Assert(html.Contains("data-cfx-active-scenario=\"ops-route\"", StringComparison.Ordinal), "Interactive HTML should preserve the configured active scenario.");
         Assert(html.Contains("data-cfx-deep-link-state=\"true\"", StringComparison.Ordinal), "Interactive HTML should expose opt-in scenario deep-link state.");
+        Assert(html.Contains("&quot;targetKind&quot;:&quot;element&quot;,&quot;targetId&quot;:&quot;authored-mark-detail&quot;", StringComparison.Ordinal),
+            "Interactive scenario metadata should retain authored SVG child IDs for element steps.");
         Assert(html.Contains("data-cfx-scenario-steps=\"[{&quot;index&quot;:0,&quot;targetKind&quot;:&quot;series&quot;,&quot;targetId&quot;:&quot;0&quot;", StringComparison.Ordinal), "Interactive HTML should expose reusable ordered scenario step metadata.");
         Assert(html.Contains("&quot;metadata&quot;:{&quot;unit&quot;:&quot;checks&quot;}", StringComparison.Ordinal), "Interactive HTML should expose reusable scenario step metadata.");
         Assert(html.Contains("data-cfx-scenario-step-control=\"play\"", StringComparison.Ordinal), "Interactive HTML should include reusable scenario playback controls.");

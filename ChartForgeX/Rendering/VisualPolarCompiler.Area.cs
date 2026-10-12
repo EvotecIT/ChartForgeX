@@ -23,7 +23,7 @@ internal static partial class VisualPolarCompiler {
                     null, colors.Border, context.Theme.GridStrokeWidth, "polar-area-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             for (var index = 0; index < series.Points.Count; index++) {
                 var point = series.Points[index]; var color = ChartSeriesColours.Point(series, index, index, colors);
-                var start = -Math.PI / 2 + index * sweep; var zero = point.Y == 0;
+                var start = CategoryAngle(chart.Options.XAxis, index, series.Points.Count, sweep); var zero = point.Y == 0;
                 var r = zero ? radius : radius * Math.Sqrt(point.Y / max); var inner = zero ? radius * ChartVisualPrimitives.PolarAreaZeroSlotInnerRadiusFactor : 0;
                 var value = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, point.Y);
                 var category = Category(chart, point.X); var role = zero ? "polar-area-zero-slot" : "polar-area-segment";
