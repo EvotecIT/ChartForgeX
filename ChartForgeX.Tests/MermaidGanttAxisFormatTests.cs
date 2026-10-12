@@ -47,7 +47,7 @@ public sealed class MermaidGanttAxisFormatTests {
         Assert.Empty(markup.Diagnostics);
         Assert.Equal(svg, Assert.Single(markup.Artifacts).ToSvg());
         var defaultChart = new MermaidParser().ParseGantt(source.Replace("axisFormat %a %d %b\n", "")).Document!.ToChart();
-        Assert.Equal("2026-01-04", defaultChart.Options.XAxisValueFormatter!(new DateTime(2026, 1, 4).ToOADate()));
+        Assert.Contains(">2026-01-04</text>", defaultChart.ToSvg());
     }
 
     [Theory]

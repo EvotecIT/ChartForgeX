@@ -29,8 +29,13 @@ internal static class ChartSeriesColours {
     }
 
     internal static ChartColor Point(ChartSeries series, int seriesIndex, int pointIndex, VisualThemeColors colors) =>
-        pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
-            ? series.PointColors[pointIndex]!.Value : Resolve(series, seriesIndex, colors);
+        PointOverride(series, pointIndex) ?? Resolve(series, seriesIndex, colors);
+
+    internal static ChartColor Point(ChartSeries series, int pointIndex, VisualThemeColors colors, ChartColor fallback) =>
+        PointOverride(series, pointIndex) ?? series.Color ?? State(series.StateRole, colors, fallback);
+
+    private static ChartColor? PointOverride(ChartSeries series, int pointIndex) =>
+        pointIndex < series.PointColors.Count ? series.PointColors[pointIndex] : null;
 
     internal static ChartColor Resolve(Chart chart, int index) {
         var series = chart.Series[index]; var t = chart.Options.Theme;
