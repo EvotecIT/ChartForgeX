@@ -122,9 +122,9 @@ chart.SaveInteractiveHtml("readings.html", options => {
 
 Visible node and chart readouts follow page or contained scrolling, resizing, and adapter zoom/pan changes, including pinned readouts. A partially visible source keeps its readout; a source that becomes fully hidden, clipped away or removed loses it. Placement follows the browser's visual viewport and any containing host that clips the fixed readout. Scrolling through slotted shadow hosts and slot reassignment refresh the active readout's geometry and visibility.
 
-Keyboard navigation brings the selected source into view immediately, including containers with hidden overflow or smooth scrolling. When a source is wider than a clipping viewport and already partly visible, navigation preserves that overlap. Geometry listeners belong to the active readout and are released when it closes. Availability refreshes on DOM, scrolling, resize and transition events; idle CSSOM-only stylesheet edits require a later event.
+Keyboard navigation brings the selected source into view immediately through accessible containers, including hidden overflow or smooth scrolling. When a source is wider than a clipping viewport and already partly visible, navigation preserves that overlap. Geometry listeners belong to the active readout and are released when it closes. Availability refreshes on DOM, scrolling, resize and transition events; idle CSSOM-only stylesheet edits require a later event.
 
-Closed shadow hosts use the browser's native intersection information. When a small painted source sits inside a larger transparent hit area, clipping only the source inside an opaque closed host may leave it eligible.
+Closed shadow hosts use the browser's native intersection information and native reveal for small marks. When a small painted source sits inside a larger transparent hit area, clipping only the source inside an opaque closed host may leave it eligible.
 
 Delayed pointer readouts use the latest pointer and live anchor bounds when shown. Dashboard children receive independent copies of the same position settings. Placement settings do not enable tooltips or change native SVG and PNG exports. Executable pointer, node, and chart examples are in the Graphite gallery and `HtmlTooltipPositionExamples.CreatePage`.
 
