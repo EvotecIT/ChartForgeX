@@ -38,10 +38,23 @@ public static class VisualWatermarkDecoration {
     /// <returns>A standalone page containing the decorated SVG and the artifact's host title and language.</returns>
     /// <remarks>Markup ownership and preservation follow <see cref="ToWatermarkedSvg"/>. The page clips watermark
     /// overflow to the SVG viewport while retaining the renderer's animation and semantic content.</remarks>
-    public static string ToWatermarkedHtmlPage(this VisualArtifact artifact, string renderedSvg, params VisualWatermark[] watermarks) {
+    public static string ToWatermarkedHtmlPage(this VisualArtifact artifact, string renderedSvg, params VisualWatermark[] watermarks) =>
+        ToWatermarkedHtmlPage(artifact, null, renderedSvg, watermarks);
+
+    /// <summary>Wraps trusted, already-rendered SVG with watermarks and explicit HTML host sizing.</summary>
+    /// <param name="artifact">The unchanged host envelope supplying the title, language, and natural-size fallback.</param>
+    /// <param name="renderOptions">HTML sizing options; other rendering options do not alter the supplied SVG.</param>
+    /// <param name="renderedSvg">A complete trusted SVG document supplied by a static or animated renderer.</param>
+    /// <param name="watermarks">Watermarks captured in declaration order.</param>
+    /// <returns>A standalone page containing the decorated SVG with the selected host sizing.</returns>
+    /// <remarks>Markup ownership and preservation follow <see cref="ToWatermarkedSvg"/>. Sizing does not reflow
+    /// or regenerate the supplied scene. Null options select the artifact family's automatic sizing.</remarks>
+    public static string ToWatermarkedHtmlPage(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions,
+        string renderedSvg, params VisualWatermark[] watermarks) {
         var svg = ToWatermarkedSvg(artifact, renderedSvg, watermarks);
         return VisualArtifactRendering.WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title,
-            svg, artifact.Accessibility.Language, clipSvgViewport: true);
+            svg, artifact.Accessibility.Language, clipSvgViewport: true,
+            sizing: VisualArtifactRendering.HtmlSizing(artifact, renderOptions));
     }
 
     /// <summary>Creates a detached artifact envelope with watermark presentation in declaration order.</summary>
