@@ -105,21 +105,31 @@ The stages set the default work order. Independent family fixes can proceed once
 
 ### Active owner PRs
 
-The following implementation PRs are open as of 12 October 2026. Each owns a distinct part of the remaining roadmap. Their local qualification does not establish merged support or public package availability; review and CI remain gates for the exact published candidate.
+These implementation PRs are open as of 12 October 2026. Reuse their existing owners for remaining work. Local qualification, merged source and public package availability are separate states; each published candidate retains its CI and review gates.
+
+Merged support includes Gantt month/minute duration semantics, dependency/calendar resolution, axis formats and dependency arrows; native sequence presentation; source font families; readable sequence HTML sizing; and treemap value-caption visibility. Completed owners are removed from this table. Broader grammar and presentation work remains below.
 
 | Active owner | Reusable contribution | Remaining qualification or scope |
 | --- | --- | --- |
-| [#295](https://github.com/EvotecIT/ChartForgeX/pull/295) | Native sequence presentation through the prepared sequence owner | Complete the sequence grammar and visible notation gaps listed above without losing unsupported source. |
-| [#296](https://github.com/EvotecIT/ChartForgeX/pull/296) | Shared HTML sizing that preserves readable sequence text | Qualify compact host scrolling, explicit fit sizing and export behavior. |
-| [#297](https://github.com/EvotecIT/ChartForgeX/pull/297), [#311](https://github.com/EvotecIT/ChartForgeX/pull/311) | Native source font families and sizes across chart, topology, sequence and block output | Qualify compact/dense content and explicit host precedence; broader color and theme-variable mapping remains open. |
-| [#300](https://github.com/EvotecIT/ChartForgeX/pull/300), [#301](https://github.com/EvotecIT/ChartForgeX/pull/301), [#304](https://github.com/EvotecIT/ChartForgeX/pull/304), [#305](https://github.com/EvotecIT/ChartForgeX/pull/305), [#306](https://github.com/EvotecIT/ChartForgeX/pull/306), [#307](https://github.com/EvotecIT/ChartForgeX/pull/307), [#308](https://github.com/EvotecIT/ChartForgeX/pull/308), [#310](https://github.com/EvotecIT/ChartForgeX/pull/310) | Gantt dependencies, date/axis/tick formats, markers, guide strokes and explicit calendar anchors | Settle the dependency-ordered chain with resolved-date, native export, host and resource-bound proof. |
-| [#313](https://github.com/EvotecIT/ChartForgeX/pull/313) | Sankey source geometry and value-label settings over the native flow owner | Qualify CSV identities, source precedence, Unicode affixes and visible labels. |
-| [#318](https://github.com/EvotecIT/ChartForgeX/pull/318), [#321](https://github.com/EvotecIT/ChartForgeX/pull/321) | Packet row/bit-number settings and shared packet geometry | Qualify dimensions, fields crossing rows and source/host precedence. |
-| [#337](https://github.com/EvotecIT/ChartForgeX/pull/337) | Horizontal XY line geometry through the shared Cartesian orientation owner | Qualify continuous numeric/time categories, reversal, labels, zones and both orientations. |
-| [#339](https://github.com/EvotecIT/ChartForgeX/pull/339) | Treemap value-caption visibility through the merged hierarchy owner | Complete remaining source classes/styles and value formatting; keep hierarchy construction in the shared owner. |
-| [#341](https://github.com/EvotecIT/ChartForgeX/pull/341), [#342](https://github.com/EvotecIT/ChartForgeX/pull/342) | Closed radar curves, graticules, dimensions, margins and native polar-axis layout | Settle curve/layout proof and complete source theme mapping without duplicating polar geometry. |
-| [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) | Flowchart circle/cross endpoint operators and bidirectional markers through shared topology geometry | Current-main native SVG/PNG, Markdown, serialization and versioned edge-type fixtures pass locally. Complete the remaining edge IDs/properties, length and compound-layout contracts separately. |
-| [#347](https://github.com/EvotecIT/ChartForgeX/pull/347) | Additional flowchart metadata shape aliases over existing native shapes | Versioned parser and native-shape fixtures cover the mapped aliases. The wider shape catalog, icon/image metadata and shape-specific notation remain open. |
+| [#311](https://github.com/EvotecIT/ChartForgeX/pull/311) | Source font sizes across chart, topology, sequence and block output | Finish full qualification of repaired CSS-length diagnostics, fractional label scenes and independently fitted group/callout roles. Focused native/browser proof and bounded review pass. |
+| [#305](https://github.com/EvotecIT/ChartForgeX/pull/305), [#306](https://github.com/EvotecIT/ChartForgeX/pull/306), [#307](https://github.com/EvotecIT/ChartForgeX/pull/307), [#308](https://github.com/EvotecIT/ChartForgeX/pull/308), [#310](https://github.com/EvotecIT/ChartForgeX/pull/310) | Gantt tick intervals, markers, input dates, bounded guide strokes and explicit calendar anchors | The integrated candidate passes local full/export/package qualification. Resolve complete comma-containing fallback dates before ID inference in #307 and preserve offsets on 12-hour fallback timestamps in #310; requalify affected layers before merge. |
+| [#313](https://github.com/EvotecIT/ChartForgeX/pull/313) | Sankey source geometry and value-label settings over the native flow owner | Local CSV identity, source precedence, Unicode label, rendering and package qualification passes; settle current-head CI and review. |
+| [#318](https://github.com/EvotecIT/ChartForgeX/pull/318), [#321](https://github.com/EvotecIT/ChartForgeX/pull/321) | Packet row/bit-number settings and shared readable packet geometry | Requalify the final font composition, including the unchanged rendering budgets. Preserve readable cross-row fields and source/host precedence. |
+| [#337](https://github.com/EvotecIT/ChartForgeX/pull/337) | Horizontal XY lines through the shared Cartesian orientation owner | Numeric/time ranges, reversal, shared axes and empty-companion tick policy pass local qualification; settle current-head CI and review. |
+| [#341](https://github.com/EvotecIT/ChartForgeX/pull/341), [#342](https://github.com/EvotecIT/ChartForgeX/pull/342) | Closed radar curves, graticules, dimensions, margins and native polar-axis layout | Local integrated curve/layout qualification passes; settle the owner chain. The separate source-theme candidate depends on these owners and final font/Gantt qualification. |
+| [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) | Flowchart endpoints, literal captions and metadata source locations | Local native SVG/PNG, Markdown, serialization and versioned fixtures pass; settle current-head CI and review. |
+| [#347](https://github.com/EvotecIT/ChartForgeX/pull/347) | Additional flowchart metadata shape aliases over existing native shapes | Versioned parser and native-shape qualification passes; settle current-head CI and review. The wider shape catalog and icon/image notation remain open. |
+| [#350](https://github.com/EvotecIT/ChartForgeX/pull/350) | Native quadrant regions, labels and accessible palette mappings | Local source-value, geometry, empty-region, native/browser and package qualification passes; settle current-head CI and review. |
+| [#352](https://github.com/EvotecIT/ChartForgeX/pull/352) | Explicit preserved-size SVGs in contained HTML hosts | Scope forced sizing to the root SVG so nested viewports retain authored constraints; recheck compact scrolling and print behavior. |
+
+Two implementation candidates reuse these owners without duplicating their work: flowchart minimum edge lengths have full local versioned/render/export qualification and await #346 plus the corrected HTML owner; radar source-theme mapping awaits the settled font, Gantt and radar owners. Neither candidate is counted as merged support.
+
+Resume order:
+
+- [ ] Resolve the Gantt fallback-date and nested-SVG sizing findings in their existing owners, then requalify affected contracts and compositions.
+- [ ] Complete full qualification of the final Font/Packet composition and the isolated radar-theme rendering budget. Retain observed budget failures; do not raise thresholds to obtain a pass.
+- [ ] Settle current-head CI and review, merge independent owners and dependency-ordered layers, and remove verified task-owned worktrees/output.
+- [ ] Publish the qualified minimum-edge-length and radar-theme candidates against settled owners, then continue the language and host-policy work below.
 
 ### 1. Compatibility evidence and honest results
 
@@ -144,7 +154,7 @@ Completion: every advertised feature has versioned positive and meaningful negat
 - [ ] Handle Mermaid 12 `theme`/`look`/`layout` changes deliberately. Preserve older `defaultRenderer` declarations with a documented diagnostic or mapping. Keep deterministic CFX layout and appearance explicit; reproducing ELK or browser paint is a separate fidelity goal.
 - [ ] Extend the existing safe label/text pipeline for escaped text, entities, multiline labels and Mermaid Markdown strings. Specify literal fallback and diagnostics for HTML labels and math until a native implementation has artifact proof.
 - [ ] Apply supported `classDef`, default classes, `class`, `style`, `linkStyle` and edge-ID styling consistently across families. Preserve inheritance and source order; report properties retained without visible effect.
-- [ ] Extend shared topology layout for nested compound groups, group endpoints, local direction, ports, self-loops, parallel edges and obstacle-aware label routing where fixtures expose gaps. Preserve identical scene geometry in SVG and PNG.
+- [ ] Extend shared topology layout for nested compound groups, group endpoints, local direction, ports, self-loops, parallel edges and obstacle-aware label routing where fixtures expose gaps. An orthogonal shortcut across a three-node chain can intersect the middle node; reuse the native obstacle-avoiding route owner and prove SVG/PNG geometry together.
 - [ ] Add a coherent host policy for accepted diagram families, source styling, safe links/assets and bounded source/model/render size. Reuse existing SVG, URI and artwork safety owners; prove script-free output and deterministic rejection without fetching remote assets or invoking source callbacks.
 - [x] Keep sequence labels at their logical font size through shared HTML host sizing. Source and prepared artifacts use a contained keyboard-accessible scroll region at compact widths; hosts can explicitly select `FitToWidth`. SVG/PNG scene geometry remains unchanged, and print output fits the page.
 
@@ -152,7 +162,7 @@ Completion: source presentation produces consistent SVG/PNG scenes or specific d
 
 ### 3. Core diagram semantics
 
-- [ ] Settle the versioned circle/cross/bidirectional endpoint owner in [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) and metadata shape-alias owner in [#347](https://github.com/EvotecIT/ChartForgeX/pull/347). Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
+- [ ] Settle the locally qualified endpoint and shape-alias owners listed above, then integrate the qualified minimum-edge-length candidate. Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
 - [ ] Complete sequence participant creation/destruction, participant boxes, supported message variants, nested parallel/critical branches, branch labels, notes, activations and autonumber behavior. Keep actor menus and links as safe host-facing data.
 - [ ] Complete class generics, visibility/static/abstract members, lollipop and two-way relationships, labeled/nested namespaces, notes, styling and safe link metadata.
 - [ ] Complete state choice/fork/join notation, concurrent regions, nested composites, multiline notes and classes; keep transition and start/end meaning visible.
