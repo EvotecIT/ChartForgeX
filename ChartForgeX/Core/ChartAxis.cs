@@ -142,7 +142,15 @@ public sealed class ChartAxis {
     }
 
     /// <summary>Gets or sets the numeric display policy. Null uses the chart fallback or the scale-aware default for time axes.</summary>
-    public ChartValueFormat? ValueFormat { get; set; }
+    public ChartValueFormat? ValueFormat {
+        get => _valueFormat;
+        set { _valueFormat = value; TimeTickLabelFormatter = null; }
+    }
+    private ChartValueFormat? _valueFormat;
+
+    // Source adapters can supply interval-aware defaults. An explicit format assignment,
+    // including null, replaces that source policy through every public axis entry point.
+    internal Func<double, ChartTimeTickUnit?, string>? TimeTickLabelFormatter { get; set; }
 
     /// <summary>
     /// Gets or sets the display time zone for <see cref="ChartScaleKind.Time"/> axes. Axis values are UTC instants;

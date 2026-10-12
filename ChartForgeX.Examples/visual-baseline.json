@@ -4994,6 +4994,30 @@
       }
     },
     {
+      "name": "mermaid-gantt-markers",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 25,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 558,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-gantt-months",
       "layout": {
         "heightMode": "fixed",
@@ -5038,6 +5062,54 @@
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
         "minDistinctColors": 493,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-gantt-ticks",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 464,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-gantt-ticks-clock",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 9,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 429,
         "maxEdgeInkPixels": 0
       }
     },

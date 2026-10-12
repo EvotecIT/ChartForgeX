@@ -15,13 +15,24 @@
     }
   },
   "fixtures": {
-    "fixtures/theme-variable-font-layers.mmd": {
+    "fixtures/gantt-axis-format.mmd": {
       "syntax": {
         "10": "accepted",
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
+      "provenance": [
+        "https://mermaid.js.org/syntax/gantt.html#output-date-format-on-the-axis",
+        "https://github.com/d3/d3-time-format"
+      ]
+    },
+    "fixtures/gantt-forward-after.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored forward and multiple after-reference regression from https://mermaid.js.org/syntax/gantt.html; resolved dates verified against all three pinned reference engines."
     },
     "fixtures/theme-variable-font.mmd": {
       "syntax": {
@@ -580,13 +591,21 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
-    "fixtures/gantt-forward-after.mmd": {
+    "fixtures/theme-variable-font-layers.mmd": {
       "syntax": {
         "10": "accepted",
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored forward and multiple after-reference regression from https://mermaid.js.org/syntax/gantt.html; resolved dates verified against all three pinned reference engines."
+      "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
+    },
+    "fixtures/gantt-tick-interval.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html and https://d3js.org/d3-time#interval_every: authored weekly ticks and UTC calendar boundary cases"
     },
     "fixtures/radar-capped-circle.mmd": {
       "syntax": {
@@ -636,16 +655,19 @@
       },
       "provenance": "https://mermaid.js.org/syntax/radar.html: zero hides concentric guides while preserving axes, observations and source configuration; pinned Mermaid 11 and 12 accept the case."
     },
-    "fixtures/gantt-axis-format.mmd": {
+    "fixtures/gantt-vertical-marker.mmd": {
       "syntax": {
         "10": "accepted",
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": [
-        "https://mermaid.js.org/syntax/gantt.html#output-date-format-on-the-axis",
-        "https://github.com/d3/d3-time-format"
-      ]
+      "expectedByReference": {
+        "10": "gantt-vertical-marker.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10 treats vert as an ordinary task id; current 11/12 interpretation is a vertical marker without a task row."
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#vertical-markers: authored marker scheduling range and explicit off directive"
     },
     "fixtures/treemap-grouped-values.mmd": {
       "syntax": {

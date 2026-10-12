@@ -5,7 +5,7 @@ using System.Globalization;
 namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidGanttParser {
-    private static readonly HashSet<string> KnownTags = new(StringComparer.OrdinalIgnoreCase) { "active", "done", "crit", "milestone" };
+    private static readonly HashSet<string> KnownTags = new(StringComparer.OrdinalIgnoreCase) { "active", "done", "crit", "milestone", "vert" };
 
     public static void ParseStatements(MermaidGanttDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         string? currentSection = null;
@@ -23,13 +23,23 @@ internal static partial class MermaidGanttParser {
             else if (StartsWithKeyword(trimmed, "dateFormat")) document.DateFormat = trimmed.Substring(10).Trim();
             else if (StartsWithKeyword(trimmed, "axisFormat")) document.AxisFormat = trimmed.Substring(10).Trim();
             else if (StartsWithKeyword(trimmed, "tickInterval")) document.TickInterval = trimmed.Substring(12).Trim();
+            else if (StartsWithKeyword(trimmed, "weekday")) {
+                var weekday = trimmed.Substring(7).Trim();
+                if (Enum.TryParse<DayOfWeek>(weekday, true, out var day) && Enum.IsDefined(typeof(DayOfWeek), day)
+                    && string.Equals(weekday, day.ToString(), StringComparison.OrdinalIgnoreCase)) document.Weekday = day;
+                else Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt weekday must name a day from monday through sunday.");
+            }
             else if (StartsWithKeyword(trimmed, "excludes")) document.Excludes = MergeCalendarTokens(document.Excludes, trimmed.Substring(8));
             else if (StartsWithKeyword(trimmed, "includes")) document.Includes = MergeCalendarTokens(document.Includes, trimmed.Substring(8));
             else if (StartsWithKeyword(trimmed, "weekend")) {
                 document.Weekend = trimmed.Substring(7).Trim().ToLowerInvariant();
                 if (document.Weekend != "friday" && document.Weekend != "saturday") Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt weekend must start on friday or saturday.");
             }
-            else if (StartsWithKeyword(trimmed, "todayMarker")) document.TodayMarker = trimmed.Substring(11).Trim();
+            else if (StartsWithKeyword(trimmed, "todayMarker")) {
+                document.TodayMarker = trimmed.Substring(11).Trim();
+                if (document.TodayMarker.Length > 0 && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase))
+                    MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "Gantt today-marker styling");
+            }
             else if (StartsWithKeyword(trimmed, "section")) {
                 currentSection = trimmed.Substring(7).Trim();
                 if (currentSection.Length == 0) Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt section names must not be empty.");
