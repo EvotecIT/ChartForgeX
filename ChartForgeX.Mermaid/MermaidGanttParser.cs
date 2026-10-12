@@ -152,10 +152,10 @@ internal static partial class MermaidGanttParser {
                 return prefix;
             }
         }
-        // Prefer complete configured dates over fallback suffixes that look like an optional ID.
-        // Equal matches preserve the explicit-ID arrangement, including numeric IDs.
+        // Configured dates have priority, followed by complete fallback dates containing
+        // commas. Equal matches preserve explicit IDs, including numeric IDs.
         List<string>? selected = null;
-        var configuredMatches = -1;
+        var bestScore = -1;
         foreach (var hasId in new[] { true, false }) {
             var startIndex = first + (hasId ? 1 : 0);
             if (startIndex + 1 >= chunks.Length || hasId && string.IsNullOrWhiteSpace(chunks[first])) continue;
@@ -168,13 +168,14 @@ internal static partial class MermaidGanttParser {
                 if (!IsStart(start.Trim()) || !IsEnd(end)) continue;
                 var matches = (MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _) ? 1 : 0)
                     + (MermaidGanttInputDateFormat.TryParseConfigured(end, document.DateFormat, out _) ? 1 : 0);
-                if (matches <= configuredMatches) continue;
+                var score = matches * 3 + (start.IndexOf(',') >= 0 ? 1 : 0) + (end.IndexOf(',') >= 0 ? 1 : 0);
+                if (score <= bestScore) continue;
                 var parts = new List<string>(prefix);
                 if (hasId) parts.Add(chunks[first].Trim());
                 parts.Add(start.Trim());
                 parts.Add(end);
                 selected = parts;
-                configuredMatches = matches;
+                bestScore = score;
             }
         }
         if (selected != null) return selected;
