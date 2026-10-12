@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -26,7 +27,7 @@ public sealed partial class MermaidParser {
     private static bool HasBalancedFontSizeFunction(string value) {
         var opening = value.IndexOf('(');
         if (opening < 0) return true;
-        var depth = 0;
+        var blocks = new Stack<char>();
         var quote = '\0';
         for (var index = opening; index < value.Length; index++) {
             var character = value[index];
@@ -49,8 +50,13 @@ public sealed partial class MermaidParser {
                 index = end + 1;
                 continue;
             }
-            if (character == '(') depth++;
-            else if (character == ')' && --depth == 0) return index == value.Length - 1;
+            if (character == '(' || character == '[' || character == '{') blocks.Push(character);
+            else if (character == ')' || character == ']' || character == '}') {
+                if (blocks.Count == 0) return false;
+                var expected = character == ')' ? '(' : character == ']' ? '[' : '{';
+                if (blocks.Pop() != expected) return false;
+                if (blocks.Count == 0) return index == value.Length - 1;
+            }
         }
         return false;
     }
