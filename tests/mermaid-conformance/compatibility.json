@@ -720,6 +720,28 @@
       "notes": {
         "10": "Mermaid 10.9.8 drops nodeWidth and nodePadding from effective configuration. Other retained settings and node/flow facts are compared; pixel equality is not claimed. ChartForgeX applies the documented current node geometry options."
       }
+    },
+    "fixtures/gantt-unix-seconds.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "expectedByReference": {
+        "10": "gantt-unix-seconds.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid10 interprets X starts as seconds. Mermaid11/12 incorrectly interpret integer X starts as milliseconds while ends remain seconds. CFX follows the documented seconds meaning for both endpoints."
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: Unix seconds; native and reference outcomes deliberately recorded separately"
+    },
+    "fixtures/gantt-input-dates.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#input-date-format: explicit fields and resolved timestamps shared across the three pinned reference engines"
     }
   }
 }
