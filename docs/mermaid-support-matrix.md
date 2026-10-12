@@ -2,7 +2,7 @@
 
 This matrix is the working contract for ChartForgeX Mermaid support. A family is complete only when it has source-preserving parsing, typed semantic models where rendering is implemented, diagnostics for unsupported syntax, deterministic SVG and PNG output where renderable, Markdown fence coverage, Mermaid.js conformance fixtures, and smoke tests that prove the public artifact contract.
 
-The current semantic reference is **Mermaid.js 12.1.0**. The [test-time harness](../tests/mermaid-conformance/package.json) also pins 10.9.8 and 11.17.2; [per-fixture compatibility metadata](../tests/mermaid-conformance/compatibility.json) records syntax outcomes and explicit older semantic differences. These tested examples do not establish full compatibility with every release or syntax form in those majors. This inventory was checked against `main` at `09065c59` and upstream 12.1.0 documentation on 10 October 2026. Open candidates are listed separately below; their APIs and proof must be rechecked after merge.
+The current semantic reference is **Mermaid.js 12.1.0**. The [test-time harness](../tests/mermaid-conformance/package.json) also pins 10.9.8 and 11.17.2; [per-fixture compatibility metadata](../tests/mermaid-conformance/compatibility.json) records syntax outcomes and explicit older semantic differences. These tested examples do not establish full compatibility with every release or syntax form in those majors. The family inventory uses upstream 12.1.0 documentation checked on 10 October 2026; the merged configuration and statement owners were rechecked against `main` at `3ad279609` on 12 October. The [roadmap](../TODO.md#active-owner-prs) tracks open candidates; their APIs and proof must be rechecked after merge.
 
 ## What support means
 
@@ -77,18 +77,11 @@ Complete the semantic and artifact gates for [Agentflow](https://mermaid.js.org/
 
 The source evidence is [header dispatch and parse results](../ChartForgeX.Mermaid/MermaidParser.cs), [presentation parsing](../ChartForgeX.Mermaid/MermaidParser.Presentation.cs), [presentation application](../ChartForgeX.Mermaid/MermaidPresentation.cs), [render options](../ChartForgeX.Mermaid/MermaidRenderOptions.cs), [Gantt duration parsing](../ChartForgeX.Mermaid/MermaidGanttParser.Duration.cs), and [the upstream harness](../tests/mermaid-conformance/validate-mermaid.mjs). Per-family parser/conversion files and the listed tests establish the row-specific limits.
 
-## Existing Owner Candidates
+## Shared Owners
 
-These are open implementation candidates as of the audit date. They reduce future work, but do not count as merged support or verified public package availability.
+The native hierarchy, authored identities, chart orientation and relationship styling owners are merged in [#273](https://github.com/EvotecIT/ChartForgeX/pull/273), [#251](https://github.com/EvotecIT/ChartForgeX/pull/251), [#261](https://github.com/EvotecIT/ChartForgeX/pull/261) and [#263](https://github.com/EvotecIT/ChartForgeX/pull/263). Bounded source configuration and class/state/ER statement diagnostics are merged in [#290](https://github.com/EvotecIT/ChartForgeX/pull/290) and [#294](https://github.com/EvotecIT/ChartForgeX/pull/294). Reuse those APIs when extending language conversion. The former treemap and radar-form candidates, #271 and #257, are closed.
 
-| Candidate | Reusable contribution | Mermaid work still required |
-| --- | --- | --- |
-| [#271](https://github.com/EvotecIT/ChartForgeX/pull/271) | Hierarchical treemap candidate consolidated into merged #273; this PR is closed | Reuse the merged hierarchy and complete Mermaid styles/configuration/value formatting. Do not build a second hierarchy implementation in the language adapter. |
-| [#261](https://github.com/EvotecIT/ChartForgeX/pull/261) | Authored hierarchy identities and explicit Mermaid Sankey node/link mapping | Qualify settled identity semantics with CSV edge cases and source display/configuration options. |
-| [#251](https://github.com/EvotecIT/ChartForgeX/pull/251) | Shared chart orientation; replaces the Mermaid-specific XY orientation enum | Follow the intentional API migration and prove horizontal/vertical line and bar geometry, legends and source options. |
-| [#257](https://github.com/EvotecIT/ChartForgeX/pull/257) | Shared markers and native radar series forms | Map Mermaid curve options deliberately. Alternate graticule geometry remains open; this candidate does not change the Mermaid radar adapter. |
-| [#263](https://github.com/EvotecIT/ChartForgeX/pull/263) | Shared relationship-node styling | Use the settled owner API where applicable; it does not parse Mermaid classes/styles or complete diagram notation. |
-| [#273](https://github.com/EvotecIT/ChartForgeX/pull/273) | Merged native chart capabilities including treemap hierarchy, Sankey identities and XY orientation | Extend these shared APIs for remaining source presentation and compatibility gaps; native capabilities do not replace language conformance work. |
+Active implementation PRs and their remaining qualification live in the [roadmap owner inventory](../TODO.md#active-owner-prs).
 
 ## Completion Order
 
