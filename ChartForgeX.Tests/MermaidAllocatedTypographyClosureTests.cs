@@ -118,6 +118,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         chart.Groups[0].Subtitle = "Group description";
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         var font = FontSpec.FromFile(fontPath);
+        font.Family = "Carlito";
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(960, 720)),
             VisualTheme.Graphite().WithTypography(new VisualTypography("Carlito", dataLabelSize: size)),
             frame: new VisualFrame(showLegend: false), font: font);
@@ -140,6 +141,26 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         var labels = XDocument.Parse(svg).Descendants().Where(node => node.Name.LocalName == "text").Select(node => node.Value).ToArray();
         Assert.Contains("ACK", labels); Assert.Contains("Payload", labels);
         await Capture(svg, png, "packet-narrow-" + size, 480, 280);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OrdinaryGroupTitlesKeepTheirWidthPolicyWhenSubtitleNeedsFitting(bool subtitle) {
+        const string label = "An ordinary group title that needs shortening";
+        var chart = TopologyChart.Create().WithViewport(600, 400, 0).WithLegend(null)
+            .AddGroup("group", label, 40, 40, 160, 120, subtitle: subtitle ? "Description" : null);
+        var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        var font = FontSpec.FromFile(fontPath); font.Family = "Carlito";
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 400), 0),
+            VisualTheme.Graphite().WithTypography(new VisualTypography("Carlito", dataLabelSize: 18)),
+            frame: new VisualFrame(showLegend: false), font: font);
+        var prepared = chart.Prepare(context);
+        var title = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "topology-group-label");
+        Assert.Equal(18, title.Text.Size, 6);
+        Assert.EndsWith("…", title.Text.Lines[0].Text);
+        if (subtitle) Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "topology-group-subtitle");
+        await Capture(prepared.ToSvg(), prepared.ToPng(), "group-ordinary-width-" + subtitle, 600, 400, fontPath);
     }
 
     [Theory]
