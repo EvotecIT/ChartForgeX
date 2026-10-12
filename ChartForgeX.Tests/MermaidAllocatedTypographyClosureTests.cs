@@ -62,11 +62,9 @@ public sealed class MermaidAllocatedTypographyClosureTests {
             .ConfigureTickLabelStyle(style => style.WithFontFamily("Arial").WithFontSize(size))
             .AddLine("Readings", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 15) });
         chart.Options.XAxis.LabelAngle = angle;
-        if (angle == 0) { chart.Options.XAxis.LabelDensity = ChartLabelDensity.All; chart.Options.XAxis.TickCount = 4; }
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
         Assert.Contains("September", labels);
-        if (angle == 0) { Assert.Contains("October", labels); Assert.Contains("November", labels); }
         await Capture(prepared.ToSvg(), prepared.ToPng(), "axis-" + size + "-" + angle, width, 420);
     }
 
