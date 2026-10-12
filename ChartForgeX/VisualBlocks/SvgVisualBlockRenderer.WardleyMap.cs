@@ -120,7 +120,7 @@ public sealed partial class SvgVisualBlockRenderer {
     private static void WriteWardleyAnnotation(SvgMarkupWriter writer, WardleyMapAnnotation annotation, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) {
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, annotation.Evolution);
         var y = VisualBlockRendering.ProjectWardleyY(layout.Plot, annotation.Visibility);
-        var radius = Math.Min(24, VisualBlockRendering.BodyFontSize(theme, 10));
+        var radius = VisualBlockRendering.WardleyAnnotationRadius(theme);
         writer.StartElement("g").Attribute("data-cfx-role", "wardley-annotation-callout").EndStartElement().Line();
         writer.StartElement("circle").Attribute("data-cfx-role", "wardley-annotation").Attribute("cx", F(x)).Attribute("cy", F(y)).Attribute("r", F(radius)).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.Axis.ToCss()).EndEmptyElement().Line();
         WriteFittedBodyText(writer, annotation.Number.ToString(System.Globalization.CultureInfo.InvariantCulture), x - radius * 0.8, y + radius * 0.4, radius * 1.6, radius * 1.6, TextAlignment.Center, theme.Text, theme, 9, 800, "wardley-annotation-number");

@@ -125,7 +125,7 @@ public sealed partial class PngVisualBlockRenderer {
     private static void DrawWardleyAnnotation(RgbaCanvas canvas, WardleyMapAnnotation annotation, VisualBlockRendering.WardleyMapLayout layout, ChartTheme theme) {
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, annotation.Evolution);
         var y = VisualBlockRendering.ProjectWardleyY(layout.Plot, annotation.Visibility);
-        var radius = Math.Min(24, VisualBlockRendering.BodyFontSize(theme, 10));
+        var radius = VisualBlockRendering.WardleyAnnotationRadius(theme);
         canvas.DrawCircle(x, y, radius, theme.PlotBackground);
         canvas.DrawCircleOutline(x, y, radius, theme.Axis, 1);
         DrawFittedBodyText(canvas, annotation.Number.ToString(System.Globalization.CultureInfo.InvariantCulture), x - radius * 0.8, y + radius * 0.4, radius * 1.6, radius * 1.6, TextAlignment.Center, theme.Text, theme, 9, 800);
