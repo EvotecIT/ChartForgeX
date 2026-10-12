@@ -18,6 +18,11 @@ public sealed class MermaidFontSizeFunctionSyntaxTests {
     [InlineData("var(--label-size, calc(1rem + 2px))", true)]
     [InlineData("clamp(12px, min(2vw, 18px), 20px)", true)]
     [InlineData("calc(18px /* ) */)", true)]
+    [InlineData("round(1em, 1px)", true)]
+    [InlineData("mod(1em, 3px)", true)]
+    [InlineData("rem(1em, 3px)", true)]
+    [InlineData("hypot(1em, 2px)", true)]
+    [InlineData("abs(-1em)", true)]
     public void UnsupportedFunctionsRequireBalancedDelimitersThroughBothSourceForms(string value, bool valid) {
         var quoted = JsonSerializer.Serialize(value);
         foreach (var directive in new[] { false, true }) {
@@ -36,5 +41,21 @@ public sealed class MermaidFontSizeFunctionSyntaxTests {
             if (valid) Assert.NotNull(result.Artifact);
             else Assert.Null(result.Artifact);
         }
+    }
+
+    [Theory]
+    [InlineData("18px", false)]
+    [InlineData("abs(-1em)", true)]
+    public void LaterScalarSizeSuppressesDiagnosticsForEarlierObjectDescendants(string value, bool warning) {
+        var result = MermaidRenderer.Render("---\nconfig:\n  themeVariables:\n    fontSize:\n      nested: 18\n---\n"
+            + "%%{init: {\"themeVariables\":{\"fontSize\":" + JsonSerializer.Serialize(value) + "}}}%%\nflowchart LR\nA --> B");
+        Assert.False(result.HasErrors);
+        Assert.NotNull(result.Artifact);
+        Assert.Contains(result.Document!.Configuration.Settings, setting => setting.Path == "themeVariables.fontSize.nested");
+        if (warning) {
+            var diagnostic = Assert.Single(result.Diagnostics);
+            Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, diagnostic.Code);
+            Assert.Equal(7, diagnostic.Span.Line);
+        } else Assert.Empty(result.Diagnostics);
     }
 }

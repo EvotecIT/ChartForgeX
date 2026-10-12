@@ -141,7 +141,7 @@ public sealed partial class MermaidParser {
             var font = Selected("fontFamily");
             if (setting.Path == "themeVariables.fontSize" && !ReferenceEquals(setting, fontSize)) continue;
             if (ReferenceEquals(setting, fontSize) && invalidFontSize) continue;
-            if (invalidFontSize && setting.Path.StartsWith("themeVariables.fontSize.", StringComparison.Ordinal)) continue;
+            if ((invalidFontSize || fontSize?.Value != null) && setting.Path.StartsWith("themeVariables.fontSize.", StringComparison.Ordinal)) continue;
             if (ReferenceEquals(setting, fontSize) && configuration.FontSize.HasValue &&
                 kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
