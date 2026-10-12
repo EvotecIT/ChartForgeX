@@ -29,7 +29,7 @@ All implemented chart kinds, ChartGrid, topology, flow and sequence use the shar
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
 - Financial marks expose independent body/wick and OHLC colors, alpha, widths, dash patterns and phase, plus hollow candles through `ChartSeries.Financial`. Trading-session spacing remains separate work; session calendars must preserve source prices and date bounds across candle/OHLC views.
 - Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
-- Cartesian plot regions provide passive, bounded background guidance and arbitrary quadrants with primary/secondary axes, interior captions and shared SVG/PNG geometry. Mermaid quadrant conversion remains separate work.
+- Cartesian plot regions provide passive, bounded background guidance and arbitrary quadrants with primary/secondary axes, interior captions and shared SVG/PNG geometry. Mermaid quadrant charts use those regions for authored quadrant captions.
 - Keep annotation captions clear of data marks in compact plots, including bar caps and nearby value labels.
 
 SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.

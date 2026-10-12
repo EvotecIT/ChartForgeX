@@ -93,6 +93,7 @@ public sealed partial class SvgColorVariables {
         foreach (var entry in _text) copy._text.Add(entry.Key, entry.Value);
         foreach (var entry in _byRole) copy._byRole.Add(entry.Key, entry.Value);
         foreach (var entry in _markInk) copy._markInk.Add(entry.Key, entry.Value);
+        copy._paletteSlots = _paletteSlots == null ? null : (SvgColorVariable?[])_paletteSlots.Clone();
         return copy;
     }
 
@@ -246,10 +247,13 @@ public sealed partial class SvgColorVariables {
     internal bool TryOpaquePaint(ChartColor color, SvgColorRole role, out string paint) {
         paint = string.Empty;
         if (!TryVariable(color, role, out var variable)) return false;
-        var literal = variable.Color.A == 255 ? variable.Color.ToHex() : variable.Color.ToHexRgba();
-        // The same exported SVG can later receive a translucent value for an initially opaque variable.
-        paint = "rgb(from var(" + variable.Name + ", " + literal + ") r g b / 1)";
+        paint = OpaquePaint(variable);
         return true;
+    }
+
+    private static string OpaquePaint(SvgColorVariable variable) {
+        var literal = variable.Color.A == 255 ? variable.Color.ToHex() : variable.Color.ToHexRgba();
+        return "rgb(from var(" + variable.Name + ", " + literal + ") r g b / 1)";
     }
 
     internal bool TryVariable(ChartColor color, SvgColorRole role, out SvgColorVariable variable) {

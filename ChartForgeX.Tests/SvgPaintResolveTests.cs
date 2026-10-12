@@ -19,7 +19,9 @@ public sealed class SvgPaintResolveTests {
         Start + "L1E40AFFF" + End, Start + "P11E40AFFF" + End, Start + "P8FFFFFFFF" + End, Start + "I01E40AFFFFFFFFFFF" + End,
         Start + "M1E40AFFF11E40AFFFLFFFFFFFF0.25" + End, Start + "M1E40AFFF2FFFFFFFF31E40AFFF1" + End,
         Start + "M1E40AFFFLFFFFFFFFL000000FF" + new string('1', 32) + End, Start + "M1E40AFFFLFFFFFFFFL000000FF" + new string('1', 33) + End,
-        Start + "L1e40afff" + End, Start + "L1E40AFF" + End, Start + Start + "L1E40AFFF" + End + End
+        Start + "L1e40afff" + End, Start + "L1E40AFF" + End, Start + Start + "L1E40AFFF" + End + End,
+        Start + "S1E40AFFF000000010" + End, Start + "S1E40AFFF000000011" + End,
+        Start + "S1E40AFFF000000012" + End, Start + "S1E40AFFFFFFFFFFF0" + End, Start + "R11E40AFFF" + End
     };
 
     [Fact]

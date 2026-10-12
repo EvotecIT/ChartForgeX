@@ -11,6 +11,52 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidQuadrantRegionBrowserTests {
     [Theory]
+    [InlineData(360, false)]
+    [InlineData(800, true)]
+    public async Task EqualPaletteSlotsFollowIndependentHostThemeValues(int width, bool dark) {
+        if (!Enabled) return;
+        var neutral = ChartColor.FromHex("#607080");
+        var tokens = dark ? VisualDesignTokens.Dark() : new VisualDesignTokens();
+        tokens.Palette = new[] { neutral, neutral };
+        var chart = new MermaidParser().ParseQuadrant("quadrantChart\nquadrant-1 Plan\nquadrant-2 Prioritize\nquadrant-3 Consider\nquadrant-4 Reassess\n")
+            .Document!.ToChart(new MermaidQuadrantRenderOptions { Width = width, Height = 440 }).WithDesignTokens(tokens);
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var svg = chart.Prepare(context).ToSvg(new VisualSvgOptions("equal-palette", tokens.ToSvgColorVariables(path => "--host-" + path.Replace('.', '-'))));
+        await using var session = await OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, 440);
+        var target = tokens.Clone();
+        target.Palette = new[] { ChartColor.FromRgba(224, 32, 48, 128), ChartColor.FromRgba(16, 160, 224, 64) };
+        var variables = target.ToSvgColorVariables(path => "--host-" + path.Replace('.', '-'));
+        await session.Page.Locator("svg").EvaluateAsync("(svg, css) => svg.setAttribute('style', css)",
+            string.Join(";", variables.GetVariablesForSvg(svg).Select(variable => variable.Name + ":" + variable.Color.ToCss())));
+        var surface = context.Theme.Resolve(context.ThemeMode).Surface;
+        for (var index = 0; index < 4; index++) {
+            var color = target.Palette[index % 2];
+            var fill = ChartForgeX.Rendering.ChartColorMath.WithOpacity(color, .14);
+            var plate = ChartForgeX.Rendering.ChartColorMath.Blend(ChartColor.FromRgb(surface.R, surface.G, surface.B), ChartColor.FromRgb(color.R, color.G, color.B), .12);
+            foreach (var (role, expected) in new[] { ("plot-region-fill", fill), ("plot-region-label-backplate", plate) }) {
+                var pixels = await session.Page.Locator("[data-cfx-role='" + role + "']").Nth(index).EvaluateAsync<int[][]>("""
+                    (node, expected) => { const c=document.createElement('canvas').getContext('2d');
+                      const read=paint => { c.clearRect(0,0,1,1); c.fillStyle=paint; c.fillRect(0,0,1,1);
+                        return [...c.getImageData(0,0,1,1).data]; }; return [read(getComputedStyle(node).fill), read(expected)]; }
+                    """, expected.ToCss());
+                Assert.Equal(pixels[1], pixels[0]);
+            }
+            var ink = ChartForgeX.Rendering.ChartColorMath.AccessibleTextOnBackground(plate);
+            Assert.Equal($"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").Nth(index)
+                .EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+        }
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture);
+            var path = Path.Combine(capture, $"quadrant-equal-palette-{width}-{dark}");
+            await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = path + ".browser.png" });
+            chart.WithDesignTokens(target);
+            await File.WriteAllBytesAsync(path + ".native.png", chart.ToPng());
+        }
+        AssertNoConsoleErrors(session);
+    }
+
+    [Theory]
     [InlineData(360, 128)]
     [InlineData(360, 255)]
     [InlineData(800, 128)]
