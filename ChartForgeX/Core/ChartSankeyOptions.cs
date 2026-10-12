@@ -45,6 +45,9 @@ public sealed class ChartSankeyOptions {
         set { if (value.HasValue) Defined(value.Value); _edgeLabelPlacement = value; }
     }
 
+    /// <summary>Gets or sets whether visible node labels include formatted values. The default is true; semantic values remain available when hidden.</summary>
+    public bool ShowValues { get; set; } = true;
+
     /// <summary>Gets or sets the finite positive node-bar width in logical units. The default is ten; an unfittable width is rejected during preparation.</summary>
     public double NodeWidth {
         get => _nodeWidth;
@@ -100,7 +103,10 @@ public enum ChartSankeyAlignment {
     /// <remarks>The bounds are longest source depth and final layer minus longest remaining sink distance. This policy keeps every flow directed to a later layer.</remarks>
     Center,
     /// <summary>Uses longest source depths and moves terminal nodes to the final layer.</summary>
-    Justify
+    Justify,
+    /// <summary>Uses longest source depths and moves each source immediately before its earliest target layer.</summary>
+    /// <remarks>Only nodes without incoming flows move. Other nodes retain their left-aligned depths.</remarks>
+    CenterSources
 }
 
 /// <summary>Controls vertical placement of the nodes and gaps within each Sankey column.</summary>

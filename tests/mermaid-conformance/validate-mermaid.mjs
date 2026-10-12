@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { isSyntaxRejection } from './reference-errors.mjs';
 import { timeFormat } from 'd3-time-format';
+import * as calendar from 'd3-time';
+
+// Reference calendar facts use the same deterministic UTC wall-clock interpretation as native Gantt dates.
+process.env.TZ = 'UTC';
 
 // Keep local calendar dates and epoch arithmetic identical on every reference host.
 process.env.TZ = 'UTC';
@@ -120,6 +124,10 @@ for (const { folder, file, hasExpected } of files) {
       const expected = JSON.parse(await readFile(join(fixtures, expectedFile), 'utf8'));
       const diagram = await mermaid.mermaidAPI.getDiagramFromText(source);
       const keys = values => values instanceof Map ? [...values.keys()] : Object.keys(values);
+      if (expected.markerFacts) {
+        assert.equal(diagram.db.getTodayMarker(), expected.todayMarker);
+        assert.deepEqual(diagram.db.getTasks().map(task => [task.id, !!task.vert, task.order]), expected.markerFacts);
+      }
       if (expected.states && referenceId === '10') diagram.db.extract(diagram.db.getRootDocV2());
       if (expected.classes) assert.deepEqual(keys(diagram.db.getClasses()), expected.classes);
       if (expected.entities) assert.deepEqual(keys(diagram.db.getEntities()), expected.entities);
@@ -142,6 +150,11 @@ for (const { folder, file, hasExpected } of files) {
         const vertices = diagram.db.getVertices();
         assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);
         assert.deepEqual(diagram.db.getEdges().map(edge => [edge.start, edge.end]), expected.edges);
+      }
+      if (expected.sankey) {
+        const graph = diagram.db.getGraph();
+        assert.deepEqual(graph.nodes.map(node => node.id), expected.sankey.nodes);
+        assert.deepEqual(graph.links.map(link => [link.source, link.target, link.value]), expected.sankey.links);
       }
       if (expected.tasks) {
         const day = value => [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
@@ -172,6 +185,16 @@ for (const { folder, file, hasExpected } of files) {
           const task = tasks.find(value => value.id === contract.id);
           assert.ok(task, `Axis format task ${contract.id}`);
           for (const [format, label] of contract.values) assert.equal(timeFormat(format)(task.startTime), label, `Axis format ${format}`);
+        }
+      }
+      if (expected.tickCases) {
+        assert.equal(diagram.db.getTickInterval(), expected.tickInterval);
+        assert.equal(diagram.db.getWeekday(), expected.weekday);
+        const format = timeFormat('%Y-%m-%dT%H:%M:%S.%L');
+        for (const contract of expected.tickCases) {
+          const interval = calendar[contract.unit === 'Week' ? 'time' + contract.weekday : 'time' + contract.unit].every(contract.count);
+          const values = interval.range(new Date(contract.start + 'Z'), new Date(+new Date(contract.end + 'Z') + 1)).map(format);
+          assert.deepEqual(values, contract.values, `Calendar ticks ${contract.unit}/${contract.count}/${contract.weekday}`);
         }
       }
       if (expected.taskRenderEnds) {
