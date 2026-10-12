@@ -4,6 +4,9 @@ namespace ChartForgeX.Mermaid;
 /// Provides per-diagram Mermaid rendering defaults for source rendering and markup adapters.
 /// </summary>
 public sealed class MermaidRenderOptions {
+    /// <summary>Gets or sets the source-resolution context used by source rendering and markup adapters.</summary>
+    public MermaidParseOptions? ParseOptions { get; set; }
+
     /// <summary>Gets or sets rendering defaults for swimlane diagrams.</summary>
     public MermaidFlowchartRenderOptions? Swimlane { get; set; }
     /// <summary>Gets or sets rendering defaults for use case diagrams.</summary>

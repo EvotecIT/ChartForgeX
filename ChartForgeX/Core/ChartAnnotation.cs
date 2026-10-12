@@ -43,6 +43,9 @@ public sealed class ChartAnnotation {
     /// </summary>
     public double Opacity { get; }
 
+    /// <summary>Gets or sets optional reference-line stroke overrides. Band fills retain their own color and opacity.</summary>
+    public ChartStrokeStyle? StrokeStyle { get; set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartAnnotation"/> class.
     /// </summary>
