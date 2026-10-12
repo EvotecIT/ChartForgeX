@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Xml.Linq;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Visuals;
 using Xunit;
 
 namespace ChartForgeX.Tests;
