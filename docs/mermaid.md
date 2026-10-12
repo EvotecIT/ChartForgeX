@@ -69,6 +69,8 @@ Topology diagram dimensions set the minimum canvas. The renderer expands the can
 
 Configuration merges in this order: frontmatter first, then legacy directives in source order. Later values at the same path win. A recognized theme or look scoped to the current diagram family wins over the corresponding global value, even when a later directive changes only the global setting. Only diagram scopes defined by the supported Mermaid configuration schema participate in this precedence; treemap uses the global appearance settings. Recognized themes include `neo`, `neo-dark`, `redux`, `redux-dark`, `redux-color` and `redux-dark-color`; their names are retained with the native light-palette approximation warning. An unrecognized scoped theme or look retains a warning and allows the global value to apply. The latest global and active-family theme, layout and look values must each be non-empty strings, even when one overrides the other. Settings for inactive families remain retained with diagnostics. Layout names retain scoped precedence because the upstream layout registry is extensible. Host-specific presentation remains available through the converted native model and shared export context; the source settings do not select a browser layout engine.
 
+`themeVariables.fontFamily` selects the native default font stack for chart, topology, sequence and visual-block output. It overrides root `fontFamily`, including when a later directive changes only the root setting. Unsupported family keys such as `flowchart.fontFamily` retain a diagnostic and do not change that selection. The original declarations remain in `Settings`, and `Configuration.FontFamily` reports the effective native stack. This sets the shared native typography default; it does not reproduce every Mermaid family-specific font role or fetch remote fonts.
+
 ```mermaid
 ---
 config:
@@ -650,7 +652,19 @@ The conversion target for sequence diagrams is `SequenceArtifact`. Participants,
 
 Source `dark`/`default` themes and font stacks become authored `SequenceArtifact.Theme` and `ThemeMode` defaults for SVG, PNG and HTML exports. The native sequence owner accepts the shared immutable `VisualTheme`, including its typography scale. A host that calls `Prepare(VisualRenderContext)` supplies the complete presentation for that prepared scene; its theme, mode and font take precedence over authored defaults. The portable envelope records the resolved colors and font used by the prepared scene. Authored envelopes record the model defaults. Source theme variables and broader sequence configuration retain diagnostics until they have native mappings.
 
-Static HTML scales the natural SVG to the page width. Wide sequence diagrams can therefore have very small labels on compact pages. Hosts can supply an explicit viewport and typography when preparing their scene; source presentation alone does not provide responsive reflow.
+Sequence HTML preserves its completed scene size so labels keep their logical font size on compact pages. A keyboard-accessible region scrolls horizontally when the scene is wider than its host. Prepared sequence artifacts use the same policy. This preserves scene geometry; it does not reflow messages or participant columns.
+
+A host can choose page-width scaling explicitly, or request preserved size for another artifact family:
+
+```csharp
+var html = result.Artifact!.ToHtmlPage(new VisualArtifactRenderOptions {
+    HtmlSizing = VisualArtifactHtmlSizing.FitToWidth
+});
+```
+
+`Automatic` preserves sequence size and retains other families' existing standalone HTML sizing. `PreserveSize` uses the common scroll region for any supported artifact. These options affect HTML hosting; SVG and PNG exports keep their prepared geometry. Print output fits the scene to the available page width. To change layout or typography, supply those values when preparing the scene.
+
+For a trusted SVG that has already been rendered, `artifact.ToWatermarkedHtmlPage(options, renderedSvg, watermark)` applies the same host sizing while preserving the supplied scene and adding the watermark. The overload without options uses automatic sizing.
 
 ## Pie Charts
 
@@ -740,8 +754,9 @@ Supported Gantt parsing includes:
 - Optional `title`, `dateFormat`, `axisFormat`, `tickInterval`, `excludes`, `includes`, `weekend`, and `todayMarker` statements.
 - `section` groups.
 - Task metadata with optional tags: `active`, `done`, `crit`, and `milestone`.
-- Task ids used by `after taskId` start dependencies and `until taskId` end references. Multiple `after` ids select the latest end; multiple `until` ids select the earliest start. `until` can reference later rows; `after` currently requires earlier rows for native dependency connectors.
+- Task ids used by `after taskId` start dependencies and `until taskId` end references. Multiple `after` ids select the latest end; multiple `until` ids select the earliest start. Both can reference later rows without changing the authored row order. Every distinct `after` predecessor has a native dependency connector.
 - Explicit start/end dates using the configured `dateFormat`.
+- Axis labels use English D3 time directives: weekday/month names, day/year and week numbers, 12/24-hour clocks, fractions, padding modifiers, and `%%`. Text outside directives remains literal. The default is `%Y-%m-%d`; input `dateFormat` and output `axisFormat` use separate notation.
 - Durations using `ms`, `s`, `m`, `h`, `d`, `w`, `M`, and `y` units. `M` means calendar months; `m` means minutes.
 - Milestones retain their authored start/end range and render as native ChartForgeX milestone points at the range midpoint.
 
@@ -779,7 +794,13 @@ var png = document.ToPng();
 
 The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes/includes, weekend selection, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Duration-based and `until` scheduling ends advance over excluded dates, with includes overriding exclusions; explicit end dates remain authored dates. `End` supplies dependency scheduling, while `RenderEnd` preserves Mermaid's visible bar endpoint before trailing excluded days. Interior exclusions can extend both values. Repeated `excludes` and `includes` declarations merge their tokens, and the final diagram calendar/date format applies to all tasks regardless of declaration order. Missing ids, circular date dependencies and an end before its start produce source diagnostics. `UntilTaskIds` retains end references independently of `DependencyIds`, and the artifact records their count as `mermaid.untilReferences`.
 
-For a milestone with a nonzero duration, `Start` and `End` now retain the range used by Mermaid dependency calculations. Callers that previously treated `Start` as its rendered point should compute the midpoint of that range. Zero-duration milestones and their rendering retain the same date. Broader date/axis/tick formats, forward `after` connectors and marker configuration remain open in the [support matrix](mermaid-support-matrix.md).
+Native callers can add all tasks first, then use `chart.AddGanttDependency(predecessorIndex, successorIndex)` for forward or multiple links. Both indices must address existing, distinct rows in a chart containing only Gantt tasks. `chart.GanttDependencies` returns a detached snapshot including inline `dependsOn` links; duplicates render once. Links anchor the predecessor's displayed finish and successor's displayed start without changing task dates. Milestone links meet the diamond boundary, and connectors paint above task fills so arrowheads remain visible in SVG and PNG. Automatic axis windows reserve room for endpoint arrowheads; explicit axis bounds retain their clipping window. The inline `dependsOn` argument still addresses an earlier row. Native preparation revalidates links when mutable rows change.
+
+For a milestone with a nonzero duration, `Start` and `End` retain the range used by Mermaid dependency calculations. Callers that previously treated `Start` as its rendered point should compute the midpoint of that range. Zero-duration milestones and their rendering retain the same date. Broader input date formats, tick intervals and marker configuration remain open in the [support matrix](mermaid-support-matrix.md).
+
+`axisFormat %a %d %b` displays labels such as `Sun 04 Jan`; `%I:%M:%S.%L %p` displays `01:05:06.007 PM`. `%U` and `%W` number weeks from Sunday and Monday, and `%V` with `%G` uses ISO week/year numbering. `%_d`, `%-d` and `%0d` choose space, no or zero padding. Composite `%c`, `%x` and `%X` use the reference formatter's English US defaults. Native Gantt dates are wall-clock values: timezone and epoch directives (`%Z`, `%Q`, `%s`) use UTC interpretation for deterministic output.
+
+`axisFormat` follows Mermaid/D3 formatting, including literal text such as `YYYY-MM-DD`. Callers that relied on the previous adapter interpreting that literal as an input-date pattern should use `%Y-%m-%d` instead. Host-specific date formatting can still be supplied through the native chart axis formatter.
 
 ## XY Charts
 

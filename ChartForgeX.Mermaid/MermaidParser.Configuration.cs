@@ -103,7 +103,7 @@ public sealed partial class MermaidParser {
         MermaidParseResult<MermaidDocument> result) {
         var scope = ConfigurationScope(kind);
         MermaidConfigurationSetting? Selected(string key) {
-            if (key == "fontFamily") return configuration.Last(key);
+            if (key == "fontFamily") return configuration.Last("themeVariables.fontFamily") ?? configuration.Last(key);
             var scoped = scope == null ? null : configuration.Last(scope + "." + key);
             return scoped != null && IsUnusableAppearance(key, scoped)
                 ? configuration.Last(key) ?? scoped : scoped ?? configuration.Last(key);
@@ -111,7 +111,7 @@ public sealed partial class MermaidParser {
         void ValidateString(MermaidConfigurationSetting? setting) {
             if (setting != null && !IsConfigurationStringValue(setting)) {
                 ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' must be a non-empty string of at most 4096 characters containing complete Unicode characters."
-                    + (setting.Path == "fontFamily" ? " Font names must also contain only characters XML allows." : string.Empty));
+                    + (IsConfigurationFontPath(setting.Path) ? " Font names must also contain only characters XML allows." : string.Empty));
             }
         }
         foreach (var key in new[] { "theme", "layout", "look" }) {
@@ -140,7 +140,7 @@ public sealed partial class MermaidParser {
                 if (kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             } else if (ReferenceEquals(setting, font) && setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) &&
                 kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
-            else if ((setting.Path == "theme" || setting.Path == scope + ".theme" || setting.Path == "fontFamily") &&
+            else if ((setting.Path == "theme" || setting.Path == scope + ".theme" || setting.Path == "fontFamily" || setting.Path == "themeVariables.fontFamily") &&
                 !ReferenceEquals(setting, theme) && !ReferenceEquals(setting, font) &&
                 !(setting.Path == scope + ".theme" && IsUnusableAppearance("theme", setting))) continue;
 
@@ -181,7 +181,9 @@ public sealed partial class MermaidParser {
 
     private static bool IsConfigurationStringValue(MermaidConfigurationSetting setting) =>
         setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) && setting.Value!.Length <= 4096 &&
-        IsCompleteConfigurationUnicode(setting.Value, setting.Path == "fontFamily");
+        IsCompleteConfigurationUnicode(setting.Value, IsConfigurationFontPath(setting.Path));
+
+    private static bool IsConfigurationFontPath(string path) => path == "fontFamily" || path == "themeVariables.fontFamily";
 
     private static bool IsCompleteConfigurationUnicode(string value, bool requireXmlCharacters) {
         for (var index = 0; index < value.Length; index++) {
