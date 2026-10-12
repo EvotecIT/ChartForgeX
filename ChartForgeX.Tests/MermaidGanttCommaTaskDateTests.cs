@@ -7,6 +7,20 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttCommaTaskDateTests {
     [Theory]
+    [InlineData("", null)]
+    [InlineData("active,", null)]
+    [InlineData("task,", "task")]
+    [InlineData("2026,", "2026")]
+    public void CompleteFallbackTimestampWinsOverATimeOnlySuffix(string prefix, string? expectedId) {
+        var parsed = new MermaidParser().ParseGantt("gantt\nTask :" + prefix + "January 2 2026, 13:00,1d");
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal(expectedId, task.Id);
+        Assert.Equal(new DateTime(2026, 1, 2, 13, 0, 0), task.Start);
+        Assert.Equal(task.Start.AddDays(1), task.End);
+    }
+
+    [Theory]
     [InlineData("2025-01-01", "")]
     [InlineData("2025-01-01", "active,")]
     [InlineData("Jan 1", "")]
