@@ -153,7 +153,7 @@ Completion: source presentation produces consistent SVG/PNG scenes or specific d
 ### 3. Core diagram semantics
 
 - [x] Render flowchart circle, cross and bidirectional endpoints through shared topology markers, preserving compact target IDs and label boundaries. Qualify endpoint semantics against Mermaid 10, 11 and 12 and retain the markers in SVG, PNG and interchange JSON.
-- [ ] Settle the versioned circle/cross/bidirectional endpoint owner in [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) and metadata shape-alias owner in [#347](https://github.com/EvotecIT/ChartForgeX/pull/347). Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
+- [ ] Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
 - [ ] Complete sequence participant creation/destruction, participant boxes, supported message variants, nested parallel/critical branches, branch labels, notes, activations and autonumber behavior. Keep actor menus and links as safe host-facing data.
 - [ ] Complete class generics, visibility/static/abstract members, lollipop and two-way relationships, labeled/nested namespaces, notes, styling and safe link metadata.
 - [ ] Complete state choice/fork/join notation, concurrent regions, nested composites, multiline notes and classes; keep transition and start/end meaning visible.
