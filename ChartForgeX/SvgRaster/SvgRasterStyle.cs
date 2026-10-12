@@ -387,7 +387,7 @@ internal sealed class SvgRasterStyle {
                 style.StrokeOpacity = ParseOpacity(value, style.StrokeOpacity);
                 break;
             case "font-size":
-                style.FontSize = Math.Max(1, ParseLength(value, style.FontSize));
+                style.FontSize = Math.Max(double.Epsilon, ParseLength(value, style.FontSize));
                 break;
             case "font-family":
                 style.FontFamily = value.Trim();

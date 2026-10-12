@@ -248,7 +248,7 @@ internal sealed partial class RgbaCanvas {
 
         var padding = Math.Max(4, fontSize * 0.45);
         var textWidth = emphasized ? MeasureTextEmphasizedWidth(text, fontSize, font, italic) : MeasureTextWidthWithFont(text, fontSize, font, italic);
-        var textHeight = font?.LineHeight(Math.Max(1, fontSize)) ?? MeasureTextHeight(fontSize, _outlineFont);
+        var textHeight = font?.LineHeight(Math.Max(double.Epsilon, fontSize)) ?? MeasureTextHeight(fontSize, _outlineFont);
         var decorationThickness = Math.Max(1, fontSize / 13.0);
         var contentHeight = underlineStyle != TextDecorationStyle.None ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, decorationThickness)) : textHeight;
         contentHeight += Math.Abs(baselineOffset);
