@@ -15,9 +15,11 @@ internal static partial class VisualCartesianCompiler {
         foreach (var region in ChartDifferenceAreaGeometry.Regions(series, geometry)) {
             var role = region.Positive ? "difference-positive" : "difference-negative";
             var (fill, fillPaint) = DifferenceFill(series, index, region.Positive, colors, context);
-            builder.Path(region.Path, fill, role: role, close: true, paint: VisualChartPaint.Fill(fillPaint));
-            if (fill.A > 0) DrawPattern(builder, region.Path, series.FillPattern, fill,
-                ChartStateMark.Backdrop(chart.Options, colors, context.Frame), role + "-pattern");
+            using (FillSegment(builder, region.Start, region.Count)) {
+                builder.Path(region.Path, fill, role: role, close: true, paint: VisualChartPaint.Fill(fillPaint));
+                if (fill.A > 0) DrawPattern(builder, region.Path, series.FillPattern, fill,
+                    ChartStateMark.Backdrop(chart.Options, colors, context.Frame), role + "-pattern");
+            }
             obstacles.Add(new LabelObstacle(SeriesId(index) + "-" + role + "-" + Number(obstacles.Count),
                 new LabelMarkShape(new[] { region.Path.Flatten() }, true, stroke, plot)));
         }
