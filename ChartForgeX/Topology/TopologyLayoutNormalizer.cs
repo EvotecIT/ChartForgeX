@@ -185,7 +185,7 @@ internal static class TopologyLayoutNormalizer {
         if (options.IncludeEndpointLabels && chart.Edges.Any(edge => !string.IsNullOrWhiteSpace(edge.SourceLabel) || !string.IsNullOrWhiteSpace(edge.TargetLabel)) && CanMeasureEdgeLabels(chart)) {
             var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
             foreach (var edge in chart.Edges.Where(edge => !string.IsNullOrWhiteSpace(edge.SourceLabel) || !string.IsNullOrWhiteSpace(edge.TargetLabel))) {
-                var route = EdgePoints(chart, edge, nodes);
+                var route = TopologyResolvedRouteSamples.Sample(chart, options, edge, nodes, EdgePoints(chart, edge, nodes));
                 IncludeEndpoint(edge.SourceLabel, route[0], route[1]);
                 IncludeEndpoint(edge.TargetLabel, route[route.Count - 1], route[route.Count - 2]);
             }

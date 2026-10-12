@@ -17,8 +17,8 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     private static (double FontSize, double Width, double Height) EndpointLabelMetrics(TopologyRenderOptions options, string text) =>
-        options.ResolvedEndpointLabelMetrics?.Invoke(text.Trim()) ??
-        (EndpointLabelFontSize, EstimateTextWidth(text.Trim(), EndpointLabelFontSize, true, options.TextMeasurement) + 6, EndpointLabelFontSize + 6);
+        options.ResolvedEndpointLabelMetrics?.Invoke(text) ??
+        (EndpointLabelFontSize, EstimateTextWidth(text, EndpointLabelFontSize, true, options.TextMeasurement) + 6, EndpointLabelFontSize + 6);
 
     public static ChartPoint EdgeEndpointLabelPoint(TopologyChart chart, TopologyRenderOptions options, ChartPoint endpoint, ChartPoint adjacent, string text) {
         var dx = adjacent.X - endpoint.X;
