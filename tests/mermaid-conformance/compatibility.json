@@ -635,6 +635,14 @@
         "12": "accepted"
       },
       "provenance": "Authored literal-apostrophe regressions for flowchart edge text, bracket captions and compact statements; verified against the pinned official Mermaid 10, 11 and 12 parsers and typed semantic facts."
+    },
+    "fixtures/treemap-visibility.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Source value visibility from https://mermaid.js.org/syntax/treemap.html; typed configuration and hierarchy magnitudes are independent of caption presentation."
     }
   }
 }

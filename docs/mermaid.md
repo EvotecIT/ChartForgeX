@@ -956,6 +956,20 @@ Comma-separated treemap values retain the magnitude used by the pinned Mermaid p
 
 The conversion target for treemap diagrams is `Chart`. Section nodes retain nested parent rectangles and measured headers, and their areas aggregate leaf sizes. Native group and leaf captions display the authored labels and formatted magnitudes when space permits. Distinct source-order IDs keep repeated labels independent; display labels remain unchanged. The typed AST retains class suffixes, and artifact metadata retains node, leaf, root, and class counts. Class-to-paint styling remains a host policy.
 
+Set `config.treemap.showValues: false` in frontmatter, or the equivalent legacy directive, to keep group and leaf labels while hiding their displayed magnitudes. Values, parent relationships, descriptive text and semantic metadata remain available. `MermaidTreemapRenderOptions.ShowValues` is a nullable host override: `null` uses the source setting or the native default, and an explicit `true` or `false` wins over source configuration. Markdown parsers capture that override when constructed. Native callers use `chart.ConfigureTreemap(options => options.ShowValues = false)`; ordinary data-label visibility still controls whether captions are drawn at all.
+
+```mermaid
+---
+config:
+  treemap:
+    showValues: false
+---
+treemap-beta
+"Storage"
+  "Documents": 1,234.5
+  "Media": 765.5
+```
+
 ## Git Graph Diagrams
 
 Git graph diagrams are parsed into `MermaidGitGraphDocument` and converted to the reusable `GitGraphBlock` visual block.
