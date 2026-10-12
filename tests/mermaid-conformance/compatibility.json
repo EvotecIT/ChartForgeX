@@ -15,6 +15,14 @@
     }
   },
   "fixtures": {
+    "fixtures/sequence-presentation.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored sequence participants/messages and legacy source presentation case from the official sequence and configuration contracts."
+    },
     "fixtures/state-floating-note.mmd": {
       "syntax": {
         "10": "accepted",
@@ -548,13 +556,21 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
-    "fixtures/sequence-presentation.mmd": {
+    "fixtures/theme-variable-font-layers.mmd": {
       "syntax": {
         "10": "accepted",
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored sequence participants/messages and legacy source presentation case from the official sequence and configuration contracts."
+      "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
+    },
+    "fixtures/theme-variable-font.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored font configuration regression from https://mermaid.js.org/config/theming.html; the pinned references retain global and theme-variable font values independently."
     },
     "fixtures/radar-capped-circle.mmd": {
       "syntax": {
@@ -604,21 +620,13 @@
       },
       "provenance": "https://mermaid.js.org/syntax/radar.html: zero hides concentric guides while preserving axes, observations and source configuration; pinned Mermaid 11 and 12 accept the case."
     },
-    "fixtures/theme-variable-font-layers.mmd": {
+    "fixtures/gantt-forward-after.mmd": {
       "syntax": {
         "10": "accepted",
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
-    },
-    "fixtures/theme-variable-font.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored font configuration regression from https://mermaid.js.org/config/theming.html; the pinned references retain global and theme-variable font values independently."
+      "provenance": "Authored forward and multiple after-reference regression from https://mermaid.js.org/syntax/gantt.html; resolved dates verified against all three pinned reference engines."
     },
     "fixtures/treemap-grouped-values.mmd": {
       "syntax": {

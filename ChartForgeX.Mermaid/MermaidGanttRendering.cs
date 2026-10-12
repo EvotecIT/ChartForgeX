@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.VisualArtifacts;
@@ -23,8 +24,23 @@ public static class MermaidGanttRendering {
         if (options.Today.HasValue) chart.WithGanttToday(options.Today.Value);
         foreach (var task in document.Tasks) {
             var name = string.IsNullOrWhiteSpace(task.Section) ? task.Title : task.Section + " / " + task.Title;
-            if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2), task.DependencyIndex);
-            else chart.AddGanttTask(name, task.Start, task.RenderEnd, task.Progress, task.DependencyIndex);
+            if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2));
+            else chart.AddGanttTask(name, task.Start, task.RenderEnd, task.Progress);
+        }
+        var ids = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (var index = 0; index < document.Tasks.Count; index++) {
+            var id = document.Tasks[index].Id;
+            if (string.IsNullOrWhiteSpace(id)) continue;
+            if (ids.ContainsKey(id!)) throw new ArgumentException("Gantt task id '" + id + "' is declared more than once.", nameof(document));
+            ids.Add(id!, index);
+        }
+        for (var index = 0; index < document.Tasks.Count; index++) {
+            var task = document.Tasks[index];
+            if (task.DependencyIndex >= 0) chart.AddGanttDependency(task.DependencyIndex, index);
+            foreach (var id in task.DependencyIds) {
+                if (!ids.TryGetValue(id, out var predecessor)) throw new ArgumentException("Gantt dependency id '" + id + "' is not declared.", nameof(document));
+                chart.AddGanttDependency(predecessor, index);
+            }
         }
 
         return MermaidPresentation.Apply(chart, document);
