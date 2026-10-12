@@ -1,0 +1,7 @@
+%%{init: {'theme': 'dark', 'fontFamily': 'Georgia, serif'}}%%
+sequenceDiagram
+participant API
+participant Store
+API->>Store: Save request
+Note right of Store: Stored record
+Store-->>API: Complete

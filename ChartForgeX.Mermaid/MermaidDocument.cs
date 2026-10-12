@@ -107,12 +107,15 @@ public class MermaidDocument {
     public VisualAccessibility Accessibility { get; } = new();
 
     /// <summary>Gets or sets the theme declared in source configuration.</summary>
-    public string? Theme { get; set; }
+    public string? Theme { get => Configuration.Theme; set => Configuration.Theme = value; }
+
+    /// <summary>Gets bounded source declarations and the effective configuration for this diagram family.</summary>
+    public MermaidSourceConfiguration Configuration { get; internal set; } = new();
 
     /// <summary>Gets parsed Mermaid directives.</summary>
     public List<MermaidDirective> Directives { get; } = new();
 
-    /// <summary>Gets unclassified body statements retained for recognized families that do not have a semantic parser yet.</summary>
+    /// <summary>Gets unclassified or unsupported body statements retained independently from rendered semantic facts.</summary>
     public List<MermaidRawStatement> RawStatements { get; } = new();
 }
 

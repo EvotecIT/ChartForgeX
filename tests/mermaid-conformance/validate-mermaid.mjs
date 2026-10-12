@@ -118,6 +118,25 @@ for (const { folder, file, hasExpected } of files) {
     if (hasExpected || variant) {
       const expected = JSON.parse(await readFile(join(fixtures, expectedFile), 'utf8'));
       const diagram = await mermaid.mermaidAPI.getDiagramFromText(source);
+      const keys = values => values instanceof Map ? [...values.keys()] : Object.keys(values);
+      if (expected.states && referenceId === '10') diagram.db.extract(diagram.db.getRootDocV2());
+      if (expected.classes) assert.deepEqual(keys(diagram.db.getClasses()), expected.classes);
+      if (expected.entities) assert.deepEqual(keys(diagram.db.getEntities()), expected.entities);
+      if (expected.states) assert.deepEqual(keys(diagram.db.getStates()), expected.states);
+      if (expected.participants) {
+        assert.deepEqual(keys(diagram.db.getActors()), expected.participants);
+        assert.deepEqual(diagram.db.getMessages().filter(message => message.from && message.to && message.placement === undefined)
+          .map(message => [message.from, message.to, message.message]), expected.messages);
+      }
+      if (Object.hasOwn(expected, 'direction')) {
+        assert.equal(typeof diagram.db.getDirection === 'function' ? diagram.db.getDirection() : null, expected.direction);
+      }
+      if (expected.configuration) {
+        const configuration = mermaid.mermaidAPI.getConfig();
+        for (const [path, value] of Object.entries(expected.configuration)) {
+          assert.deepEqual(path.split('.').reduce((current, key) => current?.[key], configuration), value, `Configuration ${path}`);
+        }
+      }
       if (expected.nodes) {
         const vertices = diagram.db.getVertices();
         assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);

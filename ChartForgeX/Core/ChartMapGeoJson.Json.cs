@@ -45,6 +45,16 @@ internal sealed class GeoJsonValue {
         _value = value;
     }
 
+    // Property bounds refer to the reader's input, including the key and complete value.
+    internal int PropertyOffset { get; private set; } = -1;
+    internal int PropertyLength { get; private set; }
+
+    internal GeoJsonValue WithPropertySource(int offset, int length) {
+        PropertyOffset = offset;
+        PropertyLength = length;
+        return this;
+    }
+
     public static GeoJsonValue Parse(string json) {
         var reader = new GeoJsonReader(json, StringComparer.OrdinalIgnoreCase);
         return reader.Parse();
@@ -62,6 +72,13 @@ internal sealed class GeoJsonValue {
 
     public Dictionary<string, GeoJsonValue> AsObject(string context) =>
         _value as Dictionary<string, GeoJsonValue> ?? throw new ArgumentException("Expected JSON object for " + context + ".");
+
+    public bool TryAsObject(out Dictionary<string, GeoJsonValue> values) {
+        values = _value as Dictionary<string, GeoJsonValue> ?? null!;
+        return values != null;
+    }
+
+    public bool IsString => _value is string;
 
     public List<GeoJsonValue> AsArray(string context) =>
         _value as List<GeoJsonValue> ?? throw new ArgumentException("Expected JSON array for " + context + ".");
@@ -122,6 +139,12 @@ internal sealed class GeoJsonReadLimits {
     public int MaximumArrayItems { get; }
     public int MaximumObjectProperties { get; }
     public bool RejectDuplicateProperties { get; private set; }
+    public bool PreserveNumberSpelling { get; private set; }
+
+    public GeoJsonReadLimits KeepNumberSpelling() {
+        PreserveNumberSpelling = true;
+        return this;
+    }
     public int MaximumDepth { get; private set; } = DefaultMaximumDepth;
 
     public GeoJsonReadLimits LimitDepth(int maximumDepth) {
@@ -157,15 +180,15 @@ internal sealed class GeoJsonReadLimits {
 }
 
 internal sealed class GeoJsonNumber {
-    public GeoJsonNumber(double value, string losslessIntegerText) {
+    public GeoJsonNumber(double value, string originalText) {
         Value = value;
-        LosslessIntegerText = losslessIntegerText;
+        OriginalText = originalText;
     }
 
     public double Value { get; }
-    public string LosslessIntegerText { get; }
+    public string OriginalText { get; }
 
-    public string ToLookupString() => LosslessIntegerText;
+    public string ToLookupString() => OriginalText;
 }
 
 internal static class GeoJsonValueExtensions {
@@ -259,12 +282,13 @@ internal sealed class GeoJsonReader {
             propertyCount++;
             if (propertyCount > maximumProperties) throw Error("JSON object contains too many properties.");
             SkipWhiteSpace();
+            var propertyStart = _position;
             var key = ReadString();
             if (_limits?.RejectDuplicateProperties == true && values.ContainsKey(key)) throw Error("JSON object contains a duplicate property named '" + key + "'.");
             SkipWhiteSpace();
             Expect(':');
             GeoJsonValue value = ReadValue(!string.Equals(key, "coordinates", StringComparison.OrdinalIgnoreCase), key);
-            values[key] = value;
+            values[key] = value.WithPropertySource(propertyStart, _position - propertyStart);
             SkipWhiteSpace();
             if (TryRead('}')) break;
             Expect(',');
@@ -293,7 +317,10 @@ internal sealed class GeoJsonReader {
     private GeoJsonValue ReadNumber(bool preserveText) {
         var start = _position;
         if (_json[_position] == '-') _position++;
-        ReadDigits();
+        if (_position < _json.Length && _json[_position] == '0') {
+            _position++;
+            if (_position < _json.Length && _json[_position] >= '0' && _json[_position] <= '9') throw Error("JSON numbers cannot contain leading zeroes.");
+        } else ReadDigits();
         if (_position < _json.Length && _json[_position] == '.') {
             _position++;
             ReadDigits();
@@ -306,8 +333,9 @@ internal sealed class GeoJsonReader {
         }
 
         var text = _json.Substring(start, _position - start);
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)) throw Error("Invalid JSON number.");
-        return GeoJsonValue.Number(value, preserveText && ShouldPreserveNumberText(text, value) ? text : null);
+        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) || double.IsInfinity(value) || double.IsNaN(value))
+            throw Error("Invalid JSON number or value outside the supported finite range.");
+        return GeoJsonValue.Number(value, _limits?.PreserveNumberSpelling == true || preserveText && ShouldPreserveNumberText(text, value) ? text : null);
     }
 
     private static bool ShouldPreserveNumberText(string text, double value) {
@@ -317,7 +345,7 @@ internal sealed class GeoJsonReader {
 
     private void ReadDigits() {
         var start = _position;
-        while (_position < _json.Length && char.IsDigit(_json[_position])) _position++;
+        while (_position < _json.Length && _json[_position] >= '0' && _json[_position] <= '9') _position++;
         if (_position == start) throw Error("Expected JSON number digit.");
     }
 
@@ -328,6 +356,7 @@ internal sealed class GeoJsonReader {
             var c = _json[_position++];
             if (c == '"') return buffer.ToString();
             if (c != '\\') {
+                if (c < '\u0020') throw Error("Unescaped control character in JSON string.");
                 buffer.Append(c);
                 continue;
             }
@@ -363,7 +392,7 @@ internal sealed class GeoJsonReader {
     }
 
     private void SkipWhiteSpace() {
-        while (_position < _json.Length && char.IsWhiteSpace(_json[_position])) _position++;
+        while (_position < _json.Length && (_json[_position] == ' ' || _json[_position] == '\t' || _json[_position] == '\n' || _json[_position] == '\r')) _position++;
     }
 
     private bool TryRead(char c) {
