@@ -56,6 +56,8 @@ Logical bounds are exact. Raster dimensions round each positive logical dimensio
 
 Phase 1 accepts a resolved viewport. A host can measure its container and prepare again at a compact size; scaling an SVG `viewBox` preserves proportions but does not reflow its layout. Natural-content sizing, constrained aspect selection and a complete Fixed/Fit/Content policy remain later work. Do not advertise those modes as implemented by a placeholder enum.
 
+`VisualArtifactRenderOptions.HtmlSizing` controls only the standalone HTML host around completed SVG geometry. Automatic sizing preserves sequence label size in a keyboard-accessible horizontal scroll region, including prepared and decorated sequence artifacts. Other families retain their existing sizing. Hosts can choose `FitToWidth` or `PreserveSize` explicitly; SVG/PNG preparation and portable semantics stay independent of that page choice. Print output fits the completed scene to page width.
+
 The common frame measures headings and legend before handing a content rectangle to the family. Headings have a bounded two-line budget. Legend entries wrap into rows or a side strip; insufficient space produces diagnostics. Truncated display text retains its full source label in semantic metadata. Factual content is not turned into a chart series to obtain a frame.
 
 `VisualFrame.LegendTitle` is an optional measured heading above categorical legend entries. It shares the legend's height budget, and its complete text remains in a descriptive region if it cannot fit. A null value permits a producer-supplied title; an empty string suppresses it. Chart and grid frame copies preserve the title, styles and density budgets.
