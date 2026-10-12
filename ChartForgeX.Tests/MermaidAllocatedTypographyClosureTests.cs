@@ -52,18 +52,22 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     }
 
     [Theory]
+    [InlineData(360, 32, 0, false)]
     [InlineData(360, 32, 90, false)]
     [InlineData(760, 256, 45, true)]
-    public async Task RotatedAxisCaptionsRetainACompleteMonth(int width, int size, double angle, bool dark) {
+    public async Task AxisCaptionsRetainACompleteMonth(int width, int size, double angle, bool dark) {
         var chart = Chart.Create().WithSize(width, 420).WithLegend(false).WithHeader(false)
             .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
             .WithXLabels("September", "October", "November")
             .ConfigureTickLabelStyle(style => style.WithFontFamily("Arial").WithFontSize(size))
             .AddLine("Readings", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 15) });
         chart.Options.XAxis.LabelAngle = angle;
+        if (angle == 0) { chart.Options.XAxis.LabelDensity = ChartLabelDensity.All; chart.Options.XAxis.TickCount = 4; }
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        Assert.Contains(XDocument.Parse(prepared.ToSvg()).Descendants(), element => element.Name.LocalName == "text" && element.Value == "September");
-        await Capture(prepared.ToSvg(), prepared.ToPng(), "rotated-axis-" + size, width, 420);
+        var labels = XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
+        Assert.Contains("September", labels);
+        if (angle == 0) { Assert.Contains("October", labels); Assert.Contains("November", labels); }
+        await Capture(prepared.ToSvg(), prepared.ToPng(), "axis-" + size + "-" + angle, width, 420);
     }
 
     [Theory]
@@ -94,9 +98,10 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     }
 
     [Theory]
+    [InlineData(0)]
     [InlineData(45)]
     [InlineData(90)]
-    public void RotatedAxisFittingUsesTheCompleteRotatedFootprint(double angle) {
+    public void OversizedAxisFittingUsesTheCompleteFootprint(double angle) {
         var builder = new VisualSceneBuilder(new VisualSize(200, 100), FontSpec.FromFamily("Arial"));
         var style = new TextStyle { Font = FontSpec.FromFamily("Arial"), FontSize = 32 };
         var bounds = new ChartRect(0, 0, 100, 50);
@@ -104,6 +109,15 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText("September", fitted), angle);
         Assert.True(metrics.Width <= bounds.Width && metrics.Height <= bounds.Height);
         Assert.Equal(32, style.FontSize);
+    }
+
+    [Fact]
+    public void OrdinaryUnrotatedAxisTextRetainsItsShorteningPolicy() {
+        var builder = new VisualSceneBuilder(new VisualSize(200, 100), FontSpec.FromFamily("Arial"));
+        var style = new TextStyle { Font = FontSpec.FromFamily("Arial"), FontSize = 18 };
+        var fitted = VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, 30, 50), new[] { "September" });
+        Assert.Same(style, fitted);
+        Assert.Equal(18, fitted.FontSize);
     }
 
     [Theory]
