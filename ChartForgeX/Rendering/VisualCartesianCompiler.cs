@@ -134,7 +134,7 @@ internal static partial class VisualCartesianCompiler {
         {
             if (ReferenceEquals(seriesBuilder, builder)) {
                 using (clipMarks ? builder.PushClip(plot) : null)
-                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null);
+                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
             }
             foreach (var index in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[index];
@@ -153,17 +153,17 @@ internal static partial class VisualCartesianCompiler {
                 })) {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
-                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index], clipMarks);
+                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index], clipMarks, xViewport);
                     else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index]);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
                 using (clipMarks ? builder.PushClip(plot) : null)
-                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null);
+                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
                 builder.Append(seriesBuilder.Build());
             }
             using (clipMarks ? builder.PushClip(plot) : null)
-                DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null);
+                DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
         }
         if (chart.Options.ShowStackTotals && stacks.HasBarStacks) {
             if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, stacks, labels);
