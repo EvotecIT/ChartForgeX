@@ -715,6 +715,14 @@
         "12": "accepted"
       },
       "provenance": "Authored comma-separated treemap values, qualified against pinned official Mermaid parsers. The reference removes comma separators, including nonstandard grouping. Typed node magnitudes and parent indices are compared without relying on native hierarchy layout."
+    },
+    "fixtures/treemap-visibility.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Source value visibility from https://mermaid.js.org/syntax/treemap.html; typed configuration and hierarchy magnitudes are independent of caption presentation."
     }
   }
 }
