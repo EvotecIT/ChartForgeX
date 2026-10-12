@@ -57,6 +57,11 @@ internal static partial class VisualBlockRendering {
     public static int PacketColumn(PacketLayoutBlock packet, PacketLayoutSlice slice) => packet.BitOrder == PacketBitOrder.Descending
         ? packet.BitsPerRow - slice.StartBit % packet.BitsPerRow - slice.BitLength : slice.StartBit % packet.BitsPerRow;
 
+    // Mirror the painted field, including its clamped gap, within the occupied bit row.
+    public static double PacketFieldLeft(PacketLayoutBlock packet, PacketLayoutSlice slice, PacketRowMetrics metrics) =>
+        PacketColumn(packet, slice) * metrics.BitWidth + (packet.BitOrder == PacketBitOrder.Descending
+            ? slice.BitLength * metrics.BitWidth - metrics.FieldWidth(slice.BitLength) : 0);
+
     public static int PacketLeftBit(PacketLayoutBlock packet, PacketLayoutSlice slice) =>
         packet.BitOrder == PacketBitOrder.Descending ? slice.EndBit : slice.StartBit;
 

@@ -137,7 +137,7 @@ public sealed class MermaidPacketConfigurationTests {
         for (var index = 0; index < fields.Length; index++) {
             // Each row is mirrored across the same content rectangle, including partial final rows.
             Assert.Equal(width + block.Options.Padding.Left - block.Options.Padding.Right,
-                Number(fields[index], "x") + Number(ascending[index], "x") + Number(fields[index], "width") + 1, 2);
+                Number(fields[index], "x") + Number(ascending[index], "x") + Number(fields[index], "width"), 2);
         }
         Assert.False(native.SequenceEqual(block.ToPng()));
         block.BitOrder = PacketBitOrder.Descending;

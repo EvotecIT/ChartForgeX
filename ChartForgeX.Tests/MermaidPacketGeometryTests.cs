@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
+using ChartForgeX.SvgRaster;
 using ChartForgeX.VisualBlocks;
 using Microsoft.Playwright;
 using Xunit;
@@ -115,17 +116,21 @@ public sealed class MermaidPacketGeometryTests {
     }
 
     [Theory]
-    [InlineData(false, 320)]
-    [InlineData(false, 960)]
-    [InlineData(true, 320)]
-    [InlineData(true, 960)]
-    public async Task PreferredDimensionsFitCompactAndWideDescendingRows(bool dark, int width) {
+    [InlineData(false, 320, 3)]
+    [InlineData(false, 960, 3)]
+    [InlineData(true, 320, 3)]
+    [InlineData(true, 960, 3)]
+    [InlineData(false, 320, 48)]
+    [InlineData(true, 960, 48)]
+    [InlineData(false, 320, 1000000)]
+    public async Task PreferredDimensionsFitCompactAndWideDescendingRows(bool dark, int width, double gap) {
         var source = Source.Replace("config:", "config:\n  theme: " + (dark ? "dark" : "default"))
             .Replace("bitsPerRow: 16", "bitsPerRow: 16\n    bitOrder: descending");
         var parsed = new MermaidParser().ParsePacket(source);
         Assert.Empty(parsed.Diagnostics);
         var block = parsed.Document!.ToPacketLayoutBlock(new MermaidPacketRenderOptions { Width = width, Height = 300 });
         block.Options.ShowCard = false;
+        block.WithFieldGap(gap);
         var fields = Fields(block);
         Assert.All(fields, field => {
             Assert.InRange(Number(field, "x"), 0, width);
@@ -134,6 +139,26 @@ public sealed class MermaidPacketGeometryTests {
         });
         var native = block.ToPng();
         Assert.NotEmpty(native);
+        block.BitOrder = PacketBitOrder.Ascending;
+        var ascending = Fields(block);
+        var rowWidth = Math.Min(24, (width - block.Options.Padding.Left - block.Options.Padding.Right) / 16) * 16;
+        for (var index = 0; index < fields.Length; index++) {
+            Assert.Equal(2 * block.Options.Padding.Left + rowWidth,
+                Number(fields[index], "x") + Number(fields[index], "width") + Number(ascending[index], "x"), 2);
+        }
+        block.BitOrder = PacketBitOrder.Descending;
+        block.WithTransparentBackground();
+        var raster = SvgRasterizer.Rasterize(block.ToSvg(), width, 300);
+        Assert.Empty(raster.Diagnostics);
+        var nativeImage = block.RenderRgba();
+        foreach (var row in fields.Select(field => (int)(Number(field, "y") + Number(field, "height") / 4)).Distinct()) {
+            var expectedInk = Enumerable.Range(0, width).Where(x => raster.Image.Pixels[(row * width + x) * 4 + 3] > 32).ToArray();
+            var actualInk = Enumerable.Range(0, width).Where(x => nativeImage.Pixels[(row * width + x) * 4 + 3] > 32).ToArray();
+            Assert.NotEmpty(expectedInk); Assert.NotEmpty(actualInk);
+            Assert.InRange(actualInk[0] - expectedInk[0], -1, 1);
+            Assert.InRange(actualInk[actualInk.Length - 1] - expectedInk[expectedInk.Length - 1], -1, 1);
+        }
+        block.WithTransparentBackground(false);
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + block.ToSvg() + "</body></html>", width, 300);
         var bounds = await session.Page.EvaluateAsync<string>("() => JSON.stringify([...document.querySelectorAll('[data-cfx-role=packet-field]')].map(n=>n.getBoundingClientRect().toJSON()))");
@@ -142,7 +167,7 @@ public sealed class MermaidPacketGeometryTests {
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(captures)) return;
         Directory.CreateDirectory(captures);
-        var name = "packet-geometry-" + (dark ? "dark-" : "light-") + width;
+        var name = "packet-geometry-" + (dark ? "dark-" : "light-") + width + "-gap-" + gap.ToString(CultureInfo.InvariantCulture);
         await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), native);
     }
