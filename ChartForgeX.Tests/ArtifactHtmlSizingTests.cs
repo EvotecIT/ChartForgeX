@@ -1,6 +1,7 @@
 using ChartForgeX.Mermaid;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
+using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using Microsoft.Playwright;
 using Xunit;
@@ -52,12 +53,17 @@ public sealed class ArtifactHtmlSizingTests {
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task HostCanPreserveAnotherFamilyWithoutChangingItsAutomaticSizing(bool trustedWatermarkedSvg) {
+    [InlineData("chart", false)]
+    [InlineData("chart", true)]
+    [InlineData("topology", false)]
+    [InlineData("topology", true)]
+    public async Task HostCanPreserveAnotherFamilyWithoutChangingItsAutomaticSizing(string family, bool trustedWatermarkedSvg) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var artifact = Chart.Create().WithSize(960, 560).WithTitle("Results")
-            .AddBar("Counts", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) }).ToVisualArtifact();
+        var artifact = family == "topology"
+            ? TopologyChart.Create().WithViewport(960, 560).WithTitle("Service path")
+                .AddAutoNode("A", "Receive").AddAutoNode("B", "Store").AddEdge("link", "A", "B").ToVisualArtifact()
+            : Chart.Create().WithSize(960, 560).WithTitle("Results")
+                .AddBar("Counts", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) }).ToVisualArtifact();
         var defaultHtml = artifact.ToHtmlPage();
         var options = new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize };
         var html = trustedWatermarkedSvg
@@ -66,7 +72,10 @@ public sealed class ArtifactHtmlSizingTests {
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 320, 620);
         Assert.True(await session.Page.Locator(".chartforgex-visual-artifact").EvaluateAsync<bool>("element => element.scrollWidth > element.clientWidth"));
         Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
-        await Capture(session.Page, "artifact-html-preserve-chart-" + trustedWatermarkedSvg + "-320");
+        await Capture(session.Page, "artifact-html-preserve-" + family + "-" + trustedWatermarkedSvg + "-320");
+        await session.Page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = Media.Print });
+        Assert.True(await session.Page.Locator("svg").EvaluateAsync<bool>("element => element.getBoundingClientRect().width <= innerWidth"));
+        await session.Page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = Media.Screen });
         await session.Page.SetContentAsync(defaultHtml);
         Assert.True(await session.Page.Locator("svg").EvaluateAsync<bool>("element => element.getBoundingClientRect().width <= innerWidth"));
         Assert.Equal(defaultHtml, artifact.ToHtmlPage());
