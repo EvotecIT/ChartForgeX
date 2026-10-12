@@ -21,7 +21,8 @@ internal static partial class VisualSankeyCompiler {
         bool showLabels = series.ShowDataLabels != false;
         var styles = model.Nodes.Select(node => ChartRelationshipPaint.LabelStyle(chart, context, node.Index, colors.Foreground)).ToArray();
         var formatted = model.Nodes.Select(node => ChartNumericFormatter.FormatValue(chart.Options, node.Value)).ToArray();
-        var labels = model.Nodes.Select(node => node.Label + " " + formatted[node.Index]).ToArray();
+        var fullLabels = model.Nodes.Select(node => node.Label + " " + formatted[node.Index]).ToArray();
+        var labels = model.Nodes.Select(node => options.ShowValues ? fullLabels[node.Index] : node.Label).ToArray();
         double reserve = showLabels ? Math.Min(plot.Width * .22, model.Nodes.Max(node => builder.MeasureText(labels[node.Index], styles[node.Index]).Width) + 16) : 2;
         var nodePlot = new ChartRect(plot.X + reserve, plot.Y + 1, plot.Width - reserve * 2, Math.Max(1, plot.Height - 2));
         if (nodePlot.Width <= 1) throw new NotSupportedException("Sankey labels require a wider common viewport.");
@@ -56,14 +57,14 @@ internal static partial class VisualSankeyCompiler {
                 metadata["data-cfx-layer"] = N(node.Layer); metadata["data-cfx-value"] = N(node.Value);
                 metadata["data-cfx-order"] = N(node.Order);
                 metadata["data-cfx-incoming"] = N(node.Incoming); metadata["data-cfx-outgoing"] = N(node.Outgoing);
-                metadata["data-cfx-full-label"] = labels[node.Index];
+                metadata["data-cfx-full-label"] = fullLabels[node.Index];
                 metadata["data-cfx-state"] = ChartRelationshipPaint.State(series, node.Index).ToString();
                 using (builder.PushGroup(ChartRelationshipMetadata.SourceId("node", node.Id), "sankey-node", metadata)) {
                     builder.Rect(bounds, color, radius: options.NodeCornerRadius ?? context.Theme.BarRadius, role: "sankey-node-mark", paint: VisualChartPaint.Fill(ChartRelationshipPaint.Paint(series, color, node.Index, neutralDefault: true, fillOverride: options.NodeFill)));
                     var pattern = ChartRelationshipPaint.Pattern(series, node.Index);
                     if (pattern != ChartFillPattern.None) builder.Pattern(Rectangle(bounds), pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sankey-node-pattern");
                 }
-                builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "sankey-node", bounds, labels[node.Index]));
+                builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "sankey-node", bounds, fullLabels[node.Index]));
             }
             if (showLabels) Labels(builder, plot, model, styles, labels, colors, context.Theme.Spacing, options);
         }

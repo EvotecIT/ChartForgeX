@@ -1,0 +1,14 @@
+{
+  "configuration": {
+    "sankey.width": 800,
+    "sankey.height": 480,
+    "sankey.nodeAlignment": "center",
+    "sankey.showValues": false,
+    "sankey.prefix": "$",
+    "sankey.suffix": " units"
+  },
+  "sankey": {
+    "nodes": ["A", "B", "C", "D", "Late", "Early"],
+    "links": [["A", "B", 6], ["B", "C", 6], ["C", "D", 6], ["Late", "D", 4], ["A", "Early", 2]]
+  }
+}
