@@ -12,6 +12,9 @@ public sealed class MermaidGanttCompleteTimestampTests {
     [InlineData("1/2/2026 13:30", "2026-01-02T13:30:00")]
     [InlineData("2026/1/2 13:30:15", "2026-01-02T13:30:15")]
     [InlineData("1-2-2026 13:30 +02:00", "2026-01-02T11:30:00")]
+    [InlineData("Friday, 02 January 2026", "2026-01-02T00:00:00")]
+    [InlineData("Fri, 02 Jan 2026 13:30", "2026-01-02T13:30:00")]
+    [InlineData("Friday, January 2, 2026, 1:30 PM +02:00", "2026-01-02T11:30:00")]
     public void CompleteFallbackDatesRetainAuthoredTimeWithoutClockDefaults(string input, string expected) {
         var parsed = new MermaidParser().ParseGantt("gantt\nTask :" + input + ",1h");
         Assert.Empty(parsed.Diagnostics);

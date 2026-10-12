@@ -18,7 +18,11 @@ internal static partial class MermaidGanttInputDateFormat {
 
     private static readonly string[] CompleteNonIsoDates = {
         "MMMM d yyyy", "MMM d yyyy", "MMMM d, yyyy", "MMM d, yyyy", "d MMMM yyyy", "d MMM yyyy",
-        "M/d/yyyy", "M-d-yyyy", "yyyy/M/d"
+        "M/d/yyyy", "M-d-yyyy", "yyyy/M/d",
+        "dddd, d MMMM yyyy", "dddd, d MMM yyyy", "ddd, d MMMM yyyy", "ddd, d MMM yyyy",
+        "dddd, MMMM d, yyyy", "dddd, MMM d, yyyy", "ddd, MMMM d, yyyy", "ddd, MMM d, yyyy",
+        "dddd d MMMM yyyy", "dddd d MMM yyyy", "ddd d MMMM yyyy", "ddd d MMM yyyy",
+        "dddd MMMM d yyyy", "dddd MMM d yyyy", "ddd MMMM d yyyy", "ddd MMM d yyyy"
     };
     private static readonly string[] CompleteTimeSuffixes = {
         " H:mm", " H:mm:ss", " H:mm:ss.FFFFFFF", " h:mm tt", " h:mm:ss tt", " h:mm:ss.FFFFFFF tt",
@@ -30,10 +34,12 @@ internal static partial class MermaidGanttInputDateFormat {
     internal static bool TryParseCompleteFallback(string input, out DateTime value) {
         foreach (var format in CompleteDateFallbacks)
             if (TryParseNative(input, format, out value, null, allowWhiteSpaces: true)) return true;
-        foreach (var date in CompleteNonIsoDates)
+        foreach (var date in CompleteNonIsoDates) {
+            if (TryParseNative(input, date, out value, null, allowWhiteSpaces: true)) return true;
             foreach (var time in CompleteTimeSuffixes)
                 if (TryParseNative(input, date + time, out value, null, allowWhiteSpaces: true)
                     || TryParseNative(input, date + "," + time, out value, null, allowWhiteSpaces: true)) return true;
+        }
         value = default;
         return false;
     }

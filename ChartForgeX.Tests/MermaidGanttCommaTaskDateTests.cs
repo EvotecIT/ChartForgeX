@@ -11,6 +11,8 @@ public sealed class MermaidGanttCommaTaskDateTests {
     [InlineData("January 4 2026, 13:00", "active,")]
     [InlineData("January 4, 2026, 13:00", "")]
     [InlineData("January 4, 2026, 13:00", "active,")]
+    [InlineData("Sunday, 04 January 2026 13:00", "")]
+    [InlineData("Sun, Jan 4, 2026, 13:00", "active,")]
     public void CompleteFallbackEndTimestampKeepsTheImplicitStart(string timestamp, string tags) {
         var parsed = new MermaidParser().ParseGantt("gantt\nFirst :first,2026-01-02,1d\nSecond :" + tags + timestamp);
         Assert.Empty(parsed.Diagnostics);

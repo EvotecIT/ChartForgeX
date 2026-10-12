@@ -131,8 +131,8 @@ internal static partial class MermaidGanttParser {
 
     private static List<string> SplitMetadata(string text, MermaidGanttDocument document) {
         var chunks = text.Split(',');
-        // Complete English timestamps can contain a date comma and a date/time separator.
-        var maximumCommas = 2;
+        // Complete English timestamps can contain weekday, date and date/time commas.
+        var maximumCommas = 3;
         if (document.DateFormat.Length <= 256) {
             try { maximumCommas = Math.Max(maximumCommas, MermaidGanttInputDateFormat.CalendarCommaCount(document.DateFormat)); }
             catch (FormatException) { /* Complete-date fallbacks can still parse an unused invalid format. */ }
