@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using ChartForgeX.Core;
@@ -155,22 +154,6 @@ public sealed partial class MermaidParser {
         }
     }
 
-    private static double? ReadConfigurationFontSize(MermaidConfigurationSetting? setting, MermaidParseResult<MermaidDocument> result, out bool invalid) {
-        invalid = false;
-        if (setting == null) return null;
-        var value = setting.Value?.Trim();
-        if (setting.TryGetNumber(out var numeric) &&
-            numeric >= 1 && numeric <= 256) return numeric;
-        if (value != null && value.Length <= 32 &&
-            Regex.IsMatch(value, @"^\+?(?:[0-9]*\.[0-9]+|[0-9]+)(?:[eE][+-]?[0-9]+)?(?:px)?$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) &&
-            double.TryParse(value.EndsWith("px", StringComparison.OrdinalIgnoreCase) ? value.Substring(0, value.Length - 2) : value,
-                NumberStyles.Float, CultureInfo.InvariantCulture, out var size) && size >= 1 && size <= 256) return size;
-        if (setting.IsString && value != null && value.Length <= 4096 &&
-            Regex.IsMatch(value, @"^(?:\+?(?:[0-9]*\.[0-9]+|[0-9]+)(?:[eE][+-]?[0-9]+)?(?:r?(?:em|ex|cap|ch|ic|lh)|pt|pc|in|cm|mm|q|[sld]?v(?:h|w|i|b|min|max)|cq(?:h|w|i|b|min|max)|%)|(?:calc|var|min|max|clamp|env)\(.+\)|xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger|math|inherit|initial|unset|revert|revert-layer)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline)) return null;
-        invalid = true;
-        ConfigurationError(result, setting.Span, "Mermaid configuration 'themeVariables.fontSize' must be a pixel size from 1 through 256, such as 18 or '18px'.");
-        return null;
-    }
 
     private static string? ConfigurationScope(MermaidDiagramKind kind) => kind switch {
         MermaidDiagramKind.Flowchart => "flowchart", MermaidDiagramKind.Swimlane => "swimlane", MermaidDiagramKind.UseCase => "usecase",
