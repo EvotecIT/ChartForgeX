@@ -121,7 +121,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact SVG should expose a host-inspectable watermark layer.");
         Assert(svg.Contains("CONFIDENTIAL", StringComparison.Ordinal) && svg.Contains("rotate(-28", StringComparison.Ordinal), "Artifact SVG should preserve text and rotation.");
         Assert(html.Contains("data-cfx-role=\"watermark\"", StringComparison.Ordinal), "Artifact HTML should embed the same decorated SVG contract.");
-        Assert(html.Contains(".chartforgex-visual-artifact svg{display:block;max-width:100%;height:auto;overflow:hidden}", StringComparison.Ordinal), "Watermarked artifact HTML should clip rotated and repeated SVG marks to the root viewport.");
+        Assert(html.Contains(".chartforgex-visual-artifact>svg{display:block;max-width:100%;height:auto;overflow:hidden}", StringComparison.Ordinal), "Watermarked artifact HTML should clip rotated and repeated SVG marks to the root viewport.");
         Assert(html.Contains("<html lang=\"pl-PL\">", StringComparison.Ordinal), "Watermarked artifact HTML should preserve the envelope language.");
         Assert(Encoding.ASCII.GetString(png).Contains("pHYs", StringComparison.Ordinal), "Artifact PNG should encode requested physical DPI metadata.");
         Assert(!plain.Pixels.SequenceEqual(decorated.Pixels), "Artifact PNG watermarking should modify visible pixels.");
