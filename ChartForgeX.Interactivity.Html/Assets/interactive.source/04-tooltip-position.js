@@ -8,7 +8,10 @@
     bottom: [0, 1], 'bottom-left': [-1, 1], left: [-1, 0], 'top-left': [-1, -1]
   };
   const unwatchTooltipPositionTrees = () => {
-    for (const tree of tooltipPositionTrees) tree.removeEventListener('scroll', queueTooltipPositionRefresh, true);
+    for (const tree of tooltipPositionTrees) {
+      tree.removeEventListener('scroll', queueTooltipPositionRefresh, true);
+      tree.removeEventListener('transitionend', queueTooltipPositionRefresh, true);
+    }
     tooltipPositionTrees.clear();
   };
   const forgetTooltipPosition = (tip) => {
@@ -30,7 +33,6 @@
     if (tooltipPositionObserver) { tooltipPositionObserver.disconnect(); tooltipPositionObserver = null; unwatchTooltipPositionTrees(); }
     if (tooltipPositionResize) { tooltipPositionResize.disconnect(); tooltipPositionResize = null; }
     window.removeEventListener('resize', queueTooltipPositionRefresh);
-    document.removeEventListener('transitionend', queueTooltipPositionRefresh, true);
     if (tooltipPositionFrame) { cancelAnimationFrame(tooltipPositionFrame); tooltipPositionFrame = 0; }
   };
   const tooltipSourceRect = (node) => {
@@ -111,8 +113,9 @@
       if (tooltipPositionTrees.has(tree)) continue;
       tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
         attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
-      // Native scroll does not cross a shadow boundary. Own it alongside that tree's mutation observer.
+      // Native geometry events do not cross a shadow boundary. Own them alongside the tree's observer.
       tree.addEventListener('scroll', queueTooltipPositionRefresh, true);
+      tree.addEventListener('transitionend', queueTooltipPositionRefresh, true);
       tooltipPositionTrees.add(tree);
     }
   };
@@ -122,7 +125,6 @@
     if (!tooltipPositionObserver) {
       // Shared listeners exist only while a readout is visible, including pointer and pinned readouts.
       window.addEventListener('resize', queueTooltipPositionRefresh);
-      document.addEventListener('transitionend', queueTooltipPositionRefresh, true);
       tooltipPositionObserver = new MutationObserver(checkTooltipPositionMutations);
       if (typeof ResizeObserver !== 'undefined') tooltipPositionResize = new ResizeObserver(queueTooltipPositionRefresh);
     }
