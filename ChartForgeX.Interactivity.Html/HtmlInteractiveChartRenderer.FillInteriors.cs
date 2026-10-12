@@ -11,7 +11,7 @@ namespace ChartForgeX.Interactivity.Html;
 public sealed partial class HtmlInteractiveChartRenderer {
     // Scalar fills already contain flattened native contours. Interior witnesses are adapter
     // metadata only: live native fill, clipping and paint remain the browser's authority.
-    // Non-paint area-segment ranges use the same observation indexes as point groups,
+    // Non-paint fill-segment ranges use the same observation indexes as point groups,
     // so a repeated coordinate never makes another disconnected path an owner.
     private static Dictionary<string, List<ChartRect>> PreparedFillInteriors(PreparedVisual prepared) {
         var results = new Dictionary<string, List<ChartRect>>(StringComparer.Ordinal);
@@ -36,9 +36,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
                     owner = group.Metadata.TryGetValue("data-cfx-kind", out var kind)
                         && (kind == "Area" || kind == "StepArea" || kind == "StackedArea") ? group.Id : null;
                     segment = null;
-                } else if (group.Role == "area-segment") {
-                    segment = group.Metadata.TryGetValue("data-cfx-area-point-start", out var start)
-                        && group.Metadata.TryGetValue("data-cfx-area-point-count", out var count)
+                } else if (group.Role == "fill-segment") {
+                    segment = group.Metadata.TryGetValue("data-cfx-fill-point-start", out var start)
+                        && group.Metadata.TryGetValue("data-cfx-fill-point-count", out var count)
                         && int.TryParse(start, NumberStyles.None, CultureInfo.InvariantCulture, out var first)
                         && int.TryParse(count, NumberStyles.None, CultureInfo.InvariantCulture, out var length)
                         && length > 0 ? (first, length) : null;

@@ -241,7 +241,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         int seriesIndex = 0, string? expectedReadout = null, bool captureScalarInk = false) {
         // Hide only native boundaries. Transparent browser targets must not establish mark ink.
         var css = "[data-cfx-role='line'],[data-cfx-role^='range-upper'],[data-cfx-role^='range-lower'],[data-cfx-role='range-midline']{stroke:none!important}";
-        if (patternOnly) css += "[data-cfx-role='area'],[data-cfx-role='range-area']{fill:none!important}";
+        if (patternOnly) css += "[data-cfx-role='area'],[data-cfx-role='range-area'],[data-cfx-role='range-band'],[data-cfx-role='difference-positive'],[data-cfx-role='difference-negative']{fill:none!important}";
         if (hideBase) css += "[data-cfx-role='range-area']{display:none!important}";
         if (envelopeStroke) css += "[data-cfx-role='area']{fill:none!important;stroke:#DF3040!important;stroke-width:2!important}";
         var html = chart.ToInteractiveHtmlPage().Replace("</head>", "<style>" + css + "</style></head>", StringComparison.Ordinal);

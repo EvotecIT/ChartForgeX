@@ -57,6 +57,50 @@ public sealed partial class CartesianFillObservationBrowserTests {
             $"scalar-disconnected-painted-{kind}", expectedReadout: "2");
     }
 
+    [Theory]
+    [InlineData(ChartSeriesKind.RangeArea, false)]
+    [InlineData(ChartSeriesKind.RangeBand, false)]
+    [InlineData(ChartSeriesKind.DifferenceArea, false)]
+    [InlineData(ChartSeriesKind.RangeArea, true)]
+    [InlineData(ChartSeriesKind.RangeBand, true)]
+    [InlineData(ChartSeriesKind.DifferenceArea, true)]
+    public async Task DisconnectedPairedObservationCannotBorrowAnotherSegmentsNativeFill(ChartSeriesKind kind, bool patternOnly) {
+        if (!Enabled) return;
+        var chart = BrokenPairedChart(kind);
+        if (patternOnly) chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        await AssertAvailabilityAsync(chart, 4, false, $"paired-disconnected-{kind}-{patternOnly}", patternOnly);
+    }
+
+    [Theory]
+    [InlineData(ChartSeriesKind.RangeArea)]
+    [InlineData(ChartSeriesKind.RangeBand)]
+    [InlineData(ChartSeriesKind.DifferenceArea)]
+    public async Task PaintedPairedObservationAfterABreakKeepsItsOwnSegment(ChartSeriesKind kind) {
+        if (!Enabled) return;
+        await AssertAvailabilityAsync(BrokenPairedChart(kind), 5, true,
+            $"paired-disconnected-painted-{kind}", expectedReadout: "2");
+    }
+
+    private static Chart BrokenPairedChart(ChartSeriesKind kind) {
+        var ranges = new[] {
+            new ChartRangeBand(0, 6, 8), new ChartRangeBand(.05, 6, 8), new ChartRangeBand(.1, 1, 2),
+            new ChartRangeBand(2, 1, 2), new ChartRangeBand(.025, 6, 8), new ChartRangeBand(1, 1, 2), new ChartRangeBand(2, 1, 2)
+        };
+        var chart = kind == ChartSeriesKind.DifferenceArea
+            ? Frame().AddDifferenceArea("Observed", ranges.Select(range => new ChartDifferencePoint(range.X, range.Upper, range.Lower)))
+            : Range(kind, ranges);
+        for (var index = 8; index <= 9; index++) {
+            var point = chart.Series[0].Points[index];
+            chart.Series[0].Points[index] = new ChartPoint(point.X, point.Y, true);
+        }
+        Configure(chart, ChartStepPosition.Start);
+        if (kind == ChartSeriesKind.DifferenceArea) chart.Series[0].WithColor(ChartColor.Transparent).ConfigureDifferenceArea(options => {
+            options.PositiveFill = ChartColor.FromHex("#DF3040"); options.NegativeFill = ChartColor.FromHex("#305CDF");
+            options.PositiveFillOpacity = .8; options.NegativeFillOpacity = .8;
+        });
+        return chart;
+    }
+
     private static Chart BrokenScalarChart(ChartSeriesKind kind, bool terminal) {
         var points = new List<ChartPoint> {
             new(0, 8), new(.05, 8), new(.1, 2), new(2, 2), new(.025, 8, true)
