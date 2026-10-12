@@ -518,6 +518,16 @@ dotnet run --project .\ChartForgeX.Markup.Cli\ChartForgeX.Markup.Cli.csproj -c R
 dotnet run --project .\ChartForgeX.Markup.Cli\ChartForgeX.Markup.Cli.csproj -c Release -- emit .\diagram.md --target csharp --output .\diagram.cs
 ```
 
+For Mermaid Gantt input formats without a year, pass an explicit calendar date to each rendering command:
+
+```powershell
+chartforgex-markup validate ./schedule.md --gantt-date-anchor 2028-01-01
+chartforgex-markup preview ./schedule.md --gantt-date-anchor 2028-01-01 --output ./schedule.html
+chartforgex-markup export ./schedule.md --gantt-date-anchor 2028-01-01 --output ./schedule.png
+```
+
+The option accepts a complete `YYYY-MM-DD` date. Invalid or missing option values return exit code 1; source dates that need an omitted anchor return exit code 2. VS Code uses the resource setting `chartforgexMarkup.ganttDateAnchor` for the same commands.
+
 ## VS Code extension
 
 `ChartForgeX.Markup.VSCode` follows the same CLI-backed packaging model as `OfficeIMO.Markup.VSCode`. The extension shell stays thin: VS Code handles activation, commands, diagnostics, preview panels, and save dialogs, while `ChartForgeX.Markup.Cli` owns parsing, validation, rendering, export, and C# code generation.

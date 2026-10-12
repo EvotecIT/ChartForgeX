@@ -156,11 +156,11 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Contains("gantt-now-line", plain.ToSvg(new MermaidGanttRenderOptions { Today = Start.AddDays(1) }));
         var off = parser.ParseGantt("gantt\ntodayMarker off\nTask :2026-01-01,4d").Document!;
         Assert.DoesNotContain("gantt-now-line", off.ToSvg(new MermaidGanttRenderOptions { Today = Start.AddDays(1) }));
-        var style = parser.ParseGantt("gantt\ntodayMarker stroke:#ff0000,stroke-width:3px\nTask :2026-01-01,4d");
+        var style = parser.ParseGantt("gantt\ntodayMarker filter:blur(2px)\nTask :2026-01-01,4d");
         var warning = Assert.Single(style.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.UnsupportedStatement);
         Assert.Equal(MermaidDiagnosticSeverity.Warning, warning.Severity);
         Assert.Equal(2, warning.Span.Line);
-        Assert.Equal("todayMarker stroke:#ff0000,stroke-width:3px", Assert.Single(style.Document!.RawStatements).Text);
+        Assert.Equal("todayMarker filter:blur(2px)", Assert.Single(style.Document!.RawStatements).Text);
     }
 
     [Theory]

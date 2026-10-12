@@ -242,6 +242,12 @@
           "default": "",
           "description": "Optional path to a ChartForgeX.Markup.Cli executable, DLL, or csproj. Empty uses the bundled CLI, then source-tree fallbacks."
         },
+        "chartforgexMarkup.ganttDateAnchor": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "Calendar date in YYYY-MM-DD format for Mermaid Gantt dates without a year. Empty requires complete dates in the source."
+        },
         "chartforgexMarkup.validateDebounceMs": {
           "type": "number",
           "default": 650,
