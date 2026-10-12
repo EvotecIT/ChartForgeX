@@ -11,6 +11,23 @@ namespace ChartForgeX.Tests;
 
 public sealed class NativeTopologyCaptionFootprintTests {
     [Theory]
+    [InlineData(48)]
+    [InlineData(155.2)]
+    public void GeographicCalloutObstaclesReserveBothPreservedIconAndCaption(double width) {
+        var node = new TopologyNode { Id = "api", Label = "Payments API", X = 32, Y = 40, Width = width, Height = 42,
+            DisplayMode = TopologyNodeDisplayMode.Icon, PreserveDisplayModeSize = true };
+        var options = new TopologyRenderOptions { IncludeIconLabels = true };
+        var obstacle = TopologyGeographicCallouts.CalloutBox.FromNodeVisual(node, options);
+        var paintedNode = TopologyGeographicCallouts.CalloutBox.FromRect(node.X, node.Y, node.Width, node.Height);
+        Assert.Equal(node.Width * node.Height, obstacle.OverlapArea(paintedNode), 6);
+        var plateWidth = TopologyRenderPrimitives.IconLabelPlateWidth(node);
+        var plateHeight = TopologyRenderPrimitives.IconLabelPlateHeight(node);
+        var paintedPlate = TopologyGeographicCallouts.CalloutBox.FromRect(node.X + node.Width / 2 - plateWidth / 2,
+            TopologyRenderPrimitives.IconLabelPlateY(node), plateWidth, plateHeight);
+        Assert.Equal(plateWidth * plateHeight, obstacle.OverlapArea(paintedPlate), 6);
+    }
+
+    [Theory]
     [InlineData(false, true)]
     [InlineData(true, false)]
     public void DetailedCardFitsItsHeaderAndOnlyPaintsADividerWithACompleteDetailLine(bool preserveSize, bool detailFits) {
