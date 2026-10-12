@@ -34,8 +34,10 @@ public sealed class MermaidFontRadarCompositionTests {
         }
         if (invalid) { Assert.Null(direct.Artifact); Assert.Empty(fenced.Artifacts); return; }
         var artifact = Assert.Single(fenced.Artifacts);
-        Assert.Equal(direct.Artifact!.ToSvg(), artifact.ToSvg());
-        Assert.Equal(direct.Artifact.ToPng(), artifact.ToPng());
+        Assert.NotNull(direct.Artifact);
+        var expected = direct.Artifact!;
+        Assert.Equal(expected.ToSvg(), artifact.ToSvg());
+        Assert.Equal(expected.ToPng(), artifact.ToPng());
         var curve = XDocument.Parse(artifact.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "radar-outline");
         Assert.Contains("C", curve.Attribute("d")!.Value);
     }
