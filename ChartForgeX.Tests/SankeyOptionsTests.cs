@@ -14,6 +14,7 @@ public sealed class SankeyOptionsTests {
     [InlineData(ChartSankeyAlignment.Right, 0, 1, 2, 3, 3, 2, 2, 3)]
     [InlineData(ChartSankeyAlignment.Center, 0, 1, 2, 3, 2, 1, 1, 2)]
     [InlineData(ChartSankeyAlignment.Justify, 0, 1, 2, 3, 3, 0, 0, 3)]
+    [InlineData(ChartSankeyAlignment.CenterSources, 0, 1, 2, 3, 1, 2, 0, 1)]
     public void UnequalPathsUseTheSelectedLayersAndOneTruthfulFlowScale(ChartSankeyAlignment alignment, params int[] layers) {
         var chart = UnequalPaths().ConfigureSankey(options => { options.Alignment = alignment; options.NodeWidth = 18; options.NodeGap = 24; });
         var nodes = chart.Series[0].Nodes.ToArray(); var flows = chart.Series[0].FlowLinks.ToArray();

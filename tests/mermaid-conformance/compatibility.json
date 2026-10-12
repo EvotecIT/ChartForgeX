@@ -15,93 +15,6 @@
     }
   },
   "fixtures": {
-    "fixtures/theme-variable-font-layers.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
-    },
-    "fixtures/theme-variable-font.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored font configuration regression from https://mermaid.js.org/config/theming.html; the pinned references retain global and theme-variable font values independently."
-    },
-    "fixtures/sequence-presentation.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored sequence participants/messages and legacy source presentation case from the official sequence and configuration contracts."
-    },
-    "fixtures/state-floating-note.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored regression for the pinned state grammar's floating-note production, case-insensitive direction and bare direction identifier."
-    },
-    "fixtures/er-lowercase-direction.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored regression for the pinned ER grammar's lowercase direction and bare direction identifier.",
-      "expectedByReference": {
-        "10": "er-lowercase-direction.expected.10.json"
-      },
-      "notes": {
-        "10": "The pinned Mermaid 10 ER grammar treats direction and bt as entities; ChartForgeX follows the current 11/12 direction semantics."
-      }
-    },
-    "fixtures/class-retained-interactions.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored class direction, note and interaction case from the official Mermaid syntax reference."
-    },
-    "fixtures/er-retained-styles.mmd": {
-      "syntax": {
-        "10": "rejected",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored ER direction, class and style case from the official Mermaid syntax reference.",
-      "notes": {
-        "10": "The pinned Mermaid 10 ER grammar rejects these style declarations."
-      }
-    },
-    "fixtures/state-retained-note.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored multiline state-note regression from the official Mermaid note syntax."
-    },
-    "fixtures/er-retained-subgraph.mmd": {
-      "syntax": {
-        "10": "accepted",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored ER subgraph and local-direction case from the official Mermaid syntax reference.",
-      "expectedByReference": {
-        "10": "er-retained-subgraph.expected.10.json"
-      },
-      "notes": {
-        "10": "The pinned Mermaid 10 grammar treats direction, subgraph and end words as entity names; ChartForgeX follows the current 11/12 notation semantics."
-      }
-    },
     "fixtures/configuration-precedence.mmd": {
       "syntax": {
         "10": "accepted",
@@ -572,13 +485,68 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
-    "fixtures/gantt-forward-after.mmd": {
+    "fixtures/state-floating-note.mmd": {
       "syntax": {
         "10": "accepted",
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored forward and multiple after-reference regression from https://mermaid.js.org/syntax/gantt.html; resolved dates verified against all three pinned reference engines."
+      "provenance": "Authored regression for the pinned state grammar's floating-note production, case-insensitive direction and bare direction identifier."
+    },
+    "fixtures/er-lowercase-direction.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored regression for the pinned ER grammar's lowercase direction and bare direction identifier.",
+      "expectedByReference": {
+        "10": "er-lowercase-direction.expected.10.json"
+      },
+      "notes": {
+        "10": "The pinned Mermaid 10 ER grammar treats direction and bt as entities; ChartForgeX follows the current 11/12 direction semantics."
+      }
+    },
+    "fixtures/class-retained-interactions.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored class direction, note and interaction case from the official Mermaid syntax reference."
+    },
+    "fixtures/er-retained-styles.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ER direction, class and style case from the official Mermaid syntax reference.",
+      "notes": {
+        "10": "The pinned Mermaid 10 ER grammar rejects these style declarations."
+      }
+    },
+    "fixtures/state-retained-note.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored multiline state-note regression from the official Mermaid note syntax."
+    },
+    "fixtures/er-retained-subgraph.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ER subgraph and local-direction case from the official Mermaid syntax reference.",
+      "expectedByReference": {
+        "10": "er-retained-subgraph.expected.10.json"
+      },
+      "notes": {
+        "10": "The pinned Mermaid 10 grammar treats direction, subgraph and end words as entity names; ChartForgeX follows the current 11/12 notation semantics."
+      }
     },
     "fixtures/radar-capped-circle.mmd": {
       "syntax": {
@@ -628,6 +596,60 @@
       },
       "provenance": "https://mermaid.js.org/syntax/radar.html: zero hides concentric guides while preserving axes, observations and source configuration; pinned Mermaid 11 and 12 accept the case."
     },
+    "fixtures/sequence-presentation.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored sequence participants/messages and legacy source presentation case from the official sequence and configuration contracts."
+    },
+    "fixtures/treemap-grouped-values.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored comma-separated treemap values, qualified against pinned official Mermaid parsers. The reference removes comma separators, including nonstandard grouping. Typed node magnitudes and parent indices are compared without relying on native hierarchy layout."
+    },
+    "fixtures/sankey-source-options.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored source settings and flow facts from the official Mermaid Sankey configuration and syntax documentation; checked with pinned reference parsers.",
+      "expectedByReference": {
+        "10": "sankey-source-options.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10.9.8 drops nodeWidth and nodePadding from effective configuration. Other retained settings and node/flow facts are compared; pixel equality is not claimed. ChartForgeX applies the documented current node geometry options."
+      }
+    },
+    "fixtures/theme-variable-font-layers.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
+    },
+    "fixtures/theme-variable-font.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored font configuration regression from https://mermaid.js.org/config/theming.html; the pinned references retain global and theme-variable font values independently."
+    },
+    "fixtures/gantt-forward-after.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored forward and multiple after-reference regression from https://mermaid.js.org/syntax/gantt.html; resolved dates verified against all three pinned reference engines."
+    },
     "fixtures/gantt-axis-format.mmd": {
       "syntax": {
         "10": "accepted",
@@ -639,14 +661,6 @@
         "https://github.com/d3/d3-time-format"
       ]
     },
-    "fixtures/treemap-grouped-values.mmd": {
-      "syntax": {
-        "10": "rejected",
-        "11": "accepted",
-        "12": "accepted"
-      },
-      "provenance": "Authored comma-separated treemap values, qualified against pinned official Mermaid parsers. The reference removes comma separators, including nonstandard grouping. Typed node magnitudes and parent indices are compared without relying on native hierarchy layout."
-    },
     "fixtures/treemap-visibility.mmd": {
       "syntax": {
         "10": "rejected",
@@ -654,6 +668,28 @@
         "12": "accepted"
       },
       "provenance": "Source value visibility from https://mermaid.js.org/syntax/treemap.html; typed configuration and hierarchy magnitudes are independent of caption presentation."
+    },
+    "fixtures/gantt-tick-interval.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html and https://d3js.org/d3-time#interval_every: authored weekly ticks and UTC calendar boundary cases"
+    },
+    "fixtures/gantt-vertical-marker.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "expectedByReference": {
+        "10": "gantt-vertical-marker.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10 treats vert as an ordinary task id; current 11/12 interpretation is a vertical marker without a task row."
+      },
+      "provenance": "https://mermaid.js.org/syntax/gantt.html#vertical-markers: authored marker scheduling range and explicit off directive"
     }
   }
 }
