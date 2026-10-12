@@ -19,8 +19,10 @@ public static class MermaidSankeyRendering {
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(options))
             .WithSubtitle(ResolveSubtitle(document, options))
-            .WithSize(options.Width, options.Height)
+            .WithSize(options.Width ?? document.Configuration.Sankey?.Width ?? 960,
+                options.Height ?? document.Configuration.Sankey?.Height ?? 560)
             .AddSankey(string.IsNullOrWhiteSpace(options.SeriesName) ? "Flow" : options.SeriesName!, ToNodes(document), ToLinks(document));
+        document.Configuration.Sankey?.Apply(chart);
         return MermaidPresentation.Apply(chart, document);
     }
 
@@ -94,9 +96,9 @@ public sealed class MermaidSankeyRenderOptions {
     /// <summary>Gets or sets the chart series name.</summary>
     public string? SeriesName { get; set; }
 
-    /// <summary>Gets or sets the natural preview width.</summary>
-    public int Width { get; set; } = 960;
+    /// <summary>Gets or sets a host width override. Null uses source configuration or the 960-pixel fallback.</summary>
+    public int? Width { get; set; }
 
-    /// <summary>Gets or sets the natural preview height.</summary>
-    public int Height { get; set; } = 560;
+    /// <summary>Gets or sets a host height override. Null uses source configuration or the 560-pixel fallback.</summary>
+    public int? Height { get; set; }
 }
