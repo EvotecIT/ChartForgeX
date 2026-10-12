@@ -1,25 +1,25 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
-using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
 /// <summary>Fits each painted extent to its own coordinate while preserving automatic axis bounds.</summary>
 internal sealed class VisualAxisPaintBounds {
-    private readonly List<ChartPoint> _extents = new List<ChartPoint>();
+    // At a shared radius, only the extreme coordinates can constrain either side.
+    // Ordinary line/scatter series therefore retain two coordinates per marker size.
+    private readonly Dictionary<double, CoordinateBounds> _extents = new Dictionary<double, CoordinateBounds>();
 
     internal void Include(double value, double radius) {
-        if (ChartMath.IsFinite(value) && ChartMath.IsFinite(radius) && radius > 0)
-            _extents.Add(new ChartPoint(value, radius));
+        if (!ChartMath.IsFinite(value) || !ChartMath.IsFinite(radius) || radius <= 0) return;
+        if (_extents.TryGetValue(radius, out var bounds))
+            _extents[radius] = new CoordinateBounds(Math.Min(bounds.Minimum, value), Math.Max(bounds.Maximum, value));
+        else _extents.Add(radius, new CoordinateBounds(value, value));
     }
 
     internal bool HasFullWidthConflict(double pixels) {
-        double? center = null;
         foreach (var extent in _extents) {
-            if (extent.Y * 2 != pixels) continue;
-            if (center.HasValue && center.Value != extent.X) return true;
-            center = extent.X;
+            if (extent.Key * 2 == pixels && extent.Value.Minimum != extent.Value.Maximum) return true;
         }
         return false;
     }
@@ -55,14 +55,20 @@ internal sealed class VisualAxisPaintBounds {
             var upper = fixedMaximum ? maximum - span : minimum;
             foreach (var extent in _extents) {
                 // An uncontainable mark clips independently; it must not cancel other marks' gutters.
-                if (extent.Y * 2 > pixels || fullWidthConflict && extent.Y * 2 == pixels) continue;
-                var fraction = extent.Y / pixels;
+                if (extent.Key * 2 > pixels || fullWidthConflict && extent.Key * 2 == pixels) continue;
+                var fraction = extent.Key / pixels;
                 // An authored bound is a clipping boundary, so only the other side expands.
-                if (!fixedMaximum) lower = Math.Max(lower, extent.X - (1 - fraction) * span);
-                if (!fixedMinimum) upper = Math.Min(upper, extent.X - fraction * span);
+                if (!fixedMaximum) lower = Math.Max(lower, extent.Value.Maximum - (1 - fraction) * span);
+                if (!fixedMinimum) upper = Math.Min(upper, extent.Value.Minimum - fraction * span);
             }
             position = upper;
             return lower <= upper;
         }
+    }
+
+    private readonly struct CoordinateBounds {
+        internal double Minimum { get; }
+        internal double Maximum { get; }
+        internal CoordinateBounds(double minimum, double maximum) { Minimum = minimum; Maximum = maximum; }
     }
 }
