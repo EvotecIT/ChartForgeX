@@ -57,7 +57,7 @@ if (!result.HasErrors && result.Artifact != null) {
 }
 ```
 
-Inspect `Diagnostics` even when rendering succeeds: warnings identify syntax or configuration retained without exact visual interpretation. `accTitle` and single-line or multiline `accDescr` provide accessible names and descriptions. The `dark` and `default` source themes select static palettes. Source font stacks reach chart, topology and visual-block owners; native font resolution uses the existing fallback rules and does not fetch remote fonts. Other themes and settings produce approximation warnings; sequence previews retain their fixed palette and font.
+Inspect `Diagnostics` even when rendering succeeds: warnings identify syntax or configuration retained without exact visual interpretation. `accTitle` and single-line or multiline `accDescr` provide accessible names and descriptions. The `dark` and `default` source themes select static palettes. Source font stacks reach chart, topology, sequence and visual-block owners; native font resolution uses the existing fallback rules and does not fetch remote fonts. Other themes and settings produce approximation warnings.
 
 `MermaidRenderOptions` lives in `ChartForgeX.Mermaid` and supplies family defaults to both the source renderer and `MermaidVisualMarkupParser`. Replace the former `ChartForgeX.Markup.Mermaid.MermaidVisualMarkupRenderOptions` type with this shared type when migrating source code.
 
@@ -648,6 +648,10 @@ var png = document.ToPng();
 
 The conversion target for sequence diagrams is `SequenceArtifact`. Participants, aliases, participant kinds, messages, notes, activations, block spans, autonumber settings, source lines, and actor links are retained as model data or metadata where the reusable artifact can carry them.
 
+Source `dark`/`default` themes and font stacks become authored `SequenceArtifact.Theme` and `ThemeMode` defaults for SVG, PNG and HTML exports. The native sequence owner accepts the shared immutable `VisualTheme`, including its typography scale. A host that calls `Prepare(VisualRenderContext)` supplies the complete presentation for that prepared scene; its theme, mode and font take precedence over authored defaults. The portable envelope records the resolved colors and font used by the prepared scene. Authored envelopes record the model defaults. Source theme variables and broader sequence configuration retain diagnostics until they have native mappings.
+
+Static HTML scales the natural SVG to the page width. Wide sequence diagrams can therefore have very small labels on compact pages. Hosts can supply an explicit viewport and typography when preparing their scene; source presentation alone does not provide responsive reflow.
+
 ## Pie Charts
 
 Pie diagrams are parsed into `MermaidPieDocument` and converted to native ChartForgeX pie charts.
@@ -966,6 +970,20 @@ var png = document.ToPng();
 Comma-separated treemap values retain the magnitude used by the pinned Mermaid parsers: `1,234.5` represents `1234.5`. Commas are separators rather than decimal marks, independently of the host culture. Nonstandard groupings such as `1,23.5` and repeated separators follow that same reference behavior. Zero-valued nodes remain available in the hierarchy and descriptive metadata.
 
 The conversion target for treemap diagrams is `Chart`. Section nodes retain nested parent rectangles and measured headers, and their areas aggregate leaf sizes. Native group and leaf captions display the authored labels and formatted magnitudes when space permits. Distinct source-order IDs keep repeated labels independent; display labels remain unchanged. The typed AST retains class suffixes, and artifact metadata retains node, leaf, root, and class counts. Class-to-paint styling remains a host policy.
+
+Set `config.treemap.showValues: false` in frontmatter, or the equivalent legacy directive, to keep group and leaf labels while hiding their displayed magnitudes. Values, parent relationships, descriptive text and semantic metadata remain available. `MermaidTreemapRenderOptions.ShowValues` is a nullable host override: `null` uses the source setting or the native default, and an explicit `true` or `false` wins over source configuration. Markdown parsers capture that override when constructed. Native callers use `chart.ConfigureTreemap(options => options.ShowValues = false)`; ordinary data-label visibility still controls whether captions are drawn at all.
+
+```mermaid
+---
+config:
+  treemap:
+    showValues: false
+---
+treemap-beta
+"Storage"
+  "Documents": 1,234.5
+  "Media": 765.5
+```
 
 ## Git Graph Diagrams
 
