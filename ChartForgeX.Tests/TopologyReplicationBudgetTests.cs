@@ -113,4 +113,3 @@ public sealed class TopologyReplicationBudgetTests {
 
 }
 
-/// <summary>Runs the replication budget tests without parallel neighbours so timing budgets stay meaningful.</summary>
