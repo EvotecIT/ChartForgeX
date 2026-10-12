@@ -63,10 +63,22 @@ internal static partial class VisualBlockRendering {
     public static int PacketRightBit(PacketLayoutBlock packet, PacketLayoutSlice slice) =>
         packet.BitOrder == PacketBitOrder.Descending ? slice.StartBit : slice.EndBit;
 
-    // The same measured cell fitting serves both exporters; ordinary long fields keep truncation.
-    public static double PacketFieldFontSize(PacketLayoutBlock packet, PacketLayoutSlice slice, double width, double height) =>
-        FitBodyTextStyle(packet.Options.Theme, slice.Field.Label, Math.Max(9, Math.Min(13.5, height * .31)),
-            Math.Max(1, width - 10), height * .6, 700).FontSize;
+    public static double PacketFieldInset(double width) => Math.Min(5, width / 8);
+
+    // The same measured cell fitting serves both exporters. A narrow wrapped slice
+    // shortens its caption before width fitting makes ordinary text unreadably small.
+    public static double PacketFieldFontSize(PacketLayoutBlock packet, PacketLayoutSlice slice, double width, double height) {
+        var theme = packet.Options.Theme;
+        var defaultSize = Math.Max(9, Math.Min(13.5, height * .31));
+        var fitted = FitBodyTextStyle(theme, slice.Field.Label, defaultSize, Math.Max(1, width - 2 * PacketFieldInset(width)), height * .6, 700).FontSize;
+        var minimum = Math.Min(8, BodyFontSize(theme, defaultSize));
+        var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, LineHeight = 1 };
+        var heightMinimum = ChartTextFitting.FitFontSize(0, minimum, size => {
+            style.FontSize = size;
+            return TextLayoutEngine.Measure("Mg", style).Height <= height * .6;
+        });
+        return Math.Max(fitted, heightMinimum);
+    }
 
     public readonly struct PacketRowMetrics {
         public PacketRowMetrics(double labelTop, double gap, double height, double bitFontSize, double fieldFontSize, double bitWidth, double fieldGap) {
