@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 
 internal sealed partial class ChartLabelScene {
     private TextStyle TextStyle(SvgRasterStyle style) => new() {
-        FontSize = Math.Max(1, style.FontSize), LineHeight = 1,
+        FontSize = style.FontSize, LineHeight = 1,
         OpenTypeLanguageTag = style.OpenTypeLanguageTag,
         Font = new FontSpec {
             Family = style.FontFamily ?? _font.Family, Weight = TypographyFontResolver.FontSpecWeight(style.FontWeight),

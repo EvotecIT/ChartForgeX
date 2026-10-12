@@ -107,18 +107,26 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     }
 
     [Theory]
+    [InlineData(18)]
+    [InlineData(18.0001)]
     [InlineData(32)]
     [InlineData(256)]
-    public async Task TopologyGroupHeadersRetainTheirLabelAndSubtitle(int size) {
-        var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size + "}}}%%\nflowchart LR\nsubgraph Service[Service group]\n A --> B\nend");
+    public async Task TopologyGroupHeadersRetainTheirLabelAndSubtitle(double size) {
+        var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Carlito','themeVariables':{'fontSize':" + size.ToString(System.Globalization.CultureInfo.InvariantCulture) + "}}}%%\nflowchart LR\nsubgraph Service[Service group]\n A --> B\nend");
         Assert.Empty(result.Diagnostics);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         chart.Groups[0].Subtitle = "Group description";
-        var svg = chart.ToSvg(); var png = chart.ToPng();
+        var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        var font = FontSpec.FromFile(fontPath);
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(960, 720)),
+            VisualTheme.Graphite().WithTypography(new VisualTypography("Carlito", dataLabelSize: size)),
+            frame: new VisualFrame(showLegend: false), font: font);
+        var prepared = chart.Prepare(context, new TopologyRenderOptions { FitContentToViewport = true });
+        var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var xml = XDocument.Parse(svg);
         Assert.Contains(xml.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "topology-group-label" && node.Value == "Service group");
         Assert.Contains(xml.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "topology-group-subtitle" && node.Value == "Group description");
-        await Capture(svg, png, "group-header-" + size, 960, 720);
+        await Capture(svg, png, "group-header-" + size, 960, 720, fontPath);
     }
 
     [Theory]
@@ -151,10 +159,15 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         Assert.Equal(arm.Y, center.Y, 3);
     }
 
-    private static async Task Capture(string svg, byte[] png, string name, int width, int height) {
+    private static async Task Capture(string svg, byte[] png, string name, int width, int height, string? fontPath = null) {
         Assert.NotEmpty(png);
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, height);
+        if (fontPath != null) {
+            await session.Page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "@font-face{font-family:'Carlito';src:url(data:font/ttf;base64," + Convert.ToBase64String(File.ReadAllBytes(fontPath)) + ")}" });
+            await session.Page.EvaluateAsync("() => document.fonts.load('18px Carlito')");
+            Assert.True(await session.Page.EvaluateAsync<bool>("() => document.fonts.check('18px Carlito')"));
+        }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(captures)) return;
