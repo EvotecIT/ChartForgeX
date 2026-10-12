@@ -14,6 +14,8 @@ public sealed class TopologyRenderOptions {
     internal double ResolvedEdgeLabelScale { get; set; } = 1;
     // Native badges retain their resolved face without changing portable diagram-layout estimates.
     internal Func<string, double>? ResolvedBadgeTextWidth { get; set; }
+    // Layout and painting share the same fitted endpoint face and backplate extent.
+    internal Func<string, (double FontSize, double Width, double Height)>? ResolvedEndpointLabelMetrics { get; set; }
     /// <summary>Gets or sets the text-width policy. Portable estimates preserve host-independent geometry by default; installed-font measurement is opt-in.</summary>
     public TextMeasurementMode TextMeasurementMode { get; set; } = TextMeasurementMode.PortableEstimate;
     private ChartLineVisualStyle? _edgeVisualStyle;
