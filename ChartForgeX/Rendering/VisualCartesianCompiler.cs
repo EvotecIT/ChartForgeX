@@ -71,7 +71,7 @@ internal static partial class VisualCartesianCompiler {
         if (!measureAxes) plot = new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, Math.Min(plot.Height, viewport.Bottom - plot.Top)));
         var coordinates = ChartBarCoordinateMap.Create(chart);
         var stacks = ChartStackLayout.Create(chart, coordinates);
-        if (!chart.Series.Any(series => series.HasSourceData) && chart.Annotations.Count == 0) {
+        if (!chart.Series.Any(series => series.HasSourceData) && chart.Annotations.Count == 0 && chart.PlotRegions.Count == 0) {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.no-data", "The chart has no observations."));
             builder.Text(chart.Options.Labels.NoData, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
                 context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center, paint: SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text));
@@ -140,6 +140,8 @@ internal static partial class VisualCartesianCompiler {
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
+        var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);
+        DrawPlotRegionFills(builder, plotRegions);
         using (builder.PushClip(viewport)) {
             if (horizontal) DrawHorizontalAxes(chart, context, builder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
             else DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
@@ -188,6 +190,7 @@ internal static partial class VisualCartesianCompiler {
             if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, stacks, labels);
             else AddStackTotals(chart, context, builder, plot, coordinates, stacks, map, secondaryMap, labels, verticalTotals!);
         }
+        DrawPlotRegionLabels(context, builder, plotRegions, colors, obstacles);
         DrawDataLabels(context, builder, labelBounds, labels, obstacles);
     }
 

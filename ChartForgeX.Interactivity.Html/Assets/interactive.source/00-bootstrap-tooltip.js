@@ -11,7 +11,9 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
+  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"]');
   const isInteractiveTarget = (node) => {
+    if (isPassiveTarget(node)) return false;
     const role = (node.dataset || {}).cfxRole;
     if (role === 'legend-entry-omitted') return false;
     if (role === 'legend-item') return true;
@@ -23,7 +25,7 @@
     return !!(data.cfxTargetKind && data.cfxTargetId
       && (data.cfxTargetKind !== ownerData.cfxTargetKind || data.cfxTargetId !== ownerData.cfxTargetId));
   };
-  const interactiveTargets = (root) => Array.from(root.querySelectorAll(targetSelector)).filter(isInteractiveTarget);
+  const interactiveTargets = (root, selector = targetSelector) => Array.from(root.querySelectorAll(selector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
     // Only the renderer-owned cell link is a mark's alternate keyboard target.
     const link = node.parentElement;
@@ -38,7 +40,7 @@
       ? { targetKind: data.cfxLegendTargetKind, targetId: data.cfxLegendTargetId } : null;
   };
   const referencedTargetNode = (root, target) => Array.from(root.querySelectorAll('[data-cfx-target-kind][data-cfx-target-id]'))
-    .find((node) => (node.dataset || {}).cfxRole !== 'legend-item'
+    .find((node) => isInteractiveTarget(node) && (node.dataset || {}).cfxRole !== 'legend-item'
       && node.dataset.cfxTargetKind === target.targetKind && node.dataset.cfxTargetId === target.targetId
       && (!target.seriesKey || seriesKey(node) === target.seriesKey));
   const seriesLegend = (node) => {
@@ -373,7 +375,7 @@
   const compareItems = (root) => {
     const items = [];
     const seen = new Set();
-    root.querySelectorAll('.cfx-selected').forEach((node) => {
+    interactiveTargets(root, '.cfx-selected').forEach((node) => {
       const target = targetIdentity(node);
       const key = targetKey(target);
       if (!key || seen.has(key)) return;
