@@ -619,6 +619,22 @@
       "notes": {
         "10": "The pinned Mermaid 10 grammar treats direction, subgraph and end words as entity names; ChartForgeX follows the current 11/12 notation semantics."
       }
+    },
+    "fixtures/sequence-presentation.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored sequence participants/messages and legacy source presentation case from the official sequence and configuration contracts."
+    },
+    "fixtures/treemap-visibility.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Source value visibility from https://mermaid.js.org/syntax/treemap.html; typed configuration and hierarchy magnitudes are independent of caption presentation."
     }
   }
 }

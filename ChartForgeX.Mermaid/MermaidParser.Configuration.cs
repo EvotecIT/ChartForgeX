@@ -96,7 +96,7 @@ public sealed partial class MermaidParser {
 
     private static bool IsConfigurationStringPath(string path) {
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path);
+        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path);
     }
 
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
@@ -129,13 +129,16 @@ public sealed partial class MermaidParser {
         configuration.FontFamily = ReadString("fontFamily");
         if (kind == MermaidDiagramKind.Radar)
             configuration.Radar = MermaidRadarSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.Treemap)
+            configuration.Treemap = MermaidTreemapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         foreach (var setting in configuration.Settings) {
             if (configuration.Radar?.Handles(setting.Path) == true) continue;
+            if (configuration.Treemap?.Handles(setting.Path) == true) continue;
             var theme = Selected("theme");
             var font = Selected("fontFamily");
             if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
-                if (kind != MermaidDiagramKind.Sequence && kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
-            } else if (ReferenceEquals(setting, font) && setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) && kind != MermaidDiagramKind.Sequence &&
+                if (kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
+            } else if (ReferenceEquals(setting, font) && setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) &&
                 kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             else if ((setting.Path == "theme" || setting.Path == scope + ".theme" || setting.Path == "fontFamily") &&
                 !ReferenceEquals(setting, theme) && !ReferenceEquals(setting, font) &&

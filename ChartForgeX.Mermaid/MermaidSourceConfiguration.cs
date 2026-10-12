@@ -7,6 +7,7 @@ namespace ChartForgeX.Mermaid;
 public sealed class MermaidSourceConfiguration {
     private readonly List<MermaidConfigurationSetting> _settings = new();
     internal MermaidRadarSettings? Radar { get; set; }
+    internal MermaidTreemapSettings? Treemap { get; set; }
 
     /// <summary>Gets the effective source theme; MermaidDocument.Theme can also set this value for direct conversion.</summary>
     public string? Theme { get; internal set; }
