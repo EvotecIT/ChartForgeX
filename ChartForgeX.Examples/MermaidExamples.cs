@@ -75,7 +75,7 @@ internal static class MermaidExamples {
             if (item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
                 block.Options.ShowCard = false;
             if (item.Key == "mermaid-source-font-size-wardley-boundaries" && result.Artifact.Model is ChartForgeX.VisualBlocks.WardleyMapBlock wardley) {
-                wardley.WithSize(360, 320);
+                wardley.WithSize(420, 320);
             }
             if (item.Key == "mermaid-source-font-size-packet-narrow-fit" && result.Artifact.Model is ChartForgeX.VisualBlocks.PacketLayoutBlock packet)
                 packet.WithSize(640, 280);
