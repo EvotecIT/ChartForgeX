@@ -107,7 +107,7 @@ The stages set the default work order. Independent family fixes can proceed once
 
 These implementation PRs are open as of 12 October 2026. Reuse their existing owners for remaining work. Local qualification, merged source and public package availability are separate states; each published candidate retains its CI and review gates.
 
-Merged support includes Gantt month/minute duration semantics, dependency/calendar resolution, axis formats and dependency arrows; native sequence presentation; source font families; readable sequence HTML sizing; and treemap value-caption visibility. Completed owners are removed from this table. Broader grammar and presentation work remains below.
+Merged support includes Gantt month/minute duration semantics, dependency/calendar resolution, English D3 axis directives and dependency arrows; native sequence presentation; source font families; readable sequence HTML sizing; and treemap value-caption visibility. Completed owners are removed from this table. Broader grammar and presentation work remains below.
 
 | Active owner | Reusable contribution | Remaining qualification or scope |
 | --- | --- | --- |
