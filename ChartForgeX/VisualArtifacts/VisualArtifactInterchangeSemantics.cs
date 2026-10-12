@@ -85,7 +85,7 @@ public sealed class VisualArtifactInterchangeSequenceArtifact {
 
 /// <summary>Contains artifact-level presentation semantics that portable hosts may preserve.</summary>
 public sealed class VisualArtifactInterchangePresentation {
-    /// <summary>Gets or sets the resolved topology theme.</summary>
+    /// <summary>Gets or sets the resolved native diagram theme.</summary>
     public VisualArtifactInterchangeTheme? Theme { get; set; }
     /// <summary>Gets or sets the geographic viewport.</summary>
     public VisualArtifactInterchangeMapViewport? MapViewport { get; set; }

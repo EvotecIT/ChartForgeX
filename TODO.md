@@ -29,6 +29,7 @@ All implemented chart kinds, ChartGrid, topology, flow and sequence use the shar
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
 - Financial marks expose independent body/wick and OHLC colors, alpha, widths, dash patterns and phase, plus hollow candles through `ChartSeries.Financial`. Trading-session spacing remains separate work; session calendars must preserve source prices and date bounds across candle/OHLC views.
 - Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
+- Cartesian plot regions provide passive, bounded background guidance and arbitrary quadrants with primary/secondary axes, interior captions and shared SVG/PNG geometry. Mermaid quadrant conversion remains separate work.
 - Keep annotation captions clear of data marks in compact plots, including bar caps and nearby value labels.
 
 SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
@@ -119,12 +120,14 @@ Completion: every advertised feature has versioned positive and meaningful negat
 - [x] Parse bounded source configuration into inspectable settings. Space-indented YAML scalar mappings and single-line/multiline legacy `init`/`initialize` declarations share limits and preserve declaration spans; legacy JSON reuses the core reader.
 - [x] Qualify frontmatter-before-directive precedence, last declarations and family-scoped theme overrides. Apply native `dark`/`default` palettes and root font stacks where supported; retain unsupported family font keys and other layout, appearance and configuration settings with stable diagnostics.
 - [ ] Define a coherent precedence and policy for host presentation overrides, source settings and family defaults through the existing native export owners.
-- [ ] Map supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Cover sequence themes too; current sequence previews retain a fixed palette.
+- [x] Apply sequence source theme/font defaults through `SequenceArtifact` and its prepared scene. Explicit host contexts override authored defaults; portable presentation records the actual colors and font. Qualify direct rendering, typed conversion, Markdown fences and native/browser output.
+- [ ] Map supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Sequence source theme/font defaults use the native owner; theme variables and further family options remain open.
 - [ ] Handle Mermaid 12 `theme`/`look`/`layout` changes deliberately. Preserve older `defaultRenderer` declarations with a documented diagnostic or mapping. Keep deterministic CFX layout and appearance explicit; reproducing ELK or browser paint is a separate fidelity goal.
 - [ ] Extend the existing safe label/text pipeline for escaped text, entities, multiline labels and Mermaid Markdown strings. Specify literal fallback and diagnostics for HTML labels and math until a native implementation has artifact proof.
 - [ ] Apply supported `classDef`, default classes, `class`, `style`, `linkStyle` and edge-ID styling consistently across families. Preserve inheritance and source order; report properties retained without visible effect.
 - [ ] Extend shared topology layout for nested compound groups, group endpoints, local direction, ports, self-loops, parallel edges and obstacle-aware label routing where fixtures expose gaps. Preserve identical scene geometry in SVG and PNG.
 - [ ] Add a coherent host policy for accepted diagram families, source styling, safe links/assets and bounded source/model/render size. Reuse existing SVG, URI and artwork safety owners; prove script-free output and deterministic rejection without fetching remote assets or invoking source callbacks.
+- [ ] Keep sequence labels readable at compact host widths through the shared HTML/export sizing owner. The current static wrapper scales a 960px convenience viewport down to the page; a 320px capture shows very small labels even though source theme/font application is correct.
 
 Completion: source presentation produces consistent SVG/PNG scenes or specific diagnostics, host policy has a single reusable owner, and compact/dense fixtures remain readable and bounded.
 
