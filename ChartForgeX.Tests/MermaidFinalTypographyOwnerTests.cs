@@ -73,11 +73,15 @@ public sealed class MermaidFinalTypographyOwnerTests {
     }
 
     [Theory]
-    [InlineData(32, false)]
-    [InlineData(256, false)]
-    [InlineData(256, true)]
-    public async Task ClassMultiplicitiesUseFittedEndpointMetrics(int size, bool fenced) {
-        var source = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size + "}}}%%\nclassDiagram\nA \"1\" --> \"0..*\" B";
+    [InlineData(32, false, false)]
+    [InlineData(256, false, false)]
+    [InlineData(256, true, false)]
+    [InlineData(32, false, true)]
+    [InlineData(256, true, true)]
+    public async Task ClassMultiplicitiesUseFittedEndpointMetrics(int size, bool fenced, bool padded) {
+        var sourceLabel = padded ? " 1 " : "1";
+        var targetLabel = padded ? " 0..* " : "0..*";
+        var source = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size + "}}}%%\nclassDiagram\nA \"" + sourceLabel + "\" --> \"" + targetLabel + "\" B";
         var result = MermaidRenderer.Render(source); Assert.Empty(result.Diagnostics);
         Assert.Equal(size, result.Document!.Configuration.FontSize);
         var artifact = result.Artifact!;
@@ -89,7 +93,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         var labels = xml.Descendants().Where(e => e.Name.LocalName == "text" &&
             (string?)e.Parent?.Attribute("data-cfx-role") == "topology-endpoint-label").ToArray();
         Assert.Equal(2, labels.Length);
-        Assert.Contains(labels, e => e.Value == "1"); Assert.Contains(labels, e => e.Value == "0..*");
+        Assert.Contains(labels, e => e.Value == sourceLabel); Assert.Contains(labels, e => e.Value == targetLabel);
         var width = (double)xml.Root!.Attribute("width")!; var height = (double)xml.Root.Attribute("height")!;
         var builder = new VisualSceneBuilder(new VisualSize(width, height), FontSpec.FromFamily("Arial"));
         foreach (var label in labels) {
@@ -99,7 +103,34 @@ public sealed class MermaidFinalTypographyOwnerTests {
             Assert.InRange((double)label.Attribute("x")!, 0, width - metrics.Width);
             Assert.InRange((double)label.Attribute("y")! - builder.TextAscent(fontSize, 600), 0, height - metrics.Height);
         }
-        await Capture(svg, artifact.ToPng(), "class-endpoints-" + size + "-" + fenced, (int)width, (int)height);
+        await Capture(svg, artifact.ToPng(), "class-endpoints-" + size + "-" + fenced + "-" + padded, (int)width, (int)height);
+    }
+
+    [Theory]
+    [InlineData(TopologyEdgeRouting.Curved)]
+    [InlineData(TopologyEdgeRouting.Straight)]
+    public async Task EndpointCaptionsReserveTheirPaintedRouteBounds(TopologyEdgeRouting routing) {
+        var chart = TopologyChart.Create().WithViewport(420, 220, 20).WithLegend(null)
+            .AddNode("source", "Source", 40, 90, width: 60, height: 40)
+            .AddNode("target", "Target", 320, 90, width: 60, height: 40)
+            .AddNodePort("source", "top", TopologyEdgePort.Top)
+            .AddNodePort("target", "top", TopologyEdgePort.Top)
+            .AddEdge("route", "source", "target", routing: routing)
+            .WithEdgeNamedPorts("route", "top", "top")
+            .WithEdgeEndpointLabels("route", "outgoing records", "incoming records");
+        var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false });
+        var svg = prepared.ToSvg();
+        var surfaces = XDocument.Parse(svg).Descendants().Where(e => e.Name.LocalName == "rect" &&
+            (string?)e.Attribute("data-cfx-role") == "topology-endpoint-label-surface").ToArray();
+        Assert.Equal(2, surfaces.Length);
+        foreach (var surface in surfaces) {
+            var x = (double)surface.Attribute("x")!; var y = (double)surface.Attribute("y")!;
+            var width = (double)surface.Attribute("width")!; var height = (double)surface.Attribute("height")!;
+            Assert.InRange(x, 20 - .01, prepared.Width - 20 - width + .01);
+            Assert.InRange(y, 20 - .01, prepared.Height - 20 - height + .01);
+        }
+        Assert.Equal(40, chart.Nodes[0].X); Assert.Equal(90, chart.Nodes[0].Y);
+        await Capture(svg, prepared.ToPng(), "endpoint-route-bounds-" + routing, (int)prepared.Width, (int)prepared.Height);
     }
 
     private static async Task Capture(string svg, byte[] png, string name, int width, int height) {
