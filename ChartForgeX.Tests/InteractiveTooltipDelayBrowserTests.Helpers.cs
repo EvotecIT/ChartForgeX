@@ -96,6 +96,10 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
                             }
                         }
                         if(!mutation.unavailable) throw new Error('Host fixture remained available');
+                        // Capture observer cancellation in this native event's microtasks, before another pointer command.
+                        await Promise.resolve();
+                        mutation.after={observedAt:performance.now(),hidden:tip.hidden,shown:window.delayTrace.shown.length,
+                            canceled:timers.canceled.includes(timer),fired:timers.fired.includes(timer)};
                     } catch(error) { mutation.error=String(error); }
                     mutation.completedAt=performance.now(); mutation.complete=true;
                 });
@@ -119,6 +123,12 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.True(mutation.GetProperty("unavailable").GetBoolean());
         Assert.True(mutation.GetProperty("pointerAt").GetDouble() <= mutation.GetProperty("mutationAt").GetDouble());
         Assert.True(mutation.GetProperty("mutationAt").GetDouble() <= mutation.GetProperty("unavailableAt").GetDouble());
+        var after = mutation.GetProperty("after");
+        Assert.True(after.GetProperty("hidden").GetBoolean());
+        Assert.Equal(0, after.GetProperty("shown").GetInt32());
+        Assert.True(after.GetProperty("canceled").GetBoolean());
+        Assert.False(after.GetProperty("fired").GetBoolean());
+        Assert.InRange(after.GetProperty("observedAt").GetDouble(), mutation.GetProperty("unavailableAt").GetDouble(), mutation.GetProperty("completedAt").GetDouble());
         var timer = before.GetProperty("timer").GetInt32();
         var timers = receipt.GetProperty("timers");
         Assert.Contains(timer, timers.GetProperty("queued").EnumerateArray().Select(item => item.GetInt32()));
