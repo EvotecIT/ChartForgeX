@@ -128,10 +128,13 @@ public static partial class V2Examples {
 
     private static void WriteMixedRadial(string output, ICollection<ProofArtifact> artifacts, VisualThemeMode mode) {
         foreach (var compact in new[] { false, true }) {
+          foreach (var curved in new[] { false, true }) {
             var variant = compact ? "compact-mixed" : "mixed";
-            WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial(), "family-radial-column-" + variant + "-" + mode.ToString().ToLowerInvariant(),
+            if (curved) variant += "-curves";
+            WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial(curved ? 1 : null), "family-radial-column-" + variant + "-" + mode.ToString().ToLowerInvariant(),
                 "radial-column", "Regional counts and targets", variant, "Columns, reference area and target line share categories and radius", mode,
-                compact ? 360 : 800, compact ? 360 : 440, true, "V2GalleryModels.CreateMixedRadial()", new[] { "RadialColumn", "Radar" }, compact: compact);
+                compact ? 360 : 800, compact ? 360 : 440, true, curved ? "V2GalleryModels.CreateMixedRadial(curveTension: 1)" : "V2GalleryModels.CreateMixedRadial()", new[] { "RadialColumn", "Radar" }, compact: compact);
+          }
             var reversedVariant = compact ? "compact-mixed-angular-reversal" : "mixed-angular-reversal";
             WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal()),
                 "family-radial-column-" + reversedVariant + "-" + mode.ToString().ToLowerInvariant(), "radial-column", "Regional counts and targets", reversedVariant,

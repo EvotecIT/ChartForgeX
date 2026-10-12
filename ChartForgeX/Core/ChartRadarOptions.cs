@@ -6,6 +6,7 @@ namespace ChartForgeX.Core;
 public sealed class ChartRadarOptions {
     private ChartLineAreaForm _form;
     private double? _fillOpacity;
+    private double? _curveTension;
 
     /// <summary>Gets or sets the radar form. Area preserves the default of AddRadar.</summary>
     public ChartLineAreaForm Form {
@@ -25,6 +26,15 @@ public sealed class ChartRadarOptions {
                 if (value.Value < 0 || value.Value > 1) throw new ArgumentOutOfRangeException(nameof(value));
             }
             _fillOpacity = value; IsConfigured = true;
+        }
+    }
+
+    /// <summary>Gets or sets closed-curve tension from zero through one. Null or zero preserves straight edges; positive values use cyclic cubic tangents through the observations.</summary>
+    public double? CurveTension {
+        get => _curveTension;
+        set {
+            if (value.HasValue) ChartGuards.UnitInterval(value.Value, nameof(value));
+            _curveTension = value; IsConfigured = true;
         }
     }
 

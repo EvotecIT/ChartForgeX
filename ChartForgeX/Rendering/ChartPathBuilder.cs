@@ -43,6 +43,23 @@ internal static class ChartPathBuilder {
         for (var i = 1; i < points.Count; i++) commands.Add(ChartPathCommand.LineTo(points[i].X, points[i].Y));
     }
 
+    /// <summary>Builds a cyclic cubic curve through finite points, including the final segment back to the first observation.</summary>
+    internal static ChartPath ClosedCurve(IReadOnlyList<ChartPoint> points, double tension) {
+        if (points == null) throw new ArgumentNullException(nameof(points));
+        ChartGuards.UnitInterval(tension, nameof(tension));
+        if (tension == 0 || points.Count < 3) return FromPoints(points);
+        var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(points[0].X, points[0].Y) };
+        for (var index = 0; index < points.Count; index++) {
+            var previous = points[(index + points.Count - 1) % points.Count];
+            var current = points[index]; var next = points[(index + 1) % points.Count];
+            var after = points[(index + 2) % points.Count];
+            commands.Add(ChartPathCommand.CubicTo(
+                current.X + (next.X - previous.X) * tension, current.Y + (next.Y - previous.Y) * tension,
+                next.X - (after.X - current.X) * tension, next.Y - (after.Y - current.Y) * tension, next.X, next.Y));
+        }
+        return new ChartPath(commands);
+    }
+
     private static void AddStepSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points, ChartStepPosition position) {
         for (var i = 1; i < points.Count; i++) {
             var transition = position == ChartStepPosition.Start ? points[i - 1].X

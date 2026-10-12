@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 
 public static partial class V2GalleryModels {
     /// <summary>Compares observed counts with an area reference and an unfilled target on shared radial categories.</summary>
-    public static Chart CreateMixedRadial() {
+    public static Chart CreateMixedRadial(double? curveTension = null) {
         ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
         var chart = Chart.Create().WithXLabels("North", "East", "South", "West")
             .WithYAxisBounds(0, 1600).WithDataLabels(false)
@@ -13,6 +13,8 @@ public static partial class V2GalleryModels {
             .AddRadialColumn("Observed", Points(1200, 700, 1050, 950))
             .AddRadarLine("Target", Points(1400, 1200, 1300, 1250));
         chart.Series[0].Radar.FillOpacity = .15;
+        chart.Series[0].Radar.CurveTension = curveTension;
+        chart.Series[2].Radar.CurveTension = curveTension;
         chart.Series[0].Markers.Enabled = false;
         chart.Series[2].ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 4; });
         return chart;
