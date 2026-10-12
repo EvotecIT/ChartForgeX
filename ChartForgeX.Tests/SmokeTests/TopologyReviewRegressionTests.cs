@@ -239,7 +239,7 @@ internal static partial class SmokeTests {
         var owner = chart.Nodes.Single(node => node.Id == "owner");
         var plateWidth = TopologyRenderPrimitives.IconLabelPlateWidth(owner);
         var plateTop = TopologyRenderPrimitives.IconLabelPlateY(owner);
-        var plateHeight = TopologyRenderPrimitives.IconLabelPlateHeight();
+        var plateHeight = TopologyRenderPrimitives.IconLabelPlateHeight(owner);
         Assert(visibleIconLabel.CenterX + visibleIconLabel.Width / 2 <= owner.X + owner.Width / 2 - plateWidth / 2 ||
             visibleIconLabel.CenterX - visibleIconLabel.Width / 2 >= owner.X + owner.Width / 2 + plateWidth / 2 ||
             visibleIconLabel.CenterY + visibleIconLabel.Height / 2 <= plateTop || visibleIconLabel.CenterY - visibleIconLabel.Height / 2 >= plateTop + plateHeight,

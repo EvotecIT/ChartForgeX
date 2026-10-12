@@ -5426,6 +5426,54 @@
       }
     },
     {
+      "name": "mermaid-source-font-size-icon-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 360,
+      "height": 240,
+      "logicalWidth": 360.0,
+      "logicalHeight": 240.0,
+      "svg": {
+        "minVisualNodes": 3,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 43200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 231,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-icon-maximum-fit",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 360,
+      "height": 240,
+      "logicalWidth": 360.0,
+      "logicalHeight": 240.0,
+      "svg": {
+        "minVisualNodes": 3,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 43200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 231,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-source-font-size-packet",
       "layout": {
         "heightMode": "fixed",
