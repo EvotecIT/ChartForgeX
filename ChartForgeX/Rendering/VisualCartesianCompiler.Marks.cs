@@ -10,7 +10,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
-        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true) {
+        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true,
+        ChartXViewport? xViewport = null) {
         var series = chart.Series[index];
         var points = new List<ChartPoint>(series.Points.Count);
         var lower = new List<ChartPoint>(series.Points.Count);
@@ -59,9 +60,11 @@ internal static partial class VisualCartesianCompiler {
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
+            var sourceX = series.Points[pointIndex].X;
+            var insideSourceX = xViewport == null || sourceX >= xViewport.Minimum && sourceX <= xViewport.Maximum;
             var bounds = VisualMarkerScene.Bounds(point.X, point.Y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
-            var visible = radius > 0 && (!clipMarks || inside)
+            var visible = radius > 0 && insideSourceX && (!clipMarks || inside)
                 && ShowMarker(chart, series, pointIndex);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             var pointColor = PointColor(series, index, pointIndex, colors);
@@ -78,6 +81,8 @@ internal static partial class VisualCartesianCompiler {
                 }
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
+            // Off-window observations keep their source group, but cannot compete for a visible label lane.
+            if (!insideSourceX) continue;
             var fill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, pointIndex, pointColor, pointPaint) : ((ChartColor Color, SvgPaint Paint)?)null;
             AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
                 calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null,

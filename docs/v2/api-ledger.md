@@ -10,6 +10,8 @@ The pinned post-extraction inventory covers eight assemblies, including typed fa
 
 Regenerate these files with `dotnet run --project tools/v2-api-ledger/ApiLedger.csproj -- --phase4 . docs/v2 <candidate-commit>`. Assembly moves are breaking changes for compiled callers even when their namespaces and signatures stay the same. The inventory records source symbols; four-framework packed assets, dependencies, resources and isolated execution are qualified separately through `Build/Test-PackageQualification.ps1`.
 
+For a checked-in ledger, use a source commit retained in the containing branch's history. Verify it with `git merge-base --is-ancestor <candidate-commit> HEAD`, and regenerate after a rebase if that source commit is no longer an ancestor. This keeps the inventory reproducible from an ordinary clone.
+
 `assembly-move-and-signature-change` records both migration requirements for the same symbol. Rebuild against its new assembly and inspect the old/new signatures for changed base types, interfaces or call defaults. Move-only and signature-only rows retain their separate classifications.
 
 The baseline inventories below record the six runtime assemblies before extraction at pinned source commits. They cover externally visible types and declared public, protected and protected-internal members, including overloads, optional parameter defaults, generic constraints, properties and their accessor visibility, indexers, events, operators, implicit public constructors, delegate invocation signatures and enum numeric values. Partial declarations are combined through compiler symbols. Inherited members remain represented by their declaring type and base/interface relationships rather than copied onto every subclass.

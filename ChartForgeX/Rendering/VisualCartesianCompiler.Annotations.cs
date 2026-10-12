@@ -8,7 +8,7 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
-    private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, bool constrainXToPlot) {
+    private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, bool constrainXToPlot, ChartXViewport? xViewport = null) {
         for (var index = 0; index < chart.Annotations.Count; index++) {
             var annotation = chart.Annotations[index];
             if (annotation.EndValue.HasValue != bands) continue;
@@ -18,9 +18,13 @@ internal static partial class VisualCartesianCompiler {
                 ? (horizontal ? map.Y(annotation.EndValue.Value) : map.X(annotation.EndValue.Value)) : projectedPosition;
             // A window must not relocate an off-window reference to its visible boundary.
             // Keep its descriptive group and source facts without guide or caption paint.
-            var outsideX = constrainXToPlot && !horizontal && (bands
-                ? Math.Max(projectedPosition, projectedEnd) <= plot.Left || Math.Min(projectedPosition, projectedEnd) >= plot.Right
-                : projectedPosition < plot.Left || projectedPosition > plot.Right);
+            var outsideX = constrainXToPlot && !horizontal && (xViewport != null
+                ? bands
+                    ? Math.Max(annotation.Value, annotation.EndValue!.Value) <= xViewport.Minimum || Math.Min(annotation.Value, annotation.EndValue.Value) >= xViewport.Maximum
+                    : annotation.Value < xViewport.Minimum || annotation.Value > xViewport.Maximum
+                : bands
+                    ? Math.Max(projectedPosition, projectedEnd) <= plot.Left || Math.Min(projectedPosition, projectedEnd) >= plot.Right
+                    : projectedPosition < plot.Left || projectedPosition > plot.Right);
             var position = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, projectedPosition)) : Math.Max(plot.Left, Math.Min(plot.Right, projectedPosition));
             var color = annotation.Color;
             var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
