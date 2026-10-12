@@ -32,7 +32,8 @@ internal static partial class MermaidGanttInputDateFormat {
             if (TryParseNative(input, format, out value, null, allowWhiteSpaces: true)) return true;
         foreach (var date in CompleteNonIsoDates)
             foreach (var time in CompleteTimeSuffixes)
-                if (TryParseNative(input, date + time, out value, null, allowWhiteSpaces: true)) return true;
+                if (TryParseNative(input, date + time, out value, null, allowWhiteSpaces: true)
+                    || TryParseNative(input, date + "," + time, out value, null, allowWhiteSpaces: true)) return true;
         value = default;
         return false;
     }
