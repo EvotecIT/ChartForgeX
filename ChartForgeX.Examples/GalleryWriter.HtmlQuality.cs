@@ -55,7 +55,7 @@ public static partial class GalleryWriter {
         // A completed static source has the same finite picture boundary as its PNG.
         // Clip its SVG viewport, while preserving ordinary overflow on the page and host.
         if (!Regex.IsMatch(html, "<div\\s[^>]*class=\"chartforgex-visual-artifact\"[^>]*>", RegexOptions.IgnoreCase)) return false;
-        var rule = Regex.Match(css, "\\.chartforgex-visual-artifact\\s+svg\\s*\\{(?<body>[^{}]*)}", RegexOptions.IgnoreCase);
+        var rule = Regex.Match(css, "\\.chartforgex-visual-artifact\\s*>\\s*svg\\s*\\{(?<body>[^{}]*)}", RegexOptions.IgnoreCase);
         if (!rule.Success || !Regex.IsMatch(rule.Groups["body"].Value, "(?:^|;)\\s*overflow\\s*:\\s*hidden\\s*(?:;|$)", RegexOptions.IgnoreCase)) return false;
         var hostRules = Regex.Matches(css, "(?:^|})\\s*(?:html,body|body|\\.chartforgex-visual-artifact)\\s*\\{(?<body>[^{}]*)}", RegexOptions.IgnoreCase);
         if (hostRules.Any(host => Regex.IsMatch(host.Groups["body"].Value, "overflow(?:-[xy])?\\s*:", RegexOptions.IgnoreCase))) return false;
