@@ -35,14 +35,18 @@ internal static class MermaidExamples {
             ["mermaid-gantt-input-dates"] = "gantt\ntitle Calendar input fields\ndateFormat Do-MMMM-YYYY\naxisFormat %a %d %b\nexcludes 3rd-January-2026 4th-January-2026\nincludes 4th-January-2026\nBuild :build,2nd-January-2026,2d\nReview :review,after build,1d\nDeadline :vert,6th-January-2026,0d\n",
             ["mermaid-gantt-ticks"] = "gantt\ntitle Fortnightly delivery\naxisFormat %a %d %b\ntickInterval 2week\nweekday tuesday\nWindow :window, 2026-01-01, 2026-03-01\nBuild :build, 2026-01-13, 14d\nVerify :after build, 14d\n",
             ["mermaid-gantt-today-style"] = "gantt\ntitle Current schedule checkpoint\naxisFormat %a %d %b\ntodayMarker stroke:#16834a,stroke-width:3px,opacity:0.8,stroke-dasharray:6 6\nBuild :build,2026-01-01,4d\nReview :review,after build,2d\n",
+            ["mermaid-gantt-date-anchor"] = "gantt\ntitle Anchored leap-year calendar\ndateFormat MM-DD\naxisFormat %a %d %b\nexcludes 02-29\nBuild :build,02-28,2d\nReview :review,after build,1d\nDeadline :vert,03-03,0d\n",
             ["mermaid-swimlane-basic"] = "swimlane-beta LR\nsubgraph Requester\n A[Submit] --> B[Review]\nend\nsubgraph Service\n C{Approved?} --> D[Deliver]\nend\nB --> C\n",
             ["mermaid-usecase-basic"] = "usecase-beta\ndirection LR\nactor Customer\nsystemBoundary Store[Online store]\n Browse(\"Browse products\")\n Pay(\"Pay for order\")\n Authenticate(\"Authenticate\")\nend\nCustomer --> Browse\nBrowse ..> : include Authenticate\nPay --|> Browse\n",
             ["mermaid-usecase-vertical"] = "usecase-beta\nactor User\nUser --> Action(Do work)\n",
             ["mermaid-cynefin-basic"] = "cynefin-beta\ntitle Service decisions\ncomplex\n \"Discover demand\"\ncomplicated\n \"Analyze capacity\"\nchaotic\n \"Contain outage\"\nclear\n \"Run checklist\"\nconfusion\n \"Investigate context\"\ncomplex --> complicated : \"Learn\"\n",
         };
         foreach (var item in examples) {
-            var options = item.Key == "mermaid-gantt-today-style"
-                ? new MermaidRenderOptions { Gantt = new MermaidGanttRenderOptions { Today = new DateTime(2026, 1, 3) } } : null;
+            var options = item.Key switch {
+                "mermaid-gantt-today-style" => new MermaidRenderOptions { Gantt = new MermaidGanttRenderOptions { Today = new DateTime(2026, 1, 3) } },
+                "mermaid-gantt-date-anchor" => new MermaidRenderOptions { ParseOptions = new MermaidParseOptions { GanttDateAnchor = new DateTime(2028, 1, 1) } },
+                _ => null
+            };
             var result = MermaidRenderer.Render(item.Value, options);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
             if (item.Key == "mermaid-radar-hidden-fractional-guides" && result.Artifact.Model is Chart chart) chart.Options.ShowGrid = false;

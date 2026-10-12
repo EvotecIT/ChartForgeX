@@ -174,7 +174,7 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [x] Keep Gantt dependency arrowheads visible over successor bars and beside milestone boundaries, including automatic window endpoints; qualify the shared schedule scene in SVG and PNG.
 - [x] Apply explicit Gantt input-date fields for English months, ordinals, quarters, day-of-year values, two-digit-year boundaries, 12-hour clocks, fractions, UTC offsets and Unix timestamps; use the same field owner for calendar exclusions. Keep upstream version differences visible in the corpus.
 - [x] Map bounded Gantt today-marker stroke declarations into reusable native reference-line styling. Qualify source/caller precedence, explicit clock ownership, safe diagnostics, SVG/PNG ink and compact/wide browser output.
-- [ ] Define an explicit anchor policy for input formats that omit the year. Preserve month/year and excludes/includes/weekend calculations.
+- [x] Resolve input formats without a year through explicit parser context shared by typed APIs, source rendering and Markdown. Keep calendar entries specific to the anchor date, reject clock-dependent partial fallback and preserve qualified complete-date spellings.
 - [x] Render Gantt `vert` markers without task rows through shared native annotations; retain marker scheduling ranges, source indices, dependency facts and automatic axis extents.
 - [x] Honor case-insensitive `todayMarker off` over caller-supplied time and require an explicit caller time for deterministic today lines. Retain unsupported style text with a source warning.
 - [x] Apply English D3 Gantt axis directives, padding and literal text through the native axis formatter; qualify shared weekday, clock and ISO/week boundary labels independently of host culture.

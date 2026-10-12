@@ -63,6 +63,7 @@ internal static partial class MermaidGanttParser {
         // Complete task-date fallbacks remain available; calendar matching also formats the declared fields.
         if ((!string.IsNullOrWhiteSpace(document.Excludes) || !string.IsNullOrWhiteSpace(document.Includes))
             && !ValidateDateFormat(document, result)) return;
+        if (!ValidateCalendarAnchor(document, result)) return;
         ResolveSchedule(document, tasks, taskIds, result);
         if (document.Tasks.Count == 0) Add(result, document.HeaderSpan.Line, document.HeaderSpan.Column, document.HeaderSpan.Length, MermaidDiagnosticSeverity.Error, "Mermaid Gantt diagrams require at least one task.");
     }
@@ -130,8 +131,8 @@ internal static partial class MermaidGanttParser {
 
     private static List<string> SplitMetadata(string text, MermaidGanttDocument document) {
         var chunks = text.Split(',');
-        // Complete English timestamps can contain a date comma and a date/time separator.
-        var maximumCommas = 2;
+        // Complete English timestamps can contain weekday, date and date/time commas.
+        var maximumCommas = 3;
         if (document.DateFormat.Length <= 256) {
             try { maximumCommas = Math.Max(maximumCommas, MermaidGanttInputDateFormat.CalendarCommaCount(document.DateFormat)); }
             catch (FormatException) { /* Complete-date fallbacks can still parse an unused invalid format. */ }
@@ -156,6 +157,7 @@ internal static partial class MermaidGanttParser {
         // commas. Equal matches preserve explicit IDs, including numeric IDs.
         List<string>? selected = null;
         var bestScore = -1;
+        var weekdayPrefix = first < chunks.Length && MermaidGanttInputDateFormat.IsWeekdayName(chunks[first].Trim());
         foreach (var hasId in new[] { true, false }) {
             var startIndex = first + (hasId ? 1 : 0);
             if (startIndex + 1 >= chunks.Length || hasId && string.IsNullOrWhiteSpace(chunks[first])) continue;
@@ -166,9 +168,11 @@ internal static partial class MermaidGanttParser {
                 if (endCount > maximumCommas + 1) continue;
                 var end = string.Join(",", chunks, boundary + 1, endCount).Trim();
                 if (!IsStart(start.Trim()) || !IsEnd(end)) continue;
-                var matches = (MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _) ? 1 : 0)
-                    + (MermaidGanttInputDateFormat.TryParseConfigured(end, document.DateFormat, out _) ? 1 : 0);
-                var score = matches * 3 + (start.IndexOf(',') >= 0 ? 1 : 0) + (end.IndexOf(',') >= 0 ? 1 : 0);
+                var matches = (MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _, document.DateAnchor) ? 1 : 0)
+                    + (MermaidGanttInputDateFormat.TryParseConfigured(end, document.DateFormat, out _, document.DateAnchor) ? 1 : 0);
+                // A new weekday-prefixed fallback must not consume an existing viable task ID.
+                var score = matches * 3 + (start.IndexOf(',') >= 0 ? 1 : 0) + (end.IndexOf(',') >= 0 ? 1 : 0)
+                    + (hasId && weekdayPrefix ? 1 : 0);
                 if (score <= bestScore) continue;
                 var parts = new List<string>(prefix);
                 if (hasId) parts.Add(chunks[first].Trim());
@@ -192,31 +196,31 @@ internal static partial class MermaidGanttParser {
 
         bool StartsConfiguredDate(int startIndex) {
             if (chunks.Length - startIndex <= maximumCommas + 1
-                && MermaidGanttInputDateFormat.TryParseConfigured(string.Join(",", chunks, startIndex, chunks.Length - startIndex).Trim(), document.DateFormat, out _)) return true;
+                && MermaidGanttInputDateFormat.TryParseConfigured(string.Join(",", chunks, startIndex, chunks.Length - startIndex).Trim(), document.DateFormat, out _, document.DateAnchor)) return true;
             var start = chunks[startIndex];
             for (var boundary = startIndex; boundary < chunks.Length - 1 && boundary <= startIndex + maximumCommas; boundary++) {
                 if (boundary > startIndex) start += "," + chunks[boundary];
                 var endCount = chunks.Length - boundary - 1;
                 if (endCount <= maximumCommas + 1
-                    && MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _)
+                    && MermaidGanttInputDateFormat.TryParseConfigured(start.Trim(), document.DateFormat, out _, document.DateAnchor)
                     && IsEnd(string.Join(",", chunks, boundary + 1, endCount).Trim())) return true;
             }
             return false;
         }
 
-        bool IsStart(string value) => IsClause(value, "after") || TryParseDate(value, document.DateFormat, out _);
-        bool IsEnd(string value) => IsClause(value, "until") || TryParseDuration(value, out _, out _) || TryParseDate(value, document.DateFormat, out _);
+        bool IsStart(string value) => IsClause(value, "after") || TryParseDate(value, document.DateFormat, out _, document.DateAnchor);
+        bool IsEnd(string value) => IsClause(value, "until") || TryParseDuration(value, out _, out _) || TryParseDate(value, document.DateFormat, out _, document.DateAnchor);
         bool IsClause(string value, string keyword) => value.IndexOf(',') < 0 && StartsWithKeyword(value, keyword) && value.Substring(keyword.Length).Trim().Length > 0;
     }
 
-    private static bool TryParseDate(string text, string dateFormat, out DateTime value) {
+    private static bool TryParseDate(string text, string dateFormat, out DateTime value, DateTime? dateAnchor = null) {
         value = default;
         if (dateFormat.Length > 256) return false;
         try {
-            if (MermaidGanttInputDateFormat.TryParseConfigured(text, dateFormat, out value)) return true;
-            var fallbackFormats = new[] { "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss" };
-            if (DateTime.TryParseExact(text.Trim(), fallbackFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value)) return true;
-            return DateTime.TryParse(text.Trim(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out value);
+            if (MermaidGanttInputDateFormat.TryParseConfigured(text, dateFormat, out value, dateAnchor)) return true;
+            // Legacy complete-date spellings remain available; unrestricted platform parsing
+            // can silently acquire today's year or date from partial text.
+            return MermaidGanttInputDateFormat.TryParseCompleteFallback(text, out value);
         } catch (FormatException) { return false; }
         catch (RegexMatchTimeoutException) { return false; }
     }

@@ -14,7 +14,13 @@ public sealed partial class MermaidParser {
     /// </summary>
     /// <param name="source">The Mermaid source text.</param>
     /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidDocument> Parse(string source) {
+    public MermaidParseResult<MermaidDocument> Parse(string source) => Parse(source, null);
+
+    /// <summary>Parses source using explicit calendar context for formats that require it.</summary>
+    /// <param name="source">The Mermaid source text.</param>
+    /// <param name="options">Optional source-resolution context.</param>
+    /// <returns>The source-preserving document and located diagnostics.</returns>
+    public MermaidParseResult<MermaidDocument> Parse(string source, MermaidParseOptions? options) {
         if (source == null) throw new ArgumentNullException(nameof(source));
         var result = new MermaidParseResult<MermaidDocument>();
         var lines = source.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
@@ -60,7 +66,7 @@ public sealed partial class MermaidParser {
         } else if (descriptor.Kind == MermaidDiagramKind.GitGraph) {
             document = ParseGitGraph(source, lines, frontMatter, header.Value, descriptor, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Gantt) {
-            document = ParseGantt(source, lines, frontMatter, header.Value, result);
+            document = ParseGantt(source, lines, frontMatter, header.Value, result, options?.GanttDateAnchor);
         } else if (descriptor.Kind == MermaidDiagramKind.MindMap) {
             document = ParseMindMap(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Timeline) {
@@ -220,10 +226,11 @@ public sealed partial class MermaidParser {
         return document;
     }
 
-    private static MermaidGanttDocument ParseGantt(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, MermaidParseResult<MermaidDocument> result) {
+    private static MermaidGanttDocument ParseGantt(string source, string[] lines, FrontMatterResult frontMatter, HeaderLine header, MermaidParseResult<MermaidDocument> result, DateTime? dateAnchor) {
         var document = new MermaidGanttDocument {
             SourceText = source,
             Kind = MermaidDiagramKind.Gantt,
+            DateAnchor = dateAnchor.HasValue ? DateTime.SpecifyKind(dateAnchor.Value.Date, DateTimeKind.Unspecified) : null,
             Header = header.Text,
             HeaderSpan = new MermaidSourceSpan(header.Line, header.Column, header.Text.Length),
             FrontMatter = frontMatter.Text

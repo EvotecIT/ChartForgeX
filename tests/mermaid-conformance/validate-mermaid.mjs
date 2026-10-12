@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { isSyntaxRejection } from './reference-errors.mjs';
+import { useReferenceClock } from './reference-clock.mjs';
 import { timeFormat } from 'd3-time-format';
 import * as calendar from 'd3-time';
 
@@ -41,7 +42,7 @@ for (const [path, fixture] of Object.entries(manifest.fixtures)) {
   }
 }
 if (!referenceId) {
-  const contracts = spawnSync(process.execPath, ['--test', fileURLToPath(new URL('reference-errors.test.mjs', import.meta.url))], {encoding: 'utf8'});
+  const contracts = spawnSync(process.execPath, ['--test', fileURLToPath(new URL('reference-errors.test.mjs', import.meta.url)), fileURLToPath(new URL('reference-clock.test.mjs', import.meta.url))], {encoding: 'utf8'});
   if (contracts.error) throw contracts.error;
   if (contracts.status !== 0) throw new Error(contracts.stderr || contracts.stdout || 'Reference-error contract tests failed.');
   for (const id of references) {
@@ -98,6 +99,8 @@ for (const { folder, file, hasExpected } of files) {
   const fixtures = join(root, folder);
   const source = await readFile(join(fixtures, file), 'utf8');
   const contract = manifest.fixtures[`${folder}/${file}`];
+  const restoreClock = useReferenceClock(contract.referenceClockUtc, dom.window);
+  try {
   let syntaxError;
   let syntaxFailed = false;
   try {
@@ -215,6 +218,7 @@ for (const { folder, file, hasExpected } of files) {
   } catch (error) {
     failures.push(`${folder}/${file}: ${error?.message ?? error}`);
   }
+  } finally { restoreClock(); }
 }
 
 if (failures.length > 0) {
