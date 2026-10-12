@@ -31,6 +31,7 @@ All implemented chart kinds, ChartGrid, topology, flow and sequence use the shar
 - Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
 - Cartesian plot regions provide passive, bounded background guidance and arbitrary quadrants with primary/secondary axes, interior captions and shared SVG/PNG geometry. Mermaid quadrant conversion remains separate work.
 - Keep annotation captions clear of data marks in compact plots, including bar caps and nearby value labels.
+- [ ] Investigate the deferred browser qualification failures: gauge needles intersect measured summary boxes at low scale values; a painted boundary point and compact dark word-cloud text fail pointer/selection assertions. Reproduce the visible behavior and distinguish renderer defects from font, coordinate and test-harness assumptions before choosing fixes.
 
 SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
 
