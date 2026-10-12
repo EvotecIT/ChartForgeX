@@ -29,13 +29,14 @@ internal static partial class VisualMatrixCompiler {
         var values = rows.SelectMany(row => row.Points).Select(point => point.Y).ToArray();
         if (values.Any(value => !ChartMath.IsFinite(value))) throw new InvalidOperationException("Matrix values must be finite; omit missing cells rather than supplying NaN.");
         var min = values.Length == 0 ? 0 : values.Min(); var max = values.Length == 0 ? 0 : values.Max();
+        var hasDomain = ChartColorScaleSurface.HasDomain(chart.Options.HeatmapColorScale, values.Length > 0 ? min : null, values.Length > 0 ? max : null);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
         if (rows.Any(row => row.IsCategoricalHeatmapRow != categorical)) throw new InvalidOperationException("Numeric and categorical matrix rows cannot be mixed.");
         var categories = new ChartStateCategoryLegend(chart, colors.MutedForeground);
         var formatColumn = ChartAxisValueFormatter.Create(chart.Options.XAxis, columns);
-        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation);
+        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain);
         var plot = layout.Plot;
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
         var gap = Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2,
@@ -46,12 +47,15 @@ internal static partial class VisualMatrixCompiler {
         var radius = Math.Min(chart.Options.HeatmapCellRadius ?? context.Theme.BarRadius, Math.Min(cellWidth, cellHeight) / 2);
         var hex = ChartHexbinLayout.Build(plot, rows.Length, columns.Length);
         var hexRadius = Math.Min(hex.Radius, Math.Min(cellHeight / 2, cellWidth / Math.Sqrt(3)));
-        using (builder.PushGroup("matrix", kind == ChartSeriesKind.Heatmap ? "heatmap" : "hexbin-heatmap", new Dictionary<string, string> {
+        var matrixMetadata = new Dictionary<string, string> {
             ["data-cfx-row-count"] = rows.Length.ToString(), ["data-cfx-column-count"] = columns.Length.ToString(),
-            ["data-cfx-min"] = VisualStateSceneTools.Number(min), ["data-cfx-max"] = VisualStateSceneTools.Number(max),
             ["data-cfx-cell-gap"] = VisualStateSceneTools.Number(gap), ["data-cfx-cell-radius"] = VisualStateSceneTools.Number(radius),
             ["data-cfx-value-text-mode"] = chart.Options.HeatmapValueTextMode.ToString(), ["data-cfx-label-level"] = chart.Options.Labels.Level
-        })) {
+        };
+        if (values.Length > 0) {
+            matrixMetadata["data-cfx-min"] = VisualStateSceneTools.Number(min); matrixMetadata["data-cfx-max"] = VisualStateSceneTools.Number(max);
+        }
+        using (builder.PushGroup("matrix", kind == ChartSeriesKind.Heatmap ? "heatmap" : "hexbin-heatmap", matrixMetadata)) {
             foreach (var group in rowLayout.Groups) {
                 var y = rowLayout.GroupTop(plot.Top, group, cellHeight, gap);
                 if (group.BeforeRow > 0) builder.Line(viewport.Left, y, plot.Right, y, colors.Border, context.Theme.GridStrokeWidth, "heatmap-row-group-rule", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
@@ -123,7 +127,7 @@ internal static partial class VisualMatrixCompiler {
                 }
             }
             MatrixAxes(chart, context, builder, viewport, plot, columns, cellWidth, gap, layout, formatColumn);
-            if (!categorical && ScaleVisible(context, presentation)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color, presentation);
+            if (!categorical && ScaleVisible(context, presentation)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color, presentation, hasDomain);
         }
     }
 

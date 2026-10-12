@@ -2,6 +2,21 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 public static partial class V2GalleryModels {
+    private static Chart FinancialDashes(ChartSeriesKind kind) {
+        var chart = FinancialOptions(kind);
+        chart.Series[0].ConfigureFinancial(financial => {
+            financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
+            financial.Rising.DashOffset = -3;
+            financial.Falling.DashPattern = new[] { 4d, 4d };
+            financial.Falling.DashOffset = 2;
+            if (kind == ChartSeriesKind.Candlestick) {
+                financial.Rising.Wick.DashPattern = Array.Empty<double>();
+                financial.Falling.Wick.DashOffset = -1;
+            }
+        });
+        return chart;
+    }
+
     private static Chart FinancialOptions(ChartSeriesKind kind) {
         var source = new[] {
             new ChartCandlestick(1, 44, 58, 38, 53), new ChartCandlestick(2, 53, 60, 42, 45),

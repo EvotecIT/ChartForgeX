@@ -180,15 +180,22 @@ public sealed partial class ChartColorScale {
     }
 
     /// <summary>
-    /// Creates a copy with explicit color interpolation bounds.
+    /// Creates a copy with independently fixed or inferred color interpolation bounds.
     /// </summary>
-    /// <remarks>For positioned stops, only the endpoint anchors move; bounds must remain outside all interior anchors.</remarks>
-    /// <param name="minimumValue">The minimum value used by the color scale.</param>
-    /// <param name="maximumValue">The maximum value used by the color scale.</param>
+    /// <remarks>
+    /// Null infers that endpoint from observations; two nulls restore automatic bounds. An inferred endpoint cannot
+    /// cross its fixed counterpart. Positioned stops require both bounds, which must remain outside all interior anchors.
+    /// </remarks>
+    /// <param name="minimumValue">The fixed minimum, or null to infer it.</param>
+    /// <param name="maximumValue">The fixed maximum, or null to infer it.</param>
     /// <returns>A color scale.</returns>
-    public ChartColorScale WithValueRange(double minimumValue, double maximumValue) {
+    public ChartColorScale WithValueRange(double? minimumValue, double? maximumValue) {
         EnsureContinuous();
-        if (HasPositionedStops) return WithPositionedRange(minimumValue, maximumValue);
+        if (HasPositionedStops) {
+            if (!minimumValue.HasValue || !maximumValue.HasValue)
+                throw new ArgumentException("Positioned color stops require both fixed endpoint bounds.", !minimumValue.HasValue ? nameof(minimumValue) : nameof(maximumValue));
+            return WithPositionedRange(minimumValue.Value, maximumValue.Value);
+        }
         return new(_colors, _midpointIndex, MidpointValue, minimumValue, maximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel);
     }
 
@@ -242,7 +249,8 @@ public sealed partial class ChartColorScale {
     /// <param name="value">The value to color.</param>
     /// <param name="sourceMinimum">The minimum source value when the scale has no explicit minimum.</param>
     /// <param name="sourceMaximum">The maximum source value when the scale has no explicit maximum.</param>
-    /// <returns>The selected color. Discrete bands ignore the finite ordered source domain; a constant continuous domain uses the low color.</returns>
+    /// <returns>The selected color. Discrete bands ignore the finite ordered source domain. An automatic constant domain
+    /// uses the low color; a domain collapsed at its sole fixed endpoint clamps observations to that endpoint's color.</returns>
     public ChartColor ColorFor(double value, double sourceMinimum, double sourceMaximum) => BlendFor(value, sourceMinimum, sourceMaximum).Color;
 
     /// <summary>Resolves the same scale decision while retaining its stop provenance for prepared SVG.</summary>
@@ -251,7 +259,7 @@ public sealed partial class ChartColorScale {
         ValidateSourceRange(sourceMinimum, sourceMaximum);
         if (Mode == ChartColorScaleMode.Discrete) return ChartColorBlend.Solid(_bands[BandIndex(value)].Color, SvgColorRole.Ramp);
         var (min, max) = ResolveRange(sourceMinimum, sourceMaximum);
-        if (max == min) return ChartColorBlend.Solid(LowColor, SvgColorRole.Ramp);
+        if (max == min) return ChartColorBlend.Solid(CollapsedRatio(value, min) == 0 ? LowColor : HighColor, SvgColorRole.Ramp);
         if (HasPositionedStops) return AlongPositioned(value);
 
         var last = _colors.Length - 1;
@@ -268,22 +276,22 @@ public sealed partial class ChartColorScale {
     /// Gets the effective minimum value used by this scale.
     /// </summary>
     /// <param name="sourceMinimum">The source data minimum.</param>
-    /// <returns>The effective minimum.</returns>
+    /// <returns>The fixed minimum or inferred minimum, clamped below a sole fixed maximum.</returns>
     public double EffectiveMinimum(double sourceMinimum) {
         EnsureContinuous();
         ValidateFinite(sourceMinimum, nameof(sourceMinimum));
-        return MinimumValue ?? sourceMinimum;
+        return MinimumValue ?? (MaximumValue.HasValue ? Math.Min(sourceMinimum, MaximumValue.Value) : sourceMinimum);
     }
 
     /// <summary>
     /// Gets the effective maximum value used by this scale.
     /// </summary>
     /// <param name="sourceMaximum">The source data maximum.</param>
-    /// <returns>The effective maximum.</returns>
+    /// <returns>The fixed maximum or inferred maximum, clamped above a sole fixed minimum.</returns>
     public double EffectiveMaximum(double sourceMaximum) {
         EnsureContinuous();
         ValidateFinite(sourceMaximum, nameof(sourceMaximum));
-        return MaximumValue ?? sourceMaximum;
+        return MaximumValue ?? (MinimumValue.HasValue ? Math.Max(sourceMaximum, MinimumValue.Value) : sourceMaximum);
     }
 
     /// <summary>
@@ -365,12 +373,6 @@ public sealed partial class ChartColorScale {
         ValidateFinite(sourceMinimum, nameof(sourceMinimum));
         ValidateFinite(sourceMaximum, nameof(sourceMaximum));
         if (sourceMaximum < sourceMinimum) throw new ArgumentOutOfRangeException(nameof(sourceMaximum), sourceMaximum, "Source color scale bounds must be ordered.");
-    }
-
-    private (double Minimum, double Maximum) ResolveRange(double sourceMinimum, double sourceMaximum) {
-        EnsureContinuous();
-        ValidateSourceRange(sourceMinimum, sourceMaximum);
-        return (MinimumValue ?? sourceMinimum, MaximumValue ?? sourceMaximum);
     }
 
     private void EnsureContinuous() {

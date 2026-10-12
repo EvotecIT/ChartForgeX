@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -8,14 +9,18 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private readonly struct FinancialMarkStyle {
         internal FinancialMarkStyle(ChartColor? fill, SvgPaint fillPaint, ChartColor stroke, SvgPaint strokePaint,
-            double strokeWidth, ChartColor wick, SvgPaint wickPaint, double wickWidth) {
+            double strokeWidth, ChartColor wick, SvgPaint wickPaint, double wickWidth,
+            double[]? dash, double dashOffset, double[]? wickDash, double wickDashOffset) {
             Fill = fill; FillPaint = fillPaint; Stroke = stroke; StrokePaint = strokePaint;
             StrokeWidth = strokeWidth; Wick = wick; WickPaint = wickPaint; WickWidth = wickWidth;
+            Dash = dash; DashOffset = dashOffset; WickDash = wickDash; WickDashOffset = wickDashOffset;
         }
         internal readonly ChartColor? Fill;
         internal readonly SvgPaint FillPaint, StrokePaint, WickPaint;
         internal readonly ChartColor Stroke, Wick;
         internal readonly double StrokeWidth, WickWidth;
+        internal readonly double[]? Dash, WickDash;
+        internal readonly double DashOffset, WickDashOffset;
     }
 
     private static FinancialMarkStyle FinancialStyle(ChartSeries series, int index, int item, bool rising, VisualThemeColors colors) {
@@ -36,7 +41,16 @@ internal static partial class VisualCartesianCompiler {
         var width = options.StrokeWidth ?? (series.HasExplicitStrokeWidth ? series.StrokeWidth
             : series.Kind == ChartSeriesKind.Candlestick ? ChartVisualPrimitives.CandlestickStrokeWidth : ChartVisualPrimitives.OhlcStrokeWidth);
         return new FinancialMarkStyle(fill.Color.A == 0 ? null : fill.Color, fill.Paint,
-            stroke.Color, stroke.Paint, width, wick.Color, wick.Paint, options.Wick.StrokeWidth ?? width);
+            stroke.Color, stroke.Paint, width, wick.Color, wick.Paint, options.Wick.StrokeWidth ?? width,
+            FinancialDash(options.DashPattern), options.DashOffset ?? 0,
+            FinancialDash(options.Wick.DashPattern ?? options.DashPattern), options.Wick.DashOffset ?? options.DashOffset ?? 0);
+    }
+
+    private static double[]? FinancialDash(IReadOnlyList<double>? pattern, double scale = 1) {
+        if (pattern == null || pattern.Count == 0) return null;
+        var copy = new double[pattern.Count];
+        for (var i = 0; i < copy.Length; i++) copy[i] = pattern[i] * scale;
+        return copy;
     }
 
     private static ChartRect FinancialBody(double x, double width, double openY, double closeY) {
@@ -82,17 +96,21 @@ internal static partial class VisualCartesianCompiler {
         var prefix = legend ? "legend-financial" : candle ? "candlestick" : "ohlc";
         if (candle) {
             FinancialWicks(body, highY, lowY, style, (from, to) => builder.Line(x, from, x, to, style.Wick,
-                style.WickWidth, role: prefix + "-wick", paint: VisualChartPaint.Stroke(style.WickPaint)));
+                style.WickWidth, role: prefix + "-wick", dash: style.WickDash, paint: VisualChartPaint.Stroke(style.WickPaint), dashOffset: style.WickDashOffset));
             var radius = Math.Min(ChartVisualPrimitives.CandlestickBodyRadius * radiusScale, body.Height / 2);
-            builder.Rect(body, style.Fill, style.StrokeWidth > 0 ? style.Stroke : null, style.StrokeWidth, radius, role: prefix + "-body",
-                paint: new VisualScenePaintBinding(fill: style.Fill.HasValue ? style.FillPaint : null,
-                    stroke: style.StrokeWidth > 0 ? style.StrokePaint : null));
+            var paint = new VisualScenePaintBinding(fill: style.Fill.HasValue ? style.FillPaint : null,
+                stroke: style.StrokeWidth > 0 ? style.StrokePaint : null);
+            if (style.Dash != null && style.StrokeWidth > 0 && style.Stroke.A > 0)
+                builder.Path(RoundedRectanglePath(body, radius), style.Fill, style.Stroke, style.StrokeWidth, role: prefix + "-body",
+                    close: true, dash: style.Dash, paint: paint, dashOffset: style.DashOffset);
+            else builder.Rect(body, style.Fill, style.StrokeWidth > 0 ? style.Stroke : null, style.StrokeWidth, radius,
+                role: prefix + "-body", paint: paint);
             if (style.Fill.HasValue) DrawPattern(builder, RoundedRectanglePath(body, radius), pattern, style.Fill.Value, backdrop, prefix + "-pattern");
         } else if (style.StrokeWidth > 0) {
             var paint = VisualChartPaint.Stroke(style.StrokePaint);
-            builder.Line(x, highY, x, lowY, style.Stroke, style.StrokeWidth, role: prefix + "-stem", paint: paint);
-            builder.Line(body.Left, openY, x, openY, style.Stroke, style.StrokeWidth, role: prefix + "-open", paint: paint);
-            builder.Line(x, closeY, body.Right, closeY, style.Stroke, style.StrokeWidth, role: prefix + "-close", paint: paint);
+            builder.Line(x, highY, x, lowY, style.Stroke, style.StrokeWidth, role: prefix + "-stem", dash: style.Dash, paint: paint, dashOffset: style.DashOffset);
+            builder.Line(body.Left, openY, x, openY, style.Stroke, style.StrokeWidth, role: prefix + "-open", dash: style.Dash, paint: paint, dashOffset: style.DashOffset);
+            builder.Line(x, closeY, body.Right, closeY, style.Stroke, style.StrokeWidth, role: prefix + "-close", dash: style.Dash, paint: paint, dashOffset: style.DashOffset);
         }
     }
 
@@ -109,7 +127,9 @@ internal static partial class VisualCartesianCompiler {
                 var stroke = Math.Max(style.StrokeWidth, candle ? style.WickWidth : 0);
                 var scale = Math.Min(slot.Width / (12 + stroke), slot.Height / (36 + stroke));
                 var scaled = new FinancialMarkStyle(style.Fill, style.FillPaint, style.Stroke, style.StrokePaint,
-                    style.StrokeWidth * scale, style.Wick, style.WickPaint, style.WickWidth * scale);
+                    style.StrokeWidth * scale, style.Wick, style.WickPaint, style.WickWidth * scale,
+                    FinancialDash(style.Dash, scale), ChartStrokeDashes.NormalizeOffset(style.Dash, style.DashOffset) * scale,
+                    FinancialDash(style.WickDash, scale), ChartStrokeDashes.NormalizeOffset(style.WickDash, style.WickDashOffset) * scale);
                 var x = slot.Left + slot.Width / 2; var y = slot.Top + slot.Height / 2;
                 var open = y + (up ? 8 : -8) * scale; var close = y - (up ? 8 : -8) * scale;
                 DrawFinancialMark(builder, candle, FinancialBody(x, 12 * scale, open, close), y - 18 * scale, y + 18 * scale,

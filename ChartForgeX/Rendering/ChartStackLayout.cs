@@ -15,11 +15,13 @@ internal sealed partial class ChartStackLayout {
     private readonly StackGroup[] _seriesGroups;
     private readonly ChartStackTotal[] _totals;
 
-    private ChartStackLayout(ChartStackPoint[][] points, double[][] sourceValues, StackGroup[] seriesGroups, ChartStackTotal[] totals, int zeroTotalCount) {
-        _points = points; _sourceValues = sourceValues; _seriesGroups = seriesGroups; _totals = totals; ZeroTotalCount = zeroTotalCount;
+    private ChartStackLayout(ChartStackPoint[][] points, double[][] sourceValues, StackGroup[] seriesGroups, ChartStackTotal[] totals, int zeroTotalCount, double[] horizontalCategories) {
+        _points = points; _sourceValues = sourceValues; _seriesGroups = seriesGroups; _totals = totals; ZeroTotalCount = zeroTotalCount; HorizontalCategories = horizontalCategories;
     }
 
     internal IReadOnlyList<ChartStackTotal> Totals => _totals;
+    /// <summary>One source representative per horizontal coordinate identity, including unstacked observations.</summary>
+    internal IReadOnlyList<double> HorizontalCategories { get; }
     internal int ZeroTotalCount { get; }
     internal bool HasBarStacks => _seriesGroups.Any(group => group != null && group.Stacked && group.Kind != ChartSeriesKind.StackedArea);
     internal ChartStackPoint Point(int seriesIndex, int pointIndex) => _points[seriesIndex].Length > 0
@@ -33,7 +35,7 @@ internal sealed partial class ChartStackLayout {
         var sourceValues = chart.Series.Select(_ => Array.Empty<double>()).ToArray();
         var groups = new List<StackGroup>();
         var seriesGroups = new StackGroup[chart.Series.Count];
-        var coordinateIds = CoordinateIds(chart, coordinates);
+        var coordinateIds = CoordinateIds(chart, coordinates, out var horizontalCategories);
         var buckets = new Dictionary<(int Group, int Coordinate, bool Positive), StackBucket>();
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
@@ -81,7 +83,7 @@ internal sealed partial class ChartStackLayout {
             totals.Add(new ChartStackTotal(bucket.SeriesIndex, bucket.PointIndex, bucket.Group.Kind, bucket.Group.Axis,
                 bucket.Group.Key, bucket.Coordinate, bucket.Positive, total, bucket.SourceTotal, target));
         }
-        var layout = new ChartStackLayout(points, sourceValues, seriesGroups, totals.ToArray(), zeroTotalCount);
+        var layout = new ChartStackLayout(points, sourceValues, seriesGroups, totals.ToArray(), zeroTotalCount, horizontalCategories);
         layout.ValidateHistogramDensity(chart, coordinates);
         return layout;
     }

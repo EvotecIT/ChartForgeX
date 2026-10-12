@@ -112,13 +112,18 @@ internal static partial class SmokeTests {
         var rightOfCenter = BitConverter.Int64BitsToDouble(centerBits + 3);
         var transitive = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
             .WithStackedBars()
+            .WithStackTotals()
             .AddHistogram("Center", new[] { center }, ChartHistogramBinLayout.FromWidth(1, 2, 1))
             .AddBar("Left", new[] { new ChartPoint(leftOfCenter, 2) })
             .AddBar("Right", new[] { new ChartPoint(rightOfCenter, 3) });
-        var transitiveBars = SvgDocument.Parse(transitive.ToSvg()).Root.FindByTag("rect")
-            .Where(element => element.GetAttribute("data-cfx-role") == "bar")
+        var transitiveSvg = transitive.ToSvg();
+        var transitiveTotals = SvgDocument.Parse(transitiveSvg).Root.FindByTag("g")
+            .Where(element => element.GetAttribute("data-cfx-role") == "stack-total")
             .ToArray();
-        Assert(((string?)CartesianPoint(transitive.ToSvg(), 2, 0).Attribute("data-cfx-base")) == "3", "Stacked bars canonicalized to one histogram center should include every earlier equivalent coordinate.");
+        Assert(((string?)CartesianPoint(transitiveSvg, 2, 0).Attribute("data-cfx-base")) == "3", "Stacked bars canonicalized to one histogram center should include every earlier equivalent coordinate.");
+        Assert(transitiveTotals.Length == 1 && transitiveTotals[0].GetAttribute("data-cfx-y") == "6" && transitiveTotals[0].GetAttribute("data-cfx-source-total") == "6",
+            "ULP-equivalent mixed bar coordinates should emit one combined stack total with a source total of six.");
+        Assert(CountOccurrences(transitiveSvg, "data-cfx-role=\"stack-total-label\"") == 1, "ULP-equivalent mixed bar coordinates should emit one combined stack-total label.");
         Assert(transitive.ToPng().Length > 64, "Canonical mixed histogram stack coordinates should preserve PNG rendering parity.");
 
         var countLayout = ChartHistogramBinLayout.FromCount(0, 0.3, 3, roundBounds: false);

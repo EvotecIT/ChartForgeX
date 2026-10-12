@@ -40,7 +40,7 @@ public readonly struct ChartBoxPlot {
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartBoxPlot"/> struct.
     /// </summary>
-    /// <param name="x">The horizontal coordinate.</param>
+    /// <param name="x">The category coordinate, mapped to X vertically or Y horizontally.</param>
     /// <param name="minimum">The minimum whisker value.</param>
     /// <param name="q1">The first quartile value.</param>
     /// <param name="median">The median value.</param>
