@@ -21,6 +21,17 @@ public sealed class MermaidFontSizeFunctionSyntaxTests {
     [InlineData("var(--size, \"unterminated)", false)]
     [InlineData("max(12px, 20px) trailing(16px)", false)]
     [InlineData("calc(1rem + 2px)", true)]
+    [InlineData("/* fallback */ calc(1rem + 2px)", true)]
+    [InlineData("calc(18px)/**/", true)]
+    [InlineData("/**/ /* outer /* inner */ calc(18px) /* ) */ /**/", true)]
+    [InlineData("/**/ large /**/", true)]
+    [InlineData("/**/ 1rem /**/", true)]
+    [InlineData("/**/ var(--size, \"/* literal */\") /**/", true)]
+    [InlineData("/**/ calc(18px) /**/ trailing", false)]
+    [InlineData("/**/ calc(18px) /**/ calc(20px)", false)]
+    [InlineData("/* unclosed calc(18px)", false)]
+    [InlineData("calc(18px) /* unclosed", false)]
+    [InlineData("ca/**/lc(18px)", false)]
     [InlineData("var(--label-size, calc(1rem + 2px))", true)]
     [InlineData("clamp(12px, min(2vw, 18px), 20px)", true)]
     [InlineData("calc(18px /* ) */)", true)]
@@ -87,5 +98,22 @@ public sealed class MermaidFontSizeFunctionSyntaxTests {
             Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, diagnostic.Code);
             Assert.Equal(7, diagnostic.Span.Line);
         } else Assert.Empty(result.Diagnostics);
+    }
+
+    [Theory]
+    [InlineData("/**/ 18px /**/")]
+    [InlineData("/* fallback */ 18 /* pixels */")]
+    public void CommentsAroundPixelSizesPreserveTheSupportedSize(string value) {
+        var quoted = JsonSerializer.Serialize(value);
+        foreach (var directive in new[] { false, true }) {
+            var source = directive
+                ? "%%{init: {\"themeVariables\":{\"fontSize\":" + quoted + "}}}%%\nflowchart LR\nA --> B"
+                : "---\nconfig:\n  themeVariables:\n    fontSize: " + quoted + "\n---\nflowchart LR\nA --> B";
+            var result = MermaidRenderer.Render(source);
+            Assert.Empty(result.Diagnostics);
+            Assert.NotNull(result.Artifact);
+            Assert.Equal(18, result.Document!.Configuration.FontSize);
+            Assert.Equal(value, Assert.Single(result.Document.Configuration.Settings).Value);
+        }
     }
 }
