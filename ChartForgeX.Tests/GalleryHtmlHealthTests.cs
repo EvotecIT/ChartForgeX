@@ -30,6 +30,7 @@ public sealed class GalleryHtmlHealthTests {
             ["host"] = host,
             ["table"] = tableHtml,
             ["static-artifact"] = artifactHtml,
+            ["descendant-artifact"] = artifactHtml.Replace(".chartforgex-visual-artifact>svg", ".chartforgex-visual-artifact svg", StringComparison.Ordinal),
             ["scrolling-artifact"] = artifactHtml.Replace(".chartforgex-visual-artifact{max-width:100%;height:auto}", ".chartforgex-visual-artifact{max-width:100%;height:auto;overflow:auto}", StringComparison.Ordinal),
             ["unbounded-artifact"] = artifactHtml.Replace("viewBox=", "data-missing-viewbox=", StringComparison.Ordinal),
             ["clipped-grid"] = gridHtml.Replace(".chartforgex-grid{margin:0 auto}", ".chartforgex-grid{margin:0 auto;overflow:hidden}", StringComparison.Ordinal),
@@ -40,6 +41,7 @@ public sealed class GalleryHtmlHealthTests {
         Assert.NotEqual(gridHtml, variants["clipped-grid"]);
         Assert.NotEqual(host, variants["missing-flat-surface"]);
         Assert.NotEqual(artifactHtml, variants["scrolling-artifact"]);
+        Assert.NotEqual(artifactHtml, variants["descendant-artifact"]);
         var directory = Path.Combine(Path.GetTempPath(), "ChartForgeX-html-health-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         try {
@@ -58,10 +60,11 @@ public sealed class GalleryHtmlHealthTests {
             Assert.False(health["clipped-grid"].GetProperty("hasExpectedOverflow").GetBoolean());
             Assert.False(health["scrolling-artifact"].GetProperty("hasExpectedOverflow").GetBoolean());
             Assert.False(health["unbounded-artifact"].GetProperty("hasExpectedOverflow").GetBoolean());
+            Assert.False(health["descendant-artifact"].GetProperty("hasExpectedOverflow").GetBoolean());
             Assert.False(health["missing-flat-surface"].GetProperty("hasFlatSurface").GetBoolean());
             Assert.False(health["missing-print"].GetProperty("hasPrintCss").GetBoolean());
             Assert.False(health["missing-text-polish"].GetProperty("hasTextPolish").GetBoolean());
-            foreach (var name in new[] { "clipped-grid", "scrolling-artifact", "unbounded-artifact", "missing-flat-surface", "missing-print", "missing-text-polish" })
+            foreach (var name in new[] { "clipped-grid", "scrolling-artifact", "unbounded-artifact", "descendant-artifact", "missing-flat-surface", "missing-print", "missing-text-polish" })
                 Assert.False(health[name].GetProperty("healthy").GetBoolean(), health[name].GetRawText());
         } finally {
             Directory.Delete(directory, recursive: true);
