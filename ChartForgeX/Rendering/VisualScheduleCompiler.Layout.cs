@@ -85,8 +85,12 @@ internal static partial class VisualScheduleCompiler {
 
     private static void Now(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ScheduleLayout layout, double x, double now) {
         var colors = context.Theme.Resolve(context.ThemeMode); var plot = layout.Plot;
+        var strokeStyle = chart.Options.GanttTodayStyle;
+        var stroke = VisualReferenceStroke.Paint(strokeStyle, colors.Status.Critical.Fill, SvgColorRole.Status, out var strokeColor);
         using (builder.PushGroup("schedule-now", "gantt-now", new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(now) }))
-            builder.Line(x, plot.Top, x, plot.Bottom, colors.Status.Critical.Fill, context.Theme.AxisStrokeWidth, "gantt-now-line", dash: new[] { 4d, 3d }, paint: VisualChartPaint.Stroke(colors.Status.Critical.Fill, SvgColorRole.Status));
+        using (builder.PushClip(plot))
+            builder.Line(x, plot.Top, x, plot.Bottom, strokeColor, TodayWidth(chart, context), "gantt-now-line",
+                dash: strokeStyle?.ResolveDash(new[] { 4d, 3d }) ?? new[] { 4d, 3d }, paint: stroke);
         var style = VisualStateSceneTools.TickStyle(chart, context);
         var availableHeight = Math.Max(0, plot.Top - layout.Viewport.Top - 4);
         style = VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, plot.Width, availableHeight), new[] { chart.Options.Labels.Now });

@@ -104,8 +104,14 @@ public sealed partial class MermaidParser {
     /// </summary>
     /// <param name="source">The Mermaid source text.</param>
     /// <returns>The parse result.</returns>
-    public MermaidParseResult<MermaidGanttDocument> ParseGantt(string source) {
-        var generic = Parse(source);
+    public MermaidParseResult<MermaidGanttDocument> ParseGantt(string source) => ParseGantt(source, null);
+
+    /// <summary>Parses a Gantt document with explicit context for input formats that omit the year.</summary>
+    /// <param name="source">The Mermaid source text.</param>
+    /// <param name="options">Optional source-resolution context.</param>
+    /// <returns>The Gantt document and located diagnostics.</returns>
+    public MermaidParseResult<MermaidGanttDocument> ParseGantt(string source, MermaidParseOptions? options) {
+        var generic = Parse(source, options);
         var result = new MermaidParseResult<MermaidGanttDocument>();
         foreach (var diagnostic in generic.Diagnostics) result.Diagnostics.Add(diagnostic);
         if (generic.Document is MermaidGanttDocument gantt) result.Document = gantt;

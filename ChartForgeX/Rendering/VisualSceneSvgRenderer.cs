@@ -81,9 +81,7 @@ internal static partial class VisualSceneSvgRenderer {
                 writer.StartElement("line").Attribute("x1", line.Start.X).Attribute("y1", line.Start.Y).Attribute("x2", line.End.X).Attribute("y2", line.End.Y);
                 Paint(writer, line, prefix, i, options: options);
                 if (line.Dash != null) {
-                    var dash = new StringBuilder();
-                    foreach (var length in line.Dash) { if (dash.Length > 0) dash.Append(' '); dash.Append(ChartStrokeDashes.FormatNumber(length)); }
-                    writer.Attribute("stroke-dasharray", dash.ToString());
+                    writer.Attribute("stroke-dasharray", DashValue(line.Dash));
                     var phase = ChartStrokeDashes.NormalizeOffset(line.Dash, line.DashOffset);
                     if (phase != 0) writer.Attribute("stroke-dashoffset", ChartStrokeDashes.FormatNumber(phase));
                 }
@@ -152,12 +150,15 @@ internal static partial class VisualSceneSvgRenderer {
         if ((mark is VisualScenePath || mark is VisualSceneSlice) && fill != "none") writer.Attribute("fill-rule", "evenodd");
         if (mark is VisualScenePath path && path.Cap != VisualStrokeCap.Round) writer.Attribute("stroke-linecap", path.Cap.ToString().ToLowerInvariant());
         if (mark is VisualScenePath joined && joined.Join != VisualStrokeJoin.Round) writer.Attribute("stroke-linejoin", joined.Join.ToString().ToLowerInvariant());
-        if (mark is VisualScenePath dashed && dashed.Dash != null) writer.Attribute("stroke-dasharray", string.Join(" ", System.Linq.Enumerable.Select(dashed.Dash, ChartStrokeDashes.FormatNumber)));
+        if (mark is VisualScenePath dashed && dashed.Dash != null) writer.Attribute("stroke-dasharray", DashValue(dashed.Dash));
         if (mark is VisualScenePath phased) {
             var phase = ChartStrokeDashes.NormalizeOffset(phased.Dash, phased.DashOffset);
             if (phase != 0) writer.Attribute("stroke-dashoffset", ChartStrokeDashes.FormatNumber(phase));
         }
     }
+
+    private static string DashValue(IReadOnlyList<double> lengths) =>
+        lengths.Count == 0 ? "none" : string.Join(" ", System.Linq.Enumerable.Select(lengths, ChartStrokeDashes.FormatNumber));
 
     private static void Semantics(SvgMarkupWriter writer, VisualSceneNode node, string prefix, int index) {
         if (node.Id != null) {

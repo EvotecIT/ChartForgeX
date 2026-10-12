@@ -12,6 +12,7 @@ namespace ChartForgeX.Markup.Mermaid;
 /// Parses Mermaid Markdown fences into ChartForgeX visual artifacts.
 /// </summary>
 public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockParser {
+    private readonly MermaidParseOptions? _parseOptions;
     private readonly MermaidFlowchartRenderOptions _renderOptions;
     private readonly MermaidFlowchartRenderOptions _swimlaneRenderOptions;
     private readonly MermaidFlowchartRenderOptions _useCaseRenderOptions;
@@ -56,6 +57,8 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     public MermaidVisualMarkupBlockParser(MermaidRenderOptions renderOptions) {
         if (renderOptions == null) throw new ArgumentNullException(nameof(renderOptions));
 
+        _parseOptions = renderOptions.ParseOptions == null ? null : new MermaidParseOptions { GanttDateAnchor = renderOptions.ParseOptions.GanttDateAnchor };
+
         _renderOptions = renderOptions.Flowchart == null ? new MermaidFlowchartRenderOptions() : Clone(renderOptions.Flowchart);
         _swimlaneRenderOptions = Clone(renderOptions.Swimlane ?? renderOptions.Flowchart ?? new MermaidFlowchartRenderOptions());
         _useCaseRenderOptions = Clone(renderOptions.UseCase ?? renderOptions.Flowchart ?? new MermaidFlowchartRenderOptions());
@@ -96,7 +99,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         if (block == null) throw new ArgumentNullException(nameof(block));
         if (result == null) throw new ArgumentNullException(nameof(result));
 
-        var mermaidResult = new MermaidParser().Parse(block.Payload);
+        var mermaidResult = new MermaidParser().Parse(block.Payload, _parseOptions);
         foreach (var diagnostic in mermaidResult.Diagnostics) {
             result.Diagnostics.Add(new MarkupDiagnostic {
                 Line = diagnostic.Span.Line <= 0 ? block.FenceLine : block.StartLine + diagnostic.Span.Line - 1,
