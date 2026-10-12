@@ -198,4 +198,19 @@ public sealed class MermaidGanttDateAnchorTests {
         Assert.True(rendered.HasErrors);
         Assert.Null(rendered.Artifact);
     }
+
+    [Theory]
+    [InlineData("", null, "1d")]
+    [InlineData("task,", "task", "1d")]
+    [InlineData("", null, "Jan 3, 2026, 1:30 PM +02:00")]
+    [InlineData("task,", "task", "Jan 3, 2026, 1:30 PM +02:00")]
+    public void CompleteOffsetFallbackKeepsBothCommasInTaskDates(string prefix, string? expectedId, string end) {
+        var parsed = new MermaidParser().ParseGantt("gantt\nTask :" + prefix + "Jan 2, 2026, 1:30 PM +02:00," + end);
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal(expectedId, task.Id);
+        Assert.Equal(new DateTime(2026, 1, 2, 11, 30, 0), task.Start);
+        Assert.Equal(DateTimeKind.Unspecified, task.Start.Kind);
+        Assert.Equal(task.Start.AddDays(1), task.End);
+    }
 }
