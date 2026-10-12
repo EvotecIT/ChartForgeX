@@ -96,7 +96,8 @@ public sealed partial class MermaidParser {
 
     private static bool IsConfigurationStringPath(string path) {
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look" || path == "radar.curveTension" || MermaidTreemapSettings.IsScalarPath(path);
+        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look" || path == "radar.curveTension" ||
+            MermaidSankeySettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path);
     }
 
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
@@ -134,11 +135,13 @@ public sealed partial class MermaidParser {
                 else ConfigurationError(result, tension.Span, "Mermaid configuration 'radar.curveTension' must be a finite number from zero through one.");
             }
         }
+        if (kind == MermaidDiagramKind.Sankey)
+            configuration.Sankey = MermaidSankeySettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Treemap)
             configuration.Treemap = MermaidTreemapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         foreach (var setting in configuration.Settings) {
             if (kind == MermaidDiagramKind.Radar && setting.Path == "radar.curveTension") continue;
-            if (configuration.Treemap?.Handles(setting.Path) == true) continue;
+            if (configuration.Sankey?.Handles(setting.Path) == true || configuration.Treemap?.Handles(setting.Path) == true) continue;
             var theme = Selected("theme");
             var font = Selected("fontFamily");
             if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
