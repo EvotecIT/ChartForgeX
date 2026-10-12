@@ -706,6 +706,20 @@
         "12": "accepted"
       },
       "provenance": "Source value visibility from https://mermaid.js.org/syntax/treemap.html; typed configuration and hierarchy magnitudes are independent of caption presentation."
+    },
+    "fixtures/sankey-source-options.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored source settings and flow facts from the official Mermaid Sankey configuration and syntax documentation; checked with pinned reference parsers.",
+      "expectedByReference": {
+        "10": "sankey-source-options.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10.9.8 drops nodeWidth and nodePadding from effective configuration. Other retained settings and node/flow facts are compared; pixel equality is not claimed. ChartForgeX applies the documented current node geometry options."
+      }
     }
   }
 }
