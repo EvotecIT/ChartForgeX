@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.Json;
 using System.Xml.Linq;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Markup.Mermaid;
@@ -16,7 +18,17 @@ public sealed class MermaidArtifactContractTests {
         Assert.NotNull(root);
         foreach (var path in Directory.GetFiles(Path.Combine(root!.FullName, "tests", "mermaid-conformance", "fixtures"), "*.mmd")) {
             var source = File.ReadAllText(path);
-            var result = MermaidRenderer.Render(source);
+            var options = new MermaidRenderOptions();
+            var expectedPath = Path.ChangeExtension(path, ".expected.json");
+            if (File.Exists(expectedPath)) {
+                using var expected = JsonDocument.Parse(File.ReadAllText(expectedPath));
+                if (expected.RootElement.TryGetProperty("dateAnchor", out var anchor)) {
+                    options.ParseOptions = new MermaidParseOptions {
+                        GanttDateAnchor = DateTime.ParseExact(anchor.GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                    };
+                }
+            }
+            var result = MermaidRenderer.Render(source, options);
             Assert.False(result.HasErrors, Path.GetFileName(path) + ": " + string.Join("; ", result.Diagnostics.Select(item => item.Message)));
             Assert.NotNull(result.Artifact);
             Assert.Equal("svg", XDocument.Parse(result.Artifact!.ToSvg()).Root!.Name.LocalName);
@@ -24,7 +36,7 @@ public sealed class MermaidArtifactContractTests {
             Assert.True(png.Length > 64 && png[0] == 137 && png[1] == 80, path);
             var json = result.Artifact.ToInterchangeJson();
             Assert.Equal(json, VisualArtifactInterchangeEnvelope.FromJson(json).ToJson());
-            var markup = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+            var markup = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
             Assert.Single(markup.Artifacts);
             Assert.False(markup.HasErrors, path);
         }
