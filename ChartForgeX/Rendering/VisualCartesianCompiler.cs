@@ -28,7 +28,7 @@ internal static partial class VisualCartesianCompiler {
                 series.Points.Select(point => point.X).Distinct().OrderBy(value => value).ToArray()) : null;
             for (var point = 0; point < series.AuthoredObservationCount; point++) {
                 var label = numericRadial ? axisLabels!.Format(chart.Options.XAxis, series.Points[point].X, categoryFormatter!)
-                    : ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.Points[point * stride].X) ?? "Item " + Number(point + 1);
+                    : ChartAxisValueFormatter.FindExplicitLabel(ChartCartesianOrientation.CategoryLabels(chart), series.Points[point * stride].X) ?? "Item " + Number(point + 1);
                 var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
                 var color = PointColor(series, 0, point, colors);
                 if (series.Kind == ChartSeriesKind.Candlestick || series.Kind == ChartSeriesKind.Ohlc)

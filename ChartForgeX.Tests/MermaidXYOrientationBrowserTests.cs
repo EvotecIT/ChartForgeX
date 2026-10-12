@@ -25,11 +25,13 @@ public sealed class MermaidXYOrientationBrowserTests {
         Assert.False(parsed.HasErrors);
         var chart = parsed.Document!.ToChart(new MermaidXYChartRenderOptions { Width = width - 32, Height = 420 });
         chart.WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLineMarkers(ChartLineMarkerMode.All);
+        if (kind == "bar") chart.WithLegend().WithPointLegend();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage();
         await using var session = await OpenAsync(html, width, 580);
         var page = session.Page;
         await page.WaitForSelectorAsync(Point(0, 0));
+        if (kind == "bar") Assert.Equal(new[] { "Jan", "Feb", "Mar" }, await page.Locator("[data-cfx-role='legend-label']").AllTextContentsAsync());
         var points = new[] { await BoxAsync(page, Point(0, 0)), await BoxAsync(page, Point(0, 1)), await BoxAsync(page, Point(0, 2)) };
         Assert.True(points[0].Y > points[1].Y && points[1].Y > points[2].Y);
         Assert.True(points[0].X + points[0].Width < points[1].X + points[1].Width && points[1].X + points[1].Width < points[2].X + points[2].Width);

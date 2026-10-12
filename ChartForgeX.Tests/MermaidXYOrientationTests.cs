@@ -11,6 +11,27 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidXYOrientationTests {
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void PointLegendsRetainAuthoredCategoriesOnThePhysicalOrLegacyAxis(bool horizontal, bool legacy) {
+        var parsed = new MermaidParser().ParseXYChart("xychart-beta" + (horizontal ? " horizontal" : "")
+            + "\nx-axis Month [Jan,Feb,Mar]\ny-axis Count 0 --> 100\nbar [20,50,80]");
+        Assert.False(parsed.HasErrors);
+        var chart = parsed.Document!.ToChart().WithLegend().WithPointLegend();
+        if (legacy) {
+            foreach (var label in chart.Options.YAxis.Labels) chart.Options.XAxis.Labels.Add(label);
+            chart.Options.YAxis.Labels.Clear();
+        }
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "legend-label")
+            .Select(node => string.Join("\n", node.Text.Lines.Select(line => line.Text)));
+        Assert.Equal(new[] { "Jan", "Feb", "Mar" }, labels);
+        foreach (var label in new[] { "Jan", "Feb", "Mar" }) Assert.Contains(">" + label + "<", prepared.ToSvg());
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
     [InlineData("bar")]
     [InlineData("line")]
     [InlineData("mixed")]
