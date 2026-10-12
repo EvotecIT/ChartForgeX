@@ -23,6 +23,12 @@ internal static partial class MermaidGanttParser {
             else if (StartsWithKeyword(trimmed, "dateFormat")) document.DateFormat = trimmed.Substring(10).Trim();
             else if (StartsWithKeyword(trimmed, "axisFormat")) document.AxisFormat = trimmed.Substring(10).Trim();
             else if (StartsWithKeyword(trimmed, "tickInterval")) document.TickInterval = trimmed.Substring(12).Trim();
+            else if (StartsWithKeyword(trimmed, "weekday")) {
+                var weekday = trimmed.Substring(7).Trim();
+                if (Enum.TryParse<DayOfWeek>(weekday, true, out var day) && Enum.IsDefined(typeof(DayOfWeek), day)
+                    && string.Equals(weekday, day.ToString(), StringComparison.OrdinalIgnoreCase)) document.Weekday = day;
+                else Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, "Gantt weekday must name a day from monday through sunday.");
+            }
             else if (StartsWithKeyword(trimmed, "excludes")) document.Excludes = MergeCalendarTokens(document.Excludes, trimmed.Substring(8));
             else if (StartsWithKeyword(trimmed, "includes")) document.Includes = MergeCalendarTokens(document.Includes, trimmed.Substring(8));
             else if (StartsWithKeyword(trimmed, "weekend")) {

@@ -22,6 +22,9 @@ public sealed class MermaidGanttDocument : MermaidDocument {
     /// <summary>Gets or sets the optional Mermaid tickInterval directive.</summary>
     public string? TickInterval { get; set; }
 
+    /// <summary>Gets or sets the weekday used to align weekly ticks. Mermaid defaults to Sunday.</summary>
+    public DayOfWeek Weekday { get; set; } = DayOfWeek.Sunday;
+
     /// <summary>Gets or sets merged tokens from Mermaid excludes directives.</summary>
     public string? Excludes { get; set; }
 
