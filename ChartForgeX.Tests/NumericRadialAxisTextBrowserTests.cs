@@ -157,11 +157,14 @@ public sealed class NumericRadialAxisTextBrowserTests {
                     if (!style.fontFamily.includes('CFX Radial Axis Carlito')) defects.push(id + ': lost the fixture face');
                     if (box.width <= 0 || box.height <= 0 || box.x < viewport.x-.1 || box.x+box.width > viewport.x+viewport.width+.1
                         || box.y < viewport.y-.1 || box.y+box.height > viewport.y+viewport.height+.1) defects.push(id + ': outside viewport');
-                    // Glyph ink is narrower than font ascent/descent padding and is what the strip must visibly contain.
-                    // The independent browser font engine can differ from native glyph advances by a fraction of a CSS pixel.
-                    if (!strip || ink.left < strip.left-.5 || ink.right > strip.right+.5 || ink.top < strip.top-.5 || ink.bottom > strip.bottom+.5)
+                    // The advance must fit precisely. Chromium's hinted glyph envelope can extend by
+                    // a raster pixel beyond that advance even for this exact embedded font face.
+                    if (!strip || x < strip.left-.1 || x+metrics.width > strip.right+.1)
+                        defects.push(id + ': title advance outside its measured strip');
+                    if (!strip || ink.left < strip.left-1 || ink.right > strip.right+1 || ink.top < strip.top-1 || ink.bottom > strip.bottom+1)
                         defects.push(id + ': visible title outside its measured strip');
                     return { id, text:text.textContent, fontFamily:style.fontFamily, fontWeight:style.fontWeight,
+                        advance:{left:x,right:x+metrics.width},
                         bounds:{left:box.x,right:box.x+box.width,top:box.y,bottom:box.y+box.height}, ink, strip };
                 });
                 return { titles, defects };
