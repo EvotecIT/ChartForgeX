@@ -12,6 +12,7 @@ internal static partial class VisualScheduleCompiler {
     private static ScheduleLayout LaneLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
         IEnumerable<string> names, IEnumerable<string?> summaries, bool hasSummary, bool now, IReadOnlyList<double> ticks, Func<double, string> format) {
         var style = VisualStateSceneTools.TickStyle(chart, context); var gap = context.Theme.Spacing;
+        style = VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, viewport.Width * .25, Math.Max(0, viewport.Height * .25 - gap)), ticks.Select(format).ToArray(), chart.Options.XAxis.LabelAngle);
         var lineHeight = builder.MeasureText("Mg", style).Height;
         var nameWidth = names.Select(name => builder.MeasureText(name, style).Width).DefaultIfEmpty(0).Max();
         var summaryWidth = summaries.Select(summary => builder.MeasureText(summary ?? string.Empty, style).Width).DefaultIfEmpty(0).Max();
@@ -22,14 +23,16 @@ internal static partial class VisualScheduleCompiler {
         var axisTitleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle {
             Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
         });
-        var axisTitleHeight = builder.MeasureText(ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle), axisTitleStyle).Height;
+        var axisTitle = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
+        axisTitleStyle = VisualAxisText.FitOversized(builder, axisTitleStyle, new ChartRect(0, 0, viewport.Width, viewport.Height * .15), new[] { axisTitle });
+        var axisTitleHeight = builder.MeasureText(axisTitle, axisTitleStyle).Height;
         var top = now || chart.YAxisTitle.Length > 0 ? Math.Min(viewport.Height * .15, lineHeight + gap) : 0;
         var plot = ChartStateTimelineModel.LanePlotArea(chart, viewport, hasSummary, chart.Options.LaneSummaryHeader,
             nameWidth, summaryWidth, lineHeight, 0, top, axisReserve, axisTitleHeight + gap);
         var plotLeft = Math.Min(viewport.Right, plot.Left); var plotTop = Math.Min(viewport.Bottom, plot.Top);
         plot = new ChartRect(plotLeft, plotTop, Math.Max(0, Math.Min(viewport.Right, plot.Right) - plotLeft), Math.Max(0, Math.Min(viewport.Bottom, plot.Bottom) - plotTop));
         var summaryLeft = hasSummary ? Math.Min(viewport.Right, plot.Right + ChartStateTimelineModel.ColumnGap) : viewport.Right;
-        return new ScheduleLayout(plot, hasSummary, summaryLeft, axisReserve);
+        return new ScheduleLayout(plot, hasSummary, summaryLeft, axisReserve, viewport);
     }
 
     private static void Axis(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ScheduleLayout layout,
@@ -84,9 +87,12 @@ internal static partial class VisualScheduleCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode); var plot = layout.Plot;
         using (builder.PushGroup("schedule-now", "gantt-now", new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(now) }))
             builder.Line(x, plot.Top, x, plot.Bottom, colors.Status.Critical.Fill, context.Theme.AxisStrokeWidth, "gantt-now-line", dash: new[] { 4d, 3d }, paint: VisualChartPaint.Stroke(colors.Status.Critical.Fill, SvgColorRole.Status));
-        var style = VisualStateSceneTools.TickStyle(chart, context); var measured = builder.MeasureText(chart.Options.Labels.Now, style);
+        var style = VisualStateSceneTools.TickStyle(chart, context);
+        var availableHeight = Math.Max(0, plot.Top - layout.Viewport.Top - 4);
+        style = VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, plot.Width, availableHeight), new[] { chart.Options.Labels.Now });
+        var measured = builder.MeasureText(chart.Options.Labels.Now, style);
         var width = Math.Min(plot.Width, measured.Width + 4); var left = Math.Max(plot.Left, Math.Min(plot.Right - width, x - width / 2));
-        VisualStateSceneTools.Text(builder, chart.Options.Labels.Now, new ChartRect(left, Math.Max(0, plot.Top - measured.Height - 4), width, measured.Height), style,
+        VisualStateSceneTools.Text(builder, chart.Options.Labels.Now, new ChartRect(left, Math.Max(layout.Viewport.Top, plot.Top - measured.Height - 4), width, Math.Min(availableHeight, measured.Height)), style,
             "gantt-now-label", "schedule-now-label", TextAlignment.Center);
     }
 
@@ -99,6 +105,10 @@ internal static partial class VisualScheduleCompiler {
         var measured = builder.MeasureText(text, style); var gap = context.Theme.Spacing / 2;
         if (placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside) {
             var inner = new ChartRect(bounds.Left + 3, bounds.Top, Math.Max(0, bounds.Width - 6), bounds.Height);
+            style = VisualTextFitting.FitOversized(builder, style, inner.Height, fitted => {
+                var metrics = builder.MeasureText(text, fitted); return metrics.Width <= inner.Width && metrics.Height <= inner.Height;
+            });
+            measured = builder.MeasureText(text, style);
             if (measured.Width > inner.Width || measured.Height > inner.Height) return;
             VisualStateSceneTools.Text(builder, text, inner, style, "data-label", VisualStateSceneTools.SourceId(chart.Series.IndexOf(series), index) + "-label", TextAlignment.Center,
                 paint: VisualStateSceneTools.DataPaint(chart, series, index, style, ink?.Paint));
@@ -118,7 +128,8 @@ internal static partial class VisualScheduleCompiler {
     }
 
     private sealed class ScheduleLayout {
-        internal ScheduleLayout(ChartRect plot, bool hasSummary, double summaryLeft, double axisReserve) { Plot = plot; HasSummary = hasSummary; SummaryLeft = summaryLeft; AxisReserve = axisReserve; }
+        internal ScheduleLayout(ChartRect plot, bool hasSummary, double summaryLeft, double axisReserve, ChartRect viewport) { Plot = plot; HasSummary = hasSummary; SummaryLeft = summaryLeft; AxisReserve = axisReserve; Viewport = viewport; }
         internal ChartRect Plot { get; } internal bool HasSummary { get; } internal double SummaryLeft { get; } internal double AxisReserve { get; }
+        internal ChartRect Viewport { get; }
     }
 }
