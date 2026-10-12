@@ -150,6 +150,9 @@ public static partial class VisualArtifactInterchangeMapping {
     private static void MapSequence(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, IReadOnlyDictionary<string, string> artifactMetadataKeys, VisualArtifactSize? preparedSize = null) {
         envelope.Family = VisualArtifactInterchangeFamily.Sequence;
         envelope.Sequence = new VisualArtifactInterchangeSequenceArtifact();
+        envelope.Presentation = new VisualArtifactInterchangePresentation {
+            Theme = MapTheme(sequence.Theme.Resolve(sequence.ThemeMode), sequence.Theme.Typography.Family)
+        };
         var ids = new InterchangeIdScope();
         var participantIds = new List<string>();
         foreach (var participant in sequence.Participants) participantIds.Add(ids.AddNodeOccurrence(participant.Id));
