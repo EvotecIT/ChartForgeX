@@ -87,7 +87,7 @@ internal static class VisualStateSceneTools {
             var measured = builder.MeasureText(text, style);
             var ratio = Math.Min(1, Math.Min(bounds.Width / Math.Max(1, measured.Width), bounds.Height / Math.Max(1, measured.Height)));
             style.FontSize = Math.Max(1, style.EffectiveFontSize * ratio); style.Baseline = TextBaseline.Normal;
-        } else style = VisualTextFitting.FitOversized(builder, style, bounds.Height, fitted => {
+        } else if (style.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize) style = VisualTextFitting.FitOversized(builder, style, bounds.Height, fitted => {
             var metrics = builder.MeasureText(text, fitted);
             return metrics.Width <= bounds.Width && metrics.Height <= bounds.Height;
         });
