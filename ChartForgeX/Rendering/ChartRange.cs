@@ -167,7 +167,7 @@ internal sealed class ChartRange {
                 }
             }
 
-            if (UsesZeroBaseline(chart.Options.YAxis) && ChartSeriesKindTraits.UsesVerticalBaseline(series.Kind)) range.IncludeY(0);
+            if (contributesBaseline && UsesZeroBaseline(chart.Options.YAxis) && ChartSeriesKindTraits.UsesVerticalBaseline(series.Kind)) range.IncludeY(0);
         }
 
         foreach (var annotation in chart.Annotations) {

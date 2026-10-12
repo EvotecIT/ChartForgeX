@@ -1,12 +1,25 @@
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Raster;
+using System.Xml.Linq;
 using Microsoft.Playwright;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class EmptyHorizontalBaselineCompanionTests {
+    [Fact]
+    public void EmptyVerticalBarDoesNotChangeSharedHorizontalLineCategoryBounds() {
+        var chart = Chart.Create().AddLine("Readings", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) });
+        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        var expected = ChartRange.FromChart(chart);
+        chart.AddBar("Empty", Array.Empty<ChartPoint>());
+        ChartGrid.Create().Add(chart).WithSharedYAxis();
+        Assert.Equal(expected.MinY, chart.Options.YAxis.Minimum);
+        Assert.Equal(expected.MaxY, chart.Options.YAxis.Maximum);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
@@ -41,8 +54,9 @@ public sealed class EmptyHorizontalBaselineCompanionTests {
     [InlineData(true)]
     public async Task EmptyBaselineCompanionDoesNotChangePopulatedHorizontalLineDomain(bool negative) {
         var sign = negative ? -1 : 1;
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false)
+        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false).WithLineMarkers(ChartLineMarkerMode.None)
             .AddLine("Readings", new[] { new ChartPoint(1, sign * 20), new ChartPoint(2, sign * 40) });
+        chart.Series[0].Color = ChartColor.FromHex("#E11D48");
         chart.Options.LineOrientation = ChartOrientation.Horizontal;
         var expected = ChartRange.FromChart(chart);
         var before = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -63,9 +77,27 @@ public sealed class EmptyHorizontalBaselineCompanionTests {
             Assert.True(Math.Abs(expectedPosition - actualPosition) * afterPlot.Width <= 1,
                 "An empty companion must preserve the line's physical value placement within one raster pixel.");
         }
-        var png = after.ToPng();
-        if (!InteractiveChartBrowser.Enabled) return;
         var svg = after.ToSvg();
+        var line = Assert.Single(XDocument.Parse(svg).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "line");
+        var vertices = Assert.Single(ChartMapPathParser.ParseSubpaths(line.Attribute("d")!.Value, 1)).Points;
+        Assert.Equal(2, vertices.Count);
+        Assert.Equal("#E11D48", (string?)line.Attribute("stroke"));
+        for (var index = 0; index < vertices.Count; index++) {
+            var bounds = afterPoints[index].Bounds;
+            Assert.InRange(Math.Abs(vertices[index].X - (bounds.Left + bounds.Width / 2)), 0, .002);
+            Assert.InRange(Math.Abs(vertices[index].Y - (bounds.Top + bounds.Height / 2)), 0, .002);
+        }
+        var png = after.ToPng();
+        var image = RasterImageDecoder.Decode(png);
+        var middle = new ChartPoint((vertices[0].X + vertices[1].X) / 2, (vertices[0].Y + vertices[1].Y) / 2);
+        var found = false;
+        for (var y = (int)middle.Y - 2; y <= (int)middle.Y + 2; y++) for (var x = (int)middle.X - 2; x <= (int)middle.X + 2; x++) {
+            var offset = (y * image.Width + x) * 4;
+            if (Math.Abs(image.Pixels[offset] - 225) <= 5 && Math.Abs(image.Pixels[offset + 1] - 29) <= 5
+                && Math.Abs(image.Pixels[offset + 2] - 72) <= 5) found = true;
+        }
+        Assert.True(found, "The native PNG must paint the authored line within two pixels of its SVG midpoint.");
+        if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", 800, 600);
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
