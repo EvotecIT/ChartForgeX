@@ -138,7 +138,7 @@ internal static partial class VisualCartesianCompiler {
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);
-        DrawPlotRegionFills(builder, plotRegions);
+        DrawPlotRegionFills(builder, plotRegions, colors);
         using (builder.PushClip(viewport)) {
             if (horizontal) DrawHorizontalAxes(chart, context, builder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
             else DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);

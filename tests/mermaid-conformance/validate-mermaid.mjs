@@ -168,10 +168,11 @@ for (const { folder, file, hasExpected } of files) {
         const points = data.points.map(point => [point.text.text,
           (point.x - two.x) / (two.width * 2), 1 - (point.y - two.y) / (two.height * 2)])
           .sort((a, b) => a[0].localeCompare(b[0]));
-        assert.deepEqual(points.map(point => point[0]), expected.quadrant.points.map(point => point[0]));
+        const expectedPoints = [...expected.quadrant.points].sort((a, b) => a[0].localeCompare(b[0]));
+        assert.deepEqual(points.map(point => point[0]), expectedPoints.map(point => point[0]));
         points.forEach((point, index) => {
-          assert.ok(Math.abs(point[1] - expected.quadrant.points[index][1]) < 1e-9);
-          assert.ok(Math.abs(point[2] - expected.quadrant.points[index][2]) < 1e-9);
+          assert.ok(Math.abs(point[1] - expectedPoints[index][1]) < 1e-9);
+          assert.ok(Math.abs(point[2] - expectedPoints[index][2]) < 1e-9);
         });
       }
       if (expected.taskTimestamps) {

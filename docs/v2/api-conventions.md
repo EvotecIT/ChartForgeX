@@ -81,6 +81,8 @@ Prepared Cartesian point semantics retain the complete resolved display label, e
 
 `Chart.AddPlotRegion(new ChartPlotRegion(color, ...))` adds a passive solid background rectangle to a Cartesian chart. `Chart.PlotRegions` owns its immutable definitions in paint order. Nullable `xMinimum`, `xMaximum`, `yMinimum` and `yMaximum` extend to the corresponding final domain end; regions never expand domains. `yAxis` selects primary or secondary Y. Bounds follow physical X and Y. Horizontal charts use value coordinates for X and linear category slots for Y. Time bounds use OLE Automation dates, and logarithmic value bounds must be positive. A secondary region requires a secondary-axis series.
 
+Use `new ChartPlotRegion(paletteIndex, ...)` to bind a region to the active render theme's categorical palette. Indices are zero-based, wrap to the palette length, and cannot be negative. Both the fill and caption contrast resolve during preparation; SVG series color variables retain that binding. Literal-color regions keep their authored color. `ChartPlotRegion.Color` is nullable for palette-backed regions; inspect `PaletteIndex` to distinguish the two forms. Automatic accessible descriptions and `ChartDescriptionFacts.PlotRegionLabels` retain authored captions even when the chart has no points.
+
 Four regions express quadrants at any numeric pivot:
 
 ```csharp

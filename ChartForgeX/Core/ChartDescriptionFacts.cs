@@ -65,6 +65,7 @@ public enum ChartDescriptionKind {
 /// </summary>
 public sealed class ChartDescriptionFacts {
     private readonly ReadOnlyCollection<string> _seriesNames;
+    private readonly ReadOnlyCollection<string> _plotRegionLabels;
 
     /// <summary>Initializes the facts of one sentence, for example to test a formatter.</summary>
     /// <param name="kind">Which sentence is described.</param>
@@ -78,7 +79,8 @@ public sealed class ChartDescriptionFacts {
     /// <param name="groupCount">The number of groups, for topology descriptions; zero or greater.</param>
     /// <param name="edgeCount">The number of edges, for topology descriptions; zero or greater.</param>
     /// <param name="zeroCount">The number of calendar days at zero, for calendar sentences; zero or greater.</param>
-    public ChartDescriptionFacts(ChartDescriptionKind kind, string? title, IEnumerable<string> seriesNames, int count, int missingCount = 0, DateTime? firstDate = null, DateTime? lastDate = null, string? mapName = null, int groupCount = 0, int edgeCount = 0, int zeroCount = 0) {
+    /// <param name="plotRegionLabels">The authored Cartesian plot region captions, including regions without points.</param>
+    public ChartDescriptionFacts(ChartDescriptionKind kind, string? title, IEnumerable<string> seriesNames, int count, int missingCount = 0, DateTime? firstDate = null, DateTime? lastDate = null, string? mapName = null, int groupCount = 0, int edgeCount = 0, int zeroCount = 0, IEnumerable<string>? plotRegionLabels = null) {
         if (seriesNames == null) throw new ArgumentNullException(nameof(seriesNames));
         if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), count, "Counts must be zero or greater.");
         if (missingCount < 0) throw new ArgumentOutOfRangeException(nameof(missingCount), missingCount, "Counts must be zero or greater.");
@@ -90,6 +92,10 @@ public sealed class ChartDescriptionFacts {
         var names = new List<string>();
         foreach (var name in seriesNames) names.Add(name ?? string.Empty);
         _seriesNames = names.AsReadOnly();
+        var regionLabels = new List<string>();
+        if (plotRegionLabels != null) foreach (var label in plotRegionLabels)
+            if (!string.IsNullOrWhiteSpace(label)) regionLabels.Add(label);
+        _plotRegionLabels = regionLabels.AsReadOnly();
         Count = count;
         MissingCount = missingCount;
         FirstDate = firstDate;
@@ -108,6 +114,9 @@ public sealed class ChartDescriptionFacts {
 
     /// <summary>Gets the described series names: every series with source data, or the one calendar or map series.</summary>
     public IReadOnlyList<string> SeriesNames => _seriesNames;
+
+    /// <summary>Gets authored Cartesian plot region captions for automatic and host-localized descriptions.</summary>
+    public IReadOnlyList<string> PlotRegionLabels => _plotRegionLabels;
 
     /// <summary>
     /// Gets the main count: described series, calendar days with a value, highlighted map points, filled map regions,
@@ -148,9 +157,9 @@ public sealed class ChartDescriptionFacts {
             var series = _seriesNames.Count > 0 ? _seriesNames[0] : string.Empty;
             switch (Kind) {
                 case ChartDescriptionKind.NoSeries:
-                    return title + " with no data series.";
+                    return _plotRegionLabels.Count > 0 ? title + " with " + PlotRegions() : title + " with no data series.";
                 case ChartDescriptionKind.NoPoints:
-                    return title + " with no data points.";
+                    return _plotRegionLabels.Count > 0 ? title + " with " + PlotRegions() : title + " with no data points.";
                 case ChartDescriptionKind.CalendarHeatmap:
                     return title + " calendar heatmap for " + series + " from " + Date(FirstDate) + " to " + Date(LastDate) + " with " + CalendarDays() + ".";
                 case ChartDescriptionKind.DottedMap:
@@ -170,10 +179,14 @@ public sealed class ChartDescriptionFacts {
                 case ChartDescriptionKind.TileMapGroup:
                     return series + " tile map with " + Number(Count) + " filled regions and " + Number(MissingCount) + " missing regions";
                 default:
-                    return title + " with " + Number(Count) + " data series: " + string.Join(", ", _seriesNames) + ".";
+                    return title + " with " + Number(Count) + " data series: " + string.Join(", ", _seriesNames) + "."
+                        + (_plotRegionLabels.Count > 0 ? " Plot regions: " + string.Join(", ", _plotRegionLabels) + "." : string.Empty);
             }
         }
     }
+
+    private string PlotRegions() => Number(_plotRegionLabels.Count) + " labeled plot "
+        + (_plotRegionLabels.Count == 1 ? "region: " : "regions: ") + string.Join(", ", _plotRegionLabels) + ".";
 
     /// <summary>Lists the calendar day counts: days with a value, then days at zero and days without data when there are any.</summary>
     private string CalendarDays() {

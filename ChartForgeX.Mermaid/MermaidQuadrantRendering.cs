@@ -33,12 +33,11 @@ public static class MermaidQuadrantRendering {
         series.SemanticRole = "mermaid-quadrant-point";
         for (var i = 0; i < document.Points.Count; i++) series.WithPointLabel(i, document.Points[i].Label);
         MermaidPresentation.Apply(chart, document);
-        var palette = chart.Options.Theme.Palette;
         for (var quadrant = 1; quadrant <= 4; quadrant++) {
             var right = quadrant == 1 || quadrant == 4;
             var top = quadrant == 1 || quadrant == 2;
             document.QuadrantLabels.TryGetValue(quadrant, out var label);
-            chart.AddPlotRegion(new ChartPlotRegion(palette[(quadrant - 1) % palette.Length],
+            chart.AddPlotRegion(new ChartPlotRegion(quadrant - 1,
                 xMinimum: right ? .5 : 0, xMaximum: right ? 1 : .5,
                 yMinimum: top ? .5 : 0, yMaximum: top ? 1 : .5, label: label ?? string.Empty));
         }

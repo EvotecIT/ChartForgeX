@@ -1,6 +1,6 @@
 {
   "quadrant": {
     "labels": ["Expand", "Promote", "Re-evaluate", "Improve"],
-    "points": [["Campaign A", 0.3, 0.6], ["Campaign B", 0.7, 0.8]]
+    "points": [["Campaign B", 0.7, 0.8], ["Campaign A", 0.3, 0.6]]
   }
 }

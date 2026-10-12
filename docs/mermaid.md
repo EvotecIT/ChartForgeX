@@ -570,6 +570,8 @@ Supported quadrant parsing includes:
 - Point rows in `label: [x, y]` form.
 - Source spans for labels and points.
 
+Four native plot regions retain the authored quadrant captions, including charts without points. Region fills and caption contrast follow the active render theme when a host calls `WithTheme` or supplies a `VisualRenderContext`. Automatic accessible descriptions include the region captions; explicit host descriptions remain authoritative.
+
 ```csharp
 using ChartForgeX.Mermaid;
 
