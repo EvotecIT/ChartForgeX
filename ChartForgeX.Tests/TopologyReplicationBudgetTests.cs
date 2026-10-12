@@ -15,7 +15,7 @@ namespace ChartForgeX.Tests;
 /// <see cref="TopologyRouteQualityTests"/> holds the same fixtures to zero caption and group-header crossings, zero
 /// overdrawn routes, attached route ends, and labels on their routes.
 /// </summary>
-[Collection(nameof(TopologyReplicationBudgetCollection))]
+[Collection(nameof(RenderingBudgetCollection))]
 public sealed class TopologyReplicationBudgetTests {
     private const long RenderTimeBudgetMilliseconds = 45_000;
     private readonly ITestOutputHelper _output;
@@ -114,6 +114,3 @@ public sealed class TopologyReplicationBudgetTests {
 }
 
 /// <summary>Runs the replication budget tests without parallel neighbours so timing budgets stay meaningful.</summary>
-[CollectionDefinition(nameof(TopologyReplicationBudgetCollection), DisableParallelization = true)]
-public sealed class TopologyReplicationBudgetCollection {
-}
