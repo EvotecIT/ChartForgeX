@@ -11,6 +11,27 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class V2StackingTests {
+    [Fact]
+    public void HorizontalUlpEquivalentCategoriesShareReadableSlotsAndTotalsWithoutChangingRawCoordinates() {
+        var category = 1.5; var peer = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(category) + 3);
+        var chart = Chart.Create().WithHeader(false).WithAxes(false).WithLegend(false).WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat)
+            .WithStackedBars().WithStackTotals().WithYAxisBounds(0, 3)
+            .AddHorizontalBar("First", new[] { new ChartPoint(category, 2) })
+            .AddHorizontalBar("Second", new[] { new ChartPoint(peer, 3) });
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 400), 0)));
+        Assert.Equal(2, prepared.Regions.Count(region => region.Role == "point"));
+        var first = Bounds(prepared, 0, 0); var second = Bounds(prepared, 1, 0);
+        Assert.Equal(30, first.Height, 8); Assert.Equal(first.Top, second.Top, 8); Assert.Equal(first.Right, second.Left, 8);
+        Assert.True(first.Top >= 0 && first.Bottom <= 400);
+        Assert.Equal("2", Point(prepared, 1, 0).Metadata["data-cfx-base"]);
+        Assert.Equal(category, double.Parse(Point(prepared, 0, 0).Metadata["data-cfx-x"], CultureInfo.InvariantCulture));
+        Assert.Equal(peer, double.Parse(Point(prepared, 1, 0).Metadata["data-cfx-x"], CultureInfo.InvariantCulture));
+        var total = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "stack-total");
+        Assert.Equal("5", total.Metadata["data-cfx-y"]); Assert.Equal("5", total.Metadata["data-cfx-source-total"]);
+        Assert.Equal(1, XDocument.Parse(prepared.ToSvg()).Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "stack-total-label"));
+        Assert.True(prepared.ToPng().Length > 64);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

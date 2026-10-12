@@ -115,11 +115,12 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static string Host(bool graphite, HtmlChartResponsiveLayout layout, int width, double scale, bool pageScroll, ChartInteractionFeatures features, Chart? chart = null) {
+    private static string Host(bool graphite, HtmlChartResponsiveLayout layout, int width, double scale, bool pageScroll, ChartInteractionFeatures features, Chart? chart = null, bool includeResetButton = false, Action<HtmlChartCrosshairOptions>? configureCrosshair = null) {
         var fragment = (chart ?? CoordinateChart(graphite)).ToInteractiveHtmlFragment(options => {
             options.ResponsiveLayout = layout;
             options.Interaction.Features = features;
-            options.IncludeResetButton = false;
+            options.IncludeResetButton = includeResetButton;
+            configureCrosshair?.Invoke(options.Crosshair);
         });
         var transform = scale == 1 ? "" : "transform:translate(80px,70px) scale(" + scale.ToString(CultureInfo.InvariantCulture) + ");transform-origin:0 0;";
         var customStage = pageScroll ? "<style>#host .cfx-stage{border-width:5px;padding:18px}</style>" : "";
@@ -152,9 +153,15 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
             const s=r.querySelector('.cfx-stage'), c=r.querySelector('.cfx-crosshair'), b=s.getBoundingClientRect();
             const sx=b.width/s.offsetWidth, sy=b.height/s.offsetHeight;
             const x=c.querySelector('.cfx-crosshair__line--y').getBoundingClientRect(), y=c.querySelector('.cfx-crosshair__line--x').getBoundingClientRect();
-            return {visible:!c.hidden,x:x.left,y:y.top,left:y.left,right:y.right,top:x.top,bottom:x.bottom,
-                viewport:{left:b.left+s.clientLeft*sx,top:b.top+s.clientTop*sy,width:s.clientWidth*sx,height:s.clientHeight*sy},
-                targetId:(r.dataset.cfxCrosshair||'').split('|')[1],label:c.querySelector('[data-cfx-crosshair-label]').textContent};
+            const viewport={left:b.left+s.clientLeft*sx,top:b.top+s.clientTop*sy,right:b.left+(s.clientLeft+s.clientWidth)*sx,bottom:b.top+(s.clientTop+s.clientHeight)*sy};
+            // The rendered axes provide an independent geometry oracle, without reading adapter plot metadata.
+            const ax=s.querySelector('[data-cfx-role="axis-x"]').getBoundingClientRect(), ay=s.querySelector('[data-cfx-role="axis-y"]').getBoundingClientRect();
+            const plot={left:Math.max(ax.left,viewport.left),right:Math.min(ax.right,viewport.right),top:Math.max(ay.top,viewport.top),bottom:Math.min(ay.bottom,viewport.bottom)};
+            const label=c.querySelector('[data-cfx-crosshair-label]'), lb=label.getBoundingClientRect(), heading=s.querySelector('[data-cfx-role="frame-heading"]');
+            return {visible:!c.hidden,x:x.left+x.width/2,y:y.top+y.height/2,left:y.left,right:y.right,top:x.top,bottom:x.bottom,
+                viewport,plot,headingBottom:heading?heading.getBoundingClientRect().bottom:null,
+                labelBounds:{visible:getComputedStyle(label).display!=='none',left:lb.left,right:lb.right,top:lb.top,bottom:lb.bottom},
+                targetId:(r.dataset.cfxCrosshair||'').split('|')[1],label:label.textContent};
         }
         """);
 
@@ -162,11 +169,18 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         Assert.True(guide.GetProperty("visible").GetBoolean());
         Assert.InRange(guide.GetProperty("x").GetDouble() - native[0], -1, 1);
         Assert.InRange(guide.GetProperty("y").GetDouble() - native[1], -1, 1);
-        var viewport = guide.GetProperty("viewport");
-        Assert.InRange(guide.GetProperty("left").GetDouble() - viewport.GetProperty("left").GetDouble(), -1, 1);
-        Assert.InRange(guide.GetProperty("right").GetDouble() - viewport.GetProperty("left").GetDouble() - viewport.GetProperty("width").GetDouble(), -1, 1);
-        Assert.InRange(guide.GetProperty("top").GetDouble() - viewport.GetProperty("top").GetDouble(), -1, 1);
-        Assert.InRange(guide.GetProperty("bottom").GetDouble() - viewport.GetProperty("top").GetDouble() - viewport.GetProperty("height").GetDouble(), -1, 1);
+        var plot = guide.GetProperty("plot");
+        foreach (var edge in new[] { "left", "right", "top", "bottom" })
+            Assert.InRange(guide.GetProperty(edge).GetDouble() - plot.GetProperty(edge).GetDouble(), -1, 1);
+        if (guide.GetProperty("headingBottom").ValueKind == JsonValueKind.Number)
+            Assert.True(guide.GetProperty("top").GetDouble() >= guide.GetProperty("headingBottom").GetDouble() - 1);
+        var label = guide.GetProperty("labelBounds");
+        if (label.GetProperty("visible").GetBoolean()) {
+            Assert.True(label.GetProperty("left").GetDouble() >= plot.GetProperty("left").GetDouble() - 1);
+            Assert.True(label.GetProperty("right").GetDouble() <= plot.GetProperty("right").GetDouble() + 1);
+            Assert.True(label.GetProperty("top").GetDouble() >= plot.GetProperty("top").GetDouble() - 1);
+            Assert.True(label.GetProperty("bottom").GetDouble() <= plot.GetProperty("bottom").GetDouble() + 1);
+        }
         Assert.False(string.IsNullOrWhiteSpace(guide.GetProperty("label").GetString()));
     }
 

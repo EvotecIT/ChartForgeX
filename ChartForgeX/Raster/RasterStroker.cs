@@ -12,7 +12,6 @@ namespace ChartForgeX.Raster;
 /// </summary>
 internal static partial class RasterStroker {
     private const double Epsilon = 0.000000001;
-    private const int MaximumDashes = 100000;
 
     /// <summary>
     /// Appends the outline of one polyline. A polyline whose last point repeats its first is closed

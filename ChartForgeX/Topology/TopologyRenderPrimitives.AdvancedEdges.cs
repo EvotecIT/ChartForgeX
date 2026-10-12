@@ -55,7 +55,7 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static string EdgeDash(TopologyEdge edge) {
-        if (edge.DashPattern.Count > 0) return string.Join(" ", edge.DashPattern.Select(value => value.ToString("0.###", CultureInfo.InvariantCulture)));
+        if (edge.DashPattern.Count > 0) return string.Join(" ", edge.DashPattern.Select(ChartStrokeDashes.FormatNumber));
         return edge.LineStyle switch {
             TopologyEdgeLineStyle.Solid => "none",
             TopologyEdgeLineStyle.Dashed => "8 5",

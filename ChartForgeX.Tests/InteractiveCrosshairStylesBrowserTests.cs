@@ -108,6 +108,10 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
             Assert.Equal("none", line.GetProperty("shadow").GetString());
         });
         Assert.False(await session.Page.Locator(".cfx-crosshair__label").IsHiddenAsync());
+        Assert.True(await session.Page.Locator(".cfx-crosshair").EvaluateAsync<bool>("""
+            c => { const b=c.getBoundingClientRect(), l=c.querySelector('[data-cfx-crosshair-label]').getBoundingClientRect();
+                return l.left>=b.left-1 && l.right<=b.right+1 && l.top>=b.top-1 && l.bottom<=b.bottom+1; }
+            """));
         await CaptureAsync(session, "crosshair-sparse-" + (graphite ? "graphite" : "ordinary") + (zeroWidth ? "-zero" : "-transparent"), new { contract, paint });
         AssertNoConsoleErrors(session);
     }

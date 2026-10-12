@@ -11,7 +11,7 @@ public sealed partial class ChartSeries {
         get {
             if (IsRelationshipKind(Kind)) return Nodes.Count;
             if (WaterfallItems.Count > 0) return WaterfallItems.Count;
-            var tupleSize = Kind == ChartSeriesKind.Bubble || Kind == ChartSeriesKind.RangeBand || Kind == ChartSeriesKind.RangeArea
+            var tupleSize = Kind == ChartSeriesKind.Bubble || Kind == ChartSeriesKind.RangeBand || Kind == ChartSeriesKind.RangeArea || Kind == ChartSeriesKind.DifferenceArea
                 || Kind == ChartSeriesKind.RangeBar || Kind == ChartSeriesKind.Dumbbell ? 2
                 : Kind == ChartSeriesKind.ErrorBar ? 3
                 : Kind == ChartSeriesKind.Candlestick || Kind == ChartSeriesKind.Ohlc ? 4

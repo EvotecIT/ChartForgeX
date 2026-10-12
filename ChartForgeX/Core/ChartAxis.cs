@@ -127,7 +127,7 @@ public sealed class ChartAxis {
     public bool Visible { get; set; } = true;
 
     /// <summary>Gets or sets whether increasing values advance in the reverse visual direction. Bounds and source labels keep their original values.</summary>
-    /// <remarks>Supported by Cartesian projections, numeric radial axes, and radar/polar numeric radii. Schedule, polar angular, and polar-area reversal reject during preparation.</remarks>
+    /// <remarks>Supported by Cartesian projections, numeric radial axes, radar/polar numeric radii and angular axes, and polar-area category angles. Angular reversal changes category order or the direction of authored polar radians without changing source values. Schedule and polar-area radius reversal reject during preparation.</remarks>
     public bool Reversed { get; set; }
 
     /// <summary>Gets or sets a value indicating whether the axis rule is visible.</summary>
