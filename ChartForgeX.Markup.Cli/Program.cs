@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Globalization;
+using ChartForgeX.Mermaid;
 using System.Linq;
 using System.Net;
 using ChartForgeX.Markup;
@@ -34,7 +36,7 @@ internal static class Program {
             var source = File.ReadAllText(input);
             switch (command) {
                 case "validate":
-                    return Validate(source);
+                    return Validate(source, args.Skip(2).ToArray());
                 case "preview":
                     return Preview(source, args.Skip(2).ToArray());
                 case "export":
@@ -57,8 +59,8 @@ internal static class Program {
         }
     }
 
-    private static int Validate(string source) {
-        var result = ParseVisuals(source);
+    private static int Validate(string source, string[] args) {
+        var result = ParseVisuals(source, args);
         WriteDiagnostics(result);
         if (result.HasErrors) return 2;
         if (result.Artifacts.Count == 0) {
@@ -78,7 +80,7 @@ internal static class Program {
     }
 
     private static int Export(string source, string[] args) {
-        var result = ParseRequiredVisuals(source);
+        var result = ParseRequiredVisuals(source, args);
         var output = Option(args, "--output") ?? Option(args, "-o");
         if (string.IsNullOrWhiteSpace(output)) throw new ArgumentException("Export requires --output <path>.");
         var extension = Path.GetExtension(output).ToLowerInvariant();
@@ -103,7 +105,7 @@ internal static class Program {
     }
 
     private static int Preview(string source, string[] args) {
-        var result = ParseRequiredVisuals(source);
+        var result = ParseRequiredVisuals(source, args);
         var html = ArtifactsToHtmlPage(result.Artifacts);
         var output = Option(args, "--output") ?? Option(args, "-o");
         if (string.IsNullOrWhiteSpace(output)) {
@@ -136,12 +138,19 @@ internal static class Program {
         return 0;
     }
 
-    private static VisualMarkupParseResult ParseVisuals(string source) {
-        return new MermaidVisualMarkupParser().Parse(source);
+    private static VisualMarkupParseResult ParseVisuals(string source, string[] args) {
+        var options = new MermaidRenderOptions();
+        var anchor = Option(args, "--gantt-date-anchor");
+        if (anchor != null) {
+            if (!DateTime.TryParseExact(anchor, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                throw new ArgumentException("Option --gantt-date-anchor requires a valid calendar date in YYYY-MM-DD format.");
+            options.ParseOptions = new MermaidParseOptions { GanttDateAnchor = date };
+        }
+        return new MermaidVisualMarkupParser(options).Parse(source);
     }
 
-    private static VisualMarkupParseResult ParseRequiredVisuals(string source) {
-        var result = ParseVisuals(source);
+    private static VisualMarkupParseResult ParseRequiredVisuals(string source, string[] args) {
+        var result = ParseVisuals(source, args);
         WriteDiagnostics(result);
         if (result.HasErrors) throw new MarkupCliErrorException("Markup contains errors.", 2);
         if (result.Artifacts.Count == 0) throw new MarkupCliErrorException("No supported visual artifacts were found.", 2);
@@ -215,9 +224,9 @@ internal static class Program {
     private static void Help() {
         Console.WriteLine("ChartForgeX Markup CLI");
         Console.WriteLine("Usage:");
-        Console.WriteLine("  chartforgex-markup validate <file>");
-        Console.WriteLine("  chartforgex-markup preview <file> [--output <preview.html>]");
-        Console.WriteLine("  chartforgex-markup export <file> --output <diagram.svg|diagram.html|diagram.png>");
+        Console.WriteLine("  chartforgex-markup validate <file> [--gantt-date-anchor YYYY-MM-DD]");
+        Console.WriteLine("  chartforgex-markup preview <file> [--output <preview.html>] [--gantt-date-anchor YYYY-MM-DD]");
+        Console.WriteLine("  chartforgex-markup export <file> --output <diagram.svg|diagram.html|diagram.png> [--gantt-date-anchor YYYY-MM-DD]");
         Console.WriteLine("  chartforgex-markup emit <topology-file> --target csharp [--output <file.cs>]");
     }
 

@@ -24,6 +24,7 @@ public static class MermaidGanttRendering {
             chart.WithXAxisValueFormatter(value => FormatAxisValue(value, document, null, chart.Options.XAxis.TimeZone));
         chart.Options.XAxis.TimeTickLabelFormatter = (value, effectiveInterval) => FormatAxisValue(value, document, effectiveInterval, chart.Options.XAxis.TimeZone);
         if (options.Today.HasValue && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase)) chart.WithGanttToday(options.Today.Value);
+        chart.Options.GanttTodayStyle = options.TodayStyle ?? MermaidGanttTodayStyle.Parse(document.TodayMarker, out _);
         chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
         foreach (var task in document.Tasks) {
             var name = string.IsNullOrWhiteSpace(task.Section) ? task.Title : task.Section + " / " + task.Title;
@@ -70,6 +71,7 @@ public static class MermaidGanttRendering {
         artifact.Metadata["mermaid.dependencies"] = DependencyCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.untilReferences"] = UntilReferenceCount(document).ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.dateFormat"] = document.DateFormat;
+        if (document.DateAnchor.HasValue) artifact.Metadata["mermaid.dateAnchor"] = document.DateAnchor.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
         if (!string.IsNullOrWhiteSpace(document.AxisFormat)) artifact.Metadata["mermaid.axisFormat"] = document.AxisFormat!;
         if (!string.IsNullOrWhiteSpace(document.TickInterval)) artifact.Metadata["mermaid.tickInterval"] = document.TickInterval!;
         artifact.Metadata["mermaid.weekday"] = document.Weekday.ToString().ToLowerInvariant();
@@ -161,4 +163,7 @@ public sealed class MermaidGanttRenderOptions {
 
     /// <summary>Gets or sets an optional current-day marker.</summary>
     public DateTime? Today { get; set; }
+
+    /// <summary>Gets or sets a native today-line stroke override. A supplied style takes precedence over source styling; source off still hides the guide.</summary>
+    public ChartStrokeStyle? TodayStyle { get; set; }
 }

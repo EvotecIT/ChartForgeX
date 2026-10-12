@@ -7,10 +7,23 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttCommaTaskDateTests {
     [Theory]
+    [InlineData("Friday", "")]
+    [InlineData("Fri", "active,")]
+    public void WeekdayFallbacksPreserveViableExplicitDependencyIds(string id, string tags) {
+        var parsed = new MermaidParser().ParseGantt("gantt\nFirst :" + tags + id + ",02 January 2026,1d\nSecond :after " + id + ",1d");
+        Assert.Empty(parsed.Diagnostics);
+        Assert.Equal(id, parsed.Document!.Tasks[0].Id);
+        Assert.Equal(parsed.Document.Tasks[0].End, parsed.Document.Tasks[1].Start);
+        Assert.Equal(0, parsed.Document.Tasks[1].DependencyIndex);
+    }
+
+    [Theory]
     [InlineData("January 4 2026, 13:00", "")]
     [InlineData("January 4 2026, 13:00", "active,")]
     [InlineData("January 4, 2026, 13:00", "")]
     [InlineData("January 4, 2026, 13:00", "active,")]
+    [InlineData("Sunday, 04 January 2026 13:00", "")]
+    [InlineData("Sun, Jan 4, 2026, 13:00", "active,")]
     public void CompleteFallbackEndTimestampKeepsTheImplicitStart(string timestamp, string tags) {
         var parsed = new MermaidParser().ParseGantt("gantt\nFirst :first,2026-01-02,1d\nSecond :" + tags + timestamp);
         Assert.Empty(parsed.Diagnostics);
@@ -59,6 +72,24 @@ public sealed class MermaidGanttCommaTaskDateTests {
     [InlineData("milestone")]
     [InlineData("vert")]
     [InlineData("")]
+    public void AnchoredConfiguredLiteralPrefixesKeepTheirDateMeaning(string literal) {
+        var source = "gantt\ndateFormat [" + literal + ",]MM-DD\nTask :" + literal + ",02-29,1d";
+        var parsed = new MermaidParser().ParseGantt(source, new MermaidParseOptions { GanttDateAnchor = new DateTime(2024, 1, 1) });
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Null(task.Id); Assert.Empty(task.Tags);
+        Assert.Equal(0, task.Progress); Assert.False(task.IsMilestone); Assert.False(task.IsVerticalMarker);
+        Assert.Equal(new DateTime(2024, 2, 29), task.Start);
+        Assert.Equal(new DateTime(2024, 3, 1), task.End);
+    }
+
+    [Theory]
+    [InlineData("active")]
+    [InlineData("done")]
+    [InlineData("crit")]
+    [InlineData("milestone")]
+    [InlineData("vert")]
+    [InlineData("")]
     public void EndOnlyConfiguredDatesKeepTheirLiteralPrefixes(string literal) {
         var prefix = literal + ",";
         var source = "gantt\ndateFormat [" + prefix + "]YYYY-MM-DD\nFirst :task," + prefix + "2026-01-02,1d\nSecond :" + prefix + "2026-01-04";
@@ -69,6 +100,25 @@ public sealed class MermaidGanttCommaTaskDateTests {
         Assert.Equal(0, task.Progress); Assert.False(task.IsMilestone); Assert.False(task.IsVerticalMarker);
         Assert.Equal(new DateTime(2026, 1, 3), task.Start);
         Assert.Equal(new DateTime(2026, 1, 4), task.End);
+    }
+
+    [Theory]
+    [InlineData("active")]
+    [InlineData("done")]
+    [InlineData("crit")]
+    [InlineData("milestone")]
+    [InlineData("vert")]
+    [InlineData("")]
+    public void EndOnlyConfiguredDatesUseTheHostAnchorBeforeConsumingTags(string literal) {
+        var prefix = literal + ",";
+        var source = "gantt\ndateFormat [" + prefix + "]MM-DD\nFirst :task," + prefix + "02-29,1d\nSecond :" + prefix + "03-02";
+        var parsed = new MermaidParser().ParseGantt(source, new MermaidParseOptions { GanttDateAnchor = new DateTime(2024, 1, 1) });
+        Assert.Empty(parsed.Diagnostics);
+        var task = parsed.Document!.Tasks[1];
+        Assert.Null(task.Id); Assert.Empty(task.Tags);
+        Assert.Equal(0, task.Progress); Assert.False(task.IsMilestone); Assert.False(task.IsVerticalMarker);
+        Assert.Equal(new DateTime(2024, 3, 1), task.Start);
+        Assert.Equal(new DateTime(2024, 3, 2), task.End);
     }
 
     [Theory]
@@ -97,6 +147,18 @@ public sealed class MermaidGanttCommaTaskDateTests {
         Assert.Equal(new[] { "active" }, task.Tags);
         Assert.Equal(0, task.Progress); Assert.False(task.IsMilestone);
         Assert.Equal(new DateTime(2026, 1, 2), task.Start);
+    }
+
+    [Theory]
+    [InlineData("", null)]
+    [InlineData("task,", "task")]
+    public void AnchoredConfiguredDateRetainsItsLiteralPrefix(string prefix, string? expectedId) {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat [prefix,]MM-DD\nTask :" + prefix + "prefix,02-29,1d", new MermaidParseOptions { GanttDateAnchor = new DateTime(2024, 1, 1) });
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal(expectedId, task.Id);
+        Assert.Equal(new DateTime(2024, 2, 29), task.Start);
+        Assert.Equal(new DateTime(2024, 3, 1), task.End);
     }
 
     [Theory]
@@ -137,6 +199,17 @@ public sealed class MermaidGanttCommaTaskDateTests {
         Assert.Equal(expectedId, task.Id);
         Assert.Equal(new DateTime(2026, 1, 2, 12, 0, 0), task.Start);
         Assert.Equal(task.Start.AddDays(1), task.End);
+    }
+
+    [Fact]
+    public void NumericIdsRemainSeparateFromCommaSeparatedClockFields() {
+        var parsed = new MermaidParser().ParseGantt("gantt\ndateFormat H[,]m\nTask :1,12,30,1h",
+            new MermaidParseOptions { GanttDateAnchor = new DateTime(2026, 1, 2) });
+        Assert.Empty(parsed.Diagnostics);
+        var task = Assert.Single(parsed.Document!.Tasks);
+        Assert.Equal("1", task.Id);
+        Assert.Equal(new DateTime(2026, 1, 2, 12, 30, 0), task.Start);
+        Assert.Equal(task.Start.AddHours(1), task.End);
     }
 
     [Theory]

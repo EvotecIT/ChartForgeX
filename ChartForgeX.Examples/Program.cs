@@ -461,6 +461,8 @@ var annotationEdge = Chart.Create()
     .AddVerticalLine(6, "right edge marker", ChartColor.FromRgb(251, 191, 36))
     .AddHorizontalLine(100, "target", ChartColor.FromRgb(52, 211, 153));
 
+annotationEdge.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 28, dash: Array.Empty<double>());
+annotationEdge.Annotations[1].StrokeStyle = new ChartStrokeStyle(width: 12, opacity: .65);
 SaveChart(annotationEdge, "annotation-edge-dark");
 
 var labels = Chart.Create()

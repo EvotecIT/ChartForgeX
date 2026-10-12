@@ -91,8 +91,8 @@ internal static partial class MermaidGanttParser {
                     }
                 }
                 slot.Value = latest;
-            } else if (TryParseDate(task.StartSpec!, document.DateFormat, out var start)) slot.Value = start;
-            else Fail(slot, result, "Gantt task start dates must match dateFormat '" + document.DateFormat + "'.");
+            } else if (TryParseDate(task.StartSpec!, document.DateFormat, out var start, document.DateAnchor)) slot.Value = start;
+            else Fail(slot, result, "Gantt task start dates must match dateFormat '" + document.DateFormat + "'." + AnchorHint(document));
             return;
         }
 
@@ -108,7 +108,7 @@ internal static partial class MermaidGanttParser {
                 return;
             }
             task.RenderEnd = renderEnd;
-        } else if (!MermaidGanttInputDateFormat.TryParseConfigured(task.EndSpec, document.DateFormat, out end)) {
+        } else if (!MermaidGanttInputDateFormat.TryParseConfigured(task.EndSpec, document.DateFormat, out end, document.DateAnchor)) {
             // An explicitly formatted end date can contain a duration-like literal suffix.
             if (TryParseDuration(task.EndSpec, out var amount, out var unit)) {
                 if (!TryResolveDurationEnd(taskStart, amount, unit, document, out end, out var renderEnd)) {
@@ -116,8 +116,8 @@ internal static partial class MermaidGanttParser {
                     return;
                 }
                 task.RenderEnd = renderEnd;
-            } else if (!TryParseDate(task.EndSpec, document.DateFormat, out end)) {
-                Fail(slot, result, "Gantt task end values must be dates, durations or until clauses.");
+            } else if (!TryParseDate(task.EndSpec, document.DateFormat, out end, document.DateAnchor)) {
+                Fail(slot, result, "Gantt task end values must be dates, durations or until clauses." + AnchorHint(document));
                 return;
             }
         }
@@ -130,6 +130,9 @@ internal static partial class MermaidGanttParser {
         var span = slot.Task.Span;
         Add(result, span.Line, span.Column, span.Length, MermaidDiagnosticSeverity.Error, message);
     }
+
+    private static string AnchorHint(MermaidGanttDocument document) => !document.DateAnchor.HasValue && MermaidGanttInputDateFormat.OmitsYear(document.DateFormat)
+        ? " Formats without a year require MermaidParseOptions.GanttDateAnchor." : string.Empty;
 
     private sealed class DateSlot {
         public DateSlot(TaskDefinition task, bool isEnd) { Task = task; IsEnd = isEnd; }
