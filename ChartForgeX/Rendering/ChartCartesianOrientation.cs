@@ -20,8 +20,11 @@ internal static class ChartCartesianOrientation {
 
     internal static ChartAxis CategoryAxis(Chart chart) => IsHorizontal(chart) ? chart.Options.YAxis : chart.Options.XAxis;
 
-    internal static bool UsesLegacyCategoryLabels(Chart chart) => IsHorizontal(chart)
-        && !chart.Series.Any(series => IsHorizontalLine(chart, series));
+    internal static bool UsesLegacyCategoryLabels(Chart chart) {
+        if (!IsHorizontal(chart)) return false;
+        var hasObservations = chart.Series.Any(series => series.Points.Count > 0);
+        return !chart.Series.Any(series => IsHorizontalLine(chart, series) && (series.Points.Count > 0 || !hasObservations));
+    }
 
     internal static IReadOnlyList<ChartAxisLabel> CategoryLabels(Chart chart) => UsesLegacyCategoryLabels(chart) && chart.Options.YAxis.Labels.Count == 0
         ? chart.Options.XAxis.Labels : CategoryAxis(chart).Labels;
