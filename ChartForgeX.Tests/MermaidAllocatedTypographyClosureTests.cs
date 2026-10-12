@@ -107,14 +107,21 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     }
 
     [Theory]
+    [InlineData(18)]
+    [InlineData(18.0001)]
     [InlineData(32)]
     [InlineData(256)]
-    public async Task TopologyGroupHeadersRetainTheirLabelAndSubtitle(int size) {
-        var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size + "}}}%%\nflowchart LR\nsubgraph Service[Service group]\n A --> B\nend");
+    public async Task TopologyGroupHeadersRetainTheirLabelAndSubtitle(double size) {
+        var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Carlito','themeVariables':{'fontSize':" + size.ToString(System.Globalization.CultureInfo.InvariantCulture) + "}}}%%\nflowchart LR\nsubgraph Service[Service group]\n A --> B\nend");
         Assert.Empty(result.Diagnostics);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         chart.Groups[0].Subtitle = "Group description";
-        var svg = chart.ToSvg(); var png = chart.ToPng();
+        var font = FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(960, 720)),
+            VisualTheme.Graphite().WithTypography(new VisualTypography("Carlito", dataLabelSize: size)),
+            frame: new VisualFrame(showLegend: false), font: font);
+        var prepared = chart.Prepare(context, new TopologyRenderOptions { FitContentToViewport = true });
+        var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var xml = XDocument.Parse(svg);
         Assert.Contains(xml.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "topology-group-label" && node.Value == "Service group");
         Assert.Contains(xml.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "topology-group-subtitle" && node.Value == "Group description");
