@@ -50,6 +50,8 @@ public sealed partial class ChartSeries {
     internal void ValidateInterpolation() {
         if (Interpolation != ChartInterpolation.Step && StepPosition != ChartStepPosition.End)
             throw new InvalidOperationException("Series '" + Name + "' requires step interpolation for its step position.");
+        if (Kind == ChartSeriesKind.DifferenceArea && Interpolation != ChartInterpolation.Linear)
+            throw new NotSupportedException("Difference areas support only Linear interpolation.");
         if (Interpolation == ChartInterpolation.Linear) return;
         if (Kind != ChartSeriesKind.Line && Kind != ChartSeriesKind.StepLine && Kind != ChartSeriesKind.Area
             && Kind != ChartSeriesKind.StepArea && Kind != ChartSeriesKind.StackedArea

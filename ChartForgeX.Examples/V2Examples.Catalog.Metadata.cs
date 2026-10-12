@@ -6,7 +6,7 @@ public static partial class V2Examples {
     };
 
     private static string GroupFor(string family) => family switch {
-        "line" or "step-line" or "area" or "step-area" or "stacked-area" or "range-band" or "range-area" or "trend-line" or "cartesian" => "trends",
+        "line" or "step-line" or "area" or "step-area" or "stacked-area" or "range-band" or "range-area" or "difference-area" or "trend-line" or "cartesian" => "trends",
         "scatter" or "bubble" or "histogram" or "error-bar" or "box-plot" or "candlestick" or "ohlc" or "polar" or "radar" => "distribution",
         "pie" or "donut" or "polar-area" or "treemap" or "sunburst" or "funnel" or "pyramid" or "pictorial" => "proportion",
         "gauge" or "circle" or "progress-ring" or "layered-radial" or "bullet" or "progress-bar" => "indicators",
@@ -34,6 +34,7 @@ public static partial class V2Examples {
         "sparse" => "Sparse data", "shapes" => "Node shapes", "above-labels" => "Outer labels", "below-labels" => "Inner labels",
         "density" => "Density", "compact-density" => "Compact density", "sum" => "Sum", "compact-sum" => "Compact sum",
         "mean" => "Mean", "compact-mean" => "Compact mean",
+        "dashed" => "Dashed strokes", "compact-dashed" => "Compact dashed strokes",
         _ => FamilyLabel(variant)
     };
 }

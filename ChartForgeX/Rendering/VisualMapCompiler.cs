@@ -28,10 +28,12 @@ internal static partial class VisualMapCompiler {
         var minimum = series.Points.Count == 0 ? 0 : series.Points.Min(point => point.Y);
         var maximum = series.Points.Count == 0 ? 0 : series.Points.Max(point => point.Y);
         var layout = ScaleLayout(chart, context, builder, plot, minimum, maximum, presentation);
-        using (builder.PushGroup("series-0", "map-series", new Dictionary<string, string> {
+        var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey,
-            ["data-cfx-label"] = series.Name, ["data-cfx-min-value"] = N(minimum), ["data-cfx-max-value"] = N(maximum)
-        })) {
+            ["data-cfx-label"] = series.Name
+        };
+        if (series.Points.Count > 0) { metadata["data-cfx-min-value"] = N(minimum); metadata["data-cfx-max-value"] = N(maximum); }
+        using (builder.PushGroup("series-0", "map-series", metadata)) {
             if (series.Kind == ChartSeriesKind.RegionMap) Regions(chart, context, builder, layout.Map, colors, minimum, maximum, presentation);
             else if (series.Kind == ChartSeriesKind.TileMap) Tiles(chart, context, builder, layout.Map, colors, minimum, maximum, presentation);
             else throw new InvalidOperationException("The series is not a map family.");

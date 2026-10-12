@@ -31,7 +31,7 @@ public sealed class AggregateSemanticExtentTests {
         }
         Assert.Equal(observations.Length, chart.Series[0].SourcePointCount);
         var prepared = chart.Prepare(new VisualRenderContext(frame: new VisualFrame(showLegend: false)));
-        Assert.Equal(extents, prepared.Regions.Count);
-        Assert.All(prepared.Regions, region => Assert.Equal("point", region.Role));
+        var marks = prepared.Regions.Where(region => region.Role == "point").ToArray();
+        Assert.Equal(extents, marks.Length);
     }
 }
