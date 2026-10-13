@@ -13,20 +13,27 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void SvgAxisLayoutUsesResolvedTypography() {
         static Chart AxisChart() => Chart.Create()
-            .WithSize(540, 300)
+            .WithSize(900, 300)
             .WithXAxis("delivery status")
             .WithXLabels("mmmm one", "mmmm two", "mmmm three", "mmmm four", "mmmm five", "mmmm six", "mmmm seven", "mmmm eight", "mmmm nine")
             .AddLine("Values", Points(1, 2, 3, 4, 5, 6, 7, 8, 9));
 
         var regular = AxisChart().ToSvg();
         var styledChart = AxisChart()
-            .ConfigureTickLabelStyle(style => style.WithFontFamily("monospace").WithFontSize(26).WithItalic().WithTextCase(TextCaseTransform.Uppercase))
+            .ConfigureTickLabelStyle(style => style.WithFontFamily("monospace").WithFontSize(18).WithItalic().WithTextCase(TextCaseTransform.Uppercase))
             .ConfigureAxisTitleStyle(style => style.WithFontFamily("serif").WithFontSize(32).WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithTextCase(TextCaseTransform.Uppercase));
         var styled = styledChart.ToSvg();
 
-        Assert(CountOccurrences(styled, "data-cfx-role=\"axis-x-label\"") < CountOccurrences(regular, "data-cfx-role=\"axis-x-label\""), "SVG tick density should measure resolved family, size, italic, and transformed casing before selecting labels.");
+        var regularLabels = CountOccurrences(regular, "data-cfx-role=\"axis-x-label\"");
+        var styledLabels = CountOccurrences(styled, "data-cfx-role=\"axis-x-label\"");
+        Assert(styledLabels < regularLabels, "SVG tick density should measure resolved family, size, italic, and transformed casing before selecting labels: " + styledLabels + " styled, " + regularLabels + " regular.");
         Assert(GetAttribute(styled, "data-cfx-role=\"axis-x-label\"", "y") < GetAttribute(regular, "data-cfx-role=\"axis-x-label\"", "y"), "SVG plot allocation should move upward to reserve a larger styled axis title.");
-        Assert(styled.Contains(">DELIVERY STATUS</text>", StringComparison.Ordinal) && styled.Contains("font-size=\"32\"", StringComparison.Ordinal), "SVG axis titles should serialize their resolved text and size after layout.");
+        var title = XDocument.Parse(styled).Descendants()
+            .Single(element => (string?)element.Attribute("data-cfx-role") == "axis-x-title")
+            .Descendants().Single(element => element.Name.LocalName == "text");
+        var titleSize = double.Parse(title.Attribute("font-size")!.Value, CultureInfo.InvariantCulture);
+        Assert(title.Value == "DELIVERY STATUS" && titleSize <= 32 && titleSize >= 31.99,
+            "SVG axis titles should serialize their resolved text and size within the precision of measured layout.");
     }
 
     private static void SpecializedLegendsHonorRoleTypography() {

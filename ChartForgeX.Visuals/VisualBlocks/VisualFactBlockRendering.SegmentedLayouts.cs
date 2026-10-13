@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Typography;
 using static ChartForgeX.VisualBlocks.VisualBlockRendering;
 
 namespace ChartForgeX.VisualBlocks;
@@ -79,8 +81,10 @@ internal static partial class VisualFactBlockRendering {
         var valueText = SegmentedProgressValueText(row);
         var deltaColor = SegmentedDeltaColor(theme, row, accent);
         var valueFontSize = Math.Max(13, theme.SubtitleFontSize + 1);
-        var valueWidth = Math.Min(160, Math.Max(46, EstimateTextWidth(valueText, valueFontSize) + 8));
-        var deltaWidth = row.Delta.Length == 0 ? 0 : Math.Min(92, EstimateTextWidth(row.Delta, theme.SubtitleFontSize) + 18);
+        double Width(string text, double size, int weight) => ChartLabelScene.MeasureText(text,
+            new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = weight }, FontSize = size, LineHeight = 1 }).Width;
+        var valueWidth = Math.Min(160, Math.Max(46, Width(valueText, valueFontSize, 850) + 8));
+        var deltaWidth = row.Delta.Length == 0 ? 0 : Math.Min(92, Width(row.Delta, theme.SubtitleFontSize, 800) + 18);
         var valueX = content.X + content.Width - valueWidth;
         var deltaX = valueX - deltaWidth - 8;
         var labelWidth = Math.Max(40, (row.Delta.Length > 0 ? deltaX : valueX) - content.X - 10);

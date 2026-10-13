@@ -16,13 +16,56 @@ internal static partial class SequencePreparedCompiler {
 
     internal static PreparedVisual PrepareDefault(SequenceArtifact model) {
         if (model == null) throw new ArgumentNullException(nameof(model));
-        var theme = model.Theme;
+        var original = PrepareNatural(model, model.Theme);
+        var authoredSize = model.Theme.Typography.DataLabelSize;
+        if (authoredSize <= VisualTextFitting.MaximumOrdinaryFontSize || FitsDefaultRaster(original)) return original;
+        var minimum = VisualTextFitting.MaximumOrdinaryFontSize;
+        var fitted = PrepareNatural(model, FitSequenceTheme(model.Theme, minimum));
+        // Huge ordinary diagrams retain the existing raster guard. This policy only
+        // bounds the extra canvas growth caused by oversized authored typography.
+        if (!FitsDefaultRaster(fitted)) return original;
+        var maximum = authoredSize;
+        for (var pass = 0; pass < 12; pass++) {
+            var size = (minimum + maximum) / 2;
+            var candidate = PrepareNatural(model, FitSequenceTheme(model.Theme, size));
+            if (FitsDefaultRaster(candidate)) { minimum = size; fitted = candidate; }
+            else maximum = size;
+        }
+        return fitted;
+    }
+
+    private static bool FitsDefaultRaster(PreparedVisual visual) {
+        var options = new VisualRenderOptions();
+        try {
+            VisualSceneRasterRenderer.CalculateAllocation(visual.Size,
+                options.Scale, options.Supersampling, options.PixelBudget);
+            return true;
+        } catch (ArgumentOutOfRangeException exception) when (exception.ParamName is "pixelBudget" or "width") {
+            return false;
+        }
+    }
+
+    private static VisualTheme FitSequenceTheme(VisualTheme theme, double size) {
+        var typography = theme.Typography;
+        var factor = size / typography.DataLabelSize;
+        return theme.WithTypography(new VisualTypography(typography.Family,
+            typography.TitleSize * factor, typography.SubtitleSize * factor,
+            typography.AxisSize * factor, typography.LegendSize * factor, size,
+            typography.ScalarValueSize * factor, typography.CenterValueSize * factor));
+    }
+
+    private static PreparedVisual PrepareNatural(SequenceArtifact model, VisualTheme theme) {
+        var measurements = new VisualSceneBuilder(new VisualSize(1, 1), new FontSpec { Family = theme.Typography.Family });
+        var minimumLabelWidth = SequencePreparedLayout.MinimumLabelWidth(model, measurements, theme.Typography.DataLabelSize);
+        var noteWidth = Math.Max(120, minimumLabelWidth + 24);
         double nesting = Math.Max(model.Blocks.Select(b => b.Depth).DefaultIfEmpty(0).Max(), model.Branches.Select(b => b.Depth).DefaultIfEmpty(0).Max());
         double gap = Math.Max(10, theme.Spacing), stroke = Math.Max(2, theme.SeriesStrokeWidth);
         double inset = gap + nesting * 10 + stroke + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.Over) ? 32 : 0);
-        double noteReserve = (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.LeftOf) ? 120 + gap : 0)
-            + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.RightOf) ? 120 + gap : 0);
-        double width = Math.Max(model.Width, model.Padding * 2 + inset * 2 + noteReserve + (model.Messages.Any(m => m.SourceId == m.TargetId) ? 70 : 0) + model.Participants.Count * 140);
+        double noteReserve = (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.LeftOf) ? noteWidth + gap : 0)
+            + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.RightOf) ? noteWidth + gap : 0);
+        double width = Math.Max(model.Width, model.Padding * 2 + inset * 2 + noteReserve
+            + (model.Messages.Any(m => m.SourceId == m.TargetId) ? SequencePreparedLayout.SelfMessageReserve(minimumLabelWidth) : 0)
+            + model.Participants.Count * Math.Max(140, minimumLabelWidth + 28));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, Math.Max(model.Height, model.Padding * 2 + 512)), model.Padding),
             theme, model.ThemeMode, frame: new VisualFrame(showLegend: false));
         return Prepare(model, context, true);
@@ -37,11 +80,19 @@ internal static partial class SequencePreparedCompiler {
         var semantics = VisualArtifactInterchangeMapping.FromPreparedSequence(model, context);
         var layout = SequencePreparedLayout.Calculate(model, semantics, builder, context, plot, fitContent);
         if (fitContent) {
-            var resolvedSize = new VisualSize(context.Layout.Size.Width, Math.Max(model.Height, layout.Bottom + model.Padding + Math.Max(2, context.Theme.SeriesStrokeWidth)));
-            context = new VisualRenderContext(new VisualLayoutOptions(resolvedSize, model.Padding), context.Theme, context.ThemeMode, context.Frame, context.Font);
-            builder = new VisualSceneBuilder(resolvedSize, context.Font);
-            VisualFrameLayout.Build(builder, context, Array.Empty<VisualLegendEntry>());
-            semantics.Width = resolvedSize.Width; semantics.Height = resolvedSize.Height;
+            // Height growth can expose additional heading lines. Recalculate the plot and
+            // sequence together; the common frame has at most four heading lines to expose.
+            for (var pass = 0; pass < 5; pass++) {
+                var height = Math.Max(model.Height, layout.Bottom + model.Padding + Math.Max(2, context.Theme.SeriesStrokeWidth));
+                if (pass > 0) height = Math.Max(context.Layout.Size.Height, height);
+                if (Math.Abs(height - context.Layout.Size.Height) < 0.001) break;
+                var resolvedSize = new VisualSize(context.Layout.Size.Width, height);
+                context = new VisualRenderContext(new VisualLayoutOptions(resolvedSize, model.Padding), context.Theme, context.ThemeMode, context.Frame, context.Font);
+                builder = new VisualSceneBuilder(resolvedSize, context.Font);
+                plot = VisualFrameLayout.Build(builder, context, Array.Empty<VisualLegendEntry>());
+                semantics = VisualArtifactInterchangeMapping.FromPreparedSequence(model, context);
+                layout = SequencePreparedLayout.Calculate(model, semantics, builder, context, plot, true);
+            }
         }
         semantics.Extensions["chartforgex.source.width"] = model.Width.ToString("R", CultureInfo.InvariantCulture);
         semantics.Extensions["chartforgex.source.height"] = model.Height.ToString("R", CultureInfo.InvariantCulture);

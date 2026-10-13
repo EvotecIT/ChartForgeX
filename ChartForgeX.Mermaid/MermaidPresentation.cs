@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Topology;
 using ChartForgeX.Themes;
@@ -17,17 +18,13 @@ internal static class MermaidPresentation {
             if (document.Configuration.Layout != null) artifact.Metadata["mermaid.config.layout"] = document.Configuration.Layout;
             if (document.Configuration.Look != null) artifact.Metadata["mermaid.config.look"] = document.Configuration.Look;
             if (document.Configuration.FontFamily != null) artifact.Metadata["mermaid.config.fontFamily"] = document.Configuration.FontFamily;
+            if (document.Configuration.FontSize.HasValue) artifact.Metadata["mermaid.config.fontSize"] = document.Configuration.FontSize.Value.ToString(CultureInfo.InvariantCulture);
             if (artifact.Model != null) Apply(artifact.Model, document);
         } else if (model is SequenceArtifact sequence) {
             sequence.Accessibility.Name = document.Accessibility.Name;
             sequence.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) sequence.ThemeMode = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? VisualThemeMode.Dark : VisualThemeMode.Light;
-            if (document.Configuration.FontFamily != null) {
-                var typography = sequence.Theme.Typography;
-                sequence.Theme = sequence.Theme.WithTypography(new VisualTypography(document.Configuration.FontFamily,
-                    typography.TitleSize, typography.SubtitleSize, typography.AxisSize, typography.LegendSize,
-                    typography.DataLabelSize, typography.ScalarValueSize, typography.CenterValueSize));
-            }
+            sequence.Theme = sequence.Theme.WithTypography(Typography(sequence.Theme.Typography, document.Configuration));
         } else if (model is TopologyChart topology) {
             topology.Accessibility.Name = document.Accessibility.Name;
             topology.Accessibility.Description = document.Accessibility.Description;
@@ -36,17 +33,38 @@ internal static class MermaidPresentation {
                 topology.Theme ??= TopologyTheme.Light();
                 topology.Theme.FontFamily = document.Configuration.FontFamily;
             }
+            if (document.Configuration.FontSize.HasValue) {
+                topology.Theme ??= TopologyTheme.Light();
+                topology.Theme.Typography = Typography(topology.Theme.Typography, document.Configuration);
+            }
         } else if (model is Chart chart) {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) chart.WithTheme(string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light());
             if (document.Configuration.FontFamily != null) chart.WithFontFamily(document.Configuration.FontFamily);
+            ScaleChartTypography(chart.Options.Theme, document.Configuration.FontSize);
         } else if (model is IVisualBlock block) {
             block.Options.Accessibility.Name = document.Accessibility.Name;
             block.Options.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) block.Options.Theme = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light();
             if (document.Configuration.FontFamily != null) block.Options.Theme.FontFamily = document.Configuration.FontFamily;
+            ScaleChartTypography(block.Options.Theme, document.Configuration.FontSize);
         }
         return model;
+    }
+
+    private static VisualTypography Typography(VisualTypography source, MermaidSourceConfiguration configuration) {
+        var scale = configuration.FontSize.HasValue ? configuration.FontSize.Value / source.DataLabelSize : 1;
+        return new VisualTypography(configuration.FontFamily ?? source.Family, source.TitleSize * scale,
+            source.SubtitleSize * scale, source.AxisSize * scale, source.LegendSize * scale,
+            source.DataLabelSize * scale, source.ScalarValueSize * scale, source.CenterValueSize * scale);
+    }
+
+    private static void ScaleChartTypography(ChartTheme theme, double? fontSize) {
+        if (!fontSize.HasValue) return;
+        var scale = fontSize.Value / theme.DataLabelFontSize;
+        theme.WithTypography(theme.TitleFontSize * scale, theme.SubtitleFontSize * scale,
+            theme.AxisTitleFontSize * scale, theme.TickLabelFontSize * scale,
+            theme.LegendFontSize * scale, fontSize.Value);
     }
 }

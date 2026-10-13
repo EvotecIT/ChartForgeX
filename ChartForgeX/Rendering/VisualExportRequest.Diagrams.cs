@@ -23,7 +23,7 @@ internal sealed partial class VisualExportRequest {
         tokens.Status.Critical = Pair(ParseTopologyColor(source.Critical, defaults.Critical), tokens.Status.Critical);
         tokens.Status.Neutral = Pair(ParseTopologyColor(source.Unknown, defaults.Unknown), tokens.Status.Neutral);
         tokens.Status.Maintenance = Pair(ParseTopologyColor(source.Disabled, defaults.Disabled), tokens.Status.Maintenance);
-        var theme = new VisualTheme(tokens, tokens, new VisualTypography(source.FontFamily));
+        var theme = new VisualTheme(tokens, tokens, source.Typography);
         // A convenience export can grow a tiny authored canvas after canonical layout. Its initial
         // padding must still leave a positive plot; explicit Prepare(context) retains strict validation.
         var padding = Math.Min(chart.Viewport.Padding, Math.Max(0, Math.Min(chart.Viewport.Width, chart.Viewport.Height) / 2 - 1));

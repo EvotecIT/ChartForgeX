@@ -16,9 +16,8 @@ public sealed partial class PngVisualBlockRenderer {
         var slices = VisualBlockRendering.PacketSlices(packet);
         var rowCount = slices.Count == 0 ? 0 : slices[slices.Count - 1].Row + 1;
         if (rowCount == 0) return;
-        var labelTop = packet.ShowBitNumbers ? 16.0 : 0.0;
-        var rowGap = Math.Min(12, Math.Max(5, content.Height * 0.025));
-        var rowHeight = Math.Max(22, Math.Min(52, (options.Size.Height - options.Padding.Bottom - y - rowGap * Math.Max(0, rowCount - 1)) / rowCount - labelTop));
+        var metrics = VisualBlockRendering.PacketRows(packet, content, y, rowCount, slices);
+        var labelTop = metrics.LabelTop; var rowGap = metrics.Gap; var rowHeight = metrics.Height;
         var bitWidth = content.Width / packet.BitsPerRow;
         for (var index = 0; index < slices.Count; index++) {
             var slice = slices[index];
@@ -28,18 +27,18 @@ public sealed partial class PngVisualBlockRenderer {
             var color = VisualBlockRendering.PaletteAt(theme, slice.FieldIndex);
             canvas.FillRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color.WithAlpha(48));
             canvas.StrokeRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color, 1);
-            if (packet.ShowBitNumbers) DrawPacketBitLabels(canvas, slice, x, rowY - 13, width, theme.MutedText);
-            var fontSize = Math.Max(9, Math.Min(13.5, rowHeight * 0.31));
-            DrawCenteredTextMiddle(canvas, slice.Field.Label, x + width / 2, rowY + rowHeight / 2, fontSize, theme.Text, true, Math.Max(1, width - 10));
+            if (packet.ShowBitNumbers && metrics.BitFontSize > 0) DrawPacketBitLabels(canvas, slice, x, rowY - metrics.BitBaselineOffset - canvas.TextAscent(metrics.BitFontSize, true), width, theme.MutedText, metrics.BitFontSize);
+            var fontSize = Math.Min(metrics.FieldFontSize, VisualBlockRendering.PacketFieldFontSize(packet, slice, width, rowHeight));
+            DrawAlignedTextAtBaseline(canvas, slice.Field.Label, x + 5, rowY + rowHeight * .58, Math.Max(1, width - 10), TextAlignment.Center, theme.Text, fontSize, true);
         }
     }
 
-    private static void DrawPacketBitLabels(RgbaCanvas canvas, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartColor color) {
-        var fontSize = 9.5;
-        canvas.DrawTextEmphasized(x, y, slice.StartBit.ToString(CultureInfo.InvariantCulture), color, fontSize);
+    private static void DrawPacketBitLabels(RgbaCanvas canvas, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartColor color, double fontSize) {
+        var inset = VisualBlockRendering.PacketBitInset(width);
+        canvas.DrawTextEmphasized(x + inset, y, slice.StartBit.ToString(CultureInfo.InvariantCulture), color, fontSize);
         if (slice.EndBit == slice.StartBit) return;
         var end = slice.EndBit.ToString(CultureInfo.InvariantCulture);
         var endWidth = canvas.MeasureTextEmphasizedWidth(end, fontSize);
-        canvas.DrawTextEmphasized(x + width - endWidth, y, end, color, fontSize);
+        canvas.DrawTextEmphasized(x + width - inset - endWidth, y, end, color, fontSize);
     }
 }

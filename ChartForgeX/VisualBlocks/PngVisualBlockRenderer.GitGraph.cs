@@ -18,7 +18,11 @@ public sealed partial class PngVisualBlockRenderer {
             var laneY = layout.LaneYs[branch.Name];
             var color = VisualBlockRendering.PaletteAt(theme, index);
             canvas.DrawLine(layout.PlotX, laneY, layout.PlotRight, laneY, color.WithAlpha(115), 2);
-            if (graph.ShowBranchLabels) DrawAlignedText(canvas, branch.Name, content.X, laneY - 7, layout.PlotX - content.X - 10, TextAlignment.Right, theme.MutedText, 11, true);
+            if (graph.ShowBranchLabels) {
+                var width = layout.PlotX - content.X - 10;
+                var font = VisualBlockRendering.GitFontSize(layout, theme, branch.Name, 11, width);
+                DrawAlignedTextAtBaseline(canvas, branch.Name, content.X, laneY + font * 4 / 11, width, TextAlignment.Right, theme.MutedText, font, true);
+            }
         }
 
         for (var index = 0; index < layout.Placements.Count; index++) DrawGitGraphEdges(canvas, layout, layout.Placements[index], theme.Axis);
@@ -37,27 +41,27 @@ public sealed partial class PngVisualBlockRenderer {
         var commit = placement.Commit;
         var branchIndex = BranchIndex(layout, commit.BranchName);
         var color = VisualBlockRendering.PaletteAt(theme, branchIndex);
-        var radius = CommitRadius(commit);
+        var radius = VisualBlockRendering.GitCommitRadius(commit, layout.FontScale);
         var fill = commit.Type == GitGraphCommitType.Reverse ? theme.CardBackground : color;
         canvas.DrawCircle(placement.X, placement.Y, radius, fill);
         canvas.DrawCircleOutline(placement.X, placement.Y, radius, color, commit.Type == GitGraphCommitType.Highlight ? 2.6 : 1.5);
         if (commit.Type == GitGraphCommitType.Merge) canvas.DrawCircleOutline(placement.X, placement.Y, radius + 4, color, 1.3);
-        if (commit.Type == GitGraphCommitType.CherryPick) DrawCenteredTextMiddle(canvas, "c", placement.X, placement.Y, 10, theme.CardBackground, true, 12);
+        if (commit.Type == GitGraphCommitType.CherryPick) DrawAlignedTextAtBaseline(canvas, "c", placement.X - radius, placement.Y + 4 * layout.FontScale, radius * 2, TextAlignment.Center, theme.CardBackground, 10 * layout.FontScale, true);
 
         if (graph.ShowCommitLabels) {
             var label = commit.Label.Length == 0 ? commit.Id : commit.Label;
-            DrawCenteredTextMiddle(canvas, label, placement.X, placement.Y + radius + 17, 10.5, theme.Text, true, 76);
+            var font = VisualBlockRendering.GitFontSize(layout, theme, label, 10.5, 76);
+            DrawAlignedTextAtBaseline(canvas, label, placement.X - 38, placement.Y + radius + font * 14 / 10.5, 76, TextAlignment.Center, theme.Text, font, true);
         }
 
-        if (commit.Tag.Length > 0) DrawGitGraphTag(canvas, placement.X, placement.Y - radius - 24, commit.Tag, theme);
+        if (commit.Tag.Length > 0) DrawGitGraphTag(canvas, VisualBlockRendering.GitTag(layout, theme, commit.Tag, placement.X, placement.Y, radius), commit.Tag, theme);
     }
 
-    private static void DrawGitGraphTag(RgbaCanvas canvas, double centerX, double y, string tag, ChartForgeX.Themes.ChartTheme theme) {
-        var width = System.Math.Min(96, System.Math.Max(38, tag.Length * 6.2 + 18));
-        var x = centerX - width / 2;
-        canvas.FillRoundedRect(x, y, width, 18, 7, theme.PlotBackground);
-        canvas.StrokeRoundedRect(x, y, width, 18, 7, theme.PlotBorder, 1);
-        DrawCenteredTextMiddle(canvas, tag, centerX, y + 9, 9.5, theme.MutedText, true, width - 10);
+    private static void DrawGitGraphTag(RgbaCanvas canvas, VisualBlockRendering.GitTagMetrics tagLayout, string tag, ChartForgeX.Themes.ChartTheme theme) {
+        var bounds = tagLayout.Bounds;
+        canvas.FillRoundedRect(bounds.X, bounds.Y, bounds.Width, bounds.Height, 7, theme.PlotBackground);
+        canvas.StrokeRoundedRect(bounds.X, bounds.Y, bounds.Width, bounds.Height, 7, theme.PlotBorder, 1);
+        DrawAlignedTextAtBaseline(canvas, tag, bounds.X + tagLayout.Inset, tagLayout.Baseline, bounds.Width - tagLayout.Inset * 2, TextAlignment.Center, theme.MutedText, tagLayout.FontSize, true);
     }
 
     private static int BranchIndex(VisualBlockRendering.GitGraphLayout layout, string branchName) {
@@ -65,10 +69,4 @@ public sealed partial class PngVisualBlockRenderer {
         return 0;
     }
 
-    private static double CommitRadius(GitGraphCommit commit) {
-        if (commit.Type == GitGraphCommitType.Highlight) return 8.5;
-        if (commit.Type == GitGraphCommitType.Merge) return 7.5;
-        if (commit.Type == GitGraphCommitType.CherryPick) return 7.5;
-        return 6.5;
-    }
 }

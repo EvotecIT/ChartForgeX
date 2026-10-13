@@ -1,14 +1,53 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
 internal static partial class VisualBlockRendering {
+
+    // Native block roles retain their relative sizes while sharing the chart body's typography setting.
+    public static double BodyFontSize(ChartTheme theme, double defaultSize) => defaultSize * theme.DataLabelFontSize / ChartTheme.DefaultDataLabelFontSize;
+
+    // Headings share a bounded portion of a fixed viewport; the remaining space belongs to the body.
+    public static BlockHeadingMetrics Headings(IVisualBlock block) {
+        var theme = block.Options.Theme;
+        var titleGap = block.Title.Length > 0 ? 7 + (block.Subtitle.Length == 0 ? 8 : 0) : 0;
+        var subtitleGap = block.Subtitle.Length > 0 ? 13 : 0;
+        var titleStyle = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = theme.UseGraphiteLayout ? 700 : 800 }, FontSize = theme.TitleFontSize, LineHeight = 1 };
+        var subtitleStyle = new TextStyle { Font = new FontSpec { Family = theme.FontFamily }, FontSize = theme.SubtitleFontSize, LineHeight = 1 };
+        var titleHeight = block.Title.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Title), titleStyle).Height : 0;
+        var subtitleHeight = block.Subtitle.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Subtitle), subtitleStyle).Height : 0;
+        var fonts = titleHeight + subtitleHeight;
+        var available = ContentRect(block.Options).Height * .4;
+        var gaps = titleGap + subtitleGap;
+        var gapScale = gaps > 0 ? Math.Min(1, available / (gaps * 2)) : 1;
+        var fontScale = fonts > 0 ? Math.Min(1, (available - gaps * gapScale) / fonts) : 1;
+        var titleSize = theme.TitleFontSize * fontScale; var subtitleSize = theme.SubtitleFontSize * fontScale;
+        titleStyle.FontSize = titleSize; subtitleStyle.FontSize = subtitleSize;
+        var titleAscent = TextAscent(titleStyle); var subtitleAscent = TextAscent(subtitleStyle);
+        var titleAdvance = block.Title.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Title), titleStyle).Height : 0;
+        var subtitleAdvance = block.Subtitle.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Subtitle), subtitleStyle).Height : 0;
+        return new BlockHeadingMetrics(titleSize, subtitleSize, titleAscent, subtitleAscent, titleAdvance + titleGap * gapScale, subtitleAdvance + subtitleGap * gapScale);
+    }
+
+    public readonly struct BlockHeadingMetrics {
+        public BlockHeadingMetrics(double titleFontSize, double subtitleFontSize, double titleAscent, double subtitleAscent, double titleAdvance, double subtitleAdvance) {
+            TitleFontSize = titleFontSize; SubtitleFontSize = subtitleFontSize; TitleAscent = titleAscent; SubtitleAscent = subtitleAscent; TitleAdvance = titleAdvance; SubtitleAdvance = subtitleAdvance;
+        }
+        public double TitleFontSize { get; }
+        public double SubtitleFontSize { get; }
+        public double TitleAscent { get; }
+        public double SubtitleAscent { get; }
+        public double TitleAdvance { get; }
+        public double SubtitleAdvance { get; }
+    }
 
     public static void Validate(IVisualBlock block) {
         if (block == null) throw new ArgumentNullException(nameof(block));
@@ -110,6 +149,28 @@ internal static partial class VisualBlockRendering {
         }
 
         return value.Substring(0, Typography.TextElementBoundary.Snap(value, low)) + suffix;
+    }
+
+    public static string FitMeasuredText(string value, double fontSize, double maxWidth, string fontFamily, int weight) {
+        value = SingleLineText(value);
+        var style = new TextStyle { Font = new FontSpec { Family = fontFamily, Weight = weight }, FontSize = fontSize, LineHeight = 1 };
+        return ChartTextFitting.FitEnd(value, maxWidth, text => TextLayoutEngine.Measure(text, style).Width, "...");
+    }
+
+    // These block captions are emitted as a single SVG text run. Match its default XML whitespace rules in both backends.
+    public static string SingleLineText(string value) {
+        var result = new StringBuilder(value.Length);
+        var pendingSpace = false;
+        foreach (var character in value) {
+            if (character == ' ' || character == '\t' || character == '\r' || character == '\n') {
+                pendingSpace = result.Length > 0;
+                continue;
+            }
+            if (pendingSpace) result.Append(' ');
+            result.Append(character);
+            pendingSpace = false;
+        }
+        return result.ToString();
     }
 
     public static double FitFontSize(string value, double maxWidth, double preferredFontSize, double minimumFontSize) {

@@ -22,7 +22,7 @@ public sealed class PacketLayoutBlock : VisualBlock<PacketLayoutBlock> {
         }
     }
 
-    /// <summary>Gets or sets whether bit start and end numbers are rendered above fields.</summary>
+    /// <summary>Gets or sets whether bit start and end numbers are rendered above fields when they fit the available space.</summary>
     public bool ShowBitNumbers { get; set; } = true;
 
     /// <summary>Gets a concise accessibility label.</summary>

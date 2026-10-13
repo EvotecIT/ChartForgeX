@@ -1,0 +1,8 @@
+{
+  "configuration": {
+    "themeVariables.fontSize": "18.5px",
+    "themeVariables.fontFamily": "Georgia, serif"
+  },
+  "nodes": ["A", "B"],
+  "edges": [["A", "B"]]
+}

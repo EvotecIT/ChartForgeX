@@ -8,7 +8,7 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.VisualArtifacts;
 
 /// <summary>Measured sequence geometry in common-frame coordinates; no export backend participates in layout.</summary>
-internal sealed class SequencePreparedLayout {
+internal sealed partial class SequencePreparedLayout {
     internal sealed class Item {
         internal string Id = string.Empty;
         internal string Text = string.Empty;
@@ -27,15 +27,16 @@ internal sealed class SequencePreparedLayout {
         VisualSceneBuilder builder, VisualRenderContext context, ChartRect plot, bool allowHeightOverflow = false) {
         var layout = new SequencePreparedLayout { FontSize = context.Theme.Typography.DataLabelSize };
         double size = layout.FontSize, gap = Math.Max(10, context.Theme.Spacing), stroke = Math.Max(2, context.Theme.SeriesStrokeWidth);
+        double minimumLabelWidth = MinimumLabelWidth(model, builder, size), noteWidth = Math.Max(120, minimumLabelWidth + 24);
         double nesting = Math.Max(model.Blocks.Select(b => b.Depth).DefaultIfEmpty(0).Max(), model.Branches.Select(b => b.Depth).DefaultIfEmpty(0).Max());
         double inset = gap + nesting * 10 + stroke + (model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.Over) ? 32 : 0);
-        double leftNote = model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.LeftOf) ? 120 + gap : 0;
-        double rightNote = model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.RightOf) ? 120 + gap : 0;
+        double leftNote = model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.LeftOf) ? noteWidth + gap : 0;
+        double rightNote = model.Notes.Any(n => n.Placement == SequenceArtifactNotePlacement.RightOf) ? noteWidth + gap : 0;
         bool self = model.Messages.Any(m => m.SourceId == m.TargetId);
-        double left = plot.X + inset + leftNote, right = plot.Right - inset - rightNote - (self ? 70 : 0);
+        double left = plot.X + inset + leftNote, right = plot.Right - inset - rightNote - (self ? SelfMessageReserve(minimumLabelWidth) : 0);
         double laneWidth = (right - left) / model.Participants.Count;
         if (laneWidth < 64) throw new NotSupportedException("Prepared sequence participant lanes require a wider common viewport.");
-        double boxWidth = Math.Min(160, laneWidth - 12), top = plot.Y + gap + stroke, participantHeight = 0;
+        double boxWidth = Math.Min(Math.Max(160, minimumLabelWidth + 16), laneWidth - 12), top = plot.Y + gap + stroke, participantHeight = 0;
         for (int i = 0; i < model.Participants.Count; i++) {
             var participant = model.Participants[i];
             string text = Wrap(participant.Label, boxWidth - 16, builder, size);
@@ -73,7 +74,7 @@ internal sealed class SequencePreparedLayout {
             }
             foreach (var note in model.Notes.Select((value, index) => new { value, index }).Where(n => Step(n.value.StepIndex) == step)) {
                 double min = note.value.ParticipantIds.Min(id => layout.Lanes[id]), max = note.value.ParticipantIds.Max(id => layout.Lanes[id]);
-                double width = note.value.Placement == SequenceArtifactNotePlacement.Over ? Math.Max(120, max - min + boxWidth) : 120;
+                double width = note.value.Placement == SequenceArtifactNotePlacement.Over ? Math.Max(noteWidth, max - min + boxWidth) : noteWidth;
                 double x = note.value.Placement == SequenceArtifactNotePlacement.LeftOf ? min - width - gap
                     : note.value.Placement == SequenceArtifactNotePlacement.RightOf ? max + gap : (min + max - width) / 2;
                 string text = Wrap(note.value.Text, width - 24, builder, size);
@@ -85,7 +86,7 @@ internal sealed class SequencePreparedLayout {
             if (step < model.Messages.Count) {
                 var message = model.Messages[step];
                 double x1 = layout.Lanes[message.SourceId], x2 = layout.Lanes[message.TargetId];
-                double width = x1 == x2 ? Math.Min(laneWidth - 8, 160) : Math.Abs(x2 - x1) - 16;
+                double width = x1 == x2 ? Math.Min(laneWidth - 8, Math.Max(160, minimumLabelWidth)) : Math.Abs(x2 - x1) - 16;
                 string prefix = Number(model, step);
                 string text = Wrap(prefix + message.Text, Math.Max(32, width), builder, size);
                 var metrics = builder.MeasureText(text, size);

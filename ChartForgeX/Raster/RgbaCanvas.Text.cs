@@ -35,7 +35,22 @@ internal sealed partial class RgbaCanvas {
         }
     }
 
+    /// <summary>Draws the selected bitmap fallback at its logical size without resolving another outline face.</summary>
+    internal void DrawBitmapText(double x, double y, string text, ChartColor color, double fontSize, bool italic, double boldOffset = 0) {
+        if (SuppressText) return;
+        var cursor = x * _scale;
+        var glyphScale = TinyFont.ScaleForFontSize(fontSize) * _scale;
+        foreach (var ch in text) {
+            DrawGlyph(cursor, y * _scale, ch, color, glyphScale, italic, boldOffset, glyphScale);
+            cursor += TinyFont.AdvanceFor(ch) * glyphScale;
+        }
+    }
+
     public void DrawText(double x, double y, string text, ChartColor color, double fontSize) => DrawText(x, y, text, color, fontSize, _outlineFont);
+
+    internal double TextAscent(double fontSize, bool emphasized) =>
+        (emphasized ? EmphasisFace(_outlineFont) ?? _outlineFont : _outlineFont)?.Ascent(Math.Max(double.Epsilon, fontSize))
+            ?? 7 * FallbackScaleForFontSize(fontSize);
 
     internal void DrawText(double x, double y, string text, ChartColor color, double fontSize, bool italic) => DrawText(x, y, text, color, fontSize, _outlineFont, italic);
 
@@ -45,8 +60,8 @@ internal sealed partial class RgbaCanvas {
 
     internal void DrawText(double x, double y, string text, ChartColor color, double fontSize, TrueTypeFont? font, bool italic) {
         if (SuppressText) return;
-        if (font != null && font.Draw(this, x, y, text, color, Math.Max(1, fontSize), italic)) return;
-        DrawTextTiny(x, y, text, color, FallbackScaleForFontSize(fontSize), italic);
+        if (font != null && font.Draw(this, x, y, text, color, Math.Max(double.Epsilon, fontSize), italic)) return;
+        DrawBitmapText(x, y, text, color, fontSize, italic);
     }
 
     internal void DrawTextFitted(double x, double y, string text, ChartColor color, double fontSize, double maximumWidth) {
@@ -77,7 +92,7 @@ internal sealed partial class RgbaCanvas {
 
         var naturalHeight = Math.Max(1, (int)Math.Ceiling(font == null
             ? TinyFont.Height * FallbackScaleForFontSize(fontSize)
-            : font.LineHeight(Math.Max(1, fontSize))));
+            : font.LineHeight(Math.Max(double.Epsilon, fontSize))));
         var bufferWidth = Math.Max(1, (int)Math.Ceiling(naturalWidth));
         var bounds = TextBufferBounds(text, fontSize, font, false, emphasized, bufferWidth, naturalHeight);
         var buffer = new RgbaCanvas((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), _supersamplingScale, font, BufferOutputScale, useDefaultOutlineFont: false) { TextHinting = BufferHinting, FontStrikeScale = FontStrikeScale };
@@ -112,8 +127,8 @@ internal sealed partial class RgbaCanvas {
             return;
         }
 
-        if (font != null && font.Draw(this, x, y, text, color, Math.Max(1, fontSize), italic, EmphasisOffset(fontSize))) return;
-        DrawTextTiny(x, y, text, color, FallbackScaleForFontSize(fontSize), italic, EmphasisOffset(fontSize));
+        if (font != null && font.Draw(this, x, y, text, color, Math.Max(double.Epsilon, fontSize), italic, EmphasisOffset(fontSize))) return;
+        DrawBitmapText(x, y, text, color, fontSize, italic, EmphasisOffset(fontSize));
     }
 
     public static double MeasureTextTinyWidth(string text, int scale) => MeasureTextTinyWidth(text, scale, null);
@@ -127,15 +142,15 @@ internal sealed partial class RgbaCanvas {
 
     internal static double MeasureTextWidth(string text, double fontSize, TrueTypeFont? outlineFont, bool italic) {
         var font = outlineFont ?? DefaultOutlineFont;
-        if (font != null) return font.Measure(text, Math.Max(1, fontSize), italic);
-        var width = MeasureTextTinyWidth(text, FallbackScaleForFontSize(fontSize), null);
+        if (font != null) return font.Measure(text, Math.Max(double.Epsilon, fontSize), italic);
+        var width = MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize));
         return width + (italic && text.Length > 0 ? TrueTypeFont.ItalicOverhang(fontSize) : 0);
     }
 
     internal double MeasureTextWidth(string text, double fontSize) => MeasureTextWidth(text, fontSize, italic: false);
 
     internal double MeasureTextWidth(string text, double fontSize, bool italic) {
-        if (_outlineFont != null) return _outlineFont.Measure(text, Math.Max(1, fontSize), italic);
+        if (_outlineFont != null) return _outlineFont.Measure(text, Math.Max(double.Epsilon, fontSize), italic);
         var width = MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize));
         return width + (italic && text.Length > 0 ? TrueTypeFont.ItalicOverhang(fontSize) : 0);
     }
@@ -144,7 +159,7 @@ internal sealed partial class RgbaCanvas {
 
     internal static double MeasureTextWidthWithFont(string text, double fontSize, TrueTypeFont? font, bool italic) =>
         font != null
-            ? font.Measure(text, Math.Max(1, fontSize), italic)
+            ? font.Measure(text, Math.Max(double.Epsilon, fontSize), italic)
             : MeasureTinyFallbackWidth(text, FallbackScaleForFontSize(fontSize)) + (italic && text.Length > 0 ? TrueTypeFont.ItalicOverhang(fontSize) : 0);
 
     public static double MeasureTextEmphasizedWidth(string text, double fontSize, TrueTypeFont? outlineFont) => MeasureTextEmphasizedWidth(text, fontSize, outlineFont, italic: false);
@@ -153,13 +168,13 @@ internal sealed partial class RgbaCanvas {
         if (string.IsNullOrEmpty(text)) return 0;
         var bold = EmphasisFace(outlineFont ?? DefaultOutlineFont);
         var primary = outlineFont ?? DefaultOutlineFont;
-        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidth(text, fontSize, outlineFont, italic) + (primary == null || primary.NeedsSyntheticBold(text) ? EmphasisOffset(fontSize) : 0);
+        return bold != null ? bold.Measure(text, Math.Max(double.Epsilon, fontSize), italic) : MeasureTextWidth(text, fontSize, outlineFont, italic) + (primary == null || primary.NeedsSyntheticBold(text) ? EmphasisOffset(fontSize) : 0);
     }
 
     private static double MeasureTextEmphasizedWidthWithFont(string text, double fontSize, TrueTypeFont? font, bool italic) {
         if (string.IsNullOrEmpty(text)) return 0;
         var bold = EmphasisFace(font);
-        return bold != null ? bold.Measure(text, Math.Max(1, fontSize), italic) : MeasureTextWidthWithFont(text, fontSize, font, italic) + (font == null || font.NeedsSyntheticBold(text) ? EmphasisOffset(fontSize) : 0);
+        return bold != null ? bold.Measure(text, Math.Max(double.Epsilon, fontSize), italic) : MeasureTextWidthWithFont(text, fontSize, font, italic) + (font == null || font.NeedsSyntheticBold(text) ? EmphasisOffset(fontSize) : 0);
     }
 
     internal double MeasureTextEmphasizedWidth(string text, double fontSize) => MeasureTextEmphasizedWidth(text, fontSize, _outlineFont);
@@ -168,10 +183,11 @@ internal sealed partial class RgbaCanvas {
 
     public static double MeasureTextHeight(double fontSize, TrueTypeFont? outlineFont) {
         var font = outlineFont ?? DefaultOutlineFont;
-        return font != null ? font.LineHeight(Math.Max(1, fontSize)) : TinyFont.Height * FallbackScaleForFontSize(fontSize);
+        return font != null ? font.LineHeight(Math.Max(double.Epsilon, fontSize)) : TinyFont.Height * FallbackScaleForFontSize(fontSize);
     }
 
-    internal double MeasureTextHeight(double fontSize) => MeasureTextHeight(fontSize, _outlineFont);
+    internal double MeasureTextHeight(double fontSize) => _outlineFont?.LineHeight(Math.Max(double.Epsilon, fontSize))
+        ?? TinyFont.Height * FallbackScaleForFontSize(fontSize);
 
     public static double MeasureTextTinyHeight(int scale) => MeasureTextTinyHeight(scale, null);
 
@@ -181,12 +197,12 @@ internal sealed partial class RgbaCanvas {
     }
 
     private static double OutlineFontSize(int scale) => TinyFont.Height * Math.Max(1, scale) * 1.45;
-    private static int FallbackScaleForFontSize(double fontSize) => Math.Max(1, (int)Math.Round(Math.Max(1, fontSize) / OutlineFontSize(1)));
+    private static double FallbackScaleForFontSize(double fontSize) => TinyFont.ScaleForFontSize(fontSize);
     internal static double EmphasisOffset(double fontSize) => Math.Max(0.24, Math.Min(0.58, fontSize * 0.025));
 
-    private static double MeasureTinyFallbackWidth(string text, int scale) {
+    private static double MeasureTinyFallbackWidth(string text, double scale) {
         var width = 0;
         foreach (var ch in text) width += TinyFont.AdvanceFor(ch);
-        return width * Math.Max(1, scale);
+        return width * scale;
     }
 }

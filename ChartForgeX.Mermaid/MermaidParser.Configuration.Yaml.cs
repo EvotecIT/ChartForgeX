@@ -37,7 +37,7 @@ public sealed partial class MermaidParser {
             }
             if (sequenceItem && parents.Count > 0 && parents[parents.Count - 1].ChildIndent < 0) {
                 var parent = parents[parents.Count - 1];
-                if (!IsConfigurationStringPath(parent.Path))
+                if (!IsConfigurationScalarPath(parent.Path))
                     configuration.Add(new MermaidConfigurationSetting(parent.Path.Length == 0 ? "config" : parent.Path, null, false, parent.Span));
                 parents.RemoveAt(parents.Count - 1);
                 opaqueIndent = parent.Indent;
@@ -76,7 +76,7 @@ public sealed partial class MermaidParser {
             if (declared.Count > 256) { ConfigurationError(result, span, "Mermaid frontmatter configuration exceeds 256 keys."); break; }
             if (valueText.Length == 0) {
                 if (parents.Count >= 8) { ConfigurationError(result, span, "Mermaid frontmatter configuration exceeds eight mapping levels."); break; }
-                if (IsConfigurationStringPath(path))
+                if (IsConfigurationScalarPath(path))
                     configuration.Add(new MermaidConfigurationSetting(path, null, false, span));
                 parents.Add((indent, path, -1, span));
                 continue;
@@ -155,7 +155,7 @@ public sealed partial class MermaidParser {
     private static void CompleteConfigurationYamlParent(List<(int Indent, string Path, int ChildIndent, MermaidSourceSpan Span)> parents,
         MermaidSourceConfiguration configuration) {
         var parent = parents[parents.Count - 1];
-        if (parent.ChildIndent < 0 && parent.Path.Length > 0 && !IsConfigurationStringPath(parent.Path))
+        if (parent.ChildIndent < 0 && parent.Path.Length > 0 && !IsConfigurationScalarPath(parent.Path))
             configuration.Add(new MermaidConfigurationSetting(parent.Path, null, false, parent.Span));
         parents.RemoveAt(parents.Count - 1);
     }
