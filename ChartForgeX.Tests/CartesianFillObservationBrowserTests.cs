@@ -19,11 +19,11 @@ public sealed partial class CartesianFillObservationBrowserTests {
     public async Task DifferenceTerminalCannotBorrowRemoteSameDirectionFill(ChartStepPosition position, bool negative, bool reversedSecondary) {
         if (!Enabled) return;
         var chart = Frame();
-        chart.AddDifferenceArea("Observed", new[] {
+        chart.AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("observed"), "Observed", new[] {
             new ChartDifferencePoint(0, negative ? 2 : 8, negative ? 8 : 2),
             new ChartDifferencePoint(1, negative ? 8 : 2, negative ? 2 : 8),
             new ChartDifferencePoint(2, negative ? 2 : 8, negative ? 8 : 2)
-        });
+        }));
         chart.Series[0].WithColor(ChartColor.Transparent).ConfigureDifferenceArea(options => {
             options.PositiveFill = ChartColor.FromHex("#DF3040"); options.NegativeFill = ChartColor.FromHex("#305CDF");
             options.PositiveFillOpacity = negative ? 0 : .8; options.NegativeFillOpacity = negative ? .8 : 0;

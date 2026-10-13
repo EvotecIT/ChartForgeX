@@ -20,6 +20,8 @@ public sealed class GalleryPngSurfaceTests {
     [InlineData("grid", 2)]
     [InlineData("block-card", 1)]
     [InlineData("block-card", 2)]
+    [InlineData("variable-frame", 1)]
+    [InlineData("variable-frame", 2)]
     public void DeclaredSurfacesRemainHealthyAndExtraEdgeMarksRemainObservable(string surface, int scale) {
         var chart = Chart.Create().WithSize(320, 220).WithTitle("Perimeter health")
             .AddBar("Observed", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50) });
@@ -37,6 +39,13 @@ public sealed class GalleryPngSurfaceTests {
                 layout: new VisualLayoutOptions(new VisualSize(320, 220.553))));
             svg = prepared.ToSvg();
             png = prepared.ToPng(new VisualRenderOptions(scale: scale));
+        } else if (surface == "variable-frame") {
+            var tokens = VisualDesignTokens.Dark();
+            chart.WithTheme(new VisualTheme(tokens, tokens), VisualThemeMode.Dark)
+                .WithSvgColorVariables(tokens.ToSvgColorVariables()).WithPngOutputScale(scale);
+            svg = chart.ToSvg(); png = chart.ToPng();
+            Assert.Contains("var(--cfx-surface-card,", svg);
+            Assert.Contains("var(--cfx-surface-line,", svg);
         } else if (surface == "shadow") {
             chart.WithTheme(VisualTheme.Report().Configure(builder => { builder.CardShadowOpacity = .24; }), VisualThemeMode.Dark).WithPngOutputScale(scale);
             svg = chart.ToSvg(); png = chart.ToPng();

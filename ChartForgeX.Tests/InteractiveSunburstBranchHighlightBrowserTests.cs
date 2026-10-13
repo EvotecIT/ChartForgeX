@@ -195,7 +195,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         var page = session.Page;
         await page.Locator(Node("platform")).FocusAsync();
         await WaitState(page, "platform", "item");
-        Assert.Equal(new[] { "1", graphite ? "1" : "0.82", graphite ? "0.3" : "0.38", "1" }, await PaintOpacities(page, "platform", "engineering-support", "operations-support", "all"));
+        Assert.Equal(new[] { "1", "1", "0.3", "1" }, await PaintOpacities(page, "platform", "engineering-support", "operations-support", "all"));
         await page.Locator("[data-cfx-role=legend-item]").First.FocusAsync();
         Assert.NotEqual("root-branch", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hover-mode"));
         Assert.Equal(0, await page.Locator("[data-cfx-highlight-state]").CountAsync());

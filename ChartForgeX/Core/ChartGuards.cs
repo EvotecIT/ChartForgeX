@@ -337,6 +337,7 @@ internal static class ChartGuards {
 
     private static void ValidateBullets(IReadOnlyList<ChartSeries> series) {
         foreach (var item in series) {
+            if (!item.HasSourceData) continue;
             if (item.BulletValues.Count != 1) throw new InvalidOperationException("Bullet charts require one typed value and target observation per series.");
         }
     }
@@ -406,9 +407,7 @@ internal static class ChartGuards {
     private static void ValidateGantt(IReadOnlyList<ChartSeries> series) {
         for (var i = 0; i < series.Count; i++) {
             var item = series[i];
-            if (item.GanttItems.Count != 1) throw new InvalidOperationException("Gantt charts require one typed schedule item per series.");
-            var dependency = item.GanttItems[0].DependsOn;
-            if (dependency < -1 || dependency >= i) throw new InvalidOperationException("Gantt dependencies must reference earlier task indexes.");
+            if (item.GanttItems.Count > 1) throw new InvalidOperationException("Gantt charts require at most one typed schedule item per series.");
         }
     }
 

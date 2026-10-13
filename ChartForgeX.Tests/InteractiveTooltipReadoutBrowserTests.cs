@@ -168,6 +168,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         var page = session.Page;
         var target = page.Locator("[data-cfx-role='circle-chart']");
         var root = page.Locator(".cfx-interactive-chart");
+        Assert.Equal("1", await target.GetAttributeAsync("data-cfx-source-count"));
         var rawPercent = await target.GetAttributeAsync("data-cfx-percent");
         Assert.Equal(8d / 13d, await target.EvaluateAsync<double>("node => Number(node.dataset.cfxPercent)"));
         await page.EvaluateAsync("() => { const root = document.querySelector('.cfx-interactive-chart'); root.addEventListener('cfxselect', event => window.circleSelection = event.detail.target); root.addEventListener('cfxhover', event => window.circleHover = event.detail.target); }");
@@ -250,7 +251,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         Assert.Equal("capacity-source", target.GetProperty("seriesKey").GetString());
         Assert.Equal("8", target.GetProperty("value").GetString());
         Assert.False(target.TryGetProperty("point", out _));
-        Assert.False(target.TryGetProperty("sourcePoint", out _));
+        Assert.Equal("0", target.GetProperty("sourcePoint").GetString());
     }
 
     private static Task<double[]> CircleLocationAsync(ILocator target, bool empty) => target.EvaluateAsync<double[]>("(node, empty) => { const svg = node.closest('svg'); const center = node.querySelector('[data-cfx-role=\"circle-center\"]'); const point = svg.createSVGPoint(); point.x = empty ? 8 : Number(center.getAttribute('cx')); point.y = empty ? svg.viewBox.baseVal.height - 8 : Number(center.getAttribute('cy')); const screen = point.matrixTransform(svg.getScreenCTM()); return [screen.x, screen.y]; }", empty);

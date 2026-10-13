@@ -8,7 +8,7 @@ public static class SunburstBranchHighlightExamples {
     /// <summary>Creates an allocation chart with repeated labels, a zero fact, numeric color and a warning hatch.</summary>
     /// <param name="width">The chart width in pixels.</param>
     /// <param name="dark">Whether to use dark colors.</param>
-    /// <param name="graphite">Whether to use the Graphite look.</param>
+    /// <param name="graphite">Whether to use the Graphite palette.</param>
     /// <returns>The chart model.</returns>
     public static Chart CreateChart(int width = 800, bool dark = false, bool graphite = true) {
         var chart = Chart.Create().WithSize(width, width < 500 ? 360 : 460).WithDataLabels()
@@ -57,7 +57,7 @@ using ChartForgeX.Themes;
 
 var chart = Chart.Create().WithSize(800, 460).WithTitle("Work allocation").WithDataLabels()
     .WithSubtitle("Hover or focus a team to follow its branch; click to pin a reading")
-    .WithTheme(THEME)
+    .WithTheme(VisualTheme.Graphite(), MODE)
     .AddSunburst("Allocated work", new[] {
         new ChartHierarchyItem("all", "All teams"),
         new ChartHierarchyItem("engineering", "Engineering", "all", colorValue: 12),
@@ -78,5 +78,5 @@ chart.SaveInteractiveHtml("work-allocation.html", options => {
     options.Highlight.HighlightedItem.StrokeWidth = 2;
     options.Highlight.UnhighlightedBranch.Opacity = .22;
 });
-""".Replace("THEME", dark ? "VisualTheme.Graphite()" : "VisualTheme.Graphite()");
+""".Replace("MODE", dark ? "VisualThemeMode.Dark" : "VisualThemeMode.Light");
 }

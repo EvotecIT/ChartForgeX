@@ -17,13 +17,27 @@ internal sealed partial class VisualSceneBuilder {
             foreach (var entry in group.Metadata) metadata.Add(entry.Key, entry.Value);
             metadata["data-cfx-series-key"] = series.Id.Value;
             metadata["data-cfx-series-scope"] = series.Id.IsAutomatic ? "local" : "shared";
-            if (!metadata.ContainsKey("data-cfx-derived") && !metadata.ContainsKey("data-cfx-source-points")
-                && (metadata.TryGetValue("data-cfx-source-point", out var source) || metadata.TryGetValue("data-cfx-point", out source))
-                && int.TryParse(source, NumberStyles.None, CultureInfo.InvariantCulture, out var sourceIndex)
+            if (TryAuthoredObservationIndex(metadata, out var sourceIndex)
                 && series.ObservationIds.TryGetValue(sourceIndex, out var observationId))
                 metadata["data-cfx-observation-id"] = observationId.Value;
             _nodes[index] = new VisualSceneGroup(group.Role, group.Id, group.Clip, metadata,
                 group.PathClip, group.Rotation, group.Href, group.Tooltip, group.Translation, group.ImageResource);
         }
+    }
+
+    private static bool TryAuthoredObservationIndex(IReadOnlyDictionary<string, string> metadata, out int sourceIndex) {
+        sourceIndex = -1;
+        if (metadata.ContainsKey("data-cfx-derived") || metadata.ContainsKey("data-cfx-source-points")) {
+            // A direct radial slice retains contributor metadata, but still represents one authored observation.
+            // Other slices and summaries must keep their derived identity instead of borrowing a contributor's ID.
+            return metadata.TryGetValue("data-cfx-derived", out var derived) && derived == "radial-slice"
+                && metadata.TryGetValue("data-cfx-point", out var point)
+                && int.TryParse(point, NumberStyles.None, CultureInfo.InvariantCulture, out sourceIndex)
+                && metadata.TryGetValue("data-cfx-source-points", out var sources)
+                && int.TryParse(sources, NumberStyles.None, CultureInfo.InvariantCulture, out var contributor)
+                && contributor == sourceIndex;
+        }
+        return (metadata.TryGetValue("data-cfx-source-point", out var source) || metadata.TryGetValue("data-cfx-point", out source))
+            && int.TryParse(source, NumberStyles.None, CultureInfo.InvariantCulture, out sourceIndex);
     }
 }

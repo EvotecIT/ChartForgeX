@@ -187,6 +187,8 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(640, 400).WithXLabels("A", "B", "C", "D")
             .AddSeries(new ChartSeries(new ChartSeriesId("slice-source"), "Slices", ChartSeriesKind.Pie, new[] { new ChartPoint(0, 8), new ChartPoint(1, 4), new ChartPoint(2, 2), new ChartPoint(3, 1) }));
+        for (var index = 0; index < chart.Series[0].ObservationCount; index++)
+            chart.Series[0].WithObservationId(index, new ChartObservationId("slice-" + index));
         chart.Options.MaximumPieSlices = 2;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
@@ -198,6 +200,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         foreach (var target in new[] { other, legend }) {
             Assert.Equal("1,2,3", await target.GetAttributeAsync("data-cfx-source-points"));
             Assert.Null(await target.GetAttributeAsync("data-cfx-source-point"));
+            Assert.Null(await target.GetAttributeAsync("data-cfx-observation-id"));
             Assert.Equal(otherId, await target.GetAttributeAsync("data-cfx-target-id"));
             await target.FocusAsync();
         }

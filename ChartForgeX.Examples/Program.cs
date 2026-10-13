@@ -312,10 +312,11 @@ var gantt = Chart.Create()
     .WithDataLabels()
     .WithGanttToday(new DateTime(2026, 2, 18))
     .AddGanttTask("Inventory scope", new DateTime(2026, 1, 5), new DateTime(2026, 1, 24), 0.90, color: ChartColor.FromRgb(37, 99, 235))
-    .AddGanttTask("Owner remediation", new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.62, dependsOn: 0, color: ChartColor.FromRgb(16, 185, 129))
-    .AddGanttTask("Control retesting", new DateTime(2026, 2, 18), new DateTime(2026, 3, 12), 0.28, dependsOn: 1, color: ChartColor.FromRgb(14, 165, 233))
-    .AddGanttTask("Monitoring handoff", new DateTime(2026, 3, 8), new DateTime(2026, 3, 26), 0.12, dependsOn: 2, color: ChartColor.FromRgb(168, 85, 247))
-    .AddGanttMilestone("Executive sign-off", new DateTime(2026, 3, 30), dependsOn: 3, color: ChartColor.FromRgb(245, 158, 11));
+    .AddGanttTask("Owner remediation", new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.62, color: ChartColor.FromRgb(16, 185, 129))
+    .AddGanttTask("Control retesting", new DateTime(2026, 2, 18), new DateTime(2026, 3, 12), 0.28, color: ChartColor.FromRgb(14, 165, 233))
+    .AddGanttTask("Monitoring handoff", new DateTime(2026, 3, 8), new DateTime(2026, 3, 26), 0.12, color: ChartColor.FromRgb(168, 85, 247))
+    .AddGanttMilestone("Executive sign-off", new DateTime(2026, 3, 30), color: ChartColor.FromRgb(245, 158, 11));
+for (var stage = 1; stage < gantt.Series.Count; stage++) gantt.AddGanttDependency(gantt.Series[stage - 1], gantt.Series[stage]);
 
 SaveChart(gantt, "domain-remediation-gantt-light");
 

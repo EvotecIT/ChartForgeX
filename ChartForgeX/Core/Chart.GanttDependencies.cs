@@ -1,52 +1,60 @@
 using System;
 using System.Collections.Generic;
-using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
-    private readonly List<ChartGanttDependency> _ganttDependencies = new();
-    private readonly HashSet<ChartGanttDependency> _ganttDependencySet = new();
+    private readonly List<GanttSeriesDependency> _ganttDependencies = new();
 
-    /// <summary>Gets a detached, ordered snapshot of Gantt links, including dependencies supplied when adding tasks.</summary>
-    public IReadOnlyList<ChartGanttDependency> GanttDependencies => ResolveGanttDependencies().AsReadOnly();
+    /// <summary>Gets a detached, ordered snapshot of authored links identified by stable series IDs, including links whose data is temporarily empty.</summary>
+    public IReadOnlyList<ChartGanttDependency> GanttDependencies {
+        get {
+            var result = new List<ChartGanttDependency>(_ganttDependencies.Count);
+            foreach (var link in _ganttDependencies) result.Add(new ChartGanttDependency(link.Predecessor.Id, link.Successor.Id));
+            return result.AsReadOnly();
+        }
+    }
 
     /// <summary>Adds a finish-to-start visual link after both Gantt tasks have been added.</summary>
-    /// <remarks>Indices address Gantt series, including vertical markers, in their authored order. Links involving a
-    /// vertical marker remain available as metadata but do not paint a row connector. A successor can precede its predecessor visually,
-    /// and a task can have several predecessors. The link does not reschedule task dates. Repeated links render once.</remarks>
-    public Chart AddGanttDependency(int predecessorIndex, int successorIndex) {
+    /// <remarks>Both handles must belong to this chart. Reordering retains the relationship; removing either series removes it.
+    /// Temporarily clearing observations suppresses the connector until both endpoints have data again. Links involving a
+    /// vertical marker retain metadata without painting a row connector. A task can have several predecessors. Links do not reschedule dates.</remarks>
+    public Chart AddGanttDependency(ChartSeries predecessor, ChartSeries successor) {
+        EnsureCanAddSeries();
+        ValidateGanttEndpoint(predecessor, nameof(predecessor)); ValidateGanttEndpoint(successor, nameof(successor));
         RequireGanttDependencyRows();
-        if (predecessorIndex < 0 || predecessorIndex >= Series.Count) throw new ArgumentOutOfRangeException(nameof(predecessorIndex));
-        if (successorIndex < 0 || successorIndex >= Series.Count) throw new ArgumentOutOfRangeException(nameof(successorIndex));
-        var link = new ChartGanttDependency(predecessorIndex, successorIndex);
-        if (_ganttDependencySet.Add(link)) _ganttDependencies.Add(link);
+        if (ReferenceEquals(predecessor, successor)) throw new ArgumentException("A Gantt dependency requires two distinct series.", nameof(successor));
+        foreach (var link in _ganttDependencies)
+            if (ReferenceEquals(link.Predecessor, predecessor) && ReferenceEquals(link.Successor, successor)) return this;
+        _ganttDependencies.Add(new GanttSeriesDependency(predecessor, successor));
         return this;
     }
 
-    internal List<ChartGanttDependency> ResolveGanttDependencies() {
-        var result = new List<ChartGanttDependency>();
-        var seen = new HashSet<ChartGanttDependency>();
+    internal List<ChartGanttOrdinalDependency> ResolveGanttDependencies() {
+        var result = new List<ChartGanttOrdinalDependency>(_ganttDependencies.Count);
         if (_ganttDependencies.Count > 0) RequireGanttDependencyRows();
-        var taskIndex = 0;
-        foreach (var series in Series) {
-            if (series.Kind != ChartSeriesKind.Gantt) continue;
-            if (series.GanttItems.Count != 1) throw new InvalidOperationException("A Gantt series requires one typed schedule item.");
-            var predecessor = series.GanttItems[0].DependsOn;
-            if (predecessor < -1 || predecessor >= taskIndex)
-                throw new InvalidOperationException("A task's inline Gantt dependency must reference an earlier task.");
-            if (predecessor >= 0) {
-                var link = new ChartGanttDependency((int)predecessor, taskIndex);
-                if (seen.Add(link)) result.Add(link);
-            }
-            taskIndex++;
-        }
+        var indices = new Dictionary<ChartSeries, int>();
+        for (var index = 0; index < Series.Count; index++) indices.Add(Series[index], index);
         foreach (var link in _ganttDependencies) {
-            if (link.PredecessorIndex >= taskIndex || link.SuccessorIndex >= taskIndex)
-                throw new InvalidOperationException("Gantt dependency indices must reference existing tasks.");
-            if (seen.Add(link)) result.Add(link);
+            if (!indices.TryGetValue(link.Predecessor, out var predecessor) || !indices.TryGetValue(link.Successor, out var successor))
+                throw new InvalidOperationException("Gantt dependency endpoints must remain attached to their chart.");
+            result.Add(new ChartGanttOrdinalDependency(predecessor, successor));
         }
         return result;
+    }
+
+    private void ValidateGanttEndpoint(ChartSeries series, string parameterName) {
+        if (series == null) throw new ArgumentNullException(parameterName);
+        if (!ReferenceEquals(series.Owner, this)) throw new ArgumentException("A Gantt endpoint must be attached to this chart.", parameterName);
+        if (series.Kind != ChartSeriesKind.Gantt) throw new ArgumentException("A Gantt endpoint must be a task, milestone or marker series.", parameterName);
+    }
+
+    private void RemoveGanttDependencies(ChartSeries series) => _ganttDependencies.RemoveAll(link => ReferenceEquals(link.Predecessor, series) || ReferenceEquals(link.Successor, series));
+
+    private readonly struct GanttSeriesDependency {
+        internal GanttSeriesDependency(ChartSeries predecessor, ChartSeries successor) { Predecessor = predecessor; Successor = successor; }
+        internal ChartSeries Predecessor { get; }
+        internal ChartSeries Successor { get; }
     }
 
     internal void ValidateExplicitGanttDependencies() {

@@ -49,7 +49,8 @@ public sealed class HtmlChartRenderer {
     /// <returns>A complete HTML document.</returns>
     public string RenderPage(Chart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        var bg = chart.Options.TransparentBackground ? chart.Options.ResolvedTheme.CardBackground : chart.Options.ResolvedTheme.Background;
+        var theme = chart.Options.ResolvedTheme;
+        var bg = HtmlSurfacePolish.PageBackground(chart.Options.TransparentBackground ? theme.CardBackground : theme.Background, theme.CardBackground);
         var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Options.Labels.UntitledChart : chart.Title;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()

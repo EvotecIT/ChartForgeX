@@ -301,7 +301,7 @@ milestone ""Ship"" 2026-01-14 color:#16A34A
         Assert(!ganttResult.HasErrors, "Timeline markup should parse Gantt table rows without errors: " + Diagnostics(ganttResult));
         var ganttChart = ganttResult.Document!.Chart;
         Assert(ganttChart.Series.Count == 2 && ganttChart.Series[0].Kind == ChartSeriesKind.Gantt, "Gantt timeline markup should build native Gantt series.");
-        Assert(IsClose(ganttChart.Series[0].GanttItems[0].Progress, 0.5) && ganttChart.Series[0].GanttItems[0].DependsOn == -1, "Gantt table rows should preserve progress and default dependencies.");
+        Assert(IsClose(ganttChart.Series[0].GanttItems[0].Progress, 0.5) && !ganttChart.GanttDependencies.Any(link => link.SuccessorId == ganttChart.Series[0].Id), "Gantt table rows should preserve progress and default dependencies.");
         Assert(ganttChart.ToSvg().Contains("data-cfx-role=\"gantt-task\"", StringComparison.Ordinal), "Gantt timeline markup should render through native Gantt SVG output.");
 
         const string commandGanttSource = @"```chartforgex timeline v1 {#launch type=""gantt""}
@@ -314,7 +314,7 @@ milestone Release 11 dependsOn=1 color=#059669
         Assert(!commandGanttResult.HasErrors, "Timeline command attributes using '=' should parse without errors: " + Diagnostics(commandGanttResult));
         var commandGanttChart = commandGanttResult.Document!.Chart;
         Assert(IsClose(commandGanttChart.Series[0].GanttItems[0].Start, 1) && IsClose(commandGanttChart.Series[0].GanttItems[0].End, 5), "Numeric timeline command values should stay numeric axis positions.");
-        Assert(IsClose(commandGanttChart.Series[1].GanttItems[0].Progress, 0.72) && commandGanttChart.Series[1].GanttItems[0].DependsOn == 0, "Timeline command '=' attributes should preserve task progress and dependencies.");
+        Assert(IsClose(commandGanttChart.Series[1].GanttItems[0].Progress, 0.72) && commandGanttChart.GanttDependencies.Any(link => link.PredecessorId == commandGanttChart.Series[0].Id && link.SuccessorId == commandGanttChart.Series[1].Id), "Timeline command '=' attributes should preserve task progress and dependencies.");
         Assert(commandGanttChart.Series[1].Color.HasValue, "Timeline command color= attributes should preserve task colors.");
     }
 

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.release-validation.schema.json",
+  "SchemaVersion": 1,
+  "ProjectRoot": "../..",
+  "Tools": [
+    {
+      "PackageId": "ChartForgeX.Markup.Cli",
+      "PackageRoot": "{PackageRoot}",
+      "CommandName": "chartforgex-markup",
+      "IncludeManifestInstall": true,
+      "Commands": [
+        {
+          "Name": "Packed CLI help",
+          "FileName": "{ToolPath}",
+          "Arguments": ["--help"],
+          "OutputContains": ["chartforgex-markup validate"],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed CLI validation",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "validate",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/topology-service-map.md"
+          ],
+          "ExpectedOutput": "Valid visual markup. Artifacts: 1",
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed CLI SVG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/topology-service-map.md",
+            "--output",
+            "{WorkRoot}/service-map.svg"
+          ],
+          "OutputContains": ["Wrote"],
+          "NonEmptyFiles": ["{WorkRoot}/service-map.svg"],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed CLI PNG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/topology-service-map.md",
+            "--output",
+            "{WorkRoot}/service-map.png"
+          ],
+          "OutputContains": ["Wrote"],
+          "NonEmptyFiles": ["{WorkRoot}/service-map.png"],
+          "TimeoutSeconds": 60
+        }
+      ]
+    }
+  ]
+}

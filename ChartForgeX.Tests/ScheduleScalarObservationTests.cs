@@ -73,14 +73,15 @@ public sealed class ScheduleScalarObservationTests {
         var start = new DateTime(2026, 3, 1, 15, 45, 12, DateTimeKind.Local);
         var task = ChartSeries.CreateGanttTask(new ChartSeriesId("task"), "Task", start, start.AddDays(2), .4);
         var marker = ChartSeries.CreateGanttMarker(new ChartSeriesId("marker"), "Marker", start, start.AddDays(3));
-        var milestone = ChartSeries.CreateGanttMilestone(new ChartSeriesId("milestone"), "Milestone", start.AddDays(2), dependsOn: 0);
+        var milestone = ChartSeries.CreateGanttMilestone(new ChartSeriesId("milestone"), "Milestone", start.AddDays(2));
         Assert.Equal(start.ToOADate(), task.GanttItems[0].Start); Assert.Equal(.4, task.GanttItems[0].Progress);
         Assert.Equal(start.AddDays(3).ToOADate(), marker.GanttItems[0].End); Assert.True(marker.GanttItems[0].IsVerticalMarker);
-        Assert.True(milestone.GanttItems[0].IsMilestone); Assert.Equal(0, milestone.GanttItems[0].DependsOn);
-        var chart = Chart.Create().AddSeries(task).AddSeries(marker).AddSeries(milestone);
+        Assert.True(milestone.GanttItems[0].IsMilestone);
+        var chart = Chart.Create().AddSeries(task).AddSeries(marker).AddSeries(milestone).AddGanttDependency(task, milestone);
         Assert.Single(chart.GanttDependencies); Assert.NotEmpty(chart.Prepare(Context()).ToSvg());
-        milestone.UpdateGanttItem(0, new ChartGanttItem(start.ToOADate(), start.ToOADate(), 1, dependsOn: 2, isMilestone: true));
-        Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context()));
+        milestone.UpdateGanttItem(0, new ChartGanttItem(start.ToOADate(), start.ToOADate(), 1, isMilestone: true));
+        Assert.Equal(task.Id, Assert.Single(chart.GanttDependencies).PredecessorId);
+        Assert.NotEmpty(chart.Prepare(Context()).ToSvg());
     }
 
     private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(320, 240)), VisualTheme.Graphite(), frame: new VisualFrame(showLegend: false));

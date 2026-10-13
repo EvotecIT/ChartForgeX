@@ -19,7 +19,8 @@ public sealed class GanttDependencyArrowTests {
     [InlineData(false, true, 960, true)]
     [InlineData(true, true, 320, true)]
     public async Task ArrowheadInkRemainsVisibleOverSuccessorBarsAndMilestones(bool dark, bool milestone, int width, bool endpoint) {
-        var chart = Create(dark, milestone, width, endpoint).AddGanttDependency(0, 1);
+        var chart = Create(dark, milestone, width, endpoint);
+        chart.AddGanttDependency(chart.Series[0], chart.Series[1]);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var arrow = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
         var tip = arrow.Commands[1];

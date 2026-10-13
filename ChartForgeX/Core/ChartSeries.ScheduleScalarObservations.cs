@@ -10,6 +10,7 @@ public sealed partial class ChartSeries {
     public IReadOnlyList<ChartGanttItem> GanttItems => _ganttItems;
 
     /// <summary>Replaces the single Gantt item or clears it with an empty sequence. Clears per-observation keys and overrides.</summary>
+    /// <remarks>Chart-owned relationships remain attached to the series. Empty observations suppress their connectors until both endpoints have data.</remarks>
     public ChartSeries ReplaceGanttItems(IEnumerable<ChartGanttItem> values) {
         RequireObservationKind(ChartSeriesKind.Gantt);
         ReplaceObservations(ref _ganttItems, SingleObservation(values), ValidateGanttItem);
@@ -23,7 +24,7 @@ public sealed partial class ChartSeries {
         return this;
     }
 
-    private static ChartGanttItem ValidateGanttItem(ChartGanttItem value) => new(value.Start, value.End, value.Progress, value.DependsOn, value.IsMilestone, value.IsVerticalMarker);
+    private static ChartGanttItem ValidateGanttItem(ChartGanttItem value) => new(value.Start, value.End, value.Progress, value.IsMilestone, value.IsVerticalMarker);
 
     private IReadOnlyList<ChartGaugeValue> _gaugeValues = Array.Empty<ChartGaugeValue>();
     /// <summary>Gets the measured value and scale authored for this gauge or circle series. Empty means no data.</summary>

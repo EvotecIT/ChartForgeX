@@ -211,13 +211,35 @@ internal static partial class SmokeTests {
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-progress-rows\"", StringComparison.Ordinal), "SegmentedMetricBlock should render progress-row treatments.");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-header-badge\"", StringComparison.Ordinal), "SegmentedMetricBlock should render optional header badges.");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-progress-strip\"", StringComparison.Ordinal), "SegmentedMetricBlock should render segmented strips.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-segment-shadow\"", StringComparison.Ordinal), "SegmentedMetricBlock should render dimensional segment shadows.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-segment-highlight\"", StringComparison.Ordinal), "SegmentedMetricBlock should render dimensional segment highlights.");
+        var progressStrips = System.Xml.Linq.XDocument.Parse(segmentedSvg).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "segmented-metric-progress-strip").ToArray();
+        var filledCounts = new[] { 39, 29 };
+        Assert(progressStrips.Length == 2, "SegmentedMetricBlock should retain both authored progress rows.");
+        var segmentedPixels = ReadPngRgba(segmented.ToPng(), out var segmentedWidth, out _);
+        for (var rowIndex = 0; rowIndex < progressStrips.Length; rowIndex++) {
+            var segments = progressStrips[rowIndex].Elements().ToArray();
+            var filled = segments.Where(element => (string?)element.Attribute("data-cfx-role") == "segmented-metric-segment-filled").ToArray();
+            var empty = segments.Where(element => (string?)element.Attribute("data-cfx-role") == "segmented-metric-segment-empty").ToArray();
+            var color = segmented.Items[rowIndex].Color!.Value;
+            Assert(segments.Length == 44 && filled.Length == filledCounts[rowIndex] && empty.Length == 44 - filledCounts[rowIndex],
+                "Flat progress strips should retain the exact authored segment count and filled share.");
+            Assert(filled.All(element => (string?)element.Attribute("fill") == color.ToCss()
+                && (string?)element.Attribute("stroke") == color.WithAlpha(120).ToCss())
+                && empty.All(element => (string?)element.Attribute("fill") == segmented.Options.Theme.Resolve(segmented.Options.ThemeMode).ElevatedSurface.ToCss()),
+                "Flat progress segments should preserve their authored accent, border and empty surface colors.");
+            var first = filled[0];
+            double Coordinate(string name) => double.Parse(first.Attribute(name)!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            var centerX = (int)Math.Floor(Coordinate("x") + Coordinate("width") / 2);
+            var centerY = (int)Math.Floor(Coordinate("y") + Coordinate("height") / 2);
+            var pixel = (centerY * segmentedWidth + centerX) * 4;
+            Assert(segmentedPixels[pixel] == color.R && segmentedPixels[pixel + 1] == color.G
+                && segmentedPixels[pixel + 2] == color.B && segmentedPixels[pixel + 3] == 255,
+                "Native PNG should paint the same opaque authored accent inside each progress strip.");
+        }
         Assert(segmentedSvg.Contains("data-cfx-segments=\"44\"", StringComparison.Ordinal), "SegmentedMetricBlock should preserve fixed segment counts in SVG metadata.");
         Assert(segmentedSvg.Contains("data-cfx-filled=\"39\"", StringComparison.Ordinal), "SegmentedMetricBlock should derive filled segment counts from value and maximum.");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-delta-pill\"", StringComparison.Ordinal), "SegmentedMetricBlock should render delta pills.");
         Assert(segmentedSvg.Contains("Up by 6% compared to last week", StringComparison.Ordinal), "SegmentedMetricBlock should render comparison facts as subtitle text.");
-        Assert(segmented.ToPng().Length > 64, "SegmentedMetricBlock progress rows should render PNG output.");
 
         var subtitleOnlyHeader = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithSubtitle("Subtitle without title")
@@ -573,7 +595,7 @@ internal static partial class SmokeTests {
         var gridBackground = gridDocument.Root!.Elements().Single(element => element.Name.LocalName == "rect" && (string?)element.Attribute("width") == "100%" && (string?)element.Attribute("height") == "100%");
         var gridFrame = gridDocument.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "visual-grid-frame");
         var gridColors = grid.Theme.Resolve(grid.ThemeMode);
-        Assert((string?)gridBackground.Attribute("fill") == gridColors.Background.ToCss()
+        Assert((string?)gridBackground.Attribute("fill") == gridColors.ElevatedSurface.ToCss()
             && (string?)gridFrame.Attribute("stroke") == gridColors.Border.ToCss()
             && (string?)gridFrame.Attribute("class") == "cfx-guide-stroke", "VisualGrid should paint its flat report background and configured frame border.");
         Assert(svg.Contains("data-cfx-role=\"visual-grid-panel\"", StringComparison.Ordinal), "VisualGrid should mark child panels.");
@@ -581,7 +603,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("Trend", StringComparison.Ordinal), "VisualGrid should embed chart SVG.");
         var gridHtml = grid.ToHtmlPage();
         Assert(gridHtml.Contains("chartforgex-visual-grid has-fixed-panels has-frame", StringComparison.Ordinal), "VisualGrid should render optional premium frames in static HTML pages.");
-        AssertFlatHtmlBackground(gridHtml, gridColors.Background, "Visual grid standalone pages");
+        AssertFlatHtmlBackground(gridHtml, gridColors.ElevatedSurface, "Visual grid standalone pages");
         Assert(gridHtml.Contains(".chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}", StringComparison.Ordinal), "VisualGrid HTML should keep child content inside each panel.");
         Assert(grid.ToPng().Length > 64, "VisualGrid should render PNG output.");
 

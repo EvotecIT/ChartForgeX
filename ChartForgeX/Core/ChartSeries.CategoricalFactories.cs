@@ -41,6 +41,7 @@ public sealed partial class ChartSeries {
             series.PointLabels.Add(item.Segment.State);
             series.StateTimelineDetails.Add(item.Segment.Detail);
         }
+        series.SourcePointCount = source.Length;
         return series;
     }
 }

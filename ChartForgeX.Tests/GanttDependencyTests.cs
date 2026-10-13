@@ -32,7 +32,8 @@ public sealed class GanttDependencyTests {
         Assert.Equal(2, document.Tasks[0].DependencyIndex);
         Assert.Equal(new[] { "first", "other" }, document.Tasks[0].DependencyIds);
         var chart = Assert.IsType<Chart>(result.Artifact!.Model);
-        Assert.Equal(new[] { (2, 0), (1, 0), (0, 3) }, chart.GanttDependencies.Select(link => (link.PredecessorIndex, link.SuccessorIndex)));
+        Assert.Equal(new[] { (chart.Series[2].Id, chart.Series[0].Id), (chart.Series[1].Id, chart.Series[0].Id), (chart.Series[0].Id, chart.Series[3].Id) },
+            chart.GanttDependencies.Select(link => (link.PredecessorId, link.SuccessorId)));
         var svg = result.Artifact.ToSvg();
         Assert.Equal(3, XDocument.Parse(svg).Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "gantt-dependency"));
         Assert.NotEmpty(result.Artifact.ToPng());
@@ -68,49 +69,61 @@ public sealed class GanttDependencyTests {
 
     [Fact]
     public void NativeLinksCombineWithInlineDependenciesWithoutDuplicationOrRescheduling() {
-        var chart = Chart.Create().AddGanttTask("First", 1, 3).AddGanttTask("Last", 4, 6, dependsOn: 0).AddGanttTask("Other", 1, 4);
+        var chart = Chart.Create().AddGanttTask("First", 1, 3);
+        var first = chart.Series[0];
+        chart.AddGanttTask("Last", 4, 6, dependsOn: first).AddGanttTask("Other", 1, 4);
+        var last = chart.Series[1]; var other = chart.Series[2];
         var before = chart.Series.Select(series => series.GanttItems[0]).ToArray();
-        chart.AddGanttDependency(0, 1).AddGanttDependency(2, 1).AddGanttDependency(2, 1);
+        chart.AddGanttDependency(first, last).AddGanttDependency(other, last).AddGanttDependency(other, last);
         var links = chart.GanttDependencies;
-        Assert.Equal(new[] { (0, 1), (2, 1) }, links.Select(link => (link.PredecessorIndex, link.SuccessorIndex)));
+        Assert.Equal(new[] { (first.Id, last.Id), (other.Id, last.Id) }, links.Select(link => (link.PredecessorId, link.SuccessorId)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg();
         Assert.Equal(2, prepared.Regions.Count(region => region.Role == "gantt-dependency"));
         Assert.Equal(2, prepared.Scene.Nodes.OfType<VisualScenePath>().Count(path => path.Role == "gantt-dependency-line"));
         Assert.NotEmpty(prepared.ToPng());
-        chart.AddGanttDependency(0, 2);
+        chart.AddGanttDependency(first, other);
         Assert.Equal(2, links.Count);
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(before, chart.Series.Select(series => series.GanttItems[0]));
     }
 
-    [Theory]
-    [InlineData(-1, 0)]
-    [InlineData(0, -1)]
-    [InlineData(2, 0)]
-    [InlineData(0, 2)]
-    [InlineData(0, 0)]
-    public void NativeLinksRequireTwoExistingDistinctTaskIndices(int predecessor, int successor) {
+    [Fact]
+    public void NativeLinksRequireDistinctOwnedGanttHandlesAndFailedSugarDoesNotAppend() {
         var chart = Chart.Create().AddGanttTask("A", 1, 2).AddGanttTask("B", 2, 3);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.AddGanttDependency(predecessor, successor));
+        var first = chart.Series[0]; var second = chart.Series[1];
+        var foreign = ChartSeries.CreateGanttTask(new ChartSeriesId("foreign"), "A", 1, 2);
+        Assert.Throws<ArgumentNullException>(() => chart.AddGanttDependency(null!, second));
+        Assert.Throws<ArgumentNullException>(() => chart.AddGanttDependency(first, null!));
+        Assert.Throws<ArgumentException>(() => chart.AddGanttDependency(first, first));
+        Assert.Throws<ArgumentException>(() => chart.AddGanttDependency(foreign, second));
+        Chart.Create().AddSeries(foreign);
+        Assert.Throws<ArgumentException>(() => chart.AddGanttDependency(first, foreign));
+        Assert.Throws<ArgumentException>(() => chart.AddGanttTask("Rejected", 3, 4, dependsOn: foreign));
+        Assert.Equal(2, chart.Series.Count);
         Assert.Empty(chart.GanttDependencies);
     }
 
     [Fact]
-    public void NativePreparationRevalidatesLinksAfterMutableRowsAreRemoved() {
-        var chart = Chart.Create().AddGanttTask("A", 1, 2).AddGanttTask("B", 2, 3).AddGanttDependency(1, 0);
-        chart.RemoveSeries(chart.Series[1]);
-        Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
-        Assert.Throws<InvalidOperationException>(() => chart.ToPng());
+    public void NativeRemovalPrunesIncidentLinksWithoutResurrectingThemOnReattachment() {
+        var chart = Chart.Create().AddGanttTask("A", 1, 2).AddGanttTask("B", 2, 3);
+        var removed = chart.Series[1];
+        chart.AddGanttDependency(removed, chart.Series[0]).RemoveSeries(removed);
+        Assert.Empty(chart.GanttDependencies);
+        Assert.NotEmpty(chart.ToSvg()); Assert.NotEmpty(chart.ToPng());
+        chart.AddSeries(removed);
+        Assert.Empty(chart.GanttDependencies);
     }
 
     [Fact]
     public void NativeLinksRejectOtherChartFamiliesAndRevalidateAfterReplacement() {
-        var chart = Chart.Create().AddGanttTask("A", 1, 2).AddGanttTask("B", 2, 3).AddGanttDependency(1, 0);
-        chart.RemoveSeries(chart.Series[1]);
+        var chart = Chart.Create().AddGanttTask("A", 1, 2).AddGanttTask("B", 2, 3);
+        chart.AddGanttDependency(chart.Series[1], chart.Series[0]).RemoveSeries(chart.Series[1]);
         chart.AddBar("Counts", new[] { new ChartForgeX.Primitives.ChartPoint(1, 2) });
-        Assert.Throws<InvalidOperationException>(() => chart.AddGanttDependency(0, 1));
+        Assert.Throws<ArgumentException>(() => chart.AddGanttDependency(chart.Series[0], chart.Series[1]));
         Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
+        chart.ClearSeries().AddLine("Reused", new[] { new ChartForgeX.Primitives.ChartPoint(1, 2) });
+        Assert.Empty(chart.GanttDependencies); Assert.NotEmpty(chart.ToSvg()); Assert.NotEmpty(chart.ToPng());
     }
 
     [BrowserTheory]

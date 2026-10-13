@@ -39,10 +39,6 @@ public sealed partial class ChartSeries {
         foreach (var value in DifferencePoints) {
             points.Add(new ChartPoint(value.X, value.First, value.BreakBefore)); points.Add(new ChartPoint(value.X, value.Second, value.BreakBefore));
         }
-        foreach (var value in GanttItems) {
-            points.Add(new ChartPoint(value.Start, value.End)); points.Add(new ChartPoint(value.Progress, value.DependsOn));
-            points.Add(new ChartPoint(value.IsMilestone ? 1 : 0, value.IsVerticalMarker ? 1 : 0));
-        }
         foreach (var value in GaugeValues) { points.Add(new ChartPoint(value.Minimum, value.Value)); points.Add(new ChartPoint(value.Maximum, value.Value)); }
         foreach (var value in BulletValues) {
             points.Add(new ChartPoint(value.Minimum, value.Value)); points.Add(new ChartPoint(value.Maximum, value.Target));

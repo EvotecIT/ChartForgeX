@@ -25,14 +25,10 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         var page = session.Page;
         var baseline = await ObserveAsync(page);
         var defaultPaint = await PaintAsync(page);
-        var defaultX = defaultPaint[0];
-        Assert.Equal(graphite ? "dashed" : "none", defaultX.GetProperty("pattern").GetString());
-        if (graphite) {
-            Assert.Equal("1px", defaultX.GetProperty("width").GetString());
-            Assert.Equal("none", defaultX.GetProperty("shadow").GetString());
-        } else {
-            Assert.Equal("1px", defaultX.GetProperty("height").GetString());
-            Assert.NotEqual("none", defaultX.GetProperty("shadow").GetString());
+        foreach (var line in defaultPaint) {
+            Assert.Equal("dashed", line.GetProperty("pattern").GetString());
+            Assert.Equal("1px", line.GetProperty("width").GetString());
+            Assert.Equal("none", line.GetProperty("shadow").GetString());
         }
         await CaptureAsync(session, "crosshair-default-" + Variant(graphite, dark, width), new { baseline, defaultPaint });
 
@@ -102,7 +98,7 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         var contract = await ObserveAsync(session.Page);
         var paint = await PaintAsync(session.Page);
         foreach (var line in paint) {
-            Assert.Equal(graphite ? "dashed" : "solid", line.GetProperty("pattern").GetString());
+            Assert.Equal("dashed", line.GetProperty("pattern").GetString());
             Assert.Equal(zeroWidth ? "0px" : "1px", line.GetProperty("width").GetString());
             if (!zeroWidth) await AssertCssColorsEqualAsync(session.Page, "rgba(0, 0, 0, 0)", line.GetProperty("color").GetString()!);
             Assert.Equal("none", line.GetProperty("shadow").GetString());

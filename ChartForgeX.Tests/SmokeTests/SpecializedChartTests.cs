@@ -395,8 +395,9 @@ internal static partial class SmokeTests {
             .WithDataLabels()
             .WithGanttToday(new DateTime(2026, 2, 10))
             .AddGanttTask("Inventory scope", new DateTime(2026, 1, 5), new DateTime(2026, 1, 24), 0.75, color: ChartColor.FromRgb(37, 99, 235))
-            .AddGanttTask("Owner remediation", new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.55, dependsOn: 0, color: ChartColor.FromRgb(16, 185, 129))
-            .AddGanttMilestone("Executive sign-off", new DateTime(2026, 3, 2), dependsOn: 1, color: ChartColor.FromRgb(245, 158, 11));
+            .AddGanttTask("Owner remediation", new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.55, color: ChartColor.FromRgb(16, 185, 129))
+            .AddGanttMilestone("Executive sign-off", new DateTime(2026, 3, 2), color: ChartColor.FromRgb(245, 158, 11));
+        chart.AddGanttDependency(chart.Series[0], chart.Series[1]).AddGanttDependency(chart.Series[1], chart.Series[2]);
 
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"gantt-chart\"", StringComparison.Ordinal), "Gantt charts should expose a chart role marker.");

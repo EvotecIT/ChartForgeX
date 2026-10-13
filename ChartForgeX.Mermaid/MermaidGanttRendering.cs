@@ -41,10 +41,10 @@ public static class MermaidGanttRendering {
         }
         for (var index = 0; index < document.Tasks.Count; index++) {
             var task = document.Tasks[index];
-            if (task.DependencyIndex >= 0) chart.AddGanttDependency(task.DependencyIndex, index);
+            if (task.DependencyIndex >= 0) chart.AddGanttDependency(chart.Series[task.DependencyIndex], chart.Series[index]);
             foreach (var id in task.DependencyIds) {
                 if (!ids.TryGetValue(id, out var predecessor)) throw new ArgumentException("Gantt dependency id '" + id + "' is not declared.", nameof(document));
-                chart.AddGanttDependency(predecessor, index);
+                chart.AddGanttDependency(chart.Series[predecessor], chart.Series[index]);
             }
         }
 

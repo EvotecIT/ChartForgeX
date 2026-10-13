@@ -488,7 +488,7 @@ internal static partial class SmokeTests {
         var chart = SampleChart();
         var html = chart.ToHtmlPage();
         Assert(!html.Contains("place-items:center;background:transparent", StringComparison.Ordinal), "Standalone pages should use a visible screen background.");
-        AssertFlatHtmlBackground(html, chart.Options.Theme.Resolve(chart.Options.ThemeMode).Background, "Standalone chart pages");
+        AssertFlatHtmlBackground(html, chart.Options.Theme.Resolve(chart.Options.ThemeMode).ElevatedSurface, "Standalone chart pages");
         Assert(html.Contains("-webkit-font-smoothing:antialiased", StringComparison.Ordinal), "Standalone pages should request browser font smoothing.");
         Assert(html.Contains("place-items:center", StringComparison.Ordinal) && html.Contains("padding:clamp(16px,4vmin,52px)", StringComparison.Ordinal), "Standalone pages should center previews with responsive padding.");
         Assert(html.Contains("@media(max-width:680px){body{padding:16px;place-items:start center}}", StringComparison.Ordinal), "Standalone pages should reduce padding and keep charts immediately visible on narrow viewports.");

@@ -113,15 +113,18 @@ public sealed class GanttEndpointMarkTests {
         Assert.Equal(Finish.ToOADate(), chart.Series[1].GanttItems[0].End);
     }
 
-    private static Chart Milestones(int width, bool dark) => Chart.Create().WithSize(width, 360)
+    private static Chart Milestones(int width, bool dark) {
+        var chart = Chart.Create().WithSize(width, 360)
         .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(false)
         .ConfigureGridStyle(style => style.ShowVerticalLines = true)
         .AddGanttTask("Work", Start, Finish, .5)
-        .AddGanttMilestone("Start", Start, color: MilestoneColor).AddGanttMilestone("Delivery", Finish, dependsOn: 0, color: MilestoneColor)
+        .AddGanttMilestone("Start", Start, color: MilestoneColor).AddGanttMilestone("Delivery", Finish, color: MilestoneColor)
         .ConfigureXAxis(axis => {
             axis.Labels.Add(new ChartAxisLabel(Start, "Start")); axis.Labels.Add(new ChartAxisLabel(Finish, "Delivery"));
             axis.LabelDensity = ChartLabelDensity.All;
         });
+        return chart.AddGanttDependency(chart.Series[0], chart.Series[2]);
+    }
 
     private static XElement[] Role(XDocument document, string role) => document.Descendants()
         .Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();

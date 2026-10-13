@@ -15,9 +15,11 @@ public static partial class V2GalleryModels {
             case ChartSeriesKind.Timeline: return Chart.Create().AddTimelineItem("Discovery", start, start.AddDays(3)).AddTimelineItem("Implementation", start.AddDays(2), start.AddDays(7))
                 .AddTimelineItem("Validation", start.AddDays(6), start.AddDays(9))
                 .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
-            case ChartSeriesKind.Gantt: return Chart.Create().AddGanttTask("Discovery", start, start.AddDays(3), .9).AddGanttTask("Implementation", start.AddDays(3), start.AddDays(7), .55, 0)
-                .AddGanttTask("Validation", start.AddDays(7), start.AddDays(9), .1, 1).AddGanttMilestone("Delivery", start.AddDays(9), 2)
-                .ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
+            case ChartSeriesKind.Gantt:
+                chart = Chart.Create().AddGanttTask("Discovery", start, start.AddDays(3), .9).AddGanttTask("Implementation", start.AddDays(3), start.AddDays(7), .55)
+                    .AddGanttTask("Validation", start.AddDays(7), start.AddDays(9), .1).AddGanttMilestone("Delivery", start.AddDays(9));
+                for (var stage = 1; stage < chart.Series.Count; stage++) chart.AddGanttDependency(chart.Series[stage - 1], chart.Series[stage]);
+                return chart.ConfigureXAxis(axis => axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture)));
             case ChartSeriesKind.Sankey: return FlowRelationships(variant);
             case ChartSeriesKind.Chord: return ChordRelationships(variant);
             case ChartSeriesKind.Tree: return TeamRelationships(variant);

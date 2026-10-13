@@ -95,7 +95,9 @@ internal static class GraphiteExamples {
         results["treemap"]=Frame("Storage distribution","Flat tiles with readable ink").WithDataLabels().AddTreemap("Files",new[]{new ChartHierarchyItem("One", "One", value: 50),new("Two", "Two", value: 30),new("Three", "Three", value: 20)});
         results["tree"]=Frame("Hierarchy","Shared flat surfaces and labels").WithDataLabels().AddTree("Structure", new[] { new ChartNode("Root", "Root"), new ChartNode("One", "One"), new ChartNode("Two", "Two"), new ChartNode("Three", "Three") }, new[]{new ChartTreeLink("Root","One"),new("Root","Two"),new("One","Three")});
         results["timeline"]=Frame("Delivery timeline","Flat intervals").AddTimelineRange("Plan",1,3).AddTimelineRange("Build",3,7).AddTimelineRange("Review",6,9);
-        results["gantt"]=Frame("Delivery schedule","Flat tasks and progress").AddGanttTask("Plan",1,3,1).AddGanttTask("Build",3,7,.65,0).AddGanttTask("Review",6,9,.2,1);
+        results["gantt"]=Frame("Delivery schedule","Flat tasks and progress").AddGanttTask("Plan",1,3,1).AddGanttTask("Build",3,7,.65).AddGanttTask("Review",6,9,.2);
+        var schedule = results["gantt"];
+        schedule.AddGanttDependency(schedule.Series[0], schedule.Series[1]).AddGanttDependency(schedule.Series[1], schedule.Series[2]);
         results["bubble"]=Frame("Bubble observations","70 percent fill with surface outline").AddBubble("Samples",new[]{new ChartBubble(1,20,12),new(2,50,30),new(3,38,20)});
         results["multi-area"]=Frame("Multiple area series","Lines without overlapping fills").AddArea("One",Points(20,30,40)).AddArea("Two",Points(15,25,35));
         results["waterfall"]=Frame("Changes","Flat increments and total").WithXLabels("Start","Added","Removed","Final").WithDataLabels().AddWaterfall("Changes",Points(60,20,-10,70));

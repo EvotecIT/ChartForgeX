@@ -85,6 +85,7 @@ public sealed class BoxPlotBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(640, 400).WithXLabels("Raw input").WithPointLegend().WithLegend()
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("raw-distribution"), "Distribution", 1, new[] { 30d, 0, 20, 10 }));
+        chart.Series[0].WithObservationId(0, new ChartObservationId("authored-source"));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.SharedX));
         var page = session.Page;
         await page.EvaluateAsync("() => { window.rawSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.rawSelections.push(event.detail.target)); }");
@@ -97,6 +98,7 @@ public sealed class BoxPlotBrowserTests {
         Assert.Equal("five-number-summary", await point.GetAttributeAsync("data-cfx-derived"));
         Assert.Equal("4", await point.GetAttributeAsync("data-cfx-source-count"));
         Assert.Null(await point.GetAttributeAsync("data-cfx-source-point"));
+        Assert.Null(await point.GetAttributeAsync("data-cfx-observation-id"));
         await page.Keyboard.PressAsync("Space");
         using var events = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.rawSelections.at(-1))"));
         var target = events.RootElement;

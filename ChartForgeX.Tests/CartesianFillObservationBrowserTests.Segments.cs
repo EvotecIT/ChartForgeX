@@ -87,7 +87,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             new ChartRangeBand(2, 1, 2), new ChartRangeBand(.025, 6, 8), new ChartRangeBand(1, 1, 2), new ChartRangeBand(2, 1, 2)
         };
         var chart = kind == ChartSeriesKind.DifferenceArea
-            ? Frame().AddDifferenceArea("Observed", ranges.Select(range => new ChartDifferencePoint(range.X, range.Upper, range.Lower)))
+            ? Frame().AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("observed"), "Observed", ranges.Select(range => new ChartDifferencePoint(range.X, range.Upper, range.Lower))))
             : Range(kind, ranges);
         if (kind == ChartSeriesKind.DifferenceArea) {
             var point = chart.Series[0].DifferencePoints[4];
@@ -109,10 +109,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             new(0, 8), new(.05, 8), new(.1, 2), new(2, 2), new(.025, 8, true)
         };
         if (terminal) { points.Add(new ChartPoint(1, 2)); points.Add(new ChartPoint(2, 2)); }
-        var chart = Frame();
-        if (kind == ChartSeriesKind.StepArea) chart.AddStepArea("Observed", points);
-        else if (kind == ChartSeriesKind.StackedArea) chart.AddStackedArea("Observed", points);
-        else chart.AddArea("Observed", points);
+        var chart = Frame().AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", kind, points));
         Configure(chart, ChartStepPosition.Start);
         if (!terminal && kind != ChartSeriesKind.StepArea) chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
         return chart;

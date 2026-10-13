@@ -31,7 +31,7 @@ public sealed class PairedObservationClipBrowserTests {
         Assert.True(await page.EvaluateAsync<bool>("p=>document.elementFromPoint(p[0],p[1])?.closest('[data-cfx-point]')?.dataset.cfxPoint==='0'", position));
         Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
         Assert.Equal("paired:0", await point.GetAttributeAsync("data-cfx-target-id"));
-        Assert.Equal("2", await point.GetAttributeAsync("data-cfx-source-count"));
+        Assert.Equal("1", await point.GetAttributeAsync("data-cfx-source-count"));
         await page.EvaluateAsync("""
             ()=>{window.cfxPairSelections=[];document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect',event=>{
               if(event.detail.target?.targetKind==='point')window.cfxPairSelections.push(event.detail.target);});}
@@ -92,7 +92,7 @@ public sealed class PairedObservationClipBrowserTests {
         Assert.True(pointerReadout); Assert.True(keyboardReadout);
         Assert.Contains("1 - 1800", await page.Locator(".cfx-tooltip dd").AllTextContentsAsync());
         Assert.Equal("paired:0", await point.GetAttributeAsync("data-cfx-target-id"));
-        Assert.Equal("2", await point.GetAttributeAsync("data-cfx-source-count"));
+        Assert.Equal("1", await point.GetAttributeAsync("data-cfx-source-count"));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("false", await point.GetAttributeAsync("aria-selected"));
         AssertNoConsoleErrors(session);

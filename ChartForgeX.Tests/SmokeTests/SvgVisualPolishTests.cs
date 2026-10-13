@@ -44,7 +44,7 @@ internal static partial class SmokeTests {
             .WithTitle("Premium HTML")
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
             .ToHtmlPage();
-        AssertFlatHtmlBackground(html, VisualTheme.Report().Resolve(VisualThemeMode.Light).Background, "Standalone chart pages");
+        AssertFlatHtmlBackground(html, VisualTheme.Report().Resolve(VisualThemeMode.Light).ElevatedSurface, "Standalone chart pages");
         Assert(html.Contains("min-height:100svh", StringComparison.Ordinal), "Standalone HTML pages should use modern viewport sizing for browser previews.");
         Assert(html.Contains("@media print", StringComparison.Ordinal), "Standalone HTML pages should include print-friendly chart framing.");
     }
@@ -54,7 +54,7 @@ internal static partial class SmokeTests {
             .WithSize(360, 220)
             .WithTitle("Shell chart")
             .AddSmoothLine("Values", Points(12, 22, 18), ChartColor.FromRgb(37, 99, 235));
-        AssertPremiumHtmlShell(chart.ToHtmlPage(), chart.Options.Theme.Resolve(chart.Options.ThemeMode).Background, centered: true, "chart HTML page");
+        AssertPremiumHtmlShell(chart.ToHtmlPage(), chart.Options.Theme.Resolve(chart.Options.ThemeMode).ElevatedSurface, centered: true, "chart HTML page");
 
         var grid = ChartGrid.Create()
             .WithTitle("Shell grid")
@@ -62,7 +62,7 @@ internal static partial class SmokeTests {
             .WithColumns(2)
             .Add(chart)
             .Add(Chart.Create().WithSize(360, 220).WithTitle("Bars").AddBar("Values", Points(4, 7, 5)));
-        AssertPremiumHtmlShell(grid.ToHtmlPage(), grid.Theme.Resolve(grid.ThemeMode).Background, centered: true, "chart grid HTML page");
+        AssertPremiumHtmlShell(grid.ToHtmlPage(), grid.Theme.Resolve(grid.ThemeMode).ElevatedSurface, centered: true, "chart grid HTML page");
 
         var table = ChartTable.Create()
             .WithTitle("Shell visual block")
@@ -70,7 +70,7 @@ internal static partial class SmokeTests {
             .AddColumn("Name")
             .AddColumn("Value")
             .AddRow("Coverage", "98%");
-        AssertPremiumHtmlShell(table.ToHtmlPage(), table.Options.Theme.Resolve(table.Options.ThemeMode).Background, centered: true, "visual block HTML page");
+        AssertPremiumHtmlShell(table.ToHtmlPage(), table.Options.Theme.Resolve(table.Options.ThemeMode).ElevatedSurface, centered: true, "visual block HTML page");
 
         var visualGrid = VisualGrid.Create()
             .WithTitle("Shell visual grid")
@@ -78,7 +78,7 @@ internal static partial class SmokeTests {
             .WithColumns(2)
             .Add(chart)
             .Add(table);
-        AssertPremiumHtmlShell(visualGrid.ToHtmlPage(), visualGrid.Theme.Resolve(visualGrid.ThemeMode).Background, centered: false, "visual grid HTML page");
+        AssertPremiumHtmlShell(visualGrid.ToHtmlPage(), visualGrid.Theme.Resolve(visualGrid.ThemeMode).ElevatedSurface, centered: false, "visual grid HTML page");
     }
 
     private static void SpecializedChartLayoutsKeepContentInsidePlotFrame() {
@@ -171,11 +171,11 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("-visualCardClip", StringComparison.Ordinal), "Metric visual blocks should define a rounded card clipping path.");
         Assert(svg.Contains("clip-path=\"url(#", StringComparison.Ordinal), "Metric status bars should be clipped by the card radius instead of painting square corners.");
         Assert(GetStringAttribute(svg, "data-cfx-role=\"metric-status-bar\"", "x") == "1.5", "Carded metric status bars should sit inside the card border instead of covering the rounded frame.");
-        Assert(SvgHasAttributes(svg, "data-cfx-role=\"visual-background\" fill=\"" + metric.Options.Theme.Resolve(metric.Options.ThemeMode).Background.ToCss() + "\""), "Opaque carded visual blocks should keep their configured SVG page background behind rounded card corners.");
+        Assert(SvgHasAttributes(svg, "data-cfx-role=\"visual-background\" fill=\"" + metric.Options.Theme.Resolve(metric.Options.ThemeMode).ElevatedSurface.ToCss() + "\""), "Opaque carded visual blocks should keep their configured SVG page background behind rounded card corners.");
         var metricPng = ReadPngRgba(metric.ToPng(), out var metricPngWidth, out var metricPngHeight);
         Assert(AlphaAt(metricPng, metricPngWidth, 1, metricPngHeight - 2) == 255, "Opaque carded visual block PNG output should keep the outside of rounded card corners on the theme background.");
         var corner = (1 * metricPngWidth + 1) * 4;
-        var background = metric.Options.Theme.Resolve(metric.Options.ThemeMode).Background;
+        var background = metric.Options.Theme.Resolve(metric.Options.ThemeMode).ElevatedSurface;
         Assert(metricPng[corner] == background.R && metricPng[corner + 1] == background.G && metricPng[corner + 2] == background.B,
             "The status accent must remain inside the rounded card rather than covering the page-background corner.");
 

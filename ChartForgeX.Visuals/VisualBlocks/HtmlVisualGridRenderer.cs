@@ -86,7 +86,7 @@ public sealed class HtmlVisualGridRenderer {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
         var theme = grid.ResolvedTheme;
-        var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
+        var background = HtmlSurfacePolish.PageBackground(theme.Background, theme.CardBackground);
         var title = grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()

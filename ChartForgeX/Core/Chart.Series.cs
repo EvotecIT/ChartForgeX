@@ -30,9 +30,11 @@ public sealed partial class Chart {
     }
 
     /// <summary>Removes an attached series without changing its identity or the identities of remaining series.</summary>
+    /// <remarks>Chart-owned Gantt relationships involving this series are removed.</remarks>
     public Chart RemoveSeries(ChartSeries series) {
         var index = OwnedSeriesIndex(series);
         EnsureCanAddSeries();
+        RemoveGanttDependencies(series);
         _series.RemoveAt(index);
         series.DetachFrom(this);
         return this;
@@ -50,8 +52,10 @@ public sealed partial class Chart {
     }
 
     /// <summary>Removes every series while keeping each detached handle and identity usable.</summary>
+    /// <remarks>Clears chart-owned Gantt relationships so the chart can be reused for another data set or family.</remarks>
     public Chart ClearSeries() {
         EnsureCanAddSeries();
+        _ganttDependencies.Clear();
         foreach (var series in _series) series.DetachFrom(this);
         _series.Clear();
         return this;

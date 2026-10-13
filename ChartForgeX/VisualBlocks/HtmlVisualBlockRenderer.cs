@@ -36,7 +36,7 @@ public sealed class HtmlVisualBlockRenderer {
     public string RenderPage(IVisualBlock block) {
         VisualBlockRendering.Validate(block);
         var theme = block.Options.ResolvedTheme;
-        var bg = block.Options.TransparentBackground ? theme.CardBackground : theme.Background.A == 0 ? theme.CardBackground : theme.Background;
+        var bg = HtmlSurfacePolish.PageBackground(block.Options.TransparentBackground ? theme.CardBackground : theme.Background, theme.CardBackground);
         var title = string.IsNullOrWhiteSpace(block.AccessibleName) ? "ChartForgeX visual block" : block.AccessibleName;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()

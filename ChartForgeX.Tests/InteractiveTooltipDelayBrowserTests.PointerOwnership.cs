@@ -102,7 +102,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         var receipt = await HostReceiptAsync(page);
         await CaptureDelayAsync(page, "delay-contact-owner-" + action + "-" + shown, receipt, session);
         Assert.False(await TipHiddenAsync(page));
-        Assert.Equal("6", await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key=\"Reading\"] + dd").InnerTextAsync());
+        Assert.Equal("6", await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key=\"readings\"] + dd").InnerTextAsync());
         Assert.True(await page.EvaluateAsync<bool>("""
             () => {
                 const root=window.hostedChart, node=root.querySelector('[data-cfx-role=point][data-cfx-series="0"][data-cfx-point="1"]'), b=node.getBoundingClientRect(), tip=root.querySelector('.cfx-tooltip');
