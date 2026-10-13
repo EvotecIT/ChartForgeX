@@ -8,6 +8,25 @@ namespace ChartForgeX.Core;
 /// their painted position without changing authored bounds. Time coordinates use OLE Automation dates.
 /// Bounds follow physical X and Y: horizontal charts use value coordinates for X and linear category slots for Y.</remarks>
 public sealed class ChartPlotRegion {
+    /// <summary>Creates a region whose color follows the active render theme's categorical palette.</summary>
+    /// <param name="paletteIndex">The zero-based palette index. Larger indices wrap to the active palette length.</param>
+    /// <param name="xMinimum">The inclusive lower X bound, or null for the domain minimum.</param>
+    /// <param name="xMaximum">The inclusive upper X bound, or null for the domain maximum.</param>
+    /// <param name="yMinimum">The inclusive lower Y bound, or null for the domain minimum.</param>
+    /// <param name="yMaximum">The inclusive upper Y bound, or null for the domain maximum.</param>
+    /// <param name="label">An optional interior caption retained in semantic metadata.</param>
+    /// <param name="opacity">The fill opacity from zero through one.</param>
+    /// <param name="yAxis">The Y axis that owns the region's coordinates.</param>
+    /// <param name="showLabel">Whether to paint the caption when it fits within the visible region.</param>
+    public ChartPlotRegion(int paletteIndex, double? xMinimum = null, double? xMaximum = null,
+        double? yMinimum = null, double? yMaximum = null, string label = "", double opacity = .14,
+        ChartAxisSide yAxis = ChartAxisSide.Primary, bool showLabel = true)
+        : this(default(ChartColor), xMinimum, xMaximum, yMinimum, yMaximum, label, opacity, yAxis, showLabel) {
+        if (paletteIndex < 0) throw new ArgumentOutOfRangeException(nameof(paletteIndex));
+        PaletteIndex = paletteIndex;
+        Color = null;
+    }
+
     /// <summary>Creates a region. A missing bound extends to that end of the selected axis domain.</summary>
     /// <param name="color">The solid background color.</param>
     /// <param name="xMinimum">The inclusive lower X bound, or null for the domain minimum.</param>
@@ -29,8 +48,10 @@ public sealed class ChartPlotRegion {
         Label = label ?? throw new ArgumentNullException(nameof(label)); Opacity = opacity; YAxis = yAxis; ShowLabel = showLabel;
     }
 
-    /// <summary>Gets the solid fill color.</summary>
-    public ChartColor Color { get; }
+    /// <summary>Gets the authored literal fill color, or null when <see cref="PaletteIndex"/> selects a theme color.</summary>
+    public ChartColor? Color { get; }
+    /// <summary>Gets the categorical palette index resolved at preparation, or null for a literal color.</summary>
+    public int? PaletteIndex { get; }
     /// <summary>Gets the authored lower X bound, or null for the domain minimum.</summary>
     public double? XMinimum { get; }
     /// <summary>Gets the authored upper X bound, or null for the domain maximum.</summary>

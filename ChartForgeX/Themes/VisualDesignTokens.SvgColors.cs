@@ -30,14 +30,16 @@ public sealed partial class VisualDesignTokens {
     /// <exception cref="ArgumentException"><paramref name="variableName"/> returned a name that is not a valid custom property name.</exception>
     public SvgColorVariables ToSvgColorVariables(Func<string, string?>? variableName = null) {
         var name = variableName ?? DefaultSvgVariableName;
-        var variables = new SvgColorVariables();
-        void Add(string path, ChartColor color) {
+        var variables = new SvgColorVariables().WithPaletteSlots(_palette.Length);
+        void Add(string path, ChartColor color, int? paletteIndex = null) {
             var variable = name(path);
-            if (variable != null) variables.Add(variable, color, RoleOf(path));
+            if (variable == null) return;
+            if (paletteIndex.HasValue) variables.AddPalette(variable, color, paletteIndex.Value);
+            else variables.Add(variable, color, RoleOf(path));
         }
 
         void AddList(string path, ChartColor[] colors) {
-            for (var i = 0; i < colors.Length; i++) Add(path + "." + (i + 1).ToString(CultureInfo.InvariantCulture), colors[i]);
+            for (var i = 0; i < colors.Length; i++) Add(path + "." + (i + 1).ToString(CultureInfo.InvariantCulture), colors[i], path == "series" ? i : (int?)null);
         }
 
         void AddPair(string path, VisualTokenColor pair) {

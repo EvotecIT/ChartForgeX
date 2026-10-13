@@ -14,6 +14,7 @@ internal readonly struct ChartColorBlend {
     private readonly ChartColor? _contrastFill;
     private readonly SvgColorRole? _contrastRole;
     private readonly SvgPaint? _contrastSource;
+    private readonly SvgPaint? _sourcePaint;
 
     /// <summary>Describes a blend of <paramref name="from"/> towards <paramref name="to"/> by <paramref name="amount"/>.</summary>
     /// <param name="from">The colour at amount 0.</param>
@@ -32,7 +33,12 @@ internal readonly struct ChartColorBlend {
         _contrastFill = null;
         _contrastRole = null;
         _contrastSource = null;
+        _sourcePaint = null;
     }
+
+    /// <summary>Retains explicit source identities while sharing the native blend and contrast calculation.</summary>
+    internal ChartColorBlend(ChartColor from, SvgPaint fromPaint, ChartColor to, SvgPaint toPaint, double amount)
+        : this(from, null, to, null, amount) => _sourcePaint = SvgPaint.Mix(Color, fromPaint, toPaint, amount);
 
     public ChartColor From { get; }
 
@@ -53,7 +59,7 @@ internal readonly struct ChartColorBlend {
     /// </summary>
     public SvgPaint Paint => _contrastSource.HasValue ? SvgPaint.Contrast(_contrastFill!.Value, _contrastSource.Value) :
         _contrastFill.HasValue ? SvgPaint.Contrast(_contrastFill.Value, _contrastRole!.Value) :
-        _solid && FromRole.HasValue ? SvgPaint.Of(Color, FromRole.Value) : SvgPaint.Mix(Color, From, FromRole, To, ToRole, Amount);
+        _sourcePaint ?? (_solid && FromRole.HasValue ? SvgPaint.Of(Color, FromRole.Value) : SvgPaint.Mix(Color, From, FromRole, To, ToRole, Amount));
 
     /// <summary>
     /// Gets the SVG paint of the blend with its literal written opaque, for paints whose opacity is set separately
