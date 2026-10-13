@@ -28,7 +28,7 @@ internal static partial class VisualCartesianCompiler {
                 series.Points.Select(point => point.X).Distinct().OrderBy(value => value).ToArray()) : null;
             for (var point = 0; point < series.AuthoredObservationCount; point++) {
                 var label = numericRadial ? axisLabels!.Format(chart.Options.XAxis, series.Points[point].X, categoryFormatter!)
-                    : ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.Points[point * stride].X) ?? "Item " + Number(point + 1);
+                    : ChartAxisValueFormatter.FindExplicitLabel(ChartCartesianOrientation.CategoryLabels(chart), series.Points[point * stride].X) ?? "Item " + Number(point + 1);
                 var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
                 var color = PointColor(series, 0, point, colors);
                 if (series.Kind == ChartSeriesKind.Candlestick || series.Kind == ChartSeriesKind.Ohlc)
@@ -186,6 +186,9 @@ internal static partial class VisualCartesianCompiler {
         if (ChartCartesianOrientation.IsHorizontal(chart) && chart.Series.Any(series => !ChartCartesianOrientation.IsHorizontal(chart, series)
             || series.YAxis != ChartAxisSide.Primary))
             throw new NotSupportedException("Horizontal Cartesian charts require homogeneous series on the primary horizontal value axis.");
+        if (chart.Series.Any(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
+            && chart.Options.YAxis.Scale != ChartScaleKind.Linear && chart.Options.YAxis.Scale != ChartScaleKind.Time)
+            throw new NotSupportedException("Horizontal line charts require a linear or time category axis.");
         foreach (var series in chart.Series) {
             if (!Supports(series.Kind)) throw Unsupported("series kind " + series.Kind);
             if (series.Points.Count % ObservationStride(series.Kind) != 0)

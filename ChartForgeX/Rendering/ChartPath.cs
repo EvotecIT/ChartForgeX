@@ -11,6 +11,17 @@ internal sealed class ChartPath {
 
     public IReadOnlyList<ChartPathCommand> Commands { get; }
 
+    /// <summary>Swaps physical axes while preserving command order and disconnected subpaths.</summary>
+    internal ChartPath Transpose() {
+        var commands = new List<ChartPathCommand>(Commands.Count);
+        foreach (var command in Commands) {
+            commands.Add(command.Kind == ChartPathCommandKind.MoveTo ? ChartPathCommand.MoveTo(command.Y, command.X)
+                : command.Kind == ChartPathCommandKind.LineTo ? ChartPathCommand.LineTo(command.Y, command.X)
+                : ChartPathCommand.CubicTo(command.Control1Y, command.Control1X, command.Control2Y, command.Control2X, command.Y, command.X));
+        }
+        return new ChartPath(commands);
+    }
+
     /// <summary>Measures endpoints and cubic extrema rather than their control-point hull.</summary>
     internal ChartRect Bounds() {
         if (Commands.Count == 0) return new ChartRect(0, 0, 0, 0);

@@ -41,6 +41,7 @@ internal static partial class SmokeTests {
             ("treeview-basic.mmd", typeof(MermaidTreeViewDocument)),
             ("eventmodeling-basic.mmd", typeof(MermaidEventModelingDocument)),
             ("xychart-basic.mmd", typeof(MermaidXYChartDocument)),
+            ("xychart-horizontal.mmd", typeof(MermaidXYChartDocument)),
             ("sankey-basic.mmd", typeof(MermaidSankeyDocument)),
             ("radar-basic.mmd", typeof(MermaidRadarDocument)),
             ("treemap-basic.mmd", typeof(MermaidTreemapDocument))

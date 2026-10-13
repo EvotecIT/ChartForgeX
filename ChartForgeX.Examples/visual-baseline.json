@@ -170,6 +170,30 @@
       }
     },
     {
+      "name": "cartesian-automatic-category-margins",
+      "layout": {
+        "heightMode": "natural",
+        "frameFontRequest": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|400|normal|12.5|\n-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|700|normal|25|",
+        "frameFontFingerprint": "6463EE6F0CE3F0D34535225E0347079AE23F8296CD516C16E8CAE8200604CCE6"
+      },
+      "width": 1108,
+      "height": 470,
+      "logicalWidth": 1108.0,
+      "logicalHeight": 469.878,
+      "svg": {
+        "minVisualNodes": 55,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 987452,
+        "minTransparentPixels": 54068,
+        "minDistinctColors": 1159,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "chart-in-five-lines-story",
       "layout": {
         "heightMode": "fixed",
@@ -3770,6 +3794,102 @@
       }
     },
     {
+      "name": "horizontal-statistics-360-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 360,
+      "height": 420,
+      "logicalWidth": 360.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 302388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 813,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "horizontal-statistics-360-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 360,
+      "height": 420,
+      "logicalWidth": 360.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 302388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 875,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "horizontal-statistics-760-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 420,
+      "logicalWidth": 760.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 638388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 709,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "horizontal-statistics-760-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 420,
+      "logicalWidth": 760.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 638388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 791,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "icon-palette",
       "layout": {
         "heightMode": "natural",
@@ -6430,6 +6550,78 @@
         "minVisiblePixels": 119040,
         "minTransparentPixels": 0,
         "minDistinctColors": 447,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-xychart-horizontal-bar",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 520,
+      "logicalWidth": 900.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 12,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 233998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 378,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-xychart-horizontal-line",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 520,
+      "logicalWidth": 900.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 233998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 487,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-xychart-horizontal-mixed",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 520,
+      "logicalWidth": 900.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 233998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 599,
         "maxEdgeInkPixels": 0
       }
     },
