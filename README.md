@@ -25,7 +25,7 @@ ChartForgeX renders polished charts, animated visual stories, visual blocks, top
 
 Cartesian series are clipped to the plot rectangle in SVG and PNG. Markers whose centers are inside the plot retain their radius at its edge. Use `chart.WithPlotClipping(false)` when a report intentionally needs series overflow.
 
-`AddDifferenceArea` compares two named observations without sorting them into lower and upper bounds. Positive and negative fills split at their linear crossings, while explicit breaks retain gaps and both raw values remain available in readouts. Use numeric/time X and a linear primary or secondary Y axis; axis reversal preserves polarity. See [difference areas](docs/v2/api-conventions.md#difference-areas) for the typed input and fill options.
+`AddDifferenceArea` compares two named observations without sorting them into lower and upper bounds. Positive and negative fills split at linear crossings or follow held values with `WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle)`. Start and End placement use the preceding and following X positions. Explicit breaks retain gaps and both raw values remain available in readouts. Use numeric/time X and a linear primary or secondary Y axis; axis reversal preserves polarity. See [difference areas](docs/v2/api-conventions.md#difference-areas) for the typed input and fill options.
 
 Automatic linear domains use evenly spaced round ticks; explicit axis bounds remain authoritative. Automatic histogram counts use equal-width bins aligned to multiples of a nice decimal step (1, 2, 2.5, 5 or 10 times a power of ten). `ChartHistogramBinLayout.FromWidth` preserves the chosen width and extends both edges to its multiples. Use `roundBounds: false` for exact data-bounded intervals, including a shorter final remainder bin. A single requested bin spanning negative and positive values retains the data bounds as one interval.
 
@@ -93,6 +93,8 @@ var prepared = chart.Prepare(context);
 string svg = prepared.ToSvg("report-checks");
 byte[] png = prepared.ToPng();
 ```
+
+For numeric Line and StepLine charts, `chart.Prepare(context, new ChartXViewport(2, 8))` prepares an exact X window with fresh ticks and clipped marks. The authored axes, source observations and full-data Y domains stay intact. `prepared.XProjection` captures the visible and full X domains, reversal and measured plot bounds for coordinate conversion. See the [viewport contract](docs/v2/api-conventions.md#numeric-x-viewports).
 
 See the [architecture and phase boundaries](docs/v2/architecture.md), [API conventions](docs/v2/api-conventions.md), [consumer migration guide](docs/v2/migration.md) and [family capability roadmap](docs/v2/chart-capabilities.csv). Generate the isolated review catalog with `dotnet run --project ChartForgeX.Examples -c Release -- --v2-only --output <directory>`.
 

@@ -7,9 +7,18 @@
     top: [0, -1], 'top-right': [1, -1], right: [1, 0], 'bottom-right': [1, 1],
     bottom: [0, 1], 'bottom-left': [-1, 1], left: [-1, 0], 'top-left': [-1, -1]
   };
+  const unwatchTooltipPositionTrees = () => {
+    for (const tree of tooltipPositionTrees) {
+      tree.removeEventListener('scroll', queueTooltipPositionRefresh, true);
+      tree.removeEventListener('transitionend', queueTooltipPositionRefresh, true);
+      tree.removeEventListener('slotchange', queueTooltipPositionRefresh, true);
+    }
+    tooltipPositionTrees.clear();
+  };
   const forgetTooltipPosition = (tip) => {
     const state = tooltipPositions.get(tip);
     tooltipPositions.delete(tip);
+    if (state?.intersectionObserver) state.intersectionObserver.disconnect();
     if (state) activeTooltipPositions.delete(state);
     if (tooltipPositionResize && state) tooltipPositionResize.unobserve(state.stage);
     if (activeTooltipPositions.size) {
@@ -18,28 +27,109 @@
         // Drain surviving hosts' removals before rebuilding registrations to release unused shadow trees.
         checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
         if (!tooltipPositionObserver) return;
-        tooltipPositionObserver.disconnect(); tooltipPositionTrees.clear();
+        tooltipPositionObserver.disconnect(); unwatchTooltipPositionTrees();
         for (const current of activeTooltipPositions) watchTooltipPositionTrees(current);
       }
       return;
     }
-    if (tooltipPositionObserver) { tooltipPositionObserver.disconnect(); tooltipPositionObserver = null; tooltipPositionTrees.clear(); }
+    if (tooltipPositionObserver) { tooltipPositionObserver.disconnect(); tooltipPositionObserver = null; unwatchTooltipPositionTrees(); }
     if (tooltipPositionResize) { tooltipPositionResize.disconnect(); tooltipPositionResize = null; }
     window.removeEventListener('resize', queueTooltipPositionRefresh);
-    document.removeEventListener('scroll', queueTooltipPositionRefresh, true);
-    document.removeEventListener('transitionend', queueTooltipPositionRefresh, true);
+    window.visualViewport?.removeEventListener('scroll', queueTooltipPositionRefresh);
+    window.visualViewport?.removeEventListener('resize', queueTooltipPositionRefresh);
     if (tooltipPositionFrame) { cancelAnimationFrame(tooltipPositionFrame); tooltipPositionFrame = 0; }
+  };
+  const tooltipSourceRect = (node) => {
+    if (node._cfxPairedRegion) return pairedExtentScreenBox(node);
+    const region = node._cfxNativeRegion, matrix = region && node.getScreenCTM();
+    if (matrix) {
+      const corners = [[region.x, region.y], [region.x + region.width, region.y],
+        [region.x, region.y + region.height], [region.x + region.width, region.y + region.height]]
+        .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+      return { left: Math.min(...corners.map(p => p.x)), right: Math.max(...corners.map(p => p.x)),
+        top: Math.min(...corners.map(p => p.y)), bottom: Math.max(...corners.map(p => p.y)) };
+    }
+    const rect = node.getBoundingClientRect();
+    // Unlocated retained keyboard facts have no painted box; their visible SVG remains the host boundary.
+    return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;
+  };
+  const tooltipShadowContainingBlock = (node, position, source) => {
+    if (!(node instanceof HTMLElement) || node.getRootNode() === source.getRootNode()) return false;
+    // offsetParent can hide a slotted node's internal containing block. Inspect the accessible flat tree.
+    const style = getComputedStyle(node);
+    return position === 'absolute' && style.position !== 'static'
+      || ['transform', 'translate', 'rotate', 'scale', 'perspective', 'filter', 'backdropFilter'].some(key => style[key] && style[key] !== 'none')
+      || /\b(layout|paint|content|strict)\b/.test(style.contain)
+      || /\b(transform|translate|rotate|scale|perspective|filter|backdrop-filter)\b/.test(style.willChange)
+      || style.contentVisibility === 'auto';
+  };
+  const tooltipClippingAncestors = (source) => {
+    const ancestors = [];
+    let positioned = null, containingBlock = null;
+    for (let child = source, node = composedParent(child); node; child = node, node = composedParent(node)) {
+      if (!positioned && child instanceof HTMLElement && ['absolute', 'fixed'].includes(getComputedStyle(child).position)) {
+        positioned = getComputedStyle(child).position; containingBlock = child.offsetParent;
+      }
+      if (positioned) {
+        // Native offsetParent includes transformed/paint-contained blocks. Overflow below it is bypassed.
+        if (node !== containingBlock && !tooltipShadowContainingBlock(node, positioned, source)) continue;
+        positioned = null;
+      }
+      if (!(node instanceof HTMLElement) || !node.getClientRects().length) continue;
+      const style = getComputedStyle(node);
+      // Overflow does not clip a non-replaced inline box. A real zero-sized block still clips.
+      if (style.display === 'inline' || style.display === 'contents') continue;
+      const paint = /\b(paint|content|strict)\b/.test(style.contain);
+      const x = paint || style.overflowX !== 'visible', y = paint || style.overflowY !== 'visible';
+      if (x || y) ancestors.push({ node, x, y });
+    }
+    return ancestors;
+  };
+  const tooltipClippingBounds = (ancestors) => {
+    const viewport = window.visualViewport;
+    let left = viewport?.offsetLeft || 0, top = viewport?.offsetTop || 0;
+    let right = left + (viewport?.width ?? window.innerWidth), bottom = top + (viewport?.height ?? window.innerHeight);
+    for (const { node, x, y } of ancestors) {
+      const rect = node.getBoundingClientRect(), scaleX = node.offsetWidth ? rect.width / node.offsetWidth : 1;
+      const scaleY = node.offsetHeight ? rect.height / node.offsetHeight : 1;
+      if (x) { left = Math.max(left, rect.left + node.clientLeft * scaleX); right = Math.min(right, rect.left + (node.clientLeft + node.clientWidth) * scaleX); }
+      if (y) { top = Math.max(top, rect.top + node.clientTop * scaleY); bottom = Math.min(bottom, rect.top + (node.clientTop + node.clientHeight) * scaleY); }
+    }
+    return { left, top, right, bottom };
+  };
+  const tooltipSourceInView = (state) => {
+    if (state.paintChanged || !state.clippingAncestors) {
+      state.clippingAncestors = tooltipClippingAncestors(state.node);
+      state.placementClippingAncestors = tooltipClippingAncestors(state.tip);
+    }
+    // Keep geometry live while caching overflow axes until the existing paint invalidation fires.
+    const { left, top, right, bottom } = tooltipClippingBounds(state.clippingAncestors);
+    const source = tooltipSourceRect(state.node);
+    return state.nativeIntersecting !== false && source && right > left && bottom > top
+      && source.right > left && source.left < right && source.bottom > top && source.top < bottom;
   };
   const tooltipPositionAvailable = (state) => state.root.isConnected && state.tip.isConnected && state.node.isConnected
     && state.root.contains(state.tip) && state.root.contains(state.node) && !state.tip.hidden && !state.root.hidden
     && hasFeature(state.root, 'Tooltips') && state.stage.getClientRects().length > 0
-    && (!state.paintChanged || tooltipReadoutAvailable(state.node, state.readoutEvent));
+    && (!state.paintChanged || tooltipReadoutAvailable(state.node, state.readoutEvent)) && tooltipSourceInView(state);
   const queueTooltipPositionRefresh = (invalidation) => {
     // Native geometry events can change clipping or responsive paint without a DOM attribute mutation.
     if (invalidation) for (const state of activeTooltipPositions) state.paintChanged = true;
     if (tooltipPositionFrame || !activeTooltipPositions.size) return;
     tooltipPositionFrame = requestAnimationFrame(() => {
       tooltipPositionFrame = 0;
+      const changes = Array.from(activeTooltipPositions).filter(state => state.paintChanged).map(state =>
+        ({ state, ancestry: composedAncestry(state.root) })).filter(({ state, ancestry }) =>
+        state.nodes.length !== ancestry.nodes.length || state.nodes.some((node, index) => node !== ancestry.nodes[index]));
+      if (changes.length && tooltipPositionObserver) {
+        // Preserve queued detach records before rebinding a moved slot's containing block and trees.
+        checkTooltipPositionMutations(tooltipPositionObserver.takeRecords());
+        if (tooltipPositionObserver) {
+          for (const { state, ancestry } of changes) if (activeTooltipPositions.has(state)) Object.assign(state, ancestry);
+          tooltipPositionObserver.disconnect(); unwatchTooltipPositionTrees();
+          for (const state of activeTooltipPositions) watchTooltipPositionTrees(state);
+        }
+      }
       for (const state of Array.from(activeTooltipPositions)) {
         if (state.tip.hidden) { forgetTooltipPosition(state.tip); continue; }
         if (!tooltipPositionAvailable(state)) { hideTip(state.root, state.tip, true); continue; }
@@ -74,17 +164,36 @@
       if (tooltipPositionTrees.has(tree)) continue;
       tooltipPositionObserver.observe(tree, { childList: true, attributes: true,
         attributeFilter: [...paintAvailabilityAttributes, 'data-cfx-interaction-features'], subtree: true });
+      // Native geometry events do not cross a shadow boundary. Own them alongside the tree's observer.
+      tree.addEventListener('scroll', queueTooltipPositionRefresh, true);
+      tree.addEventListener('transitionend', queueTooltipPositionRefresh, true);
+      tree.addEventListener('slotchange', queueTooltipPositionRefresh, true);
       tooltipPositionTrees.add(tree);
     }
   };
   const watchTooltipPosition = (state) => {
+    if (typeof IntersectionObserver !== 'undefined' && state.intersectionNode !== state.node) {
+      state.intersectionObserver?.disconnect(); state.nativeIntersecting = undefined; state.intersectionNode = state.node;
+      const box = state.node.getBoundingClientRect();
+      if (box.width > 0 && box.height > 0 && !retainedGeometryFact(state.node)) {
+        // Native intersection sees opaque closed slots. It supplements the precise source footprint above;
+        // an inflated paired hit box still cannot establish exact partial clipping inside an opaque host.
+        const observer = new IntersectionObserver(entries => {
+          const entry = entries.find(item => item.target === state.node);
+          if (!entry || state.intersectionObserver !== observer || !activeTooltipPositions.has(state)) return;
+          state.nativeIntersecting = entry.isIntersecting;
+          queueTooltipPositionRefresh();
+        });
+        state.intersectionObserver = observer; observer.observe(state.node);
+      }
+    }
     if (activeTooltipPositions.has(state)) return;
     activeTooltipPositions.add(state);
     if (!tooltipPositionObserver) {
       // Shared listeners exist only while a readout is visible, including pointer and pinned readouts.
       window.addEventListener('resize', queueTooltipPositionRefresh);
-      document.addEventListener('scroll', queueTooltipPositionRefresh, true);
-      document.addEventListener('transitionend', queueTooltipPositionRefresh, true);
+      window.visualViewport?.addEventListener('scroll', queueTooltipPositionRefresh);
+      window.visualViewport?.addEventListener('resize', queueTooltipPositionRefresh);
       tooltipPositionObserver = new MutationObserver(checkTooltipPositionMutations);
       if (typeof ResizeObserver !== 'undefined') tooltipPositionResize = new ResizeObserver(queueTooltipPositionRefresh);
     }
@@ -104,14 +213,15 @@
     if (!Number.isFinite(x) || !Number.isFinite(y)) { x = 24; y = 24; }
     return { left: x, right: x, top: y, bottom: y, width: 0, height: 0 };
   };
-  const tooltipPositionGeometry = (state, anchor) => {
+  const tooltipPositionGeometry = (state, anchor, bounds) => {
     const stage = state.stage.getBoundingClientRect(), tip = state.tip.getBoundingClientRect();
     return [anchor.left, anchor.top, anchor.width, anchor.height, stage.left, stage.top, stage.width, stage.height,
-      tip.left, tip.top, tip.width, tip.height, window.innerWidth, window.innerHeight];
+      tip.left, tip.top, tip.width, tip.height, bounds.left, bounds.top, bounds.right, bounds.bottom];
   };
   const placeTooltip = (state, skipUnchanged = false) => {
     const { root, tip } = state, anchor = tooltipAnchorRect(state);
-    const geometry = tooltipPositionGeometry(state, anchor);
+    const bounds = tooltipClippingBounds(state.placementClippingAncestors);
+    const geometry = tooltipPositionGeometry(state, anchor, bounds);
     if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
     // Measure at a stable origin, then keep the measured width while positioning. This prevents
     // fixed-position shrink-to-fit from changing the readout as it approaches a containing block's edge.
@@ -133,14 +243,14 @@
         y: (dy > 0 ? anchor.bottom + gap : dy < 0 ? anchor.top - gap - unit.height : anchor.top + (anchor.height - unit.height) / 2) + offsetY
       };
     });
-    const position = candidates.find(candidate => candidate.x >= 8 && candidate.y >= 8
-      && candidate.x + unit.width <= window.innerWidth - 8 && candidate.y + unit.height <= window.innerHeight - 8) || candidates[0];
-    const x = clamp(position.x, 8, Math.max(8, window.innerWidth - unit.width - 8));
-    const y = clamp(position.y, 8, Math.max(8, window.innerHeight - unit.height - 8));
+    const position = candidates.find(candidate => candidate.x >= bounds.left + 8 && candidate.y >= bounds.top + 8
+      && candidate.x + unit.width <= bounds.right - 8 && candidate.y + unit.height <= bounds.bottom - 8) || candidates[0];
+    const x = clamp(position.x, bounds.left + 8, Math.max(bounds.left + 8, bounds.right - unit.width - 8));
+    const y = clamp(position.y, bounds.top + 8, Math.max(bounds.top + 8, bounds.bottom - unit.height - 8));
     tip.style.left = (x - origin.left) / scaleX + 'px';
     tip.style.top = (y - origin.top) / scaleY + 'px';
     state.style = tip.getAttribute('style');
-    state.geometry = tooltipPositionGeometry(state, anchor);
+    state.geometry = tooltipPositionGeometry(state, anchor, bounds);
   };
   const positionTooltip = (tip, event, node) => {
     if (tip.hidden) return;
@@ -148,9 +258,12 @@
     if (!root || !stage || !node) return;
     let state = tooltipPositions.get(tip);
     const pinned = state && root.dataset.cfxTooltipPinned === 'true' && state.key === root.dataset.cfxPinnedTarget;
-    if (!state) { state = { root, tip, stage, trees: tooltipRootTrees(root), nodes: tooltipLifetimeNodes(root) }; tooltipPositions.set(tip, state); }
+    if (!state) { state = { root, tip, stage, ...composedAncestry(root) }; tooltipPositions.set(tip, state); }
     // A pin retains its acquisition mode: later pointer movement must not invalidate a keyboard-only fact.
-    if (!pinned) { state.node = node; state.key = targetKey(targetIdentity(node)); state.readoutEvent = event; }
+    if (!pinned) {
+      if (state.node !== node) state.nativeIntersecting = undefined;
+      state.node = node; state.key = targetKey(targetIdentity(node)); state.readoutEvent = event;
+    }
     state.event = event; state.anchor = root.dataset.cfxTooltipAnchor || 'pointer';
     state.paintChanged = true;
     if (!tooltipPositionAvailable(state)) { hideTip(root, tip, true); return; }
