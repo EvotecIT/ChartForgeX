@@ -274,7 +274,8 @@ public sealed class V2RadialTests {
         var chart = Donut(1, 1, 1, 1).WithXLabels("A", "B", "C", "D").WithDataLabels()
             .WithPieSliceLabelFormatter(slice => { calls++; return prefix + slice.Label; }).WithDonutCenterLabel(false);
         chart.Options.DataLabelPlacement = placement;
-        chart.Options.DataLabelStyle.FontSize = 100;
+        // Ordinary typography retains omission when its line cannot fit the band.
+        chart.Options.DataLabelStyle.FontSize = 18;
         var scene = Compile(chart, new ChartRect(0, 0, 200, 100));
         Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "radial.label-overflow");
         Assert.DoesNotContain(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "data-label");

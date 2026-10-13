@@ -1,4 +1,19 @@
 {
+  "schemaVersion": 1,
+  "references": {
+    "10": {
+      "package": "mermaid-10",
+      "version": "10.9.8"
+    },
+    "11": {
+      "package": "mermaid-11",
+      "version": "11.17.2"
+    },
+    "12": {
+      "package": "mermaid",
+      "version": "12.1.0"
+    }
+  },
   "fixtures": {
     "fixtures/accessibility-dark.mmd": {
       "syntax": {
@@ -627,6 +642,14 @@
       },
       "provenance": "Authored regression for merged root and theme-variable font declarations across legacy directives; pinned reference configuration retains both paths independently."
     },
+    "fixtures/theme-variable-font-size.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored pixel typography case from https://mermaid.js.org/config/theming.html; the pinned reference configurations retain the decimal pixel size and family independently."
+    },
     "fixtures/theme-variable-font.mmd": {
       "syntax": {
         "10": "accepted",
@@ -763,20 +786,5 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     }
-  },
-  "references": {
-    "10": {
-      "package": "mermaid-10",
-      "version": "10.9.8"
-    },
-    "11": {
-      "package": "mermaid-11",
-      "version": "11.17.2"
-    },
-    "12": {
-      "package": "mermaid",
-      "version": "12.1.0"
-    }
-  },
-  "schemaVersion": 1
+  }
 }

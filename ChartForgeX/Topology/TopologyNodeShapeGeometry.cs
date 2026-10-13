@@ -5,6 +5,9 @@ namespace ChartForgeX.Topology;
 
 /// <summary>Builds diagram surface paths once for SVG and raster path consumers.</summary>
 internal static partial class TopologyNodeShapeGeometry {
+    // Keep the canonical figure at ordinary sizes and shrink it inside compact display modes.
+    internal static double ActorScale(TopologyNode node) => Math.Min(1, Math.Min(node.Width / 48, node.Height / 76));
+
     internal static string Path(TopologyNode node) {
         var x = node.X; var y = node.Y; var w = node.Width; var h = node.Height;
         var inset = Math.Min(w * 0.18, h * 0.3);
@@ -18,7 +21,8 @@ internal static partial class TopologyNodeShapeGeometry {
         switch (node.Shape) {
             case TopologyNodeShape.Actor:
                 var cx = x + w / 2;
-                return "M " + P(cx, y + 6) + " A 9 9 0 1 1 " + P(cx - .01, y + 6) + " Z M " + P(cx, y + 24) + " L " + P(cx, y + 50) + " M " + P(cx - 17, y + 34) + " L " + P(cx + 17, y + 34) + " M " + P(cx - 15, y + 68) + " L " + P(cx, y + 50) + " L " + P(cx + 15, y + 68);
+                var actorScale = ActorScale(node);
+                return "M " + P(cx, y + 6 * actorScale) + " A " + P(9 * actorScale, 9 * actorScale) + " 0 1 1 " + P(cx - .01 * actorScale, y + 6 * actorScale) + " Z M " + P(cx, y + 24 * actorScale) + " L " + P(cx, y + 50 * actorScale) + " M " + P(cx - 17 * actorScale, y + 34 * actorScale) + " L " + P(cx + 17 * actorScale, y + 34 * actorScale) + " M " + P(cx - 15 * actorScale, y + 68 * actorScale) + " L " + P(cx, y + 50 * actorScale) + " L " + P(cx + 15 * actorScale, y + 68 * actorScale);
             case TopologyNodeShape.Ellipse:
             case TopologyNodeShape.Circle:
             case TopologyNodeShape.DoubleCircle:

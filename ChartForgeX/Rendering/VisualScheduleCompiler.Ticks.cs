@@ -17,6 +17,7 @@ internal static partial class VisualScheduleCompiler {
         var rotation = Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle));
         var top = Math.Min(viewport.Bottom, plot.Bottom + gap / 2);
         var height = Math.Max(0, Math.Min(layout.AxisReserve - gap / 2, viewport.Bottom - top));
+        style = VisualAxisText.FitOversized(builder, style, new ChartRect(plot.Left, top, plot.Width, height), ticks.Select(format).ToArray(), rotation);
         var labels = new List<(string Text, double X, ChartRect Bounds, TextStyle Style)>();
         var requests = new List<LabelPlacementRequest>();
         for (var index = 0; index < ticks.Count; index++) {

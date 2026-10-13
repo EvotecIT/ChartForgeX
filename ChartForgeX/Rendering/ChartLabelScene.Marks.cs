@@ -159,6 +159,8 @@ internal sealed partial class ChartLabelScene {
                 || previousRole == "annotation-label" && role == "annotation-label-text"
                 || previousRole.StartsWith("point-callout-label", StringComparison.Ordinal) && role == "point-callout-label-text"
                 || previousRole == "gauge-status-marker" && role == "gauge-status-label";
+            match |= previousRole == "wardley-annotation" && role == "wardley-annotation-number"
+                || previousRole == "git-tag" && role == "git-tag-label";
             if (!match) break;
             result.Add(previous); previous = --index >= 0 ? earlierSiblings![index] : null;
         }

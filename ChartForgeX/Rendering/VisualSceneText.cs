@@ -48,7 +48,7 @@ internal sealed class VisualSceneTextFace {
             new TextMetrics(width, Math.Max(1, lines.Count) * lineHeight, lineHeight));
     }
 
-    internal static int FallbackScale(double size) => Math.Max(1, (int)Math.Round(Math.Max(1, size) / 8d));
+    internal static double FallbackScale(double size) => TinyFont.ScaleForFontSize(size);
     private static double FallbackWidth(string text, double size) {
         var width = 0;
         foreach (var c in text) width += TinyFont.AdvanceFor(c);

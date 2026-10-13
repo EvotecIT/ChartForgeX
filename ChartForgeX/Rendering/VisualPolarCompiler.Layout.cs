@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualPolarCompiler {
     private static PolarLayout Layout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<string> axes) {
-        var style = TickStyle(chart, context);
+        var style = FittedTickStyle(chart, context, builder, plot, axes);
         var width = 0d; var height = 0d;
         if (chart.Options.ShowAxes && chart.Options.XAxis.Visible) foreach (var axis in axes) {
             var measured = builder.MeasureText(axis, style);
@@ -34,7 +34,7 @@ internal static partial class VisualPolarCompiler {
 
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, PolarLayout geometry,
         double[] categories, string[] axes, Dictionary<ChartAxisSide, RadialValueScale> scales, bool radar, List<PolarLabel> labels) {
-        var colors = context.Theme.Resolve(context.ThemeMode); var style = TickStyle(chart, context);
+        var colors = context.Theme.Resolve(context.ThemeMode); var style = FittedTickStyle(chart, context, builder, plot, axes);
         var intervalCount = chart.Options.PolarGridRingCount;
         var polygonGrid = chart.Options.PolarGridShape == ChartPolarGridShape.Polygon ||
             chart.Options.PolarGridShape == ChartPolarGridShape.Automatic && radar;
@@ -61,7 +61,8 @@ internal static partial class VisualPolarCompiler {
                     if (labelRadius >= geometry.Radius) continue;
                     var text = formatTick(ticks[index]);
                     var anchor = new ChartPoint(geometry.Cx + (secondary ? -1 : 1) * context.Theme.Spacing / 2, geometry.Cy - labelRadius);
-                    AddLabel(builder, labels, text, anchor, style, (radar ? "radar" : "polar") + "-radius-label-" + (secondary ? "secondary-" : "") + index,
+                    var ringStyle = FitLabel(builder, style, text, plot.Width * .25, geometry.Radius / Math.Max(1, ringCount));
+                    AddLabel(builder, labels, text, anchor, ringStyle, (radar ? "radar" : "polar") + "-radius-label-" + (secondary ? "secondary-" : "") + index,
                         radar ? "radar-ring-label" : "polar-radius-label", plot,
                         new[] { new LabelCandidate(0, 0, secondary ? 1 : 0, 0), new LabelCandidate(0, 0, secondary ? 1 : 0, 1) }, 20);
                 }
@@ -84,7 +85,7 @@ internal static partial class VisualPolarCompiler {
 
     private static void AddDataLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, List<PolarLabel> labels,
         ChartSeries series, int source, string id, string text, ChartPoint point, double angle, bool radar, int seriesIndex, int seriesCount) {
-        var style = DataStyle(chart, context, series, source);
+        var style = FitLabel(builder, DataStyle(chart, context, series, source), text, plot.Width * .25, Math.Min(plot.Width, plot.Height) * .1);
         var gap = context.Theme.Spacing; var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         LabelCandidate first;
         if (placement is ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside) first = new LabelCandidate(0, 0, .5, .5);
@@ -133,6 +134,15 @@ internal static partial class VisualPolarCompiler {
         }));
         return point >= 0 && point < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[point] != null ? series.PointDataLabelStyles[point]!.Resolve(style) : style;
     }
+
+    private static TextStyle FittedTickStyle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<string> axes) =>
+        VisualTextFitting.FitOversized(builder, TickStyle(chart, context), plot.Height * .2, fitted =>
+            axes.All(text => { var measured = builder.MeasureText(text, fitted); return measured.Width <= plot.Width * .25 && measured.Height <= plot.Height * .2; }));
+
+    private static TextStyle FitLabel(VisualSceneBuilder builder, TextStyle style, string text, double width, double height) =>
+        VisualTextFitting.FitOversized(builder, style, height, fitted => {
+            var measured = builder.MeasureText(text, fitted); return measured.Width <= width && measured.Height <= height;
+        });
 
     private sealed class PolarLayout {
         internal PolarLayout(double cx, double cy, double radius, double gridRadius, double availableRadius) { Cx = cx; Cy = cy; Radius = radius; GridRadius = gridRadius; AvailableRadius = availableRadius; }

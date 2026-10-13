@@ -84,7 +84,7 @@ public sealed partial class MermaidParser {
             var path = prefix + key;
             var declarationSpan = propertySpan?.Invoke(pair.Value) ?? span;
             if (pair.Value.TryAsObject(out var nested) && nested.Count > 0) {
-                if (IsConfigurationStringPath(path)) configuration.Add(new MermaidConfigurationSetting(path, null, false, declarationSpan));
+                if (IsConfigurationScalarPath(path)) configuration.Add(new MermaidConfigurationSetting(path, null, false, declarationSpan));
                 AddConfigurationJson(nested, path + ".", declarationSpan, configuration, propertySpan);
             }
             else configuration.Add(new MermaidConfigurationSetting(path, pair.Value.AsOptionalString(), pair.Value.IsString, declarationSpan));
@@ -94,9 +94,9 @@ public sealed partial class MermaidParser {
     private static string ConfigurationPathKey(string key) =>
         Regex.IsMatch(key, @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant) ? key : "[" + key + "]";
 
-    private static bool IsConfigurationStringPath(string path) {
+    private static bool IsConfigurationScalarPath(string path) {
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path) || MermaidSankeySettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path);
+        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path) || MermaidSankeySettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path);
     }
 
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
@@ -127,6 +127,8 @@ public sealed partial class MermaidParser {
         configuration.Layout = ReadString("layout");
         configuration.Look = ReadString("look");
         configuration.FontFamily = ReadString("fontFamily");
+        var fontSize = configuration.Last("themeVariables.fontSize");
+        configuration.FontSize = ReadConfigurationFontSize(fontSize, result, out var invalidFontSize);
         if (kind == MermaidDiagramKind.Radar)
             configuration.Radar = MermaidRadarSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Sankey)
@@ -138,6 +140,11 @@ public sealed partial class MermaidParser {
             if (configuration.Sankey?.Handles(setting.Path) == true || configuration.Treemap?.Handles(setting.Path) == true) continue;
             var theme = Selected("theme");
             var font = Selected("fontFamily");
+            if (setting.Path == "themeVariables.fontSize" && !ReferenceEquals(setting, fontSize)) continue;
+            if (ReferenceEquals(setting, fontSize) && invalidFontSize) continue;
+            if ((invalidFontSize || fontSize?.Value != null) && setting.Path.StartsWith("themeVariables.fontSize.", StringComparison.Ordinal)) continue;
+            if (ReferenceEquals(setting, fontSize) && configuration.FontSize.HasValue &&
+                kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             if (ReferenceEquals(setting, theme) && setting.IsString && IsNativeTheme(setting.Value)) {
                 if (kind != MermaidDiagramKind.ZenUml && kind != MermaidDiagramKind.Agentflow && kind != MermaidDiagramKind.Railroad) continue;
             } else if (ReferenceEquals(setting, font) && setting.IsString && !string.IsNullOrWhiteSpace(setting.Value) &&

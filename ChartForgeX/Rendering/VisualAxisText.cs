@@ -32,6 +32,22 @@ internal static class VisualAxisText {
             metrics.Width * sine + metrics.Height * cosine, metrics.LineHeight);
     }
 
+    /// <summary>Reduces oversized axis text using backend measurements without changing the authored style.</summary>
+    internal static TextStyle FitOversized(VisualSceneBuilder builder, TextStyle style, ChartRect bounds, string[] texts, double angle = 0) {
+        // Ordinary unrotated text keeps its shortening policy when a line fits vertically.
+        // Oversized and rotated labels fit their complete allocated footprint.
+        if (bounds.Width <= 0 || bounds.Height <= 0 ||
+            Angle(angle) == 0 && style.EffectiveFontSize <= VisualTextFitting.MaximumOrdinaryFontSize &&
+            builder.MeasureText("Mg", style).Height <= bounds.Height) return style;
+        return VisualTextFitting.FitOversized(builder, style, bounds.Height, fitted => {
+            foreach (var text in texts) {
+                var metrics = RotatedMetrics(builder.MeasureText(text, fitted), angle);
+                if (metrics.Width > bounds.Width || metrics.Height > bounds.Height) return false;
+            }
+            return true;
+        });
+    }
+
     /// <summary>Paints the displayed text within the same footprint used for full and shortened placement.</summary>
     internal static void Draw(VisualSceneBuilder builder, PlacedLabel label, string role, string? id = null, SvgPaint? paint = null) {
         if (label.IsDropped) return;

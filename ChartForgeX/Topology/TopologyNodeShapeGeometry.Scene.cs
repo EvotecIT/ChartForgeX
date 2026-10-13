@@ -40,11 +40,12 @@ internal static partial class TopologyNodeShapeGeometry {
         }
         switch (node.Shape ?? TopologyNodeShape.Rounded) {
             case TopologyNodeShape.Actor:
-                var cx = x + w / 2; var unit = Math.Min(w / 48, h / 76);
-                Ellipse(cx, y + unit * 15, unit * 9, unit * 9);
-                Open(cx, y + unit * 24, cx, y + unit * 50);
-                Open(cx - unit * 17, y + unit * 34, cx + unit * 17, y + unit * 34);
-                Open(cx - unit * 15, y + unit * 68, cx, y + unit * 50, cx + unit * 15, y + unit * 68);
+                var cx = x + w / 2;
+                var actorScale = ActorScale(node);
+                Ellipse(cx, y + 15 * actorScale, 9 * actorScale, 9 * actorScale);
+                Open(cx, y + 24 * actorScale, cx, y + 50 * actorScale);
+                Open(cx - 17 * actorScale, y + 34 * actorScale, cx + 17 * actorScale, y + 34 * actorScale);
+                Open(cx - 15 * actorScale, y + 68 * actorScale, cx, y + 50 * actorScale, cx + 15 * actorScale, y + 68 * actorScale);
                 break;
             case TopologyNodeShape.Ellipse:
             case TopologyNodeShape.Circle:

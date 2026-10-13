@@ -113,6 +113,7 @@ internal static partial class VisualCartesianCompiler {
             var title = XAxisTitle(chart);
             var titleHeight = string.IsNullOrEmpty(title) ? 0 : builder.MeasureText(title,
                 chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground })).Height + spacing;
+            titleHeight = FitAxisTitleReservation(tickHeight, titleHeight, Math.Max(0, viewport.Bottom - plot.Bottom - spacing));
             var bounds = new ChartRect(plot.Left, plot.Bottom + spacing, plot.Width,
                 Math.Max(0, Math.Min(tickHeight, viewport.Bottom - plot.Bottom - spacing - titleHeight)));
             DrawAxisLabels(builder, chart.Options, chart.Options.XAxis, xTicks, map.X, true, false, bounds, style, spacing, null, labels);
@@ -144,6 +145,16 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawAxisLabels(VisualSceneBuilder builder, ChartOptions options, ChartAxis axis, IReadOnlyList<double> ticks, Func<double, double> coordinate,
         bool horizontal, bool secondary, ChartRect bounds, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels) {
+        var pitch = horizontal ? bounds.Width : bounds.Height;
+        for (var tick = 1; tick < ticks.Count; tick++) {
+            var distance = Math.Abs(coordinate(ticks[tick]) - coordinate(ticks[tick - 1]));
+            if (distance > 0) pitch = Math.Min(pitch, distance);
+        }
+        var gap = axis.LabelDensity == ChartLabelDensity.Dense ? 0 : axis.LabelDensity == ChartLabelDensity.Relaxed ? spacing * 2 : spacing / 2;
+        pitch = Math.Max(0, pitch - gap * 2);
+        var cell = new ChartRect(0, 0, horizontal ? Math.Min(bounds.Width, pitch) : bounds.Width,
+            horizontal ? bounds.Height : Math.Min(bounds.Height, pitch));
+        style = VisualAxisText.FitOversized(builder, style, cell, ticks.Select(tick => labels.Format(axis, tick, fallback, ticks)).ToArray(), axis.LabelAngle);
         var requests = new List<LabelPlacementRequest>();
         var role = horizontal ? "axis-x-label" : secondary ? "axis-secondary-y-label" : "axis-y-label";
         var index = 0;
@@ -168,7 +179,6 @@ internal static partial class VisualCartesianCompiler {
             request.MeasuredSize = builder.MeasureText(request.Text, request.Style);
             request.RotationDegrees = VisualAxisText.Angle(axis.LabelAngle);
         }
-        var gap = axis.LabelDensity == ChartLabelDensity.Dense ? 0 : axis.LabelDensity == ChartLabelDensity.Relaxed ? spacing * 2 : spacing / 2;
         var placement = new LabelPlacementService();
         // All explicitly permits overlaps; fitting still keeps each individual label inside its axis strip.
         var placed = axis.LabelDensity == ChartLabelDensity.All
@@ -179,10 +189,14 @@ internal static partial class VisualCartesianCompiler {
         foreach (var label in placed) VisualAxisText.Draw(builder, label, role);
     }
 
+    private static double FitAxisTitleReservation(double ticks, double title, double available) =>
+        ticks + title <= available || title == 0 ? title : available * title / (ticks + title);
+
     private static void DrawAxisTitle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
         VisualThemeColors colors, TextAlignment alignment, string role) {
         var style = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground, Alignment = alignment });
         style.Alignment = alignment;
+        style = VisualAxisText.FitOversized(builder, style, bounds, new[] { text });
         VisualAxisText.Title(builder, text, bounds, style, role, null,
             "cartesian.axis-title-overflow", "An axis title was shortened or omitted within its measured frame.");
     }

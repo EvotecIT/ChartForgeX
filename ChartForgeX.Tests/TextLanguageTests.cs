@@ -130,7 +130,9 @@ public sealed class TextLanguageTests {
             var right = Number(axis, "x2");
             var selectedSize = Number(selected, "font-size");
             var localizedFont = Font().WithLanguage("BGR ");
-            Assert.True(localizedFont.Measure(sourceLabel, selectedSize) > right - left, "The fixture must require fitting.");
+            Assert.True(localizedFont.Measure(sourceLabel, 100) > right - left, "The authored label must require fitting.");
+            Assert.True(selectedSize < 100 && localizedFont.Measure(sourceLabel, selectedSize) <= right - left,
+                "Oversized text must fit the complete label using localized glyph advances.");
             var displayedWidth = localizedFont.Measure(selected.Value, selectedSize);
             Assert.True(Number(selected, "x") >= left - 1 && Number(selected, "x") + displayedWidth <= right + 1,
                 "The visible label must fit its axis strip using localized glyph advances.");
@@ -153,7 +155,7 @@ public sealed class TextLanguageTests {
     }
 
     [Fact]
-    public void SvgGridTrimmingKeepsLocalizedHeaderInsideItsAvailableWidth() {
+    public void SvgGridFittingKeepsLocalizedHeaderInsideItsAvailableWidth() {
         var path = Path.Combine(Path.GetTempPath(), "cfx-language-" + Guid.NewGuid().ToString("N") + ".ttf");
         File.WriteAllBytes(path, Bytes());
         try {
@@ -163,7 +165,11 @@ public sealed class TextLanguageTests {
             var doc = XDocument.Parse(grid.ToSvg());
             var header = doc.Descendants().First(e => (string?)e.Attribute("data-cfx-role") == "frame-heading");
             var width = double.Parse(doc.Root!.Attribute("width")!.Value, System.Globalization.CultureInfo.InvariantCulture) - grid.Padding * 2;
-            Assert.True(Font().WithLanguage("BGR ").Measure(header.Value, 100) <= width, "Localized header must be trimmed using shaped widths.");
+            var text = header.DescendantsAndSelf().First(element => element.Name.LocalName == "text");
+            var size = double.Parse(text.Attribute("font-size")!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            Assert.InRange(size, double.Epsilon, 100);
+            Assert.True(Font().WithLanguage("BGR ").Measure(text.Value, size) <= width,
+                "Localized header must fit using shaped widths at its displayed font size.");
         } finally { FontRegistry.Clear(); File.Delete(path); }
     }
 
