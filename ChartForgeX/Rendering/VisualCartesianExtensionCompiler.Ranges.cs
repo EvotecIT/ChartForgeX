@@ -28,9 +28,11 @@ internal static partial class VisualCartesianCompiler {
             var highFlat = highPath.Flatten(12); var lowFlat = lowPath.Flatten(12);
             var polygon = ChartPairedBoundaryGeometry.Envelope(highFlat, lowFlat); var opacity = area ? context.Theme.AreaOpacity : ChartVisualPrimitives.RangeBandFillOpacity;
             var fill = ChartColorMath.WithOpacity(color, opacity);
-            builder.Path(polygon, fill, role: area ? "range-area" : "range-band", close: true,
-                paint: VisualChartPaint.Fill(sourcePaint.WithOpacity(fill, opacity)));
-            DrawPattern(builder, polygon, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), area ? "range-area-pattern" : "range-band-pattern");
+            using (FillSegment(builder, offset, segment.Count)) {
+                builder.Path(polygon, fill, role: area ? "range-area" : "range-band", close: true,
+                    paint: VisualChartPaint.Fill(sourcePaint.WithOpacity(fill, opacity)));
+                DrawPattern(builder, polygon, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), area ? "range-area-pattern" : "range-band-pattern");
+            }
             var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : area ? Math.Max(ChartVisualPrimitives.RangeAreaMinStrokeWidth, context.Theme.SeriesStrokeWidth) : ChartVisualPrimitives.RangeBandBoundaryStrokeWidth;
             var upperOpacity = area ? 1 : ChartVisualPrimitives.RangeBandBoundaryOpacity;
             var lowerOpacity = area ? ChartVisualPrimitives.RangeAreaLowerStrokeOpacity : ChartVisualPrimitives.RangeBandBoundaryOpacity;

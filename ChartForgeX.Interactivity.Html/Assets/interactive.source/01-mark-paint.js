@@ -5,7 +5,16 @@
   const paintAvailabilityAttributes = ['class', 'style', 'hidden', 'aria-hidden', 'display', 'visibility',
     'fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'clip-path', 'clipPathUnits',
     'x', 'y', 'x1', 'x2', 'y1', 'y2', 'width', 'height', 'cx', 'cy', 'r', 'rx', 'ry', 'd', 'points', 'transform',
-    'stop-color', 'stop-opacity', 'font-size'];
+    'stop-color', 'stop-opacity', 'font-size', 'fill-rule', 'clip-rule', 'slot', 'name'];
+  // Paint, clipping and focus share the browser's accessible flattened ancestry.
+  const composedParent = (node) => node.assignedSlot || node.parentElement || node.getRootNode().host;
+  const composedAncestry = (root) => {
+    const nodes = [], trees = new Set();
+    for (let node = root; node; node = composedParent(node)) {
+      nodes.push(node); trees.add(node.getRootNode());
+    }
+    return { nodes, trees: Array.from(trees) };
+  };
   // Cache only for this render: host CSS can change between successive focus and pointer events.
   const paintStyle = (node, styles) => {
     if (styles.has(node)) return styles.get(node);
@@ -13,7 +22,7 @@
   };
   const paintAncestorsVisible = (node, styles) => {
     if (!node || node.closest('defs,[hidden]')) return false;
-    for (let ancestor = node; ancestor; ancestor = ancestor.parentElement || ancestor.getRootNode().host) {
+    for (let ancestor = node; ancestor; ancestor = composedParent(ancestor)) {
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }
@@ -116,8 +125,8 @@
     return true;
   };
   const pairedBoundaryRole = (node) => /^(difference-(first|second)|range-(upper|lower|midline))$/.test(node.dataset.cfxRole || '');
-  const pairedBoundaryInk = (node, subject, paint) => {
-    const region = subject._cfxPairedRegion, sourceMatrix = subject.getScreenCTM(), shapeMatrix = node.getScreenCTM();
+  const pairedBoundaryInk = (node, subject, paint, region = subject._cfxPairedRegion) => {
+    const sourceMatrix = subject.getScreenCTM(), shapeMatrix = node.getScreenCTM();
     const clips = nativePaintClips(node);
     if (!region || !sourceMatrix || !shapeMatrix || !clips || typeof node.isPointInStroke !== 'function') return false;
     // Captured paired extents include equal marker inflation on each side. Remove it to locate the actual boundaries.
@@ -165,8 +174,14 @@
     // A series-wide boundary box cannot establish paint at this observation, connected or isolated.
     if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
     // Open line marks never paint their inherited default black fill.
-    const resolved = /^(line|polyline)$/i.test(node.tagName) ? stroke
-      : (node.dataset.cfxFillArea !== 'false' && paintValue(node, paint.fill, paint.fillOpacity, styles)) || stroke;
+    const fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
+      : paintValue(node, paint.fill, paint.fillOpacity, styles);
+    if (cartesianFillObservation(node, subject)) {
+      if ((node.dataset.cfxRole || '').endsWith('-pattern')) return stroke && cartesianFillInk(node, subject, styles) ? stroke : null;
+      if (fill && cartesianFillInk(node, subject, styles)) return fill;
+      return stroke && cartesianFillStrokeInk(node, subject, paint) ? stroke : null;
+    }
+    const resolved = fill || stroke;
     return resolved && (subject === node || paintWithinNativeClips(node, subject)) ? resolved : null;
   };
   const primaryTextPaint = (node, decoration, styles) => {

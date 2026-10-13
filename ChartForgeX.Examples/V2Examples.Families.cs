@@ -23,7 +23,10 @@ public static partial class V2Examples {
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
         foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var variants = new List<string> { "wide", "compact" };
-            if (kind == ChartSeriesKind.DifferenceArea) { variants.Add("dated-gaps"); variants.Add("compact-dated-gaps"); }
+            if (kind == ChartSeriesKind.DifferenceArea) {
+                variants.Add("dated-gaps"); variants.Add("compact-dated-gaps");
+                variants.Add("step-start"); variants.Add("step-middle"); variants.Add("step-end"); variants.Add("compact-step-middle");
+            }
             if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap) {
                 variants.Add("color-scale"); variants.Add("compact-color-scale");
             }
@@ -87,6 +90,9 @@ public static partial class V2Examples {
                 if (kind == ChartSeriesKind.Scatter && variant is "options" or "compact-options") legend = false;
                 var subtitle = kind == ChartSeriesKind.DifferenceArea ? variant is "dated-gaps" or "compact-dated-gaps"
                     ? "Named paired values retain a missing section on an independent scale"
+                    : variant is "step-start" ? "Paired values change at the preceding observation; missing sections stay open"
+                    : variant is "step-middle" or "compact-step-middle" ? "Paired values change halfway between observations; missing sections stay open"
+                    : variant is "step-end" ? "Paired values change at the following observation; missing sections stay open"
                     : "Blue shows Actual above Forecast; amber shows Actual below Forecast"
                     : precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
                     : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"

@@ -10,6 +10,7 @@ public static partial class V2GalleryModels {
     /// <summary>Creates an actual source model for every chart kind, without selecting a renderer or export backend.</summary>
     public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
         var differenceGapVariant = (variant is "dated-gaps" or "compact-dated-gaps") && kind == ChartSeriesKind.DifferenceArea;
+        var differenceStepVariant = (variant is "step-start" or "step-middle" or "step-end" or "compact-step-middle") && kind == ChartSeriesKind.DifferenceArea;
         var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
         var precisionVariant = (variant is "precision" or "compact-precision") && kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
         var authoredHierarchyVariant = (variant is "authored-total" or "compact-authored-total") && kind == ChartSeriesKind.Sunburst;
@@ -25,7 +26,7 @@ public static partial class V2GalleryModels {
         var plotRegionVariant = kind == ChartSeriesKind.Scatter && variant is "quadrants" or "compact-quadrants"
             || kind == ChartSeriesKind.Bubble && variant is "plot-regions" or "compact-plot-regions";
         var partialColorVariant = (variant is "partial-color-range" or "compact-partial-color-range") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter;
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalCartesian && !angularReversalVariant && !financialDashVariant && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant && !colorLegendVariant && !endpointLabels && !partialColorVariant && !differenceGapVariant && !plotRegionVariant)
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalCartesian && !angularReversalVariant && !financialDashVariant && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant && !colorLegendVariant && !endpointLabels && !partialColorVariant && !differenceGapVariant && !differenceStepVariant && !plotRegionVariant)
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = (endpointLabels ? RangeBarEndpointLabels(variant) : null) ?? (angularReversalVariant ? AngularReversal(kind) : null) ?? (financialDashVariant ? FinancialDashes(kind) : null) ?? (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant || horizontalCartesian ? GeometryOptions(kind, variant) : null)
             ?? PlotRegionObservations(kind, variant) ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Differences(kind, variant) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
