@@ -17,7 +17,7 @@ ChartForgeX should stay easy to extend without letting renderer files become ove
 - Keep the core package free of runtime package dependencies; private build-time reference assemblies are allowed only where required for targeting.
 - Run repository smoke tests through `dotnet test` so local, CI, and IDE test flows share the same entry point.
 - Generate NuGet symbol packages with deterministic library builds.
-- Run GitHub Actions on private self-hosted runners only.
+- Run GitHub Actions on public hosted Linux, Windows, and macOS runners.
 - The smoke test runner enforces these project settings so quality does not depend on memory.
 
 ## Release Performance Budgets

@@ -1,7 +1,6 @@
   // The prepared kind names distinguish source quantities from map/grid coordinates and tuple summaries.
   const sharedXSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'scatter', 'bubble', 'errorbar', 'slope', 'trendline', 'waterfall', 'differencearea']);
   const sharedXObservation = (data) => sharedXSeriesKinds.has((data.cfxKind || '').toLowerCase()) && !data.cfxDerived;
-  const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
   const sharedXValue = (data) => (data.cfxKind || '').toLowerCase() === 'differencearea' ? data.cfxFirst : data.cfxY;
   const renderSharedXTip = (tip, node, root) => {
     const data = node.dataset || {};
@@ -30,7 +29,7 @@
     if (!rows.length) return false;
     tip.replaceChildren();
     const header = document.createElement('div');
-    header.className = 'cfx-tooltip__title'; header.textContent = data.cfxXLabel || data.cfxX; tip.appendChild(header);
+    header.className = 'cfx-tooltip__title'; header.textContent = capturedText(data, 'cfxXLabel', numericDisplayText(data.cfxX)); tip.appendChild(header);
     const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
     rows.forEach((row) => {
       const name = document.createElement('dt'); const value = document.createElement('dd');
@@ -38,7 +37,7 @@
       name.dataset.cfxTooltipPoint = row.point.dataset.cfxPoint; name.dataset.cfxTooltipSourcePoint = row.source;
       const difference = differenceTooltipRows(row.point);
       name.textContent = row.name + (difference ? ' · ' + difference[0].name : '');
-      value.textContent = difference ? difference[0].value : row.rawValue;
+      value.textContent = difference ? difference[0].value : capturedText(row.point.dataset, 'cfxFormattedValue', numericDisplayText(row.rawValue));
       const swatch = document.createElement('span'); swatch.className = 'cfx-tooltip__swatch';
       if (row.colour) swatch.style.backgroundColor = row.colour;
       swatch.setAttribute('aria-hidden', 'true'); name.prepend(swatch);

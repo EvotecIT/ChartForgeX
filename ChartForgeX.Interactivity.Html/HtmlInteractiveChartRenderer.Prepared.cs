@@ -8,6 +8,7 @@ namespace ChartForgeX.Interactivity.Html;
 public sealed partial class HtmlInteractiveChartRenderer {
     // Browser targets are a host concern. Source identities and completed layout come from the detached scene.
     private static string PreparedChartMetadata(Chart chart, PreparedVisual prepared) {
+        var fillInteriors = PreparedFillInteriors(prepared);
         var json = new StringBuilder("{\"series\":[");
         for (var index = 0; index < chart.Series.Count; index++) {
             if (index > 0) json.Append(',');
@@ -41,7 +42,19 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .Append(",\"x\":").Append(bounds.X.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"y\":").Append(bounds.Y.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"width\":").Append(bounds.Width.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"height\":").Append(bounds.Height.ToString("R", CultureInfo.InvariantCulture)).Append('}');
+                .Append(",\"height\":").Append(bounds.Height.ToString("R", CultureInfo.InvariantCulture));
+            if (fillInteriors.TryGetValue(region.Id, out var interiors)) {
+                json.Append(",\"fillInteriors\":[");
+                for (var candidate = 0; candidate < interiors.Count; candidate++) {
+                    if (candidate > 0) json.Append(',');
+                    var box = interiors[candidate];
+                    json.Append('[').Append((box.X + box.Width / 2).ToString("R", CultureInfo.InvariantCulture)).Append(',')
+                        .Append((box.Y + box.Height / 2).ToString("R", CultureInfo.InvariantCulture)).Append(',')
+                        .Append((box.Width / 2).ToString("R", CultureInfo.InvariantCulture)).Append(']');
+                }
+                json.Append(']');
+            }
+            json.Append('}');
         }
         return json.Append("]}").ToString();
     }

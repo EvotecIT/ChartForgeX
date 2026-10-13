@@ -5,8 +5,12 @@ namespace ChartForgeX.Rendering;
 
 internal static class ChartScaleTransform {
     public static double Normalize(double value, double minimum, double maximum, ChartAxis axis) {
-        var ratio = ChartMath.Normalize(Forward(value, axis), Forward(minimum, axis), Forward(maximum, axis));
-        return axis.Reversed ? 1 - ratio : ratio;
+        return Normalize(Forward(value, axis), Forward(minimum, axis), Forward(maximum, axis), axis.Reversed);
+    }
+
+    internal static double Normalize(double value, double minimum, double maximum, bool reversed) {
+        var ratio = ChartMath.Normalize(value, minimum, maximum);
+        return reversed ? 1 - ratio : ratio;
     }
 
     public static double Forward(double value, ChartAxis axis) {

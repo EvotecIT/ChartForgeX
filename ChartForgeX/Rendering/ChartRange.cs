@@ -13,7 +13,7 @@ internal sealed class ChartRange {
     public double MaxY { get; private set; } = double.NegativeInfinity;
 
     /// <summary>Snapshots data and authored bounds before viewport-dependent fitting.</summary>
-    internal ChartRange Clone() => new ChartRange { MinX = MinX, MaxX = MaxX, MinY = MinY, MaxY = MaxY };
+    internal ChartRange Copy() => new() { MinX = MinX, MaxX = MaxX, MinY = MinY, MaxY = MaxY };
 
     public static ChartRange FromChart(Chart chart, bool applyOptionBounds = true) =>
         FromChart(chart, ChartBarCoordinateMap.Create(chart), applyOptionBounds);

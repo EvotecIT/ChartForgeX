@@ -62,13 +62,17 @@ internal static class ChartPathBuilder {
 
     private static void AddStepSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points, ChartStepPosition position) {
         for (var i = 1; i < points.Count; i++) {
-            var transition = position == ChartStepPosition.Start ? points[i - 1].X
-                : position == ChartStepPosition.Middle ? points[i - 1].X / 2 + points[i].X / 2 : points[i].X;
+            var transition = StepTransitionX(points[i - 1].X, points[i].X, position);
             if (position != ChartStepPosition.Start) commands.Add(ChartPathCommand.LineTo(transition, points[i - 1].Y));
             if (position != ChartStepPosition.End) commands.Add(ChartPathCommand.LineTo(transition, points[i].Y));
             commands.Add(ChartPathCommand.LineTo(points[i].X, points[i].Y));
         }
     }
+
+    /// <summary>Places a step between mapped neighbors; the midpoint avoids overflowing their sum or difference.</summary>
+    internal static double StepTransitionX(double previousX, double nextX, ChartStepPosition position) =>
+        position == ChartStepPosition.Start ? previousX
+            : position == ChartStepPosition.Middle ? previousX / 2 + nextX / 2 : nextX;
 
     private static void AddSmoothSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points) {
         for (var i = 0; i < points.Count - 1; i++) {
