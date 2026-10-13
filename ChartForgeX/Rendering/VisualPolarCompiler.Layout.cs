@@ -23,8 +23,13 @@ internal static partial class VisualPolarCompiler {
                 series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth, chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth) / 2));
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - width - gap, plot.Height / 2 - height - gap) - markExtent);
         var count = chart.Options.PolarGridRingCount;
-        var axisRadius = chart.Options.ShowGrid && count.HasValue && count.Value > 0 ? radius * (count.Value / Math.Ceiling(count.Value)) : radius;
-        return new PolarLayout(plot.Left + plot.Width / 2, plot.Top + plot.Height / 2, axisRadius, radius);
+        var guideFraction = chart.Options.ShowGrid && count.HasValue && count.Value > 0 ? count.Value / Math.Ceiling(count.Value) : 1;
+        var extent = 1d;
+        if (chart.Options.ShowGrid) extent = Math.Max(extent, guideFraction * chart.Options.PolarAxisScaleFactor);
+        if (chart.Options.ShowAxes && chart.Options.XAxis.Visible) extent = Math.Max(extent, guideFraction * chart.Options.PolarAxisLabelFactor);
+        // Divide only after computing the bounded fraction, including subnormal interval counts.
+        var axisRadius = radius * guideFraction / extent;
+        return new PolarLayout(plot.Left + plot.Width / 2, plot.Top + plot.Height / 2, axisRadius, radius / extent, radius);
     }
 
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, PolarLayout geometry,
@@ -65,10 +70,12 @@ internal static partial class VisualPolarCompiler {
         }
         for (var index = 0; index < categories.Length; index++) {
             var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, categories[index]);
-            var end = On(geometry, angle, geometry.Radius);
-            if (chart.Options.ShowGrid) builder.Line(geometry.Cx, geometry.Cy, end.X, end.Y, colors.Border, context.Theme.GridStrokeWidth, radar ? "radar-spoke" : "polar-spoke", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+            if (chart.Options.ShowGrid) {
+                var end = On(geometry, angle, geometry.Radius * chart.Options.PolarAxisScaleFactor);
+                builder.Line(geometry.Cx, geometry.Cy, end.X, end.Y, colors.Border, context.Theme.GridStrokeWidth, radar ? "radar-spoke" : "polar-spoke", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+            }
             if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
-            var target = On(geometry, angle, geometry.Radius + context.Theme.Spacing);
+            var target = On(geometry, angle, geometry.Radius * chart.Options.PolarAxisLabelFactor + context.Theme.Spacing);
             var horizontal = Math.Cos(angle) > .3 ? 0d : Math.Cos(angle) < -.3 ? 1d : .5;
             var vertical = Math.Sin(angle) > .3 ? 0d : Math.Sin(angle) < -.3 ? 1d : .5;
             AddLabel(builder, labels, axes[index], target, style, (radar ? "radar" : "polar") + "-axis-label-" + index,
@@ -138,8 +145,9 @@ internal static partial class VisualPolarCompiler {
         });
 
     private sealed class PolarLayout {
-        internal PolarLayout(double cx, double cy, double radius, double gridRadius) { Cx = cx; Cy = cy; Radius = radius; GridRadius = gridRadius; }
+        internal PolarLayout(double cx, double cy, double radius, double gridRadius, double availableRadius) { Cx = cx; Cy = cy; Radius = radius; GridRadius = gridRadius; AvailableRadius = availableRadius; }
         internal double Cx { get; } internal double Cy { get; } internal double Radius { get; } internal double GridRadius { get; }
+        internal double AvailableRadius { get; }
     }
     private sealed class PolarLabel {
         internal PolarLabel(LabelPlacementRequest request, string id, string role, string? markId) { Request = request; Id = id; Role = role; MarkId = markId; }

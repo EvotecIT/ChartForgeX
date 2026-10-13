@@ -7,7 +7,7 @@ namespace ChartForgeX.Mermaid;
 public sealed class MermaidSourceConfiguration {
     private readonly List<MermaidConfigurationSetting> _settings = new();
     internal MermaidPacketSettings? Packet { get; set; }
-    internal double? RadarCurveTension { get; set; }
+    internal MermaidRadarSettings? Radar { get; set; }
     internal MermaidSankeySettings? Sankey { get; set; }
     internal MermaidTreemapSettings? Treemap { get; set; }
 

@@ -11,11 +11,13 @@ namespace ChartForgeX.Rendering;
 internal static class VisualAnnotationCompiler {
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
     // A caller that already describes its mark can reuse annotation painting without a nested interaction target.
-    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true, SvgColorRole colorRole = SvgColorRole.Axis) {
+    // Visibility suppresses paint while retaining the annotation's source facts and semantic region.
+    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true, SvgColorRole colorRole = SvgColorRole.Axis, Func<ChartAnnotation, bool>? isVisible = null) {
         for (var index = 0; index < annotations.Count; index++) {
             var annotation = annotations[index];
             if (annotation.EndValue.HasValue != bands || (include != null && !include(annotation))) continue;
             var horizontal = annotation.Kind == ChartAnnotationKind.HorizontalLine || annotation.Kind == ChartAnnotationKind.HorizontalBand;
+            var visible = isVisible == null || isVisible(annotation);
             var position = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, mapY(annotation.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, mapX(annotation.Value)));
             var color = annotation.Color;
             var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
@@ -32,9 +34,9 @@ internal static class VisualAnnotationCompiler {
                 var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, mapY(annotation.EndValue.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, mapX(annotation.EndValue.Value)));
                 bounds = horizontal ? new ChartRect(plot.Left, Math.Min(position, end), plot.Width, Math.Abs(end - position))
                     : new ChartRect(Math.Min(position, end), plot.Top, Math.Abs(end - position), plot.Height);
-                builder.Rect(bounds, ChartColorMath.WithOpacity(color, annotation.Opacity), role: "annotation-band",
+                if (visible) builder.Rect(bounds, ChartColorMath.WithOpacity(color, annotation.Opacity), role: "annotation-band",
                     paint: VisualChartPaint.Fill(SvgPaint.Of(color, colorRole).WithOpacity(ChartColorMath.WithOpacity(color, annotation.Opacity), annotation.Opacity)));
-            } else {
+            } else if (visible) {
                 var start = horizontal ? new ChartPoint(plot.Left, position) : new ChartPoint(position, plot.Top);
                 var end = horizontal ? new ChartPoint(plot.Right, position) : new ChartPoint(position, plot.Bottom);
                 var stroke = VisualReferenceStroke.Paint(annotation.StrokeStyle, color, colorRole, out var strokeColor);
@@ -44,7 +46,7 @@ internal static class VisualAnnotationCompiler {
                         ?? new[] { ChartVisualPrimitives.AnnotationLineDash, ChartVisualPrimitives.AnnotationLineGap }, paint: stroke);
             }
             if (describeAnnotations) builder.AddRegion(new VisualSemanticRegion(id, "annotation", bounds, description));
-            if (annotation.ShowLabel && !string.IsNullOrEmpty(annotation.Label)) {
+            if (visible && annotation.ShowLabel && !string.IsNullOrEmpty(annotation.Label)) {
                 var plate = new ChartColorBlend(colors.Surface, SvgColorRole.Surface, color, colorRole, .12);
                 var backplate = plate.Color;
                 var ink = ChartColorBlend.Contrast(plate);

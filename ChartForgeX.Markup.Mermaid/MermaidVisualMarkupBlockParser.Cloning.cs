@@ -111,6 +111,9 @@ public sealed partial class MermaidVisualMarkupBlockParser {
             Title = options.Title,
             Subtitle = options.Subtitle,
             CurveTension = options.CurveTension,
+            AxisScaleFactor = options.AxisScaleFactor,
+            AxisLabelFactor = options.AxisLabelFactor,
+            Padding = options.Padding,
             Width = options.Width,
             Height = options.Height
         };
