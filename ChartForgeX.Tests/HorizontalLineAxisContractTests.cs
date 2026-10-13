@@ -121,6 +121,29 @@ public sealed class HorizontalLineAxisContractTests {
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NonAlignedExplicitCategoryBoundsRetainOnlyTicksInsideTheirDomain(bool step) {
+        var chart = Model(new[] { new ChartPoint(1.1, 20), new ChartPoint(9.1, 60) }, step);
+        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.WithYAxisBounds(1.1, 9.1);
+        var axis = chart.Options.YAxis;
+        axis.TickCount = 6;
+        axis.WithLabelFormatter(value => value.ToString("R", CultureInfo.InvariantCulture));
+        var expected = ChartTicks.ForAxis(axis, 1.1, 9.1).Select(value => {
+            var text = value.ToString("R", CultureInfo.InvariantCulture);
+            return text + " (" + text + ")";
+        });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        Assert.Equal(expected.Count(), System.Xml.Linq.XDocument.Parse(prepared.ToSvg()).Descendants()
+            .Count(element => (string?)element.Attribute("data-cfx-role") == "grid-y"));
+        Assert.Equal(expected, prepared.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label));
+        Assert.Equal(1.1, chart.Options.YAxis.Minimum);
+        Assert.Equal(9.1, chart.Options.YAxis.Maximum);
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
     [InlineData(ChartDataLabelPlacement.Auto, 20)]
     [InlineData(ChartDataLabelPlacement.Auto, -20)]
     [InlineData(ChartDataLabelPlacement.Above, 20)]
