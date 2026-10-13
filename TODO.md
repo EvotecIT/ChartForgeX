@@ -29,7 +29,7 @@ All implemented chart kinds, ChartGrid, topology, flow and sequence use the shar
 - Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
 - Financial marks expose independent body/wick and OHLC colors, alpha, widths, dash patterns and phase, plus hollow candles through `ChartSeries.Financial`. Trading-session spacing remains separate work; session calendars must preserve source prices and date bounds across candle/OHLC views.
 - Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
-- Cartesian plot regions provide passive, bounded background guidance and arbitrary quadrants with primary/secondary axes, interior captions and shared SVG/PNG geometry. Mermaid quadrant conversion remains separate work.
+- Cartesian plot regions provide passive, bounded background guidance and arbitrary quadrants with primary/secondary axes, interior captions and shared SVG/PNG geometry. Mermaid quadrant charts use those regions for authored quadrant captions.
 - Keep annotation captions clear of data marks in compact plots, including bar caps and nearby value labels.
 
 SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
@@ -111,14 +111,12 @@ The following implementation PRs are open as of 12 October 2026. Each owns a dis
 
 | Active owner | Reusable contribution | Remaining qualification or scope |
 | --- | --- | --- |
-| [#295](https://github.com/EvotecIT/ChartForgeX/pull/295) | Native sequence presentation through the prepared sequence owner | Complete the sequence grammar and visible notation gaps listed above without losing unsupported source. |
 | [#296](https://github.com/EvotecIT/ChartForgeX/pull/296) | Shared HTML sizing that preserves readable sequence text | Qualify compact host scrolling, explicit fit sizing and export behavior. |
 | [#297](https://github.com/EvotecIT/ChartForgeX/pull/297), [#311](https://github.com/EvotecIT/ChartForgeX/pull/311) | Native source font families and sizes across chart, topology, sequence and block output | Qualify compact/dense content and explicit host precedence; broader color and theme-variable mapping remains open. |
 | [#300](https://github.com/EvotecIT/ChartForgeX/pull/300), [#301](https://github.com/EvotecIT/ChartForgeX/pull/301), [#304](https://github.com/EvotecIT/ChartForgeX/pull/304), [#305](https://github.com/EvotecIT/ChartForgeX/pull/305), [#306](https://github.com/EvotecIT/ChartForgeX/pull/306), [#307](https://github.com/EvotecIT/ChartForgeX/pull/307), [#308](https://github.com/EvotecIT/ChartForgeX/pull/308), [#310](https://github.com/EvotecIT/ChartForgeX/pull/310) | Gantt dependencies, date/axis/tick formats, markers, guide strokes and explicit calendar anchors | Settle the dependency-ordered chain with resolved-date, native export, host and resource-bound proof. |
 | [#313](https://github.com/EvotecIT/ChartForgeX/pull/313) | Sankey source geometry and value-label settings over the native flow owner | Qualify CSV identities, source precedence, Unicode affixes and visible labels. |
 | [#318](https://github.com/EvotecIT/ChartForgeX/pull/318), [#321](https://github.com/EvotecIT/ChartForgeX/pull/321) | Packet row/bit-number settings and shared packet geometry | Qualify dimensions, fields crossing rows and source/host precedence. |
 | [#337](https://github.com/EvotecIT/ChartForgeX/pull/337) | Horizontal XY line geometry through the shared Cartesian orientation owner | Qualify continuous numeric/time categories, reversal, labels, zones and both orientations. |
-| [#339](https://github.com/EvotecIT/ChartForgeX/pull/339) | Treemap value-caption visibility through the merged hierarchy owner | Complete remaining source classes/styles and value formatting; keep hierarchy construction in the shared owner. |
 | [#341](https://github.com/EvotecIT/ChartForgeX/pull/341), [#342](https://github.com/EvotecIT/ChartForgeX/pull/342) | Closed radar curves, graticules, dimensions, margins and native polar-axis layout | Settle curve/layout proof and complete source theme mapping without duplicating polar geometry. |
 | [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) | Flowchart circle/cross endpoint operators and bidirectional markers through shared topology geometry | Current-main native SVG/PNG, Markdown, serialization and versioned edge-type fixtures pass locally. Complete the remaining edge IDs/properties, length and compound-layout contracts separately. |
 | [#347](https://github.com/EvotecIT/ChartForgeX/pull/347) | Additional flowchart metadata shape aliases over existing native shapes | Versioned parser and native-shape fixtures cover the mapped aliases. The wider shape catalog, icon/image metadata and shape-specific notation remain open. |
@@ -166,7 +164,8 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 ### 4. Chart and calendar fidelity
 
 - [x] Correct Gantt duration-unit case semantics: `M` means calendar months and `m` means minutes. Shared upstream timestamp fixtures cover month-end/leap-year clamping, fractional units, exclusion calendars and dependent tasks.
-- [ ] Qualify hierarchical treemap behavior against the shared owner merged in PR #273; PR #271 is closed after consolidation. Close Mermaid class/style and value-formatting gaps without recreating hierarchy locally.
+- [x] Map treemap value-caption visibility through the shared hierarchy owner, with source configuration and explicit host precedence. Node identities, magnitudes and labels remain available when captions hide values.
+- [ ] Complete Mermaid treemap classes, styles and value formatting through the shared hierarchy owner merged in PR #273.
 - [x] Preserve comma-separated treemap magnitudes and native group/leaf captions through typed hierarchy conversion and static direct/fence output.
 - [x] Honor treemap value-caption visibility through the native hierarchy owner, source configuration and nullable host overrides while retaining semantic values and labels.
 - [ ] Reuse the stable Sankey identity work in PR #261 and qualify Mermaid labels, CSV and configuration against the settled owner API.
@@ -184,7 +183,9 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [x] Honor case-insensitive `todayMarker off` over caller-supplied time and require an explicit caller time for deterministic today lines. Retain unsupported style text with a source warning.
 - [x] Apply English D3 Gantt axis directives, padding and literal text through the native axis formatter; qualify shared weekday, clock and ISO/week boundary labels independently of host culture.
 - [x] Apply Gantt calendar tick intervals and authored weekdays through the shared time-scale owner, with reference cases for epoch alignment, month resets, empty windows and bounded fallback.
-- [ ] Render journey sections, actors and score paths as a reusable journey scene, quadrant regions and their labels as chart geometry, and timeline sections/events in both directions. Keep the current score-bar/scatter/ordered-time mappings explicit until replaced.
+- [x] Render the four normalized quadrant regions and their labels through the shared Cartesian plot-region owner, including charts without points. Preserve scatter coordinates through direct and Markdown rendering; qualify labels and positions with pinned Mermaid 10, 11 and 12 references.
+- [ ] Complete quadrant point/class styling, theme variables, source dimensions and separate axis endpoint labels. Native region captions use the shared bounded placement policy.
+- [ ] Render journey sections, actors and score paths as a reusable journey scene and timeline sections/events in both directions. Keep the current score-bar/ordered-time mappings explicit until replaced.
 - [x] Map Sankey source dimensions, node geometry/alignment and value-label visibility/affixes through the native owners. Qualify direct/fence host overrides and the same node/flow facts across pinned Mermaid 10, 11 and 12; retain unsupported paint settings as diagnostics.
 - [ ] Broaden pie/show-data, XY named-series legend rules, per-point line labels, numeric/category axes and source configuration, Sankey CSV/configuration/colors, and packet row/label/configuration cases, including Mermaid 12 bit-numbering direction.
 
