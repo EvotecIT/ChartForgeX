@@ -10,6 +10,16 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyRenderPrimitives {
     public const double EndpointLabelFontSize = 9.5;
 
+    public static (ChartRect Bounds, double FontSize) EdgeEndpointLabelLayout(TopologyChart chart, TopologyRenderOptions options, ChartPoint endpoint, ChartPoint adjacent, string text) {
+        var metrics = EndpointLabelMetrics(options, text);
+        var center = EdgeEndpointLabelPoint(chart, options, endpoint, adjacent, text);
+        return (new ChartRect(center.X - metrics.Width / 2, center.Y - metrics.Height / 2, metrics.Width, metrics.Height), metrics.FontSize);
+    }
+
+    private static (double FontSize, double Width, double Height) EndpointLabelMetrics(TopologyRenderOptions options, string text) =>
+        options.ResolvedEndpointLabelMetrics?.Invoke(text) ??
+        (EndpointLabelFontSize, EstimateTextWidth(text, EndpointLabelFontSize, true, options.TextMeasurement) + 6, EndpointLabelFontSize + 6);
+
     public static ChartPoint EdgeEndpointLabelPoint(TopologyChart chart, TopologyRenderOptions options, ChartPoint endpoint, ChartPoint adjacent, string text) {
         var dx = adjacent.X - endpoint.X;
         var dy = adjacent.Y - endpoint.Y;
@@ -17,8 +27,9 @@ internal static partial class TopologyRenderPrimitives {
         if (length < 0.001) { dx = 1; dy = 0; length = 1; }
         var ux = dx / length;
         var uy = dy / length;
-        var width = EstimateTextWidth(text.Trim(), EndpointLabelFontSize, true, options.TextMeasurement) + 6;
-        var height = EndpointLabelFontSize + 6;
+        var metrics = EndpointLabelMetrics(options, text);
+        var width = metrics.Width;
+        var height = metrics.Height;
         var normalOffset = Math.Max(14, Math.Abs(uy) * width / 2 + Math.Abs(ux) * height / 2 + 4);
         var obstacles = chart.Nodes.Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
             .Select(node => EdgeLabelNodeObstacle(node, options, 4)).ToList();

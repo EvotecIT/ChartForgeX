@@ -1,11 +1,28 @@
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
+using ChartForgeX.Mermaid;
+using ChartForgeX.VisualBlocks;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class NativeLabelAuditTests {
+    [Fact]
+    public void SmallestSourcePacketKeepsItsDerivedSubpixelLabelsInGraphiteOutput() {
+        var result = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontSize':1}}}%%\npacket-beta\n0-7: \"Header\"\n8-31: \"Payload\"");
+        Assert.Empty(result.Diagnostics);
+        var block = Assert.IsType<PacketLayoutBlock>(result.Artifact!.Model);
+        var svg = block.ToSvg();
+        var texts = System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(node => node.Name.LocalName == "text").ToArray();
+        Assert.Contains(texts, node => double.TryParse((string?)node.Attribute("font-size"), System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out var size) && size > 0 && size < 1);
+        var report = ChartLabelScene.Inspect(svg, FontSpec.SystemSans());
+        Assert.Equal(0, report.Dropped);
+        Assert.Equal(0, report.LabelLabel);
+        Assert.NotEmpty(block.ToPng());
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -22,17 +39,19 @@ public sealed class NativeLabelAuditTests {
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void NativeNodeCaptionsCountContainmentAndKeepRealTextOverlaps(bool overlap) {
+    [InlineData(false, 9.35)]
+    [InlineData(true, 9.35)]
+    [InlineData(false, .5)]
+    [InlineData(true, .5)]
+    public void NativeNodeCaptionsCountContainmentAndKeepRealTextOverlaps(bool overlap, double subtitleSize) {
         var font = FontSpec.SystemSans();
         var builder = new VisualSceneBuilder(new VisualSize(200, 100), font);
         using (builder.PushGroup("node", "topology-node", new Dictionary<string, string> { ["data-node-id"] = "node" })) {
             builder.Rect(new ChartRect(10, 10, 180, 80), ChartColor.White, role: "topology-node-surface");
             builder.Text("Title", 20, 30, 11, ChartColor.Black, 600, "topology-node-label");
             var secondBaseline = 30 - builder.TextAscent(11, 600) + builder.MeasureText("Title", 11, 600).Height
-                + builder.TextAscent(9.35) - (overlap ? 1 : 0);
-            builder.Text("Subtitle", 20, secondBaseline, 9.35, ChartColor.Black, role: "topology-node-subtitle");
+                + builder.TextAscent(subtitleSize) - (overlap ? .25 : 0);
+            builder.Text("Subtitle", 20, secondBaseline, subtitleSize, ChartColor.Black, role: "topology-node-subtitle");
         }
         var report = ChartLabelScene.Inspect(VisualSceneSvgRenderer.Render(builder.Build()), font);
         Assert.Equal(2, report.Visible);

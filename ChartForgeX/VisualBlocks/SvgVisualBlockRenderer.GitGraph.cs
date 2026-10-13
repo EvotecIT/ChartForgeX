@@ -30,7 +30,11 @@ public sealed partial class SvgVisualBlockRenderer {
                 .Attribute("stroke-linecap", "round")
                 .EndEmptyElement()
                 .Line();
-            if (graph.ShowBranchLabels) WriteText(writer, branch.Name, content.X, laneY + 4, layout.PlotX - content.X - 10, TextAlignment.Right, theme.MutedText, theme.FontFamily, 11, "700");
+            if (graph.ShowBranchLabels) {
+                var width = layout.PlotX - content.X - 10;
+                var font = VisualBlockRendering.GitFontSize(layout, theme, branch.Name, 11, width);
+                WriteText(writer, branch.Name, content.X, laneY + font * 4 / 11, width, TextAlignment.Right, theme.MutedText, theme.FontFamily, font, "700");
+            }
         }
 
         for (var index = 0; index < layout.Placements.Count; index++) WriteGitGraphEdges(writer, layout, layout.Placements[index], theme);
@@ -62,7 +66,7 @@ public sealed partial class SvgVisualBlockRenderer {
         var commit = placement.Commit;
         var branchIndex = BranchIndex(layout, commit.BranchName);
         var color = VisualBlockRendering.PaletteAt(theme, branchIndex);
-        var radius = CommitRadius(commit);
+        var radius = VisualBlockRendering.GitCommitRadius(commit, layout.FontScale);
         var fill = commit.Type == GitGraphCommitType.Reverse ? theme.CardBackground : color;
         var stroke = color;
         writer.StartElement("circle")
@@ -82,22 +86,22 @@ public sealed partial class SvgVisualBlockRenderer {
         }
 
         if (commit.Type == GitGraphCommitType.CherryPick) {
-            writer.StartElement("text").Attribute("data-cfx-role", "git-cherry-pick").Attribute("x", F(placement.X)).Attribute("y", F(placement.Y + 4)).Attribute("text-anchor", "middle").Attribute("fill", theme.CardBackground.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 10).Attribute("font-weight", "800").Text("c").EndElement().Line();
+            writer.StartElement("text").Attribute("data-cfx-role", "git-cherry-pick").Attribute("x", F(placement.X)).Attribute("y", F(placement.Y + 4 * layout.FontScale)).Attribute("text-anchor", "middle").Attribute("fill", theme.CardBackground.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", F(10 * layout.FontScale)).Attribute("font-weight", "800").Text("c").EndElement().Line();
         }
 
         if (graph.ShowCommitLabels) {
             var label = commit.Label.Length == 0 ? commit.Id : commit.Label;
-            WriteText(writer, label, placement.X - 38, placement.Y + radius + 14, 76, TextAlignment.Center, theme.Text, theme.FontFamily, 10.5, "650");
+            var font = VisualBlockRendering.GitFontSize(layout, theme, label, 10.5, 76);
+            WriteText(writer, label, placement.X - 38, placement.Y + radius + font * 14 / 10.5, 76, TextAlignment.Center, theme.Text, theme.FontFamily, font, "650");
         }
 
-        if (commit.Tag.Length > 0) WriteGitGraphTag(writer, placement.X, placement.Y - radius - 24, commit.Tag, theme);
+        if (commit.Tag.Length > 0) WriteGitGraphTag(writer, VisualBlockRendering.GitTag(layout, theme, commit.Tag, placement.X, placement.Y, radius), commit.Tag, theme);
     }
 
-    private static void WriteGitGraphTag(SvgMarkupWriter writer, double centerX, double y, string tag, ChartForgeX.Themes.ChartTheme theme) {
-        var width = System.Math.Min(96, System.Math.Max(38, tag.Length * 6.2 + 18));
-        var x = centerX - width / 2;
-        writer.StartElement("rect").Attribute("data-cfx-role", "git-tag").Attribute("x", F(x)).Attribute("y", F(y)).Attribute("width", F(width)).Attribute("height", 18).Attribute("rx", 7).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
-        WriteText(writer, tag, x + 5, y + 12.5, width - 10, TextAlignment.Center, theme.MutedText, theme.FontFamily, 9.5, "700");
+    private static void WriteGitGraphTag(SvgMarkupWriter writer, VisualBlockRendering.GitTagMetrics tagLayout, string tag, ChartForgeX.Themes.ChartTheme theme) {
+        var bounds = tagLayout.Bounds;
+        writer.StartElement("rect").Attribute("data-cfx-role", "git-tag").Attribute("x", F(bounds.X)).Attribute("y", F(bounds.Y)).Attribute("width", F(bounds.Width)).Attribute("height", F(bounds.Height)).Attribute("rx", 7).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
+        WriteText(writer, tag, bounds.X + tagLayout.Inset, tagLayout.Baseline, bounds.Width - tagLayout.Inset * 2, TextAlignment.Center, theme.MutedText, theme.FontFamily, tagLayout.FontSize, "700", "git-tag-label");
     }
 
     private static int BranchIndex(VisualBlockRendering.GitGraphLayout layout, string branchName) {
@@ -105,10 +109,4 @@ public sealed partial class SvgVisualBlockRenderer {
         return 0;
     }
 
-    private static double CommitRadius(GitGraphCommit commit) {
-        if (commit.Type == GitGraphCommitType.Highlight) return 8.5;
-        if (commit.Type == GitGraphCommitType.Merge) return 7.5;
-        if (commit.Type == GitGraphCommitType.CherryPick) return 7.5;
-        return 6.5;
-    }
 }

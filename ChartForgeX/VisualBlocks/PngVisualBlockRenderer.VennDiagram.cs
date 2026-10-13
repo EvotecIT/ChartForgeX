@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -22,13 +24,12 @@ public sealed partial class PngVisualBlockRenderer {
             canvas.DrawCircleOutline(placement.X, placement.Y, placement.Radius, accent, 2);
         }
 
-        foreach (var placement in placements) {
-            DrawCenteredTextMiddle(canvas, placement.Set.Label, placement.X, placement.Y - placement.Radius * 0.52, Math.Max(11, theme.SubtitleFontSize + 1), placement.Set.TextColor ?? theme.Text, true, placement.Radius * 1.16);
-        }
-
         foreach (var intersection in block.Intersections) DrawVennIntersectionStyle(canvas, placements, intersection);
-        foreach (var intersection in block.Intersections) DrawVennRegionText(canvas, placements, intersection.SetIds, intersection.Label, intersection.TextColor ?? theme.Text, Math.Max(10, theme.SubtitleFontSize), true);
-        foreach (var textNode in block.TextNodes) DrawVennRegionText(canvas, placements, textNode.SetIds, textNode.Label, textNode.TextColor ?? theme.MutedText, Math.Max(9, theme.SubtitleFontSize - 1), true);
+        foreach (var caption in VisualBlockRendering.VennCaptions(block, placements, body)) {
+            var style = caption.Style.Clone(); style.Color = caption.Color;
+            canvas.DrawStyledText(caption.Bounds.Left, caption.Bounds.Top, caption.Bounds.Width, caption.Text,
+                style, TextWrapMode.NoWrap, maximumLines: 1, trimming: TextTrimming.None);
+        }
     }
 
     private static void DrawVennIntersectionStyle(RgbaCanvas canvas, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, VennIntersection intersection) {
@@ -39,11 +40,4 @@ public sealed partial class PngVisualBlockRenderer {
         if (intersection.Stroke.HasValue) canvas.DrawCircleOutline(center.X, center.Y, radius, intersection.Stroke.Value, 2);
     }
 
-    private static void DrawVennRegionText(RgbaCanvas canvas, IReadOnlyList<VisualBlockRendering.VennSetPlacement> placements, IReadOnlyList<string> setIds, string label, ChartColor color, double fontSize, bool emphasized) {
-        if (label.Length == 0) return;
-        var center = VisualBlockRendering.VennRegionCenter(placements, setIds);
-        var maxWidth = Math.Max(42, placements[0].Radius * (setIds.Count == 1 ? 0.95 : 0.72));
-        var yOffset = setIds.Count == 1 ? placements[0].Radius * 0.12 : setIds.Count == 2 ? 5 : 18;
-        DrawCenteredTextMiddle(canvas, label, center.X, center.Y + yOffset, fontSize, color, emphasized, maxWidth);
-    }
 }

@@ -109,26 +109,27 @@ public sealed partial class SvgVisualBlockRenderer {
 
     internal static void RenderBlockHeading(SvgMarkupWriter writer, IVisualBlock block, ref double y, double contentX, double contentWidth) {
         var theme = block.Options.Theme;
+        var headings = VisualBlockRendering.Headings(block);
+        var titleSize = headings.TitleFontSize; var subtitleSize = headings.SubtitleFontSize;
         if (block.Title.Length > 0) {
-            writer.StartElement("text").Attribute("data-cfx-role", "visual-title").Attribute("x", contentX).Attribute("y", y + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", "800").Text(VisualBlockRendering.FitText(block.Title, theme.TitleFontSize, contentWidth)).EndElement().Line();
-            y += theme.TitleFontSize + 7;
+            var weight = theme.UseGraphiteLayout ? 700 : 800;
+            writer.StartElement("text").Attribute("data-cfx-role", "visual-title").Attribute("x", contentX).Attribute("y", y + headings.TitleAscent).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", titleSize).Attribute("font-weight", weight).Text(VisualBlockRendering.FitMeasuredText(block.Title, titleSize, contentWidth, theme.FontFamily, weight)).EndElement().Line();
+            y += headings.TitleAdvance;
         }
 
         if (block.Subtitle.Length > 0) {
-            writer.StartElement("text").Attribute("data-cfx-role", "visual-subtitle").Attribute("x", contentX).Attribute("y", y + theme.SubtitleFontSize * 0.75).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.SubtitleFontSize).Text(VisualBlockRendering.FitText(block.Subtitle, theme.SubtitleFontSize, contentWidth)).EndElement().Line();
-            y += theme.SubtitleFontSize + 13;
-        } else if (block.Title.Length > 0) {
-            y += 8;
+            writer.StartElement("text").Attribute("data-cfx-role", "visual-subtitle").Attribute("x", contentX).Attribute("y", y + headings.SubtitleAscent).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", subtitleSize).Text(VisualBlockRendering.FitMeasuredText(block.Subtitle, subtitleSize, contentWidth, theme.FontFamily, 400)).EndElement().Line();
+            y += headings.SubtitleAdvance;
         }
     }
 
-    internal static void WriteText(SvgMarkupWriter writer, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, string fontFamily, double fontSize, string weight) {
-        var fitted = VisualBlockRendering.FitText(text, fontSize, Math.Max(1, width));
+    internal static void WriteText(SvgMarkupWriter writer, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, string fontFamily, double fontSize, string weight, string role = "visual-text") {
+        var fitted = VisualBlockRendering.FitMeasuredText(text, fontSize, Math.Max(1, width), fontFamily, int.TryParse(weight, out var fontWeight) ? fontWeight : 400);
         var anchor = "start";
         var textX = x;
         if (alignment == TextAlignment.Center) { anchor = "middle"; textX = x + width / 2; }
         else if (alignment == TextAlignment.Right) { anchor = "end"; textX = x + width; }
-        writer.StartElement("text").Attribute("data-cfx-role", "visual-text").Attribute("x", textX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", color.ToCss()).Attribute("font-family", fontFamily).Attribute("font-size", fontSize).Attribute("font-weight", weight).Text(fitted).EndElement().Line();
+        writer.StartElement("text").Attribute("data-cfx-role", role).Attribute("x", textX).Attribute("y", y).Attribute("text-anchor", anchor).Attribute("fill", color.ToCss()).Attribute("font-family", fontFamily).Attribute("font-size", fontSize).Attribute("font-weight", weight).Text(fitted).EndElement().Line();
     }
 
     internal static string FormatPoint(double x, double y) => x.ToString("0.###", CultureInfo.InvariantCulture) + "," + y.ToString("0.###", CultureInfo.InvariantCulture);

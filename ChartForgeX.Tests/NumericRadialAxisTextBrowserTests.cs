@@ -170,7 +170,7 @@ public sealed class NumericRadialAxisTextBrowserTests {
                 return { titles, defects };
             }
             """, strips);
-        Assert.Empty(result.GetProperty("defects").EnumerateArray());
+        Assert.True(!result.GetProperty("defects").EnumerateArray().Any(), result.GetRawText());
         return result;
     }
 }

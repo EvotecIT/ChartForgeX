@@ -181,14 +181,18 @@ public sealed class FunnelGeometryTests {
         Assert.NotEmpty(prepared.ToPng());
     }
 
-    [Fact]
-    public void LabelsThatCannotFitReadableTypeKeepCompleteDescriptionsInsteadOfTinyGlyphs() {
+    [Theory]
+    [InlineData(25)]
+    [InlineData(100)]
+    public void LabelsThatCannotFitReadableTypeKeepCompleteDescriptionsInsteadOfTinyGlyphs(double plotHeight) {
         var chart = Funnel(new[] { 100d, 25, 0 }, ChartFunnelForm.Cone, ChartOrientation.Horizontal)
             .WithDataLabels().WithXLabels("Received", "Qualified", "Completed");
-        var context = new VisualRenderContext(); var builder = new VisualSceneBuilder(new VisualSize(160, 25), context.Font);
-        VisualSpecialtyCompiler.Build(chart, context, builder, new ChartRect(0, 0, 160, 25));
+        var context = new VisualRenderContext(); var builder = new VisualSceneBuilder(new VisualSize(160, plotHeight), context.Font);
+        VisualSpecialtyCompiler.Build(chart, context, builder, new ChartRect(0, 0, 160, plotHeight));
         var scene = builder.Build();
-        Assert.DoesNotContain(scene.Nodes.OfType<VisualSceneText>(), node => node.Role is "funnel-label" or "funnel-ratio");
+        var painted = scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role is "funnel-label" or "funnel-ratio").ToArray();
+        Assert.All(painted, node => Assert.True(node.Text.Size >= 10));
+        if (plotHeight == 25) Assert.Empty(painted);
         Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "funnel.label-hidden");
         Assert.Equal(new[] { "Received: 100", "Qualified: 25", "Completed: 0" },
             scene.Regions.Where(region => region.Role == "funnel-label").Select(region => region.Label));

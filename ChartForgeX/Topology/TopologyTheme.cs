@@ -1,9 +1,13 @@
+using System;
+using ChartForgeX.Themes;
+
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Provides topology SVG theme tokens.
 /// </summary>
 public sealed class TopologyTheme {
+    private VisualTypography _typography = new("Inter, Segoe UI, system-ui, sans-serif");
     internal TopologyTheme Clone() => (TopologyTheme)MemberwiseClone();
 
     /// <summary>Gets or sets the background color.</summary>
@@ -42,8 +46,20 @@ public sealed class TopologyTheme {
     /// <summary>Gets or sets the disabled status color.</summary>
     public string Disabled { get; set; } = "#94A3B8";
 
-    /// <summary>Gets or sets the font family used by SVG text.</summary>
-    public string FontFamily { get; set; } = "Inter, Segoe UI, system-ui, sans-serif";
+    /// <summary>Gets or sets the logical typography used for static text measurement and export.</summary>
+    /// <remarks>An explicit rendering context supplied to TopologyChart.Prepare takes precedence.</remarks>
+    public VisualTypography Typography {
+        get => _typography;
+        set => _typography = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    /// <summary>Gets or sets the font family while preserving the logical typography sizes.</summary>
+    public string FontFamily {
+        get => _typography.Family;
+        set => _typography = new VisualTypography(value, _typography.TitleSize, _typography.SubtitleSize,
+            _typography.AxisSize, _typography.LegendSize, _typography.DataLabelSize,
+            _typography.ScalarValueSize, _typography.CenterValueSize);
+    }
 
     /// <summary>
     /// Creates the default light topology theme.

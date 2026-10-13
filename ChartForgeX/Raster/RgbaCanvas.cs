@@ -248,7 +248,7 @@ internal sealed partial class RgbaCanvas {
 
         var padding = Math.Max(4, fontSize * 0.45);
         var textWidth = emphasized ? MeasureTextEmphasizedWidth(text, fontSize, font, italic) : MeasureTextWidthWithFont(text, fontSize, font, italic);
-        var textHeight = font?.LineHeight(Math.Max(1, fontSize)) ?? MeasureTextHeight(fontSize, _outlineFont);
+        var textHeight = font?.LineHeight(Math.Max(double.Epsilon, fontSize)) ?? MeasureTextHeight(fontSize, _outlineFont);
         var decorationThickness = Math.Max(1, fontSize / 13.0);
         var contentHeight = underlineStyle != TextDecorationStyle.None ? Math.Max(textHeight, fontSize + 2 + TextDecorationMetrics.OuterExtent(underlineStyle, decorationThickness)) : textHeight;
         contentHeight += Math.Abs(baselineOffset);
@@ -467,9 +467,10 @@ internal sealed partial class RgbaCanvas {
         return startAngle <= endAngle ? angle >= startAngle && angle <= endAngle : angle >= startAngle || angle <= endAngle;
     }
 
-    private void DrawGlyph(int x, int y, char ch, ChartColor color, int scale, bool italic, double boldOffset = 0) {
+    private void DrawGlyph(double x, double y, char ch, ChartColor color, double scale, bool italic, double boldOffset = 0,
+        double maximumThickness = double.PositiveInfinity) {
         var glyph = TinyFont.GetBitmap(ch);
-        var thickness = Math.Max(1.4, scale * 0.8);
+        var thickness = Math.Min(maximumThickness, Math.Max(1.4, scale * 0.8));
         var paths = new List<IReadOnlyList<ChartPoint>>();
         for (var row = 0; row < TinyFont.Height; row++) {
             for (var col = 0; col < TinyFont.Width; col++) {

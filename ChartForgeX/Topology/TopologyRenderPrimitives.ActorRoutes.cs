@@ -19,8 +19,9 @@ internal static partial class TopologyRenderPrimitives {
             var port = right ? TopologyEdgePort.Right : TopologyEdgePort.Left;
             var start = BoundaryPoint(source, CenterX(target), CenterY(target), port);
             var end = BoundaryPoint(target, CenterX(source), CenterY(source), port);
-            var corridor = right ? Math.Max(source.X + source.Width, target.X + target.Width) + EdgeEndpointGap + 16
-                : Math.Min(source.X, target.X) - EdgeEndpointGap - 16;
+            var sourceCaption = CaptionBounds(source); var targetCaption = CaptionBounds(target);
+            var corridor = right ? Math.Max(Math.Max(source.X + source.Width, target.X + target.Width), Math.Max(sourceCaption.Right, targetCaption.Right)) + EdgeEndpointGap + 16
+                : Math.Min(Math.Min(source.X, target.X), Math.Min(sourceCaption.Left, targetCaption.Left)) - EdgeEndpointGap - 16;
             return new List<ChartPoint> { start, new(corridor, start.Y), new(corridor, end.Y), end };
         }
         var changed = false;
@@ -32,14 +33,29 @@ internal static partial class TopologyRenderPrimitives {
         }
         return points;
 
-        double CaptionBottom(TopologyNode node) {
+        ChartRect CaptionBounds(TopologyNode node) {
+            if (node.Shape != TopologyNodeShape.Actor || !options.IncludeNodeLabels) return new ChartRect(node.X, node.Y, node.Width, 0);
+            var mode = EffectiveNodeDisplayMode(node, options);
+            if (mode == TopologyNodeDisplayMode.Icon) {
+                if (!options.IncludeIconLabels) return new ChartRect(node.X, node.Y, node.Width, 0);
+                var width = IconLabelPlateWidth(node, chart.TextMeasurement, options.ResolvedIconLabelFontSize);
+                return new ChartRect(CenterX(node) - width / 2, IconLabelPlateY(node), width,
+                    IconLabelPlateHeight(node, chart.TextMeasurement, options.ResolvedIconLabelFontSize));
+            }
+            if (mode == TopologyNodeDisplayMode.Tile) {
+                var caption = TopologyNodeFootprint.RenderedCaption(node, options, chart.TextMeasurement);
+                var width = Math.Max(node.Width, caption.Width);
+                return new ChartRect(CenterX(node) - width / 2, node.Y + node.Height + 4, width, Math.Max(0, caption.Height - 4));
+            }
             var lines = DiagramNodeLabelLines(node, options);
-            return DiagramNodeLabelCenterY(node) + Math.Max(0, lines.Count - 1) * 7 + 11;
+            return new ChartRect(node.X, DiagramNodeLabelCenterY(node) - 14, node.Width,
+                Math.Max(0, lines.Count - 1) * 14 + 25);
         }
 
-        bool CrossesCaption(TopologyNode node, ChartPoint endpoint, ChartPoint adjacent) =>
-            node.Shape == TopologyNodeShape.Actor && options.IncludeNodeLabels &&
-            LabelBox.FromBounds(node.X, node.Y + 70, node.X + node.Width, CaptionBottom(node)).Intersects(endpoint, adjacent);
+        bool CrossesCaption(TopologyNode node, ChartPoint endpoint, ChartPoint adjacent) {
+            var bounds = CaptionBounds(node);
+            return bounds.Height > 0 && LabelBox.FromBounds(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom).Intersects(endpoint, adjacent);
+        }
 
         void Reattach(TopologyNode node, int index, int adjacentIndex) {
             var adjacent = points[adjacentIndex];
@@ -70,8 +86,9 @@ internal static partial class TopologyRenderPrimitives {
             }
             var right = adjacent.X >= center.X;
             var port = right ? TopologyEdgePort.Right : TopologyEdgePort.Left;
-            var outsideX = right ? node.X + node.Width + EdgeEndpointGap : node.X - EdgeEndpointGap;
-            var clearY = CaptionBottom(node) + EdgeEndpointGap;
+            var caption = CaptionBounds(node);
+            var outsideX = right ? Math.Max(node.X + node.Width, caption.Right) + EdgeEndpointGap : Math.Min(node.X, caption.Left) - EdgeEndpointGap;
+            var clearY = caption.Bottom + EdgeEndpointGap;
             if (edge.Routing == TopologyEdgeRouting.Orthogonal && points.Count >= 4) {
                 // Move both corners of the anonymous crossbar instead of retaining
                 // a return leg through the caption. Caller waypoints are excluded.
@@ -90,6 +107,6 @@ internal static partial class TopologyRenderPrimitives {
     public static IReadOnlyList<string> DiagramNodeLabelLines(TopologyNode node, TopologyRenderOptions options) =>
         NodeTextLines(node.Label, node.Width * .65, 12, true, options.MaxNodeLabelLines, options, node.MaximumLabelCharacters ?? NodeLabelMaxLength);
 
-    public static double DiagramNodeLabelCenterY(TopologyNode node) => node.Shape == TopologyNodeShape.Actor ? node.Y + 84
+    public static double DiagramNodeLabelCenterY(TopologyNode node) => node.Shape == TopologyNodeShape.Actor ? node.Y + 68 * TopologyNodeShapeGeometry.ActorScale(node) + 16
         : node.Details.Count > 0 || !string.IsNullOrWhiteSpace(node.Subtitle) ? node.Y + 24 : CenterY(node);
 }

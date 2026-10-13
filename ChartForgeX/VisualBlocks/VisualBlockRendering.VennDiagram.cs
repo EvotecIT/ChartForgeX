@@ -45,6 +45,10 @@ internal static partial class VisualBlockRendering {
             ? Math.Min(width, height) * 0.30
             : Math.Min(width / (count == 2 ? 2.45 : 2.55), height / 2.15);
         radius = Math.Max(24, radius);
+        // The third set sits lower than the first two; its painted circle must
+        // still fit the same body rectangle, including the one-pixel stroke radius.
+        var edgeFraction = count >= 3 ? 0.38 : 0.48;
+        radius = Math.Max(0.5, Math.Min(radius, Math.Min(width * 0.42, height * edgeFraction) - 1));
 
         if (count == 1) {
             placements.Add(CreateVennPlacement(block, 0, rect.X + width / 2, rect.Y + height * 0.52, radius));

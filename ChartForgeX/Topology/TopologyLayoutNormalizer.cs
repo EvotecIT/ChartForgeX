@@ -182,6 +182,19 @@ internal static class TopologyLayoutNormalizer {
                 bounds = bounds.Include(layout.CenterX - layout.Width / 2, layout.CenterY - layout.Height / 2, layout.CenterX + layout.Width / 2, layout.CenterY + layout.Height / 2);
             }
         }
+        if (options.IncludeEndpointLabels && chart.Edges.Any(edge => !string.IsNullOrWhiteSpace(edge.SourceLabel) || !string.IsNullOrWhiteSpace(edge.TargetLabel)) && CanMeasureEdgeLabels(chart)) {
+            var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+            foreach (var edge in chart.Edges.Where(edge => !string.IsNullOrWhiteSpace(edge.SourceLabel) || !string.IsNullOrWhiteSpace(edge.TargetLabel))) {
+                var route = TopologyResolvedRouteSamples.Sample(chart, options, edge, nodes, EdgePoints(chart, edge, nodes));
+                IncludeEndpoint(edge.SourceLabel, route[0], route[1]);
+                IncludeEndpoint(edge.TargetLabel, route[route.Count - 1], route[route.Count - 2]);
+            }
+            void IncludeEndpoint(string? text, ChartPoint endpoint, ChartPoint adjacent) {
+                if (string.IsNullOrWhiteSpace(text)) return;
+                var layout = EdgeEndpointLabelLayout(chart, options, endpoint, adjacent, text!);
+                bounds = bounds.Include(layout.Bounds.Left, layout.Bounds.Top, layout.Bounds.Right, layout.Bounds.Bottom);
+            }
+        }
 
         return bounds;
     }
@@ -217,7 +230,7 @@ internal static class TopologyLayoutNormalizer {
                 var labelWidth = IconLabelPlateWidth(node, options.TextMeasurement, options.ResolvedIconLabelFontSize);
                 var labelCenter = CenterX(node);
                 var labelY = IconLabelPlateY(node);
-                bounds = bounds.Include(labelCenter - labelWidth / 2, labelY, labelCenter + labelWidth / 2, labelY + IconLabelPlateHeight(options.TextMeasurement, options.ResolvedIconLabelFontSize));
+                bounds = bounds.Include(labelCenter - labelWidth / 2, labelY, labelCenter + labelWidth / 2, labelY + IconLabelPlateHeight(node, options.TextMeasurement, options.ResolvedIconLabelFontSize));
             }
 
             return bounds;

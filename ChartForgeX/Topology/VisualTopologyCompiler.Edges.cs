@@ -88,14 +88,14 @@ internal sealed partial class VisualTopologyCompiler {
 
         void Endpoint(string? text, ChartPoint endpoint, ChartPoint adjacent, string end) {
             if (string.IsNullOrWhiteSpace(text)) return;
-            var p = Point(EdgeEndpointLabelPoint(_chart, _options, endpoint, adjacent, text!));
+            var layout = EdgeEndpointLabelLayout(_chart, _options, endpoint, adjacent, text!);
+            var p = Point(new ChartPoint(layout.Bounds.X + layout.Bounds.Width / 2, layout.Bounds.Y + layout.Bounds.Height / 2));
             using var endpointGroup = _builder.PushGroup(null, "topology-edge-endpoint-label", new Dictionary<string, string> {
                 ["data-edge-id"] = edge.Id, ["data-endpoint"] = end,
                 ["data-label-x"] = Number(p.X), ["data-label-y"] = Number(p.Y)
             });
-            var size = _context.Theme.Typography.DataLabelSize * .8;
-            var metrics = _builder.MeasureText(text!, size * _scale, 600);
-            var b = new ChartRect(p.X - metrics.Width / 2 - 3 * _scale, p.Y - metrics.Height / 2 - 3 * _scale, metrics.Width + 6 * _scale, metrics.Height + 6 * _scale);
+            var size = layout.FontSize;
+            var b = Bounds(layout.Bounds.X, layout.Bounds.Y, layout.Bounds.Width, layout.Bounds.Height);
             var fill = EdgeLabelColor(_colors.Surface, edge);
             if (_options.IncludeEdgeLabelBackplates) _builder.Rect(b, fill, role: "topology-endpoint-label-surface", paint: new VisualScenePaintBinding(CardPaint(fill, EdgeLabelOpacity(edge))));
             Text(text!, b, size, EdgeLabelColor(_colors.Foreground, edge), 600, "topology-endpoint-label", centered: true, opacity: EdgeLabelOpacity(edge));

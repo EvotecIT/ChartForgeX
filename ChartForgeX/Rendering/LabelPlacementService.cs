@@ -11,6 +11,7 @@ namespace ChartForgeX.Rendering;
 /// <remarks>For the same fonts and input order, placement is deterministic. Unresolvable fonts use portable measurements.
 /// Intersections with other labels and marks are rejected. Intentional containment in an associated mark is allowed.</remarks>
 public sealed class LabelPlacementService {
+    internal const double DefaultGap = 2;
     private const int CacheCapacity = 4096;
     private const int ShardCount = 16;
     private readonly MeasurementShard[] _shards = CreateShards();
@@ -87,7 +88,7 @@ public sealed class LabelPlacementService {
     /// <param name="bounds">The usable scene rectangle.</param>
     /// <param name="obstacles">Mark rectangles to avoid.</param>
     /// <param name="gap">Minimum separation in logical pixels.</param>
-    public IReadOnlyList<PlacedLabel> Place(IReadOnlyList<LabelPlacementRequest> requests, ChartRect bounds, IReadOnlyList<LabelObstacle>? obstacles = null, double gap = 2) =>
+    public IReadOnlyList<PlacedLabel> Place(IReadOnlyList<LabelPlacementRequest> requests, ChartRect bounds, IReadOnlyList<LabelObstacle>? obstacles = null, double gap = DefaultGap) =>
         PlaceCore(requests, bounds, obstacles, gap, null);
 
     /// <summary>Uses the prepared backend's measurements for both original and shortened labels, including font fallback.</summary>

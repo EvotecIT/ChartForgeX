@@ -68,7 +68,7 @@ internal static partial class TopologyRenderPrimitives {
             ? Math.Max(0, node.Width / 2 - EdgeEndpointSidePadding)
             : Math.Max(0, node.Height / 2 - EdgeEndpointSidePadding);
         if (node.Shape == TopologyNodeShape.Actor) maximum = Math.Min(maximum,
-            port is TopologyEdgePort.Top or TopologyEdgePort.Bottom ? 14 : 26);
+            (port is TopologyEdgePort.Top or TopologyEdgePort.Bottom ? 14 : 26) * TopologyNodeShapeGeometry.ActorScale(node));
         offset = Clamp(offset, -maximum, maximum);
         var spread = port switch {
             TopologyEdgePort.Top or TopologyEdgePort.Bottom => new ChartPoint(point.X + offset, point.Y),

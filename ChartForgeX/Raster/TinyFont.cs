@@ -5,6 +5,9 @@ internal static class TinyFont {
     public const int Height = 7;
     public const int Advance = 6;
 
+    /// <summary>Logical text uses one continuous em scale; the explicit tiny-font API retains integer cells.</summary>
+    internal static double ScaleForFontSize(double fontSize) => System.Math.Max(double.Epsilon, fontSize / 8d);
+
     public static bool Supports(char c) {
         if (c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z') {
             return true;

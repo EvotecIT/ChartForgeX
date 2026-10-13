@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
@@ -18,7 +19,13 @@ internal static partial class VisualSankeyCompiler {
             if (bounds.Width < 1) { builder.AddDiagnostic(new VisualDiagnostic("sankey.label-overflow", "No label column remains; full text is retained in node semantics.")); continue; }
             foreach (var node in nodes) {
                 var anchor = new ChartPoint(column.Anchor, node.Y + node.Height / 2);
-                var text = labels[node.Index]; var style = styles[node.Index]; var measured = builder.MeasureText(text, style);
+                var text = labels[node.Index]; var style = styles[node.Index];
+                var height = Math.Min(bounds.Height, node.Height);
+                style = VisualTextFitting.FitOversized(builder, style, height, fittedStyle => {
+                    var size = builder.MeasureText(text, fittedStyle);
+                    return size.Width <= bounds.Width && size.Height <= height;
+                });
+                var measured = builder.MeasureText(text, style);
                 if (measured.Width > bounds.Width) {
                     var lines = ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, bounds.Width,
                         (value, _) => builder.MeasureText(value, style).Width);
