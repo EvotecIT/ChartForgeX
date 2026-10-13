@@ -10,6 +10,32 @@ namespace ChartForgeX.Tests;
 public sealed class TimeAxisTests {
     private static readonly DateTime Day = new(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ValueAxis_OutOfRangeCaptionPreservesSubsecondFormatting(bool horizontal) {
+        var start = Day.AddHours(12).ToOADate();
+        var end = start + 200.0 / 86400000;
+        var chart = Chart.Create().WithSize(900, 450).WithHeader(false).WithLegend(false)
+            .AddLine("Readings", new[] { new ChartPoint(1, start), new ChartPoint(2, end) });
+        if (horizontal) chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        var axis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
+        axis.WithTimeScale().WithBounds(start, end);
+        var role = horizontal ? "axis-x-label" : "axis-y-label";
+        string[] Labels() => XDocument.Parse(chart.ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == role)
+            .Select(element => element.Value).ToArray();
+        var expected = Labels();
+        var png = chart.ToPng();
+        Assert.True(expected.Length > 1);
+        Assert.Equal(expected.Length, expected.Distinct(StringComparer.Ordinal).Count());
+
+        axis.Labels.Add(new ChartAxisLabel(start + 1, "Future"));
+
+        Assert.Equal(expected, Labels());
+        Assert.Equal(png, chart.ToPng());
+    }
+
     [Fact]
     public void RadialScale_SubSecondRange_PreservesFallbackAndInteriorTicks() {
         var start = Day.AddHours(12).ToOADate();

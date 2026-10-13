@@ -171,7 +171,8 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [ ] Complete Mermaid treemap classes, styles and value formatting through the shared hierarchy owner merged in PR #273.
 - [x] Preserve comma-separated treemap magnitudes and native group/leaf captions through typed hierarchy conversion and static direct/fence output.
 - [x] Honor treemap value-caption visibility through the native hierarchy owner, source configuration and nullable host overrides while retaining semantic values and labels.
-- [ ] Reuse the stable Sankey identity work in PR #261 and the shared XY orientation work in #251, also integrated in #273. Qualify Mermaid label/configuration handling and all series orientations against the settled owner APIs.
+- [ ] Reuse the stable Sankey identity work in PR #261 and qualify Mermaid labels, CSV and configuration against the settled owner API.
+- [x] Build on the shared Cartesian orientation owner from PR #251/#273: horizontal XY bars, lines and mixed series route source categories and values to the correct physical axes, retaining pointer/keyboard facts and native SVG/PNG geometry.
 - [x] Render closed radar curves through shared path geometry, apply source curve tension and host overrides, and fit cubic overshoot without changing observation values.
 - [x] Map radar graticules, dimensions, margins and axis factors through the native chart and polar-grid owners, including curved-series fitting and source/host precedence.
 - [ ] Map radar theme variables through the existing native theme and series-style owners.
@@ -189,7 +190,7 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [ ] Complete quadrant point/class styling, theme variables, source dimensions and separate axis endpoint labels. Native region captions use the shared bounded placement policy.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene and timeline sections/events in both directions. Keep the current score-bar/ordered-time mappings explicit until replaced.
 - [x] Map Sankey source dimensions, node geometry/alignment and value-label visibility/affixes through the native owners. Qualify direct/fence host overrides and the same node/flow facts across pinned Mermaid 10, 11 and 12; retain unsupported paint settings as diagnostics.
-- [ ] Broaden pie/show-data, XY numeric/category axes and legends, and Sankey CSV/configuration/colors.
+- [ ] Broaden pie/show-data, XY named-series legend rules, per-point line labels, numeric/category axes and source configuration, and Sankey CSV/configuration/colors.
 - [x] Apply packet source `bitsPerRow`, `showBits` and `bitOrder` through the native packet owner, with independent host overrides, mirrored partial rows and shared SVG/PNG bit labels. Pinned reference fixtures cover configuration retention and resolved row ranges; packet dimensions and padding remain open.
 
 Completion: values, dates, hierarchy, direction and requested encodings survive conversion and are visibly represented. Existing owner PRs supply shared capability; they do not by themselves complete Mermaid configuration or compatibility proof.
