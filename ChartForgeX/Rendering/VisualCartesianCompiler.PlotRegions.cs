@@ -52,14 +52,21 @@ internal static partial class VisualCartesianCompiler {
 
     private static string Optional(double? value) => value.HasValue ? Number(value.Value) : string.Empty;
 
-    private static void DrawPlotRegionFills(VisualSceneBuilder builder, IReadOnlyList<ResolvedPlotRegion> regions) {
+    private static ChartColor PlotRegionColor(ChartPlotRegion source, VisualThemeColors colors) =>
+        source.PaletteIndex.HasValue ? colors.Palette[source.PaletteIndex.Value % colors.Palette.Count] : source.Color!.Value;
+
+    private static SvgPaint PlotRegionPaint(ChartPlotRegion source, VisualThemeColors colors, ChartColor color, bool opaque = false) =>
+        source.PaletteIndex.HasValue ? SvgPaint.Palette(color, source.PaletteIndex.Value % colors.Palette.Count, opaque) : SvgPaint.Literal(color);
+
+    private static void DrawPlotRegionFills(VisualSceneBuilder builder, IReadOnlyList<ResolvedPlotRegion> regions, VisualThemeColors colors) {
         foreach (var region in regions) {
             using (builder.PushGroup(region.Id, "plot-region", PlotRegionMetadata(region))) {
                 var source = region.Source;
+                var color = PlotRegionColor(source, colors);
+                var paint = PlotRegionPaint(source, colors, color);
                 if (region.Bounds.Width > 0 && region.Bounds.Height > 0)
-                    builder.Rect(region.Bounds, ChartColorMath.WithOpacity(source.Color, source.Opacity), role: "plot-region-fill",
-                        paint: VisualChartPaint.Fill(SvgPaint.Literal(source.Color)
-                            .WithOpacity(ChartColorMath.WithOpacity(source.Color, source.Opacity), source.Opacity)));
+                    builder.Rect(region.Bounds, ChartColorMath.WithOpacity(color, source.Opacity), role: "plot-region-fill",
+                        paint: VisualChartPaint.Fill(paint.WithOpacity(ChartColorMath.WithOpacity(color, source.Opacity), source.Opacity)));
                 builder.AddRegion(new VisualSemanticRegion(region.Id, "plot-region", region.Bounds, source.Label));
             }
         }
@@ -72,8 +79,11 @@ internal static partial class VisualCartesianCompiler {
             if (!source.ShowLabel || source.Label.Length == 0 || bounds.Width <= 0 || bounds.Height <= 0) continue;
             // A fitted, opaque caption plate keeps ink readable across overlapping fills.
             // Reuse the annotation caption treatment rather than sampling layered regions.
-            var surface = new ChartColorBlend(ChartColor.FromRgb(colors.Surface.R, colors.Surface.G, colors.Surface.B), SvgColorRole.Surface,
-                ChartColor.FromRgb(source.Color.R, source.Color.G, source.Color.B), null, .12);
+            var color = PlotRegionColor(source, colors);
+            var opaqueSurface = ChartColor.FromRgb(colors.Surface.R, colors.Surface.G, colors.Surface.B);
+            var opaqueColor = ChartColor.FromRgb(color.R, color.G, color.B);
+            var surface = new ChartColorBlend(opaqueSurface, SvgPaint.Opaque(opaqueSurface, SvgColorRole.Surface),
+                opaqueColor, PlotRegionPaint(source, colors, opaqueColor, opaque: true), .12);
             var ink = ChartColorBlend.Contrast(surface);
             var style = new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = ink.Color };
             var candidates = new[] { new LabelCandidate(bounds.Width / 2, bounds.Height / 2, .5, .5),

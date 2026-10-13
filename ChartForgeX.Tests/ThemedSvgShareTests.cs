@@ -162,7 +162,7 @@ public sealed class ThemedSvgShareTests {
     [Fact]
     public void Topology_TintsFollowTheTokensAndContrastWhiteStaysLiteral() {
         var svg = Diagram().WithDesignTokens(Light).ToSvg(new TopologyRenderOptions { NodeSurfaceStyle = TopologyNodeSurfaceStyle.Tinted, SvgColorVariables = Light.ToSvgColorVariables() });
-        Assert.Contains("color-mix(in srgb, var(--cfx-surface-page, #F2F3F4)", svg, StringComparison.Ordinal);
+        Assert.Contains("color-mix(in srgb, rgb(from var(--cfx-surface-page, #F2F3F4) r g b / 1)", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("\uFDD0", svg, StringComparison.Ordinal);
         Assert.Equal(Diagram().WithDesignTokens(Light).ToPng(), Diagram().WithDesignTokens(Light).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
     }
@@ -190,7 +190,7 @@ public sealed class ThemedSvgShareTests {
         // Graphite's light first series colour is also the middle sequential step; a calendar day takes the ramp's property.
         var svg = Build("calendar", Light).WithSvgColorVariables(Light.ToSvgColorVariables()).ToSvg();
         Assert.Contains("--cfx-ramps-sequential-3", svg, StringComparison.Ordinal);
-        Assert.Contains("color-mix(in srgb, var(--cfx-ramps-sequential-", svg, StringComparison.Ordinal);
+        Assert.Contains("color-mix(in srgb, rgb(from var(--cfx-ramps-sequential-", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("﷐", svg, StringComparison.Ordinal);
     }
 
