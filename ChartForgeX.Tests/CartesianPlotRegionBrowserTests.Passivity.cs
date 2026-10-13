@@ -14,7 +14,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
     private const string RegionRoot = ".cfx-interactive-chart";
     private const string Guidance = "Background guidance";
 
-    [Fact]
+    [BrowserFact]
     public async Task BrushLassoAndCompareContainObservationsWithoutBackgroundRegions() {
         if (!Enabled) return;
         var html = PassiveChart().ToInteractiveHtmlPage(options => {
@@ -53,7 +53,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task HostStateAndSynchronizedHoverKeepPassiveFactsOutOfSelectionAndEmphasis() {
         if (!Enabled) return;
         var html = new[] { PassiveChart().AddHorizontalLine(9, Guidance), PassiveChart().AddHorizontalLine(9, Guidance) }
@@ -100,7 +100,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task PassiveFillAndCaptionPaintAllowNearbyObservationAndCrosshair(bool nearest) {

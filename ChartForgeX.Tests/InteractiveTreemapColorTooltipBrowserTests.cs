@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTreemapColorTooltipBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, false, false)]
     [InlineData(800, true, true, false)]
     [InlineData(360, true, true, true)]

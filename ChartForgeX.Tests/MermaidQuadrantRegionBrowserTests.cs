@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidQuadrantRegionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false)]
     [InlineData(800, true)]
     public async Task EqualPaletteSlotsFollowIndependentHostThemeValues(int width, bool dark) {
@@ -56,7 +56,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, 128)]
     [InlineData(360, 255)]
     [InlineData(800, 128)]
@@ -96,7 +96,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false)]
     [InlineData(800, true)]
     public async Task HostPaletteAndPointFreeDescriptionsReachStaticBrowserOutput(int width, bool dark) {
@@ -124,7 +124,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false)]
     [InlineData(800, true)]
     public async Task NativeQuadrantCaptionsRemainInsideTheirRegionsInBrowserOutput(int width, bool dark) {

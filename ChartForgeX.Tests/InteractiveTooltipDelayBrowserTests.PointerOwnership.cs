@@ -6,7 +6,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task EndingAnOlderNativeTouchContactKeepsTheNewContactsDeadline(bool stageAcquisition) {
@@ -63,7 +63,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         }
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("target-move", false)]
     [InlineData("target-leave", false)]
     [InlineData("stage-leave", false)]
@@ -112,7 +112,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ANewContactOnTheSameTargetStartsItsOwnFullDelay() {
         if (!Enabled) return;
         const int contactDelay = 1000;

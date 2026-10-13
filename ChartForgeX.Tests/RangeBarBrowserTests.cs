@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class RangeBarBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task NeighboringHorizontalIntervalsKeepLocalizedRawReadoutsAndIndependentSelectionAndMuting() {
         if (!Enabled) return;
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

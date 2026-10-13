@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTooltipRegressionBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task SharedDuplicateXUsesTheInteractedObservationAndDeterministicCounterparts() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithTheme(ChartTheme.GraphiteLight()).WithTitle("Observations sharing X")
@@ -35,7 +35,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartTooltipMode.Single, 700)]
     [InlineData(false, HtmlChartTooltipMode.SharedX, 340)]
     [InlineData(true, HtmlChartTooltipMode.Single, 340)]
@@ -63,7 +63,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task HorizontalAndRangeBarGradientsRemainAuthoritativeWithoutALegend(bool range) {

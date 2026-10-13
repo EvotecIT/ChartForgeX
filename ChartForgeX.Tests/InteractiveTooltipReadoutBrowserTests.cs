@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects readable data tooltips without stripping host identity or authored metadata.</summary>
 public sealed class InteractiveTooltipReadoutBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("funnel", false)]
     [InlineData("funnel", true)]
     [InlineData("pie", false)]
@@ -87,7 +87,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("pie", false, "61.54%")]
     [InlineData("pie", true, "61.54%")]
     [InlineData("gauge", false, "100%")]
@@ -149,7 +149,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task CircleScalarUsesSeriesIdentityForTabPointerAndPercentageReadout(bool dark) {

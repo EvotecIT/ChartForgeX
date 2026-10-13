@@ -10,7 +10,7 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
     private const string DataStop = "[data-cfx-keyboard-component='data'][tabindex='0']";
     private const string LegendStop = "[data-cfx-keyboard-component='legend'][tabindex='0']";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task MutedDataLeavesTheComponentWhileItsLegendRemainsReachableForUnmute(bool dark) {
@@ -51,7 +51,7 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 700, 460)]
     [InlineData(true, 340, 560)]
     public async Task RevealedHostEntersDataThenLegendAndRestoresEachComponentAfterAnotherReveal(bool dark, int width, int height) {
@@ -88,7 +88,7 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SynchronizedMuteRefreshesThePeerTabEntryWithoutMovingItsFocus() {
         if (!Enabled) return;
         var html = new[] { StatusLines(false), StatusLines(false) }.ToInteractiveHtmlDashboardPage(options => {

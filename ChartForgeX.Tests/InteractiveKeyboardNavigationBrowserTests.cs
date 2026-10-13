@@ -12,7 +12,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
     private const string DataStop = "[data-cfx-keyboard-component='data'][tabindex='0']";
     private const string LegendStop = "[data-cfx-keyboard-component='legend'][tabindex='0']";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task RovingComponentsKeepDataSeriesAndLegendNavigationSeparate(bool dark) {
@@ -68,7 +68,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartInteractionFeatures.None)]
     [InlineData(ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection)]
     public async Task DisabledKeyboardNavigationRetainsNativeLinkAndHostKeyBehavior(ChartInteractionFeatures features) {
@@ -92,7 +92,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task LinkedMatrixCellsRoveAcrossRowsAndPreserveNativeEnterNavigation() {
         if (!Enabled) return;
         await using var session = await OpenAsync(WithHostControls(LinkedHeatmap().ToInteractiveHtmlPage()));
@@ -116,7 +116,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task CompactNavigationRevealsTheFocusedPointInsideTheLocalStage(bool dark) {
@@ -136,7 +136,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task HiddenSeriesAreSkippedWithoutMakingAggregateGroupsIntoDataItems() {
         if (!Enabled) return;
         await using var session = await OpenAsync(StatusLines(false).ToInteractiveHtmlPage());
@@ -150,7 +150,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SeriesNavigationMatchesSharedXAndClampsShorterSeries() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithTheme(ChartTheme.GraphiteLight())
@@ -169,7 +169,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("pie")]
     [InlineData("map")]
     [InlineData("sankey")]
@@ -194,7 +194,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task DecimatedNavigationKeepsSourceIdentityAndSynchronizesSelectionWithoutMovingPeerFocus() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithLineMarkers(ChartLineMarkerMode.None)

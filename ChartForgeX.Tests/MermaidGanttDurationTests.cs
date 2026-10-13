@@ -39,7 +39,7 @@ public sealed class MermaidGanttDurationTests {
         Assert.Equal(new DateTime(2026, 1, 5).AddTicks(5000), task.End);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 960)]
     [InlineData(false, 320)]

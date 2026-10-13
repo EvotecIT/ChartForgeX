@@ -13,7 +13,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects independent raw-color readouts and normal point identity alongside Bubble size and series controls.</summary>
 public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Scatter, 360, false)]
     [InlineData(ChartSeriesKind.Scatter, 360, true)]
     [InlineData(ChartSeriesKind.Scatter, 800, false)]

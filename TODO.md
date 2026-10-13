@@ -1,106 +1,90 @@
-# ChartForgeX TODO
+# ChartForgeX roadmap
 
-## Story playback and sharing
+This is the active product roadmap. The [README](README.md) introduces the library, the [architecture](docs/v2/architecture.md) defines ownership, the [chart capability ledger](docs/v2/chart-capabilities.csv) records family options, and the [Mermaid matrix](docs/mermaid-support-matrix.md) records language and translation limits. Keep those references current rather than accumulating completed tasks here.
 
-- [x] Audit scene, terminal, source, export and consumer boundaries against the current theme baseline.
-- [x] Qualify prepared story snapshots, one playback clock, timestamp frames and bounded GIF/APNG producers.
-- [x] Qualify source typing, selection, replacement, fixed text size and landscape/square/portrait examples.
-- [x] Qualify optional browser playback controls, chapters, keyboard use and accessible transcripts.
-- [x] Integrate the prepared frame contract through thin ImagePlayground authoring and replay surfaces.
-- MP4 integration is deferred. The prepared frame source provides the future encoder boundary.
-- [ ] Settle the Stories owner and dependent consumer PR checks and reviews. Local source and package qualification do not establish public package readiness.
+## Current position
 
-## Consumer migration: Phase 5
+Assessment refreshed on 13 October 2026. The shared native renderer and package separation are implemented. All nine coordinated 2.0.0 package IDs are present on NuGet; that does not establish that later source changes are published or that every downstream host has migrated.
 
-All implemented chart kinds, ChartGrid, topology, flow and sequence use the shared native prepared scene. Visuals owns static composition and factual layouts; Stories owns animation and transcripts. The [architecture reassessment](docs/v2/architecture.md#phase-4-reassessment) records owner qualification and its limits. The remaining migration work is downstream execution and release qualification.
+| Area | Implemented foundation | Remaining work |
+| --- | --- | --- |
+| Rendering and ownership | Typed models prepare a detached scene for SVG/native PNG; common frame, theme, typography, labels, semantic regions, and artifact handoff; runtime-dependency-free core across four target frameworks | Public theme/option ownership still has legacy bridges; whole-chart visual fidelity needs stronger independent proof |
+| Chart catalog | Broad Cartesian, radial, financial, hierarchy, relationship, map, and gauge coverage; 34 comparison entries in the option ledger | Existing family options, supported mixtures/orientations/axes, and data lifecycle need depth; a family name is not a complete capability contract |
+| API usability | Fluent construction, typed observations and row selectors, stable hierarchy/flow IDs, common exports, and separate optional packages | Two theme vocabularies, tuple-encoded public point collections, positional/name-based series configuration, and inconsistent callback mutation semantics |
+| Visual appearance | Graphite light/dark defaults, measured typography, compact/wide examples, shared mark geometry and color owners; readable tile-code fitting and inherited Sunburst captions; gauge clearance accounts for platform font metrics | Qualify difficult labels, sparse/dense data, mixed hosts, and complete SVG/PNG output beyond numerical health |
+| Browser experience | Optional tooltips, selection, legend controls, crosshairs, brush ranges, linked charts, and topology exploration | Standalone zoom transforms the whole SVG. Data-domain zoom, chart update/resize/disposal, actual assistive-technology proof, UI localization, and RTL layout need deliberate qualification |
+| Mermaid | Thirty native family paths, typed source-preserving documents, located diagnostics, configuration mapping, direct/fence conversion, versioned semantic reference fixtures, and sequence block-boundary validation | Full grammar/notation fidelity varies; some mappings approximate or retain meaning without visible effects; the corpus needs broader feature and malformed-source coverage |
+| Quality and delivery | Cross-platform build workflow, required Windows Chromium lane, explicit browser/platform prerequisite skips, AOT smoke, artifact/package checks, 401 numerical visual-baseline entries, and an existing packed-consumer matrix | Numerical health is not visual equivalence; actual assistive-technology and broader platform/browser proof remain open; broad packed consumers need an explicit qualification gate |
 
-- [x] Inspect current owner and consumer branches, package boundaries and the public package state.
-- [x] Qualify the PowerBGInfo candidate with installed PowerShell 5.1/7 module types and observed wallpapers.
-- [x] Qualify the OfficeIMO candidate with saved-document, accessibility, placement and editable-diagram fixtures.
-- [x] Qualify the private HTML and reporting candidates with isolated package consumers and generated report layouts.
-- [x] Qualify ImagePlayground's managed-imaging candidate with installed PowerShell 5.1/7 static, composition, topology, story and terminal workflows against the integrated local owner packages.
-- [x] Prepare unsigned eight-package release archives and matching source/archive API bundles.
-- [x] Complete consumer visual acceptance with coherent wallpaper and image themes, readable compact HTML, truthful sparse report states, and observed saved/native Office delivery. Native document projection retains its documented reflow and font-substitution limits.
-- [ ] Settle owner and consumer PR review/CI and merge qualified candidates in dependency order. Public-package-only consumer checks retain their feed-availability gate.
-- [ ] With separate release authority, publish and verify owner packages, then repin and release consumers against verified public three-part versions. Owner source and local packs do not establish downstream execution.
+These are separate completion dimensions. Source coverage, usability, appearance, interaction behavior, translation fidelity, package publication, and installed-consumer proof cannot be reduced to one parity percentage.
 
-## Rendering Pipeline
+## Delivery order
 
-- Keep Graphite light/dark SVG and PNG pairs in the visual baseline; review new family geometry against [the approved look](docs/design/chart-look-spec.html) before changing it.
-- Financial marks expose independent body/wick and OHLC colors, alpha, widths, dash patterns and phase, plus hollow candles through `ChartSeries.Financial`. Trading-session spacing remains separate work; session calendars must preserve source prices and date bounds across candle/OHLC views.
-- Preserve explicit named effect styles and test colour roles, small-label contrast and SVG theme switching when palettes or filled marks change.
-- Cartesian plot regions provide passive, bounded background guidance and arbitrary quadrants with primary/secondary axes, interior captions and shared SVG/PNG geometry. Mermaid quadrant charts use those regions for authored quadrant captions.
-- Keep annotation captions clear of data marks in compact plots, including bar caps and nearby value labels.
-- [ ] Investigate the deferred browser qualification failures: gauge needles intersect measured summary boxes at low scale values; a painted boundary point and compact dark word-cloud text fail pointer/selection assertions. Reproduce the visible behavior and distinguish renderer defects from font, coordinate and test-harness assumptions before choosing fixes.
+| Order | Outcome | Dependencies and completion evidence |
+| --- | --- | --- |
+| 1 | Trustworthy correctness and executed quality gates | Use the required browser lane and located semantic errors as the baseline. Expand measured visual evidence and qualify packed consumers before treating later API or rendering work as delivered. |
+| 2 | One public configuration vocabulary and useful examples | Use current consumer workflows to settle theme, series, observation, and option ownership. Compile and run normal examples; publish intentional migration notes with the change. |
+| 3 | Professional defaults and depth in existing families | Use the common configuration contracts and family ledger. Qualify complete compact/wide light/dark SVG and PNG, supported mixtures, no-data states, and difficult labels. |
+| 4 | A complete interactive chart lifecycle | Extend core-owned projections/ticks/layers and keep input, controls, lifecycle, and browser layout in adapters. Qualify domains, updates, keyboard/touch, exports, and real accessibility. |
+| 5 | Deeper language and specialized product lanes | Complete the high-use Mermaid families and visible approximations. Choose advanced map, financial, org, and new-language work from real consumer requirements. |
 
-SVG and PNG charts share measured label placement, including data labels, targets, annotations, maps, topology and axis thinning. The light and dark `label-placement-*` gallery fixtures protect collisions, accessible dropped values and dashboard density. Keep these fixtures and the rendering benchmark budgets current as renderer behavior grows.
+Mermaid correctness, API design, and quality infrastructure can proceed independently where their owners do not overlap. A pending review or release holds only the dependent step. Keep one coherent implementation PR per requested outcome; the rows above are planning stages, not automatic PR boundaries.
 
-- Continue reducing raw/string SVG render paths where shared writer or element-tree helpers make the renderer safer and easier to test.
-- Reduce repeated paint attributes and scoped-ID payload in dense prepared SVG while preserving complete source alternatives and embedding isolation; compare raw and compressed output sizes.
-- Keep path geometry helpers independent of SVG serialization so PNG parity remains intact.
-- Preserve existing SVG contracts while migrating internals: ids, `data-cfx-role`, data attributes, selected/highlight classes, href behavior, title tooltips, accessibility metadata, and deterministic output.
-- Dense polylines stroke about 1.3-1.7x slower than the old per-segment quads (thousands of points, with every scanline crossing many outline edges), while gridlines, axes, and topology edges are faster. If dense charts need it, skip join pieces whose outer wedge is under a sub-pixel and emit fill edges from the stroker without intermediate piece lists.
-- Raster typography gaps: full-mode stem fitting handles narrow straight stems; font instruction programs, contour-point anchors and script-specific curved/diagonal stem fitting remain unsupported. Extend axis mapping beyond supported `avar` version 1 with a reference-backed `avar` version 2 case.
-- Text layout extensions: extend script-specific syllable rules beyond the supported Indic, Thai/Lao, Khmer, Sinhala and modern Myanmar font models with reference-font proof before claiming support. Explicit OpenType language tags select font-localized forms; automatic culture-to-language mapping is not provided. Font-authored GPOS device corrections use the rounded logical font size, and variation positioning follows the selected font instance; raster export resolution preserves both layouts.
-- Colour-font extensions: apply non-default COLR v1 paint variation when applications need it. Extend embedded bitmap decoding beyond PNG, JPEG, uncompressed RGB TIFF and horizontal raw EBDT images only with a concrete reference-font case; component EBDT images and scaled EBSC strikes retain outline fallback.
-- Use the PowerForge rendering benchmark history to establish tighter cross-platform CI thresholds only after enough runner evidence exists to avoid machine-specific gates.
-- Static SVG and PNG charts are drawn in one time zone (UTC or `ChartAxis.TimeZone`) and cannot follow the reader's zone; hosts with a local/UTC switch label them as fixed. Following the reader needs a browser-side redraw of time-axis ticks, labels, and tooltips (for example from the `data-cfx-start`/`data-cfx-end` instants) in `ChartForgeX.Interactivity.Html`.
-- Graphite colour roles cover flat marks, surfaces, guides, ramps and readable ink across light/dark SVG switching. Continue extending variable mapping for the derived gradients in named effect themes; their surface blends can still require regeneration when switching themes. The interactive graph explorer (`ChartForgeX.Interactivity.Html`) still names its arrow markers after the edge colour.
+## 1. Correctness and quality evidence
 
-## Interactivity
+Sequence conversion rejects unfinished blocks, unmatched `end`, and branches outside their immediate owners with located errors and no artifact through direct and Markdown-fence APIs. Gauge needle summaries use the shared font ascent envelope. Pointer focus keeps a partly visible word-cloud term stationary through a click while preserving keyboard reveal. The boundary-selection fixture isolates its rounded native clip from font-dependent axis reserves.
 
-Tooltip visibility and keyboard reveal use native painted source extents, accessible shadow-slot ancestry and the visual viewport. Disconnected area fills stay tied to their own source observations. The [HTML adapter guide](docs/interactivity.md#tooltip-position) documents closed shadow-host limits.
+Tile-code layout recovers gap space before fitting complete codes down to a 10-pixel ordinary floor; omitted codes retain their descriptive and source facts. The catalog overview reserves more map space, and inherited Sunburst secondary captions have a readable floor. Explicitly authored small fonts remain intentional author choices.
 
-- Keep super-topology parity aligned with `docs/super-topology-parity.md`: preserve the `TopologyChart` static/export owner, route large interactive exploration through `GraphScene`, and validate parity claims across API, generated artifacts, smoke tests, and performance evidence.
-- Broaden rich tooltip payloads with chart-family-specific diagnostics where renderers already expose useful `data-cfx-*` attributes, while keeping the static SVG output script-free.
-- Broaden pinned tooltip, nearest-point crosshair, brush-to-lasso selection, one-series focus, selected-target compare, and keyboard traversal coverage across more chart families as the shared rendered-target contract grows.
-- Continue graph explorer hardening beyond SVG/Canvas/WebGL rendering, worker physics, live release/reheat dragging, compact large-scene documents, graph-native hierarchy navigation, deterministic static stage exports, adaptive clustering, atomic patches, persisted interaction state, cross-renderer box selection, group transforms, bounded undo/redo, and the 1k/2k/5k/10k fixtures with OffscreenCanvas rendering hardening and automated cross-platform CI performance budgets.
-- Extend the typed vis-style compatibility layer with more option families and import/export helpers so C# users can migrate common examples without learning a second model first.
-- Broaden graph node and edge styling beyond the current parity tranche with selected/hover styles, middle arrows, self-reference polish, edge scaling, and relationship-specific styling.
-- Extend graph clustering beyond explicit, group-derived, and deterministic structural communities with hub/outlier clustering, zoom-driven clustering, host predicates, and saved cluster-state import.
-- Extend synchronized dashboards beyond viewport, selection, hover, keyboard traversal, brush, crosshair, lasso, series focus, compare markers, scenario playback, and opt-in state bookmarks into named multi-chart review presets across mixed chart types.
-- Add playful but report-safe interaction presets beyond the opt-in focus trail, scenario-step trail integration, reveal labels, and route progress; keep future route-tour controls opt-in in `ChartForgeX.Interactivity.Html`.
-- Design a production table-interaction adapter only when there is a real host requirement for search, sort, filter, selection, copy, export, paging, or virtualization. Keep demos and generated proof output in `ChartForgeX.Examples` or docs, not in library packages.
-- Keep generated interactive examples in the gallery for single charts, mixed dashboards, and topology routes so browser-visible behavior is reviewed before release.
+`Build/Test-BrowserQuality.ps1` generates and serves fresh examples, runs required browser contracts through HtmlTinkerX, rejects missing setup or skipped proof, retains captures and console evidence, and releases its server. CI runs it in a separate Windows Chromium job. Disabled browser contracts and selected missing-platform prerequisites report explicit skips in the ordinary loop. Supplemental conditional branches still need inspection when their platform or host contract is extended.
 
-## Chart Catalog
+- [ ] Strengthen visual proof beyond numerical health. Current baselines constrain dimensions, node/pixel/color counts, and edge pressure; SVG text clipping uses anchor positions. Add measured glyph bounds and targeted geometry/semantic assertions for real regressions, plus curated observed complete-chart comparisons. Internal SVG rasterization comparisons need independent browser evidence for shared scene/font defects.
+- [ ] Run the existing `-QualifyPackages` matrix at a defined release gate for net472, netstandard2.0, net8.0, and net10.0. Default packing inspects all framework assets but its simpler consumer executes only net8. Keep local qualification distinct from public-feed and installed-host proof.
+- [ ] Keep timing comparisons in the established controlled PowerForge benchmark/history lane. Review wall-clock budgets in the ordinary smoke suite; retain correctness/resource invariants there and record latency, allocation, capacity, output size, and browser response separately.
 
-- Keep marketing/poster chart matrices honest by checking each advertised family against public API, SVG renderer, PNG renderer, smoke tests, generated examples, and website gallery tags.
-- When adding a future chart family, update the README catalog, public model/API, SVG and PNG renderers, smoke tests, generated examples, gallery metadata, and promotional imagery together.
+Completion: required checks demonstrably execute, known failure states have decisive regressions, optional omissions are visible, and green health checks are not described as complete appearance or interaction proof.
 
-The [family capability ledger](docs/v2/chart-capabilities.csv) is the option roadmap. Named stacks, signed normalization, interpolation/step placement, explicit funnel forms/orientation, pyramid partitions, typed Waterfall openings/checkpoints and orientation, shared Sunburst/Treemap hierarchy items, explicit Sunburst parent totals, Sankey alignment/order/node geometry/paint, shared Sankey/Chord flow styles and states, and numeric color scales share native owners. Further work should retain that API and source-value boundary:
+## 2. API consistency and ease of use
 
-- Difference areas retain two named authored values with separate positive/negative fills at linear crossings or shared Start/Middle/End steps, explicit gaps and independent primary/secondary value axes. Smooth crossing semantics, nonlinear scales and nullable paired ingestion remain separate work; ordered range-area intervals keep their existing contract.
-- Extend Sunburst with further label fitting and sector padding controls. Opt-in HTML root-branch emphasis, rounded sectors, typed secondary captions, shared hierarchy facts, independent numeric colors, leaf aggregation and inclusive authored parent totals are implemented. Automatic caption shrinking remains a separate fitting policy.
-- Measured left/right/center labels and inside/outside edge policies are implemented. Any optional tiny-flow minimum-width treatment must preserve truthful weights and conservation; current alignment, ordering, node geometry and fill controls keep one proportional scale.
-- Full-turn radial columns combine with radar Line/Area through the existing series calls, shared categories and independent value axes. `XAxis.WithReversal()` reverses standalone and mixed radar categories, continuous Polar angles and PolarArea category slots while retaining source identities. Broader radial mixtures, partial mixed sweeps, PolarArea radius reversal and schedule reversal retain separate projection work.
-- Range bars and box plots group multiple series with vertical or horizontal value direction. Range bars also support authored Start/End captions. Each horizontal family uses the primary value axis independently; horizontal mixtures and secondary value axes retain separate slot and axis work. Box plots retain interpolated quartiles and min/max whiskers; optional IQR/outlier policies and separate per-statistic data labels remain open.
-- Extend the shared numeric color owner with arbitrary interior captions. Absolute positioned stops, Scatter/Bubble color values, automatic, fixed and partly inferred domains, missing-value paint, measured keys, typed dimension names/formats, independent key visibility, continuous gradient or sampled/exact-band keys and raw readouts use the existing shared scale; Bubble size remains independent.
-- Extend weighted Chord with deliberate ordering strategies and an independent quantitative color dimension. Its native scene retains directed reciprocal, parallel, self, and raw zero flows in source order; circular span, node gaps/thickness, flow paint/state, target cues, and measured labels are configurable.
-- [ ] Add standalone data-domain zoom policies to the HTML adapter; current browser zoom transforms the complete SVG. Native vertical numeric Line/StepLine X windows use `ChartXViewport` and a detached `ChartXProjection`. Standalone projection still needs Core-prepared tick/layer plans, bounded zoom levels and adapter geometry/lifecycle updates. Typed crosshair line paint and label visibility are implemented without enabling features. Static legend display and browser muting/isolation have separate controls. Any future hide-versus-mute policy must be explicit and independent of palette choice.
-- [ ] Qualify each increment with compact/wide light/dark SVG and native PNG, then maintain the ledger's remaining gaps and evidence limits.
+- [ ] Unify model and prepared-export theme/mode configuration around the existing `VisualTheme` owner. Resolve the public `ChartTheme`/`VisualDesignTokens` bridges and geometry flags deliberately. Qualify explicit host precedence, shared chart/grid/topology settings, detached snapshots, and equivalent convenience/prepared exports.
+- [ ] Preserve typed source observations for Bubble, Candlestick, and sibling tuple families. Their public `Series.Points` collections currently expose family-specific encodings rather than one item per observation. Define typed replacement/update operations and prove counts, identities, formatting, and style retention without tuple strides.
+- [ ] Provide a clear typed series configuration path with stable identity. Ordinary examples should not need `chart.Series[0]` or select by display name. Duplicate labels and reordering must preserve style, semantic roles, selection, and interaction keys.
+- [ ] Standardize configuration callback and option ownership semantics. In-place and clone/install callbacks currently differ; legacy default detection also affects explicit override intent. Setting an option to its default must express the same intent as another value, with predictable retention and callback-failure behavior.
+- [ ] Publish one supported combination/orientation/axis matrix. Qualify category alignment, primary/secondary value axes, horizontal mixtures, radial mixtures, missing observations, and rejection of unsupported combinations through the common preparation owner.
+- [ ] Make generated C# recipes useful on their own. Current gallery snippets include the shared example factory and unrelated family builders. Generate concise ordinary-package examples for the chosen chart, compile them, and link deeper option recipes separately. Keep reproducible font setup where it matters.
+- [ ] Keep the README and NuGet README aligned with real entrypoints and checked examples. Detailed clipping, statistics, serialization, and option contracts belong in focused references; the product entrypoint should explain tasks, packages, code, and output.
 
-## Topology
+Completion: a caller can construct, configure, update, theme, and export representative charts through one vocabulary without knowing renderer internals, collection encodings, or series positions. Intentional breaking changes include consumer inventory, focused proof, and a migration path rather than compatibility probes.
 
-- Tighten the replication fixture time budget (45 s per tier) once CI runner history exists.
-- Continue growing the dependency-free inline SVG raster layer for topology PNG artwork: extend loss diagnostics to additional unsupported paint and text behavior, and add richer text shaping through typed parser/renderer stages rather than ad hoc string handling.
-- Keep vendor icon-pack provenance, license notes, source revision, category counts, skipped-file diagnostics, and unsafe-SVG findings in generated import reports.
-- Improve geographic label placement, route arc trimming, clustering, and callout placement through generic fixtures.
-- Keep every generated topology SVG/PNG pair in the shared numeric visual baseline; add dense routing and geographic fixtures to that gate whenever those renderers grow.
-- Keep dashboard shells outside ChartForgeX; host projects such as HtmlForgeX and TestimoX should own sidebars, filters, inspectors, cards, and collected product data.
+## 3. Chart depth and visual standard
 
-## Visual Blocks
+The [family capability ledger](docs/v2/chart-capabilities.csv) is the detailed option inventory. Named stacks, signed normalization, interpolation/step placement, DifferenceArea polarity, authored histograms, explicit funnel/pyramid forms, Waterfall checkpoints, hierarchy value policies, flow styles/states, and shared numeric color dimensions are implemented. Scatter/Bubble partly inferred continuous color domains are also implemented and must not remain listed as gaps.
 
-- Broaden table, list, and metric-card style presets from real PowerBGInfo, ImagePlayground, email, Word, and wallpaper examples.
-- Add small icon/status symbol options only when they stay renderer-owned and dependency-free.
-- Add grouped capsule-bar polish only if repeated dashboard examples need it outside ordinary grouped `Bar` output.
-- Promote shared chips, badges, delta pills, and avatar stacks into reusable primitives only where multiple blocks need the same bounded geometry.
-- Add reusable status palettes and compact infographic snippets that reuse shared primitive layout/styling instead of arbitrary markup.
-- Add examples when they protect a real host scenario, and place every stable SVG/PNG pair in the shared numeric visual baseline.
+- [ ] Establish a visual acceptance packet for every claimed family: compact/wide × light/dark, representative SVG/native PNG, readable title/ticks/legend/data labels, complete important marks, and understandable no-data/sparse/dense states. Measure collision and truncation where consequential; retain full facts in accessibility and semantic regions.
+- [ ] Complete useful existing-family depth before adding headline names: BoxPlot IQR/outlier/statistic policies, Bubble size keys, gauge orientation/sweep/ticks/targets, hierarchy label fitting/padding, mixed radial projections, and horizontal/secondary-axis combinations.
+- [ ] Extend the existing color-scale owner with arbitrary interior captions and independent Chord quantitative color where required. Preserve raw color facts, missing-value behavior, identity, and independent Bubble size.
+- [ ] Add deliberate Sankey tiny-flow and hierarchy fitting policies only when actual compact data requires them. Preserve proportional weights, conservation, authored parent totals, source identity, and readable captions.
+- [ ] Keep chart look choices in shared geometry/paint/label/theme owners. Palette changes must not select different renderer implementations. Preserve explicit effect styles and qualify small-label contrast, theme switching, and mixed-grid export density.
+- [ ] Review complete report examples with chart grids and factual blocks, including host/embed frames and print. Keep page shells, collection, filters, and inspectors in consuming products; keep reusable block/composition behavior in Visuals and motion in Stories.
+
+Completion: every advertised capability has a usable API, valid native output, a representative example, and visual acceptance; all remaining family limits stay explicit in the ledger.
+
+## 4. Interactive charts
+
+- [ ] Add genuine data-domain zoom using core-prepared projection/tick/layer plans and adapter-owned controls. The existing `ChartXViewport`/`ChartXProjection` contract covers vertical numeric Line/StepLine. Extend only deliberately supported families/axes; keep labels readable, regenerate ticks and readouts, retain full source facts, and qualify reset/export behavior.
+- [ ] Inventory ordinary-chart redraw, data replacement, resize, rebind, and disposal before adding an update API. Stable IDs must preserve appropriate state; removed targets must clear stale selection/tooltips; repeated updates must not accumulate listeners or retain disposed charts. Graph patching is a separate capability.
+- [ ] Qualify feature policies across ordinary chart families: legend hide/mute, pinned tooltips, nearest-point lookup, crosshair, brush/lasso, touch, keyboard traversal, and linked views. Keep display/palette choices independent from interaction enablement.
+- [ ] Exercise actual assistive technologies and complete control/legend/series navigation on representative supported platforms. Accessible SVG names and keyboard contracts are foundations; they do not establish screen-reader behavior alone.
+- [ ] Separate UI localization from data number/date formatting and font shaping. Add translated controls, no-data/error text, and deliberate RTL layout where required; test long labels, mirrored controls, focus order, and compact hosts.
+- [ ] Measure small, ordinary, and dense Cartesian workloads separately from large topology scenes. Record preparation/update latency, allocation, output size, hit lookup, viewport response, and browser frame behavior before making scale claims.
+
+Completion: interaction changes data views predictably, controls and targets remain usable after updates, lifecycle is bounded, and accessibility/localization claims have observed evidence.
 
 ## Mermaid
 
 The [support matrix](docs/mermaid-support-matrix.md) records current parsing, rendering limits, upstream references and open owner dependencies. Thirty families have native render paths; that breadth does not establish complete grammar or visual fidelity. ZenUML, Agentflow and Railroad are diagnostic-only. The current conformance reference is Mermaid.js 12.1.0.
+
+The reference corpus has 100 sources (95 native-family fixtures and five recognition fixtures), with 55 shared semantic expectation files. The upstream harness checks syntax and selected model facts; it does not render reference images. Fixture depth is uneven across families.
 
 The compatibility goal is to adopt newer documented Mermaid syntax while preserving supported older syntax through regression fixtures. Start with explicit Mermaid 10, 11 and 12 reference versions; qualify the promised window before publishing it. Keep one semantic model where old and new spellings mean the same thing. Record deliberate grammar changes and migration guidance rather than maintaining separate renderer forks. Older majors and beta syntax need evidence for their individual contracts.
 
@@ -114,43 +98,32 @@ Source font families and logical-pixel sizes flow through the native chart, topo
 
 Further implemented support includes treemap value-caption visibility; Sankey source geometry and value-caption controls; closed radar curves, dimensions, margins and axis layout; native quadrant regions with accessible host-palette captions; horizontal XY lines through the shared Cartesian orientation; and flowchart circle/cross/bidirectional endpoints, literal captions and documented aliases over existing native shapes. Broader grammar and presentation work remains below. Source implementation and public package availability remain separate states.
 
-New roadmap implementation remains paused. Two local candidates are preserved without publication: flowchart minimum edge lengths and radar source-theme mapping. After an explicit resume, qualify them against the settled owners, publish them, and continue the language and host-policy work below. Neither candidate is counted as implemented support here.
-
 ### 1. Compatibility evidence and honest results
 
 - [ ] Expand the conformance corpus from representative examples into feature coverage for every supported family, using upstream documentation and parser regressions with recorded version and provenance.
-- [x] Qualify isolated test-time lanes for Mermaid 10.9.8, 11.17.2 and 12.1.0. `compatibility.json` records each fixture's accepted/rejected versions. The Gantt endpoint-calendar expectation records Mermaid 10's different scheduling result explicitly; ChartForgeX follows the current 11/12 result.
-- [ ] Compare typed semantic facts in both implementations: nodes, edges, nesting, labels, styles, time calculations, attributes and values. The upstream harness checks syntax for every fixture and selected flowchart/Gantt facts plus class/state/ER identities and directions; extend both upstream and .NET assertions deliberately.
+- [ ] Qualify Mermaid 12.2.0, released on 13 October 2026, against the existing 12.1.0 semantic reference. Include documented mindmap depth coloring and changed label/routing/swimlane cases where relevant. Preserve the qualified 10.9.8 and 11.17.2 compatibility lanes and recorded semantic differences.
+- [ ] Add malformed-source fixtures that the current reference rejects. The existing corpus requires acceptance by reference lane 12, so documented older-version rejections do not qualify invalid current grammar.
+- [ ] Compare typed semantic facts in both implementations: nodes, edges, nesting, labels, styles, time calculations, attributes and values. Preserve the implemented flowchart, class/state/ER, sequence, packet, Sankey, treemap, radar, quadrant, configuration, and Gantt assertions; extend uncovered features through both upstream and .NET contracts.
 - [ ] Distinguish invalid source, recognized-but-unimplemented features, retained metadata, approximate rendering and exact semantic mapping in parse/render results. Give diagnostics stable identities and original source spans, including through front matter, compact statements and Markdown fences.
-- [x] Guard class notes/interactions, state note bodies and ER presentation/grouping statements before node/relationship parsing. Preserve raw source with `CFXM007`; invalid directions and unmatched state/ER boundaries report `CFXM008`. Qualify global directions against observed SVG geometry and native PNG output.
 - [ ] Extend statement classification across the remaining family grammar, including compact source forms and typed styling/interaction metadata. Retention warnings do not establish complete notation support.
-- [x] Inventory the registered upstream families and header aliases, including Agentflow, the four Railroad dialects and `flowchart-elk`. Known families without native implementations preserve source and report `CFXM002`; unknown headers report `CFXM001`, and the static ELK-header flowchart fallback reports `CFXM003`.
 
 Completion: every advertised feature has versioned positive and meaningful negative fixtures, preserved semantic facts, and an explicit rendering or diagnostic outcome. Parser acceptance alone cannot mark a family complete.
 
 ### 2. Shared presentation, layout and host policy
 
-- [x] Parse bounded source configuration into inspectable settings. Space-indented YAML scalar mappings and single-line/multiline legacy `init`/`initialize` declarations share limits and preserve declaration spans; legacy JSON reuses the core reader.
-- [x] Qualify frontmatter-before-directive precedence, last declarations and family-scoped theme/font overrides. Apply native `dark`/`default` palettes and font stacks where supported; retain other layout, appearance and configuration settings with stable diagnostics.
 - [ ] Define a coherent precedence and policy for host presentation overrides, source settings and family defaults through the existing native export owners.
-- [x] Apply sequence source theme/font defaults through `SequenceArtifact` and its prepared scene. Explicit host contexts override authored defaults; portable presentation records the actual colors and font. Qualify direct rendering, typed conversion, Markdown fences and native/browser output.
-- [x] Map `themeVariables.fontFamily` into existing native typography defaults, retaining the original declarations and qualifying root/variable precedence and unsupported family-key diagnostics through direct and Markdown conversion.
-- [x] Apply source `themeVariables.fontSize` through native typography, preserving source declarations, independent host overrides and bounded SVG/PNG layout. Qualify ordinary and enlarged captions, dense sequence allocation and compact dashboard headings; report unsupported CSS sizing modes.
-- [ ] Map remaining supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Source font stacks and logical-pixel sizes use the native owners; color variables, global/family font sizes and further family options remain open.
+- [ ] Map remaining supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Source font stacks and supported logical-pixel sizes use the native owners; additional color variables, family-specific typography, CSS sizing modes, and further family options remain open.
 - [ ] Handle Mermaid 12 `theme`/`look`/`layout` changes deliberately. Preserve older `defaultRenderer` declarations with a documented diagnostic or mapping. Keep deterministic CFX layout and appearance explicit; reproducing ELK or browser paint is a separate fidelity goal.
 - [ ] Extend the existing safe label/text pipeline for escaped text, entities, multiline labels and Mermaid Markdown strings. Specify literal fallback and diagnostics for HTML labels and math until a native implementation has artifact proof.
 - [ ] Apply supported `classDef`, default classes, `class`, `style`, `linkStyle` and edge-ID styling consistently across families. Preserve inheritance and source order; report properties retained without visible effect.
 - [ ] Extend shared topology layout for nested compound groups, group endpoints, local direction, ports, self-loops, parallel edges and obstacle-aware label routing where fixtures expose gaps. An orthogonal shortcut across a three-node chain can intersect the middle node; reuse the native obstacle-avoiding route owner and prove SVG/PNG geometry together.
 - [ ] Add a coherent host policy for accepted diagram families, source styling, safe links/assets and bounded source/model/render size. Reuse existing SVG, URI and artwork safety owners; prove script-free output and deterministic rejection without fetching remote assets or invoking source callbacks.
-- [x] Keep sequence labels at their logical font size through shared HTML host sizing. Source and prepared artifacts use a contained keyboard-accessible scroll region at compact widths; hosts can explicitly select `FitToWidth`. SVG/PNG scene geometry remains unchanged, and print output fits the page.
 
 Completion: source presentation produces consistent SVG/PNG scenes or specific diagnostics, host policy has a single reusable owner, and compact/dense fixtures remain readable and bounded.
 
 ### 3. Core diagram semantics
 
-- [x] Map documented flowchart metadata aliases to the existing subprocess, decision, input/output, trapezoid and asymmetric native shapes, with versioned reference fixtures and SVG/PNG examples.
 - [ ] Qualify shape-only flowchart surfaces and centered captions. Inferred topology kinds currently add infrastructure glyphs to decision and other semantic shapes; source shape syntax should determine the diagram notation.
-- [x] Render flowchart circle, cross and bidirectional endpoints through shared topology markers, preserving compact target IDs and label boundaries. Qualify endpoint semantics against Mermaid 10, 11 and 12 and retain the markers in SVG, PNG and interchange JSON.
 - [ ] Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
 - [ ] Complete sequence participant creation/destruction, participant boxes, supported message variants, nested parallel/critical branches, branch labels, notes, activations and autonumber behavior. Keep actor menus and links as safe host-facing data.
 - [ ] Complete class generics, visibility/static/abstract members, lollipop and two-way relationships, labeled/nested namespaces, notes, styling and safe link metadata.
@@ -162,33 +135,12 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 
 ### 4. Chart and calendar fidelity
 
-- [x] Correct Gantt duration-unit case semantics: `M` means calendar months and `m` means minutes. Shared upstream timestamp fixtures cover month-end/leap-year clamping, fractional units, exclusion calendars and dependent tasks.
-- [x] Map treemap value-caption visibility through the shared hierarchy owner, with source configuration and explicit host precedence. Node identities, magnitudes and labels remain available when captions hide values.
 - [ ] Complete Mermaid treemap classes, styles and value formatting through the shared hierarchy owner merged in PR #273.
-- [x] Preserve comma-separated treemap magnitudes and native group/leaf captions through typed hierarchy conversion and static direct/fence output.
-- [x] Honor treemap value-caption visibility through the native hierarchy owner, source configuration and nullable host overrides while retaining semantic values and labels.
 - [ ] Reuse the stable Sankey identity work in PR #261 and qualify Mermaid labels, CSV and configuration against the settled owner API.
-- [x] Build on the shared Cartesian orientation owner from PR #251/#273: horizontal XY bars, lines and mixed series route source categories and values to the correct physical axes, retaining pointer/keyboard facts and native SVG/PNG geometry.
-- [x] Render closed radar curves through shared path geometry, apply source curve tension and host overrides, and fit cubic overshoot without changing observation values.
-- [x] Map radar graticules, dimensions, margins and axis factors through the native chart and polar-grid owners, including curved-series fitting and source/host precedence.
 - [ ] Map radar theme variables through the existing native theme and series-style owners.
-- [x] Resolve Gantt `until` end references, merge repeated calendar declarations, apply the final diagram calendar/date format and preserve milestone ranges for dependencies. Shared upstream fixtures cover source order, earliest referenced starts and included/excluded dates.
-- [x] Resolve forward `after` references without reordering source rows, and render every predecessor through the shared native Gantt dependency owner. Qualify duplicate links, graph cycles, direct conversion and Markdown fences against pinned reference dates.
-- [x] Keep Gantt dependency arrowheads visible over successor bars and beside milestone boundaries, including automatic window endpoints; qualify the shared schedule scene in SVG and PNG.
-- [x] Apply explicit Gantt input-date fields for English months, ordinals, quarters, day-of-year values, two-digit-year boundaries, 12-hour clocks, fractions, UTC offsets and Unix timestamps; use the same field owner for calendar exclusions. Keep upstream version differences visible in the corpus.
-- [x] Map bounded Gantt today-marker stroke declarations into reusable native reference-line styling. Qualify source/caller precedence, explicit clock ownership, safe diagnostics, SVG/PNG ink and compact/wide browser output.
-- [x] Resolve input formats without a year through explicit parser context shared by typed APIs, source rendering and Markdown. Keep calendar entries specific to the anchor date, reject clock-dependent partial fallback and preserve qualified complete-date spellings.
-- [x] Render Gantt `vert` markers without task rows through shared native annotations; retain marker scheduling ranges, source indices, dependency facts and automatic axis extents.
-- [x] Honor case-insensitive `todayMarker off` over caller-supplied time and require an explicit caller time for deterministic today lines. Retain unsupported style text with a source warning.
-- [x] Apply English D3 Gantt axis directives, padding and literal text through the native axis formatter; qualify shared weekday, clock and ISO/week boundary labels independently of host culture.
-- [x] Apply Gantt calendar tick intervals and authored weekdays through the shared time-scale owner, with reference cases for epoch alignment, month resets, empty windows and bounded fallback.
-- [x] Render the four normalized quadrant regions and their labels through the shared Cartesian plot-region owner, including charts without points. Preserve scatter coordinates through direct and Markdown rendering; qualify labels and positions with pinned Mermaid 10, 11 and 12 references.
 - [ ] Complete quadrant point/class styling, theme variables, source dimensions and separate axis endpoint labels. Native region captions use the shared bounded placement policy.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene and timeline sections/events in both directions. Keep the current score-bar/ordered-time mappings explicit until replaced.
-- [x] Map Sankey source dimensions, node geometry/alignment and value-label visibility/affixes through the native owners. Qualify direct/fence host overrides and the same node/flow facts across pinned Mermaid 10, 11 and 12; retain unsupported paint settings as diagnostics.
 - [ ] Broaden pie/show-data, XY named-series legend rules, per-point line labels, numeric/category axes and source configuration, Sankey CSV/configuration/colors, and remaining packet row/label cases.
-- [x] Apply packet source `bitsPerRow`, `showBits` and `bitOrder` through the native packet owner, with independent host overrides, mirrored partial rows and shared SVG/PNG bit labels. Pinned reference fixtures cover configuration retention and resolved row ranges.
-- [x] Apply packet source `bitWidth`, `rowHeight`, `paddingX` and `paddingY` through native dimensions and field/row gaps. Independent host overrides preserve explicit zero gaps; fixed preview bounds fit dense rows and reserve measured bit-label space. Reference, browser and packed-consumer checks cover the mapping.
 
 Completion: values, dates, hierarchy, direction and requested encodings survive conversion and are visibly represented. Existing owner PRs supply shared capability; they do not by themselves complete Mermaid configuration or compatibility proof.
 
@@ -205,9 +157,7 @@ Completion: each row's retained-only or approximate features either have tested 
 
 ### 6. Missing language families
 
-- [x] Recognize `agentflow-beta` with retained source and an explicit unsupported-rendering diagnostic through direct and Markdown parsing.
 - [ ] Add typed Agentflow flows/global scope, collapsed containers, metadata, connectors and sequence/reference/failure edges. Reuse topology scene primitives; model/instruction/connector metadata is data, never executable work.
-- [x] Recognize `railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta` and `railroad-peg-beta` with retained source and an explicit unsupported-rendering diagnostic.
 - [ ] Implement one reusable grammar-diagram model with distinct front ends for each railroad notation. Qualify rule references, alternatives, repetition, recursion and bounded layout before enabling rendering.
 - [ ] Evaluate ZenUML grammar, licensing and semantic differences against `SequenceArtifact`. Implement a native mapping only after that evaluation; keep the existing diagnostic-only result until then. A JavaScript plugin is not a runtime fallback.
 
@@ -223,22 +173,27 @@ Completion: each new family passes the same source/model/diagnostic/scene/export
 
 Completion: the documented support window is backed by source, artifacts, host workflows and package evidence. Implementation, merge, publication and installed-consumer qualification remain separate gates.
 
-## Formats
+## Focused extensions
 
-- Keep SVG as the highest-fidelity static output.
-- Keep dependency-free PNG fidelity aligned with SVG through contract fixtures for alpha-correct compositing, downsampling, antialiasing, gradients, and TrueType text measurement.
-- Keep animated raster export format-neutral internally so future chart families and formats can reuse sampled RGBA frames instead of topology-specific code.
-- Evaluate animated WebP only if a dependency-free encoder can share the same frame pipeline and meet the GIF/APNG validation bar.
-- Treat MP4 as a likely adapter concern unless a dependency-free encoder is practical; core ChartForgeX can expose deterministic frames while host packages own platform codecs or external tooling.
-- Keep PDF, Office document, and Visio generation in OfficeIMO adapters over `VisualArtifact` and its semantic interchange envelope; expand the contract only for a proven host requirement.
+These are later lanes selected by real consumers; they do not block making the current report/chart product coherent.
 
-## Release Readiness
+- [ ] Extend map composition with independent layer scales, geographic label placement, route trimming, clustering, and callouts through the existing map owner.
+- [ ] Define trading-session time compression for financial charts without changing source prices or authored date bounds. Keep candlestick/OHLC styling in their shared financial owner.
+- [ ] Qualify org/tree portraits, collapse/expand, saved state, and layout only as explicit host/model contracts. Keep large interactive graphs routed through `GraphScene` and static topology through `TopologyChart`.
+- [ ] Extend topology compound groups, group endpoints, ports, self/parallel edges, local direction, and obstacle-aware labels where real fixtures expose gaps. Preserve icon-pack provenance and artwork-loss diagnostics.
+- [ ] Extend factual block presets, shared chips/status symbols, and composition primitives only where several report/image consumers need the same geometry. Do not create chart series for exact tables, lists, or KPI facts.
+- [ ] Extend advanced font/Unicode/variation/color-font behavior only with concrete reference fonts and visible regressions. Preserve logical typography across raster densities and report font substitution limits.
+- [ ] Consider animated WebP and MP4 only against a real delivery requirement. Stories already supplies bounded RGBA frames and GIF/APNG; platform codecs belong behind approved optional adapters. PDF, Office, and Visio delivery stays in OfficeIMO.
 
-- Keep the first-release public surface stable where it represents real charting concepts; make pre-release breaking changes only for clearer naming, stronger typing, dependency boundaries, or product-neutral API design.
-- Keep extension-inferred export behavior documented in README; new output formats should update `Save`, raster metadata helpers, and smoke tests together.
-- Keep map catalog discovery split between embedded entries and known external entries so hosts can tell package-shipped geometry from user-supplied GeoJSON assets.
-- Use GitHub Releases as the release-note source of truth; keep package release notes short enough for NuGet and do not maintain a second long-form repository changelog.
-- Keep package license metadata aligned across `ChartForgeX`, `ChartForgeX.Interactivity`, and `ChartForgeX.Interactivity.Html`.
-- Update package versions and release metadata in all package projects when preparing a release.
-- Run the full quality loop and inspect generated examples before publishing packages.
-- Publish `.nupkg` and `.snupkg` files from `artifacts/packages/Release`.
+## Consumer and release qualification
+
+The core prepared scene, Visuals/Stories extraction, and public 2.0.0 owner packages are complete. Earlier local consumer qualification is useful historical evidence, not proof that today's public packages or installed hosts execute every current contract.
+
+- [ ] Inventory current public and private consumers before breaking APIs; preserve the actual wallpaper, report, image-composition, story, and document workflows they use. Validate through ordinary public packages or explicitly isolated candidate packages, with source/feed/install state recorded separately.
+- [ ] Recheck and complete each outstanding consumer migration against its current repository, dependencies, CI/review, and installed delivery path. Do not keep old owner-publication or PR-settlement tasks after they are resolved; do not infer downstream readiness from owner availability.
+- [ ] For stable implementation candidates, run focused contracts, the full quality loop, required browser evidence, and the packed-consumer matrix. Qualify Windows/Linux/macOS and Native AOT at the applicable gate.
+- [ ] Keep package identities/dependencies/framework assets/XML docs/symbols/licenses coordinated. Use the existing shared release entrypoint and three-part public versions; GitHub Releases is the release-note source of truth.
+- [ ] Publish and verify a new owner release and affected host releases only with release authority. Read public artifacts back before claiming availability, and retain installed-runtime proof separately.
+- [ ] Remove superseded task output and merged/abandoned task worktrees after fresh ownership, activity, containment, and Git checks. Retain only bounded evidence still needed for review or delivery.
+
+Completion: each delivered outcome has current source and artifact proof, required CI/review settlement, verified public packages when released, and representative installed-consumer evidence. A local build or merged source does not substitute for those delivery boundaries.

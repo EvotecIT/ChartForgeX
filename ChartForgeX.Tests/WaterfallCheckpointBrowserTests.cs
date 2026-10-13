@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class WaterfallCheckpointBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, false, null)]
     [InlineData(360, true, false, null)]
     [InlineData(900, false, false, null)]

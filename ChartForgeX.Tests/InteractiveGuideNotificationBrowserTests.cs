@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveGuideNotificationBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, 950)]
     [InlineData(false, 340)]
     public async Task NativeGuidesNotifyChangesDeduplicateStableMovesAndRecoverWithSemanticPeers(bool tooltips, int width) {
@@ -61,7 +61,7 @@ public sealed class InteractiveGuideNotificationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task AGuideFromAnotherSeriesKeepsItsSharedModeIndependentFromTheNativeSummary() {
         if (!Enabled) return;
         var source = Frame(false, "Native line and nearby observation")

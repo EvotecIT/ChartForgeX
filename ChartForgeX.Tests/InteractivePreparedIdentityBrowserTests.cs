@@ -6,7 +6,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractivePreparedIdentityBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartForgeX.Core.ChartSeriesKind.Line)]
     [InlineData(ChartForgeX.Core.ChartSeriesKind.Radar)]
     public async Task MarkerFreeSourceFocusRequiresSeriesPaintAtItsOwnNativeClipLocation(ChartSeriesKind kind) {
@@ -48,7 +48,7 @@ public sealed class InteractivePreparedIdentityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LinkedHeatmapCellHasOneKeyboardTargetAndRetainsNativeEnterNavigation(bool dark) {
@@ -81,7 +81,7 @@ public sealed class InteractivePreparedIdentityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task MarkerFreeDecimatedObservationEmitsOneOriginalSourceSelectionAndSupportsKeyboard() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithLineMarkers(ChartLineMarkerMode.None)

@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveDerivedEquivalenceBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false)]
     [InlineData(720, true)]
     public async Task HistogramPeersMatchIntervalPolicyAcrossDifferentLayouts(int width, bool dark) {
@@ -63,7 +63,7 @@ public sealed class InteractiveDerivedEquivalenceBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task OtherSlicesMatchTheirContributorSetAcrossGroupingPolicies() {
         if (!Enabled) return;
         Chart Pie(int slices) {
@@ -85,7 +85,7 @@ public sealed class InteractiveDerivedEquivalenceBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task MergedTimelineRunsMatchIntervalsAcrossDifferentCoalescingResults() {
         if (!Enabled) return;
         var day = new DateTime(2026, 9, 25, 0, 0, 0, DateTimeKind.Utc);

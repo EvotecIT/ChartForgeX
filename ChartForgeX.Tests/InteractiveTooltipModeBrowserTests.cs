@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTooltipModeBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartTooltipMode.Single)]
     [InlineData(false, HtmlChartTooltipMode.SharedX)]
     [InlineData(true, HtmlChartTooltipMode.Single)]
@@ -36,7 +36,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 700)]
     [InlineData(true, 700)]
     [InlineData(false, 340)]
@@ -60,7 +60,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipMode.Single)]
     [InlineData(HtmlChartTooltipMode.SharedX)]
     public async Task TooltipSwatchRetainsPointOverrideInsteadOfGroupOrSeriesFill(HtmlChartTooltipMode mode) {
@@ -80,7 +80,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task SingleRangeTooltipUsesPaintedEnvelopeWithoutRequiringALegend(bool area) {
@@ -99,7 +99,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SharedRowsRetainRawValuesSourceIdentityAndStatePriorityWithSafeText() {
         if (!Enabled) return;
         const string dangerName = "<img src=x onerror=alert(1)>";
@@ -126,7 +126,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("display:none")]
     [InlineData("visibility:hidden")]
     [InlineData("opacity:0")]
@@ -149,7 +149,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("NaN")]
     [InlineData("Infinity")]
     [InlineData("")]
@@ -164,7 +164,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SharedModeFallsBackForPieTargetsAndBothModesRespectFeatureGate() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithXLabels("North", "South").AddPie("Requests", ChartPoints.FromValues(7, 3));
@@ -188,7 +188,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SharedModeKeepsHeatmapCellQuantityAndMetadataInASingleReadout() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithXLabels("North", "South")
@@ -204,7 +204,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipMode.Single)]
     [InlineData(HtmlChartTooltipMode.SharedX)]
     public async Task DashboardChildTooltipsUseTheConfiguredMode(HtmlChartTooltipMode mode) {

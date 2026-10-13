@@ -6,7 +6,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidSankeyConfigurationBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 320)]
     [InlineData(true, 960)]
     public async Task ConfiguredSankeyUsesNativeLabelsInCompactAndWideHosts(bool showValues, int width) {

@@ -6,7 +6,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer, false)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, true)]
     [InlineData(HtmlChartTooltipAnchor.Node, false)]
@@ -52,7 +52,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Node, false)]
     [InlineData(HtmlChartTooltipAnchor.Node, true)]
     [InlineData(HtmlChartTooltipAnchor.Chart, false)]
@@ -83,7 +83,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer, false, "style-opacity", "target")]
     [InlineData(HtmlChartTooltipAnchor.Pointer, true, "class-visibility", "ancestor")]
     [InlineData(HtmlChartTooltipAnchor.Node, false, "style-opacity", "ancestor")]
@@ -138,7 +138,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Node, true, "outer")]
     [InlineData(HtmlChartTooltipAnchor.Chart, false, "inner")]
     public async Task ClosedShadowHostPaintChangeReleasesReadout(HtmlChartTooltipAnchor anchor, bool pinned, string subject) {
@@ -170,7 +170,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task OneChartsPaintMutationKeepsSiblingReadoutAndSharedWatcherUntilItsAncestorHides() {
         if (!Enabled) return;
         await using var session = await OpenAsync("<html><body></body></html>", 950, 1300);

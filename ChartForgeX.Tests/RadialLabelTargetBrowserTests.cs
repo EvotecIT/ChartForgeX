@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class RadialLabelTargetBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Pie, false)]
     [InlineData(ChartSeriesKind.Pie, true)]
     [InlineData(ChartSeriesKind.Donut, false)]
@@ -70,7 +70,7 @@ public sealed class RadialLabelTargetBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task DashboardCaptionsResolveRepeatedPointIdsWithinTheirOwnScopedChart() {
         if (!Enabled) return;
         var first = Create(ChartSeriesKind.Pie, true).WithTitle("First chart");

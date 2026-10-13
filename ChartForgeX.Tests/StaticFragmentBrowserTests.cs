@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Checks compact static fragments without the complete document's stylesheet.</summary>
 public sealed class StaticFragmentBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ChartAndGridFragmentsScaleInsideCompactHostsWithoutPageCss(bool dark) {

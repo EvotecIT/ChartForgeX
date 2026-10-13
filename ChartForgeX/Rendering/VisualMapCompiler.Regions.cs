@@ -73,7 +73,7 @@ internal static partial class VisualMapCompiler {
         var definition = chart.Options.TileMapDefinition ?? throw new InvalidOperationException("A tile map requires a tile definition.");
         var values = Values(chart, key => definition.TryResolveRegion(key, out var code) ? code : null);
         var width = chart.Options.MapRegionStrokeWidth;
-        var gap = Math.Min(context.Theme.Spacing / 2, Math.Min(plot.Width / definition.ColumnCount, plot.Height / definition.RowCount) / 6);
+        var gap = TileGap(chart, context, builder, definition, plot, width);
         var size = Math.Max(0, Math.Min((plot.Width - width - gap * (definition.ColumnCount - 1)) / definition.ColumnCount,
             (plot.Height - width - gap * (definition.RowCount - 1)) / definition.RowCount));
         var gridWidth = size * definition.ColumnCount + gap * (definition.ColumnCount - 1);
@@ -85,7 +85,7 @@ internal static partial class VisualMapCompiler {
             foreach (var region in definition.Regions) {
                 var x = plot.Left + (plot.Width - gridWidth) / 2 + region.Column * (size + gap);
                 var y = plot.Top + (plot.Height - gridHeight) / 2 + region.Row * (size + gap);
-                var bounds = new ChartRect(x, y, size, size); var inset = size * .22;
+                var bounds = new ChartRect(x, y, size, size); var inset = size * TileHexInsetRatio;
                 var contour = new List<ChartPoint> { new ChartPoint(x + inset, y), new ChartPoint(x + size - inset, y),
                     new ChartPoint(x + size, y + size / 2), new ChartPoint(x + size - inset, y + size), new ChartPoint(x + inset, y + size), new ChartPoint(x, y + size / 2) };
                 var geometry = Path(new[] { (IReadOnlyList<ChartPoint>)contour });

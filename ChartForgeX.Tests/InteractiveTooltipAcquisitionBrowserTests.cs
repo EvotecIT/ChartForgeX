@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTooltipAcquisitionBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task DefaultRadiusRetains120CssPixelsWithTooltipsOnly() {
         if (!Enabled) return;
         await using var session = await OpenAsync(Observation(false).ToInteractiveHtmlPage(options => options.Interaction.Features = ChartInteractionFeatures.Tooltips), 950, 720);
@@ -24,7 +24,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("rect", false)]
     [InlineData("rect", true)]
     [InlineData("foreignObject", false)]
@@ -59,7 +59,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Bar)]
     [InlineData(ChartSeriesKind.HorizontalBar)]
     [InlineData(ChartSeriesKind.Line)]
@@ -109,7 +109,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartResponsiveLayout.Fit, 340, true, true, true)]
     [InlineData(HtmlChartResponsiveLayout.Fit, 950, false, false, true)]
     [InlineData(HtmlChartResponsiveLayout.Readable, 340, false, false, false)]
@@ -138,7 +138,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -172,7 +172,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("opacity", "0", HtmlChartTooltipMode.Single, 1)]
     [InlineData("visibility", "hidden", HtmlChartTooltipMode.SharedX, 1)]
     [InlineData("display", "none", HtmlChartTooltipMode.Single, 2)]
@@ -209,7 +209,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task RestoredChildAndMarkerFreePaintRemainEligibleUntilTheirActualSurfaceIsHidden(bool markerFree) {

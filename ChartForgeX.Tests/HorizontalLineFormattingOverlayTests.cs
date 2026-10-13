@@ -10,7 +10,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class HorizontalLineFormattingOverlayTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, false)]
     [InlineData(360, true, true)]
     [InlineData(760, false, true)]

@@ -8,7 +8,7 @@ public sealed class InteractiveHoverEmphasisBrowserTests {
     private const string Lines = "[data-cfx-role=\"series\"]";
     private const string Legends = "[data-cfx-role=\"legend-item\"]";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task PointHover_PointedSeries_StaysFullWhileOtherSeriesDim(bool dark) {
@@ -39,7 +39,7 @@ public sealed class InteractiveHoverEmphasisBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task KeyboardFocus_ChartTargets_KeepsFocusRingAndArrowTraversal(bool dark) {

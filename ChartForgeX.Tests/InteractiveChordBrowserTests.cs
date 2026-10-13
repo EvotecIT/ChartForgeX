@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveChordBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 360)]
     [InlineData(false, 800)]
@@ -129,7 +129,7 @@ public sealed class InteractiveChordBrowserTests {
         if (!string.IsNullOrWhiteSpace(directory)) await File.WriteAllTextAsync(Path.Combine(directory, name + "-console.json"), JsonSerializer.Serialize(session.ConsoleLog));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task AllZeroChordRetainsKeyboardFactsWithoutFilledGeometry(bool dark) {
@@ -158,7 +158,7 @@ public sealed class InteractiveChordBrowserTests {
         await CaptureAsync(chart, page, "chord-zero-" + (dark ? "dark" : "light"), html); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(0, "zero")]
     [InlineData(double.Epsilon, "precision-collapse")]
     public async Task SemanticOnlyChordFactsRespectHiddenLayoutAndMutedSeries(double value, string geometryStatus) {
@@ -215,7 +215,7 @@ public sealed class InteractiveChordBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 360)]
     [InlineData(false, 800)]

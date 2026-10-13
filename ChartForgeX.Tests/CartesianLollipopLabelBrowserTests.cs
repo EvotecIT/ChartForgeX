@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class CartesianLollipopLabelBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 1, false)]
     [InlineData(true, -1, true)]
     public async Task ReversedEndpointCaptionAndPhysicalReadoutRetainTheirSignedSource(bool secondary, int sign, bool dark) {

@@ -12,7 +12,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveCrosshairStylesBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false, 950, HtmlChartCrosshairLineStyle.Solid)]
     [InlineData(false, true, 340, HtmlChartCrosshairLineStyle.Dashed)]
     [InlineData(true, false, 340, HtmlChartCrosshairLineStyle.Dotted)]
@@ -68,7 +68,7 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task StyledLinesDoNotEnableADisabledGuideOrPreventTooltips() {
         if (!Enabled) return;
         var chart = Observation(true, false);
@@ -88,7 +88,7 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, true)]
     [InlineData(true, true)]
     [InlineData(false, false)]

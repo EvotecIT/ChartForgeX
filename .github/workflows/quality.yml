@@ -163,3 +163,38 @@ jobs:
           name: chartforgex-example-gallery-${{ matrix.runner }}
           path: ChartForgeX.Examples/bin/Release/net8.0/output
           if-no-files-found: error
+
+  browser-quality:
+    name: Required browser contracts (Windows Chromium)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            10.0.x
+            8.0.x
+
+      - name: Generate gallery and execute required browser proof
+        shell: pwsh
+        run: ./Build/Test-BrowserQuality.ps1 -OutputRoot (Join-Path $env:RUNNER_TEMP 'chartforgex-browser-quality')
+
+      - name: Retain browser results and rendered evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chartforgex-browser-quality
+          path: |
+            ${{ runner.temp }}/chartforgex-browser-quality/results
+            ${{ runner.temp }}/chartforgex-browser-quality/captures
+            ${{ runner.temp }}/chartforgex-browser-quality/gallery-server.log
+          if-no-files-found: error
+          retention-days: 7

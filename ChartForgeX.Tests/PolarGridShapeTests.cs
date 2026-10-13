@@ -11,7 +11,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class PolarGridShapeTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("circle", false, 320, false)]
     [InlineData("polygon", true, 960, false)]
     [InlineData("circle", false, 960, true)]

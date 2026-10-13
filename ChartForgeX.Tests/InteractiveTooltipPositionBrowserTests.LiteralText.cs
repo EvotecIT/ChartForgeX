@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(340, false, false)]
     [InlineData(340, true, true)]
     [InlineData(950, true, false)]

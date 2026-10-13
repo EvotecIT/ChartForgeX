@@ -14,7 +14,7 @@ namespace ChartForgeX.Tests;
 public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     private const string Root = ".cfx-interactive-chart";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Fit, 650, 0.8, false)]
     [InlineData(true, HtmlChartResponsiveLayout.Fit, 650, 0.8, true)]
     [InlineData(false, HtmlChartResponsiveLayout.Readable, 340, 1, false)]
@@ -50,7 +50,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Fit, 650, 0.8, false)]
     [InlineData(true, HtmlChartResponsiveLayout.Readable, 340, 0.8, true)]
     [InlineData(false, HtmlChartResponsiveLayout.Readable, 340, 1, false)]
@@ -88,7 +88,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Fit, 650, 0.8, false)]
     [InlineData(true, HtmlChartResponsiveLayout.Readable, 340, 0.8, true)]
     public async Task PanMovesNativeGeometryByTheScreenPointerDelta(bool graphite, HtmlChartResponsiveLayout layout, int width, double scale, bool pageScroll) {

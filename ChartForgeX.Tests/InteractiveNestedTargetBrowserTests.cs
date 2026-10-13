@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveNestedTargetBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 800)]
     [InlineData(true, 360)]
     public async Task NestedAuthoredTargetsSelectOnceWhileTheirDecorationsStayWithTheirOwner(bool dark, int width) {

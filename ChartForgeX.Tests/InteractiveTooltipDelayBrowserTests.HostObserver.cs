@@ -5,7 +5,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task SharedPendingObserverReleasesACanceledShadowTreeWhileAnotherChartIsQueued() {
         if (!Enabled) return;
         const int queuedDelay = 1000;

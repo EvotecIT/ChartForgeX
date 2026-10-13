@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects raw-value pointer and keyboard readouts when canonical numeric colors replace legacy intensity levels.</summary>
 public sealed class InteractiveHeatmapColorScaleBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Heatmap, 360, false, true)]
     [InlineData(ChartSeriesKind.Heatmap, 800, true, true)]
     [InlineData(ChartSeriesKind.HexbinHeatmap, 360, true, true)]

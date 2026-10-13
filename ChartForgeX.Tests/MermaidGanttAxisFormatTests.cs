@@ -59,7 +59,7 @@ public sealed class MermaidGanttAxisFormatTests {
         Assert.Equal(expected, chart.Options.XAxisValueFormatter!(chart.Series[0].Points[0].X));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task FormattedWeekdayLabelsAreVisibleInNativeAndStaticBrowserOutput(bool dark, int width) {

@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, 0)]
     [InlineData(360, true, 0)]
     [InlineData(800, false, 0)]
@@ -86,7 +86,7 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
         await Capture(page, prepared, html, width, dark, radius, "zero", errors, session.ConsoleLog.Select(entry => entry.Type + ": " + entry.Text));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LongSecondaryTextWrapsWithinCompactPointerAndKeyboardReadouts(bool combiningCharacters) {

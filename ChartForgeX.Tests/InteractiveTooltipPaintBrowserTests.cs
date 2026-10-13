@@ -14,7 +14,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     private const string Root = ".cfx-interactive-chart";
     private const string Term = "[data-cfx-role='word-cloud-term'][data-cfx-point='0']";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 950)]
     [InlineData(true, 340)]
     public async Task VisibleWordCloudTextRetainsNativePointerSelectionFocusAndPins(bool dark, int width) {
@@ -28,13 +28,22 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         var id = await target.GetAttributeAsync("data-cfx-target-id");
         await MoveToNativeTextAsync(page, Term);
         Assert.Contains("Visible", await TooltipTextAsync(page), StringComparison.Ordinal);
+        var scrollLeft = await page.Locator(".cfx-stage").EvaluateAsync<double>("n => n.scrollLeft");
         await page.Mouse.DownAsync(); await page.Mouse.UpAsync();
+        Assert.Equal(scrollLeft, await page.Locator(".cfx-stage").EvaluateAsync<double>("n => n.scrollLeft"));
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         Assert.Equal("true", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
         await page.Locator("[data-cfx-reset]").ClickAsync();
         await MoveAwayAsync(page);
+        if (width < 400) {
+            // A host may start a drag without focusing the mark, then release beyond it.
+            await target.EvaluateAsync("n => n.addEventListener('pointerdown', e => e.preventDefault(), { once: true })");
+            await MoveToNativeTextAsync(page, Term);
+            await page.Mouse.DownAsync(); await MoveAwayAsync(page); await page.Mouse.UpAsync();
+        }
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', e => window.textSelection = e.detail.target)");
         await target.FocusAsync();
+        if (width < 400) Assert.True(await page.Locator(".cfx-stage").EvaluateAsync<double>("n => n.scrollLeft") > scrollLeft);
         Assert.Contains("100", await TooltipTextAsync(page), StringComparison.Ordinal);
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
@@ -42,11 +51,11 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         Assert.Equal("100", await page.EvaluateAsync<string>("() => window.textSelection.value"));
         await target.BlurAsync(); await MoveAwayAsync(page);
         Assert.False(await page.Locator(".cfx-tooltip").IsHiddenAsync());
-        await CaptureContractAsync(page, "paint-word-cloud-" + width + "-" + (dark ? "dark" : "light"), new { NativeTarget = id, KeyboardSelected = true });
+        await CaptureContractAsync(page, "paint-word-cloud-" + width + "-" + (dark ? "dark" : "light"), new { NativeTarget = id, KeyboardSelected = true, PointerScrollLeft = scrollLeft });
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task WordCloudUsesActualTextPaintAndHonoursChildVisibilityOverrides() {
         if (!Enabled) return;
         var chart = Frame(false).AddWordCloud("Topics", new[] { new ChartWordCloudItem("Visible", 100) });
@@ -79,7 +88,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartAnnotationKind.HorizontalBand)]
     [InlineData(ChartAnnotationKind.VerticalBand)]
     public async Task UnpaintedBandsDoNotAcquireOrPinFromTheirRetainedBounds(ChartAnnotationKind kind) {
@@ -113,7 +122,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartResponsiveLayout.Fit)]
     [InlineData(HtmlChartResponsiveLayout.Readable)]
     public async Task AnnotationCaptionAndLegendCaptionRemainRealNativeTargetsWithoutShapePaint(HtmlChartResponsiveLayout layout) {

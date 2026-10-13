@@ -19,7 +19,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             _ => "<script>" + File.ReadAllText(baseline) + "</script>", RegexOptions.Singleline);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task NestedAbsoluteWrapperPreservesFixedChartContainingBlock(bool contains) {
@@ -48,7 +48,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task NamedSlotReassignmentRebindsContainingBlockAndAncestorLifetime() {
         if (!Enabled) return;
         await using var session = await OpenAsync(ComposedHostRuntime(CssClipChart(true, true)), 950, 760);
@@ -80,7 +80,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SlottedAncestorOpacityControlsPinnedAndKeyboardAvailability() {
         if (!Enabled) return;
         await using var session = await OpenAsync(ComposedHostRuntime(CssClipChart(true, true)), 950, 760);
@@ -131,7 +131,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             containedOpacity:getComputedStyle(clipShadow.getElementById('slot-contained')).opacity,slotListeners:slotChangeListeners.size}}
         """);
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task NarrowOuterClipPreservesVisibleWideIntervalAndRevealsOffscreenInterval(bool partial) {
@@ -192,7 +192,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         }
         """);
 
-    [Fact]
+    [BrowserFact]
     public async Task NativeVisualViewportResizeRepositionsAlreadyPinnedReadout() {
         if (!Enabled) return;
         await using var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {

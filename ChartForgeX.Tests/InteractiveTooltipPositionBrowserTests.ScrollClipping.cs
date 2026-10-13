@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task PinnedReadableScrollDismissesOutOfViewSourceAndKeyboardRecovers() {
         if (!Enabled) return;
         var chart = StatusLines(true);
@@ -54,7 +54,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task PointerReadoutDismissesWhenReadableViewportClipsItsSource() {
         if (!Enabled) return;
         await using var session = await OpenAsync(StatusLines(false).ToInteractiveHtmlPage(options => {
@@ -70,7 +70,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ClosedShadowScrollDismissesPinAndReleasesTreeListeners() {
         if (!Enabled) return;
         await using var session = await OpenAsync("<html><body></body></html>", 390, 844);
@@ -119,7 +119,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task PairedNativeExtentDismissesEvenWhileTransparentHitAreaStillOverlaps() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithTheme(ChartTheme.GraphiteLight()).WithHeader(false).WithLegend(false)
@@ -157,7 +157,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("x", false)]
     [InlineData("y", true)]
     public async Task NestedHostClipKeepsPartialSourceThenDismissesFullyClippedPin(string axis, bool dark) {

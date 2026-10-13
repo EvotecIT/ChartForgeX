@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class RoundedRadialBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.RadialBar, false, false, false)]
     [InlineData(ChartSeriesKind.RadialBar, false, true, false)]
     [InlineData(ChartSeriesKind.RadialBar, true, false, false)]

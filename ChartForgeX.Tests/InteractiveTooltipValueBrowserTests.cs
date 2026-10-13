@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTooltipValueBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("node", false)]
     [InlineData("node", true)]
     [InlineData("flow", false)]

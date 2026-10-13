@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Checks display captions independently of the source numbers used by interaction.</summary>
 public sealed class InteractiveNumericReadoutBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipMode.Single)]
     [InlineData(HtmlChartTooltipMode.SharedX)]
     public async Task NumericFallbacksKeepReadableRoundtripTextAndRawSelectionFacts(HtmlChartTooltipMode mode) {
@@ -59,7 +59,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipMode.Single, false)]
     [InlineData(HtmlChartTooltipMode.SharedX, false)]
     [InlineData(HtmlChartTooltipMode.Single, true)]
@@ -94,7 +94,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SharedRowsKeepEqualXGroupingAndSeparateAdjacentUnequalNumbers() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithLegend(false)

@@ -73,7 +73,7 @@ public sealed class MermaidTreemapPresentationTests {
         Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, warning.Code); Assert.Equal(4, warning.Span.Line);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(320, "default")]
     [InlineData(960, "dark")]
     public async Task LabelsRemainVisibleWhenValuesAreHiddenInStaticHosts(int width, string theme) {

@@ -2,7 +2,7 @@
 
 ChartForgeX prepares typed chart and diagram models into a detached scene. The scene contains final geometry, positioned text, source identities, descriptive regions and diagnostics. SVG serialization and native raster painting consume those decisions; neither backend performs family layout or parses the other backend's output.
 
-The entry point is `IVisualRenderable.Prepare(VisualRenderContext)`. Charts, grids and diagram exporters use the shared preparation route. Invalid family combinations and unsupported configurations fail explicitly. Phase 1 established this ownership boundary; Phases 2–3 implement the family producers and their shared presentation contracts. Package extraction and consumer qualification remain separate phases.
+The entry point is `IVisualRenderable.Prepare(VisualRenderContext)`. Charts, grids and diagram exporters use the shared preparation route. Invalid family combinations and unsupported configurations fail explicitly. Chart families share the native scene, frame, theme and typography contracts. Static composition and animation have separate Visuals and Stories owners; downstream execution and package qualification remain distinct validation gates.
 
 ## Package ownership
 
@@ -74,7 +74,7 @@ The generated palette has `light` and `dark` objects and no numeric schema-versi
 
 The full ChartForgeX theme contract uses schema version 1, keeping the palette fields and adding `typography`, `geometry` and `effects`. `geometry.cardRadius` is independent of `geometry.barRadius`; `effects.cardShadowOpacity` and `effects.cardShadowColor` retain the chosen shadow, including color alpha. Older version-1 documents without these optional fields use radius 3 and zero shadow opacity. `FromThemeJson` and `ToThemeJson` are distinct from palette intake. Unknown full-theme versions fail explicitly. Schema versions describe portable contracts, independently of the NuGet package version.
 
-The Graphite preset uses canonical HtmlForgeX colors and the chart look specification's layout/type scale. Renderers read presentation values from the theme or explicit model overrides. They do not select a different geometry implementation because of a palette. Existing `UseGraphiteLayout` branches are removed as their families migrate; Phase 1 does not claim those legacy branches have all gone.
+The Graphite preset uses canonical HtmlForgeX colors and the chart look specification's layout/type scale. Renderers read presentation values from the theme or explicit model overrides. They do not select a different geometry implementation because of a palette. Convenience-model defaults still consult legacy `ChartTheme` flags, including `UseGraphiteLayout` and `FlatMarks`; their explicit settings are resolved into the shared preparation route. These remaining model bridges are API cleanup work.
 
 Precedence is explicit model/element setting, then context/host override, then selected preset defaults. A context-supplied theme controls the prepared route; a legacy `ChartTheme` is not silently combined with it. Explicit series/point colors and configured text styles remain meaningful. Geometry choices such as aggregation and stacked layout are explicit model policy and apply independently of light/dark mode.
 

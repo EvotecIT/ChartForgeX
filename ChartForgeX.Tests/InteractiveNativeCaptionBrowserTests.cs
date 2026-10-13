@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects native caption acquisition without promoting decorations or bypassing mark availability.</summary>
 public sealed class InteractiveNativeCaptionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("region", "exact", 0)]
     [InlineData("region", "distance", 0)]
     [InlineData("region", "nearest", 0)]

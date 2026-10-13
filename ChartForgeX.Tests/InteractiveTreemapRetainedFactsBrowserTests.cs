@@ -11,7 +11,7 @@ public sealed class InteractiveTreemapRetainedFactsBrowserTests {
     private const string DataStop = "[data-cfx-keyboard-component=data][tabindex='0']";
     private static string Target(string id) => "[data-cfx-target-kind=node][data-cfx-target-id='" + id + "']";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]

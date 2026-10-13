@@ -13,7 +13,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects authored anchors, actual paint and raw interaction facts through three numeric-color consumers.</summary>
 public sealed class InteractivePositionedColorScaleBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.TileMap, 360, false)]
     [InlineData(ChartSeriesKind.TileMap, 800, true)]
     [InlineData(ChartSeriesKind.Heatmap, 360, false)]

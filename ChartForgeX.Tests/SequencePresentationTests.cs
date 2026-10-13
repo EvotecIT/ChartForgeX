@@ -98,7 +98,7 @@ public sealed class SequencePresentationTests {
         Assert.Equal(model.Theme.Resolve(mode).Background.ToCss(), rendered.Artifact.ToInterchangeEnvelope().Presentation!.Theme!.Background);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("dark", 320)]
     [InlineData("default", 960)]
     public async Task SourceSequencePresentationIsObservedInCompactAndWideStaticHosts(string theme, int width) {

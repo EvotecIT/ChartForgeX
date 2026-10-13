@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class SankeyLabelPlacementBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSankeyLabelPlacement.Left, false, 360)]
     [InlineData(ChartSankeyLabelPlacement.Left, true, 360)]
     [InlineData(ChartSankeyLabelPlacement.Left, false, 800)]

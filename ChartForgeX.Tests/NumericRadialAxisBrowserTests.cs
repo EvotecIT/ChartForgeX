@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class NumericRadialAxisBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("axes-wide-light", -75, 800, false, false, true)]
     [InlineData("axes-compact-dark-reversed", -75, 360, true, true, true)]
     [InlineData("gallery-axes-wide-light", 0, 800, false, false, true)]
@@ -42,7 +42,7 @@ public sealed class NumericRadialAxisBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, true, 1)]
     [InlineData(true, true, 1)]
     [InlineData(false, true, -1)]
@@ -56,7 +56,7 @@ public sealed class NumericRadialAxisBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(0)]
     [InlineData(-90)]
     public async Task FullTurnCategoryOverflowRetainsItsDescriptionsInActualHosts(int start) {

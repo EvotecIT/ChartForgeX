@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task ClosedShadowNativeViewportTransitionDismissesFullyClippedPin() {
         if (!Enabled) return;
         var html = StatusLines(true).ToInteractiveHtmlPage(options => {

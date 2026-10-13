@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Checks that key presentation leaves raw observations and browser target identities intact.</summary>
 public sealed class InteractiveColorLegendPresentationBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.TileMap, 360, true, ChartColorLegendStyle.Gradient)]
     [InlineData(ChartSeriesKind.Scatter, 800, false, ChartColorLegendStyle.Gradient)]
     [InlineData(ChartSeriesKind.Heatmap, 360, false, ChartColorLegendStyle.Swatches)]

@@ -113,7 +113,7 @@ public sealed class GanttDependencyTests {
         Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task ForwardAndMultipleLinksAreObservedInStaticBrowserOutput(bool dark, int width) {

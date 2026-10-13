@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class MixedNumericRadialBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]

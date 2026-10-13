@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects captured cultural/custom text, empty output and raw identities across the six presentation owners.</summary>
 public sealed class InteractiveColorDimensionPresentationBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.TileMap, 360, false, false)]
     [InlineData(ChartSeriesKind.TileMap, 800, true, false)]
     [InlineData(ChartSeriesKind.Heatmap, 360, false, false)]

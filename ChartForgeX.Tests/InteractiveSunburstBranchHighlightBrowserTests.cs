@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveSunburstBranchHighlightBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, false, false)]
     [InlineData(360, true, false, false)]
     [InlineData(800, false, false, false)]
@@ -91,7 +91,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("source-opacity", true, HtmlChartTooltipAnchor.Node)]
     [InlineData("primitive-opacity", true, HtmlChartTooltipAnchor.Node)]
     [InlineData("primitive-opacity", false, HtmlChartTooltipAnchor.Node)]
@@ -149,7 +149,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SynchronizedDashboardResolvesLocalBranchesAndMixedFamiliesKeepTheirOwnEmphasis() {
         if (!Enabled) return;
         var first = SunburstBranchHighlightExamples.CreateChart(360);
@@ -185,7 +185,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task DefaultBranchStylesAndLegendTargetsKeepTheirPresentation(bool graphite) {
@@ -203,7 +203,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task FragmentsAndExternalAssetsUseTheSameRuntime(bool externalAssets) {
@@ -228,7 +228,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task MovingWithinOneNativeSectorRetainsOutlinesAndDoesNotRepublishHover() {
         if (!Enabled) return;
         var html = SunburstBranchHighlightExamples.CreateChart().ToInteractiveHtmlPage(options => {
@@ -283,7 +283,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task DelayedPointerReadoutsDoNotObserveTheirOwnNativePaintProbe() {
         if (!Enabled) return;
         var html = SunburstBranchHighlightExamples.CreateChart().ToInteractiveHtmlPage(options => { Configure(options); options.Tooltip.DelayMilliseconds = 60; });

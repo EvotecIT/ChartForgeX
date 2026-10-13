@@ -13,7 +13,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects paired observations whose native extent, rather than its midpoint, intersects the plot.</summary>
 public sealed class PairedObservationClipBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.DifferenceArea, false)]
     [InlineData(ChartSeriesKind.DifferenceArea, true)]
     [InlineData(ChartSeriesKind.RangeArea, false)]
@@ -60,7 +60,7 @@ public sealed class PairedObservationClipBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task LogarithmicRangeMidlineKeepsItsNativeCapReadout() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(600, 380).WithTitle("Logarithmic paired midpoint")
@@ -98,7 +98,7 @@ public sealed class PairedObservationClipBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task OffPlotEndpointCapRetainsItsOwnPairedReadout() {
         if (!Enabled) return;
         var chart = Create(ChartSeriesKind.DifferenceArea, 100, 1, visibleSibling: true, firstX: -.001);
@@ -137,7 +137,7 @@ public sealed class PairedObservationClipBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task OffPlotBoundaryCapRetainsReadoutAndKeyboardIdentityWithoutCrosshair() {
         if (!Enabled) return;
         // Both Y values are inside the plot: only the source X excludes the guide anchor.
@@ -222,7 +222,7 @@ public sealed class PairedObservationClipBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.DifferenceArea, "y-clipped")]
     [InlineData(ChartSeriesKind.RangeArea, "y-clipped")]
     [InlineData(ChartSeriesKind.RangeBand, "y-clipped")]

@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractivePolarIdentityBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, false)]
     [InlineData(true, true)]
     [InlineData(false, false)]

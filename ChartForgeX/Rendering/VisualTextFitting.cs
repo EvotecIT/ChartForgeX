@@ -5,6 +5,7 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Fits oversized authored typography against measured native layout bounds.</summary>
 internal static class VisualTextFitting {
+    internal const double MinimumOrdinaryFontSize = 10;
     internal const double MaximumOrdinaryFontSize = 18;
     internal static TextStyle FitOversized(VisualSceneBuilder builder, TextStyle style, double availableHeight, Func<TextStyle, bool> fits) {
         if (availableHeight <= 0) return style;

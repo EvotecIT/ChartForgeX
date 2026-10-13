@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class BoxPlotBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task NeighboringHorizontalSummariesKeepAllFiveLocalizedFactsAndIndependentSelectionAndMuting() {
         if (!Enabled) return;
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
@@ -80,7 +80,7 @@ public sealed class BoxPlotBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task RawSampleSummaryKeepsInterpolatedFactsAndDerivedSelectionIdentity() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(640, 400).WithXLabels("Raw input").WithPointLegend().WithLegend()

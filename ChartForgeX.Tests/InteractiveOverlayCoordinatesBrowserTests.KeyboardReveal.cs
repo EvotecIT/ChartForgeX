@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 0.8, false)]
     [InlineData(true, 0.8, true)]
     [InlineData(false, 1, true)]

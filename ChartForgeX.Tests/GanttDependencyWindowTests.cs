@@ -31,7 +31,7 @@ public sealed class GanttDependencyWindowTests {
         Assert.Single(chart.GanttDependencies);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 320)]
     [InlineData(true, 960)]
     public async Task ClippedTasksDoNotLeavePhantomDependencyInkInStaticBrowserOutput(bool dark, int width) {

@@ -58,7 +58,7 @@ public sealed class RadarCurveCompositionTests {
         }
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(320, false)]
     [InlineData(960, true)]
     public async Task MixedCurvesRemainVisibleInCompactAndWideStaticHosts(int width, bool dark) {

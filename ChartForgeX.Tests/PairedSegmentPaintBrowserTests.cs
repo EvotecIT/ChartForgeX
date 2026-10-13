@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Paired facts need their own marker, boundary ink or connected fill to become interactive paint.</summary>
 public sealed class PairedSegmentPaintBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.DifferenceArea, "opposite")]
     [InlineData(ChartSeriesKind.DifferenceArea, "opposite-reversed")]
     [InlineData(ChartSeriesKind.RangeBand, "opposite")]
@@ -91,7 +91,7 @@ public sealed class PairedSegmentPaintBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.DifferenceArea, "none")]
     [InlineData(ChartSeriesKind.RangeArea, "none")]
     [InlineData(ChartSeriesKind.RangeBand, "none")]

@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Aggregate marks report contributors separately from their stable rendered identity.</summary>
 public sealed class InteractiveSourceCollectionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.TrendLine, 2)]
     [InlineData(ChartSeriesKind.BoxPlot, 1)]
     public async Task SummaryMarksRetainDerivedFactsAndInteractiveIdentityForLargeRawInput(ChartSeriesKind kind, int marks) {
@@ -52,7 +52,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.TrendLine)]
     [InlineData(ChartSeriesKind.BoxPlot)]
     public async Task DerivedSummarySelectionSynchronizesSummariesWithoutSelectingRawObservations(ChartSeriesKind kind) {
@@ -112,7 +112,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false)]
     [InlineData(720, true)]
     public async Task MeanBinsRetainPopulatedAndEmptySourcesInHoverSelectionAndPeerSynchronization(int width, bool dark) {
@@ -186,7 +186,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task PieOtherPointAndItsLegendShareContributorIdentityWithoutSelectingAnotherSlice() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(640, 400).WithXLabels("A", "B", "C", "D")
@@ -217,7 +217,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task MergedTimelineRunReportsAllContributingBuckets() {
         if (!Enabled) return;
         var day = new DateTime(2026, 9, 25, 0, 0, 0, DateTimeKind.Utc);

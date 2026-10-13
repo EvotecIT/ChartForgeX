@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class SankeyOptionsBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 360)]
     [InlineData(false, 800)]

@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractivePolarHitBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false, false)]
     [InlineData(true, true, false)]
     [InlineData(false, true, true)]
@@ -50,7 +50,7 @@ public sealed class InteractivePolarHitBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task NestedPolarObservationInheritsAuthoredSeriesIdentity() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithDataLabels(false)
@@ -70,7 +70,7 @@ public sealed class InteractivePolarHitBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task NativeAnnotationTargetRetainsItsTooltipWithoutNearestPointGeometry() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithYAxisBounds(0, 100)

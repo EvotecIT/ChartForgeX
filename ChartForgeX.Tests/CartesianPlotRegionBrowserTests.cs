@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class CartesianPlotRegionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 360)]
     [InlineData(false, 800)]

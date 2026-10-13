@@ -195,7 +195,7 @@ public sealed class GanttTickIntervalTests {
         Assert.Equal(Enumerable.Range(hour, 5), ticks.Select(value => DateTime.FromOADate(value).Hour));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task WeeklyTicksStayReadableInNativeAndStaticBrowserOutput(bool dark, int width) {

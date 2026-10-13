@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Fit)]
     [InlineData(true, HtmlChartResponsiveLayout.Fit)]
     [InlineData(false, HtmlChartResponsiveLayout.Readable)]
@@ -47,7 +47,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartResponsiveLayout.Fit)]
     [InlineData(HtmlChartResponsiveLayout.Readable)]
     public async Task ProgrammaticViewportAndResetDiscardStaleGuidesAndReprojectTheSameObservation(HtmlChartResponsiveLayout layout) {
@@ -88,7 +88,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task MissingOrAmbiguousPlotMetadataRetainsNativeTooltipsWithoutGuessingAGuide(bool ambiguous) {

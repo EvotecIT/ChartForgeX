@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Default shared and point-legend readouts preserve each observation's independent measurements.</summary>
 public sealed class InteractiveSharedColorDimensionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 800)]
     public async Task DefaultSharedReadoutRetainsDimensionsZeroMissingSourceSortingAndPinning(bool bubble, int width) {
@@ -61,7 +61,7 @@ public sealed class InteractiveSharedColorDimensionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task PointLegendUsesReferencedColorAndLocalizedSizeWithoutInventingSeriesAggregates(bool bubble) {

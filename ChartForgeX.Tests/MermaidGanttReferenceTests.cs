@@ -9,7 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttReferenceTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task AuthoredMilestoneRangeProducesOrderedStaticMarks(bool dark, int width) {
@@ -120,7 +120,7 @@ public sealed class MermaidGanttReferenceTests {
         Assert.Equal(document.Tasks[0].RenderEnd.ToOADate(), document.ToChart().Series[0].Points[0].Y);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task ExcludedUntilEndpointKeepsTheBarBeforeItsDependent(bool dark, int width) {

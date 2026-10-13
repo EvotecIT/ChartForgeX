@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class CartesianFillObservationBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Area, false)]
     [InlineData(ChartSeriesKind.StepArea, false)]
     [InlineData(ChartSeriesKind.StackedArea, false)]
@@ -29,7 +29,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         Assert.NotEmpty(painted.GetProperty("fillInteriors").EnumerateArray());
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Area, false, false)]
     [InlineData(ChartSeriesKind.StepArea, false, false)]
     [InlineData(ChartSeriesKind.StackedArea, false, false)]
@@ -47,7 +47,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             $"scalar-disconnected-{kind}-{terminal}-{patternOnly}", patternOnly, captureScalarInk: true);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Area)]
     [InlineData(ChartSeriesKind.StepArea)]
     [InlineData(ChartSeriesKind.StackedArea)]
@@ -57,7 +57,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             $"scalar-disconnected-painted-{kind}", expectedReadout: "2");
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.RangeArea, false)]
     [InlineData(ChartSeriesKind.RangeBand, false)]
     [InlineData(ChartSeriesKind.DifferenceArea, false)]
@@ -71,7 +71,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 4, false, $"paired-disconnected-{kind}-{patternOnly}", patternOnly);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.RangeArea)]
     [InlineData(ChartSeriesKind.RangeBand)]
     [InlineData(ChartSeriesKind.DifferenceArea)]

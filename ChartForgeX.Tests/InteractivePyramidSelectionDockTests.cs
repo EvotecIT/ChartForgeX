@@ -10,7 +10,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractivePyramidSelectionDockTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, ChartOrientation.Vertical, HtmlChartResponsiveLayout.Fit, 340, 560)]
     [InlineData(true, ChartOrientation.Horizontal, HtmlChartResponsiveLayout.Fit, 340, 360)]
     [InlineData(true, ChartOrientation.Vertical, HtmlChartResponsiveLayout.Readable, 700, 460)]

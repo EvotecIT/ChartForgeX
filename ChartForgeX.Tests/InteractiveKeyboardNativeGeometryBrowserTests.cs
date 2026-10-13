@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 public sealed class InteractiveKeyboardNativeGeometryBrowserTests {
     private const string DataStop = "[data-cfx-keyboard-component='data'][tabindex='0']";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task RetainedNativeFactsRoveAndSelectWithoutMakingHiddenOrMutedFactsAvailable(bool compactDark) {

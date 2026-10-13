@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, "hidden")]
     [InlineData(true, "auto")]
     public async Task DisplayContentsOverflowDoesNotClipVisibleNativeReadout(bool shadow, string overflow) {
@@ -55,7 +55,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("x", false, 1)]
     [InlineData("y", false, .8)]
     [InlineData("x", true, .8)]

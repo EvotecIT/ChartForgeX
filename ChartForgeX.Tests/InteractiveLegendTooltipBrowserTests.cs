@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 public sealed class InteractiveLegendTooltipBrowserTests {
     private static readonly string[] InternalFields = { "Role", "Kind", "legend item", "Series" };
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LegendTooltip_FocusAndHover_SummarizesSeriesWithoutInternalFields(bool dark) {
@@ -29,7 +29,7 @@ public sealed class InteractiveLegendTooltipBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LegendTooltip_BarSeries_SummarizesTotal(bool dark) {

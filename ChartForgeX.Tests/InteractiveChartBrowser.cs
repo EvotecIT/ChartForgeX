@@ -10,12 +10,12 @@ namespace ChartForgeX.Tests;
 /// assert the runtime look (computed opacity, visibility, tooltip content) that string checks cannot observe.
 /// </summary>
 internal static class InteractiveChartBrowser {
-    /// <summary>Environment switch shared with the other EvotecIT browser suites; browser tests return early unless it is "1".</summary>
+    /// <summary>Environment switch shared with the other EvotecIT browser suites; optional browser tests are skipped unless it is "1".</summary>
     internal const string EnableVariable = "HFX_TEST_ENABLE_PLAYWRIGHT";
 
     internal const string PointTarget = "g[data-cfx-role=\"point\"]";
 
-    internal static bool Enabled => string.Equals(Environment.GetEnvironmentVariable(EnableVariable), "1", StringComparison.Ordinal);
+    internal static bool Enabled => BrowserTestPrerequisites.IsEnabled();
 
     internal static async Task<HtmlBrowserSession> OpenAsync(string html, int width = 700, int height = 460) {
         var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
@@ -73,8 +73,21 @@ internal static class InteractiveChartBrowser {
         await page.Mouse.MoveAsync(size.Width - 4, size.Height - 4, new MouseMoveOptions { Steps = 2 });
     }
 
-    internal static void AssertNoConsoleErrors(HtmlBrowserSession session) =>
+    internal static void AssertNoConsoleErrors(HtmlBrowserSession session) {
+        var captures = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            if (!Path.IsPathRooted(captures)) throw new InvalidOperationException("CFX_V2_CAPTURE_ROOT must be an explicit absolute output path.");
+            var output = Path.Combine(captures, "console");
+            Directory.CreateDirectory(output);
+            var evidence = new {
+                messages = session.ConsoleLog.Count(),
+                errors = session.ConsoleLog.Where(entry => entry.Type == HtmlConsoleMessageType.Error).Select(entry => entry.Text).ToArray()
+            };
+            File.WriteAllText(Path.Combine(output, Guid.NewGuid().ToString("N") + ".json"),
+                System.Text.Json.JsonSerializer.Serialize(evidence) + "\n");
+        }
         Xunit.Assert.DoesNotContain(session.ConsoleLog, entry => entry.Type == HtmlConsoleMessageType.Error);
+    }
 
     private static Chart Frame(bool dark, string title, string subtitle) => Chart.Create()
         .WithSize(596, 338)

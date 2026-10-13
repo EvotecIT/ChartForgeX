@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidXYOrientationBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("bar", 900, false)]
     [InlineData("bar", 360, true)]
     [InlineData("line", 900, true)]

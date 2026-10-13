@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveResetControlBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ResetControl_SelectionOnly_ShowsUntilDeselectedClearedOrReset(bool dark) {
@@ -41,7 +41,7 @@ public sealed class InteractiveResetControlBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ResetControl_SynchronizedSelectionOnly_TracksBothChartsWithoutCompareMarkers() {
         if (!Enabled) return;
         var html = new[] { StatusLines(false), StatusLines(false) }.ToInteractiveHtmlDashboardPage(options => {
@@ -65,7 +65,7 @@ public sealed class InteractiveResetControlBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ResetControl_ViewChanges_ShowsContextualButtonOnlyUntilReset(bool dark) {
@@ -102,7 +102,7 @@ public sealed class InteractiveResetControlBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ResetControl_CompactReportReview_HasNoToolbarAndStaysInView(bool dark) {
@@ -124,7 +124,7 @@ public sealed class InteractiveResetControlBrowserTests {
         await ResetAsync(page);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 380, HtmlChartResponsiveLayout.Readable)]
     [InlineData(false, 380, HtmlChartResponsiveLayout.Fit)]
     [InlineData(false, 900, HtmlChartResponsiveLayout.Readable)]

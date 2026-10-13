@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "target", false)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "target", true)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "ancestor", false)]
@@ -66,7 +66,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "inner", false)]
     [InlineData(HtmlChartTooltipAnchor.Node, "outer", true)]
     [InlineData(HtmlChartTooltipAnchor.Chart, "inner", false)]
@@ -93,7 +93,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Node, false)]
     [InlineData(HtmlChartTooltipAnchor.Node, true)]
     [InlineData(HtmlChartTooltipAnchor.Chart, false)]

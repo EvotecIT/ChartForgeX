@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveRelationshipIdentityBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Tree, false, 360)]
     [InlineData(ChartSeriesKind.Tree, true, 360)]
     [InlineData(ChartSeriesKind.Tree, false, 800)]
@@ -68,7 +68,7 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ParallelFlowsAndRenamedReorderedNodesEmitTheirAuthoredIds() {
         if (!Enabled) return;
         var nodes = new[] { new ChartNode("output", "Support"), new ChartNode("input", "Renamed support") };
@@ -98,7 +98,7 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
         await Capture(page, "parallel-flow-identities", html); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Tree, false, 800)]
     [InlineData(ChartSeriesKind.Tree, true, 360)]
     [InlineData(ChartSeriesKind.Sunburst, false, 800)]

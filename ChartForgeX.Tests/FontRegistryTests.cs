@@ -10,14 +10,14 @@ namespace ChartForgeX.Tests;
 /// <summary>
 /// Registered font files are named by family in chart themes, SVG text, VisualCanvas themes, and
 /// <see cref="FontSpec"/> text. The repository ships no font, so the cases register an installed
-/// Windows font file under a family name no host has, and return early where that file is absent.
+/// Windows font file under a family name no host has, and report skips where that file is absent.
 /// The registry is process-wide, so these cases run alone.
 /// </summary>
 [Collection(nameof(FontRegistryCollection))]
 public sealed class FontRegistryTests : IDisposable {
     private const string Family = "CFX Registered Serif";
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void ChartTitleUsesTheRequestedNumericWeightWithoutChangingTheStyle() {
         if (!TryGetGeorgia(out var regular, out var bold)) return;
         FontRegistry.Register(Family, regular, weight: 600);
@@ -33,7 +33,7 @@ public sealed class FontRegistryTests : IDisposable {
         Assert.Null(chart.Options.TitleStyle.FontWeight);
     }
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void GridTitleUsesTheRequestedNumericFaceFromItsTheme() {
         if (!TryGetGeorgia(out var regular,out var bold)) return;
         FontRegistry.Register(Family,regular,weight:600); FontRegistry.Register(Family,bold,weight:700);
@@ -45,7 +45,7 @@ public sealed class FontRegistryTests : IDisposable {
         Assert.Null(grid.TitleStyle.FontFamily);
     }
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void UnpairedAliasPreservesAnEarlierThemesEmphasisPair() {
         if (!TryGetGeorgia(out var regularPath, out _)) return;
         FontRegistry.Register(Family, regularPath);
@@ -61,7 +61,7 @@ public sealed class FontRegistryTests : IDisposable {
         }
     }
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void PortableDrawingKeepsStackPrecedenceAndUsesActualGlyphAdvances() {
         if (!TryGetGeorgia(out var path, out _)) return;
         FontRegistry.Register(Family, path);
@@ -79,7 +79,7 @@ public sealed class FontRegistryTests : IDisposable {
         }
     }
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void PortableCanvasMetricsIgnoreInstalledFamiliesAndUseRegisteredFaces() {
         const string text = "Wide canvas title WWW";
         var defaultMode = new VisualCanvasTheme().TextMeasurementMode;
@@ -96,7 +96,7 @@ public sealed class FontRegistryTests : IDisposable {
 
     public void Dispose() => FontRegistry.Clear();
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void RegisteredFamilyDrivesChartThemesAndTheirBoldFace() {
         if (!TryGetGeorgia(out var regular, out var bold)) return;
         Assert.Null(InstalledFontCatalog.Find(Family, 400, false));
@@ -112,7 +112,7 @@ public sealed class FontRegistryTests : IDisposable {
         Assert.Equal(BarChart("Georgia, serif").ToPng(), chart.ToPng());
     }
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void RegisteredFamilyDrivesSvgTextCanvasAndComposition() {
         if (!TryGetGeorgia(out var regular, out var bold)) return;
         FontRegistry.Register(Family, regular);
@@ -131,7 +131,7 @@ public sealed class FontRegistryTests : IDisposable {
         Assert.Same(TrueTypeFont.TryLoadFromPath(Path.GetFullPath(bold)), TypographyFontResolver.ResolveFace(style.Font).Font!.Root);
     }
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void RegisteredFacesTakePrecedenceOverInstalledOnesAndGenericNames() {
         if (!TryGetGeorgia(out var regular, out _) || InstalledFontCatalog.Find("Arial", 400, false) == null) return;
         FontRegistry.Register("Arial", regular);
@@ -148,7 +148,7 @@ public sealed class FontRegistryTests : IDisposable {
         Assert.Empty(FontRegistry.Families);
     }
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void FilesAndDirectoriesRegisterUnderTheirOwnNames() {
         if (!TryGetGeorgia(out var regular, out var bold)) return;
         var folder = Path.Combine(Path.GetTempPath(), "cfx-font-registry-" + Guid.NewGuid().ToString("N"));
@@ -170,7 +170,7 @@ public sealed class FontRegistryTests : IDisposable {
         Assert.Throws<ArgumentOutOfRangeException>(() => FontRegistry.Register(Family, regular, weight: 0));
     }
 
-    [Fact]
+    [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void RegistrationIsSafeWhileTextResolves() {
         if (!TryGetGeorgia(out var regular, out var bold)) return;
         var errors = 0;

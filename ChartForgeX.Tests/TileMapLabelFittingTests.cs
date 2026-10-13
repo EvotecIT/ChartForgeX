@@ -32,9 +32,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
         var labels = scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "tile-map-label").ToDictionary(node => node.Id!);
         Assert.Equal(51, sources.Length);
         Assert.NotEmpty(labels);
-        if (width == 800) Assert.Equal(51, labels.Count);
-        else Assert.True(labels.Count < 51, "Compact codes which cannot fit at eight pixels must remain omitted.");
-        var minimumStyle = new TextStyle { Font = context.Font, FontSize = 8 };
+        var minimumStyle = new TextStyle { Font = context.Font, FontSize = 10 };
         var measure = new VisualSceneBuilder(new VisualSize(width, height), context.Font);
         foreach (var source in sources) {
             var code = source.Metadata["data-cfx-region"];
@@ -48,7 +46,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
                 continue;
             }
             Assert.Equal(code, string.Join("\n", label.Text.Lines.Select(line => line.Text)));
-            Assert.InRange(label.Text.Size, 8, context.Theme.Typography.AxisSize);
+            Assert.InRange(label.Text.Size, 10, context.Theme.Typography.AxisSize);
             Assert.True(FitsHex(tile, label.Text.Metrics, chart.Options.MapRegionStrokeWidth), code + " must clear every slanted edge and its stroke.");
             Assert.Equal(tile.Left + tile.Width / 2, label.X, 6);
             Assert.Equal(tile.Top + (tile.Height - label.Text.Metrics.Height) / 2, label.Baseline - label.Text.Ascent, 6);
@@ -57,6 +55,21 @@ public sealed class TileMapLabelFittingTests : IDisposable {
         var svgLabels = svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "tile-map-label").ToArray();
         Assert.Equal(labels.Count, svgLabels.Length);
         Assert.All(svgLabels, node => Assert.Equal(labels[node.Attribute("data-cfx-source-id")!.Value].Text.Lines[0].Text, node.Value));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Fact]
+    public void CatalogThumbnailCodesKeepTheirRequestedSizeBeforeCssScaling() {
+        var chart = V2GalleryModels.Create(ChartSeriesKind.TileMap, "wide", VisualThemeMode.Light);
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 280), 14),
+            VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 13.5)),
+            frame: new VisualFrame("", "", showLegend: false), font: FontSpec.FromFamily(Family));
+        var prepared = chart.Prepare(context);
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "tile-map-label").ToArray();
+        Assert.Equal(51, labels.Length);
+        Assert.All(labels, label => Assert.Equal(13.5, label.Text.Size));
+        Assert.Equal(51, prepared.Regions.Count(region => region.Role == "tile-map-region"));
+        Assert.Equal(51, prepared.Regions.Count(region => region.Role == "tile-map-label"));
         Assert.NotEmpty(prepared.ToPng());
     }
 
@@ -101,6 +114,21 @@ public sealed class TileMapLabelFittingTests : IDisposable {
         Assert.Equal(6, chart.Options.TickLabelStyle.FontSize);
         var svg = XDocument.Parse(VisualSceneSvgRenderer.Render(scene));
         Assert.Contains(svg.Descendants(), node => node.Name.LocalName == "text" && (string?)node.Attribute("fill") == ink.ToCss() && node.Value == "OK");
+        Assert.NotEmpty(VisualSceneRasterRenderer.Render(scene).Pixels);
+    }
+
+    [Fact]
+    public void OversizedAuthoredCodesFitWithoutCrossingTheReadableFloorOrChangingTheRequest() {
+        var chart = Chart.Create().AddTileMap("Samples", new ChartTileMapDefinition("large", "Large", new[] {
+            new ChartTileMapRegion("OK", "Other name", 0, 0) }), new[] { new ChartRegionMapItem("OK", 10) })
+            .ConfigureMapColorDimension(options => options.ShowLegend = false).WithMapSurface(false);
+        chart.Options.TickLabelStyle.FontSize = 40;
+        var scene = Compile(chart, 30, 30);
+        var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "tile-map-label");
+        Assert.InRange(label.Text.Size, 10, 39.99);
+        Assert.Equal("OK", Assert.Single(label.Text.Lines).Text);
+        Assert.Equal(40, chart.Options.TickLabelStyle.FontSize);
+        Assert.DoesNotContain(scene.Diagnostics, diagnostic => diagnostic.Code == "map.label-overflow");
         Assert.NotEmpty(VisualSceneRasterRenderer.Render(scene).Pixels);
     }
 

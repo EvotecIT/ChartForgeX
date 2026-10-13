@@ -145,7 +145,7 @@ public sealed class MermaidConfigurationBoundaryTests {
         Assert.True(Assert.Single(rendered.Document.Configuration.Settings).IsString);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("flowchart LR\nA --> B")]
     [InlineData("pie\n\"Success\": 8\n\"Failure\": 2")]
     [InlineData("packet-beta\n0-7: \"Header\"")]

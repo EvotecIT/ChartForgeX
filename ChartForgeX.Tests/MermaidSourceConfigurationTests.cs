@@ -24,7 +24,7 @@ public sealed class MermaidSourceConfigurationTests {
         Assert.NotEmpty(rendered.Artifact.ToPng());
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("dark", 320)]
     [InlineData("default", 960)]
     public async Task ConfiguredSourceRemainsReadableInStaticHosts(string theme, int width) {

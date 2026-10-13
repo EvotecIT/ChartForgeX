@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Checks paired native readouts, logical source selection and shared-X rows through the HTML adapter.</summary>
 public sealed class DifferenceAreaBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false, HtmlChartTooltipMode.Single, false)]
     [InlineData(true, false, HtmlChartTooltipMode.Single, false)]
     [InlineData(false, true, HtmlChartTooltipMode.Single, false)]
@@ -67,7 +67,7 @@ public sealed class DifferenceAreaBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task TransparentDirectionDoesNotBorrowTheOtherDirectionsPaint() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(600, 380).AddDifferenceArea("Pair", new[] {

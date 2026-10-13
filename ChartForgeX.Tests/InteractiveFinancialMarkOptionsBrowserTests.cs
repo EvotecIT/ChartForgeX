@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveFinancialMarkOptionsBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Candlestick, 360, false)]
     [InlineData(ChartSeriesKind.Candlestick, 360, true)]
     [InlineData(ChartSeriesKind.Candlestick, 800, false)]
@@ -22,7 +22,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
     public Task FinancialMarksRetainPointerKeyboardSelectionLegendAndSourceFacts(ChartSeriesKind kind, int width, bool dark) =>
         ExerciseFinancialMarks(kind, width, dark, dashed: false);
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Candlestick, 360, true)]
     [InlineData(ChartSeriesKind.Ohlc, 800, false)]
     public Task DashedFinancialMarksRetainPointerKeyboardSelectionLegendAndSourceFacts(ChartSeriesKind kind, int width, bool dark) =>
@@ -96,7 +96,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task HollowCandleFragmentRetainsTheHostBackdropAndInteriorTarget(bool dark) {
@@ -118,7 +118,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Candlestick, HtmlChartTooltipMode.Single)]
     [InlineData(ChartSeriesKind.Candlestick, HtmlChartTooltipMode.SharedX)]
     [InlineData(ChartSeriesKind.Ohlc, HtmlChartTooltipMode.Single)]
@@ -155,7 +155,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Candlestick, false)]
     [InlineData(ChartSeriesKind.Ohlc, false)]
     [InlineData(ChartSeriesKind.Candlestick, true)]

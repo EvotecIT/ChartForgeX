@@ -168,8 +168,11 @@ internal static class VisualGaugeCompiler {
             var down = Math.Sin(angle); var sideways = Math.Abs(Math.Cos(angle));
             var depth = down > 0 && sideways > .000001
                 ? Math.Min((radius - stroke) * down, half * down / sideways) : 0;
+            // Browser SVG can use the face's Windows ascent even when the native painter uses
+            // its shorter horizontal-header ascent. Move the shared row by that measured extent.
+            var ascenderOverflow = Math.Max(0, builder.TextAscentEnvelope(style) - builder.TextAscent(style));
             return cy + Math.Max(stroke / 3 + gap / 2,
-                depth + Math.Max(1, context.Theme.SeriesStrokeWidth) / 2 + gap / 2);
+                depth + Math.Max(1, context.Theme.SeriesStrokeWidth) / 2 + gap / 2) + ascenderOverflow;
         }
         bool Fits(TextStyle style) {
             var start = ClearTop(value, style, radius * 1.4);

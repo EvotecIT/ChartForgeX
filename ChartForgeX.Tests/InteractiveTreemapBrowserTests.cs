@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTreemapBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("wide", false, 800)]
     [InlineData("wide", true, 800)]
     [InlineData("wide", false, 360)]
@@ -73,7 +73,7 @@ public sealed class InteractiveTreemapBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task RenamedReorderedItemsKeepAuthoredHostEventIdentity(bool dark) {
@@ -91,7 +91,7 @@ public sealed class InteractiveTreemapBrowserTests {
         await Capture(chart, session.Page, "treemap-reordered-" + (dark ? "dark" : "light"), html); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task MissingColorSingletonUsesNoDataPaintWithoutZeroScaleReadout(bool dark) {

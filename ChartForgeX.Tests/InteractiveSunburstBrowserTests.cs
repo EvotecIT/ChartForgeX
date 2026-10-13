@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveSunburstBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, false)]
     [InlineData(360, true, false)]
     [InlineData(800, false, false)]

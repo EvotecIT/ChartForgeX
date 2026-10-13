@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class RadialLabelEligibilityBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Pie, true)]
     [InlineData(ChartSeriesKind.Pie, false)]
     [InlineData(ChartSeriesKind.Donut, true)]
@@ -80,7 +80,7 @@ public sealed class RadialLabelEligibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.RadialBar, "display")]
     [InlineData(ChartSeriesKind.RadialBar, "visibility")]
     [InlineData(ChartSeriesKind.RadialBar, "opacity")]
@@ -126,7 +126,7 @@ public sealed class RadialLabelEligibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, "zero")]
     [InlineData(false, "zero")]
     [InlineData(true, "precision-collapse")]

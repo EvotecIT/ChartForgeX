@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class IntervalPointLegendBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -75,7 +75,7 @@ public sealed class IntervalPointLegendBrowserTests {
         }
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ComparisonPointLegendsRetainBothEndpointsOrUncertaintyBounds(bool errorBar) {

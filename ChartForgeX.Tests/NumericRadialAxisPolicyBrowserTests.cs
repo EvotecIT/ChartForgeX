@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Observed browser text and native raster use the same oriented and density-aware prepared scene.</summary>
 public sealed class NumericRadialAxisPolicyBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, true, true, false, false)]
     [InlineData(true, false, false, true, false)]
     [InlineData(false, true, false, true, false)]

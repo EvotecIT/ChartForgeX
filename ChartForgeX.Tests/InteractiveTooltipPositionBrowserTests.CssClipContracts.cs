@@ -25,7 +25,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         });
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("inline", true)]
     [InlineData("contents", true)]
     [InlineData("block", false)]
@@ -51,7 +51,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("hidden", true)]
     [InlineData("clip", false)]
     [InlineData("auto", true)]
@@ -84,7 +84,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task KeyboardRevealsSmoothNativeStageBeforeAcquiringReadout() {
         if (!Enabled) return;
         await using var session = await OpenAsync(CssClipChart(true, false, true), 390, 844);
@@ -100,7 +100,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("paint")]
     [InlineData("content")]
     [InlineData("strict")]
@@ -132,7 +132,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("absolute", false)]
     [InlineData("fixed", false)]
     [InlineData("absolute", true)]
@@ -159,7 +159,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task SlottedChartScrollUsesNativeComposedClipAndReleasesWatchers(bool closed) {
@@ -240,7 +240,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task NativeMobileVisualViewportDismissesPinAndReleasesListeners() {
         if (!Enabled) return;
         await using var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {

@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer)]
     [InlineData(HtmlChartTooltipAnchor.Node)]
     [InlineData(HtmlChartTooltipAnchor.Chart)]
@@ -35,7 +35,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer)]
     [InlineData(HtmlChartTooltipAnchor.Node)]
     [InlineData(HtmlChartTooltipAnchor.Chart)]
@@ -74,7 +74,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Node)]
     [InlineData(HtmlChartTooltipAnchor.Chart)]
     public async Task PinnedReadoutFollowsContainedAndPageScrollResizeAndZoom(HtmlChartTooltipAnchor anchor) {
@@ -107,7 +107,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer)]
     [InlineData(HtmlChartTooltipAnchor.Node)]
     [InlineData(HtmlChartTooltipAnchor.Chart)]
@@ -151,7 +151,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ExactLineSummaryUsesItsCanonicalNativeGeometry() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(800, 440).WithTheme(ChartTheme.GraphiteLight())
@@ -172,7 +172,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task MovingNearAContainingHostEdgeKeepsTheReadoutSizeStable() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(800, 440).WithTheme(ChartTheme.GraphiteLight())
@@ -194,7 +194,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task MultipleDashboardReadoutsShareWatchersUntilTheLastOneCloses() {
         if (!Enabled) return;
         await using var session = await OpenAsync("<html><body></body></html>", 950, 980);
@@ -238,7 +238,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         }
         """);
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("leave")]
     [InlineData("root-removed")]
     [InlineData("target-removed")]

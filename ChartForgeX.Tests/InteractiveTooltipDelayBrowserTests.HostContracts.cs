@@ -6,7 +6,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("nearest", 950)]
     [InlineData("distance", 340)]
     public async Task SparseShadowPlotKeepsOneDeadlineAndTheLatestPointer(string range, int width) {
@@ -43,7 +43,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ShadowMappedCaptionsAndLegendsRetainTheirDelayedNativeIdentity(bool legend) {
@@ -76,7 +76,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("default-zero")]
     [InlineData("keyboard")]
     [InlineData("pin")]

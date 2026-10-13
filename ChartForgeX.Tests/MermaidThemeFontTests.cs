@@ -115,7 +115,7 @@ public sealed class MermaidThemeFontTests {
         Assert.Equal("Georgia, serif", Assert.IsType<TopologyChart>(result.Artifact!.Model).Theme!.FontFamily);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("dark", 320)]
     [InlineData("default", 960)]
     public async Task NativeVariableFontIsObservedInCompactAndWideBrowserHosts(string theme, int width) {

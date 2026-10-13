@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Exercises native angular targets through pointer readouts, keyboard selection and reset.</summary>
 public sealed class RadialAngularReversalBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Radar, false, false)]
     [InlineData(ChartSeriesKind.Radar, false, true)]
     [InlineData(ChartSeriesKind.Radar, true, false)]

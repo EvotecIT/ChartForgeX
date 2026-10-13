@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveDerivedLegendBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, false)]
     [InlineData(720, true, false)]
     [InlineData(360, false, true)]
@@ -60,7 +60,7 @@ public sealed class InteractiveDerivedLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -91,7 +91,7 @@ public sealed class InteractiveDerivedLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task OtherLegendControlsMatchContributorSetsAcrossGroupingPolicies() {
         if (!Enabled) return;
         Chart Pie(int maximum) {

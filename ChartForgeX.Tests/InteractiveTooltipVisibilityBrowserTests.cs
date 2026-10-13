@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTooltipVisibilityBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("display:none", false, 700, false, false)]
     [InlineData("visibility:hidden", true, 340, false, false)]
     [InlineData("opacity:0", false, 700, false, false)]
@@ -49,7 +49,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 700)]
     [InlineData(true, 340)]
     public async Task AuthoredBarHatchRetainsSharedObservationUntilWholePointIsHidden(bool dark, int width) {
@@ -80,7 +80,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 700)]
     [InlineData(true, 340)]
     public async Task DecorativeSvgRetainsSharedPointerTooltipsForVisuallyPaintedObservations(bool dark, int width) {
@@ -99,7 +99,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false, 700)]
     [InlineData(true, true, 340)]
     public async Task VisiblePrimaryMarksOverrideInheritedHiddenVisibility(bool wrapMark, bool dark, int width) {
@@ -133,7 +133,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task VisibleLinePathOverridesInheritedHiddenSeriesVisibility() {
         if (!Enabled) return;
         var chart = Frame(true, "Restored connected surface").WithLineMarkers(ChartLineMarkerMode.All)
@@ -158,7 +158,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 700)]
     [InlineData(true, 340)]
     public async Task HiddenLineMarkersRetainVisibleSeriesPaintButHiddenPathsDoNotUseLegendPaint(bool dark, int width) {
@@ -187,7 +187,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(24)]
     [InlineData(240)]
     public async Task SharedTooltipResolvesStylesOnlyForMatchingXCandidates(int observations) {

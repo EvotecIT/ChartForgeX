@@ -30,7 +30,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         return chart;
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 800)]
     [InlineData(true, 800)]
     [InlineData(false, 360)]
@@ -79,7 +79,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task SyncedLeafKeysResolveIDsAcrossReorderAndRenameAndSkipAbsentItems(bool dark) {
@@ -113,7 +113,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task LeafKeysHonorTheLegendToggleFeatureGate() {
         if (!Enabled) return;
         var html = Model(false).WithSize(540, 350).ToInteractiveHtmlPage(options => options.Interaction.Features =
@@ -125,7 +125,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LeafKeysKeepZeroAndTinyRawValuesWithoutInventingPaintedArea(bool dark) {
@@ -165,7 +165,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task LeafKeysOutsideTheNativeLegendBudgetRemainDescriptiveWithoutKeyboardTargets() {
         if (!Enabled) return;
         var chart = Model(false).WithSize(360, 360); chart.Options.LegendMaximumHeightFraction = .03;
@@ -177,7 +177,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 800)]
     public async Task HostPaletteChangesKeepLeafTilesKeysAndTooltipSwatchesConsistent(bool dark, int width) {

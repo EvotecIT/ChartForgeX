@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Series fill availability follows the native surface at an authored observation.</summary>
 public sealed partial class CartesianFillObservationBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartStepPosition.Start, false, false)]
     [InlineData(ChartStepPosition.End, false, false)]
     [InlineData(ChartStepPosition.Start, true, true)]
@@ -33,7 +33,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             $"difference-{position}-{negative}-{reversedSecondary}");
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.RangeArea, ChartStepPosition.Start)]
     [InlineData(ChartSeriesKind.RangeArea, ChartStepPosition.End)]
     [InlineData(ChartSeriesKind.RangeBand, ChartStepPosition.Start)]
@@ -47,7 +47,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, position == ChartStepPosition.Start ? 0 : 2, false, $"{kind}-{position}-disjoint");
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Area, ChartStepPosition.Start)]
     [InlineData(ChartSeriesKind.Area, ChartStepPosition.End)]
     [InlineData(ChartSeriesKind.StepArea, ChartStepPosition.Start)]
@@ -66,7 +66,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, position == ChartStepPosition.Start ? 0 : 2, false, $"{kind}-{position}-stem");
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ScalarLinearPeakKeepsItsPaintedObservation() {
         if (!Enabled) return;
         var chart = Frame().AddArea("Observed", new[] {
@@ -77,7 +77,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 1, true, "scalar-linear-peak", expectedReadout: "8");
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartInterpolation.Linear, true, false)]
     [InlineData(ChartInterpolation.Linear, false, true)]
     [InlineData(ChartInterpolation.Smooth, false, false)]
@@ -95,7 +95,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             expectedReadout: negative ? "-8" : "8", captureScalarInk: interpolation == ChartInterpolation.Smooth);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task StackedPeakKeepsItsRawValueAboveAnotherSeries() {
         if (!Enabled) return;
         var chart = Frame().WithYAxisBounds(0, 12)
@@ -108,7 +108,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 1, true, "scalar-stacked-peak", seriesIndex: 1, expectedReadout: "8");
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ScalarPeakOnTheNativeClipBoundaryRemainsAvailable() {
         if (!Enabled) return;
         var chart = Frame().WithYAxisBounds(0, 8).AddArea("Observed", new[] {
@@ -119,7 +119,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 1, true, "scalar-clipped-peak", expectedReadout: "8");
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ScalarPeakOutsideTheNativeClipCannotUseItsPartialFootprint() {
         if (!Enabled) return;
         var chart = Frame().WithYAxisBounds(0, 8).AddArea("Observed", new[] {
@@ -130,7 +130,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 1, false, "scalar-outside-clip-peak");
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(7.95, true)]
     [InlineData(7.8, false)]
     public async Task ScalarStepFillUsesOnlyTheOriginalLocalFootprint(double heldValue, bool available) {
@@ -142,7 +142,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 0, available, $"scalar-local-step-{heldValue}", expectedReadout: available ? "8" : null);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.RangeArea, false, false)]
     [InlineData(ChartSeriesKind.RangeBand, false, false)]
     [InlineData(ChartSeriesKind.RangeArea, true, false)]
@@ -155,7 +155,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 0, true, $"{kind}-partial-{clipped}-{reversedSecondary}");
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartInterpolation.Linear)]
     [InlineData(ChartInterpolation.Step)]
     public async Task NativeThreeDecimalThinRangeRemainsAvailable(ChartInterpolation interpolation) {
@@ -168,7 +168,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 0, true, $"thin-{interpolation}");
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.RangeArea, false)]
     [InlineData(ChartSeriesKind.RangeArea, true)]
     [InlineData(ChartSeriesKind.StepArea, false)]
@@ -185,7 +185,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 0, overlap, $"{kind}-hatch-{overlap}", patternOnly: true);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task TiedRangeHoldCannotPaintThroughItsHorizontalRetrace(bool patternOnly) {
@@ -198,7 +198,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 0, false, $"range-tied-hold-{patternOnly}", patternOnly);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task VisibleHatchKeepsItsExtentWhenTheBaseFillIsNotDisplayed() {
         if (!Enabled) return;
         var chart = Range(ChartSeriesKind.RangeArea, new[] {
@@ -209,7 +209,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await AssertAvailabilityAsync(chart, 0, true, "hatch-hidden-base", patternOnly: true, hideBase: true);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ExplicitEnvelopeStrokeRetainsTheScalarEndpointStem() {
         if (!Enabled) return;
         var chart = Frame().AddStepArea("Observed", new[] { new ChartPoint(0, 8), new ChartPoint(1, 2), new ChartPoint(2, 2) });

@@ -7,7 +7,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidConfigurationAppearanceBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(320)]
     [InlineData(960)]
     public async Task UnusableScopedAppearanceUsesTheGlobalDarkThemeInStaticHosts(int width) {

@@ -75,7 +75,7 @@ public sealed class InteractiveTopologyPresentationTests {
         Assert.Equal("delivery", options.ActiveScenarioId);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(1024, false, false)]
     [InlineData(1024, false, true)]
     [InlineData(390, true, true)]
@@ -162,7 +162,7 @@ public sealed class InteractiveTopologyPresentationTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("pointercancel")]
     [InlineData("lostpointercapture")]
     [InlineData("blur")]

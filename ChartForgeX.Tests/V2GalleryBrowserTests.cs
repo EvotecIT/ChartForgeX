@@ -6,14 +6,11 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Opt-in rendered-catalog contracts using the existing HtmlTinkerX-owned browser fixture.</summary>
 public sealed class V2GalleryBrowserTests {
-    [Theory]
+    [BrowserTheory(RequiresGallery = true)]
     [InlineData(1200, 900)]
     [InlineData(390, 844)]
     public async Task InlineCatalog_PreservesScopedClipsFontsAndCompactLayout(int width, int height) {
-        var url = Environment.GetEnvironmentVariable("CFX_V2_GALLERY_URL");
-        if (!Enabled || string.IsNullOrWhiteSpace(url)) return;
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !uri.IsLoopback || uri.Scheme != Uri.UriSchemeHttp)
-            throw new InvalidOperationException("CFX_V2_GALLERY_URL must be a task-owned loopback HTTP URL.");
+        var url = BrowserTestPrerequisites.RequireGalleryUrl();
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>", width, height);
         var page = session.Page;
         await page.GotoAsync(url);
@@ -55,14 +52,17 @@ public sealed class V2GalleryBrowserTests {
                 return defects;
             }
             """);
-        Assert.Empty(defects);
-        Assert.True(await page.Locator(".tile").CountAsync() >= 4);
-        AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");
         if (!string.IsNullOrWhiteSpace(captures)) {
+            if (!Path.IsPathRooted(captures)) throw new InvalidOperationException("CFX_V2_CAPTURE_ROOT must be an explicit absolute output path.");
             Directory.CreateDirectory(captures);
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "catalog-" + width + ".png") });
+            await File.WriteAllTextAsync(Path.Combine(captures, "catalog-" + width + ".json"),
+                System.Text.Json.JsonSerializer.Serialize(new { width, height, defects }) + "\n");
         }
+        AssertNoConsoleErrors(session);
+        Assert.Empty(defects);
+        Assert.True(await page.Locator(".tile").CountAsync() >= 4);
 
         await page.Locator("[data-set-theme=dark]").ClickAsync();
         Assert.Equal("dark", await page.Locator("html").GetAttributeAsync("data-theme"));

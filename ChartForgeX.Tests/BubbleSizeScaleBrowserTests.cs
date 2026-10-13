@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects native browser hits and readable raw-size facts when an authored domain caps bubble geometry.</summary>
 public sealed class BubbleSizeScaleBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]

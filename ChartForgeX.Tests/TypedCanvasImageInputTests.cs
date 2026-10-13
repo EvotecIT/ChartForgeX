@@ -108,7 +108,7 @@ public sealed class TypedCanvasImageInputTests {
         Assert.Empty(canvas.Layers);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(VisualCanvasImageFit.Stretch)]
     [InlineData(VisualCanvasImageFit.Contain)]
     [InlineData(VisualCanvasImageFit.Cover)]

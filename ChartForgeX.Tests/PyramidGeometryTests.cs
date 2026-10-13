@@ -224,7 +224,7 @@ public sealed class PyramidGeometryTests {
         }
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ReversedPyramidUsesAuthoredSourceIdentityForRealKeyboardSelection(bool dark) {

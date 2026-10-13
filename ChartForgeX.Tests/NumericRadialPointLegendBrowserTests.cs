@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class NumericRadialPointLegendBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, false)]
     [InlineData(false, true)]
     public async Task FormattedCategoryLegendRetainsPhysicalSummaryAndKeyboardToggle(bool bars, bool dark) {

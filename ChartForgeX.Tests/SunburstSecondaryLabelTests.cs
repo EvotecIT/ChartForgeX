@@ -108,7 +108,10 @@ public sealed class SunburstSecondaryLabelTests {
             if (owner == null) continue;
             if (node is VisualSceneSlice or VisualScenePath && node.Role == "sunburst-segment-mark") marks.Add(owner.Id!, (VisualSceneMark)node);
             if (node is not VisualSceneText text || text.Role is not ("sunburst-label" or "sunburst-secondary-label")) continue;
-            if (text.Role == "sunburst-secondary-label") secondaryCount++;
+            if (text.Role == "sunburst-secondary-label") {
+                secondaryCount++;
+                Assert.True(text.Text.Size >= 10, "Inherited secondary captions must remain readable at native size.");
+            }
             var contours = marks[owner.Id!] is VisualScenePath path ? VisualSceneGeometry.Flatten(path, 8) : VisualSceneGeometry.Flatten((VisualSceneSlice)marks[owner.Id!], 8);
             var rotation = owners.Select(group => group.Rotation).FirstOrDefault(value => value.HasValue);
             if (rotation.HasValue) {
@@ -144,6 +147,9 @@ public sealed class SunburstSecondaryLabelTests {
         chart.Options.Sunburst.SecondaryLabelStyle.WithFontSize(25).WithColor("#ff00ff");
         chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.WithColor("#ff00ff"));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        chart.Options.Sunburst.SecondaryLabelStyle.WithFontSize(6);
+        var explicitSmall = Prepare(chart).Scene.Nodes.OfType<VisualSceneText>().Single(label => label.Id == "series-0-node-secondary-label-0");
+        Assert.Equal(6, explicitSmall.Text.Size);
     }
 
     [Fact]

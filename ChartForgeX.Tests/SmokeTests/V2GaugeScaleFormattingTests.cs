@@ -211,9 +211,12 @@ public sealed class V2GaugeScaleFormattingTests {
         var obstacle = new LabelMarkShape(new[] { new List<ChartForgeX.Primitives.ChartPoint> { line.Start, line.End } }, false, line.StrokeWidth);
         foreach (var role in new[] { "gauge-label", "gauge-title" }) {
             var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == role);
-            var bounds = new ChartForgeX.Primitives.ChartRect(text.Text.Lines.Min(text.LineLeft), text.Baseline - text.Text.Ascent,
-                text.Text.Metrics.Width, text.Text.Metrics.Height);
-            Assert.False(obstacle.Intersects(bounds), role + " must clear the actual needle stroke.");
+            // Native SVG hosts can use the same font's larger Windows ascender. Reserve
+            // that declared extent as well as the raster row so this proof is portable.
+            var ascent = new VisualSceneTextFace(text.Text.Style).AscentEnvelope(text.Text.Size);
+            var bounds = new ChartForgeX.Primitives.ChartRect(text.Text.Lines.Min(text.LineLeft), text.Baseline - ascent,
+                text.Text.Metrics.Width, text.Text.Metrics.Height + Math.Max(0, ascent - text.Text.Ascent));
+            Assert.False(obstacle.Intersects(bounds), role + " must clear the needle in native and browser text metrics.");
             Assert.True(text.Text.Size >= context.Theme.Typography.DataLabelSize);
             Assert.Equal(Assert.Single(prepared.Regions, region => region.Role == role).Label, string.Join("\n", text.Text.Lines.Select(item => item.Text)));
         }

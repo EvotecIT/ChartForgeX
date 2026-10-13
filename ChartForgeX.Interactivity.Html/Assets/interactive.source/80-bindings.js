@@ -51,14 +51,20 @@
       });
       // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
+        let pointerFocus = false;
+        focusNode.addEventListener('pointerdown', (event) => { pointerFocus = event.button === 0; });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => focusNode.addEventListener(type, () => { pointerFocus = false; }));
         focusNode.addEventListener('focus', (event) => {
           refreshKeyboardNavigation(root, node);
-          if (hasFeature(root, 'KeyboardNavigation')) scrollKeyboardTargetIntoView(root, focusNode);
+          // Revealing a partly visible mark between pointer down and up retargets its native click.
+          if (hasFeature(root, 'KeyboardNavigation') && !pointerFocus) scrollKeyboardTargetIntoView(root, focusNode);
+          pointerFocus = false;
           if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
         focusNode.addEventListener('blur', () => {
+          pointerFocus = false;
           clearHover(root, true, true);
           hideTip(root, tip, false);
         });

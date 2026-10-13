@@ -30,7 +30,7 @@ public sealed class PolarHiddenGuideCaptionTests {
             fractional.Regions.Where(region => region.Role.EndsWith("-point", StringComparison.Ordinal)).Select(region => region.Bounds));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(320, false)]
     [InlineData(960, true)]
     public async Task HiddenFractionalCaptionsRemainVisibleOnBothRadiusAxes(int width, bool reversed) {

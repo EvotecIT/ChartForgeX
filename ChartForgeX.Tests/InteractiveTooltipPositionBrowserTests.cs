@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Proves typed position policies against actual Chromium screen geometry.</summary>
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipPlacement.Top)]
     [InlineData(HtmlChartTooltipPlacement.TopRight)]
     [InlineData(HtmlChartTooltipPlacement.Right)]
@@ -34,7 +34,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer, HtmlChartResponsiveLayout.Fit, 340, false)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, HtmlChartResponsiveLayout.Readable, 950, true)]
     [InlineData(HtmlChartTooltipAnchor.Node, HtmlChartResponsiveLayout.Readable, 340, true)]
@@ -61,7 +61,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task OrderedFallbackUsesFirstFitOrClampsTheFirstChoice(bool noneFit) {
@@ -83,7 +83,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartResponsiveLayout.Fit, 340, false)]
     [InlineData(HtmlChartResponsiveLayout.Readable, 340, true)]
     [InlineData(HtmlChartResponsiveLayout.Fit, 950, true)]
@@ -119,7 +119,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer)]
     [InlineData(HtmlChartTooltipAnchor.Node)]
     [InlineData(HtmlChartTooltipAnchor.Chart)]

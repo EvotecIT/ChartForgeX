@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Imputed geometry identifies a category, without inventing an authored observation.</summary>
 public sealed class InteractiveMissingCategoryBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(true, true)]
     public async Task ImputedRadarCategoriesHaveIndependentRegionIdentityAndSynchronizeByCategory(bool compactDark, bool hiddenMarkers) {

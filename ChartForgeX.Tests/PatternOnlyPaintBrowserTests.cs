@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class PatternOnlyPaintBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Bar, false)]
     [InlineData(ChartSeriesKind.Bar, true)]
     [InlineData(ChartSeriesKind.Scatter, false)]
@@ -62,7 +62,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task PatternSwatchWithoutCaptionInkRemainsAPhysicalLegendTarget(bool pointLegend) {
@@ -84,7 +84,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -111,7 +111,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         Assert.NotEqual("true", selected); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, false)]
     [InlineData(false, false)]
     [InlineData(true, true)]
@@ -146,7 +146,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         Assert.Equal(collapse ? "1" : "0", await point.GetAttributeAsync("data-cfx-y")); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task PatternedSharedCollapsedSliceRequiresItsPaintedSeparator(bool donut) {
@@ -171,7 +171,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         Assert.Contains("Observed", keyboard); Assert.Equal("1", await point.GetAttributeAsync("data-cfx-value")); AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task EncodedCollapsedSunburstPatternCannotReplaceAnAbsentSeparator() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(600, 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
