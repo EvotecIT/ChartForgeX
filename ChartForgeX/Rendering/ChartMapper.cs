@@ -22,7 +22,8 @@ internal sealed class ChartMapper {
     public static ChartMapper ForHorizontalBars(ChartRect plot, ChartRange range, ChartAxis valueAxis, ChartAxis categoryAxis) =>
         new ChartMapper(plot, range, valueAxis, new ChartAxis { Reversed = categoryAxis.Reversed });
 
-    public double X(double value) => _plot.Left + ChartScaleTransform.Normalize(value, _range.MinX, _range.MaxX, _xAxis) * _plot.Width;
+    public double X(double value) => ProjectX(ChartScaleTransform.Normalize(value, _range.MinX, _range.MaxX, _xAxis), _plot);
+    internal static double ProjectX(double ratio, ChartRect plot) => plot.Left + ratio * plot.Width;
     public double Y(double value) => _plot.Bottom - ChartScaleTransform.Normalize(value, _range.MinY, _range.MaxY, _yAxis) * _plot.Height;
 
     public double XBaseline() {

@@ -85,8 +85,11 @@ public sealed class WaterfallCheckpointBrowserTests {
             Assert.Equal("movement:0", await page.EvaluateAsync<string>("() => window.waterfallSelections.at(-1).targetId"));
             Assert.Equal(0, await page.EvaluateAsync<int>("() => window.waterfallSelections.at(-1).sourcePoint"));
             await CaptureAsync(page, capture, name + "-opening-caption");
+            Assert.True(await page.Locator(".cfx-tooltip").IsVisibleAsync());
+            Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
             await openingMark.FocusAsync(); await page.Keyboard.PressAsync("Space");
             Assert.Equal("false", await openingMark.GetAttributeAsync("aria-selected"));
+            Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
             await page.EvaluateAsync("() => { window.waterfallSelections=[]; }");
         }
         var subtotal = page.Locator(Mark(4));
@@ -127,6 +130,8 @@ public sealed class WaterfallCheckpointBrowserTests {
         Assert.Equal(new[] { 0, 1, 2, 3 }, await page.EvaluateAsync<int[]>("() => window.waterfallSelections.at(-1).sourcePoints"));
         Assert.Equal(0, await page.Locator("[data-cfx-label-for][tabindex],[data-cfx-label-for][data-cfx-target-kind]").CountAsync());
         await CaptureAsync(page, capture, name + "-total-caption");
+        Assert.True(await page.Locator(".cfx-tooltip").IsVisibleAsync());
+        Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
 
         await total.FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("false", await total.GetAttributeAsync("aria-selected"));
@@ -224,7 +229,8 @@ public sealed class WaterfallCheckpointBrowserTests {
 
     private static async Task CaptureAsync(IPage page, string? directory, string name) {
         if (string.IsNullOrWhiteSpace(directory)) return;
-        await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png"), FullPage = true });
+        // Preserve the viewport and the pin being observed during capture.
+        await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png"), FullPage = false });
         await File.WriteAllTextAsync(Path.Combine(directory, name + ".runtime.json"), JsonSerializer.Serialize(
             await page.EvaluateAsync<JsonElement>("() => ({selections:window.waterfallSelections,tooltip:document.querySelector('.cfx-tooltip').innerText})"),
             new JsonSerializerOptions { WriteIndented = true }));
