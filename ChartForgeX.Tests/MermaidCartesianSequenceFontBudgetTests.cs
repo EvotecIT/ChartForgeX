@@ -31,19 +31,21 @@ public sealed class MermaidCartesianSequenceFontBudgetTests {
     }
 
     [Theory]
-    [InlineData(18)]
-    [InlineData(256)]
-    public async Task DenseAcceptedSequenceTypographyPreservesDefaultSvgAndPngExport(int size) {
-        var participants = string.Join("\n", Enumerable.Range(0, 128).Select(index => "participant P" + index + " as W"));
-        var result = MermaidRenderer.Render(Source(size, "sequenceDiagram\n" + participants + "\nP0->>P127: Save"));
+    [InlineData(18, 128)]
+    [InlineData(256, 128)]
+    [InlineData(18, 160)]
+    [InlineData(256, 160)]
+    public async Task DenseAcceptedSequenceTypographyPreservesDefaultSvgAndPngExport(int size, int count) {
+        var participants = string.Join("\n", Enumerable.Range(0, count).Select(index => "participant P" + index + " as W"));
+        var result = MermaidRenderer.Render(Source(size, "sequenceDiagram\n" + participants + "\nP0->>P" + (count - 1) + ": Save"));
         Assert.Empty(result.Diagnostics); var artifact = result.Artifact!;
         var svg = artifact.ToSvg();
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
-        if (!string.IsNullOrWhiteSpace(capture)) { Directory.CreateDirectory(capture); File.WriteAllText(Path.Combine(capture, "dense-sequence-" + size + ".svg"), svg); }
+        if (!string.IsNullOrWhiteSpace(capture)) { Directory.CreateDirectory(capture); File.WriteAllText(Path.Combine(capture, "dense-sequence-" + size + "-" + count + ".svg"), svg); }
         var png = artifact.ToPng(); Assert.NotEmpty(png);
         Assert.Equal(size, Assert.IsType<SequenceArtifact>(artifact.Model).Theme.Typography.DataLabelSize);
-        Assert.Equal(128, XDocument.Parse(svg).Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "sequence-participant"));
-        await Capture(svg, png, "dense-sequence-" + size, 960, 720);
+        Assert.Equal(count, XDocument.Parse(svg).Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "sequence-participant"));
+        await Capture(svg, png, "dense-sequence-" + size + "-" + count, 960, 720);
     }
 
     private static string Source(int size, string body) => "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size.ToString(CultureInfo.InvariantCulture) + "}}}%%\n" + body;

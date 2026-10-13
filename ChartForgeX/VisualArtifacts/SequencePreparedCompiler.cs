@@ -40,7 +40,7 @@ internal static partial class SequencePreparedCompiler {
             VisualSceneRasterRenderer.CalculateAllocation(visual.Size,
                 options.Scale, options.Supersampling, options.PixelBudget);
             return true;
-        } catch (ArgumentOutOfRangeException exception) when (exception.ParamName == "pixelBudget") {
+        } catch (ArgumentOutOfRangeException exception) when (exception.ParamName is "pixelBudget" or "width") {
             return false;
         }
     }
