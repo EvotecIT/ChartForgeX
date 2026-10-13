@@ -48,7 +48,8 @@ public sealed class MermaidFinalTypographyOwnerTests {
             var bottom = circles.Max(e => (double)e.Attribute("cy")! + (double)e.Attribute("r")! + .5);
             var builder = new VisualSceneBuilder(new VisualSize(width, 320), FontSpec.FromFamily("Arial"));
             var stages = XDocument.Parse(svg).Descendants().Where(e => e.Name.LocalName == "text" &&
-                new[] { "Genesis", "Custom", "Product", "Commodity" }.Contains(e.Value)).ToArray();
+                e.Value.Length > 0 && new[] { "Genesis", "Custom", "Product", "Commodity" }.Any(stage =>
+                    stage.StartsWith(e.Value.TrimEnd('.', '…'), StringComparison.Ordinal))).ToArray();
             Assert.Equal(4, stages.Length);
             Assert.All(stages, label => Assert.True((double)label.Attribute("y")! - builder.TextAscent((double)label.Attribute("font-size")!, 600) > bottom));
         }

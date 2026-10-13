@@ -85,7 +85,10 @@ internal static class VisualFrameLayout {
         double HeadingHeight(string? text, TextStyle style) => string.IsNullOrEmpty(text) ? 0 : 2 * Math.Max(style.EffectiveFontSize * 1.3, builder.MeasureText("Mg", style).Height);
         var headingHeight = HeadingHeight(context.Frame.Title, titleStyle) + HeadingHeight(context.Frame.Subtitle, subtitleStyle);
         var headingGaps = headingHeight > 0 ? gap * 5 / 6 + (!string.IsNullOrEmpty(context.Frame.Title) && !string.IsNullOrEmpty(context.Frame.Subtitle) ? gap / 6 : 0) : 0;
+        var oversizedHeadings = titleStyle.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize
+            || subtitleStyle.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize;
         var headingScale = headingHeight / 2 + headingGaps >= bottom - top
+            || oversizedHeadings && headingHeight + headingGaps > (bottom - top) * .4
             ? Math.Min(1, Math.Max(1, (bottom - top) * .4 - headingGaps) / headingHeight) : 1;
         // Normal headings retain bounded wrapping. Fit full text only when even a short
         // font sample cannot fit the line, independently of an ordinary companion heading.
