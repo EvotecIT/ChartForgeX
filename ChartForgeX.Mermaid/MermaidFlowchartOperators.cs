@@ -31,6 +31,8 @@ internal static class MermaidFlowchartOperators {
     /// <summary>Reads the closing half in the same normal, thick or dotted link family.</summary>
     public static int ReadLabelSuffixEnd(string text, int start, char family) {
         var end = start;
+        if (end < text.Length && (text[end] == '<' || text[end] == 'o' || text[end] == 'x')) end++;
+        var body = end;
         if (family == '.') {
             if (end < text.Length && text[end] == '-') end++;
             var dots = end;
@@ -39,10 +41,10 @@ internal static class MermaidFlowchartOperators {
             end++;
         } else {
             while (end < text.Length && text[end] == family) end++;
-            if (end - start < 2) return start;
+            if (end - body < 2) return start;
         }
         if (end < text.Length && (text[end] == '>' || text[end] == 'o' || text[end] == 'x')) return end + 1;
-        return family == '.' || end - start >= 3 ? end : start;
+        return family == '.' || end - body >= 3 ? end : start;
     }
 
     /// <summary>Finds one inline caption and its matching suffix without interpreting caption punctuation as node syntax.</summary>
@@ -57,7 +59,13 @@ internal static class MermaidFlowchartOperators {
         for (var index = firstText; index < text.Length; index++) {
             if (MermaidFlowchartText.ReadQuotedCharacter(text, ref index, ref quote)) continue;
             var end = ReadLabelSuffixEnd(text, index, family);
-            if (end == index || index == firstText) continue;
+            if (end == index || index == firstText) {
+                // A run of dots without its terminating dash cannot contain a later
+                // valid dotted suffix. Skip it once instead of rescanning its tail.
+                if (family == '.' && text[index] == '.')
+                    while (index + 1 < text.Length && text[index + 1] == '.') index++;
+                continue;
+            }
             labelEnd = index;
             edgeEnd = end;
             return true;
@@ -75,6 +83,9 @@ internal static class MermaidFlowchartOperators {
     public static TopologyMarkerKind Marker(string edgeOperator, bool source) {
         if (edgeOperator.Length == 0) return TopologyMarkerKind.None;
         var marker = edgeOperator[source ? 0 : edgeOperator.Length - 1];
+        if (source && TryReadInlineLabel(edgeOperator, 0, out _, out var suffix, out _)
+            && (edgeOperator[suffix] == '<' || edgeOperator[suffix] == 'o' || edgeOperator[suffix] == 'x'))
+            marker = edgeOperator[suffix];
         if (source) {
             var target = edgeOperator[edgeOperator.Length - 1];
             // Circle/cross sources are meaningful only in matching double-ended links.
