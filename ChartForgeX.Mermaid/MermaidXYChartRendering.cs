@@ -22,11 +22,22 @@ public static class MermaidXYChartRendering {
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height);
 
-        if (!string.IsNullOrWhiteSpace(document.XAxis.Title)) chart.WithXAxis(document.XAxis.Title!);
-        if (!string.IsNullOrWhiteSpace(document.YAxis.Title)) chart.WithYAxis(document.YAxis.Title!);
-        if (document.XAxis.Labels.Count > 0) chart.WithXLabels(document.XAxis.Labels.ToArray());
-        if (document.XAxis.HasRange) chart.WithXAxisBounds(document.XAxis.Minimum!.Value, document.XAxis.Maximum!.Value);
-        if (document.YAxis.HasRange) chart.WithYAxisBounds(document.YAxis.Minimum!.Value, document.YAxis.Maximum!.Value);
+        var horizontal = document.Orientation == ChartOrientation.Horizontal;
+        chart.Options.LineOrientation = document.Orientation;
+        var categoryAxis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
+        var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
+        if (!string.IsNullOrWhiteSpace(document.XAxis.Title)) {
+            if (horizontal) chart.WithYAxis(document.XAxis.Title!);
+            else chart.WithXAxis(document.XAxis.Title!);
+        }
+        if (!string.IsNullOrWhiteSpace(document.YAxis.Title)) {
+            if (horizontal) chart.WithXAxis(document.YAxis.Title!);
+            else chart.WithYAxis(document.YAxis.Title!);
+        }
+        for (var index = 0; index < document.XAxis.Labels.Count; index++)
+            categoryAxis.Labels.Add(new ChartAxisLabel(index + 1, document.XAxis.Labels[index]));
+        if (document.XAxis.HasRange) { categoryAxis.Minimum = document.XAxis.Minimum; categoryAxis.Maximum = document.XAxis.Maximum; }
+        if (document.YAxis.HasRange) { valueAxis.Minimum = document.YAxis.Minimum; valueAxis.Maximum = document.YAxis.Maximum; }
         if (options.ShowDataLabels) chart.WithDataLabels();
 
         foreach (var series in document.Series) {

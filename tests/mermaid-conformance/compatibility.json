@@ -707,6 +707,14 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/xychart-horizontal.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
     "fixtures/xychart-stable.mmd": {
       "syntax": {
         "10": "rejected",
