@@ -116,7 +116,7 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
   </tr>
 </table>
 
-Explore all chart families in the [gallery](https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Fcatalog.html). Each example includes light and dark themes, SVG and PNG previews, and C# source.
+Explore all chart families in the [gallery](https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Fcatalog.html). Each example includes light and dark themes, SVG and PNG previews, and a standalone C# recipe. Add the `ChartForgeX` package to a console project, paste the recipe into `Program.cs`, and run it to write SVG, PNG and HTML. Configured variants have their own focused recipes; an optional gallery-font download reproduces the galleryâ€™s typography.
 
 ## Examples
 
@@ -353,6 +353,7 @@ Inspect the generated gallery before intentionally changing visual baselines. [C
 ## Reference and support
 
 - [API conventions and chart options](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/api-conventions.md)
+- [Chart combinations, orientation and axes](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/chart-combinations.md)
 - [Topology](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/topology.md) and [icon packs](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/topology-icon-packs.md)
 - [Typography and measured label placement](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/label-placement.md)
 - [Mermaid language support](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/mermaid.md) and [support matrix](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/mermaid-support-matrix.md)

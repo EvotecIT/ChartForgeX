@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = ScatterPartialColorRangeRecipe.Create("compact-partial-color-range", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Processing time and completion", "The color ceiling stays at 100%; the lower bound follows observations", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Colors completion values with an observed lower bound and a fixed goal.</summary>
+public static class ScatterPartialColorRangeRecipe {
+    /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
+    public static Chart Create(string variant = "partial-color-range", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("partial-color-range" or "compact-partial-color-range")) throw new ArgumentOutOfRangeException(nameof(variant));
+        return PartialColorRange(mode).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static Chart PartialColorRange(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var duration = new[] { 18d, 30, 24, 44, 32 };
+        var completion = new double?[] { 55, 82, null, 68, 95 };
+        var recorded = ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", completion.Select((value, index) =>
+            new ChartPoint((index + 1) * 16, duration[index]).WithColorValue(value)));
+        recorded.WithColorScale(ChartColorScale.Sequential(colors.Palette[0], colors.Status.Pass.Fill)
+                .WithValueRange(null, 100).WithLabels("Observed minimum", null, "Goal").WithNoDataColor(colors.Border))
+            .ConfigureColorDimension(options => {
+                options.Name = "Completion"; options.ValueFormat = ChartValueFormat.Number("0'%'", CultureInfo.InvariantCulture);
+                options.LegendStyle = ChartColorLegendStyle.Swatches;
+            });
+        return NumericAxes().ConfigureLabels(labels => labels.NoData = "Not reported").AddSeries(recorded);
+    }
+
+    private static Chart NumericAxes() => Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+}

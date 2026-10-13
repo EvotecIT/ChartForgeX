@@ -353,6 +353,7 @@ Inspect the generated gallery before intentionally changing visual baselines. [C
 ## Reference and support
 
 - [API conventions and chart options](docs/v2/api-conventions.md)
+- [Chart combinations, orientation and axes](docs/v2/chart-combinations.md)
 - [Topology](docs/topology.md) and [icon packs](docs/topology-icon-packs.md)
 - [Typography and measured label placement](docs/label-placement.md)
 - [Mermaid language support](docs/mermaid.md) and [support matrix](docs/mermaid-support-matrix.md)

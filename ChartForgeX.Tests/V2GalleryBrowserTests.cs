@@ -124,6 +124,20 @@ public sealed class V2GalleryBrowserTests {
         Assert.Equal("light", await page.Locator("html").GetAttributeAsync("data-theme"));
         var lightDownloads = await page.Locator(".export-row a").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.getAttribute('href'))");
         Assert.All(lightDownloads, href => Assert.Contains("-light.", href, StringComparison.Ordinal));
+        var source = page.Locator("[data-example-source]:visible");
+        Assert.Equal(1, await source.CountAsync());
+        var sourceText = await source.TextContentAsync() ?? throw new InvalidOperationException("The visible recipe has no source text.");
+        Assert.Contains("public static class", sourceText, StringComparison.Ordinal);
+        Assert.Contains("File.WriteAllBytes(\"visual.png\", prepared.ToPng())", sourceText, StringComparison.Ordinal);
+        var gallerySource = page.Locator(".source-section a[href$='.gallery.csharp.txt']:visible");
+        Assert.Equal(1, await gallerySource.CountAsync());
+        // Intercept the clipboard boundary while exercising the real copy button, preserving the desktop clipboard.
+        await page.EvaluateAsync("() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__cfxCopiedSource = text; } } })");
+        await page.Locator("[data-copy-source]").ClickAsync();
+        Assert.Equal(sourceText, await page.EvaluateAsync<string>("() => window.__cfxCopiedSource"));
+        await page.Locator(".source-heading").ScrollIntoViewIfNeededAsync();
+        if (!string.IsNullOrWhiteSpace(captures))
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "example-source-" + width + ".png") });
         await page.Locator(".back-link").ClickAsync();
         await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         Assert.Equal("heatmap", await page.Locator("[data-gallery-search]").InputValueAsync());

@@ -1,0 +1,43 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = LayeredRadialRecipe.Create("compact", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Reviewed, verified and completed", "The same data in a compact view", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Three independently sized radial layers for reviewed, verified and complete work.</summary>
+public static class LayeredRadialRecipe {
+    /// <summary>Creates three completion layers with different radii, sweeps and separators.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var completion = ChartSeries.CreateLayeredRadial(new ChartSeriesId("completion"), "Completion", new[] {
+            new ChartRadialLayer("Reviewed", 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
+            new ChartRadialLayer("Verified", 58) { RadiusRatio = .7, StrokeRatio = .13, SweepAngleDegrees = 240, StartAngleDegrees = -30, SeparatorCount = 8 },
+            new ChartRadialLayer("Complete", 42) { RadiusRatio = .4, StrokeRatio = .13, SweepAngleDegrees = 360 }
+        });
+        return Chart.Create().WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(completion)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+}

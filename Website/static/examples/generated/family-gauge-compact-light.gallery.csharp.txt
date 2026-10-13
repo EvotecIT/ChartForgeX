@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = GaugeRecipe.Create("compact", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Available capacity against a target", "The same data in a compact view", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>A measured value, target and qualitative bands on an arc, needle or precision scale.</summary>
+public static class GaugeRecipe {
+    /// <summary>Creates capacity against its target, or a close-bound linear tolerance measurement.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is "precision" or "compact-precision") {
+            var tolerance = ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance", 1.003, 1.001, 1.005);
+            return Chart.Create().AddSeries(tolerance).ConfigureGauge(options => {
+                options.Form = ChartGaugeForm.Linear;
+                options.Target = 1.0025;
+            });
+        }
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var capacity = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", 76);
+        return Chart.Create().WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(capacity)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture))
+            .ConfigureGauge(options => {
+                options.Form = variant == "options" ? ChartGaugeForm.Needle : ChartGaugeForm.Arc;
+                options.Target = 85;
+                options.Caption = "Available capacity";
+                options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
+                options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
+                options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));
+            });
+    }
+}

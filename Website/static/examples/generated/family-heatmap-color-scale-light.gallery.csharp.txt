@@ -1,0 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = HeatmapColorScaleRecipe.Create("color-scale", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Coverage across service areas", "Signed measurements share a fixed color domain", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Shows positive and negative measurements on a diverging heatmap scale.</summary>
+public static class HeatmapColorScaleRecipe {
+    /// <summary>Creates the selected numeric color-scale example.</summary>
+    public static Chart Create(string variant = "color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var scale = variant == "color-scale"
+            ? ChartColorScale.Diverging(new[] { colors.Status.Critical.Fill }, colors.Surface,
+                new[] { colors.SequentialRamp[2], colors.SequentialRamp[3], colors.SequentialRamp[4] }, 0)
+            : ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Palette[0], 0);
+        return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").WithDataLabels()
+            .AddHeatmapRow("Primary", new double?[] { -20, -10, 0, null, 10, 20 }, id: new ChartSeriesId("primary-measurements"))
+            .AddHeatmapRow("Secondary", new double?[] { -15, 0, 5, 15, null, 25 }, id: new ChartSeriesId("secondary-measurements"))
+            .WithHeatmapColorScale(scale.WithValueRange(-20, 20).WithLabels("Below target", "Target", "Above target"))
+            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

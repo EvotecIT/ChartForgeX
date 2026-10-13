@@ -46,7 +46,8 @@ public sealed class V2GalleryArtifactTests {
 
             var sourceFile = artifact.GetProperty("source").GetString()!;
             var source = File.ReadAllText(Path.Combine(output, sourceFile));
-            Assert.Contains($"V2GalleryModels.Create(ChartSeriesKind.Bubble, \"{variant}\", VisualThemeMode.{mode})", source, StringComparison.Ordinal);
+            Assert.Contains($"var mode = VisualThemeMode.{mode};", source, StringComparison.Ordinal);
+            Assert.Contains($".Create(\"{variant}\", mode)", source, StringComparison.Ordinal);
             Assert.Matches(@"\.ConfigureBubble\s*\(", source);
             var options = model.Options.Bubble;
             Assert.Matches($@"\.WithSizeDomain\s*\(\s*{NumberPattern(options.MinimumValue!.Value)}\s*,\s*{NumberPattern(options.MaximumValue!.Value)}\s*\)", source);

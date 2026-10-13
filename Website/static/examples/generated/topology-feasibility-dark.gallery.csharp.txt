@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = SimpleTopologyRecipe.Create("feasibility", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(640, 400)), theme, mode,
+    new VisualFrame("Service request route", "Product-neutral diagram semantics", showLegend: false, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+
+/// <summary>Creates a small service request route with two nodes and a directed edge.</summary>
+public static class SimpleTopologyRecipe {
+    /// <summary>Creates the bounded native topology model.</summary>
+    /// <param name="variant">Use wide or feasibility for the simple topology.</param>
+    /// <param name="mode">The rendering mode; diagram colors are resolved when the model is prepared.</param>
+    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "feasibility"))
+            throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or feasibility.");
+
+        var chart = TopologyChart.Create();
+        chart.Id = "service-request";
+        chart.Viewport = new TopologyViewport { Width = 640, Height = 400 };
+        chart.Nodes.Add(new TopologyNode {
+            Id = "source", Label = "Source\nservice", X = 24, Y = 70, Width = 140, Height = 64,
+            Status = TopologyHealthStatus.Healthy
+        });
+        chart.Nodes.Add(new TopologyNode {
+            Id = "target", Label = "Target", X = 300, Y = 70, Width = 140, Height = 64
+        });
+        chart.Edges.Add(new TopologyEdge {
+            Id = "route", SourceNodeId = "source", TargetNodeId = "target", Direction = VisualLinkDirection.Forward,
+            Routing = TopologyEdgeRouting.Straight, LineStyle = TopologyEdgeLineStyle.Solid, Label = "Request"
+        });
+        return chart;
+    }
+}

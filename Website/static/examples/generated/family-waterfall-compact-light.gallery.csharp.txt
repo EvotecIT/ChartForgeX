@@ -1,0 +1,59 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = WaterfallRecipe.Create("compact", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Changes in available capacity", "The same data in a compact view", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Builds running-balance waterfalls with signed changes and explicit checkpoints.</summary>
+public static class WaterfallRecipe {
+    /// <summary>Creates the selected waterfall example and its orientation.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant is "options" or "compact-options" or "horizontal" or "compact-horizontal") {
+            var horizontal = variant is "horizontal" or "compact-horizontal";
+            var movement = ChartSeries.CreateWaterfall(new ChartSeriesId("movement"), "Movement", new[] {
+                ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+                ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+                ChartWaterfallItem.Total(7)
+            }).WithPointColor(4, "#A5358A");
+            chart.WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance").AddSeries(movement)
+                .ConfigureWaterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            if (horizontal) chart.WithXAxis("Running balance").WithYAxis("Stage").WithBarStyle(ChartBarStyle.SegmentedCapsule);
+            else chart.WithYAxis("Running balance");
+            chart.Options.XAxis.WithReversal(!horizontal || variant == "compact-horizontal");
+            chart.Options.YAxis.WithReversal();
+            chart.WithDataLabels();
+        }
+        else {
+            var changes = new ChartSeries(new ChartSeriesId("changes"), "Changes", ChartSeriesKind.Waterfall, new[] {
+                new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12)
+            });
+            chart.WithXLabels("North", "South", "East", "West", "Central", "Total").AddSeries(changes);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}
