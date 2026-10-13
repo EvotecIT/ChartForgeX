@@ -109,6 +109,8 @@ Modern flowchart metadata (`A@{ shape: cloud, label: "API" }`) preserves node id
 
 Flowchart links preserve circle (`A ---o B`), cross (`A ---x B`) and bidirectional endpoints (`A o--o B`, `A x--x B`, `A <--> B`) in native SVG/PNG and interchange JSON. A leading `o` or `x` adds a source marker only when the target endpoint matches; mixed links such as `A o--x B` retain only the target cross. A compact link consumes one endpoint marker: `A---oxTarget` connects to `xTarget` with a circle, while `A--- xTarget` connects without a marker. Text inside an inline or pipe label does not introduce endpoint markers or reverse the inferred layers. The existing native backward-arrow interpretation of `A <-- B` is retained.
 
+The metadata shape names `fr-rect` and `framed-rectangle` select the native subprocess surface; `question` selects a decision diamond; `lean-right` and `lean-left` select the two input/output parallelograms. `manual` and `trapezoid-top` select the upper-base trapezoid, while `priority` and `trapezoid-bottom` select the lower-base trapezoid. `odd` selects the asymmetric surface. These names use the same geometry as their supported short names or bracket notation. Expanded shapes without a native owner retain a warning and rectangle fallback.
+
 Gantt duration calculations apply `excludes`, `includes`, and Friday/Saturday weekend definitions. Explicit end dates stay explicit. Milestones use the midpoint of their authored duration, and `active` does not invent a percentage complete.
 
 ## Flowcharts
@@ -888,7 +890,11 @@ var svg = document.ToSvg();
 var png = document.ToPng();
 ```
 
-The conversion target for XY charts is `Chart`. Category labels, axis ranges, series kind counts, orientation, title, and source spans are retained in the AST or artifact metadata. Static rendering maps vertical Mermaid bars to ChartForgeX bar series, horizontal Mermaid bars to horizontal bar series, and Mermaid lines to line series.
+The conversion target for XY charts is `Chart`. Category labels, axis ranges, series kind counts, orientation, title, and source spans are retained in the AST or artifact metadata. Static rendering maps vertical Mermaid bars to ChartForgeX bar series and horizontal Mermaid bars to horizontal bar series. Lines share the source orientation, including mixed horizontal bar/line charts. In horizontal charts, the source x-axis supplies categories, captions and bounds on the physical Y axis; the source y-axis supplies values and bounds on the physical X axis. Authored point coordinates remain intact for metadata, pointer tooltips and keyboard selection.
+
+Native callers can set `chart.Options.LineOrientation = ChartOrientation.Horizontal` for line and step-line series. The primary physical X axis owns values, and the physical Y axis owns linear or time categories. Horizontal lines can share a chart with horizontal bars; vertical series and secondary-axis series require a separate chart. Interpolation, step placement, breaks and marker bounds use the same prepared geometry for SVG and PNG.
+
+For horizontal line charts, configure value formatting and explicit value labels on `XAxis`, and category formatting and labels on `YAxis`. The mean, median and standard-deviation helpers follow the current value axis during preparation, including orientation changes made after adding them. Explicit `AddHorizontalLine` and `AddHorizontalBand` annotations retain their physical Y coordinates.
 
 ## Sankey Diagrams
 

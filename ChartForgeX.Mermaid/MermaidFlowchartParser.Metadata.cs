@@ -84,16 +84,17 @@ internal static partial class MermaidFlowchartParser {
             case "rect": case "rectangle": case "proc": case "process": break;
             case "rounded": case "event": shape = MermaidFlowchartNodeShape.Rounded; break;
             case "stadium": case "pill": case "terminal": shape = MermaidFlowchartNodeShape.Stadium; break;
-            case "subproc": case "subroutine": case "subprocess": shape = MermaidFlowchartNodeShape.Subroutine; break;
+            case "subproc": case "subroutine": case "subprocess": case "fr-rect": case "framed-rectangle": shape = MermaidFlowchartNodeShape.Subroutine; break;
             case "cyl": case "cylinder": case "db": case "database": shape = MermaidFlowchartNodeShape.Cylinder; break;
             case "circle": case "circ": shape = MermaidFlowchartNodeShape.Circle; break;
             case "dbl-circ": case "double-circle": shape = MermaidFlowchartNodeShape.DoubleCircle; break;
-            case "diamond": case "diam": case "decision": shape = MermaidFlowchartNodeShape.Rhombus; break;
+            case "diamond": case "diam": case "decision": case "question": shape = MermaidFlowchartNodeShape.Rhombus; break;
             case "hex": case "hexagon": case "prepare": shape = MermaidFlowchartNodeShape.Hexagon; break;
-            case "lean-r": case "in-out": shape = MermaidFlowchartNodeShape.Parallelogram; break;
-            case "lean-l": case "out-in": shape = MermaidFlowchartNodeShape.ParallelogramAlt; break;
-            case "trap-b": case "trapezoid": shape = MermaidFlowchartNodeShape.Trapezoid; break;
-            case "trap-t": case "inv-trapezoid": shape = MermaidFlowchartNodeShape.TrapezoidAlt; break;
+            case "lean-r": case "lean-right": case "in-out": shape = MermaidFlowchartNodeShape.Parallelogram; break;
+            case "lean-l": case "lean-left": case "out-in": shape = MermaidFlowchartNodeShape.ParallelogramAlt; break;
+            case "trap-b": case "trapezoid": case "trapezoid-bottom": case "priority": shape = MermaidFlowchartNodeShape.Trapezoid; break;
+            case "trap-t": case "inv-trapezoid": case "trapezoid-top": case "manual": shape = MermaidFlowchartNodeShape.TrapezoidAlt; break;
+            case "odd": shape = MermaidFlowchartNodeShape.Asymmetric; break;
             case "cloud": shape = MermaidFlowchartNodeShape.Cloud; break;
             default: return false;
         }

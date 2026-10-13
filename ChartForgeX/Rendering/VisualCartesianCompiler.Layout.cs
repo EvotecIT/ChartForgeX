@@ -31,7 +31,7 @@ internal static partial class VisualCartesianCompiler {
                 IncludeIntervalExtents(horizontal ? x : secondary ? secondaryY : primaryY, series, valueAxis, intervalRadius);
                 continue;
             }
-            if (horizontal) continue;
+            if (horizontal && !ChartCartesianOrientation.IsHorizontalLine(chart, series)) continue;
             var pointSeries = IsPointSeries(series.Kind);
             if (!pointSeries && series.Kind is not (ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar
                 or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop or ChartSeriesKind.Slope
@@ -53,7 +53,8 @@ internal static partial class VisualCartesianCompiler {
                 markerRadius = VisualMarkerScene.Extent(series, markerRadius);
                 if (markerRadius <= 0) continue;
                 var value = series.Kind == ChartSeriesKind.StackedArea ? stacks.Point(index, raw).End : point.Y;
-                Include(point.X, value, markerRadius, series.YAxis);
+                if (ChartCartesianOrientation.IsHorizontalLine(chart, series)) Include(value, point.X, markerRadius, series.YAxis);
+                else Include(point.X, value, markerRadius, series.YAxis);
                 if (series.Kind is ChartSeriesKind.Dumbbell or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea)
                     Include(point.X, series.Points[raw + 1].Y, markerRadius, series.YAxis);
             }
