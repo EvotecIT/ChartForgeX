@@ -9,9 +9,9 @@ using ChartForgeX.VisualArtifacts;
 /// <summary>Exercises the shared prepared pipeline and portable handoff in the existing native AOT executable.</summary>
 internal static class PreparedPipelineSmoke {
     internal static void Run() {
-        string themeJson = VisualTheme.Graphite().ToThemeJson();
-        var theme = VisualTheme.FromThemeJson(themeJson);
-        Require(themeJson == theme.ToThemeJson(), "Versioned paired theme roundtrip failed.");
+        string themeJson = VisualTheme.Graphite().ToJson();
+        var theme = VisualTheme.FromJson(themeJson);
+        Require(themeJson == theme.ToJson(), "Versioned paired theme roundtrip failed.");
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), theme, mode,
                 new VisualFrame("Shared AOT output", "Prepared static pipeline", showLegend: false));

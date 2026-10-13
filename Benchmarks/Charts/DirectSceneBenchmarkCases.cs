@@ -13,7 +13,7 @@ public static class DirectSceneBenchmarkCases {
     /// <summary>Loads the same canonical theme file as the legacy lane outside timing.</summary>
     public static void Initialize(string tokenPath, string fontPath, string boldFontPath) {
         LegacySceneBenchmarkCases.Initialize(tokenPath, fontPath, boldFontPath);
-        var theme = VisualTheme.FromJson(File.ReadAllText(tokenPath), new VisualTypography("CFX Proof Carlito", 22, 13, 11, 12, 11));
+        var theme = VisualTheme.FromPaletteJson(File.ReadAllText(tokenPath), new VisualTypography("CFX Proof Carlito", 22, 13, 11, 12, 11));
         _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(LegacySceneBenchmarkCases.Width, LegacySceneBenchmarkCases.Height), padding: 24),
             theme, VisualThemeMode.Light,
             new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG", showLegend: true, legendPosition: ChartLegendPosition.TopLeft), FontSpec.FromFamily("CFX Proof Carlito"));

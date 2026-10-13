@@ -18,13 +18,19 @@ public static partial class LegacySceneBenchmarkCases {
 
     private static VisualDesignTokens Phase3Tokens() {
         var tokens = VisualDesignTokens.FromJson(_tokens);
+#if LEGACY_CHART_API
         tokens.FontFamily = "CFX Proof Carlito";
         tokens.UseGraphiteLayout = true;
+#endif
         return tokens;
     }
 
     private static Chart CreatePhase3Chart(string fixture) {
+#if LEGACY_CHART_API
         var theme = Phase3Tokens().ApplyTo(ChartTheme.GraphiteLight()).WithTypography(22, 13, 11, 11, 12, 11);
+#else
+        var theme = CurrentTheme();
+#endif
         var chart = Chart.Create().WithSize(Width, Height).WithTheme(theme).WithTitle(Title)
             .WithSubtitle("One prepared scene for SVG and native PNG").WithLegend().WithPadding(24, 24, 24, 24).WithPngOutputScale(1).WithPngSupersampling(2);
         switch (fixture) {
@@ -94,7 +100,12 @@ public static partial class LegacySceneBenchmarkCases {
     private static TopologyChart CreateTopology() {
         var chart = TopologyChart.Create().WithId("scene-topology").WithTitle(Title)
             .WithSubtitle("One prepared scene for SVG and native PNG").WithViewport(Width, Height, 24)
-            .WithLayout(TopologyLayoutMode.Layered).WithDesignTokens(Phase3Tokens());
+            .WithLayout(TopologyLayoutMode.Layered);
+#if LEGACY_CHART_API
+        chart.WithDesignTokens(Phase3Tokens());
+#else
+        chart.WithTheme(CurrentTheme());
+#endif
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true,
             WrapNodeLabels = true, PngOutputScale = 1, PngSupersamplingScale = 2 };
         for (var index = 0; index < 12; index++) chart.AddAutoNode("node-" + index, "Service " + (index + 1),

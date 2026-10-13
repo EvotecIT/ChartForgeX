@@ -32,7 +32,8 @@ public static partial class LegacySceneBenchmarkCases {
     // empty/partial exports even when frame text and dimensions remain valid.
     private static void ValidateMarks(XElement root, Chart chart) {
         if (chart.Series[0].Kind == ChartSeriesKind.Donut) {
-            var slices = root.Descendants().Where(element => element.Attribute("data-cfx-source-points") != null).ToArray();
+            var slices = root.Descendants().Where(element => element.Attribute("data-cfx-source-points") != null
+                && (string?)element.Attribute("data-cfx-role") != "legend-entry").ToArray();
             var covered = new HashSet<int>();
             foreach (var slice in slices) {
                 var indices = ((string)slice.Attribute("data-cfx-source-points")!).Split(',').Select(int.Parse).ToArray();

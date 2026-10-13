@@ -93,7 +93,8 @@ internal static partial class SmokeTests {
         dashedTopology.Edges[2].IsMuted = true;
         var dashedScene = dashedTopology.ToGraphScene();
         Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.DashPattern == "8 5" && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Style.DashPattern == "2 5", "Topology graph bridge should preserve auto status dashes and explicit dotted edge patterns.");
-        Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.Color == dashedTopology.Theme.Resolve(dashedTopology.ThemeMode).Status.Medium.Fill.ToCss() && dashedScene.Edges.Single(edge => edge.Id == "queue-api").Style.Color == "#CBD5E1", "Topology graph bridge should preserve status-derived edge colors, including muted fallback colors.");
+        var dashedColors = dashedTopology.Theme.Resolve(dashedTopology.ThemeMode);
+        Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.Color == dashedColors.Status.Medium.Fill.ToCss() && dashedScene.Edges.Single(edge => edge.Id == "queue-api").Style.Color == dashedColors.Border.ToCss(), "Topology graph bridge should preserve status-derived edge colors and use the shared theme border for muted edges.");
         Assert(!dashedScene.Edges.Single(edge => edge.Id == "queue-api").Dashed && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted / queue 7 / 3m ago", "Topology graph bridge should keep muted auto-dash edges solid while preserving secondary and tertiary edge facts by default.");
         var compactLabels = dashedTopology.ToGraphScene(options => options.IncludeEdgeDetailInLabels = false);
         Assert(compactLabels.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted", "Topology graph consumers should be able to opt into compact primary-only edge labels when their surface keeps detail in an inspector.");

@@ -20,8 +20,8 @@ internal static class Program {
     private static void ThemeSnapshots() {
         var canonical = VisualTheme.Graphite();
         var dark = canonical.Resolve(VisualThemeMode.Dark);
-        PackageAssertions.Require(dark.Background == ChartColor.FromHex("#0c0d10")
-            && dark.ElevatedSurface == ChartColor.FromHex("#16181c") && dark.Palette[0] == ChartColor.FromHex("#3987e5"),
+        PackageAssertions.Require(dark.Background.Equals(ChartColor.FromHex("#0c0d10"))
+            && dark.ElevatedSurface.Equals(ChartColor.FromHex("#16181c")) && dark.Palette[0].Equals(ChartColor.FromHex("#3987e5")),
             "The packed canonical dark palette does not match the shared theme resource.");
         var original = canonical.ToJson();
         VisualThemeBuilder? retained = null;

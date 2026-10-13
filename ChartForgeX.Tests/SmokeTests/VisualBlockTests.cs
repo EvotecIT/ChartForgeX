@@ -332,7 +332,7 @@ internal static partial class SmokeTests {
         Assert(compactBarY >= 0 && compactBarHeight > 0 && compactBarY + compactBarHeight <= 170, "SegmentedMetricBlock compact funnel bars should cap to the available plot height instead of overlapping the header.");
         var lastStageX = GetAttribute(compactFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-x");
         var lastStageWidth = GetAttribute(compactFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
-        Assert(lastStageX + lastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock funnel stage geometry should fit within the card content width.");
+        Assert(lastStageX + lastStageWidth <= compactFunnel.Options.Size.Width - compactFunnel.Options.Padding.Right + 0.1, "SegmentedMetricBlock funnel stage geometry should fit within the card content width.");
 
         var denseFunnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
             .WithTheme(VisualTheme.Report())
@@ -343,7 +343,7 @@ internal static partial class SmokeTests {
         var denseFunnelSvg = denseFunnel.ToSvg("visual-block-segmented-dense-funnel");
         var denseLastStageX = GetAttribute(denseFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-x");
         var denseLastStageWidth = GetAttribute(denseFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
-        Assert(denseLastStageX + denseLastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock dense funnel stages should preserve fitted widths instead of overflowing after a minimum bar clamp.");
+        Assert(denseLastStageX + denseLastStageWidth <= denseFunnel.Options.Size.Width - denseFunnel.Options.Padding.Right + 0.1, "SegmentedMetricBlock dense funnel stages should preserve fitted widths instead of overflowing after a minimum bar clamp.");
 
         var compactCapsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
             .WithTitle("Compact Capsule")
