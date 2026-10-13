@@ -7,11 +7,11 @@ using ChartForgeX.VisualBlocks;
 
 internal static class AnimatedVisualStoryExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
-        var theme = ChartTheme.ReportDark();
+        var theme = VisualTheme.Report();
         var activity = Chart.Create()
             .WithTitle("Release activity")
             .WithSubtitle("A native chart can participate in the same story")
-            .WithTheme(theme)
+            .WithTheme(theme, VisualThemeMode.Dark)
             .WithSize(780, 330)
             .WithAxes(false)
             .WithGrid(false)
@@ -22,7 +22,7 @@ internal static class AnimatedVisualStoryExamples {
         var portfolio = ChartTable.Create()
             .WithTitle("Active portfolio")
             .WithSubtitle("Exact values remain readable when motion is unavailable")
-            .WithTheme(theme)
+            .WithTheme(theme, VisualThemeMode.Dark)
             .WithSize(780, 330)
             .WithDenseMode()
             .WithColumns("Project", "Purpose", "Signal")
@@ -40,7 +40,7 @@ internal static class AnimatedVisualStoryExamples {
         var story = VisualGrid.Create()
             .WithTitle("Engineering portfolio")
             .WithSubtitle("One reusable model for profile cards, release stories, status reports, and dashboards")
-            .WithTheme(theme)
+            .WithTheme(theme, VisualThemeMode.Dark)
             .WithColumns(3)
             .WithPanelSize(250, 150)
             .WithGap(16)
@@ -62,6 +62,6 @@ internal static class AnimatedVisualStoryExamples {
     private static MetricCard Metric(string label, string value, string caption) => MetricCard.Create()
         .WithMetric(label, value)
         .WithCaption(caption)
-        .WithTheme(ChartTheme.ReportDark())
+        .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
         .WithSize(250, 150);
 }

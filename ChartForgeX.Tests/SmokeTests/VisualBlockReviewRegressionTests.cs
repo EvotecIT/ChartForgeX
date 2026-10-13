@@ -9,7 +9,7 @@ internal static partial class SmokeTests {
     private static void VisualBlockReviewRegressionsStayCovered() {
         var zeroFunnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
             .WithTitle("Zero Funnel")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(360, 180)
             .AddItem("Reached", 0, segments: 4)
             .AddItem("Converted", 0, segments: 3);
@@ -18,13 +18,13 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(zeroFunnelSvg, "data-cfx-role=\"segmented-metric-funnel-bar\"") == 7, "SegmentedMetricBlock zero-total funnel columns should preserve caller supplied segment counts.");
         Assert(zeroFunnel.ToPng().Length > 64, "SegmentedMetricBlock zero-total funnel columns should render PNG output.");
 
-        var zeroSliceCapsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop).WithTheme(ChartTheme.ReportLight()).WithSize(420, 220).AddItem("Used", 10).AddItem("Empty", 0);
+        var zeroSliceCapsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop).WithTheme(VisualTheme.Report()).WithSize(420, 220).AddItem("Used", 10).AddItem("Empty", 0);
         var zeroSliceCapsuleSvg = zeroSliceCapsule.ToSvg("visual-block-segmented-zero-slice-capsule");
         Assert(!zeroSliceCapsuleSvg.Contains("data-cfx-label=\"Empty\"", StringComparison.Ordinal), "SegmentedMetricBlock capsule loops should not render visible segments for zero-share items.");
         Assert(zeroSliceCapsule.ToPng().Length > 64, "SegmentedMetricBlock capsule loops with zero-share items should still render PNG output.");
 
         var compactCompositionLegend = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(360, 190)
             .WithMetric("Tiny", 12)
             .AddItem("One", 1)
@@ -51,7 +51,7 @@ internal static partial class SmokeTests {
         var compactProgressRows = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithTitle("Compact Progress")
             .WithSubtitle("Compact card")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(420, 250)
             .AddItem("One", 8, item => item.Segments = 12)
             .AddItem("Two", 7, item => item.Segments = 12)
@@ -73,7 +73,7 @@ internal static partial class SmokeTests {
         var compactCapsuleLoop = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
             .WithTitle("Compact Capsule")
             .WithSubtitle("Compact card")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(360, 170)
             .AddItem("First", 10)
             .AddItem("Second", 8)

@@ -37,8 +37,8 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.RangeBar) {
             var horizontal = variant is "horizontal" or "compact-horizontal";
             var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk")
-                .AddRangeBar("Expected", new[] { new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30), new ChartInterval(3, 15, 35), new ChartInterval(4, 25, 50) })
-                .AddRangeBar("Observed", new[] { new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55) })
+                .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("expected"), "Expected", new[] { new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30), new ChartInterval(3, 15, 35), new ChartInterval(4, 25, 50) }))
+                .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("observed"), "Observed", new[] { new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55) }))
                 .ConfigureRangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
                 .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithDataLabels();
             if (horizontal) chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
@@ -48,10 +48,10 @@ public static partial class V2GalleryModels {
         if (kind == ChartSeriesKind.BoxPlot) {
             var horizontal = variant is "horizontal" or "compact-horizontal";
             var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk")
-                .AddBoxPlot("Expected", new[] { new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35),
-                    new ChartBoxPlot(3, 12, 20, 28, 35, 45), new ChartBoxPlot(4, 20, 30, 35, 45, 55) })
-                .AddBoxPlot("Observed", new[] { new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
-                    new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58) })
+                .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("expected"), "Expected", new[] { new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35),
+                    new ChartBoxPlot(3, 12, 20, 28, 35, 45), new ChartBoxPlot(4, 20, 30, 35, 45, 55) }))
+                .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("observed"), "Observed", new[] { new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
+                    new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58) }))
                 .ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
                 .WithDataLabels();
             chart.Series[1].WithPointFillPattern(2, ChartFillPattern.DiagonalForward);

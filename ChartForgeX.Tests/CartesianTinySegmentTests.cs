@@ -37,7 +37,7 @@ public sealed class CartesianTinySegmentTests {
     }
 
     private static Chart Tiny(bool horizontal, int value) {
-        var chart = Chart.Create().WithTheme(ChartTheme.Light()).WithSize(220, 140).WithPadding(12, 12, 12, 12)
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(220, 140).WithPadding(12, 12, 12, 12)
             .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithCard(false)
             .WithBarStyle(ChartBarStyle.SegmentedCapsule);
         chart.Options.ShowPlotBackground = false;

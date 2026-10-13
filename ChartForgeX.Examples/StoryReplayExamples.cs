@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Raster;
 using ChartForgeX.Stories;
@@ -43,7 +44,7 @@ internal static class StoryReplayExamples {
             .Explain(TimeSpan.FromSeconds(5), "Idle waits shortened; original times retained.");
         var story = VisualStory.Create("Replay the result.")
             .WithDescription("Resolved demonstration events: scroll, update progress, switch sessions and keep the original timestamps. Commands are not executed.")
-            .WithTheme(VisualStoryTheme.GraphiteDark()).WithFormat(format, format == VisualStoryFormat.Portrait ? 480 : 720);
+            .WithTheme(VisualTheme.Graphite()).WithFormat(format, format == VisualStoryFormat.Portrait ? 480 : 720);
         story.Scene("session", "A complete session, at a readable pace", replay.Duration.TotalSeconds)
             .Panel("terminal", new VisualStoryReplaySurface(replay, options: new VisualStoryTerminalOptions(20)));
         story.Outcome("report", "report.html · 24 checks passed", "terminal");

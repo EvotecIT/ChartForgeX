@@ -14,17 +14,17 @@ Current visual-block primitives:
 - `ScheduleTimelineBlock` for dense time-of-day swimlanes with rounded event pills, status stripes, current-time markers, clipped-event metadata, badges, and avatar stacks.
 - `VisualGrid` for composing charts and visual blocks side by side without forcing non-chart content into `ChartGrid`.
 
-The first API is intentionally generic and bounded:
+Visual blocks render structured facts with a bounded layout:
 
 - no spreadsheet engine
 - no arbitrary HTML renderer
 - no region-specific assumptions
 - no dependency on `System.Drawing` or external table/list libraries
 - static SVG/HTML/PNG output by default
-- shared `ChartTheme`, `ChartColor`, `ChartPalettes`, transparent background, and PNG density concepts
+- shared `VisualTheme`, explicit light/dark mode, `ChartColor`, `ChartPalettes`, transparent background, and PNG density concepts
 - Wardley component outlines, evolution arrows, accelerator markers and icon curves share their geometry between SVG and PNG. Theme colours and authored transparency apply to both outputs; font coverage and curved-edge antialiasing can still differ.
 
-Packet, block-layout, Git graph, Wardley, Venn and fishbone body text follows `ChartTheme.DataLabelFontSize`. Each native text role retains its proportion to the default body size; title and subtitle sizes control headings independently. Set the body size to change node labels, relationship labels and small annotations together in SVG and PNG. Existing fixed layout bounds can shorten long text at larger sizes.
+Packet, block-layout, Git graph, Wardley, Venn and fishbone body text follows `VisualTheme.Typography.DataLabelSize`. Each native text role retains its proportion to the default body size; title and subtitle sizes control headings independently. Set the body size to change node labels, relationship labels and small annotations together in SVG and PNG. Existing fixed layout bounds can shorten long text at larger sizes.
 
 Example:
 
@@ -36,7 +36,7 @@ using ChartForgeX.VisualBlocks;
 
 var table = ChartTable.Create()
     .WithTitle("Drive Summary")
-    .WithTheme(ChartTheme.TransparentOverlayDark())
+    .WithTheme(VisualTheme.TransparentOverlay(), VisualThemeMode.Dark)
     .WithTransparentBackground()
     .AddColumn("Drive")
     .AddColumn("Used", TextAlignment.Right, format: "0%")
@@ -51,6 +51,17 @@ table.SaveSvg("drives.svg");
 table.SaveHtml("drives.html");
 table.SavePng("drives.png");
 ```
+
+Themes are immutable snapshots shared by charts, diagrams, blocks and canvases. `WithTheme(theme, mode)` selects one palette, and `WithThemeMode(mode)` changes it without replacing the theme. `ConfigureTheme` creates and assigns a new snapshot for the block:
+
+```csharp
+table.ConfigureTheme(builder => {
+    builder.Dark.Accent = ChartColor.FromHex("#60A5FA");
+    builder.Typography = new VisualTypography(dataLabelSize: 14);
+});
+```
+
+A `VisualGrid` has its own theme and mode for its frame and headings; it starts with Graphite in light mode. Configure each child when the whole composition should share a palette. Adding a child does not change the grid's theme. Use block options such as `WithCard(false)` and grid frame settings to control local framing.
 
 Table cells can host bounded badges, chips, and microvisuals for dashboard tables without embedding full charts in each row:
 
@@ -110,6 +121,7 @@ var section = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
 
 ```csharp
 using ChartForgeX.Terminal;
+using ChartForgeX.Themes;
 
 var results = TerminalTable.Create()
     .WithColumns("CHECK", "STATUS")
@@ -119,7 +131,7 @@ var results = TerminalTable.Create()
 var console = TerminalStory.Create()
     .WithTitle(@"pwsh - C:\OpenSource")
     .WithDialect(TerminalDialect.PowerShell)
-    .WithTheme(TerminalTheme.PowerShell())
+    .WithTheme(TerminalThemes.PowerShell(), VisualThemeMode.Dark)
     .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
     .WithWorkingDirectory(@"C:\OpenSource")
     .Command(@".\Invoke-Validation.ps1")
@@ -230,7 +242,7 @@ var attendance = Chart.Create()
     .WithDashboardTrendFocus(4, 37, "Apr", ChartColor.FromHex("#7057E6"), ChartDataLabelPlacement.Right);
 ```
 
-Segmented metric blocks provide fixed-count progress rows, exact-value performance rows, capsule loops, part-to-whole status strips, funnel columns, and distribution rows without domain-specific card APIs. Items use the theme palette by default; provide a color or semantic status only when a specific item needs one. Filled and empty ticks include renderer-owned shadow/highlight layers, so cards can keep a polished report look in both SVG and PNG without hand-drawing rectangles:
+Segmented metric blocks provide fixed-count progress rows, exact-value performance rows, capsule loops, part-to-whole status strips, funnel columns, and distribution rows without domain-specific card APIs. Items use the theme palette by default; provide a color or semantic status only when a specific item needs one. Filled and empty segments use the shared palette and borders in SVG and PNG:
 
 `WithHeaderSymbol()` adds a compact identity badge to progress rows, capsule loops, funnel columns, composition strips, and distribution rows.
 

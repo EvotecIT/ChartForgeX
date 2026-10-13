@@ -17,11 +17,12 @@ public sealed partial class Chart {
     /// first). Null uses the invariant abbreviations <c>Sun</c> through <c>Sat</c>.</param>
     /// <param name="monthNames">Optional localized month names: twelve entries, January first. Null uses the invariant
     /// abbreviations <c>Jan</c> through <c>Dec</c>.</param>
+    /// <param name="id">Optional stable identity assigned before attachment; calendar configuration remains owned by this chart.</param>
     /// <returns>The current chart.</returns>
     /// <remarks>The scale words and the accessible summary come from <see cref="ChartOptions.Labels"/>
     /// (<see cref="ChartLabels.Less"/>, <see cref="ChartLabels.More"/>, <see cref="ChartLabels.NoData"/>,
     /// <see cref="ChartLabels.AccessibleTextFormatter"/>); cell sizing comes from <see cref="WithCalendarHeatmapCells"/>.</remarks>
-    public Chart AddCalendarHeatmap(string name, IEnumerable<ChartCalendarHeatmapItem> items, ChartColor? color = null, DayOfWeek firstDayOfWeek = DayOfWeek.Sunday, IReadOnlyList<string>? dayNames = null, IReadOnlyList<string>? monthNames = null) {
+    public Chart AddCalendarHeatmap(string name, IEnumerable<ChartCalendarHeatmapItem> items, ChartColor? color = null, DayOfWeek firstDayOfWeek = DayOfWeek.Sunday, IReadOnlyList<string>? dayNames = null, IReadOnlyList<string>? monthNames = null, ChartSeriesId? id = null) {
         EnsureCanAddSeries();
         if (items == null) throw new ArgumentNullException(nameof(items));
         if (!Enum.IsDefined(typeof(DayOfWeek), firstDayOfWeek)) throw new ArgumentOutOfRangeException(nameof(firstDayOfWeek), firstDayOfWeek, "Unknown weekday.");
@@ -47,7 +48,7 @@ public sealed partial class Chart {
 
         Options.XAxisLabels.Clear();
         Options.XAxisLabels.AddRange(labels);
-        Add(name, ChartSeriesKind.CalendarHeatmap, points, color);
+        Add(name, ChartSeriesKind.CalendarHeatmap, points, color, id: id);
         var series = Series[Series.Count - 1];
         series.PointColors.AddRange(colors);
         series.CalendarFirstDay = firstDayOfWeek;

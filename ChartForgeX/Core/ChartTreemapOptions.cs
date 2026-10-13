@@ -24,7 +24,14 @@ public sealed class ChartTreemapOptions {
     /// <summary>Gets or sets the numeric color scale. When omitted, supplied color values use the theme's sequential ramp.</summary>
     public ChartColorScale? ColorScale { get; set; }
     /// <summary>Gets the independent color measurement's name and number display policy.</summary>
-    public ChartColorDimensionOptions ColorDimension { get; } = new();
+    public ChartColorDimensionOptions ColorDimension { get; private set; } = new();
+
+    /// <summary>Copies the configured state and detaches the mutable color measurement options.</summary>
+    internal ChartTreemapOptions Clone() {
+        var clone = (ChartTreemapOptions)MemberwiseClone();
+        clone.ColorDimension = ColorDimension.Clone();
+        return clone;
+    }
 
     private static void NonNegative(double value, string parameter) {
         ChartGuards.Finite(value, parameter);

@@ -54,7 +54,7 @@ public sealed class SvgVisualCanvasRenderer {
         writer.StartElement("stop").Attribute("offset", "0%").Attribute("stop-color", canvas.BackgroundTop.ToCss()).EndEmptyElement().Line();
         writer.StartElement("stop").Attribute("offset", "100%").Attribute("stop-color", canvas.BackgroundBottom.ToCss()).EndEmptyElement().Line();
         writer.EndElement().Line();
-        var theme = canvas.Theme ?? new VisualCanvasTheme();
+        var theme = canvas.ResolveStyle();
         writer.StartElement("linearGradient").Attribute("id", id + "-tile-glass").Attribute("x1", "0").Attribute("y1", "0").Attribute("x2", "0").Attribute("y2", "1").EndStartElement().Line();
         writer.StartElement("stop").Attribute("offset", "0%").Attribute("stop-color", theme.TileGlassTop.ToCss()).EndEmptyElement().Line();
         writer.StartElement("stop").Attribute("offset", "100%").Attribute("stop-color", theme.TileGlassBottom.ToCss()).EndEmptyElement().Line();
@@ -84,7 +84,7 @@ public sealed class SvgVisualCanvasRenderer {
         return writer.Build();
     }
 
-    private static void RenderLayer(SvgMarkupWriter writer, VisualCanvasLayer layer, string id, VisualCanvasTheme theme, int layerIndex) {
+    private static void RenderLayer(SvgMarkupWriter writer, VisualCanvasLayer layer, string id, ResolvedVisualCanvasStyle theme, int layerIndex) {
         if (layer is VisualCanvasTextLayer text) {
             RenderText(writer, text, theme);
         } else if (layer is VisualCanvasHeroTitleLayer hero) {
@@ -104,7 +104,7 @@ public sealed class SvgVisualCanvasRenderer {
         }
     }
 
-    private static void RenderTechBackdrop(SvgMarkupWriter writer, VisualCanvas canvas, string id, VisualCanvasTheme theme) {
+    private static void RenderTechBackdrop(SvgMarkupWriter writer, VisualCanvas canvas, string id, ResolvedVisualCanvasStyle theme) {
         var accent = theme.SecondaryAccent;
         var width = canvas.DesignWidth;
         var height = canvas.DesignHeight;
@@ -146,7 +146,7 @@ public sealed class SvgVisualCanvasRenderer {
         return layout + ";background-color:" + canvas.BackgroundBottom.ToCss();
     }
 
-    private static void RenderText(SvgMarkupWriter writer, VisualCanvasTextLayer text, VisualCanvasTheme theme) {
+    private static void RenderText(SvgMarkupWriter writer, VisualCanvasTextLayer text, ResolvedVisualCanvasStyle theme) {
         var anchor = Anchor(text.Alignment);
         var x = AlignedX(text.X, text.Width, text.Alignment);
         var weight = text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular;
@@ -165,7 +165,7 @@ public sealed class SvgVisualCanvasRenderer {
             .Line();
     }
 
-    private static void RenderHeroTitle(SvgMarkupWriter writer, VisualCanvasHeroTitleLayer hero, VisualCanvasTheme theme) {
+    private static void RenderHeroTitle(SvgMarkupWriter writer, VisualCanvasHeroTitleLayer hero, ResolvedVisualCanvasStyle theme) {
         var anchor = Anchor(hero.Alignment);
         var x = AlignedX(hero.X, hero.Width, hero.Alignment);
         var fontSize = hero.FittedFontSize(VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle, theme.TextMeasurementMode));
@@ -183,7 +183,7 @@ public sealed class SvgVisualCanvasRenderer {
         writer.EndElement().Line();
     }
 
-    private static void RenderKeyValueBlock(SvgMarkupWriter writer, VisualCanvasKeyValueBlockLayer block, VisualCanvasTheme theme) {
+    private static void RenderKeyValueBlock(SvgMarkupWriter writer, VisualCanvasKeyValueBlockLayer block, ResolvedVisualCanvasStyle theme) {
         var layout = VisualCanvasKeyValueBlockLayout.Build(block, theme);
         var labelColor = block.LabelColorOverride ?? theme.TileLabelColor;
         var valueColor = block.ValueColorOverride ?? theme.TileValueColor;
@@ -222,7 +222,7 @@ public sealed class SvgVisualCanvasRenderer {
         writer.EndElement().Line();
     }
 
-    private static void RenderInfoTile(SvgMarkupWriter writer, VisualCanvasInfoTileLayer tile, string id, VisualCanvasTheme theme) {
+    private static void RenderInfoTile(SvgMarkupWriter writer, VisualCanvasInfoTileLayer tile, string id, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
@@ -285,7 +285,7 @@ public sealed class SvgVisualCanvasRenderer {
         writer.EndElement().Line();
     }
 
-    private static void RenderTileMiniChart(SvgMarkupWriter writer, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme, ChartColor accent, double x, double y, double width, double height) {
+    private static void RenderTileMiniChart(SvgMarkupWriter writer, VisualCanvasInfoTileLayer tile, ResolvedVisualCanvasStyle theme, ChartColor accent, double x, double y, double width, double height) {
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-info-tile-mini-chart").EndStartElement().Line();
         writer.StartElement("rect").Attribute("x", x).Attribute("y", y).Attribute("width", width).Attribute("height", height).Attribute("rx", Math.Min(8, height * 0.24)).Attribute("fill", theme.TileMiniChartTrackColor.WithOpacity(0.20).ToCss()).EndEmptyElement().Line();
         writer.StartElement("path").Attribute("d", "M " + F(x + 4) + " " + F(y + height * 0.72) + " L " + F(x + width - 4) + " " + F(y + height * 0.72) + " M " + F(x + 4) + " " + F(y + height * 0.38) + " L " + F(x + width - 4) + " " + F(y + height * 0.38)).Attribute("fill", "none").Attribute("stroke", theme.TileMiniChartTrackColor.ToCss()).Attribute("stroke-width", 1).EndEmptyElement().Line();
@@ -400,7 +400,7 @@ public sealed class SvgVisualCanvasRenderer {
         writer.EndElement().Line();
     }
 
-    private static void RenderHeroBadge(SvgMarkupWriter writer, VisualCanvasHeroBadgeLayer badge, string id, VisualCanvasTheme theme, int layerIndex) {
+    private static void RenderHeroBadge(SvgMarkupWriter writer, VisualCanvasHeroBadgeLayer badge, string id, ResolvedVisualCanvasStyle theme, int layerIndex) {
         VisualCanvas.ValidateEnum(badge.ImageFit, nameof(badge.ImageFit));
         var accent = badge.AccentOverride ?? theme.SecondaryAccent;
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-hero-badge").EndStartElement().Line();
@@ -430,7 +430,7 @@ public sealed class SvgVisualCanvasRenderer {
         return VisualCanvasImagePixels.EmbeddedPng(badge.ImageSourceWidth, badge.ImageSourceHeight, badge.ImageRgba);
     }
 
-    private static void RenderImage(SvgMarkupWriter writer, VisualCanvasImageLayer image, string id, int layerIndex, VisualCanvasTheme theme) {
+    private static void RenderImage(SvgMarkupWriter writer, VisualCanvasImageLayer image, string id, int layerIndex, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(image.Fit, nameof(image.Fit));
         var href = image.Href;
         if (href.Length == 0 && image.Rgba != null) href = VisualCanvasImagePixels.EmbeddedPng(image.SourceWidth, image.SourceHeight, image.Rgba);
@@ -485,7 +485,7 @@ public sealed class SvgVisualCanvasRenderer {
         }
     }
 
-    private static ChartColor TileTextColor(VisualCanvasInfoTileTextRole role, VisualCanvasTheme theme) {
+    private static ChartColor TileTextColor(VisualCanvasInfoTileTextRole role, ResolvedVisualCanvasStyle theme) {
         switch (role) {
             case VisualCanvasInfoTileTextRole.Label: return theme.TileLabelColor;
             case VisualCanvasInfoTileTextRole.Detail: return theme.TileDetailColor;
@@ -493,7 +493,7 @@ public sealed class SvgVisualCanvasRenderer {
         }
     }
 
-    private static void RenderFeatureStrip(SvgMarkupWriter writer, VisualCanvasFeatureStripLayer strip, VisualCanvasTheme theme) {
+    private static void RenderFeatureStrip(SvgMarkupWriter writer, VisualCanvasFeatureStripLayer strip, ResolvedVisualCanvasStyle theme) {
         writer.StartElement("g").Attribute("data-cfx-role", "visual-canvas-feature-strip").EndStartElement().Line();
         var slot = strip.Width / strip.Items.Count;
         var iconFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.Emphasized, theme.TextMeasurementMode);

@@ -14,10 +14,10 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
     [BrowserFact]
     public async Task SharedDuplicateXUsesTheInteractedObservationAndDeterministicCounterparts() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(ChartTheme.GraphiteLight()).WithTitle("Observations sharing X")
-            .AddScatter("Observed", new[] { new ChartPoint(1, 10), new ChartPoint(1, 20), new ChartPoint(2, 15) })
+        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite()).WithTitle("Observations sharing X")
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed", new[] { new ChartPoint(1, 10), new ChartPoint(1, 20), new ChartPoint(2, 15) }))
             .AddScatter("Comparison", new[] { new ChartPoint(1, 30), new ChartPoint(1, 40), new ChartPoint(2, 25) });
-        chart.Series[0].WithInteractionKey("observations").WithPointColor(1, "#7b61e8");
+        chart.Series[0].WithPointColor(1, "#7b61e8");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)));
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
@@ -46,7 +46,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
     public async Task SolidBarSwatchesUseThePaintedGradientInsteadOfWhiteDecoration(bool dark, HtmlChartTooltipMode mode, int width) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithBarStyle(ChartBarStyle.Solid).WithTitle("Decorated bar observations")
-            .WithTheme((dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithPalette("#176eaf", "#df4263"))
+            .WithTheme(VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263")), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Previous", ChartPoints.FromValues(1, 2, 1));
         chart.Series[0].WithPointColor(1, "#7b61e8").WithPointFillPattern(1, ChartFillPattern.Crosshatch);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode), width, 560);
@@ -71,7 +71,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
     [InlineData(true)]
     public async Task HorizontalAndRangeBarGradientsRemainAuthoritativeWithoutALegend(bool range) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithLegend(false).WithTheme(ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(596, 338).WithLegend(false).WithTheme(VisualTheme.Graphite())
             .WithBarStyle(ChartBarStyle.Solid);
         if (range) chart.AddRangeBar("Expected", new[] { new ChartInterval(1, 2, 8), new ChartInterval(2, 3, 9) });
         else chart.AddHorizontalBar("Expected", ChartPoints.FromValues(3, 7, 5));

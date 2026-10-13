@@ -11,11 +11,11 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualScalarProgressCompiler {
     private static void Bullets(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
         foreach (var series in chart.Series) Range(series, out _, out _);
-        var min = chart.Options.XAxis.Minimum ?? chart.Series.Min(series => series.Points[0].X);
-        var max = chart.Options.XAxis.Maximum ?? chart.Series.Max(series => series.Points[1].X);
+        var min = chart.Options.XAxis.Minimum ?? chart.Series.Min(series => series.RenderPoints[0].X);
+        var max = chart.Options.XAxis.Maximum ?? chart.Series.Max(series => series.RenderPoints[1].X);
         if (max <= min || !Finite(max - min)) throw new InvalidOperationException("Bullet charts require a finite shared positive range.");
-        var labels = chart.Series.Select(series => Value(chart, series, 0, series.Points[0].Y)).ToArray();
-        var targets = chart.Series.Select(series => Value(chart, series, 1, series.Points[1].Y)).ToArray();
+        var labels = chart.Series.Select(series => Value(chart, series, 0, series.RenderPoints[0].Y)).ToArray();
+        var targets = chart.Series.Select(series => ChartNumericFormatter.FormatValue(chart.Options, series.BulletValues[0].Target)).ToArray();
         var gap = context.Theme.Spacing;
         var labelWidth = 0d; var valueWidth = 0d;
         for (var index = 0; index < chart.Series.Count; index++) {
@@ -24,7 +24,7 @@ internal static partial class VisualScalarProgressCompiler {
             labelWidth = Math.Max(labelWidth, builder.MeasureText(series.Name, style).Width + gap);
             valueWidth = Math.Max(valueWidth, builder.MeasureText(labels[index], Style(chart, context, series, 0,
                 colors.Foreground, context.Theme.Typography.DataLabelSize, 700)).Width
-                + builder.MeasureText("/ " + targets[index], Style(chart, context, series, 1, colors.MutedForeground,
+                + builder.MeasureText("/ " + targets[index], Style(chart, context, series, 0, colors.MutedForeground,
                     context.Theme.Typography.DataLabelSize, 400)).Width + gap * 1.5);
         }
         labelWidth = Math.Min(plot.Width * .3, labelWidth); valueWidth = Math.Min(plot.Width * .3, valueWidth);
@@ -36,7 +36,7 @@ internal static partial class VisualScalarProgressCompiler {
         if (width <= 0 || barHeight <= 0) { builder.AddDiagnostic(new VisualDiagnostic("bullet.insufficient-space", "No space remains for bullet rows.")); return; }
         double X(double value) => left + width * VisualRadialPrimitives.Clamp((VisualRadialPrimitives.Clamp(value, min, max) - min) / (max - min));
         for (var index = 0; index < chart.Series.Count; index++) {
-            var series = chart.Series[index]; var value = series.Points[0].Y; var target = series.Points[1].Y;
+            var series = chart.Series[index]; var value = series.RenderPoints[0].Y; var target = series.RenderPoints[1].Y;
             var y = plot.Top + rowHeight * (index + .5); var bounds = new ChartRect(plot.Left, plot.Top + rowHeight * index, plot.Width, rowHeight);
             var status = value < target ? "below-target" : value > target ? "above-target" : "meets-target";
             var state = series.StateRole == ChartSeriesState.None ? value < target ? ChartSeriesState.Danger : ChartSeriesState.Success : series.StateRole;
@@ -44,12 +44,13 @@ internal static partial class VisualScalarProgressCompiler {
             var measurePaint = BulletPaint(series, color);
             builder.AddRegion(new VisualSemanticRegion(Id(index), "bullet-row", bounds, series.Name + ": " + labels[index] + ", target " + targets[index]));
             using (builder.PushGroup(Id(index), "bullet-row", new Dictionary<string, string> {
-                ["data-cfx-series"] = N(index), ["data-cfx-label"] = series.Name, ["data-cfx-value"] = N(value), ["data-cfx-target"] = N(target),
-                ["data-cfx-min"] = N(series.Points[0].X), ["data-cfx-max"] = N(series.Points[1].X), ["data-cfx-scale-min"] = N(min), ["data-cfx-scale-max"] = N(max),
+                ["data-cfx-series"] = N(index), ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
+                ["data-cfx-label"] = series.Name, ["data-cfx-value"] = N(value), ["data-cfx-target"] = N(target),
+                ["data-cfx-min"] = N(series.RenderPoints[0].X), ["data-cfx-max"] = N(series.RenderPoints[1].X), ["data-cfx-scale-min"] = N(min), ["data-cfx-scale-max"] = N(max),
                 ["data-cfx-status"] = status, ["data-cfx-state"] = state.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey,
-                ["data-cfx-source-range-ends"] = string.Join(",", series.Points.Skip(2).Select(point => N(point.X)))
+                ["data-cfx-source-range-ends"] = string.Join(",", series.RenderPoints.Skip(2).Select(point => N(point.X)))
             })) {
-                var ends = series.Points.Skip(2).Select(point => point.X).Where(end => end > min && end < max).OrderBy(end => end).Distinct().ToList();
+                var ends = series.RenderPoints.Skip(2).Select(point => point.X).Where(end => end > min && end < max).OrderBy(end => end).Distinct().ToList();
                 if (ends.Count == 0) { ends.Add(min + (max - min) * .6); ends.Add(min + (max - min) * .8); }
                 ends.Add(max); var previous = min;
                 for (var range = 0; range < ends.Count; range++) {
@@ -72,7 +73,7 @@ internal static partial class VisualScalarProgressCompiler {
                     Text(chart, context, builder, series, 0, labels[index], new ChartRect(textLeft, bounds.Top, textWidth, rowHeight),
                         "bullet-value-label", Id(index) + "-value", valueColor, context.Theme.Typography.DataLabelSize, 700, alignment: TextAlignment.Left);
                     var targetLeft = textLeft + textWidth + gap / 2;
-                    Text(chart, context, builder, series, 1, "/ " + targets[index], new ChartRect(targetLeft, bounds.Top, Math.Max(0, plot.Right - targetLeft), rowHeight),
+                    Text(chart, context, builder, series, 0, "/ " + targets[index], new ChartRect(targetLeft, bounds.Top, Math.Max(0, plot.Right - targetLeft), rowHeight),
                         "bullet-target-label", Id(index) + "-target", colors.MutedForeground, context.Theme.Typography.DataLabelSize, alignment: TextAlignment.Left);
                 }
             }

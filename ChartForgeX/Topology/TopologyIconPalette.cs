@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -95,7 +96,7 @@ public static class TopologyIconPaletteExtensions {
             .WithId(RequiredText(options.Id, nameof(options.Id)))
             .WithTitle(RequiredText(options.Title, nameof(options.Title)))
             .WithLegend(null)
-            .WithTheme(TopologyTheme.Light());
+            .WithTheme(VisualTheme.Graphite());
         if (!string.IsNullOrWhiteSpace(options.Subtitle)) chart.WithSubtitle(options.Subtitle!);
 
         var x = outerPadding;

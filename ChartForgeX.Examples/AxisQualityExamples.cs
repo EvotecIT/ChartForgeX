@@ -10,7 +10,7 @@ internal static class AxisQualityExamples {
         var chart = Chart.Create()
             .WithTitle("Automatic Axis Label Fitting")
             .WithSubtitle("Dense long-form values thin predictably instead of colliding")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(760, 300)
             .WithLegend(false)
             .WithXAxis("Review window")

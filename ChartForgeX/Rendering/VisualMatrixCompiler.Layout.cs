@@ -14,7 +14,7 @@ internal static partial class VisualMatrixCompiler {
         var style = VisualStateSceneTools.TickStyle(chart, context); var gap = context.Theme.Spacing;
         var x = chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels;
         var y = chart.Options.ShowAxes && chart.Options.YAxis.Visible;
-        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground });
+        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground });
         var widest = columns.Select(formatColumn)
             .Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
         var lineHeight = builder.MeasureText("Mg", style).Height;
@@ -114,7 +114,7 @@ internal static partial class VisualMatrixCompiler {
 
     private static void CellLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series, int index,
         ChartRect cellBounds, ChartRect viewport, ChartColorBlend ink, ChartHeatmapCell? cell, string id, ChartColorPresentation presentation) {
-        var text = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : presentation.Value(series.Points[index].Y);
+        var text = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : presentation.Value(series.RenderPoints[index].Y);
         if (cell.HasValue && (index >= series.PointLabels.Count || series.PointLabels[index] == null)) text = cell.Value.Text ?? text;
         var style = VisualStateSceneTools.DataStyle(chart, context, series, index, ink.Color);
         style.FontSize = Math.Max(8, style.FontSize);
@@ -156,7 +156,7 @@ internal static partial class VisualMatrixCompiler {
             bounds = new ChartRect(bounds.Left, bounds.Top + heading, bounds.Width, Math.Max(0, bounds.Height - heading));
         }
         var textHeight = builder.MeasureText("Mg", style).Height; var swatch = Math.Min(12, Math.Max(0, bounds.Height - textHeight));
-        var values = chart.Series.SelectMany(series => series.Points).Select(point => point.Y).ToArray();
+        var values = chart.Series.SelectMany(series => series.RenderPoints).Select(point => point.Y).ToArray();
         var zero = min >= 0 && values.Any(value => value == 0);
         var nonZero = values.Where(value => value != 0).ToArray();
         var floor = zero && nonZero.Length > 0 ? nonZero.Min() : min;

@@ -3,7 +3,7 @@ using ChartForgeX.Terminal;
 
 namespace ChartForgeX.Stories;
 
-public sealed partial class VisualStoryTheme {
+internal sealed partial class ResolvedVisualStoryStyle {
     private ChartColor? _windowHeader;
     /// <summary>Gets or sets the source and replay window chrome. Minimal preserves the restrained story presentation.</summary>
     public TerminalWindowStyle WindowStyle { get; set; } = TerminalWindowStyle.Minimal;
@@ -13,16 +13,16 @@ public sealed partial class VisualStoryTheme {
     public ChartColor? BackgroundEnd { get; set; }
 
     /// <summary>Creates a colorful macOS-inspired story with traffic-light controls and a violet desktop.</summary>
-    public static VisualStoryTheme MacOS(bool light = false) => Desktop(TerminalWindowStyle.MacOS, light,
+    public static ResolvedVisualStoryStyle MacOS(bool light = false) => Desktop(TerminalWindowStyle.MacOS, light,
         light ? "#E2E7FF" : "#293D73", light ? "#F5DDF4" : "#74477D", light ? "#E8EAF8" : "#29364D", "#A68BFA");
     /// <summary>Creates a Windows-inspired story with tab chrome and a blue desktop.</summary>
-    public static VisualStoryTheme Windows(bool light = false) => Desktop(TerminalWindowStyle.WindowsTerminal, light,
+    public static ResolvedVisualStoryStyle Windows(bool light = false) => Desktop(TerminalWindowStyle.WindowsTerminal, light,
         light ? "#D7ECFF" : "#084D7D", light ? "#E8E5FF" : "#19336A", light ? "#E5EDFA" : "#1B354E", "#63CAFF");
     /// <summary>Creates a Linux-inspired story with right-hand window controls and an aubergine desktop.</summary>
-    public static VisualStoryTheme Linux(bool light = false) => Desktop(TerminalWindowStyle.Linux, light,
+    public static ResolvedVisualStoryStyle Linux(bool light = false) => Desktop(TerminalWindowStyle.Linux, light,
         light ? "#FFE4DA" : "#65304A", light ? "#EFDEFF" : "#342147", light ? "#F4E7EF" : "#3B2941", "#FFB071");
 
-    private static VisualStoryTheme Desktop(TerminalWindowStyle style, bool light, string background, string end, string header, string accent) {
+    private static ResolvedVisualStoryStyle Desktop(TerminalWindowStyle style, bool light, string background, string end, string header, string accent) {
         var theme = light ? Light() : PremiumDark();
         theme.WindowStyle = style;
         theme.Background = ChartColor.FromHex(background);
@@ -51,7 +51,7 @@ public sealed partial class VisualStoryTheme {
         return theme;
     }
 
-    internal TerminalTheme TerminalPalette() => new() {
+    internal ResolvedTerminalStyle TerminalPalette() => new() {
         PageBackground = Background, Background = Panel, HeaderBackground = WindowHeader,
         Border = Border, Text = Text, Muted = Muted, Accent = Accent, Success = Success,
         Warning = Syntax.Parameter, Error = Syntax.Keyword, Cursor = Text, FontFamily = MonospaceFontFamily

@@ -100,7 +100,7 @@ internal static partial class VisualRadialCompiler {
     /// <summary>Uses the explicit aggregation budget independently of theme or label placement.</summary>
     private static IReadOnlyList<RadialSlice> GetSlices(Chart chart, VisualThemeColors colors) {
         var series = chart.Series[0];
-        var slices = series.Points.Select((point, index) => new RadialSlice(index, new[] { index },
+        var slices = series.RenderPoints.Select((point, index) => new RadialSlice(index, new[] { index },
             Label(chart, point, index), point.Y, ChartSeriesColours.Point(series, index, index, colors),
             index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern)).ToList();
         var positive = slices.Where(slice => slice.Value > 0).ToList();

@@ -119,6 +119,7 @@
   };
   const pointTargetId = (node) => {
     const data = node.dataset || {};
+    if (data.cfxObservationId !== undefined) return JSON.stringify([seriesKey(node), data.cfxObservationId]);
     const derived = hasDerivedPointIdentity(node);
     const point = derived ? 'derived:' + derivedPointIdentity(node) : sourcePointIndex(node) ?? '0';
     return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
@@ -195,6 +196,8 @@
       label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
+      seriesScope: data.cfxSeriesScope,
+      observationId: data.cfxObservationId,
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
       sourcePoints: sourcePointCollection(node),

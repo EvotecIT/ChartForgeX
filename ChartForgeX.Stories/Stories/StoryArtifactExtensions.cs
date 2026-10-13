@@ -38,7 +38,7 @@ public static class StoryArtifactExtensions {
         var layout = TerminalStoryLayout.Build(story);
         var raster = RasterImageDecoder.Decode(story.ToPng());
         var transcript = story.ToTranscript();
-        var builder = new VisualSceneBuilder(new VisualSize(layout.Width, layout.Height), FontSpec.FromFamily(story.Theme.FontFamily));
+        var builder = new VisualSceneBuilder(new VisualSize(layout.Width, layout.Height), FontSpec.FromFamily(story.Theme.Typography.MonospaceFamily));
         builder.Image(raster, new ChartRect(0, 0, layout.Width, layout.Height), role: "terminal-completed");
         var prepared = new PreparedVisual(builder.Build(), new VisualAccessibility { Name = story.Title, Description = transcript });
         var source = new StoryStaticSource(prepared.ToSvg("terminal-artifact"), raster);

@@ -15,7 +15,7 @@ public static partial class V2GalleryModels {
             new ChartHierarchyItem("operations-support", "Support", "operations", 40),
             new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
         };
-        var chart = Chart.Create().WithDataLabels().AddSunburst("Allocated work", items);
+        var chart = Chart.Create().WithDataLabels().AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocated work", items));
         if (configured) {
             var colors = VisualTheme.Graphite().Resolve(mode);
             var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);

@@ -23,7 +23,6 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
         var chart = SunburstSecondaryLabelTests.Gallery(width, dark, radius).WithHeader(true)
             .WithTitle("Allocation by team").WithSubtitle("Primary captions and authored secondary text");
         chart.ConfigureLabels(labels => { labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
-        chart.Series[0].WithInteractionKey("allocation-source");
         var descriptions = new Dictionary<string, string> {
             ["all"] = "Allocation", ["engineering"] = "Delivery <b>& teams", ["operations-support"] = "Shared service", ["reserve"] = "No allocation <&>"
         };

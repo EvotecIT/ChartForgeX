@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.Interactivity.Html;
 using Xunit;
@@ -304,13 +305,13 @@ public sealed class PreparedTopologyTests {
 
     [Fact]
     public void PreparedExportsAreDetachedFromSourceAndReturnedEnvelope() {
-        var chart = TopologyChart.Create().WithViewport(600, 400).WithTheme(TopologyTheme.Light())
+        var chart = TopologyChart.Create().WithViewport(600, 400).WithTheme(VisualTheme.Graphite())
             .AddNode("a", "Original", 80, 100).AddNode("b", "Second", 320, 100)
             .AddEdge("ab", "a", "b");
         var prepared = chart.Prepare();
         var original = prepared.ToSvg();
         chart.Nodes[0].Label = "Changed";
-        chart.Theme!.Foreground = "#ff0000";
+        chart.ConfigureTheme(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartForgeX.Primitives.ChartColor.FromHex("#ff0000"); });
         var envelope = prepared.ToInterchangeEnvelope();
         envelope.Nodes[0].Label = "External change";
         Assert.Equal(original, prepared.ToSvg());

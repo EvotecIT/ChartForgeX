@@ -78,7 +78,7 @@ public sealed class InteractiveKeyboardNativeGeometryBrowserTests {
     private static string NativeFixture(bool dark) {
         var chart = Chart.Create().WithSize(596, 338).WithTitle("Retained authored facts")
             .WithSubtitle("Zero and precision-collapse facts remain available by keyboard")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLegend(false)
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(false)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddHorizontalLine(6, "Reference guide");
         var html = chart.ToInteractiveHtmlPage(options => options.IncludeResetButton = false);
         // This branch has no zero-geometry producer. Exercise the exported native SVG metadata

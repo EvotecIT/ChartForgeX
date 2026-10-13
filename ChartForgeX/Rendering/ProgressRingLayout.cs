@@ -22,7 +22,7 @@ internal readonly struct ProgressRingLayout {
 
     internal static double RequestedCenterRadius(Chart chart, ChartSeries series, double outerRadius, string centerLabel, double valueFontSize, double nameFontSize, TextStyleOverride style) {
         if (!chart.Options.ShowProgressRingCenterLabel || series.ShowDataLabels == false) return 0;
-        var measurement = new TextMeasurementContext(style.FontFamily ?? chart.Options.Theme.FontFamily);
+        var measurement = new TextMeasurementContext(style.FontFamily ?? chart.Options.ResolvedTheme.FontFamily);
         var value = style.TransformText(centerLabel, CultureInfo.InvariantCulture);
         var name = style.TransformText(series.Name, CultureInfo.InvariantCulture);
         var widest = Math.Max(Width(value, valueFontSize), Width(name, nameFontSize));
@@ -32,7 +32,7 @@ internal readonly struct ProgressRingLayout {
 
         double Width(string text, double size) {
             if (style.OpenTypeLanguageTag == null && style.Variations == null) return measurement.Measure(text, size, bold: true);
-            var resolved = new TextStyle { Font = FontSpec.FromFamily(style.FontFamily ?? chart.Options.Theme.FontFamily), FontSize = size, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
+            var resolved = new TextStyle { Font = FontSpec.FromFamily(style.FontFamily ?? chart.Options.ResolvedTheme.FontFamily), FontSize = size, OpenTypeLanguageTag = style.OpenTypeLanguageTag == "normal" ? null : style.OpenTypeLanguageTag };
             resolved.Font.Variations = style.Variations ?? FontVariationSettings.Default;
         resolved.Font.ColorPaletteIndex = style.ColorPaletteIndex ?? 0;
             resolved.Font.Weight = TypographyFontResolver.FontSpecWeight(style.ResolveFontWeight(700));

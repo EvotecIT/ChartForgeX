@@ -174,11 +174,18 @@ internal static class WellnessDashboardExamples {
     }
 
     private static void SavePowerBgInfoStatsSection(string output, int outputScale) {
-        var theme = ChartTheme.ReportDark()
-            .WithSurfaceColors(ChartColor.FromHex("#101319"), ChartColor.FromHex("#171B22"), ChartColor.FromHex("#171B22"), ChartColor.FromHex("#222834"), ChartColor.FromHex("#2A3240"))
-            .WithTextColors(ChartColor.FromHex("#F8FAFC"), ChartColor.FromHex("#A6ADBB"))
-            .WithPalette(Emerald.ToHex(), Cyan.ToHex(), Yellow.ToHex(), Orange.ToHex())
-            .WithCornerRadius(18, 10);
+        var theme = VisualTheme.Report().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#101319");
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#171B22");
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#171B22");
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#222834");
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#2A3240");
+            builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#F8FAFC");
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#A6ADBB");
+            builder.Light.Palette = builder.Dark.Palette = new[] { Emerald, Cyan, Yellow, Orange };
+            builder.CardRadius = 18;
+            builder.PlotRadius = builder.BarRadius = 10;
+        });
 
         MetricCard Card(string label, string value, string trend, string caption, string symbol, VisualStatus status, double[] history, ChartColor color) =>
             MetricCard.Create()
@@ -222,11 +229,18 @@ internal static class WellnessDashboardExamples {
     }
 
     private static void SaveReportMetricStrip(string output, int outputScale) {
-        var theme = ChartTheme.ReportLight()
-            .WithSurfaceColors(ChartColor.FromHex("#F8FAFC"), ChartColor.FromHex("#FFFFFF"), ChartColor.FromHex("#FFFFFF"), ChartColor.FromHex("#EFF4FB"), ChartColor.FromHex("#D8E1EF"))
-            .WithTextColors(ChartColor.FromHex("#172033"), ChartColor.FromHex("#647086"))
-            .WithPalette("#2563EB", "#14B8A6", "#F59E0B", "#EF4444")
-            .WithCornerRadius(14, 8);
+        var theme = VisualTheme.Report().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F8FAFC");
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#FFFFFF");
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#FFFFFF");
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#EFF4FB");
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#D8E1EF");
+            builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#172033");
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#647086");
+            builder.Light.Palette = builder.Dark.Palette = ChartPalettes.FromHex("#2563EB", "#14B8A6", "#F59E0B", "#EF4444");
+            builder.CardRadius = 14;
+            builder.PlotRadius = builder.BarRadius = 8;
+        });
 
         MetricCard Card(string label, string value, string trend, string caption, string symbol, VisualStatus status, double[] history, ChartColor color, bool sparkline) {
             var card = MetricCard.Create()
@@ -260,12 +274,19 @@ internal static class WellnessDashboardExamples {
     }
 
     private static void SaveTransparentReportMetricStrip(string output, int outputScale) {
-        var theme = ChartTheme.TransparentOverlayDark()
-            .WithSurfaceColors(ChartColor.Transparent, ChartColor.Transparent, ChartColor.Transparent, ChartColor.FromRgba(148, 163, 184, 118), ChartColor.FromRgba(148, 163, 184, 82))
-            .WithTextColors(ChartColor.FromHex("#F8FAFC"), ChartColor.FromRgba(226, 232, 240, 222))
-            .WithPalette("#2DD4BF", "#60A5FA", "#F59E0B", "#FB7185")
-            .WithCornerRadius(14, 8)
-            .WithShadowOpacity(0);
+        var theme = VisualTheme.TransparentOverlay().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.Transparent;
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.Transparent;
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent;
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromRgba(148, 163, 184, 118);
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromRgba(148, 163, 184, 82);
+            builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#F8FAFC");
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromRgba(226, 232, 240, 222);
+            builder.Light.Palette = builder.Dark.Palette = ChartPalettes.FromHex("#2DD4BF", "#60A5FA", "#F59E0B", "#FB7185");
+            builder.CardRadius = 14;
+            builder.PlotRadius = builder.BarRadius = 8;
+            builder.CardShadowOpacity = 0;
+        });
 
         MetricCard Card(string label, string value, string trend, string caption, string symbol, VisualStatus status, double[] history, ChartColor color, bool sparkline) {
             var card = MetricCard.Create()
@@ -299,21 +320,27 @@ internal static class WellnessDashboardExamples {
     }
 
     private static void SaveWeeklyProgressDashboard(string output, int outputScale) {
-        var theme = WellnessTheme()
-            .WithSurfaceColors(ChartColor.FromHex("#F6F7FA"), ChartColor.FromHex("#FFFFFF"), ChartColor.FromHex("#FFFFFF"), ChartColor.FromHex("#F0F2F6"), ChartColor.FromHex("#E4E7EF"))
-            .WithPalette("#0F83F7", "#FF7A1A", "#E72CEB", "#52C7E9", "#C98A52")
-            .WithCornerRadius(28, 18)
-            .WithShadowOpacity(0.055);
+        var theme = WellnessTheme().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F6F7FA");
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#FFFFFF");
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#FFFFFF");
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#F0F2F6");
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#E4E7EF");
+            builder.Light.Palette = builder.Dark.Palette = ChartPalettes.FromHex("#0F83F7", "#FF7A1A", "#E72CEB", "#52C7E9", "#C98A52");
+            builder.CardRadius = 28;
+            builder.PlotRadius = builder.BarRadius = 18;
+            builder.CardShadowOpacity = 0.055;
+        });
         var coolActivityTheme = WellnessTheme()
-            .WithSurfaceColors(ChartColor.FromHex("#F6F7FA"), ChartColor.FromHex("#F8FBFF"), ChartColor.FromHex("#FFFFFF"), ChartColor.FromHex("#E9F3FF"), ChartColor.FromHex("#E0EBF7"))
-            .WithPalette("#0F83F7", "#FF7A1A", "#E72CEB", "#52C7E9", "#C98A52")
-            .WithCornerRadius(28, 18)
-            .WithShadowOpacity(0.055);
+            .Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F6F7FA"); builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#F8FBFF"); builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#FFFFFF"); builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#E9F3FF"); builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#E0EBF7"); })
+            .WithPalette(ChartPalettes.FromHex("#0F83F7", "#FF7A1A", "#E72CEB", "#52C7E9", "#C98A52"))
+            .Configure(builder => { builder.CardRadius = 28; builder.PlotRadius = builder.BarRadius = 18; })
+            .Configure(builder => { builder.CardShadowOpacity = 0.055; });
         var warmTheme = WellnessTheme()
-            .WithSurfaceColors(ChartColor.FromHex("#F6F7FA"), ChartColor.FromHex("#FFF9F3"), ChartColor.FromHex("#FFF9F3"), ChartColor.FromHex("#F2E7DA"), ChartColor.FromHex("#F0E6DA"))
-            .WithPalette("#FF7A1A", "#0F83F7", "#E72CEB", "#52C7E9", "#C98A52")
-            .WithCornerRadius(28, 18)
-            .WithShadowOpacity(0.055);
+            .Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F6F7FA"); builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#FFF9F3"); builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#FFF9F3"); builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#F2E7DA"); builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#F0E6DA"); })
+            .WithPalette(ChartPalettes.FromHex("#FF7A1A", "#0F83F7", "#E72CEB", "#52C7E9", "#C98A52"))
+            .Configure(builder => { builder.CardRadius = 28; builder.PlotRadius = builder.BarRadius = 18; })
+            .Configure(builder => { builder.CardShadowOpacity = 0.055; });
         var blue = ChartColor.FromHex("#0F83F7");
         var orange = ChartColor.FromHex("#FF7A1A");
 
@@ -408,12 +435,20 @@ internal static class WellnessDashboardExamples {
         grid.SavePng(Path.Combine(output, "wellness-weekly-progress-dashboard.png"));
     }
 
-    private static ChartTheme WellnessTheme() => ChartTheme.Minimal()
-        .WithSurfaceColors(Background, Card, Card, Track, Track)
-        .WithTextColors(Text, Muted)
-        .WithGuideColors(Track, Track)
-        .WithPalette(Orange.ToHex(), Yellow.ToHex(), Green.ToHex(), "#6A7FDB")
-        .WithTypography(28, 14, 12, 18, 20, 20)
-        .WithCornerRadius(30, 14)
-        .WithShadowOpacity(0.03);
+    private static VisualTheme WellnessTheme() => VisualTheme.Minimal().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = Background;
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = Card;
+            builder.Light.Surface = builder.Dark.Surface = Card;
+            builder.Light.Border = builder.Dark.Border = Track;
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = Track;
+            builder.Light.Foreground = builder.Dark.Foreground = Text;
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = Muted;
+            builder.Light.Grid = builder.Dark.Grid = Track;
+            builder.Light.Axis = builder.Dark.Axis = Track;
+            builder.Light.Palette = builder.Dark.Palette = ChartPalettes.FromHex(Orange.ToHex(), Yellow.ToHex(), Green.ToHex(), "#6A7FDB");
+            builder.Typography = new VisualTypography(builder.Typography.Family, titleSize: 28, subtitleSize: 14, axisTitleSize: 12, axisSize: 18, legendSize: 20, dataLabelSize: 20);
+            builder.CardRadius = 30;
+            builder.PlotRadius = builder.BarRadius = 14;
+            builder.CardShadowOpacity = 0.03;
+        });
 }

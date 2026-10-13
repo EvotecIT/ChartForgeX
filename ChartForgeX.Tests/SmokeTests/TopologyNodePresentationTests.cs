@@ -71,8 +71,10 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-group-symbol=\"globe\"", StringComparison.Ordinal), "Neutral group surfaces should keep reusable group symbols.");
         Assert(svg.Contains("data-cfx-role=\"topology-group-status\"", StringComparison.Ordinal), "Monitoring group headers should expose compact reusable status dots.");
         var surface = System.Xml.Linq.XDocument.Parse(svg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-group-surface");
-        Assert(surface.RenderedColor("fill").ToHex() == "#FFFFFF" && surface.RenderedColor("stroke").ToHex() == "#16A34A",
-            "Neutral group surfaces should render white cards with status-colored borders.");
+        var colors = chart.Theme.Resolve(chart.ThemeMode);
+        Assert(surface.RenderedColor("fill").Equals(colors.Surface) && surface.RenderedColor("stroke").WithAlpha(255).Equals(colors.Status.Pass.Fill.WithAlpha(255)),
+            "Neutral group surfaces should use the selected theme's main surface and health status border.");
+        Assert(surface.RenderedColor("stroke").A == (byte)Math.Round(255 * .5), "Neutral group borders should retain their translucent status treatment.");
         Assert(chart.ToPng(options).Length > 64, "Neutral group surfaces should render as PNG.");
     }
 
@@ -92,7 +94,8 @@ internal static partial class SmokeTests {
 
         Assert(svg.Contains("data-cfx-role=\"topology-group-status\"", StringComparison.Ordinal), "Monitoring group headers should expose a reusable status dot.");
         Assert(svg.Contains("data-cfx-status=\"Warning\"", StringComparison.Ordinal), "The compact group status dot should preserve health state metadata.");
-        Assert(svg.Contains("fill=\"#F97316\"", StringComparison.Ordinal), "Group status dots should use the health status color, not the group accent color.");
+        var statusDot = System.Xml.Linq.XDocument.Parse(svg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-group-status");
+        Assert(statusDot.RenderedColor("fill").Equals(chart.Theme.Resolve(chart.ThemeMode).Status.Medium.Fill), "Group status dots should use the selected theme's health status color independently of the group accent.");
         Assert(chart.ToPng(options).Length > 64, "Group status dots should render as PNG.");
     }
 

@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
@@ -16,7 +17,9 @@ public sealed class MermaidConfigurationAppearanceBrowserTests {
         var result = MermaidRenderer.Render(source);
         Assert.False(result.HasErrors);
         var artifact = result.Artifact!;
-        Assert.Equal("#0B1120", Assert.IsType<TopologyChart>(artifact.Model).Theme!.Background);
+        var topology = Assert.IsType<TopologyChart>(artifact.Model);
+        Assert.Equal(VisualThemeMode.Dark, topology.ThemeMode);
+        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Background, topology.Theme.Resolve(topology.ThemeMode).Background);
         await using var session = await InteractiveChartBrowser.OpenAsync(artifact.ToHtmlPage(), width, 460);
         Assert.Equal(2, await session.Page.Locator("[data-cfx-role=topology-node]").CountAsync());
         Assert.Contains("Start", await session.Page.Locator("body").InnerTextAsync());

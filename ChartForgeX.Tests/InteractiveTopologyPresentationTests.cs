@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Interactivity.Html;
@@ -82,7 +83,7 @@ public sealed class InteractiveTopologyPresentationTests {
     public async Task TopologyPresentationKeepsSelectionAndViewportControlsWorking(int width, bool dark, bool animate) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = CreateTopology();
-        chart.Theme = dark ? TopologyTheme.Dark() : TopologyTheme.Light();
+        chart.WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var renderer = new HtmlInteractiveTopologyRenderer();
         var html = animate
             ? renderer.RenderPresentationPage(chart,

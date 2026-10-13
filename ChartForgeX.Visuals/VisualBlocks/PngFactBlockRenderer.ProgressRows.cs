@@ -11,7 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngFactBlockRenderer {
     private static void DrawSegmentedMetricProgressRows(RgbaCanvas canvas, SegmentedMetricBlock card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawSegmentedMetricHeading(canvas, card, ref y, content.X, content.Width);
@@ -35,7 +35,7 @@ public sealed partial class PngFactBlockRenderer {
     }
 
 
-    private static void DrawSegmentedStrip(RgbaCanvas canvas, SegmentedMetricItem row, double x, double y, double width, double height, ChartColor accent, ChartForgeX.Themes.ChartTheme theme) {
+    private static void DrawSegmentedStrip(RgbaCanvas canvas, SegmentedMetricItem row, double x, double y, double width, double height, ChartColor accent, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var empty = theme.CardBackground.A > 0 ? theme.CardBackground : ChartColor.White;
         var emptyStroke = theme.PlotBorder.WithAlpha(120);
         foreach (var segment in VisualFactBlockRendering.SegmentedProgressStripSegments(row, x, y, width, height)) {

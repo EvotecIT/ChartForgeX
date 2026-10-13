@@ -15,7 +15,7 @@ public sealed class NumericRadialPointLegendBrowserTests {
     public async Task FormattedCategoryLegendRetainsPhysicalSummaryAndKeyboardToggle(bool bars, bool dark) {
         if (!Enabled) return;
         var calls = new Dictionary<double, int>(); var chart = NumericRadialPointLegendTests.Create(bars, calls, false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithSize(dark ? 360 : 760, dark ? 360 : 480);
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithSize(dark ? 360 : 760, dark ? 360 : 480);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), dark ? 390 : 800, 560);
         var page = session.Page; var legend = page.Locator(Legend(0)).First;
         await legend.HoverAsync(); var tooltip = await TooltipTextAsync(page);

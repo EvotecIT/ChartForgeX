@@ -39,4 +39,7 @@ public sealed class ChartRadarOptions {
     }
 
     internal bool IsConfigured { get; private set; }
+
+    /// <summary>Copies fields directly so configuration tracking remains unchanged.</summary>
+    internal ChartRadarOptions Clone() => (ChartRadarOptions)MemberwiseClone();
 }

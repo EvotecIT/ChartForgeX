@@ -22,7 +22,7 @@ public sealed class GanttMarkerSemanticTests {
         Assert.NotEqual(regions[0].Label, regions[1].Label);
         var groups = XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "gantt-vertical-marker").ToArray();
         Assert.Equal(expected, (string?)groups[0].Attribute("aria-label"));
-        Assert.Equal(chart.Series[1].Points[0].X.ToString("R", CultureInfo.InvariantCulture), (string?)groups[0].Attribute("data-cfx-value"));
-        Assert.Equal(chart.Series[1].Points[0].Y.ToString("R", CultureInfo.InvariantCulture), (string?)groups[0].Attribute("data-cfx-end"));
+        Assert.Equal(chart.Series[1].GanttItems[0].Start.ToString("R", CultureInfo.InvariantCulture), (string?)groups[0].Attribute("data-cfx-value"));
+        Assert.Equal(chart.Series[1].GanttItems[0].End.ToString("R", CultureInfo.InvariantCulture), (string?)groups[0].Attribute("data-cfx-end"));
     }
 }

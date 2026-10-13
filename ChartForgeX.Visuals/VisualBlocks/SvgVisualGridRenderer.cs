@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Themes;
 using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -25,7 +26,7 @@ public sealed class SvgVisualGridRenderer {
 
     private string RenderCore(VisualGrid grid, string id, string childScopeRoot) {
         var layout = VisualGridLayout.FromGrid(grid);
-        var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
+        var theme = grid.ResolvedTheme;
         var writer = new SvgMarkupWriter(4096);
         writer.StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")
@@ -48,10 +49,9 @@ public sealed class SvgVisualGridRenderer {
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         writer.StartElement("defs").EndStartElement().Line();
         SvgSurfacePolish.WriteScopedStrokeStyle(writer, id);
-        if (!theme.FlatMarks) SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualGridSurface", background);
         writer.EndElement().Line();
-        if (background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", theme.FlatMarks ? background.ToCss() : "url(#" + id + "-visualGridSurface)").EndEmptyElement().Line();
-        if (grid.FrameVisible && !theme.FlatMarks) {
+        if (background.A > 0) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", background.ToCss()).EndEmptyElement().Line();
+        if (grid.FrameVisible) {
             var inset = Math.Max(8, grid.Padding * 0.5);
             writer.StartElement("rect")
                 .Attribute("data-cfx-role", "visual-grid-frame")
@@ -85,7 +85,7 @@ public sealed class SvgVisualGridRenderer {
         }
         if (layout.HeaderHeight > 0) {
             var headerWidth = Math.Max(8, layout.Width - grid.Padding * 2);
-            if (grid.Title.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-title").Attribute("data-cfx-target", "title").Attribute("x", grid.Padding).Attribute("y", grid.Padding + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", theme.UseGraphiteLayout ? "700" : "800").Text(VisualBlockRendering.FitText(grid.Title, theme.TitleFontSize, headerWidth)).EndElement().Line();
+            if (grid.Title.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-title").Attribute("data-cfx-target", "title").Attribute("x", grid.Padding).Attribute("y", grid.Padding + theme.TitleFontSize * 0.75).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.TitleFontSize).Attribute("font-weight", "700").Text(VisualBlockRendering.FitText(grid.Title, theme.TitleFontSize, headerWidth)).EndElement().Line();
             if (grid.Subtitle.Length > 0) writer.StartElement("text").Attribute("data-cfx-role", "visual-grid-subtitle").Attribute("data-cfx-target", "subtitle").Attribute("x", grid.Padding + 2).Attribute("y", grid.Padding + theme.TitleFontSize + theme.SubtitleFontSize).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", theme.SubtitleFontSize).Text(VisualBlockRendering.FitText(grid.Subtitle, theme.SubtitleFontSize, headerWidth)).EndElement().Line();
         }
 
@@ -107,7 +107,11 @@ public sealed class SvgVisualGridRenderer {
         var originalTheme = block.Options.Theme;
         try {
             block.Options.TransparentBackground = true;
-            if (originalTheme.UseGraphiteLayout) { block.Options.Theme = originalTheme.Clone(); block.Options.Theme.TitleFontSize = 15; }
+            block.Options.Theme = originalTheme.Configure(builder => {
+                var font = originalTheme.Typography;
+                builder.Typography = new VisualTypography(font.Family, 15, font.SubtitleSize, font.AxisSize, font.LegendSize,
+                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily);
+            });
             return _blockRenderer.Render(block, childScope);
         }
         finally {

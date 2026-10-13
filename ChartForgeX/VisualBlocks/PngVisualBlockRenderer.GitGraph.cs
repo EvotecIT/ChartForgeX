@@ -7,7 +7,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngVisualBlockRenderer {
     private static void DrawGitGraph(RgbaCanvas canvas, GitGraphBlock graph) {
         var options = graph.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, graph, ref y, content.X, content.Width);
@@ -37,7 +37,7 @@ public sealed partial class PngVisualBlockRenderer {
         }
     }
 
-    private static void DrawGitGraphCommit(RgbaCanvas canvas, GitGraphBlock graph, VisualBlockRendering.GitGraphLayout layout, VisualBlockRendering.GitGraphCommitPlacement placement, ChartForgeX.Themes.ChartTheme theme) {
+    private static void DrawGitGraphCommit(RgbaCanvas canvas, GitGraphBlock graph, VisualBlockRendering.GitGraphLayout layout, VisualBlockRendering.GitGraphCommitPlacement placement, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var commit = placement.Commit;
         var branchIndex = BranchIndex(layout, commit.BranchName);
         var color = VisualBlockRendering.PaletteAt(theme, branchIndex);
@@ -57,7 +57,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (commit.Tag.Length > 0) DrawGitGraphTag(canvas, VisualBlockRendering.GitTag(layout, theme, commit.Tag, placement.X, placement.Y, radius), commit.Tag, theme);
     }
 
-    private static void DrawGitGraphTag(RgbaCanvas canvas, VisualBlockRendering.GitTagMetrics tagLayout, string tag, ChartForgeX.Themes.ChartTheme theme) {
+    private static void DrawGitGraphTag(RgbaCanvas canvas, VisualBlockRendering.GitTagMetrics tagLayout, string tag, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var bounds = tagLayout.Bounds;
         canvas.FillRoundedRect(bounds.X, bounds.Y, bounds.Width, bounds.Height, 7, theme.PlotBackground);
         canvas.StrokeRoundedRect(bounds.X, bounds.Y, bounds.Width, bounds.Height, 7, theme.PlotBorder, 1);

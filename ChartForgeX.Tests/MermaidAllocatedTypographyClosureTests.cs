@@ -59,7 +59,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     [InlineData(760, 256, 45, true)]
     public async Task AxisCaptionsRetainACompleteMonth(int width, int size, double angle, bool dark) {
         var chart = Chart.Create().WithSize(width, 420).WithLegend(false).WithHeader(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXLabels("September", "October", "November")
             .ConfigureTickLabelStyle(style => style.WithFontFamily("Arial").WithFontSize(size))
             .AddLine("Readings", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 15) });

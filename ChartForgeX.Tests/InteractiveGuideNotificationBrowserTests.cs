@@ -65,13 +65,11 @@ public sealed class InteractiveGuideNotificationBrowserTests {
     public async Task AGuideFromAnotherSeriesKeepsItsSharedModeIndependentFromTheNativeSummary() {
         if (!Enabled) return;
         var source = Frame(false, "Native line and nearby observation")
-            .AddLine("Line reading", new[] { new ChartPoint(3, 5), new ChartPoint(7, 5) })
-            .AddScatter("Nearby reading", new[] { new ChartPoint(5, 5.15) });
-        source.Series[0].WithInteractionKey("line-source"); source.Series[1].WithInteractionKey("nearby-source");
+            .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("line-source"), "Line reading", new[] { new ChartPoint(3, 5), new ChartPoint(7, 5) }))
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("nearby-source"), "Nearby reading", new[] { new ChartPoint(5, 5.15) }));
         var peer = Frame(false, "Reordered native peer")
-            .AddScatter("Peer nearby reading", new[] { new ChartPoint(5, 5.15) })
-            .AddLine("Peer line reading", new[] { new ChartPoint(3, 5), new ChartPoint(7, 5) });
-        peer.Series[0].WithInteractionKey("nearby-source"); peer.Series[1].WithInteractionKey("line-source");
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("nearby-source"), "Peer nearby reading", new[] { new ChartPoint(5, 5.15) }))
+            .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("line-source"), "Peer line reading", new[] { new ChartPoint(3, 5), new ChartPoint(7, 5) }));
         await using var session = await OpenAsync(RenderDashboard(source, peer, true), 950, 1300);
         var page = session.Page;
         var root = page.Locator(".cfx-interactive-chart").Nth(0);
@@ -110,16 +108,14 @@ public sealed class InteractiveGuideNotificationBrowserTests {
     }
 
     private static Chart Frame(bool dark, string title) => Chart.Create().WithSize(800, 540).WithTitle(title)
-        .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLineMarkers(ChartLineMarkerMode.None)
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLineMarkers(ChartLineMarkerMode.None)
         .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
 
     private static string Dashboard(bool tooltips, bool dark) {
         var points = new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) };
-        var source = Frame(dark, "Independent native guide").AddLine("Reading", points);
-        source.Series[0].WithInteractionKey("reading-source");
-        var peer = Frame(dark, "Reordered peer").AddLine("Other", new[] { new ChartPoint(3, 2), new ChartPoint(7, 2) })
-            .AddLine("Peer reading", points);
-        peer.Series[0].WithInteractionKey("other-source"); peer.Series[1].WithInteractionKey("reading-source");
+        var source = Frame(dark, "Independent native guide").AddSeries(ChartSeries.CreateLine(new ChartSeriesId("reading-source"), "Reading", points));
+        var peer = Frame(dark, "Reordered peer").AddSeries(ChartSeries.CreateLine(new ChartSeriesId("other-source"), "Other", new[] { new ChartPoint(3, 2), new ChartPoint(7, 2) }))
+            .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("reading-source"), "Peer reading", points));
         return RenderDashboard(source, peer, tooltips);
     }
 

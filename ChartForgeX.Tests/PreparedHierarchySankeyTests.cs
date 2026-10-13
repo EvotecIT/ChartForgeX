@@ -56,8 +56,7 @@ public sealed class PreparedHierarchySankeyTests {
 
     [Fact]
     public void SunburstRetainsPositiveCollapsedValuesWithoutInventingSliceGeometry() {
-        var chart = Chart.Create().WithDataLabels(false).AddSunburst("Allocation", new[] { new ChartHierarchyItem("root", "All work"), new ChartHierarchyItem("tiny", "Small allocation", "root", 1e-20), new ChartHierarchyItem("visible", "Main allocation", "root", 1) });
-        chart.Series[0].WithInteractionKey("allocation-source");
+        var chart = Chart.Create().WithDataLabels(false).AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocation", new[] { new ChartHierarchyItem("root", "All work"), new ChartHierarchyItem("tiny", "Small allocation", "root", 1e-20), new ChartHierarchyItem("visible", "Main allocation", "root", 1) }));
         chart.Series[0].WithDataLabels(false);
         var prepared = chart.Prepare(Context());
         var nodes = Role(XDocument.Parse(prepared.ToSvg()), "sunburst-segment").ToArray();

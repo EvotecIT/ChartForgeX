@@ -44,29 +44,7 @@ public sealed partial class Chart {
     /// hidden with the y-axis.</param>
     /// <returns>The current chart.</returns>
     public Chart AddStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments, string? summary = null, string? group = null) {
-        if (name == null) throw new ArgumentNullException(nameof(name));
-        if (segments == null) throw new ArgumentNullException(nameof(segments));
-        var ordered = new List<ChartStateTimelineSegment>();
-        foreach (var segment in segments) {
-            if (segment.State == null) throw new ArgumentException("Segments must be created with a state.", nameof(segments));
-            ordered.Add(segment);
-        }
-
-        // Stable order: start, then end, then the caller's order, so overlapping segments draw predictably.
-        ordered = ordered.Select((segment, index) => (Segment: segment, Index: index))
-            .OrderBy(item => item.Segment.Start).ThenBy(item => item.Segment.End).ThenBy(item => item.Index)
-            .Select(item => item.Segment).ToList();
-        var series = new ChartSeries(name, ChartSeriesKind.StateTimeline, ordered.ConvertAll(segment => new ChartPoint(segment.Start, segment.End))) {
-            ShowInLegend = false,
-            LaneSummary = summary,
-            LaneGroup = string.IsNullOrWhiteSpace(group) ? null : group
-        };
-        foreach (var segment in ordered) {
-            series.PointLabels.Add(segment.State);
-            series.StateTimelineDetails.Add(segment.Detail);
-        }
-
-        AppendSeries(series);
+        AppendSeries(ChartSeries.CreateStateTimelineLane(name, segments, summary, group));
         return this;
     }
 }

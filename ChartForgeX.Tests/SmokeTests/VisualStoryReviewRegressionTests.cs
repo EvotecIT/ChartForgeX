@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -244,7 +245,7 @@ internal static partial class SmokeTests {
             .WithTiming(0, 200, 0)
             .WithFinalPrompt(false)
             .Output("ready")
-            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~", TerminalTheme.Ubuntu(), transitionSeconds: 0)
+            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~", TerminalThemes.Ubuntu(), transitionSeconds: 0)
             .Table(TerminalTable.Create().WithColumns("State").AddRow("complete"))
             .SelectTab("main", transitionSeconds: 0);
         var revealLayout = TerminalStoryLayout.Build(revealStory);
@@ -305,7 +306,7 @@ internal static partial class SmokeTests {
             () => boundedTabStory.WithTitle(new string('x', 257)),
             "Initial terminal tab titles should be bounded before animated fitting.");
         AssertThrows<ArgumentOutOfRangeException>(
-            () => boundedTabStory.DeclareTab("long", new string('x', 257), TerminalDialect.Bash, "~", TerminalTheme.Ubuntu()),
+            () => boundedTabStory.DeclareTab("long", new string('x', 257), TerminalDialect.Bash, "~", TerminalThemes.Ubuntu()),
             "Declared terminal tab titles should be bounded before animated fitting.");
         Assert(boundedTabStory.Tabs.Count == 1,
             "Rejected terminal tab titles should not mutate tab declarations.");

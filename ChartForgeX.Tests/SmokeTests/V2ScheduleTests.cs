@@ -18,7 +18,7 @@ public sealed class V2ScheduleTests {
         Assert.Contains(prepared.Regions, region => region.Role == role && region.Bounds.Width > 0);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.DoesNotContain("NaN", svg); Assert.DoesNotContain("Infinity", svg);
-        chart.Options.GanttToday = 90; chart.Options.Labels.Now = "Changed"; chart.Series.Clear();
+        chart.Options.GanttToday = 90; chart.Options.Labels.Now = "Changed"; chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(640, prepared.Size.Width); Assert.Equal(400, prepared.Size.Height);
     }

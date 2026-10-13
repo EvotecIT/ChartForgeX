@@ -11,7 +11,7 @@ internal static partial class TopologyLayoutEngine {
             Viewport = new TopologyViewport { Width = chart.Viewport.Width, Height = chart.Viewport.Height, Padding = chart.Viewport.Padding },
             MapViewport = chart.MapViewport,
             Legend = chart.Legend == null ? null : TopologyLegend.Clone(chart.Legend),
-            Theme = chart.Theme?.Clone(),
+            Theme = chart.Theme, ThemeMode = chart.ThemeMode,
             DefaultRenderOptions = chart.DefaultRenderOptions?.Clone(),
             // Prepared geometry depends on the resolved routing policy and measured font.
             // Prepare replaces these values for a fresh layout; detached prepared clones retain them.

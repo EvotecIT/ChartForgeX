@@ -26,7 +26,7 @@ public sealed class SvgTerminalStoryRenderer {
     }
 
     private static string RenderCore(TerminalStory story, TerminalStoryLayout layout, string id) {
-        var theme = story.Theme;
+        var theme = story.ResolvedStyle;
         var writer = new SvgMarkupWriter(8192);
         writer.StartElement("svg")
             .Attribute("xmlns", "http://www.w3.org/2000/svg")
@@ -97,10 +97,10 @@ public sealed class SvgTerminalStoryRenderer {
             .Attribute("class", cssClass)
             .Attribute("x", layout.ContentX)
             .Attribute("y", y)
-            .Attribute("fill", ToneColor(tab.Theme, line.Tone))
-            .Attribute("font-family", line.IsTable && !TrueTypeFont.IsMonospaceFamily(tab.Theme.FontFamily)
+            .Attribute("fill", ToneColor(tab.ResolvedStyle, line.Tone))
+            .Attribute("font-family", line.IsTable && !TrueTypeFont.IsMonospaceFamily(tab.ResolvedStyle.FontFamily)
                 ? ChartFontStacks.Mono
-                : tab.Theme.FontFamily)
+                : tab.ResolvedStyle.FontFamily)
             .Attribute("font-size", story.FontSize)
             .Attribute("style", style)
             .Attribute("xml:space", "preserve")
@@ -110,8 +110,8 @@ public sealed class SvgTerminalStoryRenderer {
         } else if (line.IsCommand) {
             var prompt = line.Text.Substring(0, line.PromptLength);
             var command = line.Text.Substring(line.PromptLength);
-            writer.StartElement("tspan").Attribute("fill", tab.Theme.Accent.ToCss()).Attribute("font-weight", "650").Text(prompt).EndElement();
-            if (command.Length > 0) writer.StartElement("tspan").Attribute("fill", tab.Theme.Text.ToCss()).Text(command).EndElement();
+            writer.StartElement("tspan").Attribute("fill", tab.ResolvedStyle.Accent.ToCss()).Attribute("font-weight", "650").Text(prompt).EndElement();
+            if (command.Length > 0) writer.StartElement("tspan").Attribute("fill", tab.ResolvedStyle.Text.ToCss()).Text(command).EndElement();
         } else {
             writer.Text(line.Text);
         }
@@ -121,7 +121,7 @@ public sealed class SvgTerminalStoryRenderer {
                 .Attribute("data-cfx-role", "terminal-cursor")
                 .Attribute("class", "cfx-terminal-cursor")
                 .Attribute("dx", 2)
-                .Attribute("fill", tab.Theme.Cursor.ToCss())
+                .Attribute("fill", tab.ResolvedStyle.Cursor.ToCss())
                 .Attribute("font-family", "monospace")
                 .Attribute("font-weight", 400)
                 .Attribute("style", "--cfx-start:" + line.StartSeconds.ToString("0.###", CultureInfo.InvariantCulture) + "s")
@@ -150,7 +150,7 @@ public sealed class SvgTerminalStoryRenderer {
         var revealSeconds = line.StartSeconds + line.DurationSeconds * (elementIndex + 1) / elementCount;
         writer.StartElement("tspan")
             .Attribute("class", "cfx-terminal-glyph")
-            .Attribute("fill", isPrompt ? tab.Theme.Accent.ToCss() : tab.Theme.Text.ToCss());
+            .Attribute("fill", isPrompt ? tab.ResolvedStyle.Accent.ToCss() : tab.ResolvedStyle.Text.ToCss());
         if (isPrompt) {
             writer.Attribute("font-weight", "650");
         }
@@ -274,7 +274,7 @@ public sealed class SvgTerminalStoryRenderer {
         return description.ToString();
     }
 
-    internal static string ToneColor(TerminalTheme theme, TerminalTextTone tone) {
+    internal static string ToneColor(ResolvedTerminalStyle theme, TerminalTextTone tone) {
         switch (tone) {
             case TerminalTextTone.Default: return theme.Text.ToCss();
             case TerminalTextTone.Muted: return theme.Muted.ToCss();

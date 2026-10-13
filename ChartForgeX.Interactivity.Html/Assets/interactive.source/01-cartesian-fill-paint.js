@@ -96,8 +96,7 @@
         const knots = new Set([low, high]);
         const add = (y) => { for (const value of [y, Number(y.toFixed(3))]) if (value > low && value < high) knots.add(value); };
         const owner = subject.closest('[data-cfx-role="series"]'), index = Number(subject.dataset.cfxPoint);
-        const connected = point => point && point.getAttribute('data-cfx-source-0-break') !== 'true'
-          && point.getAttribute('data-cfx-source-1-break') !== 'true';
+        const connected = point => point && point.getAttribute('data-cfx-break-before') !== 'true';
         for (const offset of [-1, 1]) {
           const neighbor = owner && owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index + offset) + '"]');
           if (!neighbor || !connected(offset < 0 ? subject : neighbor) || !neighbor._cfxNativeRegion) continue;

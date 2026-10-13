@@ -16,15 +16,14 @@ public sealed class ReadmeSampleTests {
     public void QuickStartLabelsLineUpWithTheirPoints() {
         // The NuGet README Quick Start, as published.
         var chart = Chart.Create()
-            .WithTitle("Domain Security Checks")
-            .WithSubtitle("Dependency-free SVG, HTML, and PNG chart rendering")
-            .WithXAxis("Run")
-            .WithYAxis("Checks")
-            .WithTheme(ChartTheme.ReportDark())
-            .WithSize(1180, 640)
-            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-            .AddSmoothArea("Passed", ChartPoints.FromValues(820, 940, 980, 1040, 1120, 1180, 1230))
-            .AddSmoothLine("Warnings", ChartPoints.FromValues(120, 138, 132, 110, 98, 86, 72), ChartColor.FromRgb(251, 191, 36));
+            .WithTitle("Weekly orders")
+            .WithSubtitle("Completed orders across the working week")
+            .WithSize(800, 440)
+            .WithXAxis("Day")
+            .WithYAxis("Orders")
+            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+            .AddLine("Completed", ChartPoints.FromValues(28, 34, 41, 48, 32))
+            .AddLine("Target", ChartPoints.FromValues(30, 35, 40, 45, 50));
 
         var labels = chart.Options.XAxisLabels;
         foreach (var series in chart.Series) {
@@ -34,9 +33,9 @@ public sealed class ReadmeSampleTests {
 
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var rendered = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-x-label").ToArray();
-        Assert.Equal(new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }, rendered.Select(label => Assert.Single(label.Text.Lines).Text));
+        Assert.Equal(new[] { "Mon", "Tue", "Wed", "Thu", "Fri" }, rendered.Select(label => Assert.Single(label.Text.Lines).Text));
         var ticks = prepared.Regions.Where(region => region.Role == "axis-x-label").ToArray();
-        Assert.Equal(7, ticks.Length);
+        Assert.Equal(5, ticks.Length);
         for (var index = 0; index < ticks.Length; index++) {
             var point = Assert.Single(prepared.Regions, region => region.Id == "series-1-point-" + index);
             Assert.Equal(point.Bounds.Left + point.Bounds.Width / 2, ticks[index].Bounds.Left, 6);

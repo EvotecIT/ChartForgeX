@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
@@ -71,7 +72,19 @@ public sealed partial class TopologyChart {
     public TopologyLegend? Legend { get; set; }
 
     /// <summary>Gets or sets an optional topology theme.</summary>
-    public TopologyTheme? Theme { get; set; }
+    public VisualTheme Theme {
+        get => _theme;
+        set => _theme = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private VisualTheme _theme = VisualTheme.Graphite();
+
+    /// <summary>Gets or sets the explicit shared theme mode.</summary>
+    public VisualThemeMode ThemeMode {
+        get => _themeMode;
+        set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; }
+    }
+    private VisualThemeMode _themeMode;
+    internal TopologyPaint ResolvedTheme => new(Theme, ThemeMode);
 }
 
 /// <summary>

@@ -114,7 +114,7 @@ public sealed class ThemedSvgShareTests {
     [Fact]
     public void Topology_LightDrawingWithDarkProperties_PaintsTheDarkDrawing_WithArrowsAndEndpointMarkers() {
         // Arrows by status, an explicit edge colour, a muted edge, and circle and diamond endpoint markers.
-        string Render(VisualDesignTokens tokens) => ArrowDiagram().WithDesignTokens(tokens).ToSvg(new TopologyRenderOptions { IdScope = "themed", SvgColorVariables = tokens.ToSvgColorVariables() });
+        string Render(VisualDesignTokens tokens) => ArrowDiagram().WithTheme(new VisualTheme(tokens, tokens)).ToSvg(new TopologyRenderOptions { IdScope = "themed", SvgColorVariables = tokens.ToSvgColorVariables() });
         var light = Render(Light);
         var document = XDocument.Parse(light);
         XElement Edge(string id) => ByRole(document, "topology-edge").Single(edge => (string?)edge.Attribute("data-edge-id") == id);
@@ -128,31 +128,31 @@ public sealed class ThemedSvgShareTests {
         // Endpoints are actual native geometry in both SVG and PNG, and all remaining clip references resolve.
         Assert.All(ByRole(document, "topology-marker"), marker => Assert.True(marker.Name.LocalName == "ellipse" || !string.IsNullOrWhiteSpace((string?)marker.Attribute("d"))));
         AssertReferencesResolve(document);
-        Assert.Equal(ArrowDiagram().WithDesignTokens(Light).ToPng(), ArrowDiagram().WithDesignTokens(Light).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
+        Assert.Equal(ArrowDiagram().WithTheme(new VisualTheme(Light, Light)).ToPng(), ArrowDiagram().WithTheme(new VisualTheme(Light, Light)).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
     }
 
     [Fact]
     public void Topology_BuiltInAndCustomStatusSlots_FollowStatusVariablesForEdgesAndMarkers() {
         foreach (var tokens in new[] { new VisualDesignTokens(), VisualDesignTokens.Dark() }) {
-            tokens.Warning = tokens.Palette[0]; // A shared RGB must still retain its semantic role.
-            var svg = ArrowDiagram().WithDesignTokens(tokens).ToSvg(new TopologyRenderOptions { IdScope = "role", SvgColorVariables = tokens.ToSvgColorVariables() });
+            tokens.Status.Medium = new VisualTokenColor(tokens.Palette[0], tokens.Status.Medium.Ink); // A shared RGB must still retain its semantic role.
+            var svg = ArrowDiagram().WithTheme(new VisualTheme(tokens, tokens)).ToSvg(new TopologyRenderOptions { IdScope = "role", SvgColorVariables = tokens.ToSvgColorVariables() });
             var document = XDocument.Parse(svg);
             var edge = ByRole(document, "topology-edge").Single(element => (string?)element.Attribute("data-edge-id") == "a");
             var marker = edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-marker");
-            Assert.StartsWith("var(--cfx-status-warning,", (string?)marker.Attribute("fill"));
-            Assert.StartsWith("var(--cfx-status-warning,", (string?)edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line").Attribute("stroke"));
+            Assert.Equal("var(--cfx-severity-medium-fill, " + tokens.Status.Medium.Fill.ToCss() + ")", (string?)marker.Attribute("fill"));
+            Assert.Equal("var(--cfx-severity-medium-fill, " + tokens.Status.Medium.Fill.ToCss() + ")", (string?)edge.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line").Attribute("stroke"));
             var node = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "topology-node" && (string?)e.Attribute("data-node-id") == "dc2");
-            Assert.Contains(node.Descendants().Attributes("stroke"), a => a.Value.StartsWith("var(--cfx-status-warning,", StringComparison.Ordinal));
+            Assert.Contains(node.Descendants().Attributes("stroke"), a => a.Value.StartsWith("var(--cfx-severity-medium-fill,", StringComparison.Ordinal));
             var status = document.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "topology-node-status" && (string?)e.Attribute("data-node-id") == "dc2");
-            Assert.Contains(status.Descendants().Attributes("fill"), a => a.Value.StartsWith("var(--cfx-status-warning,", StringComparison.Ordinal));
+            Assert.Contains(status.Descendants().Attributes("fill"), a => a.Value.StartsWith("var(--cfx-severity-medium-fill,", StringComparison.Ordinal));
         }
     }
 
     [Fact]
     public void Topology_MarkerGeometry_DoesNotDependOnTheEdgeColour() {
         // Theme changes alter paint while retaining endpoint shapes and their placement.
-        var light = ArrowDiagram().WithDesignTokens(Light).ToSvg();
-        var dark = ArrowDiagram().WithDesignTokens(Dark).ToSvg();
+        var light = ArrowDiagram().WithTheme(new VisualTheme(Light, Light)).ToSvg();
+        var dark = ArrowDiagram().WithTheme(new VisualTheme(Dark, Dark)).ToSvg();
         string Geometry(string svg) => string.Join("|", ByRole(XDocument.Parse(svg), "topology-marker").Select(marker => marker.Name.LocalName + ":" +
             string.Join(",", marker.Attributes().Where(attribute => new[] { "d", "cx", "cy", "rx", "ry" }.Contains(attribute.Name.LocalName)).Select(attribute => attribute.ToString()))));
         Assert.NotEmpty(Geometry(light));
@@ -161,10 +161,10 @@ public sealed class ThemedSvgShareTests {
 
     [Fact]
     public void Topology_TintsFollowTheTokensAndContrastWhiteStaysLiteral() {
-        var svg = Diagram().WithDesignTokens(Light).ToSvg(new TopologyRenderOptions { NodeSurfaceStyle = TopologyNodeSurfaceStyle.Tinted, SvgColorVariables = Light.ToSvgColorVariables() });
+        var svg = Diagram().WithTheme(new VisualTheme(Light, Light)).ToSvg(new TopologyRenderOptions { NodeSurfaceStyle = TopologyNodeSurfaceStyle.Tinted, SvgColorVariables = Light.ToSvgColorVariables() });
         Assert.Contains("color-mix(in srgb, rgb(from var(--cfx-surface-page, #F2F3F4) r g b / 1)", svg, StringComparison.Ordinal);
         Assert.DoesNotContain("\uFDD0", svg, StringComparison.Ordinal);
-        Assert.Equal(Diagram().WithDesignTokens(Light).ToPng(), Diagram().WithDesignTokens(Light).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
+        Assert.Equal(Diagram().WithTheme(new VisualTheme(Light, Light)).ToPng(), Diagram().WithTheme(new VisualTheme(Light, Light)).ToPng(new TopologyRenderOptions { SvgColorVariables = Light.ToSvgColorVariables() }));
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public sealed class ThemedSvgShareTests {
         var chart = TopologyChart.Create().WithViewport(640, 400)
             .AddAutoGroup("g", "Group", TopologyHealthStatus.Warning, color: color)
             .AddAutoNode("n", "Node", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "g", subtitle: "Subtitle", color: color)
-            .WithDesignTokens(tokens);
+            .WithTheme(new VisualTheme(tokens, tokens));
         var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions {
             LegendMode = TopologyLegendMode.Auto, SvgColorVariables = tokens.ToSvgColorVariables()
         }));
@@ -339,7 +339,7 @@ public sealed class ThemedSvgShareTests {
 
     /// <summary>A chart as a report host creates it: token colours and font, transparent, no card, plot surface, or header.</summary>
     private static Chart Host(VisualDesignTokens tokens, int width = 640, int height = 320) => Chart.Create()
-        .WithSize(width, height).WithDesignTokens(tokens).WithTransparentBackground().WithCard(false).WithPlotBackground(false).WithHeader(false)
+        .WithSize(width, height).WithTheme(new VisualTheme(tokens, tokens)).WithTransparentBackground().WithCard(false).WithPlotBackground(false).WithHeader(false)
         .WithMarkBackdrop(ChartMarkBackdrop.Card);
 
     private static Chart Build(string family, VisualDesignTokens tokens) {

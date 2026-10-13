@@ -153,7 +153,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         if (!Enabled) return;
         var chart = NumericRadialEncodedGeometryTests.SharedStrokedSlice(donut); chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
         chart.Series[0].Points.Clear();
-        chart.Series[0].Points.AddRange(new[] { new ChartPoint(1, 100000000), new ChartPoint(2, 1), new ChartPoint(3, 70000000) });
+        foreach (var replacement in new[] { new ChartPoint(1, 100000000), new ChartPoint(2, 1), new ChartPoint(3, 70000000) }) chart.Series[0].Points.Add(replacement);
         var name = "pattern-collapsed-" + (donut ? "donut" : "pie");
         await NativeAsync(chart.Prepare(VisualExportRequest.ForChart(chart).Context), name);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
@@ -197,7 +197,7 @@ public sealed class PatternOnlyPaintBrowserTests {
 
     internal static Chart Create(ChartSeriesKind kind, bool dark) {
         var chart = Chart.Create().WithSize(dark ? 360 : 760, dark ? 360 : 440).WithHeader(false).WithLegend().WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var points = new[] { new ChartPoint(1, 30), new ChartPoint(2, 70), new ChartPoint(3, 50) };
         switch (kind) {
             case ChartSeriesKind.Bar: chart.AddBar("Hatched observations", points); break;
@@ -211,7 +211,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         chart.WithYAxisBounds(0, 100);
         chart.Series[0].WithColor((dark ? ChartColor.FromRgb(0, 0, 0) : ChartColor.FromRgb(255, 255, 255)).WithAlpha(0)).WithFillPattern(ChartFillPattern.Crosshatch);
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Area or ChartSeriesKind.Radar)
-            chart.Series[0].WithMarkerRadius(kind == ChartSeriesKind.Scatter ? 12 : 0);
+            chart.Series[0].ConfigureMarkers(markers => markers.Radius = kind == ChartSeriesKind.Scatter ? 12 : 0);
         return chart;
     }
 

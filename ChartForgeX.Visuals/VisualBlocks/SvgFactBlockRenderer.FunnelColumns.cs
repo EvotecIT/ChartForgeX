@@ -9,7 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderSegmentedMetricFunnelColumns(SvgMarkupWriter writer, SegmentedMetricBlock card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderSegmentedMetricHeading(writer, card, ref y, content.X, content.Width);
@@ -38,17 +38,6 @@ public sealed partial class SvgFactBlockRenderer {
                     .Attribute("height", layout.BarHeight)
                     .Attribute("rx", Math.Min(4, layout.BarWidth * 0.48))
                     .Attribute("fill", color.ToCss())
-                    .EndEmptyElement().Line();
-                if (!theme.FlatMarks) writer.StartElement("rect")
-                    .Attribute("data-cfx-role", "segmented-metric-funnel-bar-highlight")
-                    .Attribute("data-cfx-stage", stage.Index)
-                    .Attribute("data-cfx-index", i)
-                    .Attribute("x", x + Math.Max(0.6, layout.BarWidth * 0.18))
-                    .Attribute("y", layout.BarY + 2)
-                    .Attribute("width", Math.Max(0.8, layout.BarWidth * 0.28))
-                    .Attribute("height", Math.Max(1, layout.BarHeight - 4))
-                    .Attribute("rx", Math.Min(3, layout.BarWidth * 0.24))
-                    .Attribute("fill", ChartColor.White.WithAlpha(48).ToCss())
                     .EndEmptyElement().Line();
             }
 

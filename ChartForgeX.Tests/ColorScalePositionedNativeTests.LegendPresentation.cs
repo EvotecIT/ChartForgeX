@@ -147,7 +147,7 @@ public sealed partial class ColorScalePositionedNativeTests {
         var compact = variant.StartsWith("compact-", StringComparison.Ordinal);
         var chart = V2GalleryModels.Create(kind, variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithTitle("Measured temperature")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var prepared = Prepare(chart); var gradient = variant.Contains("gradient", StringComparison.Ordinal);
         Assert.Equal(gradient ? 1 : 0, prepared.Scene.Nodes.OfType<VisualSceneGradient>().Count());
         Assert.Contains("Temperature", prepared.ToSvg());

@@ -205,7 +205,7 @@ public sealed class GanttTickIntervalTests {
         var document = new MermaidParser().ParseGantt(File.ReadAllText(Fixture("mmd"))).Document!;
         document.AxisFormat = "%m/%d";
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLegend(false);
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(false);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);
         Assert.Equal(new[] { "01/13", "01/27", "02/10", "02/24" }, await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync());
         Assert.Equal(0, await session.Page.Locator("script").CountAsync());

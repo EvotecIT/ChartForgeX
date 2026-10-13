@@ -20,7 +20,7 @@ public sealed class CartesianPlotRegionGalleryTests {
         var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
         var compact = variant.StartsWith("compact-", StringComparison.Ordinal);
         var chart = V2GalleryModels.Create(kind, variant, mode).WithSize(compact ? 360 : 800, compact ? 360 : 440)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle(kind == ChartSeriesKind.Scatter ? "Effort and impact" : "Capacity and delay");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(kind == ChartSeriesKind.Scatter ? 4 : 2, prepared.Regions.Count(r => r.Role == "plot-region"));

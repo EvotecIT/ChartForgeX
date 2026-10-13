@@ -8,38 +8,24 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects Cartesian data geometry, explicit paint and immutable source identity.</summary>
 public sealed class V2CartesianTests {
-    [Fact]
-    public void PreparedGridDefaults_IgnoreLegacyThemes_AndPreserveCompleteExplicitStyles() {
-        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(ChartTheme.Light());
-        var classic = Compile(chart);
-        chart.WithTheme(ChartTheme.GraphiteLight());
-        var graphite = Compile(chart);
-        Assert.Equal(VisualSceneSvgRenderer.Render(classic), VisualSceneSvgRenderer.Render(graphite));
-        Assert.DoesNotContain(classic.Nodes, node => node.Role == "grid-x");
-        Assert.Contains(classic.Nodes, node => node.Role == "grid-y");
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void ExplicitGridStyleSurvivesThemeAndModeChanges(VisualThemeMode mode) {
+        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(VisualTheme.Graphite(), mode);
+        var defaults = Compile(chart);
+        Assert.DoesNotContain(defaults.Nodes, node => node.Role == "grid-x");
+        Assert.Contains(defaults.Nodes, node => node.Role == "grid-y");
         chart.Options.GridLineStyle = new ChartGridLineStyle { ShowVerticalLines = true, StrokeWidth = 3, Dash = 2, Gap = 4 };
+        chart.WithTheme(VisualTheme.Report(), mode);
         var configured = Compile(chart).Nodes.OfType<VisualSceneLine>().Where(line => line.Role is "grid-x" or "grid-y").ToArray();
         Assert.Contains(configured, line => line.Role == "grid-x");
         Assert.All(configured, line => { Assert.Equal(3, line.StrokeWidth); Assert.Equal(new[] { 2d, 4d }, line.Dash); });
-        chart.WithTheme(ChartTheme.Light());
-        Assert.Equal(VisualSceneSvgRenderer.Render(Compile(chart)), VisualSceneSvgRenderer.Render(Compile(chart.WithTheme(ChartTheme.GraphiteLight()))));
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void PreparedGrid_PreservesDirectGetterChangesAcrossLegacyThemeSwitches(bool graphite) {
-        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Light());
         chart.Options.GridLineStyle.ShowHorizontalLines = false;
         chart.Options.GridLineStyle.StrokeWidth = 4;
-        var configured = Compile(chart);
-        Assert.DoesNotContain(configured.Nodes, node => node.Role == "grid-y");
-        chart.WithTheme(graphite ? ChartTheme.Light() : ChartTheme.GraphiteLight());
-        Assert.Equal(VisualSceneSvgRenderer.Render(configured), VisualSceneSvgRenderer.Render(Compile(chart)));
-        chart.Options.BarVisualStyle.Kind = ChartBarStyle.SegmentedCapsule;
-        var withBarStyle = Compile(chart);
-        chart.WithTheme(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Light());
-        Assert.Equal(VisualSceneSvgRenderer.Render(withBarStyle), VisualSceneSvgRenderer.Render(Compile(chart)));
+        chart.WithTheme(VisualTheme.Graphite(), mode == VisualThemeMode.Light ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role == "grid-y");
+        Assert.Equal(4, chart.Options.GridLineStyle.StrokeWidth);
     }
 
     [Theory]
@@ -210,13 +196,13 @@ public sealed class V2CartesianTests {
     [Fact]
     public void CompiledScene_KeepsExplicitPointColorAndSourceIdentity_AfterModelMutation() {
         var color = ChartColor.FromHex("#F17A42");
-        var chart = Chart.Create().AddScatter("Measured", Points(5, 8));
-        chart.Series[0].WithInteractionKey("measurements").WithPointColor(0, color);
+        var chart = Chart.Create().AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("measurements"), "Measured", Points(5, 8)));
+        chart.Series[0].WithPointColor(0, color);
         var scene = Compile(chart);
         var svg = VisualSceneSvgRenderer.Render(scene);
         chart.Series[0].Points.Clear();
         chart.Series[0].PointColors.Clear();
-        chart.Series[0].InteractionKey = "changed";
+        chart.Series[0].WithName("Changed");
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
         Assert.Equal(color, scene.Nodes.OfType<VisualSceneEllipse>().First().Fill);
         Assert.Contains(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.TryGetValue("data-cfx-series-key", out var key) && key == "measurements");

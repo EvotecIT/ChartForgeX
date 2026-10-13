@@ -28,7 +28,7 @@ public sealed class MermaidCartesianSequenceFontBudgetTests {
             .SelectMany(element => element.DescendantsAndSelf().Where(child => child.Name.LocalName == "text")).Select(element => element.Value).ToArray();
         Assert.Contains(kind == "quadrant" ? "Alpha" : "Alpha [Sam]", labels);
         Assert.Contains(kind == "quadrant" ? "Beta" : "Beta [Sam]", labels);
-        Assert.Equal(size, Assert.IsType<Chart>(artifact.Model).Options.Theme.DataLabelFontSize);
+        Assert.Equal(size, Assert.IsType<Chart>(artifact.Model).Options.Theme.Typography.DataLabelSize);
     }
 
     [Trait("Category", "Browser")]

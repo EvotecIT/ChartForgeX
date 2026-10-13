@@ -37,7 +37,7 @@ public sealed class FontRegistryTests : IDisposable {
     public void GridTitleUsesTheRequestedNumericFaceFromItsTheme() {
         if (!TryGetGeorgia(out var regular,out var bold)) return;
         FontRegistry.Register(Family,regular,weight:600); FontRegistry.Register(Family,bold,weight:700);
-        var grid=ChartGrid.Create().WithTitle("Numeric grid title").Add(BarChart(Family));
+        var grid=ChartGrid.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(Family)).WithTitle("Numeric grid title").Add(BarChart(Family));
         grid.TitleStyle.FontWeight="600";
         byte[] semibold=grid.ToPng();
         grid.TitleStyle.FontWeight="700";
@@ -82,7 +82,7 @@ public sealed class FontRegistryTests : IDisposable {
     [WindowsFontFact("georgia.ttf", "georgiab.ttf")]
     public void PortableCanvasMetricsIgnoreInstalledFamiliesAndUseRegisteredFaces() {
         const string text = "Wide canvas title WWW";
-        var defaultMode = new VisualCanvasTheme().TextMeasurementMode;
+        var defaultMode = new VisualCanvasStyleOptions().TextMeasurementMode;
         Assert.Equal(TextMeasurementMode.PortableEstimate, defaultMode);
         var portable = VisualCanvasTextFace.Resolve("Georgia", 400, defaultMode);
         var absent = VisualCanvasTextFace.Resolve("No Such Family", 400, defaultMode);
@@ -196,13 +196,13 @@ public sealed class FontRegistryTests : IDisposable {
 
     private static Chart BarChart(string family) => Chart.Create()
         .WithTitle("Readership")
-        .WithTheme(ChartTheme.ReportDark().WithFontFamily(family))
+        .WithTheme(VisualTheme.Report().WithFontFamily(family), VisualThemeMode.Dark)
         .WithSize(360, 220)
         .WithXLabels("A", "B", "C")
         .AddBar("Issues", ChartPoints.FromValues(12, 18, 9));
 
     private static VisualCanvas Canvas(string family) =>
-        VisualCanvas.Create(400, 80).WithBackdrop(VisualCanvasBackdropStyle.Transparent).WithTheme(new VisualCanvasTheme { FontFamily = family })
+        VisualCanvas.Create(400, 80).WithBackdrop(VisualCanvasBackdropStyle.Transparent).WithTheme(VisualTheme.Graphite().WithFontFamily(family))
             .AddText(10, 10, 380, "Registered canvas text", 24, ChartColors.White, emphasized: true);
 
     private static byte[] Svg(string family, int weight) =>

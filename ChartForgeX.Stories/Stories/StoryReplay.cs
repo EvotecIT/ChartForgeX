@@ -145,6 +145,6 @@ public sealed partial class StoryReplay {
         if (!Enum.IsDefined(typeof(TerminalDialect), dialect)) throw new ArgumentOutOfRangeException(nameof(dialect));
         var prompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt));
         if (dialect == TerminalDialect.Custom && prompt.Length == 0) throw new ArgumentException("A custom dialect requires its prompt.", nameof(customPrompt));
-        return new TerminalTab(id, Heading(title, nameof(title)), dialect, OneLine(directory, nameof(directory)), prompt, TerminalTheme.GraphiteDark(), TerminalTabIcon.Terminal);
+        return new TerminalTab(id, Heading(title, nameof(title)), dialect, OneLine(directory, nameof(directory)), prompt, ChartForgeX.Themes.VisualTheme.Graphite(), TerminalTabIcon.Terminal);
     }
 }

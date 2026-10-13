@@ -14,7 +14,7 @@ public sealed class InteractiveNestedTargetBrowserTests {
     [InlineData(true, 360)]
     public async Task NestedAuthoredTargetsSelectOnceWhileTheirDecorationsStayWithTheirOwner(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(width, 320).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(width, 320).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddTree("Teams", new[] { new ChartNode("teams", "All teams"), new ChartNode("north", "Support"), new ChartNode("south", "Support") },
                 new[] { new ChartTreeLink("teams", "north", 5), new ChartTreeLink("teams", "south", 8) });
         // A host can retain nested source groups in its SVG. Keep the actual renderer's marks,

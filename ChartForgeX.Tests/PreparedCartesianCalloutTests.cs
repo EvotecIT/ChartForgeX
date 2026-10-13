@@ -20,7 +20,7 @@ public sealed class PreparedCartesianCalloutTests {
             FontRegistry.Register(family, OpenTypeTestFonts.NameKeyed(extraGlyphs: new Dictionary<int, int> {
                 ['A'] = OpenTypeTestFonts.Flex, ['p'] = OpenTypeTestFonts.Flex, ['r'] = OpenTypeTestFonts.Flex
             }));
-            var chart = Chart.Create().WithSize(520, 300).WithTheme(ChartTheme.DashboardLight()).WithFontFamily(family)
+            var chart = Chart.Create().WithSize(520, 300).WithTheme(VisualTheme.Dashboard()).WithFontFamily(family)
                 .WithDashboardTrendPanelStyle(showLegend: true).WithXLabels("Jan", "Feb", "Mar", "Apr")
                 .AddSmoothLine("On-time", Points(21, 23, 25, 37), ChartColor.FromHex("#7057E6"))
                 .AddSmoothLine("Absent", Points(18, 22, 17, 14), ChartColor.FromHex("#5FD3D9"))

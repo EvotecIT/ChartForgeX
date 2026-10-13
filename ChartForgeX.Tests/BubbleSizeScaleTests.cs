@@ -49,7 +49,7 @@ public sealed class BubbleSizeScaleTests {
         var chart = Bare().AddBubble("First", new[] { new ChartBubble(1, 20, 1), new ChartBubble(3, 30, 100) })
             .AddBubble("Hidden", new[] { new ChartBubble(5, 40, 400) });
         chart.Series[1].UseSecondaryYAxis().ConfigureMarkers(marker => marker.Enabled = false);
-        chart.Series.Add(new ChartSeries("Empty", ChartSeriesKind.Bubble, Array.Empty<ChartPoint>()));
+        chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("empty"), "Empty", Array.Empty<ChartBubble>()));
         chart.ConfigureBubble(bubble => { bubble.MinimumRadius = 2; bubble.MaximumRadius = 30; });
         var automatic = Marks(Prepare(chart));
         Assert.Equal(2, automatic.Length);
@@ -155,16 +155,23 @@ public sealed class BubbleSizeScaleTests {
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 200); bubble.MinimumRadius = 4; bubble.MaximumRadius = 40; bubble.Reversed = true; });
         chart.Series[0].Markers.Shape = ChartMarkerShape.Diamond;
-        chart.Series[0].Points[1] = new ChartPoint(1, 200);
+        var first = chart.Series[0].Bubbles[0];
+        chart.Series[0].UpdateBubble(0, new ChartBubble(first.X, first.Y, 200).WithColorValue(first.ColorValue));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.NotEqual(svg, Prepare(chart).ToSvg());
     }
 
     [Fact]
-    public void BubbleOptionsHaveOneOwnerAndRejectContradictoryPublicConfiguration() {
+    public void BubbleOptionsInstallDetachedConfigurationAndRejectContradictoryPublicValues() {
         var chart = Bare().AddBubble("Samples", new[] { new ChartBubble(1, 20, 40) });
+        var initial = chart.Options.Bubble;
+        ChartBubbleOptions? candidate = null;
+        Assert.Same(chart, chart.ConfigureBubble(bubble => { candidate = bubble; bubble.MaximumRadius = 24; }));
         var options = chart.Options.Bubble;
-        Assert.Same(chart, chart.ConfigureBubble(bubble => Assert.Same(options, bubble)));
+        Assert.NotSame(initial, options); Assert.NotSame(candidate, options);
+        candidate!.MaximumRadius = 30;
+        Assert.Null(initial.MaximumRadius); Assert.Equal(24, options.MaximumRadius);
+        options.MaximumRadius = null;
         Assert.Equal(6, options.MinimumRadius); Assert.Null(options.MaximumRadius);
         Assert.Null(options.MinimumValue); Assert.Null(options.MaximumValue); Assert.False(options.Reversed);
         Assert.Throws<ArgumentNullException>(() => chart.ConfigureBubble(null!));
@@ -190,7 +197,7 @@ public sealed class BubbleSizeScaleTests {
         var chart = Bare().AddBubble("Samples", new[] { new ChartBubble(1, 20, 40) });
         var series = chart.Series[0];
         if (route == 0) series.Markers.Radius = 8;
-        else if (route == 1) series.WithMarkerRadius(8);
+        else if (route == 1) series.ConfigureMarkers(markers => markers.Radius = 8);
         else series.MarkerRadius = 8;
         var error = Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         Assert.Contains("ChartOptions.Bubble", error.Message);

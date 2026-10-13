@@ -13,8 +13,8 @@ internal static partial class VisualMapCompiler {
         var longitudeSpan = viewport.MaximumLongitude - viewport.MinimumLongitude; var latitudeSpan = viewport.MaximumLatitude - viewport.MinimumLatitude;
         if (!Finite(longitudeSpan) || !Finite(latitudeSpan) || longitudeSpan <= 0 || latitudeSpan <= 0)
             throw new InvalidOperationException("A dotted map viewport must have positive longitude and latitude spans.");
-        foreach (var point in series.Points) ValidateCoordinate(point);
-        var weights = new double?[series.Points.Count];
+        foreach (var point in series.RenderPoints) ValidateCoordinate(point);
+        var weights = new double?[series.RenderPoints.Count];
         for (var index = 0; index < weights.Length; index++) {
             weights[index] = index < series.PointValues.Count ? series.PointValues[index] : null;
             if (weights[index].HasValue && (!Finite(weights[index]!.Value) || weights[index]!.Value < 0)) throw new InvalidOperationException("Dotted map weights must be finite and non-negative.");
@@ -31,7 +31,7 @@ internal static partial class VisualMapCompiler {
             ["role"] = "group", ["aria-label"] = chart.Options.Labels.Describe(DescriptionFacts(chart, true)),
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name,
             ["data-cfx-projection"] = "equirectangular", ["data-cfx-viewport"] = viewport.Name ?? "",
-            ["data-cfx-point-count"] = N(series.Points.Count), ["data-cfx-visible-point-count"] = N(series.Points.Count(point => Visible(point, viewport))),
+            ["data-cfx-point-count"] = N(series.RenderPoints.Count), ["data-cfx-visible-point-count"] = N(series.RenderPoints.Count(point => Visible(point, viewport))),
             ["data-cfx-valued-point-count"] = N(valued.Length), ["data-cfx-connector-count"] = N(chart.Options.MapConnectors.Count),
             ["data-cfx-viewport-min-longitude"] = N(viewport.MinimumLongitude), ["data-cfx-viewport-max-longitude"] = N(viewport.MaximumLongitude),
             ["data-cfx-viewport-min-latitude"] = N(viewport.MinimumLatitude), ["data-cfx-viewport-max-latitude"] = N(viewport.MaximumLatitude),
@@ -41,8 +41,8 @@ internal static partial class VisualMapCompiler {
                 DottedLand(chart, context, builder, map, viewport, dot, colors);
                 Routes(chart, context, builder, map, plot, viewport, dot, weights, min, max, colors, labels);
             }
-            for (var index = 0; index < series.Points.Count; index++) {
-                var source = series.Points[index]; var visible = Visible(source, viewport); var point = Geographic(source, viewport, map);
+            for (var index = 0; index < series.RenderPoints.Count; index++) {
+                var source = series.RenderPoints[index]; var visible = Visible(source, viewport); var point = Geographic(source, viewport, map);
                 var category = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, index + 1) ?? "Point " + (index + 1);
                 var formatted = weights[index].HasValue ? ChartNumericFormatter.FormatValue(chart.Options, weights[index]!.Value) : "";
                 var full = category + (formatted.Length > 0 ? ": " + formatted : "") + "; " + N(source.X) + ", " + N(source.Y);
@@ -73,7 +73,7 @@ internal static partial class VisualMapCompiler {
             }
             DrawMapLabels(builder, plot, labels, obstacles, context.Theme.Spacing);
         }
-        if (series.Points.Count == 0) builder.AddDiagnostic(new VisualDiagnostic("map.no-data", "The dotted map has no observations."));
+        if (series.RenderPoints.Count == 0) builder.AddDiagnostic(new VisualDiagnostic("map.no-data", "The dotted map has no observations."));
     }
 
     private static void ValidateCoordinate(ChartPoint point) {

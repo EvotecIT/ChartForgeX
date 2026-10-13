@@ -3,20 +3,31 @@ namespace ChartForgeX.Core;
 public sealed partial class ChartSeries {
     internal bool HasSourceData => AuthoredObservationCount > 0;
 
-    // Encoded numeric families retain their existing footprint metric; typed input counts authored items.
-    internal int RenderedPointCount => WaterfallItems.Count > 0 ? AuthoredObservationCount : Points.Count;
+    internal int RenderedPointCount => ObservationCount;
+
+    /// <summary>Gets the number of authored display observations, independent of their number of numeric fields or derived marks.</summary>
+    public int ObservationCount => AuthoredObservationCount;
 
     // Point overrides and keys use logical observations, not encoded tuple members or derived extra marks.
     internal int AuthoredObservationCount {
         get {
             if (IsRelationshipKind(Kind)) return Nodes.Count;
             if (WaterfallItems.Count > 0) return WaterfallItems.Count;
-            var tupleSize = Kind == ChartSeriesKind.Bubble || Kind == ChartSeriesKind.RangeBand || Kind == ChartSeriesKind.RangeArea || Kind == ChartSeriesKind.DifferenceArea
-                || Kind == ChartSeriesKind.RangeBar || Kind == ChartSeriesKind.Dumbbell ? 2
-                : Kind == ChartSeriesKind.ErrorBar ? 3
-                : Kind == ChartSeriesKind.Candlestick || Kind == ChartSeriesKind.Ohlc ? 4
-                : Kind == ChartSeriesKind.BoxPlot ? 5 : 1;
-            return Points.Count / tupleSize;
+            return Kind switch {
+                ChartSeriesKind.Bubble => Bubbles.Count,
+                ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc => FinancialValues.Count,
+                ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea => Ranges.Count,
+                ChartSeriesKind.RangeBar => Intervals.Count,
+                ChartSeriesKind.ErrorBar => ErrorBars.Count,
+                ChartSeriesKind.BoxPlot => BoxPlots.Count,
+                ChartSeriesKind.Dumbbell => Dumbbells.Count,
+                ChartSeriesKind.DifferenceArea => DifferencePoints.Count,
+                ChartSeriesKind.Gantt => GanttItems.Count,
+                ChartSeriesKind.Gauge or ChartSeriesKind.Circle => GaugeValues.Count,
+                ChartSeriesKind.Bullet => BulletValues.Count,
+                ChartSeriesKind.LayeredRadial => RadialLayers.Count,
+                _ => Points.Count
+            };
         }
     }
 }

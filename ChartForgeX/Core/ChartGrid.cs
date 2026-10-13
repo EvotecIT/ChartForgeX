@@ -20,7 +20,9 @@ public sealed partial class ChartGrid {
     private int _pngOutputScale = 1;
     private ChartSize? _panelSize;
     private VisualPanelFit _panelFit = VisualPanelFit.Contain;
-    private ChartTheme? _theme;
+    private VisualTheme _theme = VisualTheme.Graphite();
+    private VisualThemeMode _themeMode;
+    private ResolvedVisualTheme? _resolvedTheme;
 
     /// <summary>
     /// Gets or sets the report title.
@@ -109,22 +111,29 @@ public sealed partial class ChartGrid {
     }
 
     /// <summary>
-    /// Gets or sets the optional theme used by the grid background and heading.
+    /// Gets or sets the paired theme shared by the grid frame and every panel.
     /// </summary>
-    public ChartTheme? Theme {
+    public VisualTheme Theme {
         get => _theme;
-        set => _theme = value;
+        set { _theme = value ?? throw new ArgumentNullException(nameof(value)); _resolvedTheme = null; }
     }
+
+    /// <summary>Gets or sets the explicit palette mode for the complete comparison.</summary>
+    public VisualThemeMode ThemeMode {
+        get => _themeMode;
+        set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; _resolvedTheme = null; }
+    }
+    internal ResolvedVisualTheme ResolvedTheme => _resolvedTheme ??= Theme.ResolvePresentation(ThemeMode);
 
     /// <summary>
     /// Gets the text style used for the grid title.
     /// </summary>
-    public TextStyleOverride TitleStyle { get; } = new();
+    public TextStyleOverride TitleStyle { get; private set; } = new();
 
     /// <summary>
     /// Gets the text style used for the grid subtitle.
     /// </summary>
-    public TextStyleOverride SubtitleStyle { get; } = new();
+    public TextStyleOverride SubtitleStyle { get; private set; } = new();
 
     /// <summary>
     /// Gets the charts included in the grid.
@@ -163,7 +172,7 @@ public sealed partial class ChartGrid {
     /// <returns>The current chart grid.</returns>
     public ChartGrid ConfigureTitleStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(TitleStyle);
+        TitleStyle = ChartOptionConfiguration.Configure(TitleStyle, configure, style => style.Clone());
         return this;
     }
 
@@ -174,7 +183,7 @@ public sealed partial class ChartGrid {
     /// <returns>The current chart grid.</returns>
     public ChartGrid ConfigureSubtitleStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(SubtitleStyle);
+        SubtitleStyle = ChartOptionConfiguration.Configure(SubtitleStyle, configure, style => style.Clone());
         return this;
     }
 
@@ -238,14 +247,15 @@ public sealed partial class ChartGrid {
     /// Sets the theme used by the grid background and heading.
     /// </summary>
     /// <param name="theme">The grid theme.</param>
+    /// <param name="mode">Optional explicit palette mode; omitted keeps the current mode.</param>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithTheme(ChartTheme theme) { Theme = theme ?? throw new ArgumentNullException(nameof(theme)); return this; }
-
-    /// <summary>
-    /// Clears the grid theme so renderers use the first chart theme.
-    /// </summary>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithAutomaticTheme() { _theme = null; return this; }
+    public ChartGrid WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
+        if (theme == null) throw new ArgumentNullException(nameof(theme));
+        if (mode.HasValue && !Enum.IsDefined(typeof(VisualThemeMode), mode.Value)) throw new ArgumentOutOfRangeException(nameof(mode));
+        Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this;
+    }
+    /// <summary>Sets the explicit palette mode for the comparison.</summary>
+    public ChartGrid WithThemeMode(VisualThemeMode mode) { ThemeMode = mode; return this; }
 
     /// <summary>
     /// Adds a chart to the grid.

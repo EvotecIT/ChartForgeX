@@ -24,7 +24,7 @@ public sealed class MermaidXYOrientationBrowserTests {
         var parsed = new MermaidParser().ParseXYChart("xychart-beta horizontal\ntitle Monthly count\nx-axis Month [Jan,Feb,Mar]\ny-axis Count 0 --> 100\n" + series);
         Assert.False(parsed.HasErrors);
         var chart = parsed.Document!.ToChart(new MermaidXYChartRenderOptions { Width = width - 32, Height = 420 });
-        chart.WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLineMarkers(ChartLineMarkerMode.All);
+        chart.WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLineMarkers(ChartLineMarkerMode.All);
         if (kind == "bar") chart.WithLegend().WithPointLegend();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage();

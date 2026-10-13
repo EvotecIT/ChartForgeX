@@ -18,12 +18,10 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     public async Task KeyboardNavigationRevealsNativeMarksThroughScaledHorizontalAndVerticalStageScroll(bool graphite, double scale, bool verticalScroll) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithTitle("Keyboard reveal coordinates").WithLegend(false)
-            .WithTheme(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Light())
+            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report())
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-            .AddScatter("Reading", new[] { new ChartPoint(1, 9), new ChartPoint(5, 5), new ChartPoint(9, 1) })
-            .AddScatter("Secondary", new[] { new ChartPoint(1, 1), new ChartPoint(5, 1), new ChartPoint(9, 9) });
-        chart.Series[0].WithInteractionKey("reading-source");
-        chart.Series[1].WithInteractionKey("secondary-source");
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), "Reading", new[] { new ChartPoint(1, 9), new ChartPoint(5, 5), new ChartPoint(9, 1) }))
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("secondary-source"), "Secondary", new[] { new ChartPoint(1, 1), new ChartPoint(5, 1), new ChartPoint(9, 9) }));
         var html = Host(graphite, HtmlChartResponsiveLayout.Readable, 340, scale, verticalScroll,
             ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Tooltips, chart)
             .Replace("<main id='host'", "<button id='before-chart'>Before chart</button><main id='host'", StringComparison.Ordinal);

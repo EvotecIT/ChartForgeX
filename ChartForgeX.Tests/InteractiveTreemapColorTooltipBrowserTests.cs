@@ -18,7 +18,7 @@ public sealed class InteractiveTreemapColorTooltipBrowserTests {
     public async Task TooltipsKeepAreaAndIndependentColorFactsWithLocalizedMissingStatus(int width, bool dark, bool titleOverride, bool leafKeys) {
         if (!Enabled) return;
         var colorLabel = titleOverride ? "Zmiana (%) <&>" : "Kolor";
-        var chart = Chart.Create().WithSize(width, 380).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(width, 380).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Przydział pracy").WithDataLabels(false).ConfigureLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; })
             .AddTreemap("Zespoły", new[] {
                 new ChartHierarchyItem("positive", "Obsługa", value: 9, colorValue: 7.125),

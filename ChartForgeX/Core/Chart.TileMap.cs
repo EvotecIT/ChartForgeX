@@ -12,12 +12,13 @@ public sealed partial class Chart {
     /// <param name="definition">The tile-map geometry definition.</param>
     /// <param name="regions">The region values to render. Duplicate region codes, names, or aliases are summed.</param>
     /// <param name="color">An optional high-intensity region color.</param>
+    /// <param name="id">Optional stable identity assigned before attachment; geometry and map labels remain owned by this chart.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddTileMap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColor? color = null) {
+    public Chart AddTileMap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColor? color = null, ChartSeriesId? id = null) {
         EnsureCanAddSeries();
         if (definition == null) throw new ArgumentNullException(nameof(definition));
         Options.TileMapDefinition = definition;
-        return AddTileMapCore(name, definition, regions, color);
+        return AddTileMapCore(name, definition, regions, color, id);
     }
 
     /// <summary>
@@ -27,14 +28,15 @@ public sealed partial class Chart {
     /// <param name="definition">The tile-map geometry definition.</param>
     /// <param name="regions">The region values to render. Each tile is colored independently from its own value.</param>
     /// <param name="scale">An optional map color scale used to color the tiles.</param>
+    /// <param name="id">Optional stable identity assigned before attachment; geometry and map labels remain owned by this chart.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddTileHeatmap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColorScale? scale = null) {
+    public Chart AddTileHeatmap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColorScale? scale = null, ChartSeriesId? id = null) {
         EnsureCanAddSeries();
         if (scale != null) Options.MapColorScale = scale;
-        return AddTileMap(name, definition, regions);
+        return AddTileMap(name, definition, regions, id: id);
     }
 
-    private Chart AddTileMapCore(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColor? color) {
+    private Chart AddTileMapCore(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColor? color, ChartSeriesId? id) {
         if (regions == null) throw new ArgumentNullException(nameof(regions));
         var byRegion = new SortedDictionary<string, RegionAggregate>(StringComparer.OrdinalIgnoreCase);
         foreach (var region in regions) {
@@ -59,7 +61,7 @@ public sealed partial class Chart {
 
         Options.XAxisLabels.Clear();
         Options.XAxisLabels.AddRange(labels);
-        Add(name, ChartSeriesKind.TileMap, points, color);
+        Add(name, ChartSeriesKind.TileMap, points, color, id: id);
         Series[Series.Count - 1].PointColors.AddRange(colors);
         return this;
     }

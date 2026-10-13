@@ -30,7 +30,7 @@ internal static partial class TopologyRenderPrimitives {
         return null;
     }
 
-    public static string EdgeLabelClearanceFill(TopologyGroup? group, TopologyTheme theme, TopologyRenderOptions options) {
+    public static string EdgeLabelClearanceFill(TopologyGroup? group, TopologyPaint theme, TopologyRenderOptions options) {
         if (group == null || !options.IncludeGroups) return theme.Background;
         var accent = string.IsNullOrWhiteSpace(group.Color) ? theme.StatusColor(group.Status) : group.Color!.Trim();
         return GroupFill(accent, theme, options);

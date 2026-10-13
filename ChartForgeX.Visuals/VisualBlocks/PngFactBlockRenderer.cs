@@ -34,7 +34,7 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawTable(RgbaCanvas canvas, ChartTable table) {
         var options = table.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, table, ref y, content.X, content.Width);
@@ -82,7 +82,7 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawList(RgbaCanvas canvas, ChartList list) {
         var options = list.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, list, ref y, content.X, content.Width);
@@ -101,7 +101,7 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawMetric(RgbaCanvas canvas, MetricCard card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
         var detailBottom = options.Size.Height - options.Padding.Bottom;
@@ -112,7 +112,7 @@ public sealed partial class PngFactBlockRenderer {
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
         if (card.Status != VisualStatus.None) {
-            if (options.ShowCard && theme.UseCard) {
+            if (options.ShowCard) {
                 var barInset = ChartVisualPrimitives.CardInnerHighlightInset;
                 canvas.FillRectClippedToRoundedRect(barInset, barInset, ChartVisualPrimitives.MetricStatusBarWidth, Math.Max(1, options.Size.Height - barInset * 2), 0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, statusColor);
             }
@@ -176,7 +176,7 @@ public sealed partial class PngFactBlockRenderer {
     }
 
     private static void DrawMetricDetail(RgbaCanvas canvas, MetricCard card, double bottom, double x, double width) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
         var trendSize = Math.Max(10, theme.SubtitleFontSize);
         var captionSize = Math.Max(10, theme.SubtitleFontSize - 1);
@@ -226,7 +226,7 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawMetricDetails(RgbaCanvas canvas, MetricCard card, ChartRect content, double top, double bottom) {
         if (card.Details.Count == 0 || bottom <= top + 18) return;
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var count = Math.Min(card.Details.Count, 4);
         var columns = count <= 2 ? count : 2;
         var rows = (int)Math.Ceiling(count / (double)columns);
@@ -277,7 +277,7 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawWorkloadList(RgbaCanvas canvas, WorkloadListBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, block, ref y, content.X, content.Width);
@@ -314,7 +314,7 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawScheduleTimeline(RgbaCanvas canvas, ScheduleTimelineBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, block, ref y, content.X, content.Width);
@@ -370,7 +370,7 @@ public sealed partial class PngFactBlockRenderer {
     }
 
 
-    private static void DrawScheduleAvatars(RgbaCanvas canvas, ScheduleTimelineEvent item, ChartColor color, ChartForgeX.Themes.ChartTheme theme, double x, double y) {
+    private static void DrawScheduleAvatars(RgbaCanvas canvas, ScheduleTimelineEvent item, ChartColor color, ChartForgeX.Themes.ResolvedVisualTheme theme, double x, double y) {
         var count = Math.Min(3, item.Avatars.Count);
         for (var i = 0; i < count; i++) {
             var cx = x + i * 14;
@@ -389,7 +389,7 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawRadialMetric(RgbaCanvas canvas, RadialMetricCard card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, card, ref y, content.X, content.Width);
@@ -420,7 +420,7 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawMarker(RgbaCanvas canvas, ChartList list, ChartListItem item, int index, double x, double y) {
         if (list.Marker == VisualListMarker.None) return;
-        var theme = list.Options.Theme;
+        var theme = list.Options.ResolvedTheme;
         var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, index) : VisualBlockRendering.StatusColor(theme, item.Status);
         if (list.Marker == VisualListMarker.Number) {
             canvas.DrawTextEmphasized(x - 5, y - 7, (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture), color, 11);
@@ -467,7 +467,7 @@ public sealed partial class PngFactBlockRenderer {
         return table.StatusColumnIndex == columnIndex ? VisualBlockRendering.ParseStatus(cell.Text) : VisualStatus.None;
     }
 
-    private static void DrawRadialSeparators(RgbaCanvas canvas, ChartRadialLayer layer, ChartForgeX.Themes.ChartTheme theme, double cx, double cy, double radius, double stroke, double start, double end) {
+    private static void DrawRadialSeparators(RgbaCanvas canvas, ChartRadialLayer layer, ChartForgeX.Themes.ResolvedVisualTheme theme, double cx, double cy, double radius, double stroke, double start, double end) {
         if (layer.SeparatorCount <= 0) return;
         var separator = layer.SeparatorColor ?? theme.CardBackground;
         var inset = Math.Min(stroke / 2 - 0.5, Math.Max(0, stroke * layer.SeparatorInsetRatio));

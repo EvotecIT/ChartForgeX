@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Xml.Linq;
 using ChartForgeX.Markup;
 using ChartForgeX;
 using ChartForgeX.Core;
@@ -7,6 +9,8 @@ using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
@@ -14,15 +18,37 @@ using ChartForgeX.VisualBlocks;
 internal static class Program {
     private static void Main() {
         PackageAssertions.CoreFixtures();
-        var chart = Chart.Create()
-            .WithTitle("Package smoke")
-            .WithSize(320, 180)
-            .AddLine("Values", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
-
-        if (!chart.ToSvg().Contains("<svg", StringComparison.Ordinal)) throw new InvalidOperationException("SVG render failed.");
+        var values = ChartSeries.CreateLine(new ChartSeriesId("package-values"), "Values",
+            new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
+        var bubble = ChartSeries.CreateBubble(new ChartSeriesId("0"), "Values", new[] { new ChartBubble(1.5, 2.5, 7) })
+            .WithObservationId(0, new ChartObservationId("package-bubble"));
+        var chart = Chart.Create().WithTitle("Package smoke").WithSize(320, 180)
+            .AddSeries(values).AddSeries(bubble);
+        PackageAssertions.Require(ReferenceEquals(chart.Series[0], values) && ReferenceEquals(chart.Series[1], bubble),
+            "Packed chart attachment did not retain the authored series handles.");
+        PackageAssertions.Require(bubble.Id.Value == "0" && bubble.Bubbles.Count == 1 && bubble.SourcePointCount == 1 && bubble.Points.Count == 0,
+            "Packed Bubble construction did not preserve its stable identity and single typed observation.");
+        var artifact = chart.ToVisualArtifact("package-chart");
+        PackageAssertions.Require(artifact.Metadata["chart.series.0.id"] == values.Id.Value && artifact.Metadata["chart.series.1.id"] == "0" &&
+            artifact.Metadata["chart.series.1.scope"] == "shared", "Packed artifact metadata confused a numeric-looking stable ID with a series ordinal.");
+        var chartSvg = chart.ToSvg();
+        if (!chartSvg.Contains("<svg", StringComparison.Ordinal)) throw new InvalidOperationException("SVG render failed.");
+        var bubblePoints = XDocument.Parse(chartSvg).Descendants().Where(element =>
+            (string?)element.Attribute("data-cfx-role") == "point" && (string?)element.Attribute("data-cfx-series-key") == "0").ToArray();
+        PackageAssertions.Require(bubblePoints.Length == 1 && (string?)bubblePoints[0].Attribute("data-cfx-series") == "1" &&
+            (string?)bubblePoints[0].Attribute("data-cfx-source-point") == "0" && (string?)bubblePoints[0].Attribute("data-cfx-source-count") == "1" &&
+            (string?)bubblePoints[0].Attribute("data-cfx-size") == "7" && (string?)bubblePoints[0].Attribute("data-cfx-observation-id") == "package-bubble",
+            "Packed Bubble SVG lost typed observation facts or mapped the stable series ID to its numeric ordinal.");
         if (!chart.ToHtmlFragment().Contains("<svg", StringComparison.Ordinal)) throw new InvalidOperationException("HTML render failed.");
         if (chart.ToPng().Length <= 64) throw new InvalidOperationException("PNG render failed.");
-        var html = chart.ToInteractiveHtmlPage(options => options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts));
+        var html = chart.ToInteractiveHtmlPage(options => {
+            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+            options.Interaction.AddScenario("package-series", "Selected series", scenario => scenario.AddSeriesStep(bubble.Id, "Bubble observation"));
+            options.Interaction.WithActiveScenario("package-series");
+        });
+        PackageAssertions.Require(html.Contains("data-cfx-scenario-target-id=\"0\"", StringComparison.Ordinal) &&
+            html.Contains("data-cfx-scenario-target-kind=\"series\"", StringComparison.Ordinal),
+            "Packed HTML adapter did not accept the typed stable series ID in its scenario step.");
         if (!html.Contains("data-cfx-zoom=\"in\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML zoom controls missing.");
         if (!html.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML brush controls missing.");
         if (!html.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML export controls missing.");
@@ -52,11 +78,13 @@ internal static class Program {
         if (!graphHtml.Contains("data-cfx-graph-id=\"package-graph\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer package surface missing.");
         if (!graphHtml.Contains("data-cfx-graph-physics=\"Repulsion\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer physics profile missing.");
 
-        var mermaid = new MermaidParser().ParseFlowchart("flowchart LR\n  a[Start] --> b[Done]");
+        var mermaid = new MermaidParser().ParseFlowchart("---\nconfig:\n  theme: dark\n---\nflowchart LR\n  a[Start] --> b[Done]");
         if (mermaid.HasErrors || mermaid.Document is null) throw new InvalidOperationException("Mermaid package parser failed.");
         if (mermaid.Document.Nodes.Count != 2 || mermaid.Document.Edges.Count != 1) throw new InvalidOperationException("Mermaid package parser model missing nodes or edges.");
         var mermaidArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "package-mermaid" });
         if (mermaidArtifact.Kind != VisualArtifactKind.Mermaid || !mermaidArtifact.SupportsExport(VisualArtifactExportFormat.Svg)) throw new InvalidOperationException("Mermaid package artifact contract missing.");
+        PackageAssertions.Require(mermaidArtifact.Model is TopologyChart mermaidTopology && mermaidTopology.ThemeMode == VisualThemeMode.Dark &&
+            mermaidTopology.Theme.ToJson() == VisualTheme.Graphite().ToJson(), "Packed Mermaid conversion did not preserve the canonical paired theme and explicit dark mode.");
         var mermaidClass = new MermaidParser().ParseClass("classDiagram\nclass User\nUser <|-- Admin");
         if (mermaidClass.HasErrors || mermaidClass.Document is null || mermaidClass.Document.Classes.Count != 2) throw new InvalidOperationException("Mermaid package class parser failed.");
         if (mermaidClass.Document.ToVisualArtifact().Model is not ChartForgeX.Topology.TopologyChart) throw new InvalidOperationException("Mermaid package class artifact contract missing.");

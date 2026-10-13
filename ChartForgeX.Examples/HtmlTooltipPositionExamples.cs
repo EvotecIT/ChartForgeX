@@ -11,7 +11,7 @@ public static class HtmlTooltipPositionExamples {
     public static string CreatePage(HtmlChartTooltipAnchor anchor, bool dark = false) {
         var chart = Chart.Create().WithSize(800, 440).WithTitle(anchor + " tooltip placement")
             .WithSubtitle("Hover or focus a reading; click to retain it while resizing the chart")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddScatter("Processing time", new[] { new ChartPoint(1, 8), new ChartPoint(5, 5), new ChartPoint(9, 2) });
         return chart.ToInteractiveHtmlPage(options => {

@@ -19,9 +19,7 @@ Use domain names after prefixes. Avoid interchangeable `Set`, `Use`, `Build`, `R
 
 Typed `Action<T>` configuration callbacks use `Configure*`, including callbacks that select a row, step or point by index or ID. Value and object setters keep `With*`; for example, `WithLineVisualStyle(style)` supplies a style while `ConfigureLineVisualStyle(style => ...)` configures it. The immutable `ChartColorScale.WithLabels(string?...)` copy operation retains its value arguments and name.
 
-The prefix does not promise uniform object identity or rollback. Axes, family options, labels, gauge options, accessibility and getter-owned text styles are edited in place. `ConfigureBarVisualStyle`, `ConfigureLineVisualStyle` and `ConfigureGridStyle` configure a clone of the current style, then install it through the copying setter after the callback succeeds. Retaining that working style does not give access to the installed copy. Point-label styling reuses an existing override or installs a newly configured one after success; its style list can expand before the callback runs.
-
-Chart and topology `ConfigureTheme` callbacks edit their stored theme in place. Chart-grid and visual-grid callbacks use the existing theme, or create a light theme when none is set and install it after success. Changes to an existing theme remain if the callback throws; a newly created grid theme is not installed on failure. Other callbacks that edit existing objects can also retain changes made before an exception. These ownership rules are preserved by the naming change.
+Configuration callbacks edit an isolated candidate and install a separate snapshot after success. Exceptions leave the owner unchanged, and a reference retained before or during a callback cannot mutate the newly installed value. This rule includes axes, family options, labels, accessibility, text overrides, grid pagination and optional canvas/table configuration. Theme callbacks produce an immutable paired theme through `VisualThemeBuilder`.
 
 Immutable render requests use constructors and read-only properties. They do not expose `Add*` or `Configure*` mutation. The reviewed `VisualTheme.WithTypography(VisualTypography)` exception returns an independent paired theme with a replacement typography scale, preserving both palettes, geometry and effects without editing the source. Other immutable `With*` APIs need the same explicit copy-return contract and review. Existing mutable `FontSpec`, `VisualDesignTokens`, status-token and accessibility objects enter this boundary through snapshots or leave it through independent copies.
 
@@ -46,12 +44,64 @@ HTML interaction presentation stays in the optional adapter. `HtmlChartInteracti
 | `ChartFlowStyle` / `ChartSeries.WithFlowStyle(id, style)` | Immutable fill, opacity, pattern and outline overrides for an existing Sankey or Chord flow ID. `FlowStyles` is read-only; null removes an override. |
 | `ChartSeries.WithFlowState(id, state)` | Semantic state for an existing Sankey or Chord flow ID. `FlowStates` is read-only; null restores source-node/series inheritance and `None` suppresses it. |
 | `ChartOptions.Chord` | Typed circular span/start, node geometry, opacity, direction and label settings over the canonical weighted-flow facts. See [weighted chord charts](../chord.md). |
-| `ChartOptions.Sankey` | Getter-owned mutable alignment, ordering, node geometry and flow paint options. `ConfigureSankey` edits the existing object and returns the chart. |
-| `ChartOptions.Bubble` | Getter-owned mutable size-domain, radius endpoints and reversal settings shared by every bubble series. `ConfigureBubble` edits the existing object and returns the chart. |
+| `ChartOptions.Sankey` | Alignment, ordering, node geometry and flow paint options. `ConfigureSankey` configures and installs an independent snapshot, then returns the chart. |
+| `ChartOptions.Bubble` | Size-domain, radius endpoints and reversal settings shared by every bubble series. `ConfigureBubble` configures and installs an independent snapshot, then returns the chart. |
 
 Keep the numeric scene and painter implementation internal. Public signatures use core-owned types and do not reference Visuals, Stories, browser hosts, their encoders or their policy objects. Static rendering is script-free. Optional animation, interaction and composition have the ownership described in the architecture and [consumer migration guide](migration.md).
 
 `ChartColor` is the color value type. Palette collections contain that type; do not introduce another RGB wrapper for the prepared pipeline. Diagnostic severity reuses the existing enum. Finding severity, test outcome and operational state remain distinct domain vocabularies even where their presentation uses the same colors.
+
+## One theme and an explicit mode
+
+Charts, chart grids, topology, sequence diagrams, visual blocks, canvases and stories use `VisualTheme`. It is an immutable paired theme containing light/dark palettes, typography, geometry and effects. `ThemeMode` selects the palette; colors never select a different renderer. Model defaults feed convenience exports. An explicit `VisualRenderContext` supplies the complete theme, mode and font for `Prepare`.
+
+```csharp
+var theme = VisualTheme.Graphite().Configure(builder => {
+    builder.Light.Accent = ChartColor.FromHex("#2463eb");
+    builder.Dark.Accent = ChartColor.FromHex("#78aaff");
+    builder.Typography = builder.Typography.WithFamily("Calibri, Carlito, sans-serif");
+    builder.CardRadius = 8;
+});
+chart.WithTheme(theme, VisualThemeMode.Dark);
+```
+
+`Configure` snapshots its builder after success; retaining or editing that builder later cannot change the theme. A failed callback returns no replacement. `VisualDesignTokens` describes a mode's editable colors inside this builder, not a second typography/layout model. Canvas backdrop treatments, terminal chrome and syntax highlighting remain local style options. Frame visibility belongs to the model/frame, independently of the palette.
+
+Use `theme.ToJson()` and `VisualTheme.FromJson(json)` for the versioned full-theme format. Use `VisualTheme.FromPaletteJson(json)` for the generated HtmlForgeX color document. These formats have different purposes and validation.
+
+## Stable series handles and observations
+
+Retain a `ChartSeries` when its configuration or data will change. Construct it with a `ChartSeriesId`, configure it, then attach it through `AddSeries`. Display names may repeat or change; reordering does not change identity.
+
+```csharp
+var completed = ChartSeries.CreateLine(new ChartSeriesId("completed-orders"), "Completed",
+    ChartPoints.FromValues(28, 34, 41, 48, 32));
+completed.ConfigureMarkers(markers => { markers.Radius = 4; });
+chart.AddSeries(completed);
+completed.WithName("Completed orders");
+```
+
+`Series` is a read-only view of paint order. Use `RemoveSeries`, `MoveSeries` and `ClearSeries` for membership changes; these operations validate ownership. A series can belong to one chart at a time, and IDs must be unique there. Fluent `Add*` conveniences allocate deterministic local IDs. Local IDs remain stable in that chart and are excluded from cross-chart synchronization; explicit IDs identify equivalent series across charts.
+
+Specialized observations remain in their typed collections: `Bubbles`, `FinancialValues`, `Ranges`, `Intervals`, `ErrorBars`, `BoxPlots`, `Dumbbells`, `DifferencePoints`, `GanttItems`, `GaugeValues` and `BulletValues`. Layered radial series expose `RadialLayers`. Each item represents one complete observation or layer. `Points` contains genuine numeric XY points and is an empty read-only view for these specialized families. Renderer projections are internal and do not define public source ordinals. Gauge and bullet series accept at most one value; empty replacements produce their no-data state.
+
+```csharp
+var samples = ChartSeries.CreateBubble(new ChartSeriesId("batch-samples"), "Batches",
+    new[] { new ChartBubble(10, 24, 8), new ChartBubble(20, 31, 12) });
+samples.WithObservationId(0, new ChartObservationId("batch-a"));
+chart.AddSeries(samples);
+samples.UpdateBubble(0, new ChartBubble(10, 26, 8));
+```
+
+`Update*` replaces one complete item and preserves its ordinal, explicit observation ID and point styling. `Replace*` validates and snapshots the complete sequence before installation, then clears per-observation IDs, labels and paint overrides; series configuration remains. An invalid replacement leaves existing data and metadata intact. Empty replacement creates a no-data series. Row selectors run once during ingestion and do not retain application records or delegates.
+
+`ObservationCount` counts displayed authored observations. `SourcePointCount` retains original-input counts for explicit decimation, histograms, regressions and raw-sample box plots; ordinary typed financial/range/bubble inputs count typed items. Editing a raw box-plot summary clears its raw-sample provenance because the new summary is no longer derived from those samples.
+
+## Configuration callback ownership
+
+Public option callbacks use one transaction: clone current options, invoke the callback, then install an independent clone after success. A thrown callback leaves the previous owner and collections unchanged. References obtained before the callback, and references retained inside it, do not mutate the newly installed options. Read the current option property after a successful callback when another edit is needed.
+
+Direct option setters remain supported. Assigning a value expresses intent even when it equals the default; nullable overrides can return to inheritance through null where documented. Text-style boolean assignments also preserve explicit false when overriding inherited italic, underline or strikethrough. Callback ownership applies to installed configuration; one-time data selector and formatter functions have their own documented execution lifetime.
 
 ## Numeric color presentation
 
@@ -75,7 +125,7 @@ The prepared context owns size, theme, font and frame behavior. `Chart.WithSize`
 
 The model's title and subtitle supply fallbacks when the corresponding `VisualFrame` values are null. An empty string explicitly suppresses that line. Frame legend visibility, placement, content surface and transparent canvas come from the context, including its defaults. Model card settings do not override an explicit frame. Categorical legends use the frame's visibility permission; numeric keys additionally honor their owned `ColorDimension.ShowLegend` setting. Data semantics, explicit series/point colors, label styles, axes and formatters remain model inputs. Convenience exports resolve the model's legend and card settings into their frame before preparation.
 
-Prepared Cartesian guides default to horizontal lines independently of the model's legacy theme. Assigning `chart.Options.GridLineStyle` supplies a complete explicit style. Direct mutations of the returned style preserve values that differ from that legacy default, applied over the prepared defaults; this bridge cannot distinguish assigning a property its existing default value from leaving it unset. Use a whole-style assignment when that distinction matters, such as enabling vertical guides through a legacy style that already enables them. Configured grid stroke widths override the context's default width. If both legacy default style objects were modified, differing Graphite properties take precedence over differing classic properties; a whole-style assignment removes that ambiguity.
+Prepared Cartesian guides default to horizontal lines. Bar, line and grid style objects have the same defaults as the prepared renderer: flat bars, plain lines and horizontal guides. Direct property assignments and successful configuration callbacks are explicit, including values equal to the default. A zero bar radius or a one-pixel grid width therefore overrides a different theme value when assigned. An empty callback preserves inheritance.
 
 Prepared Cartesian point semantics retain the complete resolved display label, even when visible placement shortens or omits it. Explicit point labels take precedence over the value formatter. Formatting runs once per point during preparation and the detached metadata reuses that result; exporting a prepared visual does not call the formatter again. Numeric coordinates and source identities remain separate metadata fields.
 
@@ -106,9 +156,9 @@ Set `legendTitle` in the `VisualFrame` constructor to give categorical legend en
 
 `VisualFrame.ShowCard` and `ShowSurface` independently enable the outer elevated card and content surface. Configure `VisualTheme.CardRadius` through the `cardRadius` constructor argument without changing `BarRadius`. The `cardShadowOpacity` argument accepts 0–1; `cardShadowColor` retains authored alpha, which multiplies that opacity. Shadows use bounded native layers inside available outer padding. Zero opacity disables the shadow, and insufficient padding produces a diagnostic instead of expanding the viewport or shifting the content.
 
-`VisualTheme.Graphite()` reads the checked-in generated HtmlForgeX chart palette. `VisualTheme.FromJson` accepts that generated chart-token shape, not the full HtmlForgeX owner schema. HtmlForgeX governs color values; the chart look specification governs layout and typography defaults. Typography, spacing and geometry settings absent from the color export have explicit ChartForgeX defaults. Register or supply suitable fonts when portable appearance matters; equal geometry does not guarantee identical browser/native glyph painting.
+`VisualTheme.Graphite()` reads the checked-in generated HtmlForgeX chart palette. `VisualTheme.FromPaletteJson` accepts that generated chart-token shape, not the full HtmlForgeX owner schema. HtmlForgeX governs color values; the chart look specification governs layout and typography defaults. Typography, spacing and geometry settings absent from the color export have explicit ChartForgeX defaults. Register or supply suitable fonts when portable appearance matters; equal geometry does not guarantee identical browser/native glyph painting.
 
-`VisualTheme.ToThemeJson()` exports the complete paired theme, including typography, geometry and effects, using `schemaVersion: 1`. The independent card radius is `geometry.cardRadius`; shadow opacity and color are `effects.cardShadowOpacity` and `effects.cardShadowColor`. `VisualTheme.FromThemeJson(json)` imports that versioned format. Version-1 inputs may omit these card fields and use their defaults. Keep these round-trip methods distinct from the generated color-token importer; unsupported versions, duplicate keys and missing required fields fail explicitly.
+`VisualTheme.ToJson()` exports the complete paired theme, including typography, geometry and effects, using `schemaVersion: 1`. The independent card radius is `geometry.cardRadius`; shadow opacity and color are `effects.cardShadowOpacity` and `effects.cardShadowColor`. `VisualTheme.FromJson(json)` imports that versioned format. Version-1 inputs may omit these card fields and use their defaults. Keep these round-trip methods distinct from the generated color-token importer; unsupported versions, duplicate keys and missing required fields fail explicitly.
 
 ## Prepare once, export several ways
 
@@ -201,7 +251,7 @@ Names default to First/Second. Null fill overrides inherit explicit series color
 
 Difference areas support Linear and Step interpolation with numeric/time X and a linear primary or secondary Y axis. Linear fills split where the two boundaries cross. For held observations, call `chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle)`. Both boundaries change together: Start uses the preceding X, Middle the mapped midpoint and End the following X. Each held interval takes the sign of its original pair. Vertical jumps have no filled width; ties have no filled area. These transitions do not add source observations or invent a diagonal crossing.
 
-The DateTime constructor uses the existing UTC conversion policy. X must increase within each connected segment; explicit `BreakBefore` starts a new segment and cuts both boundaries and fill. A break on either raw encoded tuple member has the same effect. Either axis can be reversed without changing fill polarity. Bounds and clipping use both values and the selected value axis. Smooth interpolation, nonlinear axes, duplicate/backtracking X within a segment, stacking and normalization are rejected. Nullable paired ingestion and automatic alignment of separately supplied series remain separate work; use finite pairs and explicit breaks for missing sections.
+The DateTime constructor uses the existing UTC conversion policy. X must increase within each connected segment; explicit `BreakBefore` starts a new segment and cuts both boundaries and fill. Either axis can be reversed without changing fill polarity. Bounds and clipping use both values and the selected value axis. Smooth interpolation, nonlinear axes, duplicate/backtracking X within a segment, stacking and normalization are rejected. Nullable paired ingestion and automatic alignment of separately supplied series remain separate work; use finite pairs and explicit breaks for missing sections.
 
 ## Waterfall opening balances and checkpoints
 
@@ -476,11 +526,11 @@ Null paints and numeric options inherit the existing family behavior. Body fills
 
 A zero fill multiplier or a transparent effective fill creates a hollow candlestick with no interior wick or hatch. SVG, native PNG and configured financial legend glyphs consume the same captured pattern, phase and resolved paint. Zero widths and transparent strokes remain hidden regardless of dash settings. A point legend shows its observation's direction; a series legend shows rising and falling glyphs under one series action. Bounds cover the painted body and strokes, including minimum-height and all-equal bodies. Preparation freezes styles, geometry, regions and legend output independently of later option changes. Session-time spacing and datum style callbacks remain separate work.
 
-HTML financial tooltips expose Open, High, Low and Close rows, including zero prices, through the ordinary and pinned readout. Shared-X mode uses the existing single-target fallback for financial tuples. Financial readouts retain raw metadata and accessible descriptions and omit a generic Y row, which would otherwise describe only the opening member.
+HTML financial tooltips expose Open, High, Low and Close rows, including zero prices, through the ordinary and pinned readout. Shared-X mode uses the existing single-target fallback for financial observations. Financial readouts retain raw metadata and accessible descriptions and omit a generic Y row, which would otherwise describe only the opening member.
 
 ## Bubble size scale
 
-`ChartOptions.Bubble` owns one size domain for every bubble series, including series on the secondary Y axis and series with hidden glyphs. Automatic bounds use the minimum and maximum positive source sizes across those series; empty tuple series contribute no extent. Equal source sizes therefore map to equal logical radii. Adding an observation outside the automatic domain changes that domain. Pin both the domain and radius endpoints when sizes must remain stable across additional series or viewport changes.
+`ChartOptions.Bubble` owns one size domain for every bubble series, including series on the secondary Y axis and series with hidden glyphs. Automatic bounds use the minimum and maximum positive source sizes across those series; empty typed series contribute no extent. Equal source sizes therefore map to equal logical radii. Adding an observation outside the automatic domain changes that domain. Pin both the domain and radius endpoints when sizes must remain stable across additional series or viewport changes.
 
 ```csharp
 chart.ConfigureBubble(bubble => {

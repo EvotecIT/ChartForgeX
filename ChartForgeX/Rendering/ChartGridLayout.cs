@@ -31,7 +31,7 @@ internal sealed class ChartGridLayout {
             panelHeight = Math.Max(panelHeight, chart.Options.Size.Height);
         }
 
-        var theme = grid.Theme ?? grid.Charts[0].Options.Theme;
+        var theme = grid.ResolvedTheme;
         var titleFontSize = grid.TitleStyle.FontSize ?? theme.TitleFontSize;
         var subtitleFontSize = grid.SubtitleStyle.FontSize ?? theme.SubtitleFontSize;
         var headerHeight = grid.Title.Length == 0 && grid.Subtitle.Length == 0 ? 0 : Math.Max(76, (int)Math.Ceiling(titleFontSize + (grid.Subtitle.Length == 0 ? 0 : subtitleFontSize) + 37));

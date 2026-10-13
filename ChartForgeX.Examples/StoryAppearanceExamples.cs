@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Raster;
 using ChartForgeX.Stories;
@@ -7,9 +8,10 @@ internal static class StoryAppearanceExamples {
     internal static void Write(string output) {
         foreach (var light in new[] { false, true }) {
             foreach (var appearance in new[] { "macos", "windows", "linux" }) {
-                var theme = appearance == "macos" ? VisualStoryTheme.MacOS(light)
-                    : appearance == "windows" ? VisualStoryTheme.Windows(light) : VisualStoryTheme.Linux(light);
-                var prepared = Create(theme).Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 0));
+                var theme = appearance == "macos" ? VisualStoryThemes.MacOS()
+                    : appearance == "windows" ? VisualStoryThemes.Windows() : VisualStoryThemes.Linux();
+                var style = appearance == "macos" ? VisualStoryStyleOptions.MacOS(light) : appearance == "windows" ? VisualStoryStyleOptions.Windows(light) : VisualStoryStyleOptions.Linux(light);
+                var prepared = Create(theme, light ? VisualThemeMode.Light : VisualThemeMode.Dark, style).Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 0));
                 var name = "desktop-" + appearance + (light ? "-light" : "-dark");
                 var svg = prepared.ToAnimatedSvg(new VisualStoryFrameOptions(4));
                 File.WriteAllText(Path.Combine(output, name + ".svg"), svg);
@@ -22,7 +24,7 @@ internal static class StoryAppearanceExamples {
         }
     }
 
-    private static VisualStory Create(VisualStoryTheme theme) {
+    private static VisualStory Create(VisualTheme theme, VisualThemeMode mode, VisualStoryStyleOptions style) {
         const string text = "$name = 'Stories'\nWrite-Output \"Hello, $name!\"";
         var source = StorySourceText.Create(text, "powershell")
             .AddSpan(0, 5, StorySyntaxKind.Variable).AddSpan(6, 1, StorySyntaxKind.Operator)
@@ -31,7 +33,7 @@ internal static class StoryAppearanceExamples {
         var editor = StorySourceTimeline.Create(StorySourceText.Create("", "powershell")).Type(source, TimeSpan.FromSeconds(3));
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(3), title: "PowerShell · captured output")
             .Command(TimeSpan.FromSeconds(.3), "./hello.ps1").Output(TimeSpan.FromSeconds(1), "Hello, Stories!");
-        var story = VisualStory.Create("Make your code a story").WithTheme(theme).WithFormat(VisualStoryFormat.Square, 720)
+        var story = VisualStory.Create("Make your code a story").WithTheme(theme, mode).WithStyle(style).WithFormat(VisualStoryFormat.Square, 720)
             .WithDescription("Resolved source and authored example output. Displayed commands are not executed.");
         story.Scene("write", "01  Write with syntax colors", 3)
             .Panel("code", new VisualStorySourceSurface(editor, options: new VisualStorySourceOptions("hello.ps1", 22)));

@@ -12,7 +12,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngFactBlockRenderer {
     private static void DrawActivityTimeline(RgbaCanvas canvas, ActivityTimelineBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, block, ref y, content.X, content.Width);
@@ -34,13 +34,13 @@ public sealed partial class PngFactBlockRenderer {
     }
 
     private static void DrawActivitySection(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         canvas.DrawCircle(spineX, y + 10, 4, theme.PlotBorder);
         DrawAlignedText(canvas, item.Title.ToUpperInvariant(), x + 40, y + 4, width - 40, TextAlignment.Left, theme.MutedText, Math.Max(10, theme.SubtitleFontSize - 1), true);
     }
 
     private static void DrawActivityChecklistItem(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width, ChartColor color) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         canvas.DrawCircle(spineX + 24, y + 11, 4, color);
         if (item.Completed) {
             canvas.DrawPolyline(new[] { new ChartPoint(spineX + 20, y + 11), new ChartPoint(spineX + 23, y + 15), new ChartPoint(spineX + 29, y + 7) }, color, 1.5);
@@ -52,14 +52,14 @@ public sealed partial class PngFactBlockRenderer {
     }
 
     private static void DrawActivityHiddenSummary(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width, ChartColor color) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         canvas.DrawCircle(spineX, y + 13, 8, color.WithAlpha(42));
         canvas.DrawCircleOutline(spineX, y + 13, 8, color, 1);
         DrawAlignedText(canvas, item.HiddenCount.ToString(CultureInfo.InvariantCulture) + " " + item.Title, x + 40, y + 6, width - 40, TextAlignment.Left, color, Math.Max(12, theme.SubtitleFontSize), true);
     }
 
     private static void DrawActivityEvent(RgbaCanvas canvas, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double rowHeight, double spineX, double x, double width, ChartColor color) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         if (block.ShowEventSurfaces) {
             canvas.FillRoundedRect(x + 32, y - 6, Math.Max(1, width - 32), Math.Max(26, rowHeight - 8), 10, theme.PlotBackground.WithAlpha(130));
             canvas.StrokeRoundedRect(x + 32, y - 6, Math.Max(1, width - 32), Math.Max(26, rowHeight - 8), 10, theme.PlotBorder.WithAlpha(150), 1);

@@ -113,7 +113,7 @@ public sealed class WaterfallCheckpointTests {
         var prepared = typed.Prepare(VisualExportRequest.ForChart(typed).Context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(); var artifact = prepared.ToArtifact("waterfall", VisualArtifactKind.Chart);
         var artifactSvg = artifact.ToSvg(); var artifactPng = artifact.ToPng(); var interchange = artifact.ToInterchangeJson();
-        typed.Series.Clear(); typed.Options.Labels.Total = "Changed";
+        typed.ClearSeries(); typed.Options.Labels.Total = "Changed";
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(artifactSvg, artifact.ToSvg()); Assert.Equal(artifactPng, artifact.ToPng()); Assert.Equal(interchange, artifact.ToInterchangeJson());
         Assert.Contains("data-cfx-waterfall-kind=\"total\"", svg);

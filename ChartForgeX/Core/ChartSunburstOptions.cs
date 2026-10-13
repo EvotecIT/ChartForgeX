@@ -14,7 +14,7 @@ public sealed class ChartSunburstOptions {
     public Func<ChartSunburstLabelContext, string?>? SecondaryLabelFormatter { get; set; }
 
     /// <summary>Gets the secondary caption overrides. Inherits the node's data-label typography at 80% of its font size with a ten-pixel minimum no larger than the primary caption, then applies these overrides.</summary>
-    public TextStyleOverride SecondaryLabelStyle { get; } = new();
+    public TextStyleOverride SecondaryLabelStyle { get; private set; } = new();
 
     /// <summary>Gets or sets the finite, nonnegative spacing in logical pixels between primary and secondary captions. Default: two.</summary>
     public double SecondaryLabelSpacing {
@@ -49,5 +49,13 @@ public sealed class ChartSunburstOptions {
     /// <summary>Gets or sets the numeric color scale. When omitted, supplied color observations use the theme's sequential ramp.</summary>
     public ChartColorScale? ColorScale { get; set; }
     /// <summary>Gets the independent color measurement's name and number display policy.</summary>
-    public ChartColorDimensionOptions ColorDimension { get; } = new();
+    public ChartColorDimensionOptions ColorDimension { get; private set; } = new();
+
+    /// <summary>Copies the configured state and detaches mutable caption and color measurement options.</summary>
+    internal ChartSunburstOptions Clone() {
+        var clone = (ChartSunburstOptions)MemberwiseClone();
+        clone.SecondaryLabelStyle = SecondaryLabelStyle.Clone();
+        clone.ColorDimension = ColorDimension.Clone();
+        return clone;
+    }
 }

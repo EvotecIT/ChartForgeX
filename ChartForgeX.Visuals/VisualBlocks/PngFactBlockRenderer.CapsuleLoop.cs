@@ -13,7 +13,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngFactBlockRenderer {
     private static void DrawSegmentedMetricCapsuleLoop(RgbaCanvas canvas, SegmentedMetricBlock card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawSegmentedMetricHeading(canvas, card, ref y, content.X, content.Width);
@@ -28,13 +28,13 @@ public sealed partial class PngFactBlockRenderer {
     }
 
     private static void DrawCapsuleTrack(RgbaCanvas canvas, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         DrawCapsuleLoopStroke(canvas, x, y + 1.4, width, height, stroke + 2, 0, 1, theme.MutedText.WithAlpha(14), RasterLineCap.Round);
         DrawCapsuleLoopStroke(canvas, x, y, width, height, stroke, 0, 1, theme.CardBackground.WithAlpha(170), RasterLineCap.Round);
     }
 
     private static void DrawCapsuleSegments(RgbaCanvas canvas, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         foreach (var slice in VisualFactBlockRendering.SegmentedSlices(card)) {
             if (slice.Share <= 0) continue;
             var color = VisualFactBlockRendering.SegmentedItemColor(theme, slice.Item, slice.Index);
@@ -77,7 +77,7 @@ public sealed partial class PngFactBlockRenderer {
     }
 
     private static void DrawCapsuleLegend(RgbaCanvas canvas, SegmentedMetricBlock card, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var rowHeight = Math.Max(26, Math.Min(34, height / Math.Max(1, card.Items.Count)));
         var total = VisualFactBlockRendering.SegmentedTotal(card);
         var bottom = y + height;

@@ -93,6 +93,7 @@ public sealed partial class SvgColorVariables {
         foreach (var entry in _text) copy._text.Add(entry.Key, entry.Value);
         foreach (var entry in _byRole) copy._byRole.Add(entry.Key, entry.Value);
         foreach (var entry in _markInk) copy._markInk.Add(entry.Key, entry.Value);
+        foreach (var entry in _themeTokens) copy._themeTokens.Add(entry.Key, entry.Value);
         copy._paletteSlots = _paletteSlots == null ? null : (SvgColorVariable?[])_paletteSlots.Clone();
         return copy;
     }

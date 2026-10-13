@@ -18,7 +18,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart ConfigureTextStyle(ChartTextRole role, System.Action<TextStyleOverride> configure) {
         if (configure == null) throw new System.ArgumentNullException(nameof(configure));
-        configure(Options.GetTextStyle(role));
+        Options.SetTextStyle(role, ChartOptionConfiguration.Configure(Options.GetTextStyle(role), configure, style => style.Clone()));
         return this;
     }
 

@@ -21,7 +21,7 @@ internal static partial class VisualScheduleCompiler {
         var widestTick = ticks.Select(tick => builder.MeasureText(format(tick), style).Width).DefaultIfEmpty(0).Max();
         var axisReserve = Math.Min(viewport.Height * .25, Math.Sin(angle) * Math.Min(widestTick, viewport.Width * .25) + Math.Cos(angle) * lineHeight + gap);
         var axisTitleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
+            Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
         });
         var axisTitle = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
         axisTitleStyle = VisualAxisText.FitOversized(builder, axisTitleStyle, new ChartRect(0, 0, viewport.Width, viewport.Height * .15), new[] { axisTitle });
@@ -52,7 +52,7 @@ internal static partial class VisualScheduleCompiler {
             TickLabels(chart, context, builder, viewport, layout, ticks, project, format, style);
             if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, "schedule-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
             var title = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
-            var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground });
+            var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
             VisualStateSceneTools.Text(builder, title, new ChartRect(plot.Left, plot.Bottom + layout.AxisReserve, plot.Width, Math.Max(0, viewport.Bottom - plot.Bottom - layout.AxisReserve)),
                 titleStyle, "schedule-x-axis-title", "schedule-x-title", TextAlignment.Center);
         }
@@ -103,7 +103,7 @@ internal static partial class VisualScheduleCompiler {
     private static void DataLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series, int index,
         string text, ChartRect bounds, ChartRect viewport, VisualThemeColors colors, ChartColor? fillOverride = null, ChartColorBlend? ink = null) {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) && series.Kind != ChartSeriesKind.GanttLane) return;
-        var fill = fillOverride ?? VisualStateSceneTools.SeriesColor(series, chart.Series.IndexOf(series), colors);
+        var fill = fillOverride ?? VisualStateSceneTools.SeriesColor(series, chart.IndexOfSeries(series), colors);
         var style = VisualStateSceneTools.DataStyle(chart, context, series, index, ink?.Color ?? ChartColorMath.AccessibleTextOnBackground(fill));
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         var measured = builder.MeasureText(text, style); var gap = context.Theme.Spacing / 2;
@@ -114,7 +114,7 @@ internal static partial class VisualScheduleCompiler {
             });
             measured = builder.MeasureText(text, style);
             if (measured.Width > inner.Width || measured.Height > inner.Height) return;
-            VisualStateSceneTools.Text(builder, text, inner, style, "data-label", VisualStateSceneTools.SourceId(chart.Series.IndexOf(series), index) + "-label", TextAlignment.Center,
+            VisualStateSceneTools.Text(builder, text, inner, style, "data-label", VisualStateSceneTools.SourceId(chart.IndexOfSeries(series), index) + "-label", TextAlignment.Center,
                 paint: VisualStateSceneTools.DataPaint(chart, series, index, style, ink?.Paint));
             return;
         }
@@ -128,7 +128,7 @@ internal static partial class VisualScheduleCompiler {
             VisualStateSceneTools.Connector(builder, chart.Options, new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2),
                 new ChartPoint(left + width / 2, top + height / 2), colors.MutedForeground);
         VisualStateSceneTools.Text(builder, text, new ChartRect(left, top, width, height), style, "data-label",
-            VisualStateSceneTools.SourceId(chart.Series.IndexOf(series), index) + "-label", TextAlignment.Center, paint: VisualStateSceneTools.DataPaint(chart, series, index, style, ink?.Paint));
+            VisualStateSceneTools.SourceId(chart.IndexOfSeries(series), index) + "-label", TextAlignment.Center, paint: VisualStateSceneTools.DataPaint(chart, series, index, style, ink?.Paint));
     }
 
     private sealed class ScheduleLayout {

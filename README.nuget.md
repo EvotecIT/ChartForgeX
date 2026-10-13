@@ -67,7 +67,7 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
       <strong>Completed orders by region</strong><br />Bar
       <br />
       <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-bar-wide-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-bar-wide-dark.html">Dark HTML</a> /
-      <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-bar-wide-light.svg">SVG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-bar-wide-light.png">PNG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-bar-wide-light.csharp.txt">C#</a>
+      <a href="Website/static/examples/generated/family-bar-wide-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-bar-wide-light.png">PNG</a> / <a href="Website/static/examples/generated/family-bar-wide-light.csharp.txt">C#</a>
     </td>
     <td width="50%">
       <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-wide-light.html"><img src="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-line-wide-light.thumbnail.png" alt="Weekly request volume" width="100%" /></a>
@@ -75,7 +75,7 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
       <strong>Weekly request volume</strong><br />Line
       <br />
       <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-wide-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-line-wide-dark.html">Dark HTML</a> /
-      <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-line-wide-light.svg">SVG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-line-wide-light.png">PNG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-line-wide-light.csharp.txt">C#</a>
+      <a href="Website/static/examples/generated/family-line-wide-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-line-wide-light.png">PNG</a> / <a href="Website/static/examples/generated/family-line-wide-light.csharp.txt">C#</a>
     </td>
   </tr>
   <tr>
@@ -85,7 +85,7 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
       <strong>Services contributing to revenue</strong><br />Donut
       <br />
       <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-donut-wide-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-donut-wide-dark.html">Dark HTML</a> /
-      <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-donut-wide-light.svg">SVG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-donut-wide-light.png">PNG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-donut-wide-light.csharp.txt">C#</a>
+      <a href="Website/static/examples/generated/family-donut-wide-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-donut-wide-light.png">PNG</a> / <a href="Website/static/examples/generated/family-donut-wide-light.csharp.txt">C#</a>
     </td>
     <td width="50%">
       <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-heatmap-wide-light.html"><img src="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-heatmap-wide-light.thumbnail.png" alt="Coverage across service areas" width="100%" /></a>
@@ -93,7 +93,7 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
       <strong>Coverage across service areas</strong><br />Heatmap
       <br />
       <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-heatmap-wide-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ffamily-heatmap-wide-dark.html">Dark HTML</a> /
-      <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-heatmap-wide-light.svg">SVG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-heatmap-wide-light.png">PNG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/family-heatmap-wide-light.csharp.txt">C#</a>
+      <a href="Website/static/examples/generated/family-heatmap-wide-light.svg">SVG</a> / <a href="Website/static/examples/generated/family-heatmap-wide-light.png">PNG</a> / <a href="Website/static/examples/generated/family-heatmap-wide-light.csharp.txt">C#</a>
     </td>
   </tr>
   <tr>
@@ -103,7 +103,7 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
       <strong>Service request topology</strong><br />Topology
       <br />
       <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ftopology-expanded-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Ftopology-expanded-dark.html">Dark HTML</a> /
-      <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/topology-expanded-light.svg">SVG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/topology-expanded-light.png">PNG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/topology-expanded-light.csharp.txt">C#</a>
+      <a href="Website/static/examples/generated/topology-expanded-light.svg">SVG</a> / <a href="Website/static/examples/generated/topology-expanded-light.png">PNG</a> / <a href="Website/static/examples/generated/topology-expanded-light.csharp.txt">C#</a>
     </td>
     <td width="50%">
       <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Fsequence-expanded-light.html"><img src="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/sequence-expanded-light.thumbnail.png" alt="Request processing sequence" width="100%" /></a>
@@ -111,7 +111,7 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
       <strong>Request processing sequence</strong><br />Sequence
       <br />
       <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Fsequence-expanded-light.html">Light HTML</a> / <a href="https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Fsequence-expanded-dark.html">Dark HTML</a> /
-      <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/sequence-expanded-light.svg">SVG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/sequence-expanded-light.png">PNG</a> / <a href="https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/Website/static/examples/generated/sequence-expanded-light.csharp.txt">C#</a>
+      <a href="Website/static/examples/generated/sequence-expanded-light.svg">SVG</a> / <a href="Website/static/examples/generated/sequence-expanded-light.png">PNG</a> / <a href="Website/static/examples/generated/sequence-expanded-light.csharp.txt">C#</a>
     </td>
   </tr>
 </table>
@@ -155,6 +155,32 @@ chart.SavePng("cpu.png");
 ```
 
 The [API guide](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/api-conventions.md) covers category and time axes, missing observations, series options, color scales, statistical helpers, and small multiples. Stable hierarchy, flow, and interaction IDs keep selection tied to the data when labels or presentation change.
+
+## Configure and update a series
+
+Keep a series handle when you need to configure it or change its observations. Its ID stays the same when its display name or chart position changes.
+
+```csharp
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Themes;
+
+var orders = ChartSeries.CreateLine(new ChartSeriesId("completed-orders"), "Completed",
+    ChartPoints.FromValues(28, 34, 41, 48, 32));
+orders.ConfigureMarkers(markers => markers.Radius = 4);
+
+var chart = Chart.Create()
+    .WithTitle("Weekly orders")
+    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+    .AddSeries(orders);
+
+orders.WithName("Completed orders");
+chart.SavePng("orders-dark.png");
+```
+
+Charts, diagrams, grids, canvases, and stories use the same paired `VisualTheme` with an explicit light/dark mode. Customize it with `VisualTheme.Graphite().Configure(builder => ...)`; the returned theme is an independent snapshot.
+
+Specialized series retain typed observations such as `Bubbles` and `FinancialValues`. Use their `Update*` methods to change one complete observation while keeping its ID and styling, or `Replace*` to install a new sequence. Option callbacks apply their changes after success and leave the model unchanged if they throw. See [API ownership and updates](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/api-conventions.md#stable-series-handles-and-observations) for the complete contracts.
 
 ## One layout, several outputs
 

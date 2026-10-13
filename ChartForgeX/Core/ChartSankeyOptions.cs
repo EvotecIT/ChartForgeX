@@ -82,6 +82,9 @@ public sealed class ChartSankeyOptions {
         set { ChartGuards.UnitInterval(value, nameof(value)); _ribbonOpacity = value; }
     }
 
+    /// <summary>Copies the configured state for isolated chart configuration.</summary>
+    internal ChartSankeyOptions Clone() => (ChartSankeyOptions)MemberwiseClone();
+
     private static void NonNegative(double? value) {
         if (!value.HasValue) return;
         ChartGuards.Finite(value.Value, nameof(value));

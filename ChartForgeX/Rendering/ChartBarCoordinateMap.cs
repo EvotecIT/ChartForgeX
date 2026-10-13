@@ -22,7 +22,7 @@ internal sealed class ChartBarCoordinateMap {
     }
 
     internal static ChartBarCoordinateMap Create(Chart chart) {
-        var keys = chart.Series.Select(series => new ChartBarCoordinateKey[series.Points.Count]).ToArray();
+        var keys = chart.Series.Select(series => new ChartBarCoordinateKey[series.RenderPoints.Count]).ToArray();
         var nodes = CreateNodes(chart).OrderBy(node => node.Coordinate).ThenBy(node => node.SeriesIndex).ThenBy(node => node.PointIndex).ToArray();
         var activeGroups = new List<CoordinateGroup>();
         var allGroups = new List<CoordinateGroup>();
@@ -70,10 +70,10 @@ internal sealed class ChartBarCoordinateMap {
             var series = chart.Series[seriesIndex];
             if (series.Kind != ChartSeriesKind.Bar && series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn
                 && !(series.Kind == ChartSeriesKind.Radar && mixedRadial)) continue;
-            for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+            for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
                 var layout = series.HistogramBinLayout;
                 var isHistogramBin = layout != null && layout.Minimum != layout.Maximum && pointIndex < layout.Count;
-                yield return new CoordinateNode(seriesIndex, pointIndex, series.Points[pointIndex].X, isHistogramBin ? layout : null, pointIndex);
+                yield return new CoordinateNode(seriesIndex, pointIndex, series.RenderPoints[pointIndex].X, isHistogramBin ? layout : null, pointIndex);
             }
         }
     }

@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Terminal;
@@ -14,7 +15,7 @@ internal static class TerminalStoryExamples {
             .WithTitle(@"pwsh - C:\OpenSource")
             .WithDialect(TerminalDialect.PowerShell)
             .WithWorkingDirectory(@"C:\OpenSource")
-            .WithTheme(TerminalTheme.PowerShell())
+            .WithTheme(TerminalThemes.PowerShell())
             .WithWindowStyle(TerminalWindowStyle.MacOS)
             .WithPngOutputScale((int)pngOutputScale)
             .Command("Get-ActivePortfolio | Format-Table")
@@ -34,7 +35,7 @@ internal static class TerminalStoryExamples {
             .WithTitle("dotnet run - ChartForgeX")
             .WithDialect(TerminalDialect.CSharp)
             .WithWorkingDirectory(@"C:\Charts")
-            .WithTheme(TerminalTheme.Dark())
+            .WithTheme(TerminalThemes.Default())
             .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
             .WithWidth(1000)
             .Command("using ChartForgeX; using ChartForgeX.Core; using System.Linq;", 0.65)
@@ -53,14 +54,14 @@ internal static class TerminalStoryExamples {
             .WithTitle("PowerShell")
             .WithDialect(TerminalDialect.PowerShell)
             .WithWorkingDirectory(@"C:\OpenSource")
-            .WithTheme(TerminalTheme.Campbell())
+            .WithTheme(TerminalThemes.Campbell())
             .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
             .WithWidth(1100)
             .Command("Get-Module ImagePlayground")
             .Output("ImagePlayground  3.2.0", TerminalTextTone.Success)
-            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", TerminalTheme.WindowsPowerShell(), TerminalTabIcon.WindowsPowerShell)
+            .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", TerminalThemes.WindowsPowerShell(), TerminalTabIcon.WindowsPowerShell)
             .Command("$PSVersionTable.PSVersion")
-            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalTheme.Ubuntu(), TerminalTabIcon.Ubuntu)
+            .OpenTab("ubuntu", "Ubuntu", TerminalDialect.Bash, "~/src", TerminalThemes.Ubuntu(), TerminalTabIcon.Ubuntu)
             .Command("dotnet test")
             .Output("Passed! Failed: 0", TerminalTextTone.Success)
             .SelectTab("main")

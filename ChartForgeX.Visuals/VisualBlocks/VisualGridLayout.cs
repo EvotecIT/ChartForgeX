@@ -38,7 +38,7 @@ internal sealed class VisualGridLayout {
             panelHeight = Math.Max(panelHeight, size.Height);
         }
 
-        var theme = grid.Theme ?? ItemTheme(grid.Items[0]);
+        var theme = grid.ResolvedTheme;
         var headerHeight = grid.Title.Length == 0 && grid.Subtitle.Length == 0 ? 0 : Math.Max(76, (int)Math.Ceiling(theme.TitleFontSize + (grid.Subtitle.Length == 0 ? 0 : theme.SubtitleFontSize) + 37));
         var width = grid.Padding * 2 + columns * panelWidth + (columns - 1) * grid.Gap;
         var occupied = new List<bool[]>();
@@ -100,9 +100,9 @@ internal sealed class VisualGridLayout {
         throw new InvalidOperationException("Visual grid items must contain a chart or visual block.");
     }
 
-    public static ChartTheme ItemTheme(VisualGridItem item) {
-        if (item.Chart != null) return item.Chart.Options.Theme;
-        if (item.Block != null) return item.Block.Options.Theme;
+    public static ResolvedVisualTheme ItemTheme(VisualGridItem item) {
+        if (item.Chart != null) return item.Chart.Options.ResolvedTheme;
+        if (item.Block != null) return item.Block.Options.ResolvedTheme;
         throw new InvalidOperationException("Visual grid items must contain a chart or visual block.");
     }
 

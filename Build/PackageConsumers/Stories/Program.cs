@@ -6,6 +6,8 @@ using ChartForgeX.Stories;
 using ChartForgeX.Terminal;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 
 internal static class Program {
     private static void Main() {
@@ -26,6 +28,11 @@ internal static class Program {
             .WithTiming(0, 100, 0).WithFinalPrompt(false).Command("status", 0.1).Output("Ready");
         PackageAssertions.Require(PackageAssertions.Contains(terminal.ToTranscript(), "Ready"), "Terminal transcript is missing.");
         PackageAssertions.Png(terminal.ToPng());
+        var shared = VisualTheme.Graphite().Configure(builder => builder.Dark.Foreground = ChartColor.FromHex("#00FE7F"));
+        var themedTerminal = TerminalStory.Create().WithTheme(shared, VisualThemeMode.Dark).WithFinalPrompt(false).Output("Shared appearance");
+        PackageAssertions.Require(ReferenceEquals(shared, themedTerminal.Theme)
+            && PackageAssertions.Contains(themedTerminal.ToSvg(), "#00FE7F"), "Terminal lost its shared dark foreground.");
+        PackageAssertions.Png(themedTerminal.ToPng());
         var terminalArtifact = terminal.ToVisualArtifact();
         PackageAssertions.Require(ReferenceEquals(terminal, terminalArtifact.Model)
             && PackageAssertions.Contains(terminalArtifact.ToSvg(), "Ready"), "Completed terminal artifact lost its model or transcript.");
@@ -39,6 +46,15 @@ internal static class Program {
         story.Outcome("ready", "Ready", "image");
         PackageAssertions.Require(PackageAssertions.Contains(story.ToTranscript(), "Ready"), "Story transcript is missing.");
         PackageAssertions.Png(story.ToPng());
+        var style = new VisualStoryStyleOptions { Syntax = new StorySyntaxPalette { Plain = ChartColor.FromHex("#1234FF") } };
+        var themedStory = VisualStory.Create("Shared story").WithTheme(shared, VisualThemeMode.Dark).WithStyle(style).WithSize(480, 320);
+        themedStory.Scene("source", "Source", 1).Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready")));
+        themedStory.Outcome("ready", "Ready", "source");
+        var captured = themedStory.Prepare();
+        var capturedSvg = captured.ToSvg();
+        style.Syntax.Plain = ChartColor.FromHex("#FF1234");
+        PackageAssertions.Require(ReferenceEquals(shared, themedStory.Theme) && captured.ToSvg() == capturedSvg
+            && PackageAssertions.Contains(capturedSvg, "#1234FF"), "Prepared story lost its shared theme or detached syntax styling.");
         var options = VisualStoryAnimationOptions.Create().WithFramesPerSecond(2).WithEndHold(0).WithTransition(0).WithLoop(false);
         PackageAssertions.Gif(story.ToGif(options));
         PackageAssertions.Apng(story.ToApng(options));

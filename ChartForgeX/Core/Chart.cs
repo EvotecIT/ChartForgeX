@@ -63,11 +63,6 @@ public sealed partial class Chart {
     public ChartOptions Options { get; private set; } = new();
 
     /// <summary>
-    /// Gets the chart series.
-    /// </summary>
-    public List<ChartSeries> Series { get; } = new();
-
-    /// <summary>
     /// Gets the chart annotations.
     /// </summary>
     public List<ChartAnnotation> Annotations { get; } = new();
@@ -146,15 +141,22 @@ public sealed partial class Chart {
     /// Sets the chart theme.
     /// </summary>
     /// <param name="theme">The theme to use.</param>
+    /// <param name="mode">Optional explicit palette mode; omitted keeps the current mode.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithTheme(ChartTheme theme) { Options.Theme = theme ?? throw new ArgumentNullException(nameof(theme)); return this; }
+    public Chart WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
+        if (theme == null) throw new ArgumentNullException(nameof(theme));
+        if (mode.HasValue && !Enum.IsDefined(typeof(VisualThemeMode), mode.Value)) throw new ArgumentOutOfRangeException(nameof(mode));
+        Options.Theme = theme; if (mode.HasValue) Options.ThemeMode = mode.Value; return this;
+    }
+    /// <summary>Sets the explicit palette mode without replacing the paired theme.</summary>
+    public Chart WithThemeMode(VisualThemeMode mode) { Options.ThemeMode = mode; return this; }
 
     /// <summary>
     /// Sets the CSS font-family used by vector and HTML renderers.
     /// </summary>
     /// <param name="fontFamily">The CSS font-family stack.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithFontFamily(string fontFamily) { Options.Theme.FontFamily = fontFamily ?? throw new ArgumentNullException(nameof(fontFamily)); return this; }
+    public Chart WithFontFamily(string fontFamily) { Options.Theme = Options.Theme.WithFontFamily(fontFamily); return this; }
 
     /// <summary>
     /// Sets the preferred TrueType font file or TrueType collection used by the PNG renderer.
@@ -572,11 +574,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional gauge accent color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddGauge(string name, double value, double min = 0, double max = 100, ChartColor? color = null) {
-        ChartGuards.Finite(value, nameof(value));
-        ChartGuards.Finite(min, nameof(min));
-        ChartGuards.Finite(max, nameof(max));
-        if (max <= min) throw new ArgumentOutOfRangeException(nameof(max), max, "Gauge maximum must be greater than minimum.");
-        AppendSeries(new ChartSeries(name, ChartSeriesKind.Gauge, new[] { new ChartPoint(min, value), new ChartPoint(max, value) }) { Color = color });
+        AppendSeries(ChartSeries.CreateGauge(name, new ChartGaugeValue(value, min, max), color));
         return this;
     }
 
@@ -592,23 +590,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional value accent color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddBullet(string name, double value, double target, double min = 0, double max = 100, IEnumerable<double>? rangeEnds = null, ChartColor? color = null) {
-        ChartGuards.Finite(value, nameof(value));
-        ChartGuards.Finite(target, nameof(target));
-        ChartGuards.Finite(min, nameof(min));
-        ChartGuards.Finite(max, nameof(max));
-        if (max <= min) throw new ArgumentOutOfRangeException(nameof(max), max, "Bullet maximum must be greater than minimum.");
-        var points = new List<ChartPoint> {
-            new(min, value),
-            new(max, target)
-        };
-        if (rangeEnds != null) {
-            foreach (var rangeEnd in rangeEnds) {
-                ChartGuards.Finite(rangeEnd, nameof(rangeEnds));
-                points.Add(new ChartPoint(rangeEnd, rangeEnd));
-            }
-        }
-
-        AppendSeries(new ChartSeries(name, ChartSeriesKind.Bullet, points) { Color = color });
+        AppendSeries(ChartSeries.CreateBullet(name, new ChartBulletValue(value, target, min, max, rangeEnds), color));
         return this;
     }
 
@@ -685,73 +667,15 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddDonut(string name, IEnumerable<ChartPoint> points) => Add(name, ChartSeriesKind.Donut, points, null);
 
-    /// <summary>
-    /// Adds a horizontal line annotation at a y-axis value.
-    /// </summary>
-    /// <param name="value">The y-axis value.</param>
-    /// <param name="label">The annotation label.</param>
-    /// <param name="color">An optional annotation color.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddHorizontalLine(double value, string label = "", ChartColor? color = null) {
-        ChartGuards.Finite(value, nameof(value));
-        Annotations.Add(new ChartAnnotation(ChartAnnotationKind.HorizontalLine, value, null, label, color ?? Options.Theme.Axis, 1));
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a vertical line annotation at an x-axis value.
-    /// </summary>
-    /// <param name="value">The x-axis value.</param>
-    /// <param name="label">The annotation label.</param>
-    /// <param name="color">An optional annotation color.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddVerticalLine(double value, string label = "", ChartColor? color = null) {
-        ChartGuards.Finite(value, nameof(value));
-        Annotations.Add(new ChartAnnotation(ChartAnnotationKind.VerticalLine, value, null, label, color ?? Options.Theme.Axis, 1));
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a horizontal band annotation between two y-axis values.
-    /// </summary>
-    /// <param name="start">The first y-axis value.</param>
-    /// <param name="end">The second y-axis value.</param>
-    /// <param name="label">The annotation label.</param>
-    /// <param name="color">An optional annotation color.</param>
-    /// <param name="opacity">The band opacity.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddHorizontalBand(double start, double end, string label = "", ChartColor? color = null, double opacity = 0.14) {
-        ChartGuards.Finite(start, nameof(start));
-        ChartGuards.Finite(end, nameof(end));
-        ChartGuards.UnitInterval(opacity, nameof(opacity));
-        Annotations.Add(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, start, end, label, color ?? Options.Theme.Axis, opacity));
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a vertical band annotation between two x-axis values.
-    /// </summary>
-    /// <param name="start">The first x-axis value.</param>
-    /// <param name="end">The second x-axis value.</param>
-    /// <param name="label">The annotation label.</param>
-    /// <param name="color">An optional annotation color.</param>
-    /// <param name="opacity">The band opacity.</param>
-    /// <returns>The current chart.</returns>
-    public Chart AddVerticalBand(double start, double end, string label = "", ChartColor? color = null, double opacity = 0.14) {
-        ChartGuards.Finite(start, nameof(start));
-        ChartGuards.Finite(end, nameof(end));
-        ChartGuards.UnitInterval(opacity, nameof(opacity));
-        Annotations.Add(new ChartAnnotation(ChartAnnotationKind.VerticalBand, start, end, label, color ?? Options.Theme.Axis, opacity));
-        return this;
-    }
-
-    private Chart Add(string name, ChartSeriesKind kind, IEnumerable<ChartPoint> points, ChartColor? color, bool smooth = false) {
-        AppendSeries(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), kind, ChartGuards.Points(points, nameof(points))) { Color = color, Smooth = smooth });
+    private Chart Add(string name, ChartSeriesKind kind, IEnumerable<ChartPoint> points, ChartColor? color, bool smooth = false, ChartSeriesId? id = null) {
+        var source = ChartGuards.Points(points, nameof(points));
+        var series = id.HasValue ? new ChartSeries(id.Value, name, kind, source) : new ChartSeries(name, kind, source);
+        series.Color = color; series.Smooth = smooth;
+        AppendSeries(series);
         return this;
     }
 
     private void AppendSeries(ChartSeries series) {
-        EnsureCanAddSeries();
-        Series.Add(series);
+        AddSeries(series);
     }
 }

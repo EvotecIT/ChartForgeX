@@ -168,7 +168,7 @@ public sealed class GanttStyledGuideBoundaryTests {
     public async Task WideCurrentTimeGuidesRemainInsideAutomaticClassicAndLaneWindows(bool lanes, bool after) {
         var start = new DateTime(2026, 1, 2);
         var chart = Chart.Create().WithSize(320, 360).WithLegend(false).WithDataLabels(false)
-            .WithTheme(after ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), after ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithGanttToday(after ? start.AddDays(5) : start.AddDays(-1));
         if (lanes) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
             .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, start.AddDays(3), "work") });

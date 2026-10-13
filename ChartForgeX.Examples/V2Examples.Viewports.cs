@@ -53,7 +53,7 @@ public static partial class V2Examples {
         chart.Options.XAxis.WithReversal(steps);
         chart.Options.XAxis.TickCount = 4; chart.Options.YAxis.TickCount = 4;
         foreach (var series in chart.Series) {
-            series.WithMarkerRadius(3);
+            series.ConfigureMarkers(markers => markers.Radius = 3);
             if (steps) series.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         }
         return chart;
@@ -81,7 +81,7 @@ public static partial class V2Examples {
                 + point.Y.ToString(CultureInfo.InvariantCulture) + (point.BreakBefore ? ", true" : "") + ")"));
             source.Append("chart.").Append(series.Kind == ChartSeriesKind.StepLine ? "AddStepLine" : "AddLine").Append('(')
                 .Append(Literal(series.Name)).Append(", new ChartPoint[] { ").Append(points).Append(" });\n")
-                .Append("chart.Series[").Append(index).Append("].WithMarkerRadius(3);\n");
+                .Append("chart.Series[").Append(index).Append("].ConfigureMarkers(markers => markers.Radius = 3);\n");
             if (series.Kind == ChartSeriesKind.StepLine)
                 source.Append("chart.Series[").Append(index).Append("].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);\n");
             if (series.ShowDataLabels == false)

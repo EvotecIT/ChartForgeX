@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Terminal;
 using Xunit;
 
@@ -22,7 +23,7 @@ public sealed class TerminalStoryClockTests {
     [Fact]
     public void TabsActivateAtTheExactAccumulatedStartTick() {
         var story = Terminal().WithTiming(.1, 42, 0).Pause(.2)
-            .OpenTab("other", "Other", TerminalDialect.Bash, "/", TerminalTheme.Dark(), transitionSeconds: 0);
+            .OpenTab("other", "Other", TerminalDialect.Bash, "/", TerminalThemes.Default(), transitionSeconds: 0);
         var layout = TerminalStoryLayout.Build(story);
         Assert.True(layout.TabVisible("other", .3));
         Assert.Equal(1, layout.TabOpacity("other", .3));

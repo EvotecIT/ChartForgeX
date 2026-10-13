@@ -21,7 +21,7 @@ public sealed class MermaidAxisTypographyBoundsTests {
     [InlineData(true, true, 900)]
     [InlineData(true, true, 320)]
     public async Task MaximumFontsRetainAuthoredCategoriesAndNumericScale(bool horizontal, bool dark, int width) {
-        var chart = horizontal ? Chart.Create().WithTheme((dark ? ChartTheme.Dark() : ChartTheme.Light()).WithTypography(480, 320, 256, 256, 256, 256))
+        var chart = horizontal ? Chart.Create().WithTheme(VisualTheme.Report().Configure(builder => builder.Typography = new VisualTypography(builder.Typography.Family, titleSize: 480, subtitleSize: 320, axisTitleSize: 256, axisSize: 256, legendSize: 256, dataLabelSize: 256)), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Horizontal bars").WithSize(width, 520).WithXLabels("Jan", "Feb", "Mar")
             .WithXAxis("Count").WithYAxis("Month").WithXAxisBounds(0, 100)
             .AddHorizontalBar("Values", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50), new ChartPoint(3, 80) })
@@ -41,7 +41,7 @@ public sealed class MermaidAxisTypographyBoundsTests {
             && ((string?)element.Parent?.Attribute("data-cfx-role")) is "axis-x-label" or "axis-y-label").ToArray();
         foreach (var caption in new[] { "Jan", "Feb", "Mar", "0", "100" }) Assert.Contains(caption, labels.Select(item => item.Value));
         foreach (var caption in new[] { "Month", "Count" }) Assert.Contains(document.Descendants(), item => item.Name.LocalName == "text" && item.Value == caption);
-        Assert.Equal(256, chart.Options.Theme.DataLabelFontSize);
+        Assert.Equal(256, chart.Options.Theme.Typography.DataLabelSize);
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, 520);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

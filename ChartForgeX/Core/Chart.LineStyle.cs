@@ -26,9 +26,7 @@ public sealed partial class Chart {
     /// </summary>
     public Chart ConfigureLineVisualStyle(Action<ChartLineVisualStyle> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        var style = Options.LineVisualStyle.Clone();
-        configure(style);
-        Options.LineVisualStyle = style;
+        Options.LineVisualStyle = ChartOptionConfiguration.Configure(Options.LineVisualStyle, configure, style => style.Clone());
         return this;
     }
 }

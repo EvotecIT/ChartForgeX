@@ -106,11 +106,11 @@ public static partial class V2Examples {
         var lines = new List<string> { "using ChartForgeX.Core;", "using ChartForgeX.Primitives;", "using ChartForgeX.Rendering;", "using ChartForgeX.Themes;", "using ChartForgeX.Typography;", "", "// The generated gallery includes these licensed font fixtures beside the outputs.", "FontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Regular.ttf\", 400);", "FontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Bold.ttf\", 700);", "var chart = Chart.Create();" };
         if (chart.Options.XAxisLabels.Count > 0)
             lines.Add("chart.WithXLabels(" + string.Join(", ", chart.Options.XAxisLabels.Select(label => Literal(label.Text))) + ");");
-        foreach (var series in chart.Series) {
+        for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
+            var series = chart.Series[seriesIndex];
             var method = series.Kind == ChartSeriesKind.Donut ? "AddDonut" : series.Kind == ChartSeriesKind.Area ? "AddArea" : series.Kind == ChartSeriesKind.Bar ? "AddBar" : "AddLine";
             var points = string.Join(", ", series.Points.Select(point => "new ChartPoint(" + point.X.ToString(System.Globalization.CultureInfo.InvariantCulture) + ", " + point.Y.ToString(System.Globalization.CultureInfo.InvariantCulture) + (point.BreakBefore ? ", true" : "") + ")"));
             lines.Add("chart." + method + "(" + Literal(series.Name) + ", new ChartPoint[] { " + points + " });");
-            var seriesIndex = chart.Series.IndexOf(series);
             if (series.Color.HasValue) lines.Add("chart.Series[" + seriesIndex + "].WithColor(ChartColor.FromHex(" + Literal(series.Color.Value.ToHex()) + "));");
             for (var index = 0; index < series.PointColors.Count; index++)
                 if (series.PointColors[index].HasValue) lines.Add("chart.Series[" + seriesIndex + "].WithPointColorRange(" + index + ", 1, ChartColor.FromHex(" + Literal(series.PointColors[index]!.Value.ToHex()) + "));");

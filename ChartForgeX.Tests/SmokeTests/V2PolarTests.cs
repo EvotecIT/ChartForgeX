@@ -16,7 +16,7 @@ public sealed class V2PolarTests {
         var chart = Chart.Create().AddPolar("Signal", new[] { new ChartPoint(0, 100), new ChartPoint(Math.PI / 2, 50), new ChartPoint(Math.PI, 25) }).WithDataLabels();
         chart.Options.YAxis.Minimum = 0; chart.Options.YAxis.Maximum = 100;
         chart.Options.ValueFormatter = value => value.ToString("0.0", CultureInfo.GetCultureInfo("pl-PL")) + " units";
-        var color = ChartColor.FromHex("#123456"); chart.Series[0].WithPointColor(1, color).WithMarkerRadius(6);
+        var color = ChartColor.FromHex("#123456"); chart.Series[0].WithPointColor(1, color).ConfigureMarkers(markers => markers.Radius = 6);
         var scene = Compile(chart);
         var points = scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "polar-point").ToArray();
         var cx = 220d; var cy = 165d;

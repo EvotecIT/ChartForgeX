@@ -28,7 +28,6 @@ public sealed class NumericRadialAxisTextBrowserTests {
         if (!Enabled) return;
         var chart = NumericRadialAxisTextTests.Configured(bars, width, dark);
         UseProofFonts(chart);
-        chart.Series[0].WithInteractionKey("requests"); chart.Series[1].WithInteractionKey("resolved");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var mark = NumericRadialSeriesTests.Marks(prepared.Scene)[0];
         var angle = mark.Start + mark.Sweep / 2; var radius = (mark.Inner + mark.Outer) / 2;

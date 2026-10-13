@@ -8,7 +8,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngVisualBlockRenderer {
     private static void DrawFishboneDiagram(RgbaCanvas canvas, FishboneDiagramBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, block, ref y, content.X, content.Width);
@@ -22,7 +22,7 @@ public sealed partial class PngVisualBlockRenderer {
         DrawFittedBodyText(canvas, block.Effect, layout.Head.X + 10, VisualBlockRendering.BlockLayoutBaseline(effectStyle, layout.Head.Y + layout.Head.Height / 2), layout.Head.Width - 20, layout.Head.Height - 16, TextAlignment.Center, theme.Text, theme, 13.5, 800);
     }
 
-    private static void DrawFishboneBranch(RgbaCanvas canvas, VisualBlockRendering.FishboneBranchPlacement branch, ChartForgeX.Themes.ChartTheme theme) {
+    private static void DrawFishboneBranch(RgbaCanvas canvas, VisualBlockRendering.FishboneBranchPlacement branch, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var color = VisualBlockRendering.PaletteAt(theme, branch.Index);
         canvas.DrawLine(branch.BaseX, branch.BaseY, branch.EndX, branch.EndY, color, 2);
         DrawFittedBodyText(canvas, branch.Cause.Label, branch.LabelX, branch.LabelY, branch.LabelWidth, 24, TextAlignment.Center, theme.Text, theme, 12.5, 750);

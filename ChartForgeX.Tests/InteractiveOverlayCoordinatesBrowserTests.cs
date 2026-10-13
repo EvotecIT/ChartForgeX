@@ -132,10 +132,9 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
 
     private static Chart CoordinateChart(bool graphite) {
         var chart = Chart.Create().WithSize(596, 338).WithTitle("Native overlay coordinates")
-            .WithTheme(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Light())
+            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report())
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-            .AddScatter("Reading", new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) });
-        chart.Series[0].WithInteractionKey("reading-source");
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), "Reading", new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) }));
         return chart;
     }
 

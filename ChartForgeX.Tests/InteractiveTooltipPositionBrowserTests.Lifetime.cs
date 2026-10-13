@@ -154,7 +154,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     [BrowserFact]
     public async Task ExactLineSummaryUsesItsCanonicalNativeGeometry() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite())
             .WithLineMarkers(ChartLineMarkerMode.None).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddLine("Reading", new[] { new ChartPoint(3, 3), new ChartPoint(5, 7), new ChartPoint(7, 3) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
@@ -175,7 +175,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     [BrowserFact]
     public async Task MovingNearAContainingHostEdgeKeepsTheReadoutSizeStable() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite())
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddScatter("Median processing duration for exported jobs", new[] { new ChartPoint(3, 5), new ChartPoint(9.5, 5) });
         var fragment = chart.ToInteractiveHtmlFragment(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);

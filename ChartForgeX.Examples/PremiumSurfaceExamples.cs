@@ -50,11 +50,18 @@ internal static class PremiumSurfaceExamples {
     }
 
     private static void SaveCompactEmailSummary(string output, int outputScale) {
-        var theme = ChartTheme.ReportLight()
-            .WithSurfaceColors(ChartColor.FromHex("#F8FAFC"), ChartColor.FromHex("#FFFFFF"), ChartColor.FromHex("#FFFFFF"), ChartColor.FromHex("#EFF4FB"), ChartColor.FromHex("#D8E1EF"))
-            .WithTextColors(ChartColor.FromHex("#172033"), ChartColor.FromHex("#647086"))
-            .WithPalette("#2563EB", "#14B8A6", "#F59E0B", "#EF4444")
-            .WithCornerRadius(12, 8);
+        var theme = VisualTheme.Report().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F8FAFC");
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#FFFFFF");
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#FFFFFF");
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#EFF4FB");
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#D8E1EF");
+            builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#172033");
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#647086");
+            builder.Light.Palette = builder.Dark.Palette = ChartPalettes.FromHex("#2563EB", "#14B8A6", "#F59E0B", "#EF4444");
+            builder.CardRadius = 12;
+            builder.PlotRadius = builder.BarRadius = 8;
+        });
 
         MetricCard Card(string label, string value, string caption, string symbol, VisualStatus status, ChartColor color, params double[] history) => MetricCard.Create()
             .WithSize(260, 142)

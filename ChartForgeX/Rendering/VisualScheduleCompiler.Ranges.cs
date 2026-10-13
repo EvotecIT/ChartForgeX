@@ -14,15 +14,15 @@ internal static partial class VisualScheduleCompiler {
         var row = 0;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
-            if (series.Points.Count < (gantt ? 3 : 1)) throw new InvalidOperationException("Schedule series is missing its range or task metadata.");
-            var start = series.Points[0].X; var end = series.Points[0].Y;
+            if (series.RenderPoints.Count < (gantt ? 3 : 1)) throw new InvalidOperationException("Schedule series is missing its range or task metadata.");
+            var start = series.RenderPoints[0].X; var end = series.RenderPoints[0].Y;
             if (!ChartMath.IsFinite(start) || !ChartMath.IsFinite(end) || end < start) throw new InvalidOperationException("Schedule endpoints must be finite and ordered.");
-            var progress = gantt ? series.Points[1].X : 0;
-            var dependency = gantt ? series.Points[1].Y : -1;
+            var progress = gantt ? series.RenderPoints[1].X : 0;
+            var dependency = gantt ? series.RenderPoints[1].Y : -1;
             if (!ChartMath.IsFinite(progress) || progress < 0 || progress > 1 || !ChartMath.IsFinite(dependency) || dependency < -1 || dependency >= index || dependency != Math.Truncate(dependency))
                 throw new InvalidOperationException("Gantt progress must be between zero and one, and dependencies must reference an earlier task.");
             var marker = IsMarker(series);
-            items.Add(new RangeItem(index, marker ? -1 : row++, start, end, progress, gantt && series.Points[2].X >= .5, marker));
+            items.Add(new RangeItem(index, marker ? -1 : row++, start, end, progress, gantt && series.RenderPoints[2].X >= .5, marker));
         }
         var links = gantt ? chart.ResolveGanttDependencies() : new List<ChartGanttDependency>();
         var renderedLinks = links.Where(link => !items[link.PredecessorIndex].Marker && !items[link.SuccessorIndex].Marker).ToArray();
@@ -82,7 +82,8 @@ internal static partial class VisualScheduleCompiler {
                 var completion = (item.Progress * 100).ToString("0.#", chart.Options.ValueFormat.Culture) + "%";
                 var summary = series.Name + ": " + Format(item.Start) + " – " + Format(item.End) + ", " + (gantt ? completion : duration);
                 var metadata = new Dictionary<string, string> {
-                    ["data-cfx-series"] = item.Index.ToString(), ["data-cfx-point"] = "0", ["data-cfx-start"] = VisualStateSceneTools.Number(item.Start),
+                    ["data-cfx-series"] = item.Index.ToString(), ["data-cfx-point"] = "0", ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
+                    ["data-cfx-start"] = VisualStateSceneTools.Number(item.Start),
                     ["data-cfx-end"] = VisualStateSceneTools.Number(item.End), ["data-cfx-duration"] = duration,
                     ["data-cfx-progress"] = VisualStateSceneTools.Number(item.Progress), ["data-cfx-milestone"] = item.Milestone ? "true" : "false",
                     ["data-cfx-series-key"] = series.InteractionIdentityKey

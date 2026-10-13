@@ -36,15 +36,15 @@ internal static partial class SmokeTests {
         var lightBlock = MetricCard.Create()
             .WithMetric("Visual identity", "98.2%")
             .WithSize(280, 150)
-            .WithTheme(ChartTheme.Light());
+            .WithTheme(VisualTheme.Report());
         var darkBlock = MetricCard.Create()
             .WithMetric("Visual identity", "98.2%")
             .WithSize(280, 150)
-            .WithTheme(ChartTheme.Dark());
+            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark);
         var contentVariant = MetricCard.Create()
             .WithMetric("Visual identity", "76.4%")
             .WithSize(280, 150)
-            .WithTheme(ChartTheme.Light());
+            .WithTheme(VisualTheme.Report());
         AssertNoDuplicateIds(lightBlock.ToHtmlFragment() + darkBlock.ToHtmlFragment() + contentVariant.ToHtmlFragment(), "Unscoped visual blocks with distinct visual identities");
         var deterministicBlockSvg = lightBlock.ToSvg();
         Assert(deterministicBlockSvg == lightBlock.ToSvg(), "Content-derived visual block IDs should remain deterministic.");

@@ -88,7 +88,7 @@ public sealed class DesignTokenJsonTests {
         var fills = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "state-timeline-segment")
             .Select(element => element.RenderedColor("fill").ToCss()).ToArray();
         Assert.Equal(new[] { tokens.Status.Pass.Fill.ToCss(), tokens.Status.Critical.Fill.ToCss() }, fills);
-        Assert.Equal(tokens.MutedForeground, timeline.Options.Theme.MutedText);
+        Assert.Equal(tokens.Muted ?? tokens.MutedForeground, timeline.Options.Theme.Resolve(timeline.Options.ThemeMode).Muted);
 
         var line = Chart.Create().WithDesignTokens(tokens).AddLine("A", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) }).AddLine("B", new[] { new ChartPoint(0, 2), new ChartPoint(1, 1) });
         var lineSvg = line.ToSvg();
@@ -182,9 +182,9 @@ public sealed class DesignTokenJsonTests {
         Assert.Null(tokens.SequentialRamp);
         Assert.Null(tokens.DivergingRamp);
         Assert.Null(tokens.ToSequentialColorScale());
-        Assert.Null(Chart.Create().WithDesignTokens(tokens).Options.Theme.SequentialRamp);
+        Assert.Empty(Chart.Create().WithDesignTokens(tokens).Options.Theme.Resolve(VisualThemeMode.Light).SequentialRamp);
         var replaced = Chart.Create().WithDesignTokens(VisualDesignTokens.FromJson(GraphiteJson)).WithDesignTokens(tokens);
-        Assert.Null(replaced.Options.Theme.SequentialRamp);
+        Assert.Empty(replaced.Options.Theme.Resolve(replaced.Options.ThemeMode).SequentialRamp);
     }
 
     [Fact]
@@ -210,10 +210,10 @@ public sealed class DesignTokenJsonTests {
         var explicitColour = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 400d }, ChartColor.FromHex("#0f9f8c"));
         Assert.DoesNotContain(tokens.SequentialRamp[4].ToCss(), explicitColour.ToSvg(), StringComparison.OrdinalIgnoreCase);
         var withRamp = chart.ToPng();
-        chart.Options.Theme.SequentialRamp = null;
+        chart.ConfigureTheme(builder => builder.Colors(chart.Options.ThemeMode).SequentialRamp = null);
         Assert.NotEqual(withRamp, chart.ToPng());
         chart.WithDesignTokens(tokens);
-        Assert.Throws<ArgumentException>(() => chart.Options.Theme.SequentialRamp = new[] { ChartColor.White });
+        Assert.Throws<ArgumentException>(() => chart.ConfigureTheme(builder => builder.Colors(chart.Options.ThemeMode).SequentialRamp = new[] { ChartColor.White }));
     }
 
     [Fact]

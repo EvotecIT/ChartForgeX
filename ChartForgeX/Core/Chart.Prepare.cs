@@ -31,6 +31,12 @@ public sealed partial class Chart : IVisualRenderable {
 
     private PreparedVisual PrepareCore(VisualRenderContext context, ChartXViewport? viewport) {
         if (context == null) throw new ArgumentNullException(nameof(context));
+        var view = (Chart)MemberwiseClone();
+        view.Options = Options.PresentationView(context);
+        return view.PrepareScene(context, viewport);
+    }
+
+    private PreparedVisual PrepareScene(VisualRenderContext context, ChartXViewport? viewport) {
         ChartGuards.RenderCompatibility(this, preparing: true);
         if (viewport != null) VisualCartesianCompiler.ValidateXViewport(this);
         var family = VisualChartCompiler.Family(this);
@@ -58,6 +64,7 @@ public sealed partial class Chart : IVisualRenderable {
         var colors = context.Theme.Resolve(context.ThemeMode);
         var content = VisualFrameLayout.Build(builder, context, entries, out var legendHeight);
         var projection = VisualChartCompiler.Build(family, this, context, builder, content, axisLabels, bubbleScale, colorScales, legendHeight, viewport);
+        builder.CaptureChartIdentity(this);
         var accessibility = Accessibility.Clone();
         accessibility.Name ??= !string.IsNullOrWhiteSpace(frame.Title) ? frame.Title
             : !string.IsNullOrWhiteSpace(Title) ? Title : Options.Labels.UntitledChart;

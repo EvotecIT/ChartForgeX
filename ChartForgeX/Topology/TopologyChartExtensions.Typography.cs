@@ -13,6 +13,6 @@ public static partial class TopologyChartExtensions {
     /// <returns>The resolved outline font or built-in fallback information.</returns>
     public static PngFontInfo GetPngFontInfo(this TopologyChart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        return TrueTypeFont.ResolveInfo(null, null, null, (chart.Theme ?? TopologyTheme.Light()).FontFamily);
+        return TrueTypeFont.ResolveInfo(null, null, null, (chart.ResolvedTheme).FontFamily);
     }
 }

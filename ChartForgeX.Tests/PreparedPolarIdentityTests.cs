@@ -14,10 +14,10 @@ public sealed class PreparedPolarIdentityTests {
         var first = new[] { new ChartPoint(3, 72), new ChartPoint(1, 54), new ChartPoint(2, 63) };
         var second = new[] { new ChartPoint(2, 81), new ChartPoint(3, 92), new ChartPoint(1, 76) };
         var chart = Bare();
-        if (kind == ChartSeriesKind.Radar) chart.AddRadarArea("Observed", first).AddRadarLine("Target", second);
-        else chart.AddPolar("Observed", first).AddPolar("Target", second);
-        chart.Series[0].WithInteractionKey("observed-source");
-        chart.Series[1].WithInteractionKey("target-source");
+        var observed = new ChartSeries(new ChartSeriesId("observed-source"), "Observed", kind, first);
+        var target = new ChartSeries(new ChartSeriesId("target-source"), "Target", kind, second);
+        if (kind == ChartSeriesKind.Radar) target.ConfigureRadar(options => options.Form = ChartLineAreaForm.Line);
+        chart.AddSeries(observed).AddSeries(target);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == role).ToArray();
         var svg = XDocument.Parse(prepared.ToSvg());
@@ -29,6 +29,7 @@ public sealed class PreparedPolarIdentityTests {
                 var group = Assert.Single(groups, item => item.Id == sourceId);
                 Assert.Equal(series.ToString(), group.Metadata["data-cfx-series"]);
                 Assert.Equal(point.ToString(), group.Metadata["data-cfx-point"]);
+                Assert.Equal((series == 0 ? observed : target).Id.Value, group.Metadata["data-cfx-series-key"]);
                 Assert.Equal(points[point].Y.ToString(System.Globalization.CultureInfo.InvariantCulture), group.Metadata["data-cfx-value"]);
                 AssertSeriesAttribute(svg, sourceId, series);
             }

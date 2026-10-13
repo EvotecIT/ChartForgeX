@@ -13,42 +13,13 @@ public sealed partial class ChartSeries {
     private ChartAxisSide _yAxis = ChartAxisSide.Primary;
     private ChartDataLabelPlacement? _dataLabelPlacement;
     private ChartFillPattern _fillPattern = ChartFillPattern.None;
-    private string? _interactionKey;
 
     internal bool PreserveInteractionTargetsWhenMarkersHidden { get; private set; }
 
     /// <summary>
     /// Gets the display name shown in legends.
     /// </summary>
-    public string Name { get; }
-
-    /// <summary>
-    /// Gets or sets the stable semantic key used to synchronize this series across interactive charts.
-    /// When unset, capable adapters use <see cref="Name"/>. Digits-only values are reserved for local series ordinals.
-    /// </summary>
-    public string? InteractionKey {
-        get => _interactionKey;
-        set {
-            var normalized = string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
-            if (normalized != null && IsOrdinalLikeInteractionKey(normalized)) throw new ArgumentException("Interaction keys cannot contain only digits because numeric scenario targets are reserved for local series ordinals.", nameof(value));
-            _interactionKey = normalized;
-        }
-    }
-
-    internal string InteractionIdentityKey {
-        get {
-            var key = string.IsNullOrWhiteSpace(_interactionKey) ? Name : _interactionKey!;
-            return IsOrdinalLikeInteractionKey(key) ? "series:" + key : key;
-        }
-    }
-
-    private static bool IsOrdinalLikeInteractionKey(string value) {
-        if (value.Length == 0) return false;
-        for (var index = 0; index < value.Length; index++) {
-            if (value[index] < '0' || value[index] > '9') return false;
-        }
-        return true;
-    }
+    public string Name { get; private set; }
 
     /// <summary>
     /// Gets the series rendering kind.
@@ -56,11 +27,13 @@ public sealed partial class ChartSeries {
     public ChartSeriesKind Kind { get; }
 
     /// <summary>
-    /// Gets the ordered numeric points. Typed waterfall and relationship series keep their source in their typed collections.
+    /// Gets mutable numeric X/Y observations. Typed observation families expose an empty read-only view here.
     /// </summary>
-    public List<ChartPoint> Points { get; } = new();
+    public IList<ChartPoint> Points => UsesTypedObservations ? Array.Empty<ChartPoint>() : _points;
+    private readonly List<ChartPoint> _points = new();
 
-    /// <summary>Gets the number of source observations supplied before aggregation or explicit decimation.</summary>
+    /// <summary>Gets the authored source count, or the retained original-input count for explicit derivation APIs such as histogram, regression, raw-sample box plot and decimation.</summary>
+    /// <remarks>Calendar and map ingestion normalize duplicate keys before storing authored observations. Use <see cref="ObservationCount"/> for the current authored display items.</remarks>
     public int SourcePointCount { get; private set; }
 
     /// <summary>Gets the explicit decimation algorithm, or null when the series was not created through a decimating API.</summary>
@@ -160,7 +133,7 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets radial arc layer definitions for layered radial charts.
     /// </summary>
-    public List<ChartRadialLayer> RadialLayers { get; } = new();
+    public IReadOnlyList<ChartRadialLayer> RadialLayers => _radialLayers;
 
     /// <summary>
     /// Gets or sets smooth interpolation. Setting false restores linear interpolation,
@@ -201,7 +174,7 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets the series-specific data-label style. When empty, the chart-level data-label style is used.
     /// </summary>
-    public TextStyleOverride DataLabelStyle { get; } = new();
+    public TextStyleOverride DataLabelStyle { get; private set; } = new();
 
     /// <summary>
     /// Gets or sets the vertical axis used for cartesian rendering.
@@ -429,25 +402,6 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Sets the stable semantic key used to synchronize this series across interactive charts.
-    /// </summary>
-    /// <param name="key">The semantic key, or null to use the series name.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithInteractionKey(string? key) {
-        InteractionKey = key;
-        return this;
-    }
-
-    /// <summary>
-    /// Uses the series name as the automatic interactive synchronization key.
-    /// </summary>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseAutomaticInteractionKey() {
-        InteractionKey = null;
-        return this;
-    }
-
-    /// <summary>
     /// Sets an optional semantic role emitted by capable renderers.
     /// </summary>
     /// <param name="role">The semantic role, or null to use the renderer default.</param>
@@ -502,7 +456,7 @@ public sealed partial class ChartSeries {
     /// <returns>The current series.</returns>
     public ChartSeries ConfigureDataLabelStyle(Action<TextStyleOverride> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(DataLabelStyle);
+        DataLabelStyle = ChartOptionConfiguration.Configure(DataLabelStyle, configure, style => style.Clone());
         return this;
     }
 
@@ -515,9 +469,9 @@ public sealed partial class ChartSeries {
     public ChartSeries ConfigurePointDataLabelStyle(int pointIndex, Action<TextStyleOverride> configure) {
         ValidatePointIndex(pointIndex);
         if (configure == null) throw new ArgumentNullException(nameof(configure));
+        var current = pointIndex < PointDataLabelStyles.Count ? PointDataLabelStyles[pointIndex] : null;
+        var style = ChartOptionConfiguration.Configure(current ?? new TextStyleOverride(), configure, candidate => candidate.Clone());
         while (PointDataLabelStyles.Count <= pointIndex) PointDataLabelStyles.Add(null);
-        var style = PointDataLabelStyles[pointIndex] ?? new TextStyleOverride();
-        configure(style);
         PointDataLabelStyles[pointIndex] = style;
         return this;
     }
@@ -583,12 +537,13 @@ public sealed partial class ChartSeries {
     /// <param name="name">The display name shown in legends.</param>
     /// <param name="kind">The series rendering kind.</param>
     /// <param name="points">The ordered data points.</param>
-    public ChartSeries(string name, ChartSeriesKind kind, IEnumerable<ChartPoint> points) {
+    internal ChartSeries(string name, ChartSeriesKind kind, IEnumerable<ChartPoint> points) {
         Name = name ?? throw new ArgumentNullException(nameof(name));
         if (!Enum.IsDefined(typeof(ChartSeriesKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown series kind.");
         Kind = kind;
         _interpolation = kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea ? ChartInterpolation.Step : ChartInterpolation.Linear;
-        Points.AddRange(ChartGuards.Points(points, nameof(points)));
+        _points.AddRange(ChartGuards.Points(points, nameof(points)));
+        if (UsesTypedObservations && _points.Count > 0) throw new ArgumentException("This series kind requires typed observations. Use its typed series factory or chart Add method.", nameof(points));
         if (IsRelationshipKind(kind) && Points.Count > 0) throw new ArgumentException("Relationship series use typed nodes, links or items. Use AddSankey, AddChord, AddTree, AddSunburst or AddTreemap.", nameof(points));
         SourcePointCount = Points.Count;
     }

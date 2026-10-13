@@ -137,7 +137,7 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
         .AddHorizontalLine(6, "Warning threshold").AddVerticalLine(2, "Review window");
 
     private static Chart Frame(bool dark) => Chart.Create().WithSize(596, 420).WithTitle("Observed values with reference guides")
-        .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
         .WithXLabels("A", "B", "C").WithXAxisBounds(1, 3).WithYAxisBounds(0, 10);
 
     private static string Annotation(int index) => "[data-cfx-role='annotation'][data-cfx-source-id='annotation-" + index + "']";

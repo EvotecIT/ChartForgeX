@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using Xunit;
@@ -54,7 +55,7 @@ public sealed class InteractivePreparedIdentityBrowserTests {
     public async Task LinkedHeatmapCellHasOneKeyboardTargetAndRetainsNativeEnterNavigation(bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithTitle("Service evidence")
-            .WithTheme(dark ? ChartForgeX.Themes.ChartTheme.GraphiteDark() : ChartForgeX.Themes.ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXLabels("Directory")
             .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
             .AddHeatmapCategoryRow("DC01", new ChartHeatmapCell("pass", "3", href: "#evidence", tooltip: "Open evidence"));
@@ -85,8 +86,7 @@ public sealed class InteractivePreparedIdentityBrowserTests {
     public async Task MarkerFreeDecimatedObservationEmitsOneOriginalSourceSelectionAndSupportsKeyboard() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithLineMarkers(ChartLineMarkerMode.None)
-            .AddDecimatedLine("Latency", Enumerable.Range(0, 100).Select(index => new ChartPoint(index, Math.Sin(index / 4d))), 12);
-        chart.Series[0].WithInteractionKey("latency-source");
+            .AddSeries(ChartSeries.CreateDecimated(new ChartSeriesId("latency-source"), "Latency", ChartSeriesKind.Line, Enumerable.Range(0, 100).Select(index => new ChartPoint(index, Math.Sin(index / 4d))), 12));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         await page.EvaluateAsync("() => { window.cfxSelections = []; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.cfxSelections.push(event.detail)); }");

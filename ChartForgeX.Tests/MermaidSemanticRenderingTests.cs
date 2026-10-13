@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Xml.Linq;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Topology;
@@ -33,8 +34,11 @@ public sealed class MermaidSemanticRenderingTests {
         Assert.Equal("Accessible API", artifact.Accessibility.Name);
         var svg = XDocument.Parse(artifact.ToSvg());
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "title" && element.Value == "Accessible API");
-        Assert.Contains("#0B1120", svg.ToString());
-        Assert.Equal("#0B1120", Assert.IsType<TopologyChart>(artifact.Model).Theme!.Background);
+        var topology = Assert.IsType<TopologyChart>(artifact.Model);
+        var expected = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Background;
+        Assert.Equal(VisualThemeMode.Dark, topology.ThemeMode);
+        Assert.Contains(expected.ToHex(), svg.ToString());
+        Assert.Equal(expected, topology.Theme.Resolve(topology.ThemeMode).Background);
     }
 
     [Fact]

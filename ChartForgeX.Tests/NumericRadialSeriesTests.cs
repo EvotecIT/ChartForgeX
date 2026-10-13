@@ -21,7 +21,7 @@ public sealed class NumericRadialSeriesTests {
             .WithTitle(V2GalleryModels.Title(ChartSeriesKind.RadialColumn)).WithSubtitle("Grouped source counts by region");
         // A single series gives the full caption angular room; crowded inside
         // captions have their own curved-mark containment regression.
-        chart.Series.RemoveAt(1); chart.WithLegend();
+        chart.RemoveSeries(chart.Series[1]); chart.WithLegend();
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "radial-data-label" && element.Value == "1200");
     }
@@ -129,8 +129,8 @@ public sealed class NumericRadialSeriesTests {
     [InlineData(true)]
     public void NativePixelsMatchSvgPaintAndPreparedObservationsRemainDetached(bool bars) {
         var color = ChartColor.FromHex("#2468AC");
-        var chart = Add(Chart.Create(), bars, "Authored", new(1, 600), new(2, 900));
-        chart.Series[0].StateRole = ChartSeriesState.Danger; chart.Series[0].WithPointColor(0, color).WithInteractionKey("requests");
+        var chart = Add(Chart.Create(), bars, new ChartSeriesId("requests"), "Authored", new(1, 600), new(2, 900));
+        chart.Series[0].WithState(ChartSeriesState.Danger).WithPointColor(0, color);
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         var scene = Compile(chart); var mark = Marks(scene)[0]; var image = VisualSceneRasterRenderer.Render(scene);
         var angle = mark.Start + mark.Sweep / 2; var radius = (mark.Inner + mark.Outer) / 2;
@@ -202,6 +202,8 @@ public sealed class NumericRadialSeriesTests {
     }
 
     internal static Chart Add(Chart chart, bool bars, string name, params ChartPoint[] points) => bars ? chart.AddRadialBar(name, points) : chart.AddRadialColumn(name, points);
+    internal static Chart Add(Chart chart, bool bars, ChartSeriesId id, string name, params ChartPoint[] points) =>
+        chart.AddSeries(new ChartSeries(id, name, bars ? ChartSeriesKind.RadialBar : ChartSeriesKind.RadialColumn, points));
     internal static VisualScene Compile(Chart chart) {
         var context = new VisualRenderContext(); var builder = new VisualSceneBuilder(new VisualSize(600, 440), context.Font);
         VisualNumericRadialCompiler.Build(chart, context, builder, new ChartRect(0, 0, 600, 440)); return builder.Build();

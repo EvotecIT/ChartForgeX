@@ -26,14 +26,14 @@ public static partial class V2GalleryModels {
         var completion = new double?[] { 55, 82, null, 68, 95 };
         chart.WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
             .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
-            .AddScatter("Recorded batches", completion.Select((value, index) =>
-                new ChartPoint((index + 1) * 16, duration[index]).WithColorValue(value)));
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", completion.Select((value, index) =>
+                new ChartPoint((index + 1) * 16, duration[index]).WithColorValue(value))));
         chart.Series[0].WithColorScale(ChartColorScale.Sequential(colors.Palette[0], colors.Status.Pass.Fill)
                 .WithValueRange(null, 100).WithLabels("Observed minimum", null, "Goal").WithNoDataColor(colors.Border))
             .ConfigureColorDimension(options => {
                 options.Name = "Completion"; options.ValueFormat = ChartValueFormat.Number("0'%'", CultureInfo.InvariantCulture);
                 options.LegendStyle = ChartColorLegendStyle.Swatches;
-            }).WithInteractionKey("recorded-batches");
+            });
         return chart;
     }
 }

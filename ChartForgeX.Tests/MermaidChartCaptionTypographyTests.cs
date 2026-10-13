@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Text.Json;
 using System.Xml.Linq;
 using ChartForgeX.Core;
@@ -19,8 +20,8 @@ public sealed class MermaidChartCaptionTypographyTests {
     [InlineData("treemap", 900, false)]
     [InlineData("treemap", 320, true)]
     [InlineData("treemap", 900, true)]
-    public Task MaximumSourceFontKeepsCaptionsInTheirNativeLayout(string family, int width, bool graphite) =>
-        VerifyCaptions(family, width, 460, graphite, false);
+    public Task MaximumSourceFontKeepsCaptionsInTheirNativeLayout(string family, int width, bool dark) =>
+        VerifyCaptions(family, width, 460, dark, false);
 
     [Trait("Category", "Browser")]
     [Theory]
@@ -28,16 +29,16 @@ public sealed class MermaidChartCaptionTypographyTests {
     [InlineData("sankey", true)]
     [InlineData("treemap", false)]
     [InlineData("treemap", true)]
-    public Task TallNarrowMarksFitOversizedCaptionsInBothDimensions(string family, bool graphite) =>
-        VerifyCaptions(family, 320, 1200, graphite, true);
+    public Task TallNarrowMarksFitOversizedCaptionsInBothDimensions(string family, bool dark) =>
+        VerifyCaptions(family, 320, 1200, dark, true);
 
-    private static async Task VerifyCaptions(string family, int width, int height, bool graphite, bool flat) {
+    private static async Task VerifyCaptions(string family, int width, int height, bool dark, bool flat) {
         var body = family == "sankey" ? "sankey-beta\nSource,Target,10\n" : flat ? "treemap-beta\n\"Documents\": 5\n\"Media\": 5\n"
             : "treemap-beta\n\"Storage\"\n  \"Documents\": 5\n  \"Media\": 5\n";
         var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\n" + body);
         Assert.False(rendered.HasErrors);
         var chart = Assert.IsType<Chart>(rendered.Artifact!.Model);
-        chart.WithSize(width, height); chart.Options.Theme.UseGraphiteLayout = graphite;
+        chart.WithSize(width, height).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);
         var labels = XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
@@ -53,7 +54,7 @@ public sealed class MermaidChartCaptionTypographyTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(capture)) {
-            Directory.CreateDirectory(capture); var name = family + "-font-ceiling-" + width + "-" + graphite + "-" + height;
+            Directory.CreateDirectory(capture); var name = family + "-font-ceiling-" + width + "-" + dark + "-" + height;
             File.WriteAllBytes(Path.Combine(capture, name + ".native.png"), prepared.ToPng());
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, name + ".png") });
         }

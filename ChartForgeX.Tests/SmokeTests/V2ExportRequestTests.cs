@@ -15,7 +15,7 @@ public sealed class V2ExportRequestTests {
     [InlineData(true)]
     public void CompactConvenienceExportsMeasureAxesInsideTheSameDefaultFrame(bool graphite) {
         var chart = Chart.Create().WithSize(240, 160)
-            .WithTheme(graphite ? ChartTheme.GraphiteLight() : new ChartTheme())
+            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report())
             .AddBar("Capacity", new[] { new ChartPoint(1, 2), new ChartPoint(2, 5), new ChartPoint(3, 3) });
         chart.Options.ShowHeader = false; chart.Options.ShowLegend = false;
         var svg = XDocument.Parse(chart.ToSvg());
@@ -47,7 +47,7 @@ public sealed class V2ExportRequestTests {
         chart.Options.ShowHeader = false; chart.Options.ShowLegend = false;
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false;
         chart.Options.TransparentBackground = true; chart.Options.PngOutputScale = 2;
-        chart.Options.Theme.Palette = new[] { ChartColor.FromHex("#306090") };
+        chart.Options.Theme = chart.Options.Theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.FromHex("#306090") }; });
         var pixels = chart.ToRgbaImage();
         Assert.Equal(480, pixels.Width); Assert.Equal(300, pixels.Height);
         Assert.Equal(0, pixels.Pixels[3]);
@@ -57,19 +57,6 @@ public sealed class V2ExportRequestTests {
         Assert.Contains(svg.Descendants(), node => (string?)node.Attribute("fill") == "#306090");
         Assert.Equal(new ChartPadding(9, 11, 15, 17), chart.Options.Padding);
         Assert.True(chart.Options.TransparentBackground);
-    }
-
-    [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void ConvenienceGraphiteThemesUseTheCanonicalPairedColorOwner(VisualThemeMode mode) {
-        var expected = VisualTheme.Graphite().Resolve(mode);
-        var actual = mode == VisualThemeMode.Light ? ChartTheme.GraphiteLight() : ChartTheme.GraphiteDark();
-        Assert.Equal(expected.Palette, actual.Palette);
-        Assert.Equal(expected.Foreground, actual.Text);
-        Assert.Equal(expected.Surface, actual.PlotBackground);
-        Assert.Equal(expected.Status.Pass.Fill, actual.Positive);
-        Assert.Equal(VisualTheme.Graphite().Typography.TitleSize, actual.TitleFontSize);
     }
 
     [Fact]

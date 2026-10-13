@@ -9,7 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgVisualBlockRenderer {
     private static void RenderVennDiagram(SvgMarkupWriter writer, VennDiagramBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);

@@ -8,7 +8,7 @@ internal static partial class VisualMapCompiler {
         var series = chart.Series[0];
         if (series.Kind == ChartSeriesKind.DottedMap)
             return new ChartDescriptionFacts(group ? ChartDescriptionKind.DottedMapGroup : ChartDescriptionKind.DottedMap,
-                chart.Title, new[] { series.Name }, series.Points.Count);
+                chart.Title, new[] { series.Name }, series.RenderPoints.Count);
         int count; int total; string name;
         if (series.Kind == ChartSeriesKind.RegionMap) {
             var definition = chart.Options.RegionMapDefinition ?? throw new InvalidOperationException("A region map requires a geometry definition.");

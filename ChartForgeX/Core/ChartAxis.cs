@@ -172,7 +172,14 @@ public sealed class ChartAxis {
     public bool ShowTimeZone { get; set; }
 
     /// <summary>Gets explicit value-to-label mappings.</summary>
-    public List<ChartAxisLabel> Labels { get; } = new();
+    public List<ChartAxisLabel> Labels { get; private set; } = new();
+
+    /// <summary>Copies the axis's authored policy and detaches its explicit label collection.</summary>
+    internal ChartAxis Clone() {
+        var copy = (ChartAxis)MemberwiseClone();
+        copy.Labels = new List<ChartAxisLabel>(Labels);
+        return copy;
+    }
 
     /// <summary>Sets explicit bounds.</summary>
     public ChartAxis WithBounds(double minimum, double maximum) {

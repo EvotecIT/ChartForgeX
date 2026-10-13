@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.VisualBlocks;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -140,11 +141,12 @@ public sealed class TableArtifact {
         return this;
     }
 
-    /// <summary>Configures one existing row.</summary>
+    /// <summary>Replaces an existing row with an independently configured copy, including its cells and metadata.</summary>
+    /// <remarks>Callback exceptions preserve the owner. Previous values and retained callback values remain independent of the installed result.</remarks>
     public TableArtifact ConfigureRow(int rowIndex, Action<TableArtifactRow> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (rowIndex < 0 || rowIndex >= _rows.Count) throw new ArgumentOutOfRangeException(nameof(rowIndex), rowIndex, "Row index must reference an existing table artifact row.");
-        configure(_rows[rowIndex]);
+        _rows[rowIndex] = ChartOptionConfiguration.Configure(_rows[rowIndex], configure, row => row.Clone());
         return this;
     }
 
@@ -272,6 +274,13 @@ public sealed class TableArtifactRow {
     /// <summary>Gets or sets whether this row can be selected by a host.</summary>
     public bool Selectable { get; set; } = true;
 
+    internal TableArtifactRow Clone() {
+        var copy = new TableArtifactRow(Key) { Status = Status, Selectable = Selectable };
+        foreach (var cell in Cells) copy.Cells.Add(cell.Clone());
+        foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
+        return copy;
+    }
+
     /// <summary>Gets row metadata for host adapters and exporters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
 }
@@ -308,6 +317,14 @@ public sealed class TableArtifactCell {
             TableArtifactGuards.EnumDefined(value, nameof(value));
             _status = value;
         }
+    }
+
+    internal TableArtifactCell Clone() {
+        var copy = new TableArtifactCell(DisplayText) {
+            SearchText = SearchText, SortText = SortText, CopyText = CopyText, ExportText = ExportText, Status = Status
+        };
+        foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
+        return copy;
     }
 
     /// <summary>Gets cell metadata for host adapters and exporters.</summary>

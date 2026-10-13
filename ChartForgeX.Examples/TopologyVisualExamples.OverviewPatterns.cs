@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
 internal static partial class TopologyVisualExamples {
@@ -7,7 +8,7 @@ internal static partial class TopologyVisualExamples {
             .WithTitle("Impact Dependency Overview")
             .WithSubtitle("Reusable blast-radius map: dependencies, owners, consumers, controls, and risks around a selected platform.")
             .WithViewport(1120, 600, 28)
-            .WithTheme(TopologyTheme.Light())
+            .WithTheme(VisualTheme.Graphite())
             .WithLegend(TopologyLegend.Create("Impact Legend")
                 .AddNodeKind("Platform", TopologyNodeKind.Application, "#2563EB", "APP")
                 .AddNodeKind("Dependency", TopologyNodeKind.Service, "#16A34A", "SVC")
@@ -66,7 +67,7 @@ internal static partial class TopologyVisualExamples {
             .WithTitle("Ownership Evidence Bundle")
             .WithSubtitle("Selected asset evidence map with owners, certificate, DNS, IP, finding, and export package relationships.")
             .WithViewport(1120, 600, 28)
-            .WithTheme(TopologyTheme.Light())
+            .WithTheme(VisualTheme.Graphite())
             .WithLegend(TopologyLegend.Create("Evidence Legend")
                 .AddNodeKind("Asset", TopologyNodeKind.Namespace, "#16A34A", "A")
                 .AddNodeKind("Evidence", TopologyNodeKind.Storage, "#2563EB", "EV")

@@ -34,13 +34,11 @@ internal static partial class InteractiveChartBrowser {
     /// <summary>The approved "Checks over a week" interaction example: quiet, warning, and danger lines.</summary>
     internal static Chart StatusLines(bool dark) {
         var chart = Frame(dark, "Check results over time", "Healthy checks recede; failures remain visible")
-            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-            .AddLine("Passed", Points(820, 940, 980, 1041, 1120, 1180, 1230))
-            .AddLine("Warnings", Points(120, 138, 131, 112, 98, 86, 72))
-            .AddLine("Failed", Points(22, 30, 27, 31, 18, 14, 11))
-            .WithSeriesState("Passed", ChartSeriesState.Quiet)
-            .WithSeriesState("Warnings", ChartSeriesState.Warning)
-            .WithSeriesState("Failed", ChartSeriesState.Danger);
+            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun");
+        var passed = new ChartSeries(new ChartSeriesId("passed"), "Passed", ChartSeriesKind.Line, Points(820, 940, 980, 1041, 1120, 1180, 1230)).WithState(ChartSeriesState.Quiet);
+        var warnings = new ChartSeries(new ChartSeriesId("warnings"), "Warnings", ChartSeriesKind.Line, Points(120, 138, 131, 112, 98, 86, 72)).WithState(ChartSeriesState.Warning);
+        var failed = new ChartSeries(new ChartSeriesId("failed"), "Failed", ChartSeriesKind.Line, Points(22, 30, 27, 31, 18, 14, 11)).WithState(ChartSeriesState.Danger);
+        chart.AddSeries(passed).AddSeries(warnings).AddSeries(failed);
         chart.Options.YAxis.Maximum = 1400;
         chart.Options.YAxis.TickCount = 8;
         return chart;
@@ -93,7 +91,7 @@ internal static partial class InteractiveChartBrowser {
 
     private static Chart Frame(bool dark, string title, string subtitle) => Chart.Create()
         .WithSize(596, 338)
-        .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
         .WithTitle(title)
         .WithSubtitle(subtitle);
 

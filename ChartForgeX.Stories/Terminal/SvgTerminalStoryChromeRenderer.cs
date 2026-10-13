@@ -9,7 +9,7 @@ internal static class SvgTerminalStoryChromeRenderer {
         if (writer == null) throw new ArgumentNullException(nameof(writer));
         if (story == null) throw new ArgumentNullException(nameof(story));
         if (layout == null) throw new ArgumentNullException(nameof(layout));
-        var theme = story.Theme;
+        var theme = story.ResolvedStyle;
         var radius = TerminalWindowChrome.FrameRadius(story.WindowStyle);
         writer.StartElement("g")
             .Attribute("data-cfx-role", "terminal-window-chrome")
@@ -52,7 +52,7 @@ internal static class SvgTerminalStoryChromeRenderer {
     }
 
     private static void WriteWindowsTerminal(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout) {
-        var theme = story.Theme;
+        var theme = story.ResolvedStyle;
         var tabCount = layout.Tabs.Count;
         var tabWidth = TerminalWindowChrome.WindowsTabWidth(layout.Width, tabCount);
         var tabRight = TerminalWindowChrome.WindowsTabRight(layout.Width, tabCount);
@@ -62,14 +62,14 @@ internal static class SvgTerminalStoryChromeRenderer {
             var finalClass = string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? " cfx-terminal-tab-final" : string.Empty;
             writer.StartElement("g").Attribute("data-cfx-role", "terminal-tab").Attribute("data-cfx-tab", tab.Id).Attribute("class", "cfx-terminal-tab-presence-" + index).Attribute("opacity", 1).EndStartElement().Line()
                 .StartElement("rect").Attribute("x", tabX).Attribute("y", 13).Attribute("width", tabWidth).Attribute("height", 37).Attribute("rx", 9).Attribute("fill", theme.HeaderBackground.ToCss()).EndEmptyElement().Line()
-                .StartElement("rect").Attribute("data-cfx-role", "terminal-tab-active").Attribute("class", "cfx-terminal-tab-active cfx-terminal-tab-state-" + index + finalClass).Attribute("opacity", string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? 1 : 0).Attribute("x", tabX).Attribute("y", 13).Attribute("width", tabWidth).Attribute("height", 37).Attribute("rx", 9).Attribute("fill", tab.Theme.Background.ToCss()).EndEmptyElement().Line();
+                .StartElement("rect").Attribute("data-cfx-role", "terminal-tab-active").Attribute("class", "cfx-terminal-tab-active cfx-terminal-tab-state-" + index + finalClass).Attribute("opacity", string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? 1 : 0).Attribute("x", tabX).Attribute("y", 13).Attribute("width", tabWidth).Attribute("height", 37).Attribute("rx", 9).Attribute("fill", tab.ResolvedStyle.Background.ToCss()).EndEmptyElement().Line();
             WriteTabIcon(writer, tab, tabX + 12, 22);
             writer.StartElement("text")
                 .Attribute("data-cfx-role", "terminal-tab-title")
                 .Attribute("x", tabX + 40)
                 .Attribute("y", 37)
                 .Attribute("fill", theme.Text.ToCss())
-                .Attribute("font-family", tab.Theme.FontFamily)
+                .Attribute("font-family", tab.ResolvedStyle.FontFamily)
                 .Attribute("font-size", TerminalWindowChrome.TitleFontSize)
                 .Attribute("font-weight", 600)
                 .Text(TerminalWindowChrome.FitTabTitle(tab.Title, layout.Width, tabCount))
@@ -84,7 +84,7 @@ internal static class SvgTerminalStoryChromeRenderer {
     }
 
     private static void WriteWindowControls(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout) {
-        var theme = story.Theme;
+        var theme = story.ResolvedStyle;
         var controlY = 31d;
         writer.StartElement("line").Attribute("data-cfx-role", "terminal-window-minimize").Attribute("x1", layout.Width - 106).Attribute("y1", controlY).Attribute("x2", layout.Width - 94).Attribute("y2", controlY).Attribute("stroke", theme.Text.ToCss()).Attribute("stroke-width", 1.3).EndEmptyElement().Line()
             .StartElement("rect").Attribute("data-cfx-role", "terminal-window-maximize").Attribute("x", layout.Width - 66).Attribute("y", controlY - 6).Attribute("width", 12).Attribute("height", 12).Attribute("fill", "none").Attribute("stroke", theme.Text.ToCss()).Attribute("stroke-width", 1.3).EndEmptyElement().Line();
@@ -102,8 +102,8 @@ internal static class SvgTerminalStoryChromeRenderer {
                 .Attribute("opacity", string.Equals(tab.Id, layout.FinalTabId, StringComparison.OrdinalIgnoreCase) ? 1 : 0)
                 .Attribute("x", x)
                 .Attribute("y", y)
-                .Attribute("fill", story.Theme.Muted.ToCss())
-                .Attribute("font-family", tab.Theme.FontFamily)
+                .Attribute("fill", story.ResolvedStyle.Muted.ToCss())
+                .Attribute("font-family", tab.ResolvedStyle.FontFamily)
                 .Attribute("font-size", TerminalWindowChrome.TitleFontSize)
                 .Attribute("font-weight", 600)
                 .Attribute("text-anchor", anchor)
@@ -115,13 +115,13 @@ internal static class SvgTerminalStoryChromeRenderer {
     private static void WriteTabIcon(SvgMarkupWriter writer, TerminalTab tab, double x, double y) {
         if (tab.Icon == TerminalTabIcon.None) return;
         if (tab.Icon == TerminalTabIcon.Ubuntu) {
-            writer.StartElement("circle").Attribute("data-cfx-role", "terminal-shell-icon").Attribute("cx", x + 9).Attribute("cy", y + 9).Attribute("r", 9).Attribute("fill", tab.Theme.Accent.ToCss()).EndEmptyElement().Line()
-                .StartElement("circle").Attribute("cx", x + 9).Attribute("cy", y + 9).Attribute("r", 3).Attribute("fill", "none").Attribute("stroke", tab.Theme.Background.ToCss()).Attribute("stroke-width", 1.6).EndEmptyElement().Line();
+            writer.StartElement("circle").Attribute("data-cfx-role", "terminal-shell-icon").Attribute("cx", x + 9).Attribute("cy", y + 9).Attribute("r", 9).Attribute("fill", tab.ResolvedStyle.Accent.ToCss()).EndEmptyElement().Line()
+                .StartElement("circle").Attribute("cx", x + 9).Attribute("cy", y + 9).Attribute("r", 3).Attribute("fill", "none").Attribute("stroke", tab.ResolvedStyle.Background.ToCss()).Attribute("stroke-width", 1.6).EndEmptyElement().Line();
             return;
         }
 
-        writer.StartElement("rect").Attribute("data-cfx-role", "terminal-shell-icon").Attribute("x", x).Attribute("y", y).Attribute("width", 18).Attribute("height", 18).Attribute("rx", 3).Attribute("fill", tab.Theme.Accent.ToCss()).EndEmptyElement().Line()
-            .StartElement("path").Attribute("d", "M" + (x + 4).ToString(CultureInfo.InvariantCulture) + " " + (y + 5).ToString(CultureInfo.InvariantCulture) + "l4 4-4 4M" + (x + 9.5).ToString(CultureInfo.InvariantCulture) + " " + (y + 13).ToString(CultureInfo.InvariantCulture) + "h5").Attribute("fill", "none").Attribute("stroke", tab.Theme.Background.ToCss()).Attribute("stroke-width", 1.7).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
+        writer.StartElement("rect").Attribute("data-cfx-role", "terminal-shell-icon").Attribute("x", x).Attribute("y", y).Attribute("width", 18).Attribute("height", 18).Attribute("rx", 3).Attribute("fill", tab.ResolvedStyle.Accent.ToCss()).EndEmptyElement().Line()
+            .StartElement("path").Attribute("d", "M" + (x + 4).ToString(CultureInfo.InvariantCulture) + " " + (y + 5).ToString(CultureInfo.InvariantCulture) + "l4 4-4 4M" + (x + 9.5).ToString(CultureInfo.InvariantCulture) + " " + (y + 13).ToString(CultureInfo.InvariantCulture) + "h5").Attribute("fill", "none").Attribute("stroke", tab.ResolvedStyle.Background.ToCss()).Attribute("stroke-width", 1.7).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
     }
 
     private static string HeaderPath(int width, double headerHeight, double radius) {

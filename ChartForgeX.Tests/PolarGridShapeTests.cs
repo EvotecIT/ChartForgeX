@@ -20,7 +20,7 @@ public sealed class PolarGridShapeTests {
         var values = missing ? "curve c{A: -30, B: -10}\nmin -40" : "curve c{17, 31, 73}\nmax 100";
         var document = new MermaidParser().ParseRadar("radar-beta\naxis A, B, C\n" + values + "\nticks 3\ngraticule " + shape).Document!;
         var chart = document.ToChart(new MermaidRadarRenderOptions { Width = 520, Height = 380 })
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style=\"margin:0\">" + chart.ToHtmlFragment() + "</body></html>", width, 460);
         var rings = session.Page.Locator("[data-cfx-role=\"radar-ring\"]");
         Assert.Equal(3, await rings.CountAsync());

@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
@@ -78,12 +79,14 @@ public sealed class MermaidConfigurationBoundaryTests {
     }
 
     [Theory]
-    [InlineData("Dark", "#0B1120")]
-    [InlineData("DEFAULT", "#FFFFFF")]
-    public void ThemeDiagnosticsMatchTheNativePaletteForCasingVariants(string theme, string background) {
+    [InlineData("Dark", VisualThemeMode.Dark)]
+    [InlineData("DEFAULT", VisualThemeMode.Light)]
+    public void ThemeDiagnosticsMatchTheNativePaletteForCasingVariants(string theme, VisualThemeMode mode) {
         var rendered = MermaidRenderer.Render("%%{init: {'theme':'" + theme + "'}}%%\nflowchart LR\nA --> B");
         Assert.Empty(rendered.Diagnostics);
-        Assert.Equal(background, Assert.IsType<TopologyChart>(rendered.Artifact!.Model).Theme!.Background);
+        var topology = Assert.IsType<TopologyChart>(rendered.Artifact!.Model);
+        Assert.Equal(mode, topology.ThemeMode);
+        Assert.Equal(VisualTheme.Graphite().Resolve(mode).Background, topology.Theme.Resolve(topology.ThemeMode).Background);
     }
 
     [Theory]

@@ -62,7 +62,7 @@ public sealed class V2GaugeScaleFormattingTests {
         Assert.Contains(prepared.Regions, region => region.Role == "gauge-label" && region.Label == "Authored measurement");
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.WithValueFormatter(_ => throw new InvalidOperationException("Detached exports must not invoke a late formatter."));
-        chart.Series[0].Points.Clear();
+        chart.Series[0].ReplaceGaugeValues(Array.Empty<ChartGaugeValue>());
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(expected.Length, calls.Count);
     }
@@ -117,7 +117,7 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(ChartGaugeForm.Needle, true, 800, 440)]
     [InlineData(ChartGaugeForm.Linear, true, 800, 440)]
     public void DefaultGaugeCaptionsRemainReadableAndSeparateFromTheirMeasurements(ChartGaugeForm form, bool dark, int width, int height) {
-        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddGauge("Tolerance", 1.003, 1.001, 1.005).ConfigureGauge(options => { options.Form = form; options.Target = 1.0025; });
         var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
         var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-title");
@@ -150,7 +150,7 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void PublishedBandedNeedleKeepsReadableMeasurementAndCaption(bool dark, bool fixtureFont) {
-        var chart = Chart.Create().WithSize(396, 294).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(396, 294).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands").AddGauge("Readiness", 74)
             .ConfigureGauge(options => {
                 options.Form = ChartGaugeForm.Needle; options.Target = 90;
@@ -204,7 +204,7 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(1d, true, 800, 440)]
     public void NeedleEndpointsKeepMeasuredValueAndCaptionClearOfTheirStroke(double ratio, bool dark, int width, int height) {
         var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTitle("Range")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).ConfigureGauge(options => options.Form = ChartGaugeForm.Needle);
         var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gauge-needle");

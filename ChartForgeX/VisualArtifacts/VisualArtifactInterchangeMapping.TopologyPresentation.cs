@@ -122,7 +122,7 @@ public static partial class VisualArtifactInterchangeMapping {
         };
     }
 
-    private static VisualArtifactInterchangeTheme MapTheme(TopologyTheme theme) {
+    private static VisualArtifactInterchangeTheme MapTheme(TopologyPaint theme) {
         return new VisualArtifactInterchangeTheme {
             Background = theme.Background,
             Foreground = theme.Foreground,

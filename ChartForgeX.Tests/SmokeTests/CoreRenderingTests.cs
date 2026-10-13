@@ -34,7 +34,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SmoothSeriesRenderAsBezierPaths() {
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var svg = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(420, 260)
             .WithLineVisualStyle(ChartLineVisualStyle.Premium())
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
@@ -71,7 +71,7 @@ internal static partial class SmokeTests {
     }
 
     private static void PngScatterDoesNotConnectPoints() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(220, 80)
             .WithSparkline()
             .AddScatter("Only points", new[] { new ChartPoint(1, 1), new ChartPoint(4, 1) }, ChartColor.FromRgb(37, 99, 235));
@@ -94,8 +94,8 @@ internal static partial class SmokeTests {
 
     private static void StepAreaSeriesRenderAsStairStepAreas() {
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 30), new ChartPoint(3, 18), new ChartPoint(4, 42) };
-        var area = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).AddArea("Values", points);
-        var stepArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 260).WithDataLabels().WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddStepArea("Values", points, ChartColor.FromRgb(37, 99, 235));
+        var area = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 260).AddArea("Values", points);
+        var stepArea = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 260).WithDataLabels().WithLineVisualStyle(ChartLineVisualStyle.Premium()).AddStepArea("Values", points, ChartColor.FromRgb(37, 99, 235));
         var areaSvg = area.ToSvg();
         var stepAreaSvg = stepArea.ToSvg();
         Assert(stepArea.Series[0].Kind == ChartSeriesKind.StepArea, "Step areas should use their own series kind.");
@@ -160,12 +160,12 @@ internal static partial class SmokeTests {
     }
 
     private static void DataLabelsUseReadableEdgeAwareStyling() {
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddLine("Values", Points(1000, 900, 1000)).ToSvg();
+        var svg = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithDataLabels().AddLine("Values", Points(1000, 900, 1000)).ToSvg();
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Data labels should be identifiable in SVG output.");
         Assert(System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text" && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") == "data-label"))
             .All(element => double.TryParse((string?)element.Attribute("y"), NumberStyles.Float, CultureInfo.InvariantCulture, out _)), "Data labels should export their measured numeric baselines.");
 
-        var longSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var longSvg = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(220, 140)
             .WithDataLabels()
             .WithValueFormatter(_ => "Extremely long remediation status label that must fit")
@@ -353,7 +353,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SvgUsesReportGradeStyling() {
-        var chart = Chart.Create().WithTitle("Styled").WithTheme(ChartTheme.ReportDark()).WithSize(640, 360)
+        var chart = Chart.Create().WithTitle("Styled").WithTheme(VisualTheme.Report(), VisualThemeMode.Dark).WithSize(640, 360)
             .WithLineVisualStyle(ChartLineVisualStyle.Premium())
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(96, 165, 250))
             .AddHorizontalLine(25, "target", ChartColor.FromRgb(251, 191, 36));
@@ -372,66 +372,69 @@ internal static partial class SmokeTests {
     private static void TypographyUsesNativeFontStackAndEscapesCustomFamilies() {
         var system = Chart.Create().WithFontFamily(ChartFontStacks.SystemSans).AddLine("Values", Points(1, 2, 3));
         Assert(system.ToSvg().Contains(ChartFontStacks.SystemSans, StringComparison.Ordinal), "SVG should retain a configured native system font stack.");
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithLegend(true).WithFontFamily("A&B \"Display\"").AddLine("Values", Points(1, 2, 3)).ToSvg();
+        var svg = Chart.Create().WithTheme(VisualTheme.Report()).WithLegend(true).WithFontFamily("A&B \"Display\"").AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(svg.Contains("font-family=\"A&amp;B &quot;Display&quot;\"", StringComparison.Ordinal), "SVG font-family values should be attribute-escaped.");
-        var editorial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTheme(ChartTheme.Editorial()).AddLine("Values", Points(1, 2, 3)).ToSvg();
+        var editorial = Chart.Create().WithTheme(VisualTheme.Editorial()).AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(editorial.Contains(ChartFontStacks.Serif, StringComparison.Ordinal), "Editorial themes should use the built-in serif font stack.");
-        var dashboard = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTheme(ChartTheme.DashboardLight()).AddBar("KPI", Points(8, 9, 7)).ToSvg();
+        var dashboard = Chart.Create().WithTheme(VisualTheme.Dashboard()).AddBar("KPI", Points(8, 9, 7)).ToSvg();
         Assert(dashboard.Contains("#DDFB20", StringComparison.Ordinal) && dashboard.Contains("rx=\"14\"", StringComparison.Ordinal), "Dashboard themes should preserve their palette and shared frame corner geometry.");
-        var saasChart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithTheme(ChartTheme.SaasDashboardLight()).WithLineMarkers(ChartLineMarkerMode.All).AddSmoothLine("MRR", Points(104, 112, 126));
+        var saasChart = Chart.Create().WithTheme(VisualTheme.SaasDashboard()).WithLineMarkers(ChartLineMarkerMode.All).AddSmoothLine("MRR", Points(104, 112, 126));
         var saas = saasChart.ToSvg();
         Assert(saas.Contains("#356AF4", StringComparison.Ordinal) && PreparedFamily(saasChart).Scene.Nodes.OfType<VisualSceneEllipse>().Where(mark => mark.Role == "marker").All(mark => mark.Rx == 4.2), "SaaS dashboard themes should retain their series palette and explicit endpoint marker radius.");
-        var customized = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var customized = Chart.Create().WithTheme(VisualTheme.Report()).WithPlotBackground()
             .WithTitle("Custom typography")
-            .ConfigureTheme(theme => theme
-                .WithSurfaceColors(ChartColor.FromRgb(250, 250, 250), ChartColor.FromRgb(1, 1, 1), ChartColor.FromRgb(2, 2, 2), ChartColor.FromRgb(3, 3, 3), ChartColor.FromRgb(4, 4, 4))
-                .WithTextColors(ChartColor.FromRgb(5, 5, 5), ChartColor.FromRgb(6, 6, 6))
-                .WithGuideColors(ChartColor.FromRgb(7, 7, 7), ChartColor.FromRgb(8, 8, 8))
-                .WithSemanticColors(ChartColor.FromRgb(9, 9, 9), ChartColor.FromRgb(10, 10, 10), ChartColor.FromRgb(11, 11, 11))
-                .WithFontFamily(ChartFontStacks.Mono)
-                .WithTypography(24, 12, 11, 10, 11, 10)
-                .WithStrokeWidth(2)
-                .WithMarkerRadius(5)
-                .WithShadowOpacity(0.2)
-                .WithSurfaceStyle(ChartSurfaceStyle.Floating)
-                .WithCornerRadius(73, 2))
-            .WithPalette(ChartPalettes.Pastel)
-            .AddLine("Values", Points(1, 2, 3))
-            .ToSvg();
-        Assert(customized.Contains(ChartFontStacks.Mono, StringComparison.Ordinal), "Theme callbacks should let users customize font stacks fluently.");
-        Assert(customized.Contains("font-size=\"24\"", StringComparison.Ordinal), "Theme callbacks should let users customize typography fluently.");
+            .ConfigureTheme(builder => {
+                foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+                    var colors = builder.Colors(mode);
+                    colors.Background = ChartColor.FromRgb(250, 250, 250);
+                    colors.ElevatedSurface = ChartColor.FromRgb(1, 1, 1);
+                    colors.Surface = ChartColor.FromRgb(2, 2, 2);
+                    colors.Border = ChartColor.FromRgb(3, 3, 3);
+                    colors.PlotBorder = ChartColor.FromRgb(4, 4, 4);
+                    colors.Foreground = ChartColor.FromRgb(5, 5, 5);
+                    colors.MutedForeground = ChartColor.FromRgb(6, 6, 6);
+                    colors.Grid = ChartColor.FromRgb(7, 7, 7);
+                    colors.Axis = ChartColor.FromRgb(8, 8, 8);
+                }
+                builder.Typography = new VisualTypography(ChartFontStacks.Mono, titleSize: 24, subtitleSize: 12,
+                    axisTitleSize: 11, axisSize: 10, legendSize: 11, dataLabelSize: 10);
+                builder.SeriesStrokeWidth = 2; builder.MarkerRadius = 5;
+                builder.CardShadowOpacity = 0.24; builder.CardRadius = 73;
+                builder.PlotRadius = 2; builder.BarRadius = 2;
+            })
+            .WithPalette(ChartPalettes.Pastel).AddLine("Values", Points(1, 2, 3)).ToSvg();
+        Assert(customized.Contains(ChartFontStacks.Mono, StringComparison.Ordinal), "Theme callbacks should customize font stacks.");
+        Assert(customized.Contains("font-size=\"24\"", StringComparison.Ordinal), "Theme callbacks should customize typography.");
         Assert(customized.Contains("#60A5FA", StringComparison.Ordinal), "Chart palette helpers should accept reusable palette presets.");
-        var hexPalette = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .WithPalette("#123456", "#0ea5e9")
-            .AddLine("First", Points(1, 2, 3))
-            .AddLine("Second", Points(3, 2, 1))
-            .ToSvg();
+        var hexPalette = Chart.Create().WithTheme(VisualTheme.Report()).WithPalette(ChartPalettes.FromHex("#123456", "#0ea5e9"))
+            .AddLine("First", Points(1, 2, 3)).AddLine("Second", Points(3, 2, 1)).ToSvg();
         Assert(hexPalette.Contains("#123456", StringComparison.Ordinal) && hexPalette.Contains("#0EA5E9", StringComparison.Ordinal), "Chart palette helpers should accept pasted hex colors.");
-        var hexTheme = ChartTheme.Light().WithPalette("#ABC", "#0EA5E980");
-        Assert(hexTheme.Palette[0].ToHex() == "#AABBCC" && hexTheme.Palette[1].ToCss() == "rgba(14,165,233,0.502)", "Theme palette helpers should parse short and alpha hex colors.");
-        Assert(customized.Contains("#010101", StringComparison.Ordinal) && customized.Contains("#020202", StringComparison.Ordinal), "Theme callbacks should let users customize surface colors fluently.");
-        Assert(customized.Contains("#050505", StringComparison.Ordinal), "Theme callbacks should let users customize text colors fluently.");
-        Assert(customized.Contains("#070707", StringComparison.Ordinal) && customized.Contains("#080808", StringComparison.Ordinal), "Theme callbacks should let users customize guide colors fluently.");
+        var hexTheme = VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#ABC", "#0EA5E980")).Resolve(VisualThemeMode.Light);
+        Assert(hexTheme.Palette[0].ToHex() == "#AABBCC" && hexTheme.Palette[1].ToCss() == "rgba(14,165,233,0.502)", "Theme palettes should retain short and alpha hex colors.");
+        Assert(customized.Contains("#010101", StringComparison.Ordinal) && customized.Contains("#020202", StringComparison.Ordinal), "Theme callbacks should customize independent surface colors.");
+        Assert(customized.Contains("#050505", StringComparison.Ordinal), "Theme callbacks should customize text colors.");
+        Assert(customized.Contains("#070707", StringComparison.Ordinal) && customized.Contains("#080808", StringComparison.Ordinal), "Theme callbacks should customize independent guide colors.");
         Assert(SvgHasAttributes(customized, "data-cfx-role=\"frame-card\" rx=\"73\"")
-            && SvgHasAttributes(customized, "data-cfx-role=\"content-surface\" rx=\"2\""), "Theme callbacks should preserve independent outer card and plot corner geometry.");
-        var bare = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .ConfigureTheme(theme => theme.WithSurfaceStyle(ChartSurfaceStyle.Bare))
-            .AddLine("Values", Points(1, 2, 3))
-            .ToSvg();
-        Assert(!SvgHasAttributes(bare, "data-cfx-role=\"frame-card\""), "Bare surface style should suppress the outer card surface.");
-        var glass = ChartTheme.Light().WithSurfaceStyle(ChartSurfaceStyle.Glass);
-        Assert(glass.CardBackground.A < 255 && glass.PlotBackground.A < 255, "Glass surface style should make card and plot surfaces translucent.");
-        var compact = ChartTheme.Light().WithSurfaceStyle(ChartSurfaceStyle.Compact);
-        Assert(compact.TitleFontSize == 22 && compact.MarkerRadius < ChartTheme.Light().MarkerRadius, "Compact surface style should tighten typography and markers.");
-        var grid = ChartGrid.Create()
-            .WithTitle("Custom grid")
-            .ConfigureTheme(theme => theme.WithFontFamily(ChartFontStacks.Mono).WithTypography(22, 12, 11, 10, 11, 10))
-            .Add(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddLine("Values", Points(1, 2, 3)))
-            .ToSvg();
-        Assert(grid.Contains(ChartFontStacks.Mono, StringComparison.Ordinal), "Grid theme callbacks should let users customize grid typography fluently.");
-        Assert(grid.Contains("font-size=\"22\"", StringComparison.Ordinal), "Grid theme callbacks should apply customized heading typography.");
-        var html = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithFontFamily("A;B{}").AddLine("Values", Points(1, 2, 3)).ToHtmlPage();
-        Assert(!html.Contains("font-family:A;B{}", StringComparison.Ordinal), "HTML font-family values should not be able to break the style declaration.");
+            && SvgHasAttributes(customized, "data-cfx-role=\"content-surface\" rx=\"2\""), "Theme callbacks should preserve independent card and plot corner geometry.");
+        var bare = Chart.Create().WithCard(false).AddLine("Values", Points(1, 2, 3)).ToSvg();
+        Assert(!SvgHasAttributes(bare, "data-cfx-role=\"frame-card\""), "An explicit chart option should suppress the outer card.");
+        var translucent = Chart.Create().WithPlotBackground().ConfigureTheme(builder => {
+            builder.Light.ElevatedSurface = builder.Light.ElevatedSurface.WithAlpha(210);
+            builder.Light.Surface = builder.Light.Surface.WithAlpha(178);
+        }).AddLine("Values", Points(1, 2, 3));
+        var translucentPrepared = PreparedFamily(translucent);
+        Assert(translucentPrepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "frame-card").Fill!.Value.A == 210
+            && translucentPrepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "content-surface").Fill!.Value.A == 178,
+            "Native card and plot surfaces should retain independently authored alpha.");
+        Assert(translucentPrepared.ToPng().Length > 64, "Translucent authored surfaces should render through the same PNG scene.");
+        var grid = ChartGrid.Create().WithTitle("Custom grid")
+            .ConfigureTheme(builder => builder.Typography = new VisualTypography(ChartFontStacks.Mono, titleSize: 22,
+                subtitleSize: 12, axisTitleSize: 11, axisSize: 10, legendSize: 11, dataLabelSize: 10))
+            .Add(Chart.Create().AddLine("Values", Points(1, 2, 3))).ToSvg();
+        Assert(grid.Contains(ChartFontStacks.Mono, StringComparison.Ordinal), "Grid theme callbacks should customize shared typography.");
+        Assert(grid.Contains("font-size=\"22\"", StringComparison.Ordinal), "Grid theme callbacks should apply authored heading sizes.");
+        var html = Chart.Create().WithFontFamily("A;B{}").AddLine("Values", Points(1, 2, 3)).ToHtmlPage();
+        Assert(!html.Contains("font-family:A;B{}", StringComparison.Ordinal), "HTML font-family values should not break the style declaration.");
     }
 
     private static void RenderingUsesInvariantCulture() {
@@ -451,36 +454,41 @@ internal static partial class SmokeTests {
     }
 
     private static void ReportThemesExposeVisualTokens() {
-        var theme = ChartTheme.ReportDark();
-        Assert(theme.CardBorder.A > 0, "Report themes should define card borders.");
-        Assert(theme.PlotBorder.A > 0, "Report themes should define plot borders.");
-        Assert(theme.PlotCornerRadius > 0, "Report themes should define plot corner radius.");
-        Assert(theme.Positive.A > 0 && theme.Warning.A > 0 && theme.Negative.A > 0, "Report themes should define semantic status colors.");
-        Assert(theme.TitleFontSize > theme.TickLabelFontSize, "Title text should be larger than tick labels.");
+        var theme = VisualTheme.Report();
+        var colors = theme.Resolve(VisualThemeMode.Dark);
+        Assert(colors.Border.A > 0 && colors.PlotBorder.A > 0, "Report themes should define independent card and plot borders.");
+        Assert(theme.PlotRadius > 0, "Report themes should define plot corner geometry.");
+        Assert(colors.Positive.A > 0 && colors.Warning.A > 0 && colors.Negative.A > 0, "Report themes should define semantic status colors.");
+        Assert(theme.Typography.TitleSize > theme.Typography.AxisSize, "Title text should be larger than tick labels.");
         var palette = new[] { ChartColor.Black };
-        theme.Palette = palette;
+        var customized = theme.WithPalette(palette);
         palette[0] = ChartColor.White;
-        Assert(theme.Palette[0].R == ChartColor.Black.R && theme.Palette[0].G == ChartColor.Black.G && theme.Palette[0].B == ChartColor.Black.B, "Themes should snapshot assigned palettes instead of retaining caller-owned arrays.");
+        Assert(customized.Resolve(VisualThemeMode.Dark).Palette[0].Equals(ChartColor.Black),
+            "Themes should snapshot caller-owned palette arrays.");
+        Assert(theme.Resolve(VisualThemeMode.Dark).Palette.Count > 1, "Customizing a theme should preserve the source snapshot.");
         var pastel = ChartPalettes.Pastel;
         pastel[0] = ChartColor.Black;
-        Assert(ChartPalettes.Pastel[0].R != ChartColor.Black.R || ChartPalettes.Pastel[0].G != ChartColor.Black.G || ChartPalettes.Pastel[0].B != ChartColor.Black.B, "Palette presets should return fresh arrays so callers can mutate local copies safely.");
-        var overlayTheme = ChartTheme.TransparentOverlayDark();
-        Assert(overlayTheme.Background.A == 0 && overlayTheme.CardBackground.A > 0 && overlayTheme.CardBackground.A < 255, "Transparent overlay themes should keep the chart background clear and use a translucent card.");
-        Assert(overlayTheme.Palette.Length >= 8, "Transparent overlay themes should expose a broad operational palette.");
-        foreach (var namedTheme in new[] { ChartTheme.Colorblind(), ChartTheme.Aurora(), ChartTheme.Editorial(), ChartTheme.Candy(), ChartTheme.Terminal(), ChartTheme.TransparentOverlayDark(), ChartTheme.Minimal() }) {
-            Assert(namedTheme.Palette.Length >= 8, "Built-in style themes should provide broad qualitative palettes.");
-            Assert(namedTheme.FontFamily.Length > 0, "Built-in style themes should define a font stack.");
-            Assert(namedTheme.Text.A > 0 && namedTheme.MutedText.A > 0 && namedTheme.Grid.A > 0, "Built-in style themes should define core visual tokens.");
+        Assert(!ChartPalettes.Pastel[0].Equals(ChartColor.Black), "Palette presets should return independent arrays.");
+        var overlay = VisualTheme.TransparentOverlay().Resolve(VisualThemeMode.Dark);
+        Assert(overlay.Background.A == 0 && overlay.ElevatedSurface.A > 0 && overlay.ElevatedSurface.A < 255,
+            "Overlay themes should preserve a clear background and translucent card.");
+        Assert(overlay.Palette.Count >= 8, "Overlay themes should provide a broad operational palette.");
+        foreach (var namedTheme in new[] { VisualTheme.Colorblind(), VisualTheme.Aurora(), VisualTheme.Editorial(), VisualTheme.Candy(), VisualTheme.Terminal(), VisualTheme.TransparentOverlay(), VisualTheme.Minimal() }) {
+            var namedColors = namedTheme.Resolve(VisualThemeMode.Light);
+            Assert(namedColors.Palette.Count >= 8, "Named themes should provide broad qualitative palettes.");
+            Assert(namedTheme.Typography.Family.Length > 0, "Named themes should define a font stack.");
+            Assert(namedColors.Foreground.A > 0 && namedColors.MutedForeground.A > 0 && namedColors.Grid.A > 0,
+                "Named themes should define visible text and guide colors.");
         }
-        foreach (var preset in new[] { ChartPalettes.Report, ChartPalettes.Colorblind, ChartPalettes.Vivid, ChartPalettes.Pastel, ChartPalettes.Editorial, ChartPalettes.Jewel, ChartPalettes.Terminal, ChartPalettes.CommandCenter }) {
-            Assert(preset.Length >= 8, "Reusable palette presets should provide enough colors for multi-series charts.");
-        }
+        foreach (var preset in new[] { ChartPalettes.Report, ChartPalettes.Colorblind, ChartPalettes.Vivid, ChartPalettes.Pastel, ChartPalettes.Editorial, ChartPalettes.Jewel, ChartPalettes.Terminal, ChartPalettes.CommandCenter })
+            Assert(preset.Length >= 8, "Reusable palette presets should provide enough colors for multiple series.");
     }
 
     private static void StandaloneHtmlUsesVisibleBackground() {
-        var html = SampleChart().ToHtmlPage();
+        var chart = SampleChart();
+        var html = chart.ToHtmlPage();
         Assert(!html.Contains("place-items:center;background:transparent", StringComparison.Ordinal), "Standalone pages should use a visible screen background.");
-        Assert(html.Contains("linear-gradient(180deg", StringComparison.Ordinal), "Standalone pages should render a polished page surface gradient.");
+        AssertFlatHtmlBackground(html, chart.Options.Theme.Resolve(chart.Options.ThemeMode).Background, "Standalone chart pages");
         Assert(html.Contains("-webkit-font-smoothing:antialiased", StringComparison.Ordinal), "Standalone pages should request browser font smoothing.");
         Assert(html.Contains("place-items:center", StringComparison.Ordinal) && html.Contains("padding:clamp(16px,4vmin,52px)", StringComparison.Ordinal), "Standalone pages should center previews with responsive padding.");
         Assert(html.Contains("@media(max-width:680px){body{padding:16px;place-items:start center}}", StringComparison.Ordinal), "Standalone pages should reduce padding and keep charts immediately visible on narrow viewports.");
@@ -505,8 +513,8 @@ internal static partial class SmokeTests {
         var boundaryA = Chart.Create().WithTitle("ab").WithSubtitle("c").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
         var boundaryB = Chart.Create().WithTitle("a").WithSubtitle("bc").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
         AssertNoDuplicateIds(boundaryA.ToSvg() + boundaryB.ToSvg(), "Boundary-distinct content namespaces");
-        var lightVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(ChartTheme.Light()).AddLine("Values", Points(10, 20, 30));
-        var darkVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(ChartTheme.Dark()).AddLine("Values", Points(10, 20, 30));
+        var lightVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(VisualTheme.Report()).AddLine("Values", Points(10, 20, 30));
+        var darkVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(VisualTheme.Report(), VisualThemeMode.Dark).AddLine("Values", Points(10, 20, 30));
         AssertNoDuplicateIds(lightVariant.ToHtmlFragment() + darkVariant.ToHtmlFragment(), "Unscoped fragments with distinct visual identities");
         var withoutLegend = Chart.Create().WithTitle("Repeated fragment").WithSize(320, 220).WithLegend(false).AddLine("Values", Points(10, 20, 30));
         AssertNoDuplicateIds(repeated.ToHtmlFragment() + withoutLegend.ToHtmlFragment(), "Unscoped fragments with distinct layout options");
@@ -535,7 +543,7 @@ internal static partial class SmokeTests {
     }
 
     private static void EdgeXAxisLabelsStayInsidePlot() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels("January", "February", "March", "April", "May", "December").AddLine("Values", Points(10, 20, 15, 30, 24, 35));
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels("January", "February", "March", "April", "May", "December").AddLine("Values", Points(10, 20, 15, 30, 24, 35));
         var prepared = PreparedFamily(chart);
         var scopes = new System.Collections.Generic.Stack<VisualSceneGroup>();
         var plot = default(ChartRect);
@@ -575,14 +583,14 @@ internal static partial class SmokeTests {
     }
 
     private static void LegendRowsWrapWithRoleMarkers() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 320).AddLine("Primary domain checks", Points(1, 2, 3)).AddLine("Certificate transparency drift", Points(2, 3, 4)).AddLine("Dnssec policy posture", Points(3, 4, 5)).AddLine("Mail authentication alignment", Points(4, 5, 6));
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 320).AddLine("Primary domain checks", Points(1, 2, 3)).AddLine("Certificate transparency drift", Points(2, 3, 4)).AddLine("Dnssec policy posture", Points(3, 4, 5)).AddLine("Mail authentication alignment", Points(4, 5, 6));
         var prepared = PreparedFamily(chart);
         var svg = chart.ToSvg();
         Assert(SvgHasAttributes(svg, "data-cfx-role=\"legend-entry\""), "SVG should expose semantic legend entries.");
         Assert(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "legend-label")
             .Select(text => text.Baseline).Distinct().Count() > 1, "Long legends should wrap into multiple measured rows.");
 
-        var rightLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 320).WithLegendPosition(ChartLegendPosition.Right).AddLine("Primary domain checks with a realistic name", Points(1, 2, 3)).AddLine("Certificate transparency drift with another realistic name", Points(2, 3, 4));
+        var rightLegend = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(520, 320).WithLegendPosition(ChartLegendPosition.Right).AddLine("Primary domain checks with a realistic name", Points(1, 2, 3)).AddLine("Certificate transparency drift with another realistic name", Points(2, 3, 4));
         var rightLegendSvg = rightLegend.ToSvg();
         var rightRegions = PreparedFamily(rightLegend).Regions.Where(region => region.Role == "legend" && region.Bounds.Width > 0).ToArray();
         Assert(rightRegions.Length > 0 && rightRegions.All(region => region.Bounds.Left >= rightLegend.Options.Size.Width * .6 && region.Bounds.Right <= rightLegend.Options.Size.Width),
@@ -597,12 +605,12 @@ internal static partial class SmokeTests {
             string.Join(" / ", Enumerable.Repeat("Extremely long certificate transparency drift monitor", 3)),
             string.Join(" / ", Enumerable.Repeat("Extremely long DNSSEC posture remediation backlog", 3))
         };
-        var longLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(320, 220).WithPngFont(font)
+        var longLegend = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(320, 220).WithPngFont(font)
             .AddLine(longNames[0], Points(1, 2, 3)).AddLine(longNames[1], Points(2, 3, 4));
         var longSvg = longLegend.ToSvg();
         Assert(longSvg.Contains("…</text>", StringComparison.Ordinal), "SVG legends should shorten series names that exceed the bounded legend lane.");
         AssertBoundedLegend(longLegend, longNames);
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithLegendPosition((ChartLegendPosition)999), "Legend positions should reject undefined enum values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithLegendPosition((ChartLegendPosition)999), "Legend positions should reject undefined enum values.");
 
         void AssertBoundedLegend(Chart model, params string[] fullNames) {
             var native = PreparedFamily(model);

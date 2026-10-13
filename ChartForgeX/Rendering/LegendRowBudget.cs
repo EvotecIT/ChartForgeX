@@ -33,7 +33,7 @@ internal static class LegendRowBudget {
         var rowHeight = RowHeight(chart);
         if (height < rowHeight) return 0;
         var fixedSpacing = IsHorizontal(position ?? chart.Options.LegendPosition)
-            ? Math.Min(chart.Options.Theme.UseGraphiteLayout ? 6 : 18 + ChartVisualPrimitives.LegendPlotGap, Math.Max(0, height - rowHeight))
+            ? Math.Min(6, Math.Max(0, height - rowHeight))
             : Math.Min(18, Math.Max(0, height - rowHeight));
         var maximumRows = Math.Max(1, (int)Math.Floor(Math.Max(0, height - fixedSpacing) / rowHeight));
         if (chart.Options.LegendMaximumRows.HasValue) maximumRows = Math.Min(maximumRows, chart.Options.LegendMaximumRows.Value);
@@ -80,7 +80,7 @@ internal static class LegendRowBudget {
 
     private static double MeasureLegendTextHeight(Chart chart) {
         var style = chart.Options.LegendStyle;
-        var fontSize = style?.FontSize ?? chart.Options.Theme.LegendFontSize;
+        var fontSize = style?.FontSize ?? chart.Options.ResolvedTheme.LegendFontSize;
         if (style?.Baseline is TextBaseline.Superscript or TextBaseline.Subscript) fontSize *= 0.65;
         var height = fontSize * PortableLineHeightEm;
         var underline = style?.UnderlineStyle ?? (style?.Underline == true ? TextDecorationStyle.Single : TextDecorationStyle.None);

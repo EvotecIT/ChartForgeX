@@ -12,7 +12,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderActivityTimeline(SvgMarkupWriter writer, ActivityTimelineBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
@@ -40,13 +40,13 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderActivitySection(SvgMarkupWriter writer, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         WriteText(writer, item.Title.ToUpperInvariant(), x + 40, y + 14, width - 40, TextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "800");
         writer.StartElement("circle").Attribute("data-cfx-role", "activity-section-node").Attribute("cx", spineX).Attribute("cy", y + 10).Attribute("r", 4).Attribute("fill", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
     }
 
     private static void RenderActivityChecklistItem(SvgMarkupWriter writer, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width, ChartColor color) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         writer.StartElement("circle").Attribute("data-cfx-role", "activity-check-node").Attribute("cx", spineX + 24).Attribute("cy", y + 11).Attribute("r", 4).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
         if (item.Completed) writer.StartElement("polyline").Attribute("data-cfx-role", "activity-checkmark").Attribute("points", FormatPoint(spineX + 20, y + 11) + " " + FormatPoint(spineX + 23, y + 15) + " " + FormatPoint(spineX + 29, y + 7)).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", 1.5).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
         var textColor = item.Muted ? theme.MutedText.WithAlpha(150) : theme.Text;
@@ -55,13 +55,13 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderActivityHiddenSummary(SvgMarkupWriter writer, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double spineX, double x, double width, ChartColor color) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         writer.StartElement("circle").Attribute("data-cfx-role", "activity-hidden-node").Attribute("cx", spineX).Attribute("cy", y + 13).Attribute("r", 8).Attribute("fill", color.WithAlpha(42).ToCss()).Attribute("stroke", color.ToCss()).EndEmptyElement().Line();
         WriteText(writer, item.HiddenCount.ToString(CultureInfo.InvariantCulture) + " " + item.Title, x + 40, y + 17, width - 40, TextAlignment.Left, color, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize), "750");
     }
 
     private static void RenderActivityEvent(SvgMarkupWriter writer, ActivityTimelineBlock block, ActivityTimelineItem item, double y, double rowHeight, double spineX, double x, double width, ChartColor color) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         if (block.ShowEventSurfaces) {
             writer.StartElement("rect")
                 .Attribute("data-cfx-role", "activity-event-surface")

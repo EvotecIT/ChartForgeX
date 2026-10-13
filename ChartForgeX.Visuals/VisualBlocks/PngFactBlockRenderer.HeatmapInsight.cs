@@ -12,7 +12,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngFactBlockRenderer {
     private static void DrawHeatmapInsightCard(RgbaCanvas canvas, HeatmapInsightCard card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, card, ref y, content.X, content.Width);
@@ -56,7 +56,7 @@ public sealed partial class PngFactBlockRenderer {
 
 
     private static void DrawHeatmapInsightRail(RgbaCanvas canvas, HeatmapInsightCard card, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         DrawAlignedText(canvas, card.InsightTitle, x, y + 2, width, TextAlignment.Left, theme.Text, Math.Max(11, theme.SubtitleFontSize), true);
         var itemY = y + 42;
         foreach (var item in card.Insights) {

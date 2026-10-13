@@ -18,7 +18,7 @@ public sealed class InteractivePyramidSelectionDockTests {
         HtmlChartResponsiveLayout layout, int width, int height) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithTitle("Work allocation").WithDataLabels()
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXLabels("Services", "Platform", "Support")
             .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) })
             .ConfigurePyramid(options => { options.Orientation = orientation; options.Reversed = true; options.ValueEncoding = ChartPyramidValueEncoding.Area; });

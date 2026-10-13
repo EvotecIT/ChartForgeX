@@ -13,14 +13,9 @@ public sealed partial class Chart {
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddRangeBand(string name, IEnumerable<ChartRangeBand> bands, ChartColor? color = null) {
-        if (bands == null) throw new ArgumentNullException(nameof(bands));
-        var points = new List<ChartPoint>();
-        foreach (var band in bands) {
-            points.Add(new ChartPoint(band.X, band.Lower));
-            points.Add(new ChartPoint(band.X, band.Upper));
-        }
-
-        if (points.Count == 0) throw new ArgumentException("Range bands must contain at least one value.", nameof(bands));
-        return Add(name, ChartSeriesKind.RangeBand, points, color);
+        var series = ChartSeries.CreateRangeBand(name, bands, color);
+        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(bands));
+        AppendSeries(series);
+        return this;
     }
 }

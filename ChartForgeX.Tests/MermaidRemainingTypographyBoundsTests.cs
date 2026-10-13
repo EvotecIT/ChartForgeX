@@ -19,10 +19,9 @@ public sealed class MermaidRemainingTypographyBoundsTests {
     [InlineData(false, 960, true)]
     [InlineData(true, 320, true)]
     [InlineData(true, 960, true)]
-    public async Task MaximumBodyFontKeepsBlockCellAndEdgeLabelsVisible(bool graphite, int width, bool circle) {
-        var theme = ChartTheme.Light();
-        theme.UseGraphiteLayout = graphite; theme.FontFamily = "Arial"; theme.DataLabelFontSize = 256;
-        var block = BlockLayoutBlock.Create().WithSize(width, 300).WithCard(false).WithTheme(theme).WithColumns(2)
+    public async Task MaximumBodyFontKeepsBlockCellAndEdgeLabelsVisible(bool dark, int width, bool circle) {
+        var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        var block = BlockLayoutBlock.Create().WithSize(width, 300).WithCard(false).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithColumns(2)
             .AddItem("a", "API").AddItem("b", "Store", shape: circle ? BlockLayoutShape.Circle : BlockLayoutShape.Rectangle).AddEdge("a", "b", "link");
         var svg = block.ToSvg();
         var labels = XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
@@ -30,7 +29,7 @@ public sealed class MermaidRemainingTypographyBoundsTests {
         Assert.NotEmpty(block.ToPng());
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, 300);
-        await Capture(session, block.ToPng(), "block-font-ceiling-" + graphite + "-" + width + (circle ? "-circle" : ""));
+        await Capture(session, block.ToPng(), "block-font-ceiling-" + dark + "-" + width + (circle ? "-circle" : ""));
         var bounds = await session.Page.EvaluateAsync<string>("() => JSON.stringify([...document.querySelectorAll('svg text,[data-cfx-role=block-layout-node]')].map(n=>({label:n.textContent,bounds:n.getBoundingClientRect().toJSON()})))");
         Assert.True(await session.Page.EvaluateAsync<bool>("() => { const nodes=[...document.querySelectorAll('[data-cfx-role=block-layout-node]')]; return [...document.querySelectorAll('svg text')].filter(t=>['API','Store'].includes(t.textContent)).every(t=>{ const b=t.getBoundingClientRect(); return b.width>0 && nodes.some(n=>{const r=n.getBoundingClientRect(); if(n.localName==='circle') { const dx=Math.max(Math.abs(b.left-r.x-r.width/2),Math.abs(b.right-r.x-r.width/2)),dy=Math.max(Math.abs(b.top-r.y-r.height/2),Math.abs(b.bottom-r.y-r.height/2)); return dx*dx+dy*dy<=r.width*r.width/4; } return b.left>=r.left && b.right<=r.right && b.top>=r.top && b.bottom<=r.bottom;}); }); }"), bounds);
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
@@ -42,11 +41,10 @@ public sealed class MermaidRemainingTypographyBoundsTests {
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     [InlineData(true, 960)]
-    public async Task MaximumSourceFontRetainsChartTitleAndContent(bool graphite, int width) {
+    public async Task MaximumSourceFontRetainsChartTitleAndContent(bool dark, int width) {
         var parsed = new MermaidParser().ParsePie("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\npie\ntitle Visible\n\"A\": 2\n\"B\": 1");
         Assert.Empty(parsed.Diagnostics);
-        var chart = parsed.Document!.ToChart(new MermaidPieRenderOptions { Width = width, Height = 460 });
-        chart.Options.Theme.UseGraphiteLayout = graphite;
+        var chart = parsed.Document!.ToChart(new MermaidPieRenderOptions { Width = width, Height = 460 }).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var svg = chart.ToSvg();
         var title = Assert.Single(XDocument.Parse(svg).Descendants(), element => element.Name.LocalName == "text" && element.Value == "Visible");
         Assert.True(double.Parse(title.Attribute("font-size")!.Value, CultureInfo.InvariantCulture) > 0);
@@ -55,7 +53,7 @@ public sealed class MermaidRemainingTypographyBoundsTests {
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, 460);
         Assert.True(await session.Page.EvaluateAsync<bool>("() => { const t=[...document.querySelectorAll('svg text')].find(t=>t.textContent==='Visible'); const b=t.getBoundingClientRect(); return b.width>0 && b.left>=0 && b.right<=innerWidth && b.top>=0 && b.bottom<230; }"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
-        await Capture(session, png, "pie-title-font-ceiling-" + graphite + "-" + width);
+        await Capture(session, png, "pie-title-font-ceiling-" + dark + "-" + width);
     }
 
     private static async Task Capture(HtmlTinkerX.HtmlBrowserSession session, byte[] png, string name) {

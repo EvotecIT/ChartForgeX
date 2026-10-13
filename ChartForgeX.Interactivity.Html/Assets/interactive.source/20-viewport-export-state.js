@@ -44,6 +44,27 @@
   };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
+    // Automatically allocated identities are local handles, never accidental matches in a peer chart.
+    const sharedTarget = target => target && target.seriesScope !== 'local';
+    if (payload.target?.seriesScope === 'local') {
+      if (['hover', 'crosshair', 'navigate'].includes(payload.action) && root._cfxSharedHover) emitSync(root, { action: 'hover-clear' });
+      return;
+    }
+    payload = { ...payload };
+    for (const field of ['targets', 'trail']) if (Array.isArray(payload[field])) {
+      const shared = payload[field].filter(sharedTarget);
+      if (payload[field].length && !shared.length) return;
+      payload[field] = shared;
+    }
+    if (payload.action === 'state' && payload.state) {
+      const targets = payload.state.selectedTargets || [], shared = targets.filter(sharedTarget);
+      if (targets.length && !shared.length) return;
+      payload.state = { ...payload.state, selectedTargets: shared };
+    }
+    if (payload.action === 'hover-clear') {
+      if (!root._cfxSharedHover) return;
+      delete root._cfxSharedHover;
+    } else if (['hover', 'crosshair', 'navigate'].includes(payload.action)) root._cfxSharedHover = true;
     const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
     root.dispatchEvent(new CustomEvent('cfxsync', { detail }));
     document.querySelectorAll('.cfx-interactive-chart').forEach((peer) => {

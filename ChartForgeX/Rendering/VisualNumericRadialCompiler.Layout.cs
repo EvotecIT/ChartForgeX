@@ -36,7 +36,7 @@ internal static partial class VisualNumericRadialCompiler {
                 .Select(metrics => Math.Sqrt(metrics.Width * metrics.Width + metrics.Height * metrics.Height)).DefaultIfEmpty(0).Max() + context.Theme.Spacing
             : 0;
         radius = Math.Max(0, radius - lane);
-        var radarExtent = chart.Series.Where(series => series.Kind == ChartSeriesKind.Radar && series.Points.Count > 0)
+        var radarExtent = chart.Series.Where(series => series.Kind == ChartSeriesKind.Radar && series.RenderPoints.Count > 0)
             .Select(series => Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
                 ChartLineVisualLayers.Build(context.Theme.Resolve(context.ThemeMode).Accent,
                     series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth,

@@ -15,7 +15,7 @@ internal static partial class VisualNumericRadialCompiler {
         string[] categoryLabels, Dictionary<ChartAxisSide, RadialValueScale> scales, VisualThemeColors colors,
         List<RadialSeriesLabel> labels, List<LabelObstacle>? obstacles) {
         var series = chart.Series[seriesIndex];
-        if (series.Points.Count == 0) return;
+        if (series.RenderPoints.Count == 0) return;
         var scale = scales[series.YAxis]; var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
         var (mapped, raw) = RadarPoints(chart, geometry, seriesIndex, coordinates, categories, scale);
         var path = ChartPathBuilder.ClosedCurve(mapped, series.Radar.CurveTension ?? 0);
@@ -31,7 +31,7 @@ internal static partial class VisualNumericRadialCompiler {
             using (builder.PushClip(new ChartPath(clipCommands))) {
                 if (geometry.Outer > 0) VisualPolarSeriesScene.Draw(chart, context, builder, series, path, color, true);
                 for (var category = 0; category < categories.Length; category++) {
-                    var source = raw[category]; var value = source >= 0 ? series.Points[source].Y : 0;
+                    var source = raw[category]; var value = source >= 0 ? series.RenderPoints[source].Y : 0;
                     var angle = CategoryAngle(chart.Options.XAxis, category, categories.Length, geometry.Start, geometry.Sweep, false);
                     var text = source >= 0 && source < series.PointLabels.Count && series.PointLabels[source] != null
                         ? series.PointLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
@@ -84,13 +84,13 @@ internal static partial class VisualNumericRadialCompiler {
         ChartBarCoordinateMap coordinates, ChartBarCoordinateKey[] categories, RadialValueScale scale) {
         var series = chart.Series[seriesIndex];
         var raw = Enumerable.Repeat(-1, categories.Length).ToArray();
-        for (var source = 0; source < series.Points.Count; source++) {
+        for (var source = 0; source < series.RenderPoints.Count; source++) {
             var key = coordinates.Resolve(seriesIndex, source);
             raw[Array.FindIndex(categories, category => category.Id == key.Id)] = source;
         }
         return (raw.Select((source, category) => On(geometry,
             CategoryAngle(chart.Options.XAxis, category, categories.Length, geometry.Start, geometry.Sweep, false),
-            geometry.Inner + scale.Normalize(source >= 0 ? series.Points[source].Y : 0) * (geometry.Outer - geometry.Inner))).ToArray(), raw);
+            geometry.Inner + scale.Normalize(source >= 0 ? series.RenderPoints[source].Y : 0) * (geometry.Outer - geometry.Inner))).ToArray(), raw);
     }
 
     private static void RadarDataLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartSeries series,

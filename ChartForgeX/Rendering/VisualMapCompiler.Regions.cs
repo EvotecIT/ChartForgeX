@@ -32,7 +32,7 @@ internal static partial class VisualMapCompiler {
                 var full = Formatted(chart, index, presentation); var id = index.HasValue ? "series-0-point-" + index.Value : "region-map-empty-" + region.Code;
                 var blend = Fill(chart, colors, index, min, max); var fill = blend.Color;
                 builder.AddRegion(new VisualSemanticRegion(id, "region-map-region", bounds, region.Name + ": " + full));
-                using (builder.PushGroup(id, "region-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].Points[index.Value].Y : (double?)null, full, min, max, presentation))) {
+                using (builder.PushGroup(id, "region-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].RenderPoints[index.Value].Y : (double?)null, full, min, max, presentation))) {
                     builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "region-map-region", close: true,
                         paint: new VisualScenePaintBinding(blend.Paint, SvgPaint.Of(chart.Options.MapRegionStrokeColor ?? colors.Surface, SvgColorRole.Surface)));
                     var pattern = Pattern(chart.Series[0], index);
@@ -93,7 +93,7 @@ internal static partial class VisualMapCompiler {
                 var full = Formatted(chart, index, presentation); var id = index.HasValue ? "series-0-point-" + index.Value : "tile-map-empty-" + region.Code;
                 var blend = Fill(chart, colors, index, min, max); var fill = blend.Color;
                 builder.AddRegion(new VisualSemanticRegion(id, "tile-map-region", bounds, region.Name + ": " + full));
-                using (builder.PushGroup(id, "tile-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].Points[index.Value].Y : (double?)null, full, min, max, presentation))) {
+                using (builder.PushGroup(id, "tile-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].RenderPoints[index.Value].Y : (double?)null, full, min, max, presentation))) {
                     builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "tile-map-region", close: true,
                         paint: new VisualScenePaintBinding(blend.Paint, SvgPaint.Of(chart.Options.MapRegionStrokeColor ?? colors.Surface, SvgColorRole.Surface)));
                     var pattern = Pattern(chart.Series[0], index);

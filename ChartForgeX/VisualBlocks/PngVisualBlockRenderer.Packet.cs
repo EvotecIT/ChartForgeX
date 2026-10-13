@@ -9,7 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngVisualBlockRenderer {
     private static void DrawPacketLayout(RgbaCanvas canvas, PacketLayoutBlock packet) {
         var options = packet.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, packet, ref y, content.X, content.Width);

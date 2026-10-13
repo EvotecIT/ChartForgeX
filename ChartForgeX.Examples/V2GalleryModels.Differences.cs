@@ -20,13 +20,13 @@ public static partial class V2GalleryModels {
             chart.ConfigureXAxis(axis => axis.WithTimeScale());
             chart.AddLine("Primary reference", new[] { new ChartPoint(day, 1), new ChartPoint(day.AddDays(8), 2) });
         }
-        chart.AddDifferenceArea("Actual and forecast", pairs);
+        chart.AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", pairs));
         var series = chart.Series[dated ? 1 : 0];
         series.ConfigureDifferenceArea(options => {
             options.FirstName = "Actual"; options.SecondName = "Forecast";
             options.PositiveFill = ChartColor.FromHex("#267EAB"); options.NegativeFill = ChartColor.FromHex("#D47A34");
             options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
-        }).WithMarkerRadius(3);
+        }).ConfigureMarkers(markers => markers.Radius = 3);
         if (stepped) series.WithInterpolation(ChartInterpolation.Step, variant switch {
             "step-start" => ChartStepPosition.Start,
             "step-end" => ChartStepPosition.End,

@@ -137,7 +137,7 @@ public sealed class InteractiveResetControlBrowserTests {
         if (!Enabled) return;
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, "compact-options", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(360, 360).WithTitle("Requests across processing stages").WithSubtitle("Aligned and ordered weighted flows")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = layout), width, 650);
         var page = session.Page;
         var target = page.Locator("[data-cfx-target-kind='node'][data-cfx-target-id='south-support']");

@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Xml.Linq;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Stories;
@@ -29,10 +30,10 @@ public sealed class StoryTranscriptBoundaryTests {
     [Fact]
     public void TerminalTranscriptRetainsTabsPromptsBlankLinesAndCompleteTableCells() {
         var terminal = TerminalStory.Create().WithTitle("Main").WithDialect(TerminalDialect.Custom, "> ")
-            .DeclareTab("build", "Build", TerminalDialect.Custom, ".", TerminalTheme.GraphiteDark(), customPrompt: "$ ")
+            .DeclareTab("build", "Build", TerminalDialect.Custom, ".", VisualTheme.Graphite(), customPrompt: "$ ")
             .Command("echo hello", .05).Output("hello\r\n").Blank().Pause(.05)
             .SelectTab("build", 0).Table(TerminalTable.Create().WithColumns("Name", "Value").AddRow("long complete value", "42"))
-            .OpenTab("result", "Result", TerminalDialect.Custom, ".", TerminalTheme.GraphiteDark(), customPrompt: "# ", transitionSeconds: 0)
+            .OpenTab("result", "Result", TerminalDialect.Custom, ".", VisualTheme.Graphite(), customPrompt: "# ", transitionSeconds: 0)
             .Output("ready");
         var expected = string.Join(Environment.NewLine, new[] {
             "[Tab added: Build]", "[Main] > echo hello", "[Main] hello", "[Main] ", "[Main]", "[Tab: Build]",

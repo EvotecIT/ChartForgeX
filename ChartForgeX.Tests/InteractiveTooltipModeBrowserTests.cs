@@ -18,7 +18,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(true, HtmlChartTooltipMode.SharedX)]
     public async Task ExplicitModeIsIndependentOfPaletteAndGraphiteLayout(bool graphite, HtmlChartTooltipMode mode) {
         if (!Enabled) return;
-        var chart = Lines(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Dark());
+        var chart = Lines(graphite ? VisualTheme.Graphite() : VisualTheme.Report());
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = mode;
             options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
@@ -43,7 +43,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(true, 340)]
     public async Task MarkerFreeSharedTooltipUsesActualLinePaintInLightDarkAndCompactViews(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Lines(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLineMarkers(ChartLineMarkerMode.None).WithLuminousLineStyle();
+        var chart = Lines(VisualTheme.Graphite()).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLineMarkers(ChartLineMarkerMode.None).WithLuminousLineStyle();
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width, 560);
         var page = session.Page;
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "[data-cfx-role='series'][data-cfx-series='1'] [data-cfx-role='line'] { stroke:#7b61e8; }" });
@@ -65,7 +65,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(HtmlChartTooltipMode.SharedX)]
     public async Task TooltipSwatchRetainsPointOverrideInsteadOfGroupOrSeriesFill(HtmlChartTooltipMode mode) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(ChartTheme.GraphiteLight().WithPalette("#176eaf", "#df4263"))
+        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263")))
             .AddBar("Requests", ChartPoints.FromValues(3, 7, 5)).AddBar("Previous", ChartPoints.FromValues(1, 2, 1));
         chart.Series[0].WithPointColor(1, "#7b61e8");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode));
@@ -85,7 +85,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(true)]
     public async Task SingleRangeTooltipUsesPaintedEnvelopeWithoutRequiringALegend(bool area) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithLegend(false).WithTheme(ChartTheme.GraphiteLight());
+        var chart = Chart.Create().WithSize(596, 338).WithLegend(false).WithTheme(VisualTheme.Graphite());
         var ranges = new[] { new ChartRangeBand(1, 2, 8), new ChartRangeBand(2, 3, 9) };
         if (area) chart.AddRangeArea("Expected", ranges, ChartColor.FromHex("#176eaf"));
         else chart.AddRangeBand("Expected", ranges, ChartColor.FromHex("#176eaf"));
@@ -104,12 +104,12 @@ public sealed class InteractiveTooltipModeBrowserTests {
         if (!Enabled) return;
         const string dangerName = "<img src=x onerror=alert(1)>";
         var chart = Chart.Create().WithSize(596, 338).WithLineMarkers(ChartLineMarkerMode.None)
-            .AddDecimatedLine("Latency", Enumerable.Range(0, 100).Select(index => new ChartPoint(index, 100 + Math.Sin(index / 4d))), 12);
-        chart.Series[0].WithInteractionKey("latency-source");
+            .AddSeries(ChartSeries.CreateDecimated(new ChartSeriesId("latency-source"), "Latency", ChartSeriesKind.Line, Enumerable.Range(0, 100).Select(index => new ChartPoint(index, 100 + Math.Sin(index / 4d))), 12));
         var observed = chart.Series[0].Points[3];
         const double precise = 0.12345678901234566;
-        chart.AddLine(dangerName, new[] { new ChartPoint(observed.X, precise) }).WithSeriesState(dangerName, ChartSeriesState.Danger);
-        chart.Series[1].WithInteractionKey("alerts");
+        var alerts = ChartSeries.CreateLine(new ChartSeriesId("alerts"), dangerName, new[] { new ChartPoint(observed.X, precise) });
+        alerts.StateRole = ChartSeriesState.Danger;
+        chart.AddSeries(alerts);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         await page.Locator(Point(0, 3)).FocusAsync();
@@ -156,7 +156,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(null)]
     public async Task SharedRowsIgnoreMissingOrNonFiniteHostValues(string? value) {
         if (!Enabled) return;
-        await using var session = await OpenAsync(Lines(ChartTheme.Light()).ToInteractiveHtmlPage());
+        await using var session = await OpenAsync(Lines(VisualTheme.Report()).ToInteractiveHtmlPage());
         var page = session.Page;
         await page.Locator(Point(1, 1)).EvaluateAsync("(node, value) => { if (value === null) node.removeAttribute('data-cfx-y'); else node.dataset.cfxY = value; }", value);
         await page.Locator(Point(0, 1)).FocusAsync();
@@ -176,7 +176,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         Assert.DoesNotContain("Role", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
         Assert.Equal("7", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd").InnerTextAsync());
         foreach (var mode in new[] { HtmlChartTooltipMode.Single, HtmlChartTooltipMode.SharedX }) {
-            await page.SetContentAsync(Lines(ChartTheme.Light()).ToInteractiveHtmlPage(options => {
+            await page.SetContentAsync(Lines(VisualTheme.Report()).ToInteractiveHtmlPage(options => {
                 options.Tooltip.Mode = mode;
                 options.Interaction.Disable(ChartInteractionFeatures.Tooltips);
             }));
@@ -209,7 +209,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(HtmlChartTooltipMode.SharedX)]
     public async Task DashboardChildTooltipsUseTheConfiguredMode(HtmlChartTooltipMode mode) {
         if (!Enabled) return;
-        var chart = Lines(ChartTheme.Light());
+        var chart = Lines(VisualTheme.Report());
         await using var session = await OpenAsync(new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1; options.Tooltip.Mode = mode;
         }), 700, 1000);
@@ -223,8 +223,8 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart Lines(ChartTheme theme) => Chart.Create().WithSize(596, 338).WithTitle("Observations over time")
-        .WithTheme(theme.WithPalette("#176eaf", "#df4263")).WithXLabels("Mon", "Tue", "Wed")
+    private static Chart Lines(VisualTheme theme) => Chart.Create().WithSize(596, 338).WithTitle("Observations over time")
+        .WithTheme(theme.WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263"))).WithXLabels("Mon", "Tue", "Wed")
         .AddLine("Current", ChartPoints.FromValues(12, 19, 16)).AddLine("Baseline", ChartPoints.FromValues(7, 11, 8));
 
     private static async Task CaptureAsync(IPage page, string name) {

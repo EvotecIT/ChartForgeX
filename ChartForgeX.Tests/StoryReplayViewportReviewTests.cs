@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Primitives;
@@ -23,14 +24,16 @@ public sealed class StoryReplayViewportReviewTests {
 
     [Fact]
     public void AuthoredViewportPreservesPaletteAlphaOutsideATabTransition() {
-        var theme = TerminalTheme.GraphiteDark();
-        theme.Background = theme.Background.WithAlpha(64);
-        theme.Border = theme.Border.WithAlpha(128);
+        var theme = VisualTheme.Graphite();
+        theme = theme.Configure(builder => {
+            builder.Dark.ElevatedSurface = builder.Dark.ElevatedSurface.WithAlpha(64);
+            builder.Dark.Border = builder.Dark.Border.WithAlpha(128);
+        });
         var terminal = TerminalStory.Create().WithTheme(theme).WithFinalPrompt(false).Output("Ready");
         var viewport = XDocument.Parse(Story(terminal, 600, 400).Prepare().ToSvg()).Descendants()
             .Single(element => (string?)element.Attribute("data-cfx-role") == "terminal-viewport");
-        Assert.Equal(theme.Background.ToCss(), (string?)viewport.Attribute("fill"));
-        Assert.Equal(theme.Border.ToCss(), (string?)viewport.Attribute("stroke"));
+        Assert.Equal(theme.Resolve(VisualThemeMode.Dark).ElevatedSurface.ToCss(), (string?)viewport.Attribute("fill"));
+        Assert.Equal(theme.Resolve(VisualThemeMode.Dark).Border.ToCss(), (string?)viewport.Attribute("stroke"));
     }
 
     [Fact]
@@ -118,10 +121,10 @@ public sealed class StoryReplayViewportReviewTests {
     }
 
     private static TerminalStory TransitionTerminal() {
-        var theme = TerminalTheme.GraphiteDark();
-        theme.Background = ChartColor.FromHex("#000000");
-        theme.Success = ChartColor.FromHex("#00FF00");
-        theme.Error = ChartColor.FromHex("#FF0000");
+        var theme = VisualTheme.Graphite();
+        theme = theme.Configure(builder => { builder.Dark.ElevatedSurface = ChartColor.Black;
+            builder.Dark.Status.Pass = new VisualTokenColor(ChartColor.FromHex("#00FF00"), ChartColor.FromHex("#00FF00"));
+            builder.Dark.Status.Critical = new VisualTokenColor(ChartColor.FromHex("#FF0000"), ChartColor.FromHex("#FF0000")); });
         return TerminalStory.Create().WithTheme(theme).WithFinalPrompt(false).WithTiming(0, 42, 0).WithTabHold(0)
             .Output("FIRST", TerminalTextTone.Success).OpenTab("other", "Other", TerminalDialect.Bash, "~/src", theme, transitionSeconds: 0)
             .Blank().Output("SECOND", TerminalTextTone.Error).SelectTab("main", 1);

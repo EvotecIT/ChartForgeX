@@ -20,7 +20,7 @@ internal static class TerminalLinePlayback {
         var count = StoryPlaybackClock.Elements(elements.Length, elapsed, line.StartSeconds, line.DurationSeconds);
         return string.Concat(elements.Take(count));
     }
-    internal static ChartColor ToneColor(TerminalTheme theme, TerminalTextTone tone) => tone switch {
+    internal static ChartColor ToneColor(ResolvedTerminalStyle theme, TerminalTextTone tone) => tone switch {
         TerminalTextTone.Default => theme.Text,
         TerminalTextTone.Muted => theme.Muted,
         TerminalTextTone.Accent => theme.Accent,

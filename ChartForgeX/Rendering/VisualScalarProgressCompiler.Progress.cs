@@ -10,11 +10,11 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualScalarProgressCompiler {
     private static void Progress(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
         var series = chart.Series[0];
-        if (series.Points.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("progress.no-data", "The progress chart has no rows.")); return; }
-        if (series.Points.Any(point => point.Y < 0)) throw new InvalidOperationException("Progress rows require non-negative values.");
-        var labels = series.Points.Select(point => Category(chart, point.X)).ToArray();
-        var values = series.Points.Select((point, index) => Value(chart, series, index, point.Y)).ToArray();
-        var gap = context.Theme.Spacing; var rowHeight = plot.Height / series.Points.Count;
+        if (series.RenderPoints.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("progress.no-data", "The progress chart has no rows.")); return; }
+        if (series.RenderPoints.Any(point => point.Y < 0)) throw new InvalidOperationException("Progress rows require non-negative values.");
+        var labels = series.RenderPoints.Select(point => Category(chart, point.X)).ToArray();
+        var values = series.RenderPoints.Select((point, index) => Value(chart, series, index, point.Y)).ToArray();
+        var gap = context.Theme.Spacing; var rowHeight = plot.Height / series.RenderPoints.Count;
         var tickStyle = Style(chart, context, series, -1, colors.MutedForeground, context.Theme.Typography.AxisSize, 400, true);
         var labelWidth = Math.Min(plot.Width * .3, labels.Max(label => builder.MeasureText(label, tickStyle).Width) + gap);
         var valueWidth = chart.Options.ShowProgressValues ? Math.Min(plot.Width * .25, values.Select((value, index) => builder.MeasureText(value,
@@ -30,8 +30,8 @@ internal static partial class VisualScalarProgressCompiler {
             ["data-cfx-maximum"] = N(chart.Options.ProgressMaximum), ["data-cfx-show-values"] = chart.Options.ShowProgressValues ? "true" : "false",
             ["data-cfx-show-handles"] = chart.Options.ShowProgressHandles ? "true" : "false", ["data-cfx-bar-thickness-ratio"] = N(chart.Options.ProgressBarThicknessRatio),
             ["data-cfx-track-opacity"] = N(chart.Options.ProgressTrackOpacity), ["data-cfx-series-key"] = series.InteractionIdentityKey
-        })) for (var index = 0; index < series.Points.Count; index++) {
-            var raw = series.Points[index].Y; var ratio = VisualRadialPrimitives.Clamp(raw / chart.Options.ProgressMaximum);
+        })) for (var index = 0; index < series.RenderPoints.Count; index++) {
+            var raw = series.RenderPoints[index].Y; var ratio = VisualRadialPrimitives.Clamp(raw / chart.Options.ProgressMaximum);
             var y = plot.Top + rowHeight * (index + .5); var color = ChartSeriesColours.Point(series, index, index, colors);
             var bounds = new ChartRect(plot.Left, plot.Top + rowHeight * index, plot.Width, rowHeight);
             builder.AddRegion(new VisualSemanticRegion(Id(0, index), "progress-row", bounds, labels[index] + ": " + values[index]));

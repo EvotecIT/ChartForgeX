@@ -33,7 +33,7 @@ public sealed class VisualBlockOptions {
     private ChartSize _size = new(520, 300);
     private ChartPadding _padding = new(22, 22, 22, 22);
     private bool _hasExplicitPadding;
-    private ChartTheme _theme = ChartTheme.GraphiteLight();
+    private VisualTheme _theme = VisualTheme.Graphite();
     private int _pngOutputScale = 1;
 
     /// <summary>Gets the text alternative, language, and decorative metadata used by static exports.</summary>
@@ -50,7 +50,7 @@ public sealed class VisualBlockOptions {
 
     /// <summary>Gets or sets the inner content padding.</summary>
     public ChartPadding Padding {
-        get => HostOwnsFrame ? new ChartPadding(0,0,0,0) : !_hasExplicitPadding && Theme.UseGraphiteLayout ? new ChartPadding(18,16,18,12) : _padding;
+        get => HostOwnsFrame ? new ChartPadding(0,0,0,0) : !_hasExplicitPadding ? new ChartPadding(18,16,18,12) : _padding;
         set {
             ValidateNonNegative(value.Left, nameof(value));
             ValidateNonNegative(value.Top, nameof(value));
@@ -62,10 +62,18 @@ public sealed class VisualBlockOptions {
     }
 
     /// <summary>Gets or sets the visual theme used by renderers.</summary>
-    public ChartTheme Theme {
+    public VisualTheme Theme {
         get => _theme;
         set => _theme = value ?? throw new ArgumentNullException(nameof(value));
     }
+
+    /// <summary>Gets or sets the explicit mode of the shared theme.</summary>
+    public VisualThemeMode ThemeMode {
+        get => _themeMode;
+        set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; }
+    }
+    private VisualThemeMode _themeMode;
+    internal ResolvedVisualTheme ResolvedTheme => Theme.ResolvePresentation(ThemeMode);
 
     /// <summary>Gets or sets whether the full background should stay transparent.</summary>
     public bool TransparentBackground { get; set; }
@@ -154,7 +162,17 @@ public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBloc
     public TSelf WithPadding(double left, double top, double right, double bottom) { Options.Padding = new ChartPadding(left, top, right, bottom); return Self(); }
 
     /// <summary>Sets the visual theme.</summary>
-    public TSelf WithTheme(ChartTheme theme) { Options.Theme = theme ?? throw new ArgumentNullException(nameof(theme)); return Self(); }
+    public TSelf WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
+        Options.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        if (mode.HasValue) Options.ThemeMode = mode.Value;
+        return Self();
+    }
+
+    /// <summary>Sets the light or dark mode without changing the shared theme.</summary>
+    public TSelf WithThemeMode(VisualThemeMode mode) { Options.ThemeMode = mode; return Self(); }
+
+    /// <summary>Atomically replaces the shared theme using an isolated configuration builder.</summary>
+    public TSelf ConfigureTheme(Action<VisualThemeBuilder> configure) { Options.Theme = Options.Theme.Configure(configure); return Self(); }
 
     /// <summary>Lets the embedding host own the surface and removes outer padding.</summary>
     public TSelf WithHostFrame(bool hostOwnsFrame = true) { Options.HostOwnsFrame = hostOwnsFrame; return Self(); }

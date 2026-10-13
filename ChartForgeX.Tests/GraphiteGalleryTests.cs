@@ -18,7 +18,7 @@ public sealed class GraphiteGalleryTests {
         Directory.CreateDirectory(output);
         try {
             var chart = Chart.Create().WithSize(596, 338).WithTitle("Host frame").WithHostFrame()
-                .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithPngOutputScale(scale)
+                .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithPngOutputScale(scale)
                 .WithXLabels("One", "Two", "Three").AddBar("Counts", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
             foreach (var name in new[] { "normal", "edge-mark" }) {
                 File.WriteAllText(Path.Combine(output, name + ".svg"), chart.ToSvg());
@@ -52,9 +52,9 @@ public sealed class GraphiteGalleryTests {
         Directory.CreateDirectory(output);
         try {
             var chart=Chart.Create().WithSize(320,220).WithTitle("Graphite frame").WithPngOutputScale(scale)
-                .WithTheme(translucent ? ChartTheme.Light() : ChartTheme.GraphiteLight())
+                .WithTheme(translucent ? VisualTheme.Report() : VisualTheme.Graphite())
                 .AddBar("Counts",new[]{new ChartPoint(1,20),new ChartPoint(2,50)});
-            if(framed) chart.Options.Theme.WithSurfaceStyle(ChartSurfaceStyle.Framed);
+            if(framed) chart.ConfigureTheme(builder => builder.CardRadius = 8);
             var names=new List<string>{"normal","edge-mark"};
             if(translucent) names.Add(framed?"edge-border-color":"edge-translucent-mark");
             foreach(var name in names) {
@@ -62,7 +62,7 @@ public sealed class GraphiteGalleryTests {
                 File.WriteAllText(Path.Combine(output,name+".html"),chart.ToHtmlPage());
                 var canvas=RenderCanvas(chart);
                 if(name=="edge-mark") canvas.FillRect(0,50*scale,3*scale,20*scale,ChartColor.Black);
-                if(name=="edge-border-color") canvas.FillRect(0,50*scale,3*scale,20*scale,chart.Options.Theme.CardBorder.WithAlpha(255));
+                if(name=="edge-border-color") canvas.FillRect(0,50*scale,3*scale,20*scale,chart.Options.Theme.Resolve(chart.Options.ThemeMode).Border.WithAlpha(255));
                 if(name=="edge-translucent-mark") canvas.FillRect(0,50*scale,3*scale,20*scale,ChartColor.Black.WithAlpha(96));
                 File.WriteAllBytes(Path.Combine(output,name+".png"),PngWriter.WriteRgba(canvas.ToImage()));
             }
@@ -72,8 +72,8 @@ public sealed class GraphiteGalleryTests {
             Assert.True(charts["normal"].GetProperty("png").GetProperty("healthy").GetBoolean(), charts["normal"].GetProperty("png").GetRawText());
             Assert.Equal(0,charts["normal"].GetProperty("png").GetProperty("edgeInkPixels").GetInt64());
             var html=charts["normal"].GetProperty("html");
-            Assert.Equal(!translucent,html.GetProperty("hasFlatSurface").GetBoolean());
-            Assert.Equal(translucent,html.GetProperty("hasSurfaceGradient").GetBoolean());
+            Assert.True(html.GetProperty("hasFlatSurface").GetBoolean());
+            Assert.False(html.GetProperty("hasSurfaceGradient").GetBoolean());
             Assert.True(html.GetProperty("healthy").GetBoolean(),html.GetRawText());
             Assert.False(charts["edge-mark"].GetProperty("png").GetProperty("healthy").GetBoolean());
             Assert.True(charts["edge-mark"].GetProperty("png").GetProperty("edgeInkPixels").GetInt64()>0);

@@ -63,16 +63,16 @@ public static partial class V2GalleryModels {
             .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
             .WithValueFormat(ChartValueFormat.Number("0.0 'min'", CultureInfo.InvariantCulture));
         if (kind == ChartSeriesKind.Bubble) {
-            chart.AddBubble("Recorded batches", temperatures.Select((value, index) =>
-                new ChartBubble((index + 1) * 16, minutes[index], sizes[index]).WithColorValue(value)));
+            chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("recorded-batches"), "Recorded batches", temperatures.Select((value, index) =>
+                new ChartBubble((index + 1) * 16, minutes[index], sizes[index]).WithColorValue(value))));
             if (!gradient) scale = ChartColorScale.Discrete(new[] {
                 new ChartColorBand(0, colors.Palette[0], "Cold"),
                 new ChartColorBand(15, colors.Status.Medium.Fill, "Mild"),
                 new ChartColorBand(null, colors.Status.Critical.Fill, "Warm")
             }).WithNoDataColor(colors.Border);
-        } else chart.AddScatter("Recorded batches", temperatures.Select((value, index) =>
-            new ChartPoint((index + 1) * 16, minutes[index]).WithColorValue(value)));
-        chart.Series[0].WithColorScale(scale).ConfigureColorDimension(Present).WithInteractionKey("recorded-batches");
+        } else chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", temperatures.Select((value, index) =>
+            new ChartPoint((index + 1) * 16, minutes[index]).WithColorValue(value))));
+        chart.Series[0].WithColorScale(scale).ConfigureColorDimension(Present);
         return chart;
     }
 }

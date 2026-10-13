@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Linq;
 using System.Xml.Linq;
@@ -127,7 +128,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-callout-node-count=\"1\"", StringComparison.Ordinal), "Hidden geographic anchor nodes should not inflate callout node totals.");
         Assert(svg.Contains("data-callout-critical-count=\"0\"", StringComparison.Ordinal), "Hidden geographic anchor nodes should not skew callout health totals.");
 
-        var callouts = TopologyGeographicCallouts.Build(chart, options, TopologyTheme.Light());
+        var callouts = TopologyGeographicCallouts.Build(chart, options, chart.ResolvedTheme);
         Assert(callouts.Count == 1 && callouts[0].NodeCount == 1 && callouts[0].CriticalCount == 0, "Geographic callout models should count rendered group members only.");
     }
 }

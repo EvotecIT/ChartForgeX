@@ -156,6 +156,32 @@ chart.SavePng("cpu.png");
 
 The [API guide](docs/v2/api-conventions.md) covers category and time axes, missing observations, series options, color scales, statistical helpers, and small multiples. Stable hierarchy, flow, and interaction IDs keep selection tied to the data when labels or presentation change.
 
+## Configure and update a series
+
+Keep a series handle when you need to configure it or change its observations. Its ID stays the same when its display name or chart position changes.
+
+```csharp
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Themes;
+
+var orders = ChartSeries.CreateLine(new ChartSeriesId("completed-orders"), "Completed",
+    ChartPoints.FromValues(28, 34, 41, 48, 32));
+orders.ConfigureMarkers(markers => markers.Radius = 4);
+
+var chart = Chart.Create()
+    .WithTitle("Weekly orders")
+    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+    .AddSeries(orders);
+
+orders.WithName("Completed orders");
+chart.SavePng("orders-dark.png");
+```
+
+Charts, diagrams, grids, canvases, and stories use the same paired `VisualTheme` with an explicit light/dark mode. Customize it with `VisualTheme.Graphite().Configure(builder => ...)`; the returned theme is an independent snapshot.
+
+Specialized series retain typed observations such as `Bubbles` and `FinancialValues`. Use their `Update*` methods to change one complete observation while keeping its ID and styling, or `Replace*` to install a new sequence. Option callbacks apply their changes after success and leave the model unchanged if they throw. See [API ownership and updates](docs/v2/api-conventions.md#stable-series-handles-and-observations) for the complete contracts.
+
 ## One layout, several outputs
 
 Use the `Save*` helpers for everyday exports. When you need several outputs with the same layout, prepare the visual once:

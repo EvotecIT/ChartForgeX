@@ -153,8 +153,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
     public async Task SynchronizedDashboardResolvesLocalBranchesAndMixedFamiliesKeepTheirOwnEmphasis() {
         if (!Enabled) return;
         var first = SunburstBranchHighlightExamples.CreateChart(360);
-        var second = Chart.Create().WithSize(360, 360).AddSunburst("Renamed allocation", first.Series[0].HierarchyItems.Reverse());
-        first.Series[0].WithInteractionKey("allocation"); second.Series[0].WithInteractionKey("allocation");
+        var second = Chart.Create().WithSize(360, 360).AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation"), "Renamed allocation", first.Series[0].HierarchyItems.Reverse()));
         var line = StatusLines(false);
         var html = new[] { first, second, line }.ToInteractiveHtmlDashboardPage(options => {
             options.Highlight.Mode = HtmlChartHighlightMode.RootBranch;

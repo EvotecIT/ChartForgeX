@@ -6,17 +6,17 @@ public static partial class V2GalleryModels {
     /// <summary>Compares observed counts with an area reference and an unfilled target on shared radial categories.</summary>
     public static Chart CreateMixedRadial(double? curveTension = null) {
         ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+        var reference = new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.Radar, Points(1000, 900, 1100, 1000))
+            .ConfigureRadar(options => { options.FillOpacity = .15; options.CurveTension = curveTension; })
+            .ConfigureMarkers(markers => markers.Enabled = false);
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.RadialColumn, Points(1200, 700, 1050, 950));
+        var target = new ChartSeries(new ChartSeriesId("target"), "Target", ChartSeriesKind.Radar, Points(1400, 1200, 1300, 1250))
+            .ConfigureRadar(options => { options.Form = ChartLineAreaForm.Line; options.CurveTension = curveTension; })
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 4; });
         var chart = Chart.Create().WithXLabels("North", "East", "South", "West")
             .WithYAxisBounds(0, 1600).WithDataLabels(false)
             .WithRadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: .22, cornerRadius: 4))
-            .AddRadarArea("Reference", Points(1000, 900, 1100, 1000))
-            .AddRadialColumn("Observed", Points(1200, 700, 1050, 950))
-            .AddRadarLine("Target", Points(1400, 1200, 1300, 1250));
-        chart.Series[0].Radar.FillOpacity = .15;
-        chart.Series[0].Radar.CurveTension = curveTension;
-        chart.Series[2].Radar.CurveTension = curveTension;
-        chart.Series[0].Markers.Enabled = false;
-        chart.Series[2].ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 4; });
+            .AddSeries(reference).AddSeries(observed).AddSeries(target);
         return chart;
     }
 

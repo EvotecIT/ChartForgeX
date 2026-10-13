@@ -18,8 +18,7 @@ public sealed partial class VisualDesignTokens {
     /// <c>severity</c> (fill and ink), <c>outcome</c>, <c>state</c>, and <c>series</c>, plus optional <c>ramps</c>
     /// (<c>sequential</c>: colours weakest to strongest; <c>diverging</c>: <c>negative</c> and <c>positive</c> arms weakest to
     /// strongest around a <c>neutral</c> colour). Files without ramps still load. Other top-level members, such as
-    /// <c>name</c> or <c>notes</c>, are ignored. An optional <c>graphite</c> object in each mode enables the flat look
-    /// and supplies <c>muted</c>, <c>grid</c>, <c>axis</c>, <c>info</c>, <c>quiet</c>, <c>quietLine</c>,
+    /// <c>name</c> or <c>notes</c>, are ignored. An optional <c>graphite</c> object in each mode supplies <c>muted</c>, <c>grid</c>, <c>axis</c>, <c>info</c>, <c>quiet</c>, <c>quietLine</c>,
     /// <c>neutral</c>, <c>neutral2</c>, and <c>neutral3</c> colour roles.
     /// </summary>
     /// <remarks>
@@ -81,7 +80,6 @@ public sealed partial class VisualDesignTokens {
         };
         var graphite = OptionalMember(set, "graphite", name + ".graphite");
         if (graphite != null) {
-            tokens.UseGraphiteLayout = true;
             tokens.Muted = Color(graphite, "muted", name + ".graphite");
             tokens.Grid = Color(graphite, "grid", name + ".graphite");
             tokens.Axis = Color(graphite, "axis", name + ".graphite");

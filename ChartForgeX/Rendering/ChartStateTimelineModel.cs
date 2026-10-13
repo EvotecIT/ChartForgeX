@@ -95,22 +95,22 @@ internal sealed class ChartStateTimelineModel {
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
             if (series.Kind != ChartSeriesKind.StateTimeline) continue;
-            var segments = new List<ChartStateTimelineResolvedSegment>(series.Points.Count);
-            for (var i = 0; i < series.Points.Count; i++) {
+            var segments = new List<ChartStateTimelineResolvedSegment>(series.RenderPoints.Count);
+            for (var i = 0; i < series.RenderPoints.Count; i++) {
                 var key = series.PointLabels[i] ?? string.Empty;
                 var state = legend.Resolve(key);
 
                 var detail = i < series.StateTimelineDetails.Count ? series.StateTimelineDetails[i] : null;
                 var last = segments.Count - 1;
                 // Contiguous rollup buckets in the same state draw as one run so bucket seams do not read as state changes.
-                if (last >= 0 && ReferenceEquals(segments[last].State, state) && segments[last].End == series.Points[i].X && string.Equals(segments[last].Detail, detail, StringComparison.Ordinal)) {
-                    segments[last] = new ChartStateTimelineResolvedSegment(segments[last].PointIndex, segments[last].Start, series.Points[i].Y, state, detail);
+                if (last >= 0 && ReferenceEquals(segments[last].State, state) && segments[last].End == series.RenderPoints[i].X && string.Equals(segments[last].Detail, detail, StringComparison.Ordinal)) {
+                    segments[last] = new ChartStateTimelineResolvedSegment(segments[last].PointIndex, segments[last].Start, series.RenderPoints[i].Y, state, detail);
                 } else {
-                    segments.Add(new ChartStateTimelineResolvedSegment(i, series.Points[i].X, series.Points[i].Y, state, detail));
+                    segments.Add(new ChartStateTimelineResolvedSegment(i, series.RenderPoints[i].X, series.RenderPoints[i].Y, state, detail));
                 }
 
-                min = Math.Min(min, series.Points[i].X);
-                max = Math.Max(max, series.Points[i].Y);
+                min = Math.Min(min, series.RenderPoints[i].X);
+                max = Math.Max(max, series.RenderPoints[i].Y);
             }
 
             lanes.Add(new ChartStateTimelineLane(seriesIndex, series.Name, series.LaneSummary, segments, series.LaneGroup));

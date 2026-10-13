@@ -22,7 +22,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         var placements = FocusRecoveryPlacements(anchor);
         var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440).WithHeader(false)
             .WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
-            .WithTheme(precision ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()), bars, "Observed",
+            .WithTheme(VisualTheme.Graphite(), precision ? VisualThemeMode.Dark : VisualThemeMode.Light), bars, "Observed",
             new ChartPoint(1, precision ? 1 : 0), new ChartPoint(2, 100000000));
         var fragment = chart.ToInteractiveHtmlFragment(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

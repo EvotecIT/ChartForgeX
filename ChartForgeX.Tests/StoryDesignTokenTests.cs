@@ -10,125 +10,89 @@ namespace ChartForgeX.Tests;
 
 public sealed class StoryDesignTokenTests {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void TranslucentSyntaxColorsUseReadableForegroundInsteadOfOpaqueOnlyContrast(bool dark) {
-        var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
-        var invisibleInk = dark ? ChartColor.FromHex("#FFFFFF20") : ChartColor.FromHex("#00000020");
-        tokens.Palette = new[] { invisibleInk };
-        tokens.Accent = ChartColor.FromRgba(invisibleInk.R, invisibleInk.G, invisibleInk.B, 0);
-        var theme = tokens.ApplyTo(new VisualStoryTheme());
-
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void TranslucentSyntaxColorsUseReadableForegroundInsteadOfOpaqueOnlyContrast(VisualThemeMode mode) {
+        var invisible = mode == VisualThemeMode.Dark ? ChartColor.FromHex("#FFFFFF20") : ChartColor.FromHex("#00000020");
+        var theme = VisualTheme.Graphite().Configure(builder => {
+            builder.Colors(mode).Palette = new[] { invisible };
+            builder.Colors(mode).Accent = invisible.WithAlpha(0);
+        });
+        var story = VisualStory.Create("Readable syntax").WithTheme(theme, mode);
         foreach (var kind in new[] { StorySyntaxKind.Keyword, StorySyntaxKind.Type, StorySyntaxKind.Command,
-            StorySyntaxKind.Parameter, StorySyntaxKind.Variable, StorySyntaxKind.Property,
-            StorySyntaxKind.String, StorySyntaxKind.Number }) {
-            Assert.Equal(tokens.Foreground, theme.Syntax.Resolve(kind));
-        }
-        Assert.Equal(invisibleInk, tokens.Palette[0]);
-        Assert.Equal(tokens.Accent, theme.Accent);
+            StorySyntaxKind.Parameter, StorySyntaxKind.Variable, StorySyntaxKind.Property, StorySyntaxKind.String, StorySyntaxKind.Number })
+            Assert.Equal(theme.Resolve(mode).Foreground, story.ResolvedStyle.Syntax.Resolve(kind));
+        Assert.Equal(invisible, theme.Resolve(mode).Palette[0]);
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void GraphiteFactoriesShareSurfaceTypographyAndSemanticInkRoles(bool dark) {
-        var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
-        var story = dark ? VisualStoryTheme.GraphiteDark() : VisualStoryTheme.GraphiteLight();
-        var terminal = dark ? TerminalTheme.GraphiteDark() : TerminalTheme.GraphiteLight();
-
-        Assert.Equal(tokens.Background, story.Background);
-        Assert.Equal(tokens.ElevatedSurface, story.Panel);
-        Assert.Equal(tokens.Border, story.Border);
-        Assert.Equal(tokens.Foreground, story.Text);
-        Assert.Equal(tokens.MutedForeground, story.Muted);
-        Assert.Equal(tokens.Accent, story.Accent);
-        Assert.Equal(tokens.Status.Pass.Ink, story.Success);
-        Assert.Equal(tokens.FontFamily, story.FontFamily);
-        Assert.Equal(tokens.MonospaceFontFamily, story.MonospaceFontFamily);
-        Assert.Equal(tokens.Background, terminal.PageBackground);
-        Assert.Equal(tokens.ElevatedSurface, terminal.Background);
-        Assert.Equal(tokens.Surface, terminal.HeaderBackground);
-        Assert.Equal(tokens.Border, terminal.Border);
-        Assert.Equal(tokens.Foreground, terminal.Text);
-        Assert.Equal(tokens.MutedForeground, terminal.Muted);
-        Assert.Equal(tokens.Accent, terminal.Accent);
-        Assert.Equal(tokens.Status.Pass.Ink, terminal.Success);
-        Assert.Equal(tokens.Status.Medium.Ink, terminal.Warning);
-        Assert.Equal(tokens.Status.Critical.Ink, terminal.Error);
-        Assert.Equal(tokens.Foreground, terminal.Cursor);
-        Assert.Equal(tokens.MonospaceFontFamily, terminal.FontFamily);
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void SharedThemeSelectsStoryAndTerminalSurfacesFontsAndSemanticInk(VisualThemeMode mode) {
+        var theme = VisualTheme.Graphite();
+        var colors = theme.Resolve(mode);
+        var story = VisualStory.Create("Shared appearance").WithTheme(theme, mode);
+        var terminal = TerminalStory.Create().WithTheme(theme, mode);
+        Assert.Same(theme, story.Theme);
+        Assert.Same(theme, terminal.Theme);
+        Assert.Equal(colors.Background, story.ResolvedStyle.Background);
+        Assert.Equal(colors.ElevatedSurface, story.ResolvedStyle.Panel);
+        Assert.Equal(colors.ElevatedSurface, terminal.ResolvedStyle.Background);
+        Assert.Equal(colors.Status.Pass.Ink, terminal.ResolvedStyle.Success);
+        Assert.Equal(colors.Status.Medium.Ink, terminal.ResolvedStyle.Warning);
+        Assert.Equal(colors.Status.Critical.Ink, terminal.ResolvedStyle.Error);
+        Assert.Equal(theme.Typography.Family, story.ResolvedStyle.FontFamily);
+        Assert.Equal(theme.Typography.MonospaceFamily, terminal.ResolvedStyle.FontFamily);
+        foreach (var kind in Enum.GetValues<StorySyntaxKind>())
+            Assert.True(ChartColorMath.ContrastRatio(story.ResolvedStyle.Syntax.Resolve(kind), colors.ElevatedSurface) >= 4.5);
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void GraphiteSyntaxAndTerminalTonesAreReadableOnTheirContentSurfaces(bool dark) {
-        var story = dark ? VisualStoryTheme.GraphiteDark() : VisualStoryTheme.GraphiteLight();
-        var terminal = dark ? TerminalTheme.GraphiteDark() : TerminalTheme.GraphiteLight();
-        foreach (var kind in Enum.GetValues<StorySyntaxKind>()) {
-            Assert.True(ChartColorMath.ContrastRatio(story.Syntax.Resolve(kind), story.Panel) >= 4.5,
-                $"{kind} must stay legible on the {(dark ? "dark" : "light")} source panel.");
-        }
-        var tones = new[] { terminal.Text, terminal.Muted, terminal.Accent, terminal.Success, terminal.Warning, terminal.Error, terminal.Cursor };
-        Assert.All(tones, color => Assert.True(ChartColorMath.ContrastRatio(color, terminal.Background) >= 4.5));
-        Assert.True(ChartColorMath.ContrastRatio(terminal.Text, terminal.HeaderBackground) >= 4.5);
-        Assert.True(ChartColorMath.ContrastRatio(story.Text, story.Background) >= 4.5);
-        Assert.True(ChartColorMath.ContrastRatio(story.Muted, story.Background) >= 4.5);
-    }
-
-    [Fact]
-    public void CustomTokensMapInkRatherThanMarkFillAndDoNotAliasSyntaxState() {
-        var tokens = VisualDesignTokens.GraphiteLight();
-        tokens.FontFamily = "Aptos, sans-serif";
-        tokens.MonospaceFontFamily = "Consolas, monospace";
-        tokens.Accent = ChartColor.FromHex("#563D7C");
-        tokens.Status.Pass = new VisualTokenColor(ChartColor.FromHex("#43D69A"), ChartColor.FromHex("#125F39"));
-        tokens.Status.Medium = new VisualTokenColor(ChartColor.FromHex("#FFDD66"), ChartColor.FromHex("#765200"));
-        tokens.Status.Critical = new VisualTokenColor(ChartColor.FromHex("#FF8888"), ChartColor.FromHex("#8D1616"));
-        tokens.Palette = new[] { ChartColor.FromHex("#FEFEFE") };
-        var story = new VisualStoryTheme();
-        var terminal = new TerminalTheme();
-
-        Assert.Same(story, tokens.ApplyTo(story));
-        Assert.Same(terminal, tokens.ApplyTo(terminal));
-        Assert.Equal(tokens.Status.Pass.Ink, story.Success);
-        Assert.Equal(tokens.Status.Pass.Ink, terminal.Success);
-        Assert.Equal(tokens.Status.Medium.Ink, terminal.Warning);
-        Assert.Equal(tokens.Status.Critical.Ink, terminal.Error);
-        Assert.Equal(tokens.Accent, story.Accent);
-        Assert.Equal(tokens.Accent, terminal.Accent);
-        Assert.Equal(tokens.FontFamily, story.FontFamily);
-        Assert.Equal(tokens.MonospaceFontFamily, story.MonospaceFontFamily);
-        Assert.Equal(tokens.MonospaceFontFamily, terminal.FontFamily);
-        Assert.Equal(tokens.Foreground, story.Syntax.Keyword);
-        Assert.Equal(tokens.Foreground, story.Syntax.Number);
-
-        var independent = tokens.ApplyTo(new VisualStoryTheme());
-        story.Syntax.Keyword = ChartColor.FromHex("#1B5A93");
-        Assert.Equal(tokens.Foreground, independent.Syntax.Keyword);
-        Assert.Equal("#FEFEFE", tokens.Palette[0].ToHex());
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void TerminalSvgUsesMappedSemanticTonesAndRespectsLaterCallerOverrides(bool dark) {
-        var theme = dark ? TerminalTheme.GraphiteDark() : TerminalTheme.GraphiteLight();
-        var errorOverride = ChartColor.FromHex("#A52A6D");
-        theme.Error = errorOverride;
-        var story = TerminalStory.Create().WithTheme(theme)
-            .Output("normal", TerminalTextTone.Default)
-            .Output("success", TerminalTextTone.Success)
-            .Output("warning", TerminalTextTone.Warning)
-            .Output("error", TerminalTextTone.Error);
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void TerminalSvgUsesSharedSemanticTonesAndRetainsAuthoredOverrides(VisualThemeMode mode) {
+        var error = ChartColor.FromHex("#A52A6D");
+        var theme = VisualTheme.Graphite().Configure(builder =>
+            builder.Colors(mode).Status.Critical = new VisualTokenColor(ChartColors.Red, error));
+        var story = TerminalStory.Create().WithTheme(theme, mode)
+            .Output("normal").Output("success", TerminalTextTone.Success)
+            .Output("warning", TerminalTextTone.Warning).Output("error", TerminalTextTone.Error);
         var output = XDocument.Parse(story.ToSvg()).Descendants()
             .Where(element => (string?)element.Attribute("data-cfx-role") == "terminal-output")
             .ToDictionary(element => element.Value, element => (string?)element.Attribute("fill"));
+        var colors = theme.Resolve(mode);
+        Assert.Equal(colors.Foreground.ToCss(), output["normal"]);
+        Assert.Equal(colors.Status.Pass.Ink.ToCss(), output["success"]);
+        Assert.Equal(colors.Status.Medium.Ink.ToCss(), output["warning"]);
+        Assert.Equal(error.ToCss(), output["error"]);
+        Assert.NotEmpty(story.ToPng());
+    }
 
-        Assert.Equal(theme.Text.ToCss(), output["normal"]);
-        Assert.Equal(theme.Success.ToCss(), output["success"]);
-        Assert.Equal(theme.Warning.ToCss(), output["warning"]);
-        Assert.Equal(errorOverride.ToCss(), output["error"]);
-        Assert.Equal(errorOverride, story.Theme.Error);
+    [Fact]
+    public void PreparedStoriesCaptureLocalSyntaxAndWindowOptionsWithoutMutatingSharedTheme() {
+        var shared = VisualTheme.Graphite();
+        var style = new VisualStoryStyleOptions { Syntax = new StorySyntaxPalette { Plain = ChartColors.Red } };
+        var story = VisualStory.Create("Detached style").WithTheme(shared, VisualThemeMode.Dark).WithStyle(style).WithSize(480, 320);
+        story.Scene("source", "Source", 1).Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready")));
+        story.Outcome("ready", "Ready", "source");
+        var prepared = story.Prepare();
+        var before = prepared.ToSvg();
+        style.Syntax.Plain = ChartColors.Blue;
+        style.WindowStyle = TerminalWindowStyle.MacOS;
+        Assert.Equal(before, prepared.ToSvg());
+        Assert.Same(shared, story.Theme);
+        Assert.Contains(ChartColors.Red.ToCss(), before);
+    }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void StoryHtmlKeepsExplicitModeWhenItsAuthoredBackgroundHasDifferentLuminance(VisualThemeMode mode) {
+        var theme = VisualTheme.Graphite().Configure(builder =>
+            builder.Colors(mode).Background = mode == VisualThemeMode.Light ? ChartColor.Black : ChartColor.White);
+        var story = VisualStory.Create("Explicit appearance").WithTheme(theme, mode).WithSize(480, 320);
+        story.Scene("source", "Source", 1).Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready")));
+        story.Outcome("ready", "Ready", "source");
+        Assert.Contains("color-scheme:" + (mode == VisualThemeMode.Light ? "light" : "dark"), story.ToHtmlPage());
     }
 }

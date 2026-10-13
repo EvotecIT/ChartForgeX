@@ -18,7 +18,7 @@ public sealed class HorizontalLineFormattingOverlayTests {
     public async Task BrowserExportsKeepValueUnitsAndStatisticsOnPhysicalX(int width, bool dark, bool step) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Model(step).WithSize(width - 32, 420).WithXAxis("Latency").WithYAxis("Run")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         chart.AddMeanLine("Mean", chart.Series[0].Points).AddStandardDeviationBand("Deviation", chart.Series[0].Points);
         chart.Options.LineOrientation = ChartOrientation.Horizontal;
         chart.Options.XAxis.WithValueFormat(ChartValueFormat.Number("0' ms'"));

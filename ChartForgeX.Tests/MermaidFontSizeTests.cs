@@ -171,7 +171,7 @@ public sealed class MermaidFontSizeTests {
     [Fact]
     public void ExplicitNativeContextOverridesAuthoredTypographyWithoutMutatingIt() {
         var topology = Assert.IsType<TopologyChart>(MermaidRenderer.Render(Source("flowchart LR\nA[API] --> B[Store]")).Artifact!.Model);
-        topology.Theme!.FontFamily = "Arial";
+        topology.WithTheme(topology.Theme.WithFontFamily("Arial"));
         Assert.Equal(18.5, topology.Theme.Typography.DataLabelSize);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 360)),
             VisualTheme.Graphite().WithTypography(new VisualTypography("Georgia", dataLabelSize: 14)), frame: new VisualFrame(showLegend: false));
@@ -207,8 +207,8 @@ public sealed class MermaidFontSizeTests {
     private static double FontSize(object model) => model switch {
         TopologyChart topology => topology.Theme!.Typography.DataLabelSize,
         SequenceArtifact sequence => sequence.Theme.Typography.DataLabelSize,
-        Chart chart => chart.Options.Theme.DataLabelFontSize,
-        IVisualBlock block => block.Options.Theme.DataLabelFontSize,
+        Chart chart => chart.Options.Theme.Typography.DataLabelSize,
+        IVisualBlock block => block.Options.Theme.Typography.DataLabelSize,
         _ => throw new InvalidOperationException("Unexpected native family.")
     };
 }

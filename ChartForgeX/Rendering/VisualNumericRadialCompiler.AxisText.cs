@@ -38,7 +38,7 @@ internal static partial class VisualNumericRadialCompiler {
         var secondary = scales.ContainsKey(ChartAxisSide.Secondary) && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0;
         if (!category && !primary && !secondary) return content;
         var style = chart.Options.AxisTitleStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
+            Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
         });
         var spacing = context.Theme.Spacing;
         var primaryHeight = primary ? builder.MeasureText(chart.YAxisTitle, style).Height : 0;

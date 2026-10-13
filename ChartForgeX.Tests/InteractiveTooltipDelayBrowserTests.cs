@@ -126,7 +126,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
     [BrowserFact]
     public async Task KeyboardOnlyZeroFactBypassesPointerDelay() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(ChartTheme.GraphiteDark()).AddGauge("Capacity", 0);
+        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).AddGauge("Capacity", 0);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => ConfigureDelay(options, "exact")), 340, 620);
         await session.Page.Locator("[data-cfx-role=gauge]").FocusAsync();
         Assert.Contains("Capacity", await TooltipTextAsync(session.Page), StringComparison.Ordinal);

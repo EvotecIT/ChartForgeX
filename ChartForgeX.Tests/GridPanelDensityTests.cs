@@ -18,7 +18,7 @@ public sealed class GridPanelDensityTests {
         chart.WithPngOutputScale(2 * panelScale);
         var expected = chart.ToRgbaImage();
         chart.WithPngOutputScale(1);
-        var theme = ChartTheme.ReportLight(); theme.Background = ChartColor.Transparent; theme.CardBackground = ChartColor.Transparent;
+        var theme = VisualTheme.Report(); theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.Transparent; }); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.Transparent; });
         var grid = VisualGrid.Create().WithPadding(0).WithGap(0).WithPanelSize(320 * panelScale, 220 * panelScale).WithPngOutputScale(2).Add(chart);
         grid.Theme = theme;
         var actual = new PngVisualGridRenderer().RenderImage(grid);

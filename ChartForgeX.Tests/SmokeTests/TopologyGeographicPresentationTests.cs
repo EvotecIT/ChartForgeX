@@ -139,7 +139,8 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"topology-edge-label-text\"", StringComparison.Ordinal), "Route-aware callout placement should account for rendered edge label boxes.");
         var routeHalos = System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-route-halo").ToArray();
         Assert(routeHalos.Length > 0, "Monitoring geographic route arcs should render a clean underlay for dashboard map layering.");
-        Assert(routeHalos.All(element => (string?)element.Attribute("fill") == "none" && element.RenderedColor("stroke").ToHex() == "#FFFFFF"), "Geographic route halos should explicitly disable path fill so open map arcs never render as filled wedges.");
+        var background = chart.Theme.Resolve(chart.ThemeMode).Background;
+        Assert(routeHalos.All(element => (string?)element.Attribute("fill") == "none" && element.RenderedColor("stroke").WithAlpha(255).Equals(background.WithAlpha(255))), "Geographic route halos should disable path fill and use the selected theme's background, keeping open map arcs clear.");
         Assert(svg.Contains("data-cfx-role=\"topology-geographic-callout-leader-halo\"", StringComparison.Ordinal), "Monitoring geographic callout leaders should render a clean underlay above map routes and silhouettes.");
         Assert(svg.Contains("data-cfx-role=\"topology-geographic-callout-leader\"", StringComparison.Ordinal), "Monitoring geographic callouts should use routed leaders instead of raw diagonal connector lines.");
         Assert(chart.ToPng(options).Length > 64, "Route-aware geographic callouts should render as PNG.");

@@ -11,7 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderScheduleTimeline(SvgMarkupWriter writer, ScheduleTimelineBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
@@ -81,7 +81,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
 
-    private static void RenderScheduleAvatars(SvgMarkupWriter writer, ScheduleTimelineEvent item, ChartColor color, ChartForgeX.Themes.ChartTheme theme, double x, double y) {
+    private static void RenderScheduleAvatars(SvgMarkupWriter writer, ScheduleTimelineEvent item, ChartColor color, ChartForgeX.Themes.ResolvedVisualTheme theme, double x, double y) {
         var count = Math.Min(3, item.Avatars.Count);
         for (var i = 0; i < count; i++) {
             var cx = x + i * 14;

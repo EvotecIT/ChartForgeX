@@ -88,11 +88,11 @@ internal static class VisualFrameLayout {
         // Preserve the theme's role hierarchy: a normal dashboard title is larger
         // than its body text. Global font enlargement scales both heading roles.
         var ordinaryScale = VisualTextFitting.MaximumOrdinaryFontSize / typography.DataLabelSize;
-        var nativeOrdinaryScale = VisualTextFitting.MaximumOrdinaryFontSize / ChartTheme.DefaultDataLabelFontSize;
+        var nativeOrdinaryScale = VisualTextFitting.MaximumOrdinaryFontSize / ResolvedVisualTheme.DefaultDataLabelFontSize;
         var oversizedTitle = titleStyle.EffectiveFontSize > Math.Max(typography.TitleSize * ordinaryScale,
-            ChartTheme.DefaultTitleFontSize * nativeOrdinaryScale);
+            ResolvedVisualTheme.DefaultTitleFontSize * nativeOrdinaryScale);
         var oversizedSubtitle = subtitleStyle.EffectiveFontSize > Math.Max(typography.SubtitleSize * ordinaryScale,
-            ChartTheme.DefaultSubtitleFontSize * nativeOrdinaryScale);
+            ResolvedVisualTheme.DefaultSubtitleFontSize * nativeOrdinaryScale);
         var oversizedHeadings = oversizedTitle || oversizedSubtitle;
         var coupledOversizedHeadings = (string.IsNullOrEmpty(context.Frame.Title) || oversizedTitle)
             && (string.IsNullOrEmpty(context.Frame.Subtitle) || oversizedSubtitle);
@@ -288,8 +288,8 @@ internal static class VisualFrameLayout {
             return new ChartRect(left, Math.Min(top, size.Height - pad.Bottom), Math.Max(0, right - left), 0);
         }
         var content = new ChartRect(left, top, right - left, bottom - top);
-        if (context.Frame.ShowSurface) builder.Rect(content, colors.Surface, colors.Border, radius: context.Theme.BarRadius, role: "content-surface",
-            paint: new VisualScenePaintBinding(paints?.Surface ?? SvgPaint.Of(colors.Surface, SvgColorRole.Surface), paints?.Border ?? SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
+        if (context.Frame.ShowSurface) builder.Rect(content, colors.Surface, colors.PlotBorder, radius: context.Theme.PlotRadius, role: "content-surface",
+            paint: new VisualScenePaintBinding(paints?.Surface ?? SvgPaint.Of(colors.Surface, SvgColorRole.Surface), paints?.PlotBorder ?? (colors.PlotBorder.Equals(colors.Border) ? paints?.Border : null) ?? SvgPaint.Of(colors.PlotBorder, SvgColorRole.Surface)));
         return content;
 
         void Header(string? text, TextStyle style, SvgPaint? paint) {

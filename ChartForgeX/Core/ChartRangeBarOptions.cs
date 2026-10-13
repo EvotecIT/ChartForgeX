@@ -28,4 +28,7 @@ public sealed class ChartRangeBarOptions {
             _orientation = value;
         }
     }
+
+    /// <summary>Copies the configured state for isolated chart configuration.</summary>
+    internal ChartRangeBarOptions Clone() => (ChartRangeBarOptions)MemberwiseClone();
 }

@@ -19,7 +19,7 @@ public sealed class GraphiteFrameTypographyTests {
     [Theory]
     [MemberData(nameof(Families))]
     public void EveryFamilyUsesSharedFrameTypography(ChartSeriesKind kind, ChartGaugeForm form, bool dark) {
-        var chart = Create(kind).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Create(kind).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(640, 360).WithTitle("Shared title").WithSubtitle("Shared subtitle");
         chart.Options.Gauge.Form = form;
         var svg = XDocument.Parse(chart.ToSvg());

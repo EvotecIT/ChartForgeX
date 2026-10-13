@@ -32,8 +32,7 @@ public sealed class RadialAngularReversalBrowserTests {
         var chart = kind == ChartSeriesKind.RadialColumn ? V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal())
             : V2GalleryModels.Create(kind, "angular-reversal");
         chart.WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend()
-            .WithTitle("Reversed angular observations").WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
-        for (var index = 0; index < chart.Series.Count; index++) chart.Series[index].WithInteractionKey("angular-" + index);
+            .WithTitle("Reversed angular observations").WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var series = kind == ChartSeriesKind.PolarArea ? 0 : kind == ChartSeriesKind.RadialColumn ? 2 : 1;
         var point = kind is ChartSeriesKind.PolarArea or ChartSeriesKind.RadialColumn ? 0 : 1;
         var expectedValue = chart.Series[series].Points[point].Y.ToString("R", CultureInfo.InvariantCulture);
@@ -54,7 +53,7 @@ public sealed class RadialAngularReversalBrowserTests {
         Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node => node.hidden"));
         await page.Mouse.ClickAsync((float)painted[0], (float)painted[1]);
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
-        Assert.Equal("angular-" + series + ":" + point, await target.GetAttributeAsync("data-cfx-target-id"));
+        Assert.Equal(chart.Series[series].Id.Value + ":" + point, await target.GetAttributeAsync("data-cfx-target-id"));
         Assert.Equal(point.ToString(CultureInfo.InvariantCulture), await page.EvaluateAsync<string>("() => window.angularSelections.at(-1).target.sourcePoint"));
         Assert.Equal(expectedValue, await page.EvaluateAsync<string>("() => window.angularSelections.at(-1).target.value"));
         await CaptureAsync(page, kind, compact, dark, "pointer-selected");
@@ -63,7 +62,7 @@ public sealed class RadialAngularReversalBrowserTests {
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         await page.Keyboard.PressAsync("ArrowRight");
-        Assert.NotEqual("angular-" + series + ":" + point, await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
+        Assert.NotEqual(chart.Series[series].Id.Value + ":" + point, await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
         await page.Locator("[data-cfx-reset]").ClickAsync(); await MoveAwayAsync(page);
         Assert.Equal(0, await page.Locator("[data-cfx-point][aria-selected='true']").CountAsync());
         Assert.Equal(string.Empty, await TooltipTextAsync(page));

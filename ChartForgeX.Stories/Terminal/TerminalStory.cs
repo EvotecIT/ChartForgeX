@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -128,7 +129,7 @@ public sealed partial class TerminalStory {
             TerminalDialect.PowerShell,
             @"C:\",
             string.Empty,
-            TerminalTheme.Dark(),
+            TerminalThemes.Default(),
             TerminalTabIcon.PowerShell);
         _tabs.Add(initialTab);
         _tabsById.Add(initialTab.Id, initialTab);
@@ -144,7 +145,12 @@ public sealed partial class TerminalStory {
     public string ActiveTabId => _activeTabId;
 
     /// <summary>Gets the terminal theme.</summary>
-    public TerminalTheme Theme => InitialTab.Theme;
+    public VisualTheme Theme => InitialTab.Theme;
+    /// <summary>Gets the explicit initial-tab appearance.</summary>
+    public VisualThemeMode ThemeMode => InitialTab.ThemeMode;
+    /// <summary>Gets the initial-tab cursor and title-bar styling.</summary>
+    public TerminalStyleOptions Style => InitialTab.Style;
+    internal ResolvedTerminalStyle ResolvedStyle => InitialTab.ResolvedStyle;
 
     /// <summary>Gets the visible terminal window chrome.</summary>
     public TerminalWindowStyle WindowStyle { get; private set; } = TerminalWindowStyle.MacOS;
@@ -199,7 +205,7 @@ public sealed partial class TerminalStory {
     }
 
     /// <summary>Sets the prompt dialect and optional custom prompt.</summary>
-    public TerminalStory WithDialect(TerminalDialect dialect, string? customPrompt = null) {
+    public TerminalStory WithDialect(TerminalDialect dialect, string? customPrompt = null, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureInitialConfiguration();
         ValidateEnum(dialect, nameof(dialect));
         var normalizedPrompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt), allowEmpty: false);
@@ -217,9 +223,10 @@ public sealed partial class TerminalStory {
     }
 
     /// <summary>Sets the terminal theme.</summary>
-    public TerminalStory WithTheme(TerminalTheme theme) {
+    public TerminalStory WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
         EnsureInitialConfiguration();
-        InitialTab.Theme = (theme ?? throw new ArgumentNullException(nameof(theme))).Copy();
+        InitialTab.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        if (mode.HasValue) InitialTab.ThemeMode = mode.Value;
         return this;
     }
 
@@ -360,11 +367,11 @@ public sealed partial class TerminalStory {
         string title,
         TerminalDialect dialect,
         string workingDirectory,
-        TerminalTheme theme,
+        VisualTheme theme,
         TerminalTabIcon icon = TerminalTabIcon.Terminal,
-        string? customPrompt = null) {
+        string? customPrompt = null, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureInitialConfiguration();
-        var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt);
+        var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt, themeMode, style);
         _tabs[0] = tab;
         _tabsById.Clear();
         _tabsById.Add(tab.Id, tab);
@@ -378,11 +385,11 @@ public sealed partial class TerminalStory {
         string title,
         TerminalDialect dialect,
         string workingDirectory,
-        TerminalTheme theme,
+        VisualTheme theme,
         TerminalTabIcon icon = TerminalTabIcon.Terminal,
-        string? customPrompt = null) {
+        string? customPrompt = null, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureStepCapacity();
-        var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt);
+        var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt, themeMode, style);
         if (_tabsById.ContainsKey(tab.Id)) throw new ArgumentException("Terminal tab identifiers must be unique.", nameof(id));
         if (_tabs.Count >= 8) throw new InvalidOperationException("Terminal stories support at most eight tabs.");
         _tabs.Add(tab);
@@ -396,13 +403,13 @@ public sealed partial class TerminalStory {
         string title,
         TerminalDialect dialect,
         string workingDirectory,
-        TerminalTheme theme,
+        VisualTheme theme,
         TerminalTabIcon icon = TerminalTabIcon.Terminal,
         string? customPrompt = null,
-        double transitionSeconds = 0.2) {
+        double transitionSeconds = 0.2, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureStepCapacity();
         var transitionDuration = TransitionDuration(transitionSeconds);
-        var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt);
+        var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt, themeMode, style);
         if (_tabsById.ContainsKey(tab.Id)) throw new ArgumentException("Terminal tab identifiers must be unique.", nameof(id));
         if (_tabs.Count >= 8) throw new InvalidOperationException("Terminal stories support at most eight tabs.");
         _tabs.Add(tab);
@@ -412,7 +419,7 @@ public sealed partial class TerminalStory {
     }
 
     /// <summary>Activates a previously declared terminal tab without clearing its buffer.</summary>
-    public TerminalStory SelectTab(string id, double transitionSeconds = 0.2) {
+    public TerminalStory SelectTab(string id, double transitionSeconds = 0.2, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureStepCapacity();
         var transitionDuration = TransitionDuration(transitionSeconds);
         var normalizedId = TabId(id, nameof(id));
@@ -439,7 +446,7 @@ public sealed partial class TerminalStory {
         if (_steps.Count == 0) throw new InvalidOperationException("Terminal stories require at least one command, output line, table, or pause.");
         if (_steps.Count > 120) throw new InvalidOperationException("Terminal stories support at most 120 steps.");
         foreach (var tab in _tabs) {
-            if (string.IsNullOrWhiteSpace(tab.Theme.FontFamily)) throw new InvalidOperationException("Terminal tab themes require a font family.");
+            if (string.IsNullOrWhiteSpace(tab.Theme.Typography.MonospaceFamily)) throw new InvalidOperationException("Terminal tab themes require a font family.");
             if (tab.Dialect == TerminalDialect.Custom && tab.CustomPrompt.Length == 0) throw new InvalidOperationException("Custom terminal dialects require a prompt.");
         }
         if (WindowStyle == TerminalWindowStyle.WindowsTerminal && _tabs.Count * 72 > Width - 230) {
@@ -474,9 +481,9 @@ public sealed partial class TerminalStory {
         string title,
         TerminalDialect dialect,
         string workingDirectory,
-        TerminalTheme theme,
+        VisualTheme theme,
         TerminalTabIcon icon,
-        string? customPrompt) {
+        string? customPrompt, VisualThemeMode themeMode, TerminalStyleOptions? style) {
         var normalizedId = TabId(id, nameof(id));
         ValidateEnum(dialect, nameof(dialect));
         ValidateEnum(icon, nameof(icon));
@@ -488,8 +495,8 @@ public sealed partial class TerminalStory {
             dialect,
             OneLine(workingDirectory, nameof(workingDirectory), allowEmpty: false),
             normalizedPrompt,
-            (theme ?? throw new ArgumentNullException(nameof(theme))).Copy(),
-            icon);
+            theme ?? throw new ArgumentNullException(nameof(theme)),
+            icon, themeMode, style);
     }
 
     private static string TabId(string value, string name) {

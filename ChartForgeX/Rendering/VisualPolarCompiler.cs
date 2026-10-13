@@ -14,7 +14,7 @@ internal static partial class VisualPolarCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.PolarArea) {
             var series = chart.Series[0];
-            return !series.ShowInLegend ? Array.Empty<VisualLegendEntry>() : series.Points.Select((point, index) =>
+            return !series.ShowInLegend ? Array.Empty<VisualLegendEntry>() : series.RenderPoints.Select((point, index) =>
                 new VisualLegendEntry(Category(chart, point.X), ChartSeriesColours.Point(series, index, index, colors), Id(0, index),
                     series.Kind, Pattern(series, index), series.StateRole, series.InteractionIdentityKey)).ToArray();
         }
@@ -32,16 +32,16 @@ internal static partial class VisualPolarCompiler {
             throw new InvalidOperationException("Prepared polar charts require one family; polar area requires one series.");
         if (kind == ChartSeriesKind.PolarArea && chart.Options.YAxis.Reversed)
             throw new NotSupportedException("Polar-area radius reversal is not supported.");
-        if (chart.Series.SelectMany(series => series.Points).Any(point => !Finite(point.X) || !Finite(point.Y) || kind == ChartSeriesKind.PolarArea && point.Y < 0))
+        if (chart.Series.SelectMany(series => series.RenderPoints).Any(point => !Finite(point.X) || !Finite(point.Y) || kind == ChartSeriesKind.PolarArea && point.Y < 0))
             throw new InvalidOperationException("Polar coordinates must be finite; area values must be non-negative.");
-        if (!chart.Series.Any(series => series.Points.Count > 0)) { builder.AddDiagnostic(new VisualDiagnostic("polar.no-data", "The polar chart has no observations.")); return; }
+        if (!chart.Series.Any(series => series.RenderPoints.Count > 0)) { builder.AddDiagnostic(new VisualDiagnostic("polar.no-data", "The polar chart has no observations.")); return; }
         var colors = context.Theme.Resolve(context.ThemeMode);
         if (kind == ChartSeriesKind.PolarArea) { Area(chart, context, builder, plot, colors); return; }
         var radar = kind == ChartSeriesKind.Radar;
-        var categories = radar ? chart.Series.SelectMany(series => series.Points).Select(point => point.X).Distinct().OrderBy(value => value).ToArray()
+        var categories = radar ? chart.Series.SelectMany(series => series.RenderPoints).Select(point => point.X).Distinct().OrderBy(value => value).ToArray()
             : Enumerable.Range(0, Math.Max(4, Math.Min(12, chart.Options.XAxis.TickCount))).Select(index => Math.PI * 2 * index / Math.Max(4, Math.Min(12, chart.Options.XAxis.TickCount))).ToArray();
         if (radar && categories.Length < 3) { builder.AddDiagnostic(new VisualDiagnostic("radar.insufficient-categories", "Radar polygons need at least three distinct categories.")); return; }
-        var scales = RadialValueScale.ForAxes(chart, index => chart.Series[index].Points.Select(point => point.Y), radar ? "Radar" : "Polar");
+        var scales = RadialValueScale.ForAxes(chart, index => chart.Series[index].RenderPoints.Select(point => point.Y), radar ? "Radar" : "Polar");
         var categoryCache = new Dictionary<double, string>();
         string CategoryText(double value) {
             if (!categoryCache.TryGetValue(value, out var text)) categoryCache.Add(value, text = Category(chart, value));
@@ -56,14 +56,14 @@ internal static partial class VisualPolarCompiler {
             Grid(chart, context, builder, plot, geometry, categories, axes, scales, radar, labels);
             foreach (var seriesIndex in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[seriesIndex];
-                if (series.Points.Count == 0) continue;
+                if (series.RenderPoints.Count == 0) continue;
                 var scale = scales[series.YAxis];
                 var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
-                var raw = radar ? categories.Select(value => Find(series, value)).ToArray() : Enumerable.Range(0, series.Points.Count).ToArray();
+                var raw = radar ? categories.Select(value => Find(series, value)).ToArray() : Enumerable.Range(0, series.RenderPoints.Count).ToArray();
                 var mapped = new ChartPoint[raw.Length];
                 for (var index = 0; index < raw.Length; index++) {
-                    var value = raw[index] >= 0 ? series.Points[raw[index]].Y : 0;
-                    var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, series.Points[raw[index]].X);
+                    var value = raw[index] >= 0 ? series.RenderPoints[raw[index]].Y : 0;
+                    var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, series.RenderPoints[raw[index]].X);
                     mapped[index] = On(geometry, angle, geometry.Radius * scale.Normalize(value));
                 }
                 var path = radar ? ChartPathBuilder.ClosedCurve(mapped, series.Radar.CurveTension ?? 0)
@@ -75,9 +75,9 @@ internal static partial class VisualPolarCompiler {
                 })) {
                     VisualPolarSeriesScene.Draw(chart, context, builder, series, path, color, radar);
                     for (var index = 0; index < mapped.Length; index++) {
-                        var source = raw[index]; var value = source >= 0 ? series.Points[source].Y : 0;
-                        var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, series.Points[source].X);
-                        var category = radar ? categories[index] : series.Points[source].X;
+                        var source = raw[index]; var value = source >= 0 ? series.RenderPoints[source].Y : 0;
+                        var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, series.RenderPoints[source].X);
+                        var category = radar ? categories[index] : series.RenderPoints[source].X;
                         var formatted = source >= 0 && source < series.PointLabels.Count && series.PointLabels[source] != null
                             ? series.PointLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
                         var pointId = source >= 0 ? Id(seriesIndex, source) : Id(seriesIndex) + "-missing-category-" + index;
@@ -86,7 +86,7 @@ internal static partial class VisualPolarCompiler {
                         builder.AddRegion(new VisualSemanticRegion(pointId, radar ? "radar-point" : "polar-point", bounds, CategoryText(category) + ": " + formatted));
                         var pointMetadata = new Dictionary<string, string> {
                             ["data-cfx-series"] = N(seriesIndex),
-                            ["data-cfx-point"] = N(source), ["data-cfx-category"] = N(category), ["data-cfx-angle"] = N(radar ? angle : series.Points[source].X),
+                            ["data-cfx-point"] = N(source), ["data-cfx-category"] = N(category), ["data-cfx-angle"] = N(radar ? angle : series.RenderPoints[source].X),
                             ["data-cfx-value"] = N(value), ["data-cfx-full-label"] = formatted, ["data-cfx-missing"] = source < 0 ? "true" : "false"
                         };
                         VisualPolarSeriesScene.DescribePoint(pointMetadata, series, source, CategoryText(category), formatted);
@@ -115,7 +115,7 @@ internal static partial class VisualPolarCompiler {
     private static string Category(Chart chart, double value) => ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value)
         ?? ChartAxisValueFormatter.Format(chart.Options.XAxis, value);
     private static int Find(ChartSeries series, double category) {
-        for (var index = 0; index < series.Points.Count; index++) if (ChartMath.SameCoordinate(series.Points[index].X, category)) return index;
+        for (var index = 0; index < series.RenderPoints.Count; index++) if (ChartMath.SameCoordinate(series.RenderPoints[index].X, category)) return index;
         return -1;
     }
     private static ChartFillPattern Pattern(ChartSeries series, int index) => index >= 0 && index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern;

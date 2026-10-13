@@ -10,7 +10,7 @@ internal static class ChartWaterfallSteps {
     internal static IReadOnlyList<ChartWaterfallStep> Create(ChartSeries series) {
         series.ValidateWaterfall();
         var typed = series.WaterfallItems.Count > 0;
-        var items = typed ? series.WaterfallItems : series.Points.Select(point => ChartWaterfallItem.Delta(point.X, point.Y)).ToArray();
+        var items = typed ? series.WaterfallItems : series.RenderPoints.Select(point => ChartWaterfallItem.Delta(point.X, point.Y)).ToArray();
         var steps = new List<ChartWaterfallStep>(items.Count + (typed ? 0 : 1));
         var cumulative = 0d; var checkpointBalance = 0d; var subtotal = 0d; var sourceIndex = 0; var checkpointSource = 0;
         for (var index = 0; index < items.Count; index++) {
@@ -34,7 +34,7 @@ internal static class ChartWaterfallSteps {
             }
         }
         if (typed || steps.Count == 0) return steps;
-        var coordinates = series.Points.Select(point => point.X).Distinct().OrderBy(value => value).ToArray();
+        var coordinates = series.RenderPoints.Select(point => point.X).Distinct().OrderBy(value => value).ToArray();
         var spacing = double.PositiveInfinity;
         for (var index = 1; index < coordinates.Length; index++) spacing = Math.Min(spacing, coordinates[index] - coordinates[index - 1]);
         if (double.IsInfinity(spacing)) spacing = 1;

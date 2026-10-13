@@ -23,7 +23,7 @@ internal static partial class TopologyRenderPrimitives {
 
     public static bool UseNeutralGroupSurface(TopologyRenderOptions options) => options.GroupSurfaceStyle == TopologyGroupSurfaceStyle.Neutral;
 
-    public static string GroupFill(string accent, TopologyTheme theme, TopologyRenderOptions options) =>
+    public static string GroupFill(string accent, TopologyPaint theme, TopologyRenderOptions options) =>
         UseNeutralGroupSurface(options) ? theme.Card : StatusFill(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.055 : 0.10);
 
     public static double EdgeStrokeWidth(TopologyEdge edge, bool selected, TopologyRenderOptions options) {
@@ -47,7 +47,7 @@ internal static partial class TopologyRenderPrimitives {
     public static ChartLineVisualStyle EdgeVisualStyle(TopologyEdge edge, bool selected, TopologyRenderOptions options) =>
         options.EdgeVisualStyle ?? ChartRouteVisualStyles.TopologyEdge(IsMonitoringDashboardStyle(options), edge.IsMuted, selected);
 
-    public static string EdgeColor(TopologyEdge edge, TopologyTheme theme, TopologyRenderOptions options) {
+    public static string EdgeColor(TopologyEdge edge, TopologyPaint theme, TopologyRenderOptions options) {
         if (edge.IsMuted) return IsMonitoringDashboardStyle(options) ? "#CBD5E1" : theme.Border;
         if (!string.IsNullOrWhiteSpace(edge.Color)) return edge.Color!.Trim();
         return theme.StatusColor(edge.Status);
@@ -173,7 +173,7 @@ internal static partial class TopologyRenderPrimitives {
         node.MaximumLabelCharacters is > 0 ? node.MaximumLabelCharacters.Value : NodeTitleMaxLength(displayMode);
 
     public static double EstimateTextWidth(string value, double fontSize, bool bold, TextMeasurementContext? measurement = null) {
-        return (measurement ?? new TextMeasurementContext(TopologyTheme.Light().FontFamily)).Measure(value, fontSize, bold);
+        return (measurement ?? new TextMeasurementContext(TopologyPaint.Default.FontFamily)).Measure(value, fontSize, bold);
     }
 
     public static string TrimToEstimatedWidth(string value, double maxWidth, double fontSize, bool bold, TextMeasurementContext? measurement = null) {

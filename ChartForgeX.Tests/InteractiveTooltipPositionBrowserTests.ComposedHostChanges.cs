@@ -136,10 +136,9 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     [InlineData(false)]
     public async Task NarrowOuterClipPreservesVisibleWideIntervalAndRevealsOffscreenInterval(bool partial) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(650, 338).WithHeader(false).WithLegend(false).WithTheme(ChartTheme.GraphiteDark())
+        var chart = Chart.Create().WithSize(650, 338).WithHeader(false).WithLegend(false).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 3).ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal)
-            .AddRangeBar("Window", new[] { new ChartInterval(1, 2, 5.5), new ChartInterval(2, 7, 9) });
-        chart.Series[0].WithInteractionKey("css-interval");
+            .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("css-interval"), "Window", new[] { new ChartInterval(1, 2, 5.5), new ChartInterval(2, 7, 9) }));
         var html = chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.Features = ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection;

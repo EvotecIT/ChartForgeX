@@ -20,21 +20,19 @@ public static partial class V2GalleryModels {
         }
         if (kind == ChartSeriesKind.Heatmap) {
             var matrix = Chart.Create().WithXLabels("A", "B", "C", "D", "E", "F")
-                .AddHeatmapRow("Primary", PositionedColorValues.Take(6))
-                .AddHeatmapRow("Secondary", PositionedColorValues.Skip(6))
+                .AddHeatmapRow("Primary", PositionedColorValues.Take(6), id: new ChartSeriesId("primary-measurements"))
+                .AddHeatmapRow("Secondary", PositionedColorValues.Skip(6), id: new ChartSeriesId("secondary-measurements"))
                 .WithHeatmapColorScale(scale).WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
                 .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto).WithDataLabels();
-            matrix.Series[0].WithInteractionKey("primary-measurements");
-            matrix.Series[1].WithInteractionKey("secondary-measurements");
             return matrix;
         }
         var minutes = new[] { 24d, 36, 45, 20, 32, 50, 28, 41, 18, 35, 22, 48 };
         var chart = Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
             .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false)
             .ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; })
-            .AddScatter("Recorded batches", PositionedColorValues.Select((value, index) =>
-                new ChartPoint((index + 1) * 8, minutes[index]).WithColorValue(value)));
-        chart.Series[0].WithColorScale(scale).WithInteractionKey("recorded-batches")
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", PositionedColorValues.Select((value, index) =>
+                new ChartPoint((index + 1) * 8, minutes[index]).WithColorValue(value))));
+        chart.Series[0].WithColorScale(scale)
             .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
         return chart;
     }

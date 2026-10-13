@@ -7,7 +7,7 @@ internal static partial class ExpressiveExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
         StyledMultilingualTextExample.Write(output);
         SaveGrid(CreateThemeShowcaseGrid(), output, "theme-font-showcase-grid", pngOutputScale);
-        SaveGrid(CreateBrandKitShowcaseGrid(), output, "brand-kit-showcase-grid", pngOutputScale);
+        SaveGrid(CreateThemePresetShowcaseGrid(), output, "brand-kit-showcase-grid", pngOutputScale);
         SaveGrid(CreatePaletteSwatchGrid(), output, "palette-swatch-showcase-grid", pngOutputScale);
         SaveGrid(CreatePictorialSymbolShowcaseGrid(), output, "pictorial-symbol-showcase-grid", pngOutputScale);
         SaveGrid(CreatePictorialIsotypeShowcaseGrid(), output, "pictorial-isotype-showcase-grid", pngOutputScale);
@@ -37,91 +37,13 @@ internal static partial class ExpressiveExamples {
         SaveChart(CreateSupportThemesWordCloud(), output, "support-themes-word-cloud-editorial", pngOutputScale);
     }
 
-    private static ChartGrid CreateBrandKitShowcaseGrid() {
-        var executive = CreateBrandKitPreview(
-            "Executive",
-            "Restrained report palette for board-ready snapshots",
-            ChartBrandKit.Executive(),
-            new[] { "Q1", "Q2", "Q3", "Q4" },
-            Points(52, 61, 67, 74));
-
-        var product = CreateBrandKitPreview(
-            "Product",
-            "Vivid geometric styling for launch and adoption views",
-            ChartBrandKit.Product(),
-            new[] { "Beta", "GA", "Scale", "Retain" },
-            Points(38, 58, 76, 88));
-
-        var editorial = CreateBrandKitPreview(
-            "Editorial",
-            "Publication-style color and serif typography",
-            ChartBrandKit.Editorial(),
-            new[] { "North", "South", "East", "West" },
-            Points(44, 53, 62, 68));
-
-        var accessible = CreateBrandKitPreview(
-            "Accessible",
-            "Colorblind-friendly high-contrast comparisons",
-            ChartBrandKit.Accessible(),
-            new[] { "A", "B", "C", "D" },
-            Points(31, 46, 59, 72));
-
-        return ChartGrid.Create()
-            .WithTitle("Brand Kit Showcase")
-            .WithSubtitle("Reusable brand kits apply palette, font, surface, guide, and semantic tokens")
-            .WithBrandKit(ChartBrandKit.Executive())
-            .WithColumns(2)
-            .WithPadding(28)
-            .WithPanelSize(420, 260)
-            .Add(executive)
-            .Add(product)
-            .Add(editorial)
-            .Add(accessible);
-    }
-
-    private static Chart CreateBrandKitPreview(string title, string subtitle, ChartBrandKit brandKit, string[] labels, IEnumerable<ChartPoint> points) => Chart.Create()
-        .WithTitle(title)
-        .WithSubtitle(subtitle)
-        .WithXAxis("Stage")
-        .WithYAxis("Score")
-        .WithBrandKit(brandKit)
-        .WithSize(420, 260)
-        .WithXLabels(labels)
-        .AddSmoothArea("Momentum", points);
-
-    private static ChartGrid CreatePaletteSwatchGrid() {
-        return ChartGrid.Create()
-            .WithTitle("Palette Swatch Showcase")
-            .WithSubtitle("Reusable palettes rendered as equal-weight color wheels for quick visual selection")
-            .WithBrandKit(ChartBrandKit.Executive())
-            .WithColumns(2)
-            .WithPadding(28)
-            .WithPanelSize(420, 260)
-            .Add(CreatePalettePreview("Report", "Balanced default reporting colors", ChartPalettes.Report, ChartTheme.ReportLight()))
-            .Add(CreatePalettePreview("Colorblind", "Accessible categorical comparison", ChartPalettes.Colorblind, ChartTheme.Colorblind()))
-            .Add(CreatePalettePreview("Vivid", "High-energy launch and product views", ChartPalettes.Vivid, ChartTheme.Aurora()))
-            .Add(CreatePalettePreview("Pastel", "Soft playful scorecards", ChartPalettes.Pastel, ChartTheme.Candy()))
-            .Add(CreatePalettePreview("Editorial", "Refined publication tones", ChartPalettes.Editorial, ChartTheme.Editorial()))
-            .Add(CreatePalettePreview("Terminal", "Technical command-center contrast", ChartPalettes.Terminal, ChartTheme.Terminal()));
-    }
-
-    private static Chart CreatePalettePreview(string title, string subtitle, ChartColor[] palette, ChartTheme theme) => Chart.Create()
-        .WithTitle(title)
-        .WithSubtitle(subtitle)
-        .WithTheme(theme)
-        .WithPalette(palette)
-        .WithLegend(false)
-        .WithSize(420, 260)
-        .WithXLabels("1", "2", "3", "4", "5", "6", "7", "8")
-        .AddPolarArea("Palette", Points(1, 1, 1, 1, 1, 1, 1, 1));
-
     private static Chart CreateDashboardSegmentedColumnPreview() => Chart.Create()
         .WithHeader(false)
         .WithTransparentBackground(false)
         .WithDashboardBarPanelStyle()
         .WithLegend(false)
         .WithPadding(42, 26, 24, 54)
-        .WithTheme(ChartTheme.DashboardLight())
+        .WithTheme(VisualTheme.Dashboard())
         .WithSize(920, 460)
         .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
         .WithStackedBars()
@@ -135,7 +57,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateDashboardSegmentedHorizontalPreview() => Chart.Create()
         .WithHeader(false)
         .WithTransparentBackground(false)
-        .WithTheme(ChartTheme.DashboardLight())
+        .WithTheme(VisualTheme.Dashboard())
         .WithDashboardBarPanelStyle()
         .WithLegend(false)
         .WithPadding(160, 34, 26, 34)
@@ -152,11 +74,11 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateDashboardPremiumTrendPreview() => Chart.Create()
         .WithHeader(false)
         .WithTransparentBackground(false)
-        .WithTheme(ChartTheme.SaasDashboardLight()
+        .WithTheme(VisualTheme.SaasDashboard()
             .WithPalette(new[] { ChartColor.FromHex("#2563EB"), ChartColor.FromHex("#14B8A6") })
-            .WithGuideColors(ChartColor.FromHex("#D7DEE8"), ChartColor.FromHex("#94A3B8"))
-            .WithMarkerRadius(3.2)
-            .WithTextColors(ChartColor.FromHex("#64748B"), ChartColor.FromHex("#8792A5")))
+            .Configure(builder => { builder.Light.Grid = builder.Dark.Grid = ChartColor.FromHex("#D7DEE8"); builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#94A3B8"); })
+            .Configure(builder => { builder.MarkerRadius = 3.2; })
+            .Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#64748B"); builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#8792A5"); }))
         .WithDashboardPanelStyle()
         .WithLegend(false)
         .WithPadding(36, 30, 26, 58)
@@ -184,7 +106,7 @@ internal static partial class ExpressiveExamples {
         var grid = ChartGrid.Create()
             .WithTitle("Pictorial Symbol Showcase")
             .WithSubtitle("Built-in pictorial symbols for scorecards, ratings, audience mixes, and friendly summaries")
-            .WithTheme(ChartTheme.Candy().WithCornerRadius(8, 4))
+            .WithTheme(VisualTheme.Candy().Configure(builder => { builder.CardRadius = 8; builder.PlotRadius = builder.BarRadius = 4; }))
             .WithColumns(3)
             .WithPadding(24)
             .WithPanelSize(360, 190);
@@ -198,7 +120,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreatePictorialShapePreview(ChartPictorialShape shape, ChartColor color) => Chart.Create()
         .WithTitle(shape.ToString())
         .WithSubtitle("Built-in symbol")
-        .WithTheme(ChartTheme.Candy().WithCornerRadius(8, 4))
+        .WithTheme(VisualTheme.Candy().Configure(builder => { builder.CardRadius = 8; builder.PlotRadius = builder.BarRadius = 4; }))
         .WithSize(360, 190)
         .WithLegend(false).WithPlotBackground(false)
         .WithPadding(44, 30, 24, 34)
@@ -211,7 +133,7 @@ internal static partial class ExpressiveExamples {
         return ChartGrid.Create()
             .WithTitle("Pictorial Isotype Showcase")
             .WithSubtitle("One-icon-per-unit rows and population-scale icon rows inspired by classic Isotype charts")
-            .WithTheme(ChartTheme.Minimal())
+            .WithTheme(VisualTheme.Minimal())
             .WithColumns(2)
             .WithPadding(28)
             .WithPanelSize(430, 280)
@@ -222,7 +144,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateSimplePeopleIsotype() => Chart.Create()
         .WithTitle("Audience Groups")
         .WithSubtitle("Each person icon represents one respondent")
-        .WithTheme(ChartTheme.Minimal())
+        .WithTheme(VisualTheme.Minimal())
         .WithSize(430, 280)
         .WithPictorialColumns(25)
         .WithPictorialValuePerSymbol(1)
@@ -236,7 +158,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreatePopulationPeopleIsotype() => Chart.Create()
         .WithTitle("Population of Barrie")
         .WithSubtitle("Each person icon represents 5,000 residents")
-        .WithTheme(ChartTheme.Editorial())
+        .WithTheme(VisualTheme.Editorial())
         .WithSize(430, 280)
         .WithValueFormatter(value => value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture))
         .WithPictorialColumns(26)
@@ -251,7 +173,7 @@ internal static partial class ExpressiveExamples {
         }, ChartPictorialShape.Person);
 
     private static ChartGrid CreatePeopleInfographicShowcaseGrid() {
-        var brand = ChartBrandKit.PeopleInfographic();
+        var brand = VisualTheme.PeopleInfographic();
         const int panelWidth = 420;
         const int panelHeight = 320;
         const int gap = 18;
@@ -261,7 +183,7 @@ internal static partial class ExpressiveExamples {
             .WithSubtitle("Demographic panels using pictorial people, donut split, rings, horizontal bars, and trend lines")
             .ConfigureTitleStyle(style => style.WithColor("#0F172A").WithWeight("900"))
             .ConfigureSubtitleStyle(style => style.WithColor("#475569"))
-            .WithBrandKit(brand)
+            .WithTheme(brand)
             .WithColumns(3)
             .WithPadding(28)
             .WithGap(gap)
@@ -280,7 +202,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateDemographicDonut() => Chart.Create()
         .WithTitle("Demographic Split")
         .WithSubtitle("60.5% male / 39.5% female")
-        .WithTheme(ChartTheme.PeopleInfographic())
+        .WithTheme(VisualTheme.PeopleInfographic())
         .WithLegend(false)
         .WithDonutCenterText("60.5%", "Male")
         .WithDonutInnerRadiusRatio(0.68)
@@ -294,7 +216,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateGenderPictorialSplit(int width, int height) => Chart.Create()
         .WithTitle("Audience Icons")
         .WithSubtitle("Each icon represents 5%")
-        .WithTheme(ChartTheme.PeopleInfographic())
+        .WithTheme(VisualTheme.PeopleInfographic())
         .WithSize(width, height)
         .WithLegend(false)
         .WithPictorialColumns(10)
@@ -313,7 +235,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreatePopulationRows(int width, int height) => Chart.Create()
         .WithTitle("People Rows")
         .WithSubtitle("One icon equals one respondent")
-        .WithTheme(ChartTheme.PeopleInfographic())
+        .WithTheme(VisualTheme.PeopleInfographic())
         .WithSize(width, height)
         .WithLegend(false)
         .WithPictorialColumns(20)
@@ -329,7 +251,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateAgeHorizontalBars(int width, int height) => Chart.Create()
         .WithTitle("Age Bands")
         .WithSubtitle("Segment response by cohort")
-        .WithTheme(ChartTheme.PeopleInfographic())
+        .WithTheme(VisualTheme.PeopleInfographic())
         .WithSize(width, height)
         .WithXLabels("18-24", "25-34", "35-44", "45-54", "55+")
         .WithValueFormatter(Percent)
@@ -339,7 +261,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateSurveyTrend(int width, int height) => Chart.Create()
         .WithTitle("Survey Trend")
         .WithSubtitle("Two audience groups over time")
-        .WithTheme(ChartTheme.PeopleInfographic())
+        .WithTheme(VisualTheme.PeopleInfographic())
         .WithSize(width, height)
         .WithXAxis("Year")
         .WithYAxis("Share")
@@ -351,7 +273,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateInfographicRings() => Chart.Create()
         .WithTitle("Awareness Ring")
         .WithSubtitle("Single KPI using the circle chart")
-        .WithTheme(ChartTheme.PeopleInfographic())
+        .WithTheme(VisualTheme.PeopleInfographic())
         .WithLegend(false)
         .WithCircleStatusLabel(false)
         .WithSize(420, 300)
@@ -365,7 +287,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateInfographicSliderBars() => Chart.Create()
         .WithTitle("Preference Sliders")
         .WithSubtitle("Slider-style progress controls")
-        .WithTheme(ChartTheme.PeopleInfographic())
+        .WithTheme(VisualTheme.PeopleInfographic())
         .WithSize(420, 300)
         .WithLegend(false)
         .WithProgressBarThickness(0.28)
@@ -379,7 +301,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateDressIconRows() => Chart.Create()
         .WithTitle("Dress Icons")
         .WithSubtitle("Alternate built-in person silhouette")
-        .WithTheme(ChartTheme.PeopleInfographic())
+        .WithTheme(VisualTheme.PeopleInfographic())
         .WithSize(420, 300)
         .WithLegend(false)
         .WithPictorialColumns(12)
@@ -396,7 +318,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateInfographicCompletionBars() => Chart.Create()
         .WithTitle("Completion Bars")
         .WithSubtitle("Compact progress rows")
-        .WithTheme(ChartTheme.PeopleInfographic())
+        .WithTheme(VisualTheme.PeopleInfographic())
         .WithSize(420, 300)
         .WithLegend(false)
         .WithProgressHandles(false)
@@ -413,21 +335,21 @@ internal static partial class ExpressiveExamples {
         return ChartGrid.Create()
             .WithTitle("Word Cloud Control Showcase")
             .WithSubtitle("Term limits and density controls tune clouds from calm editorial summaries to dense poster layouts")
-            .WithBrandKit(ChartBrandKit.Editorial())
+            .WithTheme(VisualTheme.Editorial())
             .WithColumns(2)
             .WithPadding(28)
             .WithPanelSize(430, 280)
             .Add(CreateWordCloudControlPreview(
                 "Editorial Summary",
                 "Top terms, low density, restrained rotation",
-                ChartTheme.Editorial(),
+                VisualTheme.Editorial(),
                 10,
                 0.75,
                 new[] { -10d, 0d, 8d }))
             .Add(CreateWordCloudControlPreview(
                 "Poster Cloud",
                 "More terms, tighter packing, playful angles",
-                ChartTheme.Candy(),
+                VisualTheme.Candy(),
                 18,
                 1.65,
                 new[] { -28d, -12d, 0d, 16d, 28d }));
@@ -437,7 +359,7 @@ internal static partial class ExpressiveExamples {
         return ChartGrid.Create()
             .WithTitle("Callout Label Placement")
             .WithSubtitle("Tuned lanes keep labels readable without crowding the marks")
-            .WithBrandKit(ChartBrandKit.Product())
+            .WithTheme(VisualTheme.Product())
             .WithColumns(1)
             .WithPadding(24)
             .WithPanelSize(620, 320)
@@ -449,7 +371,7 @@ internal static partial class ExpressiveExamples {
         var chart = Chart.Create()
             .WithTitle("Audience Mix Callouts")
             .WithSubtitle("Offset slices and tuned leaders highlight key segments")
-            .WithTheme(ChartTheme.Aurora())
+            .WithTheme(VisualTheme.Aurora())
             .WithSize(620, 320)
             .WithPadding(42, 46, 48, 42)
             .WithLegend(false)
@@ -476,7 +398,7 @@ internal static partial class ExpressiveExamples {
         var chart = Chart.Create()
             .WithTitle("Scorecard Side Labels")
             .WithSubtitle("Values sit outside each bar with reserved label lanes")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 320)
             .WithPadding(42, 54, 44, 50)
             .WithPlotBackground(false)
@@ -502,7 +424,7 @@ internal static partial class ExpressiveExamples {
         return ChartGrid.Create()
             .WithTitle("Point Color Customization Showcase")
             .WithSubtitle("One API highlights individual intervals, comparisons, summaries, windows, and endpoints")
-            .WithBrandKit(ChartBrandKit.Accessible())
+            .WithTheme(VisualTheme.Accessible())
             .WithColumns(2)
             .WithPadding(28)
             .WithPanelSize(430, 280)
@@ -518,7 +440,7 @@ internal static partial class ExpressiveExamples {
         var chart = Chart.Create()
             .WithTitle("Range Intervals")
             .WithSubtitle("Highlight one observed window")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(430, 280)
             .WithPointLegend()
             .WithLegendPosition(ChartLegendPosition.Bottom)
@@ -539,7 +461,7 @@ internal static partial class ExpressiveExamples {
         var chart = Chart.Create()
             .WithTitle("Before / After")
             .WithSubtitle("Color a comparison without a new chart type")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(430, 280)
             .WithPointLegend()
             .WithLegendPosition(ChartLegendPosition.TopRight)
@@ -560,7 +482,7 @@ internal static partial class ExpressiveExamples {
         var chart = Chart.Create()
             .WithTitle("Spread Summary")
             .WithSubtitle("Quartile boxes can carry point emphasis")
-            .WithTheme(ChartTheme.ReportDark())
+            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
             .WithSize(430, 280)
             .WithLegend(false)
             .WithDataLabels()
@@ -579,7 +501,7 @@ internal static partial class ExpressiveExamples {
         var chart = Chart.Create()
             .WithTitle("Candlestick Windows")
             .WithSubtitle("Override semantic color for a notable window")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(430, 280)
             .WithLegend(false)
             .WithDataLabels()
@@ -593,7 +515,7 @@ internal static partial class ExpressiveExamples {
         var chart = Chart.Create()
             .WithTitle("OHLC Ticks")
             .WithSubtitle("Compact finance marks keep the same override")
-            .WithTheme(ChartTheme.ReportDark())
+            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
             .WithSize(430, 280)
             .WithLegend(false)
             .WithDataLabels()
@@ -607,7 +529,7 @@ internal static partial class ExpressiveExamples {
         var chart = Chart.Create()
             .WithTitle("Endpoint Emphasis")
             .WithSubtitle("Start and end markers can differ")
-            .WithTheme(ChartTheme.Minimal())
+            .WithTheme(VisualTheme.Minimal())
             .WithSize(430, 280)
             .WithLegend(false)
             .WithDataLabels()
@@ -627,7 +549,7 @@ internal static partial class ExpressiveExamples {
         new ChartCandlestick(4, 72, 84, 67, 76)
     };
 
-    private static Chart CreateWordCloudControlPreview(string title, string subtitle, ChartTheme theme, int maximumTerms, double density, double[] angles) => Chart.Create()
+    private static Chart CreateWordCloudControlPreview(string title, string subtitle, VisualTheme theme, int maximumTerms, double density, double[] angles) => Chart.Create()
         .WithTitle(title)
         .WithSubtitle(subtitle)
         .WithTheme(theme)
@@ -642,7 +564,7 @@ internal static partial class ExpressiveExamples {
         .WithDataLabels()
         .WithTitle("Control Coverage Partition")
         .WithSubtitle("Sunburst hierarchy chart using the Aurora theme")
-        .WithTheme(ChartTheme.Aurora())
+        .WithTheme(VisualTheme.Aurora())
         .WithSize(920, 560)
         .AddSunburst("Controls", new[] {
             new ChartHierarchyItem("Security posture", "Security posture"),
@@ -660,7 +582,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateAudiencePictorial() => Chart.Create()
         .WithTitle("Audience Mix")
         .WithSubtitle("Pictorial stars turn proportions into a quick visual count")
-        .WithTheme(ChartTheme.Candy())
+        .WithTheme(VisualTheme.Candy())
         .WithSize(860, 500)
         .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
         .WithPictorialColumns(10)
@@ -676,7 +598,7 @@ internal static partial class ExpressiveExamples {
     private static Chart CreateSupportThemesWordCloud() => Chart.Create()
         .WithTitle("Support Themes")
         .WithSubtitle("Word cloud terms use deterministic placement across renderers")
-        .WithTheme(ChartTheme.Editorial())
+        .WithTheme(VisualTheme.Editorial())
         .WithSize(860, 500)
         .WithWordCloudFontRange(13, 50)
         .WithWordCloudAngles(-18, 0, 10)

@@ -65,7 +65,7 @@ public sealed partial class ChartGrid : IVisualRenderable {
                     frame.ShowSurface && options.ShowPlotBackground && modelFrame, transparentBackground: true,
                     legendStyle: frame.LegendStyle, legendMaximumRows: maximumRows,
                     legendMaximumHeightFraction: Math.Min(frame.LegendMaximumHeightFraction, options.LegendMaximumHeightFraction),
-                    showCard: frame.ShowCard && options.ShowCard && options.Theme.UseCard && modelFrame, legendTitle: frame.LegendTitle);
+                    showCard: frame.ShowCard && options.ShowCard && modelFrame, legendTitle: frame.LegendTitle);
                 var padding = options.HostOwnsFrame ? ChartPadding.All(0) : options.Padding;
                 var panelPadding = new ChartPadding(Math.Min(padding.Left, width / 4), Math.Min(padding.Top, height / 4),
                     Math.Min(padding.Right, width / 4), Math.Min(padding.Bottom, height / 4));

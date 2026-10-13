@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Linq;
 using System.Xml.Linq;
@@ -245,7 +246,7 @@ internal static partial class SmokeTests {
 
         var lightStory = VisualStory.Create("Light documentation")
             .WithSize(480, 320)
-            .WithTheme(VisualStoryTheme.Light());
+            .WithTheme(VisualStoryThemes.Premium(), VisualThemeMode.Light);
         lightStory.Scene("result", "Completed", 0.25)
             .Panel("result", new VisualStoryTextSurface("ready", emphasized: true));
         lightStory.Outcome("ready", "The result is visible", "result");
@@ -453,11 +454,11 @@ internal static partial class SmokeTests {
             () => narrowMedia.ToPng(),
             "Outcome media panels should reject positive but unrecognizably narrow content areas.");
 
-        var truncatedTheme = VisualStoryTheme.PremiumDark();
-        truncatedTheme.Syntax.Plain = ChartColor.FromRgb(255, 0, 128);
+        var truncatedTheme = VisualStoryThemes.Premium();
+        var truncatedStyle = new VisualStoryStyleOptions { Syntax = new StorySyntaxPalette { Plain = ChartColor.FromRgb(255, 0, 128) } };
         var truncatedStory = VisualStory.Create("Visible truncation")
             .WithSize(480, 320)
-            .WithTheme(truncatedTheme);
+            .WithTheme(truncatedTheme).WithStyle(truncatedStyle);
         truncatedStory.Scene("result", "Completed")
             .Panel(
                 "result",
@@ -480,7 +481,7 @@ internal static partial class SmokeTests {
 
         var denseLinesStory = VisualStory.Create("Bounded source lines")
             .WithSize(480, 320)
-            .WithTheme(truncatedTheme);
+            .WithTheme(truncatedTheme).WithStyle(truncatedStyle);
         denseLinesStory.Scene("result", "Completed")
             .Panel(
                 "result",
@@ -490,16 +491,16 @@ internal static partial class SmokeTests {
         Assert(denseLinesStory.ToPng().Length > 200,
             "Source rendering should retain only the visible prefix of a large newline-delimited value.");
 
-        var horizontalTheme = VisualStoryTheme.PremiumDark();
-        horizontalTheme.Syntax.Plain = ChartColor.FromRgb(255, 0, 128);
-        horizontalTheme.Syntax.Keyword = ChartColor.FromRgb(0, 255, 0);
-        horizontalTheme.Syntax.Type = ChartColor.FromRgb(0, 128, 255);
+        var horizontalTheme = VisualStoryThemes.Premium();
+        var horizontalStyle = new VisualStoryStyleOptions { Syntax = new StorySyntaxPalette { Plain = ChartColor.FromRgb(255, 0, 128) } };
+        horizontalStyle.Syntax!.Keyword = ChartColor.FromRgb(0, 255, 0);
+        horizontalStyle.Syntax!.Type = ChartColor.FromRgb(0, 128, 255);
         var horizontalSource = StorySourceText.Create(new string('W', 37) + "tail", "text")
             .AddSpan(0, 37, StorySyntaxKind.Keyword)
             .AddSpan(37, 4, StorySyntaxKind.Type);
         var horizontalStory = VisualStory.Create("Run-boundary truncation")
             .WithSize(480, 320)
-            .WithTheme(horizontalTheme);
+            .WithTheme(horizontalTheme).WithStyle(horizontalStyle);
         horizontalStory.Scene("result", "Completed")
             .Panel("result", new VisualStorySourceSurface(horizontalSource));
         horizontalStory.Outcome("ready", "Ready", "result");

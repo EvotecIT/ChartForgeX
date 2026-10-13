@@ -15,6 +15,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             var series = chart.Series[index];
             json.Append("{\"name\":").Append(HtmlJsonString.Encode(series.Name))
                 .Append(",\"key\":").Append(HtmlJsonString.Encode(series.InteractionIdentityKey))
+                .Append(",\"local\":").Append(series.Id.IsAutomatic ? "true" : "false")
                 .Append(",\"kind\":").Append(HtmlJsonString.Encode(series.Kind.ToString().ToLowerInvariant()))
                 .Append(",\"state\":").Append(HtmlJsonString.Encode(series.StateRole.ToString().ToLowerInvariant()))
                 .Append(",\"indices\":[");

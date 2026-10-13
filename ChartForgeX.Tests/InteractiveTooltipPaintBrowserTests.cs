@@ -199,7 +199,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         options.Tooltip.Range = HtmlChartTooltipRange.Exact;
     }
 
-    private static Chart Frame(bool dark) => Chart.Create().WithSize(800, 540).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+    private static Chart Frame(bool dark) => Chart.Create().WithSize(800, 540).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
     private static Chart AnnotationChart(bool dark) => Frame(dark).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
         .AddLine("Measured", new[] { new ChartPoint(2, 2), new ChartPoint(8, 2) });
 

@@ -8,7 +8,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart ConfigureMapColorDimension(Action<ChartColorDimensionOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.MapColorDimension); return this;
+        Options.MapColorDimension = ChartOptionConfiguration.Configure(Options.MapColorDimension, configure, options => options.Clone()); return this;
     }
 
     /// <summary>Configures the existing numeric rectangular, hexagonal or calendar heatmap measurement's presentation.</summary>
@@ -16,6 +16,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart ConfigureHeatmapColorDimension(Action<ChartColorDimensionOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.HeatmapColorDimension); return this;
+        Options.HeatmapColorDimension = ChartOptionConfiguration.Configure(Options.HeatmapColorDimension, configure, options => options.Clone()); return this;
     }
 }

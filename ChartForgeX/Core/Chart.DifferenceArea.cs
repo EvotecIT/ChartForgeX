@@ -14,13 +14,9 @@ public sealed partial class Chart {
     /// Positive means First is greater than Second, including when either axis is reversed.
     /// Linear interpolation splits crossings; Step uses the series step position for both held boundaries. Smooth is unsupported.</remarks>
     public Chart AddDifferenceArea(string name, IEnumerable<ChartDifferencePoint> points, ChartColor? color = null) {
-        if (points == null) throw new ArgumentNullException(nameof(points));
-        var encoded = new List<ChartPoint>();
-        foreach (var point in points) {
-            encoded.Add(new ChartPoint(point.X, point.First, point.BreakBefore));
-            encoded.Add(new ChartPoint(point.X, point.Second, point.BreakBefore));
-        }
-        if (encoded.Count == 0) throw new ArgumentException("Difference areas must contain at least one pair.", nameof(points));
-        return Add(name, ChartSeriesKind.DifferenceArea, encoded, color);
+        var series = ChartSeries.CreateDifferenceArea(name, points, color);
+        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(points));
+        AppendSeries(series);
+        return this;
     }
 }

@@ -15,7 +15,7 @@ public sealed partial class PngFactBlockRenderer {
     }
 
     private static void DrawSegmentedMetricHeader(RgbaCanvas canvas, SegmentedMetricBlock card, ref double y, double x, double width) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var layout = VisualFactBlockRendering.SegmentedHeaderLayout(card, x, y, width);
         if (layout.BadgeSize > 0) {
             canvas.FillRoundedRectVerticalGradient(x, y, layout.BadgeSize, layout.BadgeSize, 14, ChartSurfacePolish.GradientTop(ChartColor.White), ChartSurfacePolish.GradientBottom(ChartColor.White));

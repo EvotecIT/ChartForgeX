@@ -14,7 +14,7 @@ internal static partial class VisualMarkerScene {
             var colors = context.Theme.Resolve(context.ThemeMode);
             foreach (var positive in new[] { true, false }) {
                 var half = new ChartRect(bounds.Left + (positive ? 0 : bounds.Width / 2), bounds.Top, bounds.Width / 2, bounds.Height);
-                var (fill, fillPaint) = VisualCartesianCompiler.DifferenceFill(series, chart.Series.IndexOf(series), positive, colors, context);
+                var (fill, fillPaint) = VisualCartesianCompiler.DifferenceFill(series, chart.IndexOfSeries(series), positive, colors, context);
                 builder.Rect(half, fill, role: positive ? "legend-difference-positive" : "legend-difference-negative", paint: VisualChartPaint.Fill(fillPaint));
                 if (fill.A > 0) VisualFrameLayout.DrawLegendPattern(builder, half, pattern, context, role: "legend-area-pattern");
             }

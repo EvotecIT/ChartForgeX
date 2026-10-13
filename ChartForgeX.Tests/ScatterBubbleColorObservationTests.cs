@@ -60,13 +60,12 @@ public sealed class ScatterBubbleColorObservationTests {
         Assert.All(chart.Series[2].Points, point => Assert.Null(point.ColorValue));
         Assert.All(ChartBubbles.FromXYSize(rows.Select(row => row.X), rows.Select(row => row.Y), rows.Select(row => row.Size)),
             bubble => Assert.Null(bubble.ColorValue));
-        var points = chart.Series[1].Points;
+        var points = chart.Series[1].Bubbles;
         for (var index = 0; index < rows.Length; index++) {
-            Assert.Equal(rows[index].X, points[index * 2].X);
-            Assert.Equal(rows[index].Y, points[index * 2].Y);
-            Assert.Equal(rows[index].Color, points[index * 2].ColorValue);
-            Assert.Equal(rows[index].Size, points[index * 2 + 1].Y);
-            Assert.Null(points[index * 2 + 1].ColorValue);
+            Assert.Equal(rows[index].X, points[index].X);
+            Assert.Equal(rows[index].Y, points[index].Y);
+            Assert.Equal(rows[index].Color, points[index].ColorValue);
+            Assert.Equal(rows[index].Size, points[index].Size);
         }
         // Raw color is a supported source fact even before a scale is selected.
         chart.Prepare(Context());
@@ -76,26 +75,25 @@ public sealed class ScatterBubbleColorObservationTests {
     [InlineData(ChartSeriesKind.Scatter)]
     [InlineData(ChartSeriesKind.Bubble)]
     public void ScaleOwnershipUsesOneImmutableReferenceAndNullResetRetainsSourceFacts(ChartSeriesKind kind) {
-        var points = kind == ChartSeriesKind.Scatter
-            ? new[] { new ChartPoint(1, 9).WithColorValue(3) }
-            : new[] { new ChartPoint(1, 9).WithColorValue(3), new ChartPoint(1, 25) };
-        var series = new ChartSeries("Source", kind, points);
+        var series = kind == ChartSeriesKind.Scatter
+            ? ChartSeries.CreateScatter(new ChartSeriesId("source"), "Source", new[] { new ChartPoint(1, 9).WithColorValue(3) })
+            : ChartSeries.CreateBubble(new ChartSeriesId("source"), "Source", new[] { new ChartBubble(1, 9, 25).WithColorValue(3) });
         var scale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White).WithValueRange(0, 10);
         Assert.Null(series.ColorScale);
         Assert.Same(series, series.WithColorScale(scale));
         Assert.Same(scale, series.ColorScale);
         series.ColorScale = null;
         Assert.Null(series.ColorScale);
-        Assert.Equal(3d, series.Points[0].ColorValue);
+        Assert.Equal(3d, kind == ChartSeriesKind.Bubble ? series.Bubbles[0].ColorValue : series.Points[0].ColorValue);
         series.ColorScale = scale;
         Assert.Same(series, series.WithColorScale(null));
         Assert.Null(series.ColorScale);
-        Assert.Equal(3d, series.Points[0].ColorValue);
+        Assert.Equal(3d, kind == ChartSeriesKind.Bubble ? series.Bubbles[0].ColorValue : series.Points[0].ColorValue);
     }
 
     [Fact]
     public void UnsupportedScaleAssignmentFailsAtThePublicBoundaryAndNullResetRemainsValid() {
-        var series = new ChartSeries("Line", ChartSeriesKind.Line, new[] { new ChartPoint(1, 2) });
+        var series = new ChartSeries(new ChartSeriesId("fixture-series"), "Line", ChartSeriesKind.Line, new[] { new ChartPoint(1, 2) });
         var scale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White);
         Assert.Throws<InvalidOperationException>(() => series.ColorScale = scale);
         Assert.Throws<InvalidOperationException>(() => series.WithColorScale(scale));
@@ -108,20 +106,22 @@ public sealed class ScatterBubbleColorObservationTests {
     [InlineData(ChartSeriesKind.Bar)]
     public void PreparationRejectsColorFactsOnUnsupportedDisplayedFamilies(ChartSeriesKind kind) {
         var chart = Chart.Create();
-        var series = new ChartSeries("Unsupported", kind, new[] { new ChartPoint(1, 2).WithColorValue(0) });
-        chart.Series.Add(series);
+        var series = new ChartSeries(new ChartSeriesId("fixture-series"), "Unsupported", kind, new[] { new ChartPoint(1, 2).WithColorValue(0) });
+        chart.AddSeries(series);
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context()));
         series.Points[0] = series.Points[0].WithColorValue(null);
         chart.Prepare(Context());
     }
 
     [Fact]
-    public void PreparationRejectsAColorFactOnTheBubbleSizeMember() {
+    public void BubbleColorMeasurementRemainsIndependentOfSizeDuringTypedUpdates() {
         var chart = Chart.Create().AddBubble("Bubble", new[] { new ChartBubble(1, 2, 25).WithColorValue(-10) });
         var series = chart.Series[0];
-        series.Points[1] = series.Points[1].WithColorValue(0);
-        Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context()));
-        series.Points[1] = series.Points[1].WithColorValue(null);
+        series.UpdateBubble(0, series.Bubbles[0].WithColorValue(0));
+        Assert.Equal(25, series.Bubbles[0].Size);
+        Assert.Equal(0, series.Bubbles[0].ColorValue);
+        series.UpdateBubble(0, series.Bubbles[0].WithColorValue(null));
+        Assert.Equal(25, series.Bubbles[0].Size);
         chart.Prepare(Context());
     }
 

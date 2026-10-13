@@ -19,7 +19,6 @@ public sealed class InteractiveSharedColorDimensionBrowserTests {
         var chart = Model(width);
         Add(chart, bubble, "Samples", new[] { 1d, 1, 2 }, new[] { 18d, 0, 24 }, new[] { 9d, 36, 81 }, new double?[] { -12, 0, null });
         Add(chart, bubble, "Alerts", new[] { 1d, 2 }, new[] { 2d, 30 }, new[] { 4d, 16 }, new double?[] { null, -8 });
-        chart.Series[0].WithInteractionKey("samples-source"); chart.Series[1].WithInteractionKey("alerts-source");
         chart.Series[1].StateRole = ChartSeriesState.Danger;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width + 24, 600);
         var page = session.Page; var root = page.Locator(".cfx-interactive-chart");
@@ -81,12 +80,14 @@ public sealed class InteractiveSharedColorDimensionBrowserTests {
     }
 
     private static Chart Model(int width) => Chart.Create().WithSize(width, 500).WithDataLabels(false)
-        .WithTheme(ChartTheme.GraphiteLight()).ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
+        .WithTheme(VisualTheme.Graphite()).ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
 
     private static void Add(Chart chart, bool bubble, string name, double[] x, double[] y, double[] size, double?[] color) {
-        if (bubble) chart.AddBubble(name, Enumerable.Range(0, x.Length).Select(index => new ChartBubble(x[index], y[index], size[index]).WithColorValue(color[index])));
-        else chart.AddScatter(name, Enumerable.Range(0, x.Length).Select(index => new ChartPoint(x[index], y[index]).WithColorValue(color[index])));
-        chart.Series[chart.Series.Count - 1].WithColorScale(ChartColorScale.Sequential(Low, High));
+        var id = new ChartSeriesId(name == "Samples" ? "samples-source" : "alerts-source");
+        var series = bubble ? ChartSeries.CreateBubble(id, name, Enumerable.Range(0, x.Length).Select(index => new ChartBubble(x[index], y[index], size[index]).WithColorValue(color[index])))
+            : ChartSeries.CreateScatter(id, name, Enumerable.Range(0, x.Length).Select(index => new ChartPoint(x[index], y[index]).WithColorValue(color[index])));
+        series.WithColorScale(ChartColorScale.Sequential(Low, High));
+        chart.AddSeries(series);
     }
 
     private static async Task AssertDimensionAsync(IPage page, string series, string dimension, string label, string value, string source) {

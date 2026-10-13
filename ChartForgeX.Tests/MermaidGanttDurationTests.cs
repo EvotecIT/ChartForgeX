@@ -48,7 +48,7 @@ public sealed class MermaidGanttDurationTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var result = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DD\nMonth :month, 2026-01-31, 1M\nMinute :minute, 2026-01-31, 1m");
         Assert.False(result.HasErrors);
-        var chart = result.Document!.ToChart().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        var chart = result.Document!.ToChart().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var html = "<!doctype html><html><body style=\"margin:0\">" + chart.ToHtmlFragment() + "</body></html>";
         await using var session = await InteractiveChartBrowser.OpenAsync(html, width, 600);
         var bars = session.Page.Locator("[data-cfx-role=\"gantt-task-shape\"]");

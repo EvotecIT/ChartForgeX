@@ -69,7 +69,7 @@ public sealed class GanttDependencyTests {
     [Fact]
     public void NativeLinksCombineWithInlineDependenciesWithoutDuplicationOrRescheduling() {
         var chart = Chart.Create().AddGanttTask("First", 1, 3).AddGanttTask("Last", 4, 6, dependsOn: 0).AddGanttTask("Other", 1, 4);
-        var before = chart.Series.Select(series => series.Points[0]).ToArray();
+        var before = chart.Series.Select(series => series.GanttItems[0]).ToArray();
         chart.AddGanttDependency(0, 1).AddGanttDependency(2, 1).AddGanttDependency(2, 1);
         var links = chart.GanttDependencies;
         Assert.Equal(new[] { (0, 1), (2, 1) }, links.Select(link => (link.PredecessorIndex, link.SuccessorIndex)));
@@ -81,7 +81,7 @@ public sealed class GanttDependencyTests {
         chart.AddGanttDependency(0, 2);
         Assert.Equal(2, links.Count);
         Assert.Equal(svg, prepared.ToSvg());
-        Assert.Equal(before, chart.Series.Select(series => series.Points[0]));
+        Assert.Equal(before, chart.Series.Select(series => series.GanttItems[0]));
     }
 
     [Theory]
@@ -99,7 +99,7 @@ public sealed class GanttDependencyTests {
     [Fact]
     public void NativePreparationRevalidatesLinksAfterMutableRowsAreRemoved() {
         var chart = Chart.Create().AddGanttTask("A", 1, 2).AddGanttTask("B", 2, 3).AddGanttDependency(1, 0);
-        chart.Series.RemoveAt(1);
+        chart.RemoveSeries(chart.Series[1]);
         Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
         Assert.Throws<InvalidOperationException>(() => chart.ToPng());
     }
@@ -107,7 +107,7 @@ public sealed class GanttDependencyTests {
     [Fact]
     public void NativeLinksRejectOtherChartFamiliesAndRevalidateAfterReplacement() {
         var chart = Chart.Create().AddGanttTask("A", 1, 2).AddGanttTask("B", 2, 3).AddGanttDependency(1, 0);
-        chart.Series.RemoveAt(1);
+        chart.RemoveSeries(chart.Series[1]);
         chart.AddBar("Counts", new[] { new ChartForgeX.Primitives.ChartPoint(1, 2) });
         Assert.Throws<InvalidOperationException>(() => chart.AddGanttDependency(0, 1));
         Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
@@ -120,7 +120,7 @@ public sealed class GanttDependencyTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var document = new MermaidParser().ParseGantt(File.ReadAllText(Fixture("mmd"))).Document!;
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 420 })
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 460);
         Assert.Equal(3, await session.Page.Locator("[data-cfx-role='gantt-dependency-line']").CountAsync());
         Assert.Equal(4, await session.Page.Locator("[data-cfx-role='gantt-task'],[data-cfx-role='gantt-milestone']").CountAsync());

@@ -70,7 +70,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
         if (!Enabled) return;
         var horizontal = kind == ChartSeriesKind.HorizontalBar;
         var chart = Chart.Create().WithSize(700, 430).WithHeader(false).WithLegend(false).WithDataLabels()
-            .WithTheme(ChartTheme.GraphiteLight()).WithXAxisBounds(0, horizontal ? 50 : 5).WithYAxisBounds(0, horizontal ? 5 : 50);
+            .WithTheme(VisualTheme.Graphite()).WithXAxisBounds(0, horizontal ? 50 : 5).WithYAxisBounds(0, horizontal ? 5 : 50);
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(3, 30) };
         chart = kind switch {
             ChartSeriesKind.Bar => chart.AddBar("Reading", points),
@@ -215,7 +215,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     public async Task RestoredChildAndMarkerFreePaintRemainEligibleUntilTheirActualSurfaceIsHidden(bool markerFree) {
         if (!Enabled) return;
         var chart = Observation(markerFree, graphite: true);
-        if (markerFree) chart = Chart.Create().WithSize(800, 540).WithTheme(ChartTheme.GraphiteDark()).WithLegend(true)
+        if (markerFree) chart = Chart.Create().WithSize(800, 540).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithLegend(true)
             .WithLineMarkers(ChartLineMarkerMode.None).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddLine("Reading", new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
@@ -249,7 +249,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     }
 
     private static Chart Observation(bool dark, bool graphite = false) => Chart.Create().WithSize(800, 540).WithLegend(true)
-        .WithTheme(graphite ? dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight() : dark ? ChartTheme.Dark() : ChartTheme.Light())
+        .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
         .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddScatter("Reading", new[] { new ChartPoint(5, 5) });
 
     private static async Task CaptureAsync(IPage page, string name, object observations) {

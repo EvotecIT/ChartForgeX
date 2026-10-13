@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void PictorialItemsRenderSymbolRows() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(760, 430)
-            .WithTheme(ChartTheme.Candy())
+            .WithTheme(VisualTheme.Candy())
             .AddPictorial("Audience", new[] {
                 new ChartPictorialItem("New users", 84),
                 new ChartPictorialItem("Returning users", 62),
@@ -28,7 +28,7 @@ internal static partial class SmokeTests {
         Assert(source.Metadata["data-cfx-point"] == "0" && source.Metadata["data-cfx-label"] == "New users" && source.Metadata["data-cfx-value"] == "84", "Pictorial rows should retain their label, source identity and raw value.");
         Assert(svg.Contains("data-cfx-role=\"pictorial-label\"", StringComparison.Ordinal), "Pictorial charts should render item labels.");
         Assert(chart.ToPng().Length > 64, "Pictorial charts should render PNG output.");
-        var fiveStar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var fiveStar = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 260)
             .WithPictorialColumns(5)
             .WithPictorialMaximum(5)
@@ -48,7 +48,7 @@ internal static partial class SmokeTests {
         Assert(fiveStarSvg.Contains("data-cfx-empty-opacity=\"0.22\"", StringComparison.Ordinal), "Pictorial charts should expose empty-symbol opacity metadata.");
         Assert(CountOccurrences(fiveStarSvg, "data-cfx-role=\"pictorial-symbol\"") == 10, "Pictorial column settings should control symbol density.");
         Assert(fiveStar.ToPng().Length > 64, "Pictorial column settings should render PNG output.");
-        var tenStar = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var tenStar = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 260)
             .WithPictorialColumns(5)
             .WithPictorialMaximum(10)
@@ -57,7 +57,7 @@ internal static partial class SmokeTests {
                 new ChartPictorialItem("Support", 5)
             }, ChartPictorialShape.Star);
         AssertNoDuplicateIds(fiveStarSvg + tenStar.ToSvg(), "Unscoped pictorial charts with distinct scaling options");
-        var styledPictorial = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var styledPictorial = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 260)
             .WithPictorialColumns(5)
             .WithPictorialMaximum(5)
@@ -68,7 +68,7 @@ internal static partial class SmokeTests {
         Assert(styledPictorialSvg.Contains("data-cfx-symbol-scale=\"1.2\"", StringComparison.Ordinal), "Pictorial symbol scale should be configurable.");
         Assert(styledPictorialSvg.Contains("data-cfx-empty-opacity=\"0.08\"", StringComparison.Ordinal), "Pictorial empty-symbol opacity should be configurable.");
         Assert(styledPictorial.ToPng().Length > 64, "Pictorial styling options should render PNG output.");
-        var customColors = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var customColors = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 260)
             .WithPictorialColumns(5)
             .WithPictorialMaximum(5)
@@ -82,10 +82,10 @@ internal static partial class SmokeTests {
         var pointLegend = PreparedFamily(customColors.WithPointLegend());
         var pointLegendSvg = pointLegend.ToSvg(new VisualSvgOptions());
         Assert(FamilyLabels(pointLegend, "legend-label").Select(FamilyContent).SequenceEqual(new[] { "Product", "Support" }), "Pictorial point legends should name every source item.");
-        Assert(FamilyGroups(pointLegend, "pictorial-item").All(item => item.Metadata["data-cfx-series-key"] == "Rating"), "Pictorial sources should retain their semantic series identity independently of the shared legend markup.");
+        Assert(FamilyGroups(pointLegend, "pictorial-item").All(item => item.Metadata["data-cfx-series-key"] == customColors.Series[0].Id.Value), "Pictorial sources should retain their semantic series identity independently of the shared legend markup.");
         Assert(pointLegendSvg.Contains("#EC4899", StringComparison.Ordinal), "Pictorial point legends should match item colors.");
         Assert(customColors.ToPng().Length > 64, "Pictorial item colors should render PNG output.");
-        var isotype = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var isotype = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 260)
             .WithPictorialColumns(25)
             .WithPictorialValuePerSymbol(1)
@@ -102,7 +102,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(isotypeSvg, "data-cfx-role=\"pictorial-symbol\"") == 75, "Pictorial value-per-symbol charts should still render the configured symbol grid.");
         Assert(CountOccurrences(isotypeSvg, "data-cfx-fill=\"1\"") == 29, "Pictorial value-per-symbol charts should render one filled symbol per unit when values are integral.");
         Assert(isotype.ToPng().Length > 64, "Isotype-style pictorial charts should render PNG output.");
-        var wrappedIsotype = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var wrappedIsotype = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(560, 300)
             .WithPictorialColumns(20)
             .WithPictorialValuePerSymbol(1)
@@ -117,7 +117,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(wrappedIsotypeSvg, "data-cfx-fill=\"1\"") == 75, "Wrapped pictorial rows should preserve the represented value count.");
         Assert(wrappedIsotype.ToPng().Length > 64, "Wrapped Isotype pictorial rows should render PNG output.");
         const string SparkPath = "M12 2 L15 9 L22 9 L17 14 L19 22 L12 17 L5 22 L7 14 L2 9 L9 9 Z";
-        var customSymbol = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var customSymbol = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 260)
             .WithPictorialColumns(5)
             .WithPictorialSvgPath(SparkPath, ChartPictorialShape.Star)
@@ -130,7 +130,7 @@ internal static partial class SmokeTests {
         var customPng = customPrepared.ToPng();
         customSymbol.WithPictorialShape(ChartPictorialShape.Circle);
         Assert(customPng.Length > 64 && !customPng.SequenceEqual(customSymbol.ToPng()), "The native painter should render the custom contour rather than substituting a built-in shape.");
-        var resetSymbol = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var resetSymbol = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 260)
             .WithPictorialSvgPath(SparkPath, ChartPictorialShape.Star)
             .AddPictorial("Built-in", new[] { new ChartPictorialItem("Diamond", 4) }, ChartPictorialShape.Circle)
@@ -141,7 +141,7 @@ internal static partial class SmokeTests {
         Assert(!resetSymbolSvg.Contains("d=\"" + SparkPath + "\"", StringComparison.Ordinal), "Built-in pictorial symbols should not retain custom path data.");
         Assert(resetSymbol.ToPng().Length > 64, "Reset pictorial symbols should render PNG output.");
         foreach (var shape in new[] { ChartPictorialShape.Circle, ChartPictorialShape.Square, ChartPictorialShape.Diamond, ChartPictorialShape.Triangle, ChartPictorialShape.Star, ChartPictorialShape.Heart, ChartPictorialShape.Shield, ChartPictorialShape.Check, ChartPictorialShape.Person, ChartPictorialShape.PersonDress }) {
-            var shaped = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+            var shaped = Chart.Create().WithTheme(VisualTheme.Report())
                 .WithSize(420, 260)
                 .AddPictorial("Shape", new[] { new ChartPictorialItem(shape.ToString(), 10) }, shape);
             Assert(shaped.ToSvg().Contains("data-cfx-shape=\"" + shape + "\"", StringComparison.Ordinal), "Pictorial SVG output should support the " + shape + " shape.");
@@ -152,7 +152,7 @@ internal static partial class SmokeTests {
     private static void ProgressBarsRenderSliderRows() {
         var chart = Chart.Create()
             .WithSize(560, 320)
-            .WithTheme(ChartTheme.PeopleInfographic())
+            .WithTheme(VisualTheme.PeopleInfographic())
             .WithProgressBarThickness(0.34)
             .WithProgressTrackOpacity(0.18)
             .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")

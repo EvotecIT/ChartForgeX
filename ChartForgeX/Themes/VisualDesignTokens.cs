@@ -1,19 +1,14 @@
 using System;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
-using ChartForgeX.Topology;
 
 namespace ChartForgeX.Themes;
 
 /// <summary>
-/// Defines product-neutral brand, semantic color, typography, and shape tokens that can be applied across ChartForgeX visual surfaces.
+/// Builds product-neutral semantic color palettes. A VisualTheme snapshots these mutable values.
 /// </summary>
 public sealed partial class VisualDesignTokens {
     private ChartColor[] _palette = ChartPalettes.Report;
-    private string _fontFamily = ChartFontStacks.SystemSans;
-    private string _monospaceFontFamily = "Cascadia Mono, Consolas, monospace";
-    private double _cornerRadius = 12;
-    private double _strokeWidth = 2;
     private VisualStatusTokens _status = new();
     private ChartColor[]? _sequentialRamp;
 
@@ -52,33 +47,6 @@ public sealed partial class VisualDesignTokens {
         }
     }
 
-    /// <summary>Gets or sets the primary CSS-compatible font family stack.</summary>
-    public string FontFamily {
-        get => _fontFamily;
-        set => _fontFamily = RequiredText(value, nameof(value));
-    }
-
-    /// <summary>Gets or sets the CSS-compatible monospace font family stack.</summary>
-    public string MonospaceFontFamily {
-        get => _monospaceFontFamily;
-        set => _monospaceFontFamily = RequiredText(value, nameof(value));
-    }
-
-    /// <summary>Gets or sets the base corner radius.</summary>
-    public double CornerRadius {
-        get => _cornerRadius;
-        set => _cornerRadius = NonNegativeFinite(value, nameof(value));
-    }
-
-    /// <summary>Gets or sets the base data-mark stroke width.</summary>
-    public double StrokeWidth {
-        get => _strokeWidth;
-        set {
-            if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Stroke width must be finite and greater than zero.");
-            _strokeWidth = value;
-        }
-    }
-
     /// <summary>
     /// Gets or sets the severity, outcome, and operational-state colours. Use
     /// <see cref="VisualStatusTokens.OperationalStateCategories"/> and related methods with
@@ -90,8 +58,7 @@ public sealed partial class VisualDesignTokens {
     }
 
     /// <summary>
-    /// Gets or sets the optional sequential ramp (weakest to strongest, one hue) for counts and magnitudes. Applied to
-    /// <see cref="ChartTheme.SequentialRamp"/>; null clears it so heatmaps use the default blend.
+    /// Gets or sets the optional sequential ramp (weakest to strongest, one hue) for counts and magnitudes. Used for numeric heatmap scales; null keeps the default blend.
     /// </summary>
     public ChartColor[]? SequentialRamp {
         get => _sequentialRamp == null ? null : (ChartColor[])_sequentialRamp.Clone();
@@ -108,6 +75,20 @@ public sealed partial class VisualDesignTokens {
     public ChartColorScale? ToSequentialColorScale() =>
         _sequentialRamp == null ? null : ChartColorScale.Sequential(_sequentialRamp);
 
+    /// <summary>Replaces this editable palette with an independent copy of another palette.</summary>
+    public void CopyFrom(VisualDesignTokens source) {
+        if (source == null) throw new ArgumentNullException(nameof(source));
+        var copy = source.Clone();
+        Background = copy.Background; Surface = copy.Surface; ElevatedSurface = copy.ElevatedSurface;
+        Foreground = copy.Foreground; MutedForeground = copy.MutedForeground; Border = copy.Border;
+        Accent = copy.Accent; SecondaryAccent = copy.SecondaryAccent; Positive = copy.Positive;
+        Warning = copy.Warning; Negative = copy.Negative; Disabled = copy.Disabled; Palette = copy.Palette;
+        Status = copy.Status; SequentialRamp = copy.SequentialRamp; DivergingRamp = copy.DivergingRamp;
+        PlotBorder = copy.PlotBorder; Muted = copy.Muted; Grid = copy.Grid; Axis = copy.Axis;
+        Info = copy.Info; Quiet = copy.Quiet; QuietLine = copy.QuietLine;
+        Neutral = copy.Neutral; Neutral2 = copy.Neutral2; Neutral3 = copy.Neutral3;
+    }
+
     /// <summary>Creates an independent copy.</summary>
     public VisualDesignTokens Clone() => new() {
         Background = Background,
@@ -123,86 +104,12 @@ public sealed partial class VisualDesignTokens {
         Negative = Negative,
         Disabled = Disabled,
         Palette = Palette,
-        FontFamily = FontFamily,
-        MonospaceFontFamily = MonospaceFontFamily,
-        CornerRadius = CornerRadius,
-        StrokeWidth = StrokeWidth,
         Status = Status.Clone(),
         SequentialRamp = SequentialRamp,
         DivergingRamp = DivergingRamp,
-        UseGraphiteLayout = UseGraphiteLayout, Muted = Muted, Grid = Grid, Axis = Axis,
+        PlotBorder = PlotBorder, Muted = Muted, Grid = Grid, Axis = Axis,
         Info = Info, Quiet = Quiet, QuietLine = QuietLine, Neutral = Neutral, Neutral2 = Neutral2, Neutral3 = Neutral3
     };
-
-    /// <summary>Applies the shared tokens to a chart renderer theme.</summary>
-    public ChartTheme ApplyTo(ChartTheme theme) {
-        if (theme == null) throw new ArgumentNullException(nameof(theme));
-        if (theme.UseGraphiteLayout && !UseGraphiteLayout) {
-            var classic = ChartTheme.Light();
-            theme.WithTypography(classic.TitleFontSize, classic.SubtitleFontSize, classic.TickLabelFontSize, classic.AxisTitleFontSize, classic.LegendFontSize, classic.DataLabelFontSize);
-            theme.ShadowOpacity = classic.ShadowOpacity;
-            theme.MarkerRadius = classic.MarkerRadius;
-        }
-        theme.UseGraphiteLayout = UseGraphiteLayout;
-        theme.FlatMarks = UseGraphiteLayout;
-        theme.Background = Background;
-        theme.CardBackground = ElevatedSurface;
-        theme.PlotBackground = Surface;
-        theme.CardBorder = Border;
-        theme.PlotBorder = Border.WithOpacity(0.72);
-        theme.Text = Foreground;
-        theme.MutedText = MutedForeground;
-        theme.Grid = Border.WithOpacity(0.55);
-        theme.Axis = MutedForeground.WithOpacity(0.75);
-        theme.Positive = Positive;
-        theme.Warning = Warning;
-        theme.Negative = Negative;
-        theme.Palette = Palette;
-        theme.SequentialRamp = _sequentialRamp == null ? null : SequentialRamp;
-        theme.FontFamily = FontFamily;
-        theme.CornerRadius = CornerRadius;
-        theme.PlotCornerRadius = Math.Max(0, CornerRadius * 0.72);
-        theme.StrokeWidth = StrokeWidth;
-        theme.Text2 = MutedForeground;
-        theme.MutedText = Muted ?? theme.MutedText;
-        theme.Grid = Grid ?? theme.Grid;
-        theme.Axis = Axis ?? theme.Axis;
-        theme.Info = Info ?? theme.Info;
-        theme.Quiet = Quiet ?? theme.Quiet;
-        theme.QuietLine = QuietLine ?? theme.QuietLine;
-        theme.Neutral = Neutral ?? theme.Neutral;
-        theme.Neutral2 = Neutral2 ?? theme.Neutral2;
-        theme.Neutral3 = Neutral3 ?? theme.Neutral3;
-        if (UseGraphiteLayout) {
-            theme.UseGraphiteLayout = true;
-            theme.FlatMarks = true;
-            theme.PlotBorder = ChartColor.Transparent;
-            theme.PlotCornerRadius = 0;
-            theme.ShadowOpacity = 0;
-            theme.WithTypography(17, 13.5, 12, 12, 13, 12);
-            theme.MarkerRadius = 3;
-        }
-        return theme;
-    }
-
-    /// <summary>Applies the shared tokens to a topology renderer theme.</summary>
-    public TopologyTheme ApplyTo(TopologyTheme theme) {
-        if (theme == null) throw new ArgumentNullException(nameof(theme));
-        theme.Background = Background.ToCss();
-        theme.Foreground = Foreground.ToCss();
-        theme.MutedForeground = MutedForeground.ToCss();
-        theme.Card = ElevatedSurface.ToCss();
-        theme.Surface = Surface.ToCss();
-        theme.Border = Border.ToCss();
-        theme.Accent = Accent.ToCss();
-        theme.Healthy = Positive.ToCss();
-        theme.Warning = Warning.ToCss();
-        theme.Critical = Negative.ToCss();
-        theme.Unknown = MutedForeground.ToCss();
-        theme.Disabled = Disabled.ToCss();
-        theme.FontFamily = FontFamily;
-        return theme;
-    }
 
     /// <summary>Creates a dark token set suitable for reports, dashboards, and wallpapers.</summary>
     public static VisualDesignTokens Dark() => new() {
@@ -231,6 +138,4 @@ public sealed partial class VisualDesignTokens {
         }
     };
 
-    private static string RequiredText(string value, string parameterName) => string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Value must not be empty.", parameterName) : value.Trim();
-    private static double NonNegativeFinite(double value, string parameterName) => double.IsNaN(value) || double.IsInfinity(value) || value < 0 ? throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite and non-negative.") : value;
 }

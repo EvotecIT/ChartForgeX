@@ -11,10 +11,12 @@ public sealed class CartesianGuideRoleTests {
     [InlineData(true)]
     public void ExplicitAxisAndGridColorsKeepTheirIndependentRoles(bool horizontal) {
         var chart = Chart.Create().WithSize(480, 320).WithHeader(false).WithLegend(false);
-        chart.Options.Theme.Axis = ChartColor.FromHex("#A02030");
-        chart.Options.Theme.Grid = ChartColor.FromHex("#2040A0");
-        chart.Options.Theme.CardBorder = ChartColor.FromHex("#20A040");
-        chart.Options.GridLineStyle = new ChartGridLineStyle { HorizontalOpacity = 1, VerticalOpacity = 1 };
+        chart.ConfigureTheme(builder => {
+            builder.Light.Axis = ChartColor.FromHex("#A02030");
+            builder.Light.Grid = ChartColor.FromHex("#2040A0");
+            builder.Light.Border = ChartColor.FromHex("#20A040");
+        });
+        chart.Options.GridLineStyle = new ChartGridLineStyle { ShowVerticalLines = true, HorizontalOpacity = 1, VerticalOpacity = 1 };
         var points = new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) };
         if (horizontal) chart.AddHorizontalBar("Values", points);
         else chart.AddLine("Values", points);
@@ -25,6 +27,6 @@ public sealed class CartesianGuideRoleTests {
         Assert.NotEmpty(grid);
         Assert.All(axes, element => Assert.Equal("#A02030", (string?)element.Attribute("stroke")));
         Assert.All(grid, element => Assert.Equal("#2040A0", (string?)element.Attribute("stroke")));
-        Assert.NotEqual(chart.ToPng(), chart.ConfigureTheme(theme => { theme.Axis = ChartColors.Transparent; theme.Grid = ChartColors.Transparent; }).ToPng());
+        Assert.NotEqual(chart.ToPng(), chart.ConfigureTheme(builder => { builder.Light.Axis = ChartColors.Transparent; builder.Light.Grid = ChartColors.Transparent; }).ToPng());
     }
 }

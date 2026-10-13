@@ -19,12 +19,12 @@ public static partial class V2GalleryModels {
             .ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; });
         ChartColorScale scale;
         if (kind == ChartSeriesKind.Scatter) {
-            chart.AddScatter("Recorded batches", samples.Select(sample => new ChartPoint(sample.Batch, sample.Minutes).WithColorValue(sample.Temperature)));
+            chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", samples.Select(sample => new ChartPoint(sample.Batch, sample.Minutes).WithColorValue(sample.Temperature))));
             scale = ChartColorScale.Diverging(new[] { colors.Palette[0] }, colors.Surface,
                 new[] { ChartColor.FromHex("#D9A441"), ChartColor.FromHex("#CF6A42"), colors.Status.Critical.Fill }, 0)
                 .WithValueRange(-15, 30).WithLabels("Cold", "Freezing", "Warm");
         } else {
-            chart.AddBubble("Recorded batches", samples.Select(sample => new ChartBubble(sample.Batch, sample.Minutes, sample.Requests).WithColorValue(sample.Temperature)))
+            chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("recorded-batches"), "Recorded batches", samples.Select(sample => new ChartBubble(sample.Batch, sample.Minutes, sample.Requests).WithColorValue(sample.Temperature))))
                 .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20; });
             scale = ChartColorScale.Discrete(new[] {
                 new ChartColorBand(0, colors.Palette[0], "Cold"),
@@ -33,7 +33,7 @@ public static partial class V2GalleryModels {
             });
         }
         chart.Series[0].WithColorScale(scale.WithNoDataColor(colors.Border))
-            .WithInteractionKey("recorded-batches").ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
         chart.AddLine("Target duration", new[] { new ChartPoint(0, 30), new ChartPoint(100, 30) });
         chart.Series[1].ConfigureMarkers(markers => markers.Enabled = false);
         return chart;

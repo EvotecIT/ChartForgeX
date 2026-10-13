@@ -219,7 +219,7 @@ internal static partial class SmokeTests {
         ("Graph explorer accessibility and frame telemetry stay honest", GraphExplorerAccessibilityAndFrameTelemetryStayHonest),
         ("Super topology bridge maps topology to graph explorer contract", SuperTopologyBridgeMapsTopologyToGraphExplorerContract),
         ("Typography uses a native font stack and escapes custom families", TypographyUsesNativeFontStackAndEscapesCustomFamilies),
-        ("Brand kits apply reusable tokens", BrandKitsApplyReusableTokens),
+        ("Paired themes apply reusable presentation", PairedThemesApplyReusablePresentation),
         ("Rendering uses invariant culture", RenderingUsesInvariantCulture),
         ("Report themes expose visual quality tokens", ReportThemesExposeVisualTokens),
         ("Standalone HTML uses a visible page background", StandaloneHtmlUsesVisibleBackground),

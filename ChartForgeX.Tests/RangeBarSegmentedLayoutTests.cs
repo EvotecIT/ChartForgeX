@@ -32,8 +32,7 @@ public sealed class RangeBarSegmentedLayoutTests {
         for (var item = 1; item < ordered.Length; item++) Assert.True(ordered[item - 1].Bottom < ordered[item].Top);
         Assert.Equal("32", (string?)groups[5].Attribute("data-cfx-start"));
         Assert.Equal("12", (string?)groups[5].Attribute("data-cfx-end"));
-        Assert.Equal("2", (string?)groups[5].Attribute("data-cfx-source-0-index"));
-        Assert.Equal("3", (string?)groups[5].Attribute("data-cfx-source-1-index"));
+        Assert.Equal("1", (string?)groups[5].Attribute("data-cfx-source-point"));
         if (style == ChartBarStyle.SegmentedCapsule) {
             for (var item = 0; item < bodies.Length; item++) {
                 var measured = ChartSegmentedBarGeometry.RangePaintBounds(chart.Options.ResolvePreparedBarVisualStyle(), bodies[item].Bounds, true);

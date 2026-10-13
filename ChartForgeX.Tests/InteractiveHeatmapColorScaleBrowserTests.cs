@@ -24,7 +24,7 @@ public sealed class InteractiveHeatmapColorScaleBrowserTests {
     public async Task PointerKeyboardAndSelectionKeepObservedValuesAndMissingIdentities(ChartSeriesKind kind, int width, bool dark, bool explicitScale) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(width, 400).WithDataLabels(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithHeatmapColorScale(explicitScale ? ChartColorScale.Discrete(new[] {
                 new ChartColorBand(10, ChartColor.FromHex("#DAE8F8"), "Low"),
                 new ChartColorBand(20, ChartColor.FromHex("#6F9ECE"), "Middle"),

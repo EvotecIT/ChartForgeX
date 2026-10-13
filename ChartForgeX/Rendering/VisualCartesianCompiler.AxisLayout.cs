@@ -45,7 +45,7 @@ internal static partial class VisualCartesianCompiler {
             categoryCaptions = ChartWaterfallCategoryLabels.Resolve(chart, categoryLabels);
         } else if (chart.Series.Any(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot)) {
             categoryCaptions = ChartCartesianCategoryLabels.Resolve(chart,
-                chart.Series.Where(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot).SelectMany(series => series.Points.Select(point => point.X)), categoryLabels);
+                chart.Series.Where(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot).SelectMany(series => series.RenderPoints.Select(point => point.X)), categoryLabels);
         }
         if (categoryCaptions != null) {
             var categoryAxis = horizontal ? HorizontalAxes(chart, axisLabels).Category : chart.Options.XAxis;

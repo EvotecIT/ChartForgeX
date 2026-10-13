@@ -13,29 +13,29 @@ public sealed class FrameHeadingFittingTests {
     [InlineData(18)]
     [InlineData(256)]
     public async Task ChangingOnlyDataLabelSizePreservesOrdinaryHeadingRoles(int size) {
-        var theme = ChartTheme.DashboardLight();
-        theme.DataLabelFontSize = size;
+        var theme = VisualTheme.Dashboard();
+        theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var chart = Chart.Create().WithTheme(theme).WithSize(520, 260)
             .WithTitle("Average KPI").WithSubtitle("Company standard").WithLegend(false)
             .WithAxes(false).WithGrid(false).WithPadding(32, 80, 32, 26)
             .AddBar("KPI", new[] { new ChartPoint(1, 8), new ChartPoint(2, 9) });
         var texts = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").ToArray();
-        Assert.Equal(theme.TitleFontSize, (double)Assert.Single(texts, element => element.Value == "Average KPI").Attribute("font-size")!, 7);
-        Assert.Equal(theme.SubtitleFontSize, (double)Assert.Single(texts, element => element.Value == "Company standard").Attribute("font-size")!, 7);
+        Assert.Equal(theme.Typography.TitleSize, (double)Assert.Single(texts, element => element.Value == "Average KPI").Attribute("font-size")!, 7);
+        Assert.Equal(theme.Typography.SubtitleSize, (double)Assert.Single(texts, element => element.Value == "Company standard").Attribute("font-size")!, 7);
         await Capture(chart, "dashboard-label-size-" + size, 520, 260);
     }
 
     [Trait("Category", "Browser")]
     [Fact]
     public async Task LargeCompactTitleRetainsItsOrdinarySubtitle() {
-        var theme = ChartTheme.DashboardLight();
+        var theme = VisualTheme.Dashboard();
         var chart = Chart.Create().WithTheme(theme).WithSize(520, 260)
             .WithTitle("Average KPI").WithSubtitle("Company standard").WithLegend(false)
             .ConfigureTitleStyle(style => style.WithFontSize(64))
             .AddLine("KPI", new[] { new ChartPoint(1, 8), new ChartPoint(2, 9) });
         var texts = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").ToArray();
         Assert.Equal(64, (double)Assert.Single(texts, element => element.Value == "Average KPI").Attribute("font-size")!, 7);
-        Assert.Equal(theme.SubtitleFontSize, (double)Assert.Single(texts, element => element.Value == "Company standard").Attribute("font-size")!, 7);
+        Assert.Equal(theme.Typography.SubtitleSize, (double)Assert.Single(texts, element => element.Value == "Company standard").Attribute("font-size")!, 7);
         await Capture(chart, "dashboard-large-title", 520, 260);
     }
 
@@ -44,7 +44,7 @@ public sealed class FrameHeadingFittingTests {
     [InlineData(520, 260, 80)]
     [InlineData(300, 210, 34)]
     public async Task CompactDashboardHeadingsRetainTheThemesOrdinaryRoleSizes(int width, int height, int topPadding) {
-        var theme = ChartTheme.DashboardLight();
+        var theme = VisualTheme.Dashboard();
         var chart = Chart.Create().WithTheme(theme).WithSize(width, height)
             .WithTitle("Average KPI").WithSubtitle("Company standard")
             .WithLegend(false).WithAxes(false).WithGrid(false)
@@ -52,8 +52,8 @@ public sealed class FrameHeadingFittingTests {
             .AddBar("KPI", new[] { new ChartPoint(1, 8), new ChartPoint(2, 9) });
         var headings = XDocument.Parse(chart.ToSvg()).Descendants()
             .Where(element => element.Name.LocalName == "text").ToArray();
-        Assert.Equal(theme.TitleFontSize, (double)Assert.Single(headings, element => element.Value == "Average KPI").Attribute("font-size")!, 7);
-        Assert.Equal(theme.SubtitleFontSize, (double)Assert.Single(headings, element => element.Value == "Company standard").Attribute("font-size")!, 7);
+        Assert.Equal(theme.Typography.TitleSize, (double)Assert.Single(headings, element => element.Value == "Average KPI").Attribute("font-size")!, 7);
+        Assert.Equal(theme.Typography.SubtitleSize, (double)Assert.Single(headings, element => element.Value == "Company standard").Attribute("font-size")!, 7);
         await Capture(chart, "dashboard-ordinary-" + width, width, height);
     }
 
@@ -61,7 +61,7 @@ public sealed class FrameHeadingFittingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void OrdinaryLongTitlesRetainTheirSizeAndDoNotShrinkAShortSubtitle(bool dashboard) {
-        var theme = dashboard ? ChartTheme.DashboardLight() : ChartTheme.Light();
+        var theme = dashboard ? VisualTheme.Dashboard() : VisualTheme.Report();
         var chart = Chart.Create().WithTheme(theme).WithSize(320, 700)
             .WithTitle("An ordinary report heading that wraps across the available width")
             .WithSubtitle("Short subtitle").WithLegend(false)
@@ -70,8 +70,8 @@ public sealed class FrameHeadingFittingTests {
         var headings = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "frame-heading")
             .SelectMany(element => element.Descendants().Where(child => child.Name.LocalName == "text")).ToArray();
         var subtitle = Assert.Single(headings, element => element.Value == "Short subtitle");
-        Assert.Equal(theme.SubtitleFontSize, (double)subtitle.Attribute("font-size")!, 7);
-        Assert.All(headings.Where(element => element != subtitle), element => Assert.Equal(theme.TitleFontSize, (double)element.Attribute("font-size")!, 7));
+        Assert.Equal(theme.Typography.SubtitleSize, (double)subtitle.Attribute("font-size")!, 7);
+        Assert.All(headings.Where(element => element != subtitle), element => Assert.Equal(theme.Typography.TitleSize, (double)element.Attribute("font-size")!, 7));
         Assert.Contains(headings, element => element != subtitle);
     }
 

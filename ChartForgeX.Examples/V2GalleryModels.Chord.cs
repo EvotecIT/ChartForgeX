@@ -3,7 +3,7 @@ using ChartForgeX.Core;
 public static partial class V2GalleryModels {
     private static Chart ChordRelationships(string variant) {
         var configured = variant == "options";
-        var chart = Chart.Create().AddChord("Transfers", new[] {
+        var chart = Chart.Create().AddSeries(ChartSeries.CreateChord(new ChartSeriesId("transfer-source"), "Transfers", new[] {
             new ChartNode("north", "North"), new ChartNode("south", "South"),
             new ChartNode("north-support", configured ? "Support" : "Services"), new ChartNode("south-support", "Support")
         }, new[] {
@@ -12,7 +12,7 @@ public static partial class V2GalleryModels {
             new ChartFlowLink("support-south", "north-support", "south", 9), new ChartFlowLink("south-support", "south", "south-support", 14),
             new ChartFlowLink("support-return", "south-support", "north", 4), new ChartFlowLink("support-internal", "south-support", "south-support", 3),
             new ChartFlowLink("zero-transfer", "north-support", "south-support", 0)
-        });
+        }));
         if (configured) {
             chart.ConfigureChord(options => {
                 options.StartAngleDegrees = -120;

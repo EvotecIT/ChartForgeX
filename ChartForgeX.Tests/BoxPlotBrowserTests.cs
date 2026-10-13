@@ -16,12 +16,11 @@ public sealed class BoxPlotBrowserTests {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
         var chart = V2GalleryModels.Create(ChartSeriesKind.BoxPlot, "compact-horizontal")
-            .WithSize(360, 440).WithTheme(ChartTheme.GraphiteDark()).WithDataLabels(false).WithFontFamily("Carlito")
+            .WithSize(360, 440).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithDataLabels(false).WithFontFamily("Carlito")
             .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         chart.Options.XAxis.WithBounds(0, 60);
         chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Minimum = "Minimum lokalne"; labels.Q1 = "Dolny kwartyl"; labels.Median = "Mediana"; labels.Q3 = "Górny kwartyl"; labels.Maximum = "Maksimum"; });
-        chart.Series[0].WithInteractionKey("expected").WithPointLabel(1, "Promised distribution"); chart.Series[1].WithInteractionKey("observed");
-        chart.Options.YAxis.Labels.AddRange(chart.Options.XAxis.Labels.Select(label => new ChartAxisLabel(label.Value,
+        chart.Series[0].WithPointLabel(1, "Promised distribution"); chart.Options.YAxis.Labels.AddRange(chart.Options.XAxis.Labels.Select(label => new ChartAxisLabel(label.Value,
             label.Value == 2 ? "Express delivery" : label.Text)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = HtmlChartTooltipMode.SharedX;
@@ -53,10 +52,11 @@ public sealed class BoxPlotBrowserTests {
         Assert.Equal(rawRows, await RowsAsync(page));
         Assert.Equal(defaultHeading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         var raw = new[] { "8", "12", "22", "30", "42" };
+        var fields = new[] { "minimum", "q1", "median", "q3", "maximum" };
         for (var member = 0; member < raw.Length; member++) {
-            Assert.Equal(raw[member], await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-" + member + "-y"));
-            Assert.Equal((5 + member).ToString(), await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-" + member + "-index"));
+            Assert.Equal(raw[member], await page.Locator(neighbor).GetAttributeAsync("data-cfx-" + fields[member]));
         }
+        Assert.Equal("1", await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-point"));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(neighbor).GetAttributeAsync("aria-selected"));
         Assert.Equal("observed:1", await page.EvaluateAsync<string>("() => window.boxSelections.at(-1).targetId"));
@@ -84,8 +84,7 @@ public sealed class BoxPlotBrowserTests {
     public async Task RawSampleSummaryKeepsInterpolatedFactsAndDerivedSelectionIdentity() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(640, 400).WithXLabels("Raw input").WithPointLegend().WithLegend()
-            .AddBoxPlot("Distribution", 1, new[] { 30d, 0, 20, 10 });
-        chart.Series[0].WithInteractionKey("raw-distribution");
+            .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("raw-distribution"), "Distribution", 1, new[] { 30d, 0, 20, 10 }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.SharedX));
         var page = session.Page;
         await page.EvaluateAsync("() => { window.rawSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.rawSelections.push(event.detail.target)); }");
@@ -96,12 +95,14 @@ public sealed class BoxPlotBrowserTests {
         Assert.Equal(new[] { "Series", "Distribution", "Category", "Raw input", "Minimum", "0", "Q1", "7.5", "Median", "15", "Q3", "22.5", "Maximum", "30" }, await RowsAsync(page));
         Assert.Equal("Distribution: 15", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal("five-number-summary", await point.GetAttributeAsync("data-cfx-derived"));
-        Assert.Equal("-1", await point.GetAttributeAsync("data-cfx-source-0-index"));
+        Assert.Equal("4", await point.GetAttributeAsync("data-cfx-source-count"));
+        Assert.Null(await point.GetAttributeAsync("data-cfx-source-point"));
         await page.Keyboard.PressAsync("Space");
         using var events = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.rawSelections.at(-1))"));
         var target = events.RootElement;
         Assert.Equal("raw-distribution:derived:five-number-summary:0", target.GetProperty("targetId").GetString());
-        Assert.False(target.TryGetProperty("sourcePoint", out _)); Assert.False(target.TryGetProperty("sourcePoints", out _));
+        Assert.False(target.TryGetProperty("sourcePoint", out _));
+        Assert.False(target.TryGetProperty("sourcePoints", out _));
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "box-plot-raw-summary.png") });
         AssertNoConsoleErrors(session);

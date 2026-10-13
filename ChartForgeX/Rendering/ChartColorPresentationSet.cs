@@ -43,7 +43,7 @@ internal sealed class ChartSeriesColorSurface {
         Scale = series.ColorScale; Presentation = presentation; SeriesName = series.Name;
         _bubble = series.Kind == ChartSeriesKind.Bubble;
         var stride = _bubble ? 2 : 1;
-        _values = Enumerable.Range(0, series.Points.Count / stride).Select(index => series.Points[index * stride].ColorValue).ToArray();
+        _values = Enumerable.Range(0, series.RenderPoints.Count / stride).Select(index => series.RenderPoints[index * stride].ColorValue).ToArray();
         var values = _values.Where(value => value.HasValue).Select(value => value!.Value).ToArray();
         HasValues = values.Length > 0; Missing = values.Length < _values.Length;
         Minimum = HasValues ? values.Min() : 0; Maximum = HasValues ? values.Max() : 0;

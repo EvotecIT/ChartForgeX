@@ -13,7 +13,7 @@ namespace ChartForgeX.Stories;
 
 internal static partial class NativeVisualStoryRenderer {
     internal static PreparedVisual Prepare(VisualStory story, int sceneIndex, double? elapsed, int outputScale, string transcript) {
-        var scene = story.Scenes[sceneIndex]; var theme = story.Theme;
+        var scene = story.Scenes[sceneIndex]; var theme = story.ResolvedStyle;
         var builder = new VisualSceneBuilder(new VisualSize(story.Width, story.Height), FontSpec.FromFamily(theme.FontFamily));
         if (theme.BackgroundEnd.HasValue) {
             builder.RectGradient(new ChartRect(0, 0, story.Width, story.Height), new ChartPoint(0, 0), new ChartPoint(story.Width, story.Height),
@@ -74,8 +74,8 @@ internal static partial class NativeVisualStoryRenderer {
         builder.Text(TerminalTextWidth.Fit(text, width, value => builder.MeasureText(value, size, weight).Width), x, baseline, size, color, weight);
     }
     private static void DrawProse(VisualSceneBuilder builder, VisualStory story, VisualStoryTextSurface surface, ChartRect bounds) {
-        var style = TextStyle.Create(surface.Emphasized ? 28 : 21, surface.Emphasized ? story.Theme.Text : story.Theme.Muted);
-        style.Font = FontSpec.FromFamily(story.Theme.FontFamily); style.Font.Weight = surface.Emphasized ? 700 : 400;
+        var style = TextStyle.Create(surface.Emphasized ? 28 : 21, surface.Emphasized ? story.ResolvedStyle.Text : story.ResolvedStyle.Muted);
+        style.Font = FontSpec.FromFamily(story.ResolvedStyle.FontFamily); style.Font.Weight = surface.Emphasized ? 700 : 400;
         style.LineHeight = 1.35;
         var lineHeight = TextLayoutEngine.Measure("Ag", style).LineHeight;
         var maxLines = Math.Max(1, (int)(bounds.Height / lineHeight));

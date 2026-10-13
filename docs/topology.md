@@ -4,9 +4,42 @@
 
 Use it for static or embeddable diagrams such as service maps, SQL/server dependency views, people/team relationship diagrams, network connectivity maps, replication meshes, geographic-style location views, and product-specific topology views supplied by host applications.
 
+## Shared themes
+
+Topology uses the same immutable `VisualTheme` as charts, grids and other visual models. Reuse one paired theme and select `VisualThemeMode.Light` or `Dark` explicitly for each model. `WithFontFamily(...)` and `Configure(...)` return new theme snapshots; assign the returned value when customizing a shared theme.
+
+```csharp
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+
+var theme = VisualTheme.Graphite().WithFontFamily("Segoe UI, sans-serif");
+var mode = VisualThemeMode.Dark;
+var trend = Chart.Create().WithTheme(theme, mode)
+    .AddLine("Requests", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
+var topology = TopologyChart.Create().WithTheme(theme, mode)
+    .AddNode("api", "API", 100, 100, status: TopologyHealthStatus.Healthy);
+
+var variables = new SvgColorVariables()
+    .AddThemeToken(VisualThemeColorToken.Background, "--report-page")
+    .AddThemeToken(VisualThemeColorToken.Surface, "--report-node-surface")
+    .AddThemeToken(VisualThemeColorToken.ElevatedSurface, "--report-frame")
+    .AddThemeToken(VisualThemeColorToken.Foreground, "--report-text")
+    .AddThemeToken(VisualThemeColorToken.MutedForeground, "--report-secondary-text")
+    .AddThemeToken(VisualThemeColorToken.Positive, "--report-healthy");
+
+var trendSvg = trend.ToSvg();
+var topologySvg = topology.ToSvg(new TopologyRenderOptions { SvgColorVariables = variables });
+var topologyPng = topology.ToPng();
+```
+
+`AddThemeToken(...)` keeps surface, text and status bindings distinct even when their resolved colors are equal. Define these custom properties in the embedding host to restyle SVG output. Each reference retains the selected theme's concrete fallback; PNG uses those concrete colors. An explicit `Prepare(context)` uses the theme, mode and font from that context.
+
 ## Text measurement and fonts
 
-Topology layout defaults to `TextMeasurementMode.PortableEstimate`, which preserves the portable width estimate and does not inspect installed fonts. This keeps geometry reproducible across hosts, but the estimate cannot guarantee that every custom font fits. Set `TopologyRenderOptions.TextMeasurementMode = TextMeasurementMode.InstalledFonts` (from `ChartForgeX.Typography`) to measure the host font resolved from `TopologyTheme.FontFamily`; this opt-in can change wrapping and geometry between machines. Node wrapping, edge-label backplates and routing clearance share that measurement. Subtitle chips and badges use the same geometry in SVG and PNG; long center-banner titles are shortened to the available width. Trimming respects text-element boundaries rather than cutting UTF-16 code units.
+Topology layout defaults to `TextMeasurementMode.PortableEstimate`, which preserves the portable width estimate and does not inspect installed fonts. This keeps geometry reproducible across hosts, but the estimate cannot guarantee that every custom font fits. Set `TopologyRenderOptions.TextMeasurementMode = TextMeasurementMode.InstalledFonts` (from `ChartForgeX.Typography`) to measure the host font resolved from `VisualTheme.Typography.Family`; this opt-in can change wrapping and geometry between machines. Node wrapping, edge-label backplates and routing clearance share that measurement. Subtitle chips and badges use the same geometry in SVG and PNG; long center-banner titles are shortened to the available width. Trimming respects text-element boundaries rather than cutting UTF-16 code units.
 
 Use `chart.GetPngFontInfo()` to inspect the PNG face and fallback; installed-font layout uses the same resolver. This diagnostic does not change the portable layout policy. Measurements are cached within each render with a bounded cache; changing a source theme takes effect on the next render.
 

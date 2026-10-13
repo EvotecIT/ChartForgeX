@@ -137,7 +137,7 @@ internal static partial class SmokeTests {
 
     private static Chart WaterfallLabelSample(int width, bool dark) => Chart.Create().WithSize(width, width == 180 ? 180 : 360)
         .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels().WithBarStyle(ChartBarStyle.Flat)
-        .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
 
     private static ChartRect WaterfallLabelBounds(VisualSceneText text) =>
         new(text.X, text.Baseline - text.Text.Ascent, text.Text.Metrics.Width, text.Text.Metrics.Height);

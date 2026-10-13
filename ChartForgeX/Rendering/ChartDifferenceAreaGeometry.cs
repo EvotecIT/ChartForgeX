@@ -18,12 +18,12 @@ internal static class ChartDifferenceAreaGeometry {
                 Finish(); segmentStart = item; segmentEnd = ConnectedEnd(mapped.First, item); continue;
             }
             var a = item - 1; var b = item;
-            var left = series.Points[a * 2].Y.CompareTo(series.Points[a * 2 + 1].Y);
-            var right = series.Points[b * 2].Y.CompareTo(series.Points[b * 2 + 1].Y);
+            var left = series.RenderPoints[a * 2].Y.CompareTo(series.RenderPoints[a * 2 + 1].Y);
+            var right = series.RenderPoints[b * 2].Y.CompareTo(series.RenderPoints[b * 2 + 1].Y);
             if (left == 0 && right == 0) { Finish(); continue; }
             if (left != 0 && right != 0 && left != right) {
-                var t = CrossingFraction(series.Points[a * 2].Y, series.Points[a * 2 + 1].Y,
-                    series.Points[b * 2].Y, series.Points[b * 2 + 1].Y);
+                var t = CrossingFraction(series.RenderPoints[a * 2].Y, series.RenderPoints[a * 2 + 1].Y,
+                    series.RenderPoints[b * 2].Y, series.RenderPoints[b * 2 + 1].Y);
                 var x = Blend(mapped.First[a].X, mapped.First[b].X, t);
                 var y = Blend(mapped.First[a].Y, mapped.First[b].Y, t) / 2
                     + Blend(mapped.Second[a].Y, mapped.Second[b].Y, t) / 2;
@@ -70,7 +70,7 @@ internal static class ChartDifferenceAreaGeometry {
         void Hold(double startX, double endX, int item) {
             // Start and End have a zero-width endpoint hold; it must not split or create a filled region.
             if (startX == endX) return;
-            var polarity = series.Points[item * 2].Y.CompareTo(series.Points[item * 2 + 1].Y);
+            var polarity = series.RenderPoints[item * 2].Y.CompareTo(series.RenderPoints[item * 2 + 1].Y);
             if (polarity == 0) { Finish(); return; }
             if (sign != polarity) Finish();
             var firstY = mapped.First[item].Y; var secondY = mapped.Second[item].Y;

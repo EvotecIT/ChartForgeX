@@ -77,7 +77,7 @@ public sealed class VerticalIntervalAutoBoundsTests {
 
     private static Chart Create(bool boxPlot, ChartBarStyle style, ChartScaleKind scale, bool reversed, bool secondary = false) {
         var chart = Chart.Create().WithSize(480, 320).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithBarStyle(style).WithTheme(ChartTheme.GraphiteLight()).WithFontFamily("Carlito")
+            .WithBarStyle(style).WithTheme(VisualTheme.Graphite()).WithFontFamily("Carlito")
             .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         if (secondary) {
             chart.AddLine("Primary", new[] { new ChartPoint(1, 1.25), new ChartPoint(2, 1.75) });
@@ -108,13 +108,12 @@ public sealed class VerticalIntervalAutoBoundsTests {
         Assert.Equal(2, groups.Length);
         for (var point = 0; point < groups.Length; point++) {
             Assert.Equal(secondary ? "secondary" : "primary", (string?)groups[point].Attribute("data-cfx-axis"));
-            Assert.Equal(count, Number(groups[point], "data-cfx-source-count"));
+            Assert.Equal(1, Number(groups[point], "data-cfx-source-count"));
             Assert.Equal(point, Number(groups[point], "data-cfx-point"));
+            Assert.Equal(point, Number(groups[point], "data-cfx-source-point"));
+            Assert.Equal(point + 1, Number(groups[point], "data-cfx-x"));
             for (var member = 0; member < count; member++) {
                 Assert.Equal(values[point], Number(groups[point], "data-cfx-" + keys[member]));
-                Assert.Equal(values[point], Number(groups[point], "data-cfx-source-" + member + "-y"));
-                Assert.Equal(point + 1, Number(groups[point], "data-cfx-source-" + member + "-x"));
-                Assert.Equal(point * count + member, Number(groups[point], "data-cfx-source-" + member + "-index"));
             }
         }
     }

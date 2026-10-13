@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Linq;
 using System.Text;
 using ChartForgeX.Core;
@@ -168,7 +169,7 @@ internal static class TopologyExamples {
             .WithTitle("Site Topology")
             .WithSubtitle("Sample regional site topology with hubs, branches, bridgeheads, and site-link health.")
             .WithViewport(1200, 680, 28)
-            .WithTheme(TopologyTheme.Light())
+            .WithTheme(VisualTheme.Graphite())
             .WithLegend(TopologyLegend.Default()
                 .AddNodeKind("Hub site", TopologyNodeKind.Hub, symbol: "H")
                 .AddNodeKind("Branch site", TopologyNodeKind.Branch, symbol: "B")

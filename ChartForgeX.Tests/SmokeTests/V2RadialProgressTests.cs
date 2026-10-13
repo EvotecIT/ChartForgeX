@@ -39,6 +39,9 @@ public sealed class V2RadialProgressTests {
         var svg = VisualSceneSvgRenderer.Render(scene);
         lower.Value = 0; upper.Maximum = 10;
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
+        Assert.Equal(svg, VisualSceneSvgRenderer.Render(Compile(chart)));
+        chart.Series[0].RadialLayers[0].Value = 0;
+        chart.Series[0].RadialLayers[1].Maximum = 10;
         Assert.Throws<InvalidOperationException>(() => Compile(chart));
     }
 

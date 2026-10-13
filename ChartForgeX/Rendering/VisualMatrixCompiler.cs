@@ -70,8 +70,8 @@ internal static partial class VisualMatrixCompiler {
                 using (builder.PushGroup("series-" + rowIndex, "series", new Dictionary<string, string> {
                     ["data-cfx-series"] = rowIndex.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name
                 })) {
-                    for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
-                        var point = series.Points[pointIndex]; var columnIndex = Array.BinarySearch(columns, point.X);
+                    for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
+                        var point = series.RenderPoints[pointIndex]; var columnIndex = Array.BinarySearch(columns, point.X);
                         var bounds = new ChartRect(plot.Left + columnIndex * (cellWidth + gap), y, cellWidth, cellHeight);
                         ChartPath? hexPath = null;
                         if (kind == ChartSeriesKind.HexbinHeatmap) {

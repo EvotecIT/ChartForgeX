@@ -9,7 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderVisualBadge(SvgMarkupWriter writer, ChartTable table, ChartTableCell cell, double x, double y, double width, double height) {
-        var theme = table.Options.Theme;
+        var theme = table.Options.ResolvedTheme;
         var color = cell.BadgeColor ?? VisualBlockRendering.StatusColor(theme, cell.BadgeStatus);
         var fontSize = Math.Max(9, table.Dense ? 10.5 : 11.5);
         var badgeWidth = Math.Min(width, Math.Max(28, VisualBlockRendering.EstimateTextWidth(cell.BadgeText, fontSize) + 18));
@@ -37,7 +37,7 @@ public sealed partial class SvgFactBlockRenderer {
         return x;
     }
 
-    private static void BadgeColors(ChartForgeX.Themes.ChartTheme theme, ChartColor color, VisualBadgeStyle style, out ChartColor fill, out ChartColor stroke, out ChartColor text) {
+    private static void BadgeColors(ChartForgeX.Themes.ResolvedVisualTheme theme, ChartColor color, VisualBadgeStyle style, out ChartColor fill, out ChartColor stroke, out ChartColor text) {
         if (style == VisualBadgeStyle.Solid) {
             fill = color;
             stroke = color;

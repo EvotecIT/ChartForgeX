@@ -140,7 +140,8 @@ public sealed class FinancialDashOptionsTests {
         var original = Prepare(chart); var item = chart.Series[0].Financial.Rising;
         item.DashPattern = new[] { 6d, 10d }; item.DashOffset = -2;
         if (kind == ChartSeriesKind.Candlestick) { item.Wick.DashPattern = new[] { 4d, 8d }; item.Wick.DashOffset = 3; }
-        item.DashPattern = null; item.DashOffset = null; item.Wick.DashPattern = null; item.Wick.DashOffset = null;
+        item.DashPattern = null; item.DashOffset = null;
+        if (kind == ChartSeriesKind.Candlestick) { item.Wick.DashPattern = null; item.Wick.DashOffset = null; }
         Assert.Equal(original.ToSvg(), Prepare(chart).ToSvg()); Assert.Equal(original.ToPng(), Prepare(chart).ToPng());
         item.DashPattern = new[] { 6d, 10d }; item.DashOffset = -2; item.StrokeWidth = 0;
         if (kind == ChartSeriesKind.Candlestick) { item.FillOpacity = 0; item.Wick.StrokeWidth = 0; }

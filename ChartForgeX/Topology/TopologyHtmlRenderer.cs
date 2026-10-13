@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Themes;
 using System.Globalization;
 using System.Linq;
 using ChartForgeX.Html;
@@ -50,7 +51,7 @@ public sealed partial class TopologyHtmlRenderer {
         options = chart.ResolveRenderOptions(options).CloneForRendering();
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
         if (options.View != null && !string.IsNullOrWhiteSpace(options.View.Id)) id += "-" + options.View.Id;
-        var theme = chart.Theme ?? TopologyTheme.Light();
+        var theme = new TopologyPaint(chart.Theme, chart.ThemeMode, options.SvgColorVariables);
         var cssPrefix = CssClassPrefix(options);
         var wrapperClass = cssPrefix + "-wrapper";
         var viewportClass = cssPrefix + "-viewport";
@@ -172,7 +173,7 @@ public sealed partial class TopologyHtmlRenderer {
         options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
         options ??= new TopologyRenderOptions();
-        var theme = chart.Theme ?? TopologyTheme.Light();
+        var theme = new TopologyPaint(chart.Theme, chart.ThemeMode, options.SvgColorVariables);
         var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!;
         var cssPrefix = CssClassPrefix(options);
         var writer = new HtmlMarkupWriter();
@@ -194,10 +195,11 @@ public sealed partial class TopologyHtmlRenderer {
     /// <param name="options">Optional render options whose CSS prefix should be honored.</param>
     /// <param name="theme">Optional topology theme whose font family should be used.</param>
     /// <returns>CSS ready to register once in a host document.</returns>
-    public static string BuildFragmentStyle(TopologyRenderOptions? options = null, TopologyTheme? theme = null) {
+    /// <param name="mode">The explicit palette mode for the host surface.</param>
+    public static string BuildFragmentStyle(TopologyRenderOptions? options = null, VisualTheme? theme = null, VisualThemeMode mode = VisualThemeMode.Light) {
         options ??= new TopologyRenderOptions();
-        theme ??= TopologyTheme.Light();
-        return StyleSheet(CssClassPrefix(options), CssFontFamily(theme.FontFamily), theme.Background, includePageShell: false);
+        var paint = new TopologyPaint(theme ?? VisualTheme.Graphite(), mode, options.SvgColorVariables);
+        return StyleSheet(CssClassPrefix(options), CssFontFamily(paint.FontFamily), paint.Background, includePageShell: false);
     }
 
     private static void WriteIconButton(HtmlMarkupWriter writer, string dataAttribute, string dataValue, string title, string ariaLabel, bool? pressed, string icon, string? text = null) {
@@ -344,7 +346,7 @@ public sealed partial class TopologyHtmlRenderer {
         return NormalizeCssClassPrefix(options.CssClassPrefix, DefaultCssClassPrefix);
     }
 
-    internal static string BuildPageStyle(TopologyRenderOptions options, TopologyTheme theme) {
+    internal static string BuildPageStyle(TopologyRenderOptions options, TopologyPaint theme) {
         return StyleSheet(CssClassPrefix(options), CssFontFamily(theme.FontFamily), theme.Background);
     }
 

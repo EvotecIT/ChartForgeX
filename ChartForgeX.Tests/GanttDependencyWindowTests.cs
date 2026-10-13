@@ -26,8 +26,8 @@ public sealed class GanttDependencyWindowTests {
         Assert.Equal(expected, XDocument.Parse(prepared.ToSvg()).Descendants().Count(element =>
             (string?)element.Attribute("data-cfx-role") == "gantt-dependency-arrow"));
         Assert.NotEmpty(prepared.ToPng());
-        Assert.Equal(firstStart, chart.Series[0].Points[0].X);
-        Assert.Equal(nextEnd, chart.Series[1].Points[0].Y);
+        Assert.Equal(firstStart, chart.Series[0].GanttItems[0].Start);
+        Assert.Equal(nextEnd, chart.Series[1].GanttItems[0].End);
         Assert.Single(chart.GanttDependencies);
     }
 
@@ -37,7 +37,7 @@ public sealed class GanttDependencyWindowTests {
     public async Task ClippedTasksDoNotLeavePhantomDependencyInkInStaticBrowserOutput(bool dark, int width) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Create(1, 2, 3, 4, false, width)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         chart.AddGanttTask("Visible", 12, 18).AddGanttDependency(1, 2);
         await using var session = await InteractiveChartBrowser.OpenAsync(
             "<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);

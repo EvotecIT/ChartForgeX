@@ -14,7 +14,7 @@ public sealed class CartesianLollipopLabelBrowserTests {
     public async Task ReversedEndpointCaptionAndPhysicalReadoutRetainTheirSignedSource(bool secondary, int sign, bool dark) {
         if (!Enabled) return;
         var chart = CartesianLollipopLabelTests.Create(secondary, true, sign)
-            .WithSize(dark ? 360 : 640, 360).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithSize(dark ? 360 : 640, 360).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), dark ? 390 : 700, 520);
         var page = session.Page; var point = page.Locator(Point(0, 0));
         var marker = await point.Locator("[data-cfx-role='lollipop-marker']").BoundingBoxAsync() ?? throw new InvalidOperationException("No native endpoint marker.");

@@ -15,9 +15,8 @@ public sealed class RangeBarEndpointLabelBrowserTests {
         if (!Enabled) return;
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
-        var chart = RangeBarEndpointLabelTests.Fixture(true).WithSize(360, 360).WithLegend(true).WithTheme(ChartTheme.GraphiteDark());
-        chart.Series[0].WithInteractionKey("expected").WithPointLabel(0, "Promised <&> delivery");
-        chart.Series[1].WithInteractionKey("observed");
+        var chart = RangeBarEndpointLabelTests.Fixture(true).WithSize(360, 360).WithLegend(true).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+        chart.Series[0].WithPointLabel(0, "Promised <&> delivery");
         chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
         chart.Options.RangeBar.EndpointLabelFormatter = context => context.FormattedValue + (context.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
         if (!string.IsNullOrWhiteSpace(directory)) {
@@ -62,10 +61,9 @@ public sealed class RangeBarEndpointLabelBrowserTests {
         Assert.Equal("false", await page.Locator(Point(1, 0)).GetAttributeAsync("aria-selected"));
         await page.Locator(point).FocusAsync();
         Assert.Equal(rows, await RowsAsync(page));
-        Assert.Equal("30", await page.Locator(point).GetAttributeAsync("data-cfx-source-0-y"));
-        Assert.Equal("-10", await page.Locator(point).GetAttributeAsync("data-cfx-source-1-y"));
-        Assert.Equal("0", await page.Locator(point).GetAttributeAsync("data-cfx-source-0-index"));
-        Assert.Equal("1", await page.Locator(point).GetAttributeAsync("data-cfx-source-1-index"));
+        Assert.Equal("30", await page.Locator(point).GetAttributeAsync("data-cfx-start"));
+        Assert.Equal("-10", await page.Locator(point).GetAttributeAsync("data-cfx-end"));
+        Assert.Equal("0", await page.Locator(point).GetAttributeAsync("data-cfx-source-point"));
         await page.Locator(Legend(0)).ClickAsync();
         Assert.Equal(1, await page.Locator("g[data-cfx-role='series'][data-cfx-series='0'].cfx-series-muted").CountAsync());
         var opacity = await EffectiveOpacityAsync(page, captions);

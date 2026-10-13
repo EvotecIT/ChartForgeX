@@ -20,7 +20,7 @@ internal static partial class TopologyRenderPrimitives {
     public static double EdgeLabelBackplateRadius(TopologyRenderOptions options) =>
         IsMonitoringDashboardStyle(options) ? EdgeLabelBackplateMonitoringRadius : EdgeLabelBackplateDefaultRadius;
 
-    public static string EdgeLabelBackplateFill(TopologyTheme theme, TopologyRenderOptions options) =>
+    public static string EdgeLabelBackplateFill(TopologyPaint theme, TopologyRenderOptions options) =>
         IsMonitoringDashboardStyle(options) ? theme.Card : theme.Background;
 
     public static double EdgeLabelBackplateFillOpacity(TopologyRenderOptions options) =>

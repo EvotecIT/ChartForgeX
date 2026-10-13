@@ -26,8 +26,7 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
     public async Task RepeatedLabelsKeepAuthoredSelectionAndTooltipIdentity(ChartSeriesKind kind, bool dark, int width) {
         if (!Enabled) return;
         var chart = RelationshipIdentityTests.RepeatedLabels(kind).WithSize(width, width < 500 ? 320 : 460)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithTitle("Teams and support").WithLegend(true);
-        chart.Series[0].WithInteractionKey("team-source");
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("Teams and support").WithLegend(true);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 450 : 580);
         var page = session.Page;
@@ -108,7 +107,7 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
     public async Task ConfiguredExamplesRetainRepeatedLabelsAndNativePaint(ChartSeriesKind kind, bool dark, int width) {
         if (!Enabled) return;
         var chart = V2GalleryModels.Create(kind, "options").WithSize(width, width < 500 ? 320 : 460)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithTitle("Explicit relationship identities");
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("Explicit relationship identities");
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 430 : 570);
         var supports = session.Page.Locator("[data-cfx-target-kind=node][data-cfx-label=Support]");

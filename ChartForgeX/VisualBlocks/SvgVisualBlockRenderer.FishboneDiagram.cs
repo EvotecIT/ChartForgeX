@@ -8,7 +8,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgVisualBlockRenderer {
     private static void RenderFishboneDiagram(SvgMarkupWriter writer, FishboneDiagramBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
@@ -22,7 +22,7 @@ public sealed partial class SvgVisualBlockRenderer {
         WriteFittedBodyText(writer, block.Effect, layout.Head.X + 10, VisualBlockRendering.BlockLayoutBaseline(effectStyle, layout.Head.Y + layout.Head.Height / 2), layout.Head.Width - 20, layout.Head.Height - 16, TextAlignment.Center, theme.Text, theme, 13.5, 800);
     }
 
-    private static void WriteFishboneBranch(SvgMarkupWriter writer, VisualBlockRendering.FishboneBranchPlacement branch, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteFishboneBranch(SvgMarkupWriter writer, VisualBlockRendering.FishboneBranchPlacement branch, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var color = VisualBlockRendering.PaletteAt(theme, branch.Index);
         writer.StartElement("line").Attribute("data-cfx-role", "fishbone-branch").Attribute("x1", F(branch.BaseX)).Attribute("y1", F(branch.BaseY)).Attribute("x2", F(branch.EndX)).Attribute("y2", F(branch.EndY)).Attribute("stroke", color.ToCss()).Attribute("stroke-width", 2).Attribute("stroke-linecap", "round").EndEmptyElement().Line();
         WriteFittedBodyText(writer, branch.Cause.Label, branch.LabelX, branch.LabelY, branch.LabelWidth, 24, TextAlignment.Center, theme.Text, theme, 12.5, 750);

@@ -24,7 +24,7 @@ public sealed class NumericRadialAxisBrowserTests {
         var chart = dual ? NumericRadialAxisLabelTests.DualAxes(width, reversed) : NumericRadialAxisLabelTests.Categories(start, width, reversed);
         if (name.StartsWith("gallery-", StringComparison.Ordinal)) chart = V2GalleryModels.CreateRadialBarScales().WithSize(width, width == 360 ? 360 : 440)
             .WithTitle("Requests and resolution rate").WithSubtitle("Request counts and percentages use independent scales");
-        chart.WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        chart.WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width + 40, width == 360 ? 420 : 510);
         await CaptureAsync(session, chart, name);
         var displayed = await session.Page.Locator(dual ? "[data-cfx-role='radial-value-label'] text" : "[data-cfx-role='radial-category-label'] text").CountAsync();

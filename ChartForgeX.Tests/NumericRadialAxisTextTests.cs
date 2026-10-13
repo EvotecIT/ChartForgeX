@@ -102,7 +102,7 @@ public sealed class NumericRadialAxisTextTests {
     [InlineData(true)]
     public void OnlyParticipatingValueAxesReserveTitleStripsIncludingCompleteEmptyDomains(bool bars) {
         var chart = Configured(bars, 800);
-        chart.Series.RemoveAt(1);
+        chart.RemoveSeries(chart.Series[1]);
         var primaryPrepared = Prepare(chart); var primary = primaryPrepared.Scene;
         Assert.DoesNotContain(primary.Nodes.OfType<VisualSceneText>(), text => text.Id == "radial-value-axis-title-secondary");
         chart.WithSecondaryYAxis("Unused caption that must not shrink the plot"); chart.Options.SecondaryYAxis.LabelAngle = -90;
@@ -144,14 +144,14 @@ public sealed class NumericRadialAxisTextTests {
 
     internal static Chart Configured(bool bars, int width, bool dark = false) {
         var chart = Chart.Create().WithSize(width, width == 360 ? 360 : 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithFontFamily("Carlito").WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithFontFamily("Carlito").WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXLabels("North", "South", "East").WithRadialGeometry(new(-75, 195, .2, .25, .1))
             .WithXAxis("Region").WithYAxis("Requests").WithSecondaryYAxis("Resolved (%)")
             .WithYAxisBounds(0, 1500).WithSecondaryYAxisBounds(0, 100)
             .ConfigureXAxis(axis => axis.LabelAngle = -30).ConfigureYAxis(axis => { axis.LabelAngle = 30; axis.TickCount = 3; })
             .ConfigureSecondaryYAxis(axis => { axis.LabelAngle = 90; axis.TickCount = 3; });
-        NumericRadialSeriesTests.Add(chart, bars, "Requests", new(1, 1200), new(2, 900), new(3, 700));
-        NumericRadialSeriesTests.Add(chart, bars, "Resolved (%)", new(1, 85), new(2, 70), new(3, 60)).Series[1].UseSecondaryYAxis();
+        NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("requests"), "Requests", new(1, 1200), new(2, 900), new(3, 700));
+        NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("resolved"), "Resolved (%)", new(1, 85), new(2, 70), new(3, 60)).Series[1].UseSecondaryYAxis();
         chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         return chart;
     }

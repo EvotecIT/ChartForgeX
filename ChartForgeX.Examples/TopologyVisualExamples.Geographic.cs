@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Core;
 using ChartForgeX.Topology;
 
@@ -10,7 +11,7 @@ internal static partial class TopologyVisualExamples {
             .WithLayout(TopologyLayoutMode.Geographic)
             .WithMapViewport(ChartMapViewport.World())
             .WithViewport(1280, 720, 28)
-            .WithTheme(TopologyTheme.Light())
+            .WithTheme(VisualTheme.Graphite())
             .WithLegend(TopologyLegend.Default()
                 .AddNodeKind("Region hub", TopologyNodeKind.Hub, symbol: "H")
                 .AddNodeKind("Site", TopologyNodeKind.Branch, symbol: "S")

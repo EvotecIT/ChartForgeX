@@ -10,7 +10,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngFactBlockRenderer {
     private static void DrawSegmentedMetricFunnelColumns(RgbaCanvas canvas, SegmentedMetricBlock card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawSegmentedMetricHeading(canvas, card, ref y, content.X, content.Width);

@@ -92,15 +92,12 @@ public sealed partial class DifferenceAreaTests {
         }
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void EitherTupleMemberCutsStepBoundariesAndNativeFill(bool breakSecond) {
+    [Fact]
+    public void TypedPairCutsStepBoundariesAndNativeFill() {
         var chart = Model(new(0, 8, 2), new(1, 8, 2), new(3, 8, 2), new(4, 8, 2));
         var series = chart.Series[0];
         series.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
-        series.Points[4] = new ChartPoint(3, 8, !breakSecond);
-        series.Points[5] = new ChartPoint(3, 2, breakSecond);
+        series.UpdateDifferencePoint(2, new ChartDifferencePoint(3, 8, 2, true));
         var prepared = Prepare(chart);
         foreach (var role in new[] { "difference-first", "difference-second" })
             Assert.Equal(2, Boundary(prepared, role).Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));
@@ -111,7 +108,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Equal(0, Pixel(image, left.X / 2 + right.X / 2, left.Y + left.Height / 2).A);
         Assert.Equal(4, prepared.Regions.Count(region => region.Role == "point"));
         var breakFacts = Group(prepared, "series-0-point-2");
-        Assert.Equal("true", breakFacts["data-cfx-source-" + (breakSecond ? "1" : "0") + "-break"]);
+        Assert.Equal("true", breakFacts["data-cfx-break-before"]);
     }
 
     [Theory]

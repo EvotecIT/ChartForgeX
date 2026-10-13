@@ -27,8 +27,7 @@ public sealed class DifferenceAreaBrowserTests {
         if (!Enabled) return;
         var chart = V2GalleryModels.Create(ChartSeriesKind.DifferenceArea, stepped ? "step-middle" : "wide")
             .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend().WithTitle("Actual and forecast")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
-        chart.Series[0].WithInteractionKey("comparison");
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         chart.AddLine("Reference", new[] { new ChartPoint(3, 55) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode),
             compact ? 390 : 880, compact ? 560 : 600);

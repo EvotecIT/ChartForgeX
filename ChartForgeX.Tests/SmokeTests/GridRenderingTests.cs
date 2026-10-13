@@ -13,7 +13,7 @@ internal static partial class SmokeTests {
         var coverage = Chart.Create().WithTitle("Coverage").WithSize(320, 220).AddBar("Values", Points(80, 72, 91));
         var readiness = Chart.Create().WithTitle("Readiness").WithSize(320, 220).AddLine("Values", Points(62, 70, 84));
         var grid = ChartGrid.Create().WithTitle("Control scorecards").WithSubtitle("Small multiples for a static report")
-            .WithTheme(ChartTheme.ReportLight()).WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200)
+            .WithTheme(VisualTheme.Report()).WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200)
             .Add(coverage).Add(readiness).WithSharedYAxis();
         var html = grid.ToHtmlPage();
         Assert(html.Contains("<section class=\"chartforgex-grid\"", StringComparison.Ordinal), "Chart grids should render a stable report container.");
@@ -33,7 +33,7 @@ internal static partial class SmokeTests {
         var png = grid.ToPng();
         Assert(ReadBigEndianInt32(png, 16) == 680 && ReadBigEndianInt32(png, 20) == (int)Math.Ceiling(prepared.Size.Height), "PNG should use the same logical grid viewport.");
         AssertRgbaParity(grid.ToRgbaImage(), png, "Prepared ChartGrid");
-        var tintedTheme = ChartTheme.ReportLight(); tintedTheme.Background = ChartColor.FromHex("#F4F7FB");
+        var tintedTheme = VisualTheme.Report(); tintedTheme = tintedTheme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F4F7FB"); });
         var tinted = ChartGrid.Create().WithTitle(grid.Title).WithSubtitle(grid.Subtitle).WithTheme(tintedTheme)
             .WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200).Add(coverage).Add(readiness);
         Assert(!png.SequenceEqual(tinted.ToPng()), "The shared grid export should honor explicit background colors.");
@@ -47,7 +47,7 @@ internal static partial class SmokeTests {
         AssertNoDuplicateIds(repeatedGrid.ToHtmlFragment("scope with spaces") + repeatedGrid.ToHtmlFragment("scope|with|spaces"), "External host scopes");
         Assert(grid.ToSvg() == grid.ToSvg(), "Prepared SVG grids should be deterministic.");
         Assert(grid.ToSvg("stable-grid") == grid.ToSvg("stable-grid"), "Host-scoped SVG grids should be deterministic.");
-        grid.WithAutomaticPanelSize().WithAutomaticTheme();
-        Assert(!grid.PanelSize.HasValue && grid.Theme == null, "Automatic grid controls should clear explicit export settings.");
+        grid.WithAutomaticPanelSize().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+        Assert(!grid.PanelSize.HasValue && ReferenceEquals(grid.Theme, VisualTheme.Graphite()) && grid.ThemeMode == VisualThemeMode.Dark, "Automatic panel sizing should preserve the explicitly selected paired theme and mode.");
     }
 }

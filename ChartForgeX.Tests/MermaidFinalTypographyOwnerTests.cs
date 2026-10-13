@@ -26,9 +26,10 @@ public sealed class MermaidFinalTypographyOwnerTests {
     [InlineData(256, 800, true, true)]
     [InlineData(256, 360, false, true)]
     public async Task WardleyBoundaryAnnotationsRetainTheirCompleteCircle(double fontSize, int width, bool hostOwnsFrame, bool dark) {
-        var theme = dark ? ChartTheme.Dark() : ChartTheme.Light();
-        theme.FontFamily = "Arial"; theme.DataLabelFontSize = fontSize;
-        var map = WardleyMapBlock.Create().WithSize(width, 320).WithTheme(theme);
+        var theme = VisualTheme.Report();
+        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        theme = theme.WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: fontSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        var map = WardleyMapBlock.Create().WithSize(width, 320).WithTheme(theme, mode);
         map.Options.HostOwnsFrame = hostOwnsFrame;
         map.AddNode("api", "API", .5, .5);
         map.AddAnnotation(1, "", 1, 1);

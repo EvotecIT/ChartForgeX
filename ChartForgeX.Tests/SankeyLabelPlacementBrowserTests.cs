@@ -27,7 +27,7 @@ public sealed class SankeyLabelPlacementBrowserTests {
     public async Task MeasuredLabelPoliciesKeepNativeCaptionsAndAuthoredPointerKeyboardFacts(ChartSankeyLabelPlacement placement, bool dark, int width) {
         if (!Enabled) return;
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, width < 500 ? "compact-options" : "options")
-            .WithSize(width, width < 500 ? 360 : 440).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithSize(width, width < 500 ? 360 : 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Requests across processing stages").WithSubtitle("Measured node captions")
             .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
             .ConfigureSankey(options => {

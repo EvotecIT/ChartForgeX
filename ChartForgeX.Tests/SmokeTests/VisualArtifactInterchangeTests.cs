@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Linq;
 using ChartForgeX.Core;
@@ -14,7 +15,7 @@ internal static partial class SmokeTests {
         topology.Id = "directory";
         topology.Title = "Directory topology";
         topology.LayoutMode = TopologyLayoutMode.Manual;
-        topology.Theme = TopologyTheme.Dark();
+        topology.Theme = VisualTheme.Graphite();
         topology.Groups.Add(new TopologyGroup { Id = "site", Label = "Site A", X = 20, Y = 30, Width = 420, Height = 220, Href = "https://example.test/site" });
         var source = new TopologyNode { Id = "dc1", Label = "DC 1", Kind = TopologyNodeKind.Server, GroupId = "site", X = 80, Y = 100, Width = 120, Height = 64, Href = "https://example.test/dc1" };
         source.Metadata["role"] = "primary";
@@ -121,8 +122,8 @@ internal static partial class SmokeTests {
                roundTrip.Presentation.Legend.Items.Count == 2 &&
                roundTrip.Presentation.Legend.Items.Single(item => item.Kind == TopologyLegendItemKind.Edge).LineStyle == TopologyEdgeLineStyle.Dashed,
             "Topology interchange should preserve the prepared legend title, item kinds, labels, colors, symbols, and line styles.");
-        Assert(roundTrip.Presentation.Theme!.Background == "#0B1120" && roundTrip.Presentation.Theme.Card == "#111827" &&
-               roundTrip.Presentation.Theme.Accent == "#60A5FA" && roundTrip.Presentation.Theme.FontFamily == topology.Theme.FontFamily,
+        Assert(roundTrip.Presentation.Theme!.Background == topology.Theme.Resolve(topology.ThemeMode).Background.ToCss() && roundTrip.Presentation.Theme.Card == topology.Theme.Resolve(topology.ThemeMode).Surface.ToCss() &&
+               roundTrip.Presentation.Theme.Accent == topology.Theme.Resolve(topology.ThemeMode).Accent.ToCss() && roundTrip.Presentation.Theme.FontFamily == topology.Theme.Typography.Family,
             "Topology interchange should preserve prepared theme tokens used by static rendering.");
         Assert(roundTrip.ToJson() == json, "Topology interchange JSON should be deterministic after round trip.");
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json), "Topology artifacts should declare their implemented semantic JSON export.");

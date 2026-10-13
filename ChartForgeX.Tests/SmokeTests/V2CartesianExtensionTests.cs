@@ -36,7 +36,7 @@ public sealed class V2CartesianExtensionTests {
         Assert.DoesNotContain("NaN", svg); Assert.DoesNotContain("Infinity", svg);
         var pixels = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
         Assert.Contains(Enumerable.Range(0, pixels.Width * pixels.Height), index => pixels.Pixels[index * 4 + 3] > 0);
-        chart.Series[0].Points.Clear();
+        chart.Series[0].WithPointLabel(0, "Changed after preparation");
         Assert.Equal(svg, prepared.ToSvg());
     }
 
@@ -52,8 +52,8 @@ public sealed class V2CartesianExtensionTests {
         var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point").ToArray();
         var candle = Assert.Single(groups, group => group.Metadata.ContainsKey("data-cfx-high"));
         Assert.Equal("110", candle.Metadata["data-cfx-high"]);
-        Assert.Equal("4", candle.Metadata["data-cfx-source-count"]);
-        Assert.Equal("3", candle.Metadata["data-cfx-source-3-index"]);
+        Assert.Equal("1", candle.Metadata["data-cfx-source-count"]);
+        Assert.Equal("0", candle.Metadata["data-cfx-source-point"]);
         Assert.Contains(prepared.Regions, region => region.Label?.Contains("low=-30") == true && region.Label.Contains("close=12"));
         var cap = prepared.Scene.Nodes.OfType<VisualSceneLine>().First(line => line.Role == "error-cap");
         Assert.True(cap.Start.X > 0); Assert.True(cap.End.X < prepared.Size.Width);
@@ -134,7 +134,7 @@ public sealed class V2CartesianExtensionTests {
         var trendSvg = preparedTrend.ToSvg(); var boxSvg = preparedBox.ToSvg();
         var trendFacts = preparedTrend.Regions.Select(region => region.Label).ToArray();
         var boxFacts = preparedBox.Regions.Select(region => region.Label).ToArray();
-        trend.Series[0].Points.Clear(); box.Series[0].Points.Clear();
+        trend.Series[0].Points.Clear(); box.Series[0].ReplaceBoxPlots(Array.Empty<ChartBoxPlot>());
         Assert.Equal(8, trendSource[1].Y); Assert.Equal(8, boxSource[0]);
         Assert.Equal(trendFacts, preparedTrend.Regions.Select(region => region.Label));
         Assert.Equal(boxFacts, preparedBox.Regions.Select(region => region.Label));
@@ -144,8 +144,7 @@ public sealed class V2CartesianExtensionTests {
     [Fact]
     public void RangeArea_GapsSplitFillAndDashedMidlinesWhileFormattingEachIntervalOnce() {
         var chart = Fixture(ChartSeriesKind.RangeArea);
-        chart.Series[0].Points.Add(new ChartPoint(3, 3, true)); chart.Series[0].Points.Add(new ChartPoint(3, 8));
-        chart.Series[0].Points.Add(new ChartPoint(4, 4)); chart.Series[0].Points.Add(new ChartPoint(4, 7));
+        chart.Series[0].ReplaceRanges(chart.Series[0].Ranges.Concat(new[] { new ChartRangeBand(3, 3, 8, true), new ChartRangeBand(4, 4, 7) }));
         chart.Series[0].FillPattern = ChartFillPattern.Crosshatch;
         var calls = 0;
         chart.Options.ValueFormatter = value => { calls++; return value.ToString(CultureInfo.InvariantCulture); };

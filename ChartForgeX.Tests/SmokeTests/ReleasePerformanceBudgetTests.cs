@@ -22,7 +22,7 @@ internal static partial class SmokeTests {
             .WithTitle("Release performance chart")
             .WithSubtitle("Representative line, area, and bar marks")
             .WithSize(960, 540)
-            .WithTheme(ChartTheme.ReportDark())
+            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
             .WithLegend()
             .AddLine("Observed", PerformancePoints(72, 48, 19))
             .AddSmoothArea("Forecast", PerformancePoints(72, 42, 13), ChartColor.FromHex("#38BDF8"))

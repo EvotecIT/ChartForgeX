@@ -17,13 +17,16 @@ public sealed partial class ColorScalePartialDomainNativeTests {
         const string font = "CFX Partial Color Carlito";
         FontRegistry.Register(font, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         var chart = Chart.Create().WithSize(width, 480).WithDataLabels(false).WithPngSupersampling(1).WithFontFamily(font)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         chart.Options.TransparentBackground = false; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.ShowGrid = false;
         if (family is "scatter" or "bubble") {
             var initial = values.Length > 0 ? values : new double?[] { 0 };
             if (family == "bubble") chart.AddBubble("Observed", initial.Select((value, index) => new ChartBubble(index + 1, 10 + index * 5, 36).WithColorValue(value)));
             else chart.AddScatter("Observed", initial.Select((value, index) => new ChartPoint(index + 1, 10 + index * 5).WithColorValue(value)));
-            if (values.Length == 0) chart.Series[0].Points.Clear();
+            if (values.Length == 0) {
+                if (family == "bubble") chart.Series[0].ReplaceBubbles(Array.Empty<ChartBubble>());
+                else chart.Series[0].Points.Clear();
+            }
             chart.WithXAxisBounds(0, 5).WithYAxisBounds(0, 35);
         } else if (family is "heatmap" or "hexbin") {
             // A refresh may clear observations while the row retains its declared columns.

@@ -78,7 +78,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
 
     private static string ScenarioFixture(bool dark, int width) {
         var chart = PassiveChart().WithSize(width < 500 ? 350 : 600, 360).WithLegend(true)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Features = ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.FocusTrail;
             options.Interaction.AddScenario("element-route", "Element route", scenario => scenario

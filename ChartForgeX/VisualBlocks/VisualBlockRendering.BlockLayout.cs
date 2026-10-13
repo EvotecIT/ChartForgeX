@@ -20,7 +20,7 @@ internal static partial class VisualBlockRendering {
     }
 
     // Cell and connector captions share measured sizing and baseline placement in both backends.
-    public static TextStyle BlockLayoutText(ChartTheme theme, string text, double defaultSize, double width, double height) =>
+    public static TextStyle BlockLayoutText(ResolvedVisualTheme theme, string text, double defaultSize, double width, double height) =>
         FitBodyTextStyle(theme, text, defaultSize, width, height, 700);
 
     public static double BlockLayoutBaseline(TextStyle style, double centerY) {

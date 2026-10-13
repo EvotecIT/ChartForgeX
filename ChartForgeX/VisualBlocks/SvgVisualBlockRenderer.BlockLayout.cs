@@ -10,7 +10,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgVisualBlockRenderer {
     private static void RenderBlockLayout(SvgMarkupWriter writer, BlockLayoutBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
@@ -33,7 +33,7 @@ public sealed partial class SvgVisualBlockRenderer {
         }
     }
 
-    private static void WriteBlockLayoutNode(SvgMarkupWriter writer, BlockLayoutItem item, int index, BlockLayoutRect rect, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteBlockLayoutNode(SvgMarkupWriter writer, BlockLayoutItem item, int index, BlockLayoutRect rect, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var accent = VisualBlockRendering.PaletteAt(theme, index);
         if (item.Shape == BlockLayoutShape.Circle) {
             var radius = VisualBlockRendering.BlockLayoutCircleRadius(rect.Width, rect.Height);
@@ -77,7 +77,7 @@ public sealed partial class SvgVisualBlockRenderer {
         WriteText(writer, item.Label, caption.X, VisualBlockRendering.BlockLayoutBaseline(style, rect.Y + rect.Height / 2), caption.Width, TextAlignment.Center, theme.Text, theme.FontFamily, style.FontSize, "700", "block-layout-node-label");
     }
 
-    private static void WriteBlockLayoutEdge(SvgMarkupWriter writer, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteBlockLayoutEdge(SvgMarkupWriter writer, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var route = BlockEdgeRoute(source, target);
         writer.StartElement("line")
             .Attribute("data-cfx-role", "block-layout-edge")

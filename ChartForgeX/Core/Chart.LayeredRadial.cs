@@ -22,9 +22,7 @@ public sealed partial class Chart {
         }
 
         if (materialized.Count == 0) throw new ArgumentException("Layered radial charts must contain at least one layer.", nameof(layers));
-        var series = new ChartSeries(name, ChartSeriesKind.LayeredRadial, new[] { new ChartPoint(0, 0) });
-        series.RadialLayers.AddRange(materialized);
-        AppendSeries(series);
+        AppendSeries(ChartSeries.CreateLayeredRadial(name, materialized));
         return this;
     }
 

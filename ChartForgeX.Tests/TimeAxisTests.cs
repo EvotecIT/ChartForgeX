@@ -412,7 +412,7 @@ public sealed class TimeAxisTests {
         Assert.Equal(wallClock, calendar.Series[0].Points[0].X, 9);
         Assert.Equal(DateTimeKind.Unspecified, new ChartCalendarHeatmapItem(localDay, 1).Date.Kind);
         Assert.Equal(wallClock, Chart.Create().WithGanttToday(localDay).Options.GanttToday!.Value, 9);
-        Assert.Equal(wallClock, Chart.Create().AddGanttTask("Task", localDay, localDay.AddDays(1)).Series[0].Points[0].X, 9);
+        Assert.Equal(wallClock, Chart.Create().AddGanttTask("Task", localDay, localDay.AddDays(1)).Series[0].GanttItems[0].Start, 9);
     }
 
     [Fact]

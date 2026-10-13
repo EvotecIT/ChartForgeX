@@ -9,7 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class PngVisualBlockRenderer {
     private static void DrawFittedBodyText(RgbaCanvas canvas, string text, double x, double baseline, double width, double height,
-        TextAlignment alignment, ChartColor color, ChartTheme theme, double defaultSize, int weight) {
+        TextAlignment alignment, ChartColor color, ResolvedVisualTheme theme, double defaultSize, int weight) {
         var style = VisualBlockRendering.FitBodyTextStyle(theme, text, defaultSize, width, height, weight);
         var fitted = VisualBlockRendering.FitMeasuredText(text, style.FontSize, width, theme.FontFamily, weight);
         var metrics = TextLayoutEngine.Measure(fitted, style);

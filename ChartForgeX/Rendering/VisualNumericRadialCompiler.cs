@@ -70,7 +70,7 @@ internal static partial class VisualNumericRadialCompiler {
                     seriesMetadata["data-cfx-min-value"] = N(scale.Minimum); seriesMetadata["data-cfx-max-value"] = N(scale.Maximum);
                 }
                 using (builder.PushGroup(SeriesId(seriesIndex), "series", seriesMetadata)) {
-                    for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
+                    for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
                         var key = coordinates.Resolve(seriesIndex, pointIndex);
                         var category = Array.FindIndex(categories, value => value.Id == key.Id);
                         var stack = stacks.Point(seriesIndex, pointIndex);
@@ -93,7 +93,7 @@ internal static partial class VisualNumericRadialCompiler {
         foreach (var series in chart.Series) {
             var axis = Axis(chart, series.YAxis);
             if (axis.Scale == ChartScaleKind.Time) throw new NotSupportedException("Numeric radial value axes support linear, logarithmic and symmetric logarithmic scales.");
-            foreach (var point in series.Points) {
+            foreach (var point in series.RenderPoints) {
                 if (!ChartMath.IsFinite(point.X) || !ChartMath.IsFinite(point.Y)) throw new InvalidOperationException("Numeric radial observations must be finite.");
                 if (axis.Scale == ChartScaleKind.Logarithmic && point.Y <= 0) throw new InvalidOperationException("Logarithmic numeric radial values must be positive.");
             }
@@ -101,17 +101,17 @@ internal static partial class VisualNumericRadialCompiler {
     }
 
     private static ChartBarCoordinateKey[] Categories(Chart chart, ChartBarCoordinateMap coordinates) =>
-        Enumerable.Range(0, chart.Series.Count).SelectMany(series => Enumerable.Range(0, chart.Series[series].Points.Count)
+        Enumerable.Range(0, chart.Series.Count).SelectMany(series => Enumerable.Range(0, chart.Series[series].RenderPoints.Count)
             .Select(point => coordinates.Resolve(series, point))).Distinct().OrderBy(key => key.Value).ThenBy(key => key.Id).ToArray();
 
     private static Dictionary<ChartAxisSide, RadialValueScale> Scales(Chart chart, ChartStackLayout stacks) =>
-        RadialValueScale.ForAxes(chart, series => Enumerable.Range(0, chart.Series[series].Points.Count)
+        RadialValueScale.ForAxes(chart, series => Enumerable.Range(0, chart.Series[series].RenderPoints.Count)
             .SelectMany(point => new[] { stacks.Point(series, point).Base, stacks.Point(series, point).End }), "Numeric radial", true);
 
     private static void DrawPoint(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, RadialSeriesGeometry geometry,
         ChartSeries series, int seriesIndex, int pointIndex, string category, ChartStackPoint stack, RadialSeriesMark mark,
         VisualThemeColors colors, List<RadialSeriesLabel> labels, List<LabelObstacle>? obstacles) {
-        var point = series.Points[pointIndex]; var id = PointId(seriesIndex, pointIndex);
+        var point = series.RenderPoints[pointIndex]; var id = PointId(seriesIndex, pointIndex);
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null ? series.PointLabels[pointIndex]!
             : ChartNumericFormatter.FormatValue(chart.Options, point.Y);
         var description = series.Name + ", " + category + ": " + text;

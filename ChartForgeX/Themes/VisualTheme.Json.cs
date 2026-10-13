@@ -12,7 +12,7 @@ public sealed partial class VisualTheme {
 
     /// <summary>Loads a version 1 paired theme, including canonical palettes, typography and geometry.</summary>
     /// <remarks>
-    /// This format is distinct from <see cref="FromJson"/>, which imports the generated canonical color document.
+    /// This format is distinct from <see cref="FromPaletteJson"/>, which imports the generated canonical color document.
     /// Version 1 requires light/dark palettes and complete typography/geometry objects. Unknown members are ignored
     /// within bounded input limits; duplicate keys and unsupported versions are rejected. Optional per-mode
     /// <c>roles</c> preserve independent semantic and annotation colors without selecting a legacy renderer path.
@@ -25,7 +25,7 @@ public sealed partial class VisualTheme {
     /// <param name="json">The case-sensitive versioned theme document, at most one MiB of characters.</param>
     /// <returns>An immutable theme snapshot.</returns>
     /// <exception cref="ArgumentException">The document is malformed, unsupported, incomplete or outside input limits.</exception>
-    public static VisualTheme FromThemeJson(string json) {
+    public static VisualTheme FromJson(string json) {
         if (json == null) throw new ArgumentNullException(nameof(json));
         if (json.Length > MaximumThemeJsonCharacters) throw new ArgumentException("Theme JSON exceeds the maximum supported size.", nameof(json));
         var root = GeoJsonValue.Parse(json, StringComparer.Ordinal, ThemeJsonLimits).AsObject("theme");
@@ -39,20 +39,23 @@ public sealed partial class VisualTheme {
             new VisualTypography(Required(typography, "family", "typography").AsString("typography.family"),
                 Number(typography, "titleSize", "typography"), Number(typography, "subtitleSize", "typography"),
                 Number(typography, "axisSize", "typography"), Number(typography, "legendSize", "typography"), Number(typography, "dataLabelSize", "typography"),
-                OptionalNumber(typography, "scalarValueSize", "typography", 34), OptionalNumber(typography, "centerValueSize", "typography", 20)),
+                OptionalNumber(typography, "scalarValueSize", "typography", 34), OptionalNumber(typography, "centerValueSize", "typography", 20),
+                OptionalNumber(typography, "axisTitleSize", "typography", Number(typography, "axisSize", "typography")),
+                typography.TryGetValue("monospaceFamily", out var mono) ? mono.AsString("typography.monospaceFamily") : "Cascadia Mono, Consolas, monospace"),
             Number(geometry, "spacing", "geometry"), Number(geometry, "seriesStrokeWidth", "geometry"), Number(geometry, "markerRadius", "geometry"),
             Number(geometry, "areaOpacity", "geometry"), Number(geometry, "barRadius", "geometry"),
             Number(geometry, "gridStrokeWidth", "geometry"), Number(geometry, "axisStrokeWidth", "geometry"),
             geometry.TryGetValue("cardRadius", out var cardRadius) ? cardRadius.AsNumber("geometry.cardRadius") : DefaultCardRadius,
             effects.TryGetValue("cardShadowOpacity", out var opacity) ? opacity.AsNumber("effects.cardShadowOpacity") : 0,
             effects.TryGetValue("cardShadowColor", out var shadow) ? Hex(shadow.AsString("effects.cardShadowColor"), "cardShadowColor") : null,
-            OptionalNumber(geometry, "gaugeStrokeWidth", "geometry", 14), OptionalNumber(geometry, "gaugeBandWidth", "geometry", 4));
+            OptionalNumber(geometry, "gaugeStrokeWidth", "geometry", 14), OptionalNumber(geometry, "gaugeBandWidth", "geometry", 4),
+            OptionalNumber(geometry, "plotRadius", "geometry", Number(geometry, "barRadius", "geometry")));
     }
 
     /// <summary>Exports the complete paired color, typography and geometry theme using schemaVersion 1.</summary>
     /// <remarks>Color alpha bytes, status fill/ink pairs and ordered ramps are retained. Each array is limited to 256 values.</remarks>
-    /// <returns>A deterministic JSON document suitable for <see cref="FromThemeJson"/>.</returns>
-    public string ToThemeJson() {
+    /// <returns>A deterministic JSON document suitable for <see cref="FromJson"/>.</returns>
+    public string ToJson() {
         var writer = new VisualArtifactInterchangeJsonWriter();
         writer.StartObject();
         writer.Property("schemaVersion"); writer.Number(1);
@@ -60,6 +63,8 @@ public sealed partial class VisualTheme {
         WriteThemeColors(writer, "dark", _dark.ToTokens());
         writer.Property("typography"); writer.StartObject();
         writer.Property("family"); writer.String(Typography.Family);
+        writer.Property("monospaceFamily"); writer.String(Typography.MonospaceFamily);
+        WriteNumber(writer, "axisTitleSize", Typography.AxisTitleSize);
         WriteNumber(writer, "titleSize", Typography.TitleSize); WriteNumber(writer, "subtitleSize", Typography.SubtitleSize);
         WriteNumber(writer, "axisSize", Typography.AxisSize); WriteNumber(writer, "legendSize", Typography.LegendSize); WriteNumber(writer, "dataLabelSize", Typography.DataLabelSize);
         WriteNumber(writer, "scalarValueSize", Typography.ScalarValueSize); WriteNumber(writer, "centerValueSize", Typography.CenterValueSize);
@@ -68,7 +73,7 @@ public sealed partial class VisualTheme {
         WriteNumber(writer, "spacing", Spacing); WriteNumber(writer, "seriesStrokeWidth", SeriesStrokeWidth); WriteNumber(writer, "markerRadius", MarkerRadius);
         WriteNumber(writer, "areaOpacity", AreaOpacity); WriteNumber(writer, "barRadius", BarRadius);
         WriteNumber(writer, "gridStrokeWidth", GridStrokeWidth); WriteNumber(writer, "axisStrokeWidth", AxisStrokeWidth);
-        WriteNumber(writer, "cardRadius", CardRadius);
+        WriteNumber(writer, "cardRadius", CardRadius); WriteNumber(writer, "plotRadius", PlotRadius);
         WriteNumber(writer, "gaugeStrokeWidth", GaugeStrokeWidth); WriteNumber(writer, "gaugeBandWidth", GaugeBandWidth);
         writer.EndObject();
         writer.Property("effects"); writer.StartObject();
@@ -91,6 +96,7 @@ public sealed partial class VisualTheme {
         tokens.Negative = Role(roles, "negative", tokens.Negative);
         tokens.Disabled = Role(roles, "disabled", tokens.Disabled);
         tokens.Muted = NullableRole(roles, "muted", tokens.Muted); tokens.Grid = NullableRole(roles, "grid", tokens.Grid);
+        tokens.PlotBorder = NullableRole(roles, "plotBorder", tokens.PlotBorder);
         tokens.Axis = NullableRole(roles, "axis", tokens.Axis); tokens.Info = NullableRole(roles, "info", tokens.Info);
         tokens.Quiet = NullableRole(roles, "quiet", tokens.Quiet); tokens.QuietLine = NullableRole(roles, "quietLine", tokens.QuietLine);
         tokens.Neutral = NullableRole(roles, "neutral", tokens.Neutral); tokens.Neutral2 = NullableRole(roles, "neutral2", tokens.Neutral2);
@@ -125,6 +131,7 @@ public sealed partial class VisualTheme {
         writer.Property("roles"); writer.StartObject();
         WriteColor(writer, "positive", tokens.Positive); WriteColor(writer, "warning", tokens.Warning);
         WriteColor(writer, "negative", tokens.Negative); WriteColor(writer, "disabled", tokens.Disabled);
+        WriteColor(writer, "plotBorder", tokens.PlotBorder);
         WriteColor(writer, "muted", tokens.Muted); WriteColor(writer, "grid", tokens.Grid); WriteColor(writer, "axis", tokens.Axis);
         WriteColor(writer, "info", tokens.Info); WriteColor(writer, "quiet", tokens.Quiet); WriteColor(writer, "quietLine", tokens.QuietLine);
         WriteColor(writer, "neutral", tokens.Neutral); WriteColor(writer, "neutral2", tokens.Neutral2); WriteColor(writer, "neutral3", tokens.Neutral3);

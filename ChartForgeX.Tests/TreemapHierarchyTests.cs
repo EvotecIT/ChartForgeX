@@ -61,7 +61,7 @@ public sealed class TreemapHierarchyTests {
         Assert.Equal(-2, Number(nodes["north-support"], "data-cfx-color-value"));
         Assert.Null(nodes["reserve"].Attribute("data-cfx-color-value"));
         Assert.All(nodes.Values, node => {
-            Assert.Equal("0", (string?)node.Attribute("data-cfx-series")); Assert.Equal("Allocation", (string?)node.Attribute("data-cfx-series-key"));
+            Assert.Equal("0", (string?)node.Attribute("data-cfx-series")); Assert.Equal(series.Id.Value, (string?)node.Attribute("data-cfx-series-key"));
             Assert.Null(node.Attribute("data-cfx-point")); Assert.Null(node.Attribute("data-cfx-source-point"));
         });
         // This checks rendered rectangles independently of the hierarchy layout helper.

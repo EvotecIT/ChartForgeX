@@ -64,11 +64,11 @@ public sealed class PairedObservationClipBrowserTests {
     public async Task LogarithmicRangeMidlineKeepsItsNativeCapReadout() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(600, 380).WithTitle("Logarithmic paired midpoint")
-            .WithTheme(ChartTheme.GraphiteLight()).WithLegend(false).WithDataLabels(false)
+            .WithTheme(VisualTheme.Graphite()).WithLegend(false).WithDataLabels(false)
             .WithXAxisBounds(0, 1).WithYAxisBounds(10, 1000).ConfigureYAxis(axis => axis.Scale = ChartScaleKind.Logarithmic)
             .WithLineVisualStyle(ChartLineVisualStyle.Plain());
-        chart.AddRangeArea("Pair", new[] { new ChartRangeBand(.5, 1, 1800) });
-        chart.Series[0].WithInteractionKey("paired").WithStrokeWidth(6).ConfigureMarkers(markers => markers.Enabled = false);
+        chart.AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("paired"), "Pair", new[] { new ChartRangeBand(.5, 1, 1800) }));
+        chart.Series[0].WithStrokeWidth(6).ConfigureMarkers(markers => markers.Enabled = false);
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         var html = chart.ToInteractiveHtmlPage();
         if (!string.IsNullOrWhiteSpace(directory)) {
@@ -123,7 +123,7 @@ public sealed class PairedObservationClipBrowserTests {
         Assert.True(await page.EvaluateAsync<bool>("p=>document.elementFromPoint(p[0],p[1])?.closest('[data-cfx-point]')?.dataset.cfxPoint==='0'", position));
         Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
         Assert.Equal("paired:0", await point.GetAttributeAsync("data-cfx-target-id"));
-        Assert.Equal("-0.001", await point.GetAttributeAsync("data-cfx-source-0-x"));
+        Assert.Equal("-0.001", await point.GetAttributeAsync("data-cfx-x"));
         await page.Mouse.MoveAsync(2, 2); await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
         await AssertPairedReadoutAsync(page, ChartSeriesKind.DifferenceArea, false);
         await page.Mouse.ClickAsync((float)position[0], (float)position[1]);
@@ -186,12 +186,11 @@ public sealed class PairedObservationClipBrowserTests {
         Assert.True(await page.EvaluateAsync<bool>("p=>document.elementFromPoint(p[0],p[1])?.closest('[data-cfx-point]')?.dataset.cfxPoint==='0'", position));
         Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
         Assert.Equal("paired:0", await point.GetAttributeAsync("data-cfx-target-id"));
-        Assert.Equal("2", await point.GetAttributeAsync("data-cfx-source-count"));
-        for (var member = 0; member < 2; member++) {
-            Assert.Equal(member.ToString(), await point.GetAttributeAsync("data-cfx-source-" + member + "-index"));
-            Assert.Equal("-0.001", await point.GetAttributeAsync("data-cfx-source-" + member + "-x"));
-            Assert.Equal(member == 0 ? "8" : "2", await point.GetAttributeAsync("data-cfx-source-" + member + "-y"));
-        }
+        Assert.Equal("1", await point.GetAttributeAsync("data-cfx-source-count"));
+        Assert.Equal("0", await point.GetAttributeAsync("data-cfx-source-point"));
+        Assert.Equal("-0.001", await point.GetAttributeAsync("data-cfx-x"));
+        Assert.Equal("8", await point.GetAttributeAsync("data-cfx-first"));
+        Assert.Equal("2", await point.GetAttributeAsync("data-cfx-second"));
         await page.EvaluateAsync("""
             ()=>{window.cfxCapSelections=[];document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect',event=>{
               if(event.detail.target?.targetKind==='point')window.cfxCapSelections.push(event.detail.target);});}
@@ -277,20 +276,20 @@ public sealed class PairedObservationClipBrowserTests {
 
     private static Chart Create(ChartSeriesKind kind, double first, double second, bool visibleSibling = false, double firstX = .25) {
         var chart = Chart.Create().WithSize(600, 380).WithTitle("Clipped paired observations")
-            .WithTheme(ChartTheme.GraphiteLight()).WithLegend(false).WithDataLabels(false)
+            .WithTheme(VisualTheme.Graphite()).WithLegend(false).WithDataLabels(false)
             .WithXAxisBounds(0, 1).WithYAxisBounds(0, 10).WithLineVisualStyle(ChartLineVisualStyle.Plain());
         chart.Options.ClipMarksToPlot = true;
         var nextFirst = visibleSibling ? 8 : first; var nextSecond = visibleSibling ? 1 : second;
-        if (kind == ChartSeriesKind.DifferenceArea) chart.AddDifferenceArea("Pair", new[] {
+        if (kind == ChartSeriesKind.DifferenceArea) chart.AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("paired"), "Pair", new[] {
             new ChartDifferencePoint(firstX, first, second), new ChartDifferencePoint(.75, nextFirst, nextSecond)
-        });
+        }));
         else {
             var ranges = new[] { new ChartRangeBand(firstX, Math.Min(first, second), Math.Max(first, second)),
                 new ChartRangeBand(.75, Math.Min(nextFirst, nextSecond), Math.Max(nextFirst, nextSecond)) };
-            if (kind == ChartSeriesKind.RangeArea) chart.AddRangeArea("Pair", ranges);
-            else chart.AddRangeBand("Pair", ranges);
+            if (kind == ChartSeriesKind.RangeArea) chart.AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("paired"), "Pair", ranges));
+            else chart.AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId("paired"), "Pair", ranges));
         }
-        chart.Series[0].WithInteractionKey("paired").ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Series[0].ConfigureMarkers(markers => markers.Enabled = false);
         return chart;
     }
 

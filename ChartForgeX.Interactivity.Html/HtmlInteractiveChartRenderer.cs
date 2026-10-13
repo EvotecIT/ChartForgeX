@@ -32,7 +32,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets);
-        writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", chart.Options.Theme.UseGraphiteLayout ? "background:" + chart.Options.Theme.Background.ToCss() + ";color:" + chart.Options.Theme.Text.ToCss() + ";font-family:" + chart.Options.Theme.FontFamily : null).EndStartElement().Line()
+        writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", "background:" + chart.Options.ResolvedTheme.Background.ToCss() + ";color:" + chart.Options.ResolvedTheme.Text.ToCss() + ";font-family:" + chart.Options.ResolvedTheme.FontFamily).EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
         HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets);
@@ -128,7 +128,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
-            .Attribute("data-cfx-look", chart.Options.Theme.UseGraphiteLayout ? "graphite" : null)
+            .Attribute("data-cfx-look", "graphite")
             .Attribute("role", "group")
             .Attribute("aria-label", ChartTitle(chart, titleFallback))
             .Attribute("data-cfx-asset-source", assetSource)

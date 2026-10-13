@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Topology;
@@ -29,13 +30,13 @@ public sealed class TopologyMeasuredTypographyTests {
     public void DefaultTopologyLayoutUsesPortableMetricsWithOrWithoutOptions(bool supplyOptions) {
         const string text = "iiiiiiiiiiiiiiii";
         const double size = 20;
-        var theme = TopologyTheme.Light(); theme.FontFamily = "Georgia";
+        var theme = VisualTheme.Graphite().WithFontFamily("Georgia");
         var chart = TopologyChart.Create().WithTheme(theme).AddAutoNode("a", text);
         var prepared = TopologyLayoutEngine.Prepare(chart, options: supplyOptions ? new TopologyRenderOptions() : null);
         var expected = text.Length * size * 0.56;
         Assert.Equal(expected, prepared.TextMeasurement!.Measure(text, size, false));
-        Assert.Equal(expected, new TextMeasurementContext(theme.FontFamily).Measure(text, size, false));
-        Assert.Equal(expected, new TextMeasurementContext(FontSpec.FromFamily(theme.FontFamily)).Measure(text, size, false));
+        Assert.Equal(expected, new TextMeasurementContext(theme.Typography.Family).Measure(text, size, false));
+        Assert.Equal(expected, new TextMeasurementContext(FontSpec.FromFamily(theme.Typography.Family)).Measure(text, size, false));
     }
 
     [Fact]
@@ -50,7 +51,7 @@ public sealed class TopologyMeasuredTypographyTests {
             System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Fonts", "arial.ttf") }
             .FirstOrDefault(System.IO.File.Exists);
         if (regularPath == null) return; // The portable fallback remains covered on hosts without Arial.
-        var theme = TopologyTheme.Light(); theme.FontFamily = "Arial, sans-serif";
+        var theme = VisualTheme.Graphite().WithFontFamily("Arial, sans-serif");
         Assert.Equal("Arial", TopologyChart.Create().WithTheme(theme).GetPngFontInfo().ResolvedFaceName);
         var boldPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(regularPath)!,
             regularPath.StartsWith("/System/", StringComparison.Ordinal) ? "Arial Bold.ttf" : "arialbd.ttf");
@@ -58,15 +59,15 @@ public sealed class TopologyMeasuredTypographyTests {
         if (bold == null) return;
         const string text = "Measured labels across cards, compact cards, and tiles";
         var nativeWidth = TextLayoutEngine.MeasureWidth(text, new TextStyle { FontSize = 34 }, bold);
-        Assert.True(new TextMeasurementContext(theme.FontFamily, TextMeasurementMode.InstalledFonts).Measure(text, 34, true) >= nativeWidth);
+        Assert.True(new TextMeasurementContext(theme.Typography.Family, TextMeasurementMode.InstalledFonts).Measure(text, 34, true) >= nativeWidth);
     }
 
     [Fact]
     public void ArialWithMonospaceFallbackKeepsTerminalTablesMonospaced() {
-        var theme = TerminalTheme.Dark(); theme.FontFamily = "Arial, monospace";
-        Assert.False(TrueTypeFont.IsMonospaceFamily(theme.FontFamily));
-        var outline = TrueTypeFont.TryLoadForFamily(theme.FontFamily, out _);
-        var table = PngTerminalStoryRenderer.ResolveTableFont(theme, outline);
+        var theme = TerminalThemes.Default().Configure(builder => builder.Typography = new VisualTypography(monospaceFamily: "Arial, monospace"));
+        Assert.False(TrueTypeFont.IsMonospaceFamily(theme.Typography.MonospaceFamily));
+        var outline = TrueTypeFont.TryLoadForFamily(theme.Typography.MonospaceFamily, out _);
+        var table = PngTerminalStoryRenderer.ResolveTableFont(TerminalStory.Create().WithTheme(theme).ResolvedStyle, outline);
         if (table == null) return;
         var style = new TextStyle { FontSize = 14 };
         Assert.Equal(TextLayoutEngine.MeasureWidth("iiii", style, table),
@@ -75,11 +76,12 @@ public sealed class TopologyMeasuredTypographyTests {
 
     [Fact]
     public void FontDiagnosticsReflectCurrentTheme() {
-        var theme = TopologyTheme.Light(); theme.FontFamily = "monospace";
+        var theme = VisualTheme.Graphite().WithFontFamily("monospace");
         var chart = TopologyChart.Create().WithTheme(theme);
         Assert.Equal("monospace", chart.GetPngFontInfo().ThemeFontFamily);
-        theme.FontFamily = "serif";
+        chart.WithTheme(theme.WithFontFamily("serif"));
         Assert.Equal("serif", chart.GetPngFontInfo().ThemeFontFamily);
+        Assert.Equal("monospace", theme.Typography.Family);
     }
 
     [Theory]
@@ -87,14 +89,14 @@ public sealed class TopologyMeasuredTypographyTests {
     [InlineData(TopologyNodeDisplayMode.CompactCard)]
     [InlineData(TopologyNodeDisplayMode.Tile)]
     public void SubtitleChipsContainTheirMeasuredText(TopologyNodeDisplayMode mode) {
-        var theme = TopologyTheme.Light(); theme.FontFamily = "monospace";
+        var theme = VisualTheme.Graphite().WithFontFamily("monospace");
         var chart = TopologyChart.Create().WithTheme(theme).AddAutoNode("a", "Service", subtitle: "WWWWWWWWWWWWWWWW");
         var options = new TopologyRenderOptions { TextMeasurementMode = TextMeasurementMode.InstalledFonts, NodeDisplayMode = mode, CardSubtitleMode = TopologyCardSubtitleMode.Chip, IncludeTileSubtitles = true };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var chip = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == (mode == TopologyNodeDisplayMode.Tile ? "topology-node-subtitle" : "topology-node-card-subtitle"));
         var text = chip.Descendants().Single(element => element.Name.LocalName == "text").Value;
         double width = double.Parse(chip.Elements().Single(element => element.Name.LocalName == "rect").Attribute("width")!.Value, CultureInfo.InvariantCulture);
-        Assert.True(new TextMeasurementContext(theme.FontFamily, TextMeasurementMode.InstalledFonts).Measure(text, 9.5, true) <= width - 17.9);
+        Assert.True(new TextMeasurementContext(theme.Typography.Family, TextMeasurementMode.InstalledFonts).Measure(text, 9.5, true) <= width - 17.9);
         Assert.NotEmpty(chart.ToPng(options));
     }
 
@@ -123,8 +125,8 @@ public sealed class TopologyMeasuredTypographyTests {
 
     [Fact]
     public void EmittedEdgeLabelBoxFitsMeasuredTextInTheThemeFont() {
-        var theme = TopologyTheme.Light();
-        theme.FontFamily = "monospace";
+        var theme = VisualTheme.Graphite();
+        theme = theme.WithFontFamily("monospace");
         const string label = "WWWWWWWWWWWWWWWWWWWWWWWW";
         var chart = TopologyChart.Create().WithTheme(theme)
             .AddNode("a", "A", 80, 100).AddNode("b", "B", 500, 300).AddEdge("ab", "a", "b", label);
@@ -134,7 +136,7 @@ public sealed class TopologyMeasuredTypographyTests {
         var text = box.Descendants().Single(element => element.Name.LocalName == "text");
         Assert.Equal(label, text.Value);
         double glyphWidth = TextLayoutEngine.Measure(text.Value, new TextStyle {
-            Font = new FontSpec { Family = theme.FontFamily, Weight = int.Parse(text.Attribute("font-weight")!.Value, CultureInfo.InvariantCulture) },
+            Font = new FontSpec { Family = theme.Typography.Family, Weight = int.Parse(text.Attribute("font-weight")!.Value, CultureInfo.InvariantCulture) },
             FontSize = double.Parse(text.Attribute("font-size")!.Value, CultureInfo.InvariantCulture)
         }).Width;
         Assert.True(width >= glyphWidth + 7.9, "The rendered backplate must reserve the emitted glyph width and its horizontal padding.");

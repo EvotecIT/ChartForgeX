@@ -188,7 +188,7 @@ public sealed class SunburstSecondaryLabelTests {
 
     internal static Chart Gallery(int width, bool dark, double radius) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, "options", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
-            .WithSize(width, width < 500 ? 360 : 440).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithSize(width, width < 500 ? 360 : 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithHeader(false).WithLegend(false);
         chart.Options.Sunburst.CornerRadius = radius; RoundedRadialSeriesTests.UseFixtureFont(chart); return chart;
     }

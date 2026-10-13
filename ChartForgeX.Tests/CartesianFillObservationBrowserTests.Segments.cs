@@ -89,9 +89,12 @@ public sealed partial class CartesianFillObservationBrowserTests {
         var chart = kind == ChartSeriesKind.DifferenceArea
             ? Frame().AddDifferenceArea("Observed", ranges.Select(range => new ChartDifferencePoint(range.X, range.Upper, range.Lower)))
             : Range(kind, ranges);
-        for (var index = 8; index <= 9; index++) {
-            var point = chart.Series[0].Points[index];
-            chart.Series[0].Points[index] = new ChartPoint(point.X, point.Y, true);
+        if (kind == ChartSeriesKind.DifferenceArea) {
+            var point = chart.Series[0].DifferencePoints[4];
+            chart.Series[0].UpdateDifferencePoint(4, new ChartDifferencePoint(point.X, point.First, point.Second, true));
+        } else {
+            var point = chart.Series[0].Ranges[4];
+            chart.Series[0].UpdateRange(4, new ChartRangeBand(point.X, point.Lower, point.Upper, true));
         }
         Configure(chart, ChartStepPosition.Start);
         if (kind == ChartSeriesKind.DifferenceArea) chart.Series[0].WithColor(ChartColor.Transparent).ConfigureDifferenceArea(options => {

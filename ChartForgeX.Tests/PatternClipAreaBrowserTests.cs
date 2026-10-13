@@ -122,7 +122,7 @@ public sealed class PatternClipAreaBrowserTests {
     [Trait("Category", "Browser")]
     public async Task VisibleRadarMarkerStrokeRetainsAnOtherwiseInvisibleObservation() {
         var chart = Create(ChartSeriesKind.Radar, collapsed: true);
-        chart.Series[0].WithFillPattern(ChartFillPattern.None).WithMarkerRadius(6);
+        chart.Series[0].WithFillPattern(ChartFillPattern.None).ConfigureMarkers(markers => markers.Radius = 6);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneEllipse>(), ellipse => ellipse.Rx == 6 && ellipse.Stroke?.A > 0);
         var rgba = prepared.ToRgba();
@@ -148,7 +148,7 @@ public sealed class PatternClipAreaBrowserTests {
         else if (kind == ChartSeriesKind.RangeArea) chart.AddRangeArea("Observed", ranges, smooth: smooth);
         else chart.AddRadar("Observed", collapsed ? new[] { new ChartPoint(1, 0), new ChartPoint(2, 70), new ChartPoint(3, 0) }
             : new[] { new ChartPoint(1, 30), new ChartPoint(2, 70), new ChartPoint(3, 50) });
-        chart.Series[0].WithColor(ChartColor.White.WithAlpha(0)).WithMarkerRadius(0).WithFillPattern(ChartFillPattern.Crosshatch);
+        chart.Series[0].WithColor(ChartColor.White.WithAlpha(0)).ConfigureMarkers(markers => markers.Radius = 0).WithFillPattern(ChartFillPattern.Crosshatch);
         return chart;
     }
 }

@@ -12,11 +12,11 @@ internal static partial class VisualPolarCompiler {
         var extent = 1d;
         foreach (var series in chart.Series) {
             var tension = series.Radar.CurveTension ?? 0;
-            if (tension == 0 || series.Points.Count == 0) continue;
+            if (tension == 0 || series.RenderPoints.Count == 0) continue;
             var scale = scales[series.YAxis];
             var points = categories.Select((category, index) => {
                 var source = Find(series, category);
-                var radius = scale.Normalize(source < 0 ? 0 : series.Points[source].Y);
+                var radius = scale.Normalize(source < 0 ? 0 : series.RenderPoints[source].Y);
                 var angle = CategoryAngle(chart.Options.XAxis, index, categories.Length);
                 return new ChartPoint(Math.Cos(angle) * radius, Math.Sin(angle) * radius);
             }).ToArray();

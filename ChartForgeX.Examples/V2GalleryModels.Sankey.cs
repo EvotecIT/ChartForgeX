@@ -2,7 +2,7 @@ using ChartForgeX.Core;
 
 public static partial class V2GalleryModels {
     private static Chart ConfiguredSankey() {
-        var chart = Chart.Create().AddSankey("Requests", new[] {
+        var chart = Chart.Create().AddSeries(ChartSeries.CreateSankey(new ChartSeriesId("request-flows"), "Requests", new[] {
             new ChartNode("received", "Received"), new ChartNode("north", "North"), new ChartNode("south", "South"),
             new ChartNode("north-support", "Support"), new ChartNode("south-support", "Support"), new ChartNode("completed", "Completed"),
             new ChartNode("review", "Review"), new ChartNode("imported", "Imported")
@@ -12,7 +12,7 @@ public static partial class V2GalleryModels {
             new ChartFlowLink("south-standard", "south", "south-support", 28),
             new ChartFlowLink("north-completed", "north-support", "completed", 72), new ChartFlowLink("south-completed", "south-support", "completed", 28),
             new ChartFlowLink("received-review", "received", "review", 5), new ChartFlowLink("imported-completed", "imported", "completed", 10)
-        }).ConfigureSankey(options => {
+        })).ConfigureSankey(options => {
             options.Alignment = ChartSankeyAlignment.Center;
             options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
             options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;

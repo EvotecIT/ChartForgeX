@@ -38,7 +38,7 @@ internal static partial class VisualCartesianCompiler {
                 or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea)) continue;
             if (series.Markers.Enabled == false) continue;
             var radius = ResolveMarkerRadius(series, context);
-            var count = series.Points.Count / ObservationStride(series.Kind);
+            var count = series.RenderPoints.Count / ObservationStride(series.Kind);
             for (var item = 0; item < count; item++) {
                 if (pointSeries && !ShowMarker(chart, series, item)) continue;
                 if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea) {
@@ -47,16 +47,16 @@ internal static partial class VisualCartesianCompiler {
                     if (!VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue)) continue;
                 }
                 var raw = item * ObservationStride(series.Kind);
-                var point = series.Points[raw];
+                var point = series.RenderPoints[raw];
                 var markerRadius = series.Kind == ChartSeriesKind.Bubble
-                    ? bubbleScale!.Radius(series.Points[raw + 1].Y, plot) : radius;
+                    ? bubbleScale!.Radius(series.RenderPoints[raw + 1].Y, plot) : radius;
                 markerRadius = VisualMarkerScene.Extent(series, markerRadius);
                 if (markerRadius <= 0) continue;
                 var value = series.Kind == ChartSeriesKind.StackedArea ? stacks.Point(index, raw).End : point.Y;
                 if (ChartCartesianOrientation.IsHorizontalLine(chart, series)) Include(value, point.X, markerRadius, series.YAxis);
                 else Include(point.X, value, markerRadius, series.YAxis);
                 if (series.Kind is ChartSeriesKind.Dumbbell or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea)
-                    Include(point.X, series.Points[raw + 1].Y, markerRadius, series.YAxis);
+                    Include(point.X, series.RenderPoints[raw + 1].Y, markerRadius, series.YAxis);
             }
         }
         // References and markers share one fit: extending one side must preserve the other's pixel gutter.
@@ -81,7 +81,7 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void IncludeIntervalExtents(MarkerExtents extents, ChartSeries series, ChartAxis valueAxis, double radius) {
-        foreach (var point in series.Points) extents.Include(point.Y, radius, valueAxis);
+        foreach (var point in series.RenderPoints) extents.Include(point.Y, radius, valueAxis);
     }
 
     private sealed class MarkerExtents {

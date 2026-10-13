@@ -44,7 +44,7 @@ internal static partial class VisualBlockRendering {
         var orderedBranches = OrderedGitGraphBranches(graph);
         var laneYs = new Dictionary<string, double>(StringComparer.Ordinal);
         var availableHeight = Math.Max(32, totalHeight - bottomPadding - y);
-        var fontScale = Math.Min(graph.Options.Theme.DataLabelFontSize / ChartTheme.DefaultDataLabelFontSize, availableHeight / (orderedBranches.Count * 80));
+        var fontScale = Math.Min(graph.Options.ResolvedTheme.DataLabelFontSize / ResolvedVisualTheme.DefaultDataLabelFontSize, availableHeight / (orderedBranches.Count * 80));
         var markerReserve = 0d;
         foreach (var commit in graph.Commits) {
             var radius = GitCommitRadius(commit, fontScale);
@@ -84,7 +84,7 @@ internal static partial class VisualBlockRendering {
         _ => 6.5
     };
 
-    public static double GitFontSize(GitGraphLayout layout, ChartTheme theme, string text, double defaultSize, double width) {
+    public static double GitFontSize(GitGraphLayout layout, ResolvedVisualTheme theme, string text, double defaultSize, double width) {
         var preferred = defaultSize * layout.FontScale;
         var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = preferred, LineHeight = 1 };
         var normalized = SingleLineText(text);
@@ -94,7 +94,7 @@ internal static partial class VisualBlockRendering {
         });
     }
 
-    public static GitTagMetrics GitTag(GitGraphLayout layout, ChartTheme theme, string tag, double x, double y, double radius) {
+    public static GitTagMetrics GitTag(GitGraphLayout layout, ResolvedVisualTheme theme, string tag, double x, double y, double radius) {
         var font = GitFontSize(layout, theme, tag, 9.5, 86);
         var scale = font / 9.5;
         var inset = Math.Min(5, 5 * scale);

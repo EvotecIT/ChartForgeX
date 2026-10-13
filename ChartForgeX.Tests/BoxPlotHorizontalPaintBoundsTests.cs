@@ -68,7 +68,7 @@ public sealed class BoxPlotHorizontalPaintBoundsTests {
         var summaries = new[] { new ChartBoxPlot(1, 10, 20, 30, 50, 100), equalQuartilesAtMaximum
             ? new ChartBoxPlot(2, 100, 100, 100, 100, 100) : new ChartBoxPlot(2, 20, 25, 40, 60, 80) };
         var chart = Chart.Create().WithSize(width, 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(width == 360 ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), width == 360 ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithFontFamily("Carlito").WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
             .ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal).AddBoxPlot("Summary", summaries);
         if (strokeWidth >= 0) chart.Series[0].WithStrokeWidth(strokeWidth);
@@ -82,12 +82,11 @@ public sealed class BoxPlotHorizontalPaintBoundsTests {
         Assert.Equal(2, groups.Length);
         var keys = new[] { "minimum", "q1", "median", "q3", "maximum" };
         for (var point = 0; point < groups.Length; point++) {
-            Assert.Equal("5", (string?)groups[point].Attribute("data-cfx-source-count"));
+            Assert.Equal("1", (string?)groups[point].Attribute("data-cfx-source-count"));
+            Assert.Equal(point, Number(groups[point], "data-cfx-source-point"));
             Assert.Equal(point + 1, Number(groups[point], "data-cfx-x"));
             for (var member = 0; member < 5; member++) {
                 Assert.Equal(expected[point][member], Number(groups[point], "data-cfx-" + keys[member]));
-                Assert.Equal(expected[point][member], Number(groups[point], "data-cfx-source-" + member + "-y"));
-                Assert.Equal(point * 5 + member, Number(groups[point], "data-cfx-source-" + member + "-index"));
             }
         }
     }

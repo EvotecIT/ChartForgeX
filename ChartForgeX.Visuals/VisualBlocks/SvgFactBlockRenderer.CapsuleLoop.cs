@@ -13,7 +13,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderSegmentedMetricCapsuleLoop(SvgMarkupWriter writer, SegmentedMetricBlock card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderSegmentedMetricHeading(writer, card, ref y, content.X, content.Width);
@@ -37,7 +37,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderCapsuleTrack(SvgMarkupWriter writer, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var path = CapsuleLoopPath(x, y, width, height, stroke, 0, 1);
         writer.StartElement("path")
             .Attribute("data-cfx-role", "segmented-metric-capsule-track-shadow")
@@ -61,7 +61,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderCapsuleSegments(SvgMarkupWriter writer, SegmentedMetricBlock card, double x, double y, double width, double height, double stroke) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var slices = VisualFactBlockRendering.SegmentedSlices(card);
         foreach (var slice in slices) {
             if (slice.Share <= 0) continue;
@@ -99,7 +99,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderCapsuleSegmentLabel(SvgMarkupWriter writer, SegmentedMetricBlock card, SegmentedMetricSlice slice, ChartColor color, double x, double y, double width, double height, double stroke) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var label = (slice.Share * 100).ToString("0", CultureInfo.InvariantCulture) + "%";
         var fontSize = Math.Max(9, Math.Min(12, stroke * 0.42));
         var maxWidth = Math.Max(28, stroke * 1.9);
@@ -122,7 +122,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderCapsuleLegend(SvgMarkupWriter writer, SegmentedMetricBlock card, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var rowHeight = Math.Max(26, Math.Min(34, height / Math.Max(1, card.Items.Count)));
         var total = VisualFactBlockRendering.SegmentedTotal(card);
         var bottom = y + height;

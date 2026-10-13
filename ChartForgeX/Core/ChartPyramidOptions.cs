@@ -41,4 +41,7 @@ public sealed class ChartPyramidOptions {
             _aspectRatio = value;
         }
     }
+
+    /// <summary>Copies the configured state for isolated chart configuration.</summary>
+    internal ChartPyramidOptions Clone() => (ChartPyramidOptions)MemberwiseClone();
 }

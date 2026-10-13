@@ -13,10 +13,9 @@ namespace ChartForgeX.Tests;
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     private static string CssClipChart(bool keyboard = true, bool dark = false, bool readable = false) {
         var chart = Chart.Create().WithSize(650, 338).WithHeader(false).WithLegend(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-            .AddScatter("Reading", new[] { new ChartPoint(1, 5), new ChartPoint(5, 5), new ChartPoint(9, 5) });
-        chart.Series[0].WithInteractionKey("css-reading");
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("css-reading"), "Reading", new[] { new ChartPoint(1, 5), new ChartPoint(5, 5), new ChartPoint(9, 5) }));
         return chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = readable ? HtmlChartResponsiveLayout.Readable : HtmlChartResponsiveLayout.Fit;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection

@@ -226,7 +226,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
     }
 
     private static Chart Frame(bool dark, string title) => Chart.Create().WithSize(596, 338).WithTitle(title)
-        .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
 
     private static Task<string[][]> RowsAsync(IPage page) => page.EvaluateAsync<string[][]>("() => Array.from(document.querySelectorAll('.cfx-tooltip dt')).map(row => [row.textContent, row.nextElementSibling.textContent, row.querySelector('.cfx-tooltip__swatch') ? getComputedStyle(row.querySelector('.cfx-tooltip__swatch')).backgroundColor : ''])");
 

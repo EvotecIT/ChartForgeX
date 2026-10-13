@@ -11,10 +11,11 @@ namespace ChartForgeX.Tests;
 /// <summary>Independent color facts keep their own domain, paint, raw readouts and detached preparation.</summary>
 public sealed class ScatterBubbleColorRenderingTests {
     internal static readonly ChartColor Low = ChartColor.FromHex("#2166AC"), High = ChartColor.FromHex("#B2182B"), Empty = ChartColor.FromHex("#9CA3AF");
-    internal static Chart Create(bool bubble, params double?[] colors) {
+    internal static Chart Create(bool bubble, params double?[] colors) => Create(new ChartSeriesId("samples"), bubble, colors);
+    private static Chart Create(ChartSeriesId id, bool bubble, params double?[] colors) {
         var chart = Chart.Create().WithSize(800, 500).WithDataLabels(false).ConfigureLabels(labels => labels.Color = "Temperature (°C)");
-        if (bubble) chart.AddBubble("Samples", colors.Select((value, i) => new ChartBubble(i + 1, 10 + i * 4, (i + 1) * (i + 1)).WithColorValue(value)));
-        else chart.AddScatter("Samples", colors.Select((value, i) => new ChartPoint(i + 1, 10 + i * 4).WithColorValue(value)));
+        if (bubble) chart.AddSeries(ChartSeries.CreateBubble(id, "Samples", colors.Select((value, i) => new ChartBubble(i + 1, 10 + i * 4, (i + 1) * (i + 1)).WithColorValue(value))));
+        else chart.AddSeries(ChartSeries.CreateScatter(id, "Samples", colors.Select((value, i) => new ChartPoint(i + 1, 10 + i * 4).WithColorValue(value))));
         return chart;
     }
     internal static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -45,7 +46,7 @@ public sealed class ScatterBubbleColorRenderingTests {
         Assert.NotEqual((string?)points[1].Attribute("data-cfx-y"), (string?)points[2].Attribute("data-cfx-y"));
         if (bubble) {
             Assert.NotEqual(Number(marks[1], "rx"), Number(marks[2], "rx"));
-            Assert.All(chart.Series[0].Points.Where((_, index) => index % 2 == 1), point => Assert.Null(point.ColorValue));
+            Assert.Equal(5, chart.Series[0].Bubbles.Count);
             var bubbles = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "bubble").ToArray();
             var image = ChartForgeX.Raster.RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
             var backdrop = ChartColor.FromRgba(image.Pixels[0], image.Pixels[1], image.Pixels[2], image.Pixels[3]);
@@ -94,10 +95,10 @@ public sealed class ScatterBubbleColorRenderingTests {
 
     [Fact]
     public void DuplicateNamesInPanelsKeepTheirOwnColorDomainsIdentitiesAndDetachedFacts() {
-        var first = Create(false, -10, 10); var second = Create(true, 900, 1000);
+        var first = Create(new ChartSeriesId("first"), false, -10, 10); var second = Create(new ChartSeriesId("second"), true, 900, 1000);
         var scale = ChartColorScale.Sequential(Low, High);
-        first.Series[0].WithColorScale(scale).WithInteractionKey("first");
-        second.Series[0].WithColorScale(scale).WithInteractionKey("second");
+        first.Series[0].WithColorScale(scale);
+        second.Series[0].WithColorScale(scale);
         var grid = ChartGrid.Create().WithColumns(2).Add(first).Add(second);
         var prepared = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200, 500))));
         var document = XDocument.Parse(prepared.ToSvg()); var keys = Role(document, "color-scale-0");
@@ -105,7 +106,7 @@ public sealed class ScatterBubbleColorRenderingTests {
         Assert.Equal(new[] { "first", "second" }, Role(document, "color-scale-source").Select(key => (string?)key.Attribute("data-cfx-series-key")));
         Assert.Contains(prepared.Regions, region => region.Id == "panel-0/series-0-point-0" && region.Label?.Contains("Temperature (°C): -10") == true);
         Assert.Contains(prepared.Regions, region => region.Id == "panel-1/series-0-point-0" && region.Label?.Contains("Temperature (°C): 900") == true);
-        var svg = prepared.ToSvg(); second.Series[0].Points[0] = second.Series[0].Points[0].WithColorValue(9999);
+        var svg = prepared.ToSvg(); second.Series[0].UpdateBubble(0, second.Series[0].Bubbles[0].WithColorValue(9999));
         Assert.Equal(svg, prepared.ToSvg());
     }
 
@@ -133,7 +134,7 @@ public sealed class ScatterBubbleColorRenderingTests {
         var chart = Create(true, -10, 0, null);
         chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Series[0].Points[0] = chart.Series[0].Points[0].WithColorValue(999);
+        chart.Series[0].UpdateBubble(0, chart.Series[0].Bubbles[0].WithColorValue(999));
         chart.Series[0].WithColorScale(ChartColorScale.Sequential(ChartColor.White, ChartColor.Black).WithValueRange(900, 1000));
         chart.Series[0].Markers.Fill = ChartColor.Black; chart.ConfigureLabels(labels => labels.Color = "Changed");
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());

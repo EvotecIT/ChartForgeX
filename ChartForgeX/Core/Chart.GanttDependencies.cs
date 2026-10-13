@@ -31,9 +31,9 @@ public sealed partial class Chart {
         var taskIndex = 0;
         foreach (var series in Series) {
             if (series.Kind != ChartSeriesKind.Gantt) continue;
-            if (series.Points.Count < 2) throw new InvalidOperationException("Gantt dependency metadata is missing.");
-            var predecessor = series.Points[1].Y;
-            if (!ChartMath.IsFinite(predecessor) || predecessor < -1 || predecessor >= taskIndex || predecessor != Math.Truncate(predecessor))
+            if (series.GanttItems.Count != 1) throw new InvalidOperationException("A Gantt series requires one typed schedule item.");
+            var predecessor = series.GanttItems[0].DependsOn;
+            if (predecessor < -1 || predecessor >= taskIndex)
                 throw new InvalidOperationException("A task's inline Gantt dependency must reference an earlier task.");
             if (predecessor >= 0) {
                 var link = new ChartGanttDependency((int)predecessor, taskIndex);

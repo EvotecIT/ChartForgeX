@@ -38,7 +38,7 @@ public sealed class GraphiteHeatmapLegendTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ZeroPrecedesRampAndObservedNonZeroRangeUsesValueFormat(bool dark) {
-        var chart = Chart.Create().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(640, 320)
             .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + (value == 120 ? "+ events" : " events"))
             .AddHeatmapRow("Count", new[] { 0d, 2, 20, 120 });

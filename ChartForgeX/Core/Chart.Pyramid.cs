@@ -22,7 +22,7 @@ public sealed partial class Chart {
     /// <remarks>Options can be configured before or after adding the pyramid series.</remarks>
     public Chart ConfigurePyramid(Action<ChartPyramidOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.Pyramid);
+        Options.Pyramid = ChartOptionConfiguration.Configure(Options.Pyramid, configure, options => options.Clone());
         return this;
     }
 }

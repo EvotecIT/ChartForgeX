@@ -12,13 +12,13 @@ Every rendered interaction surface is normalized to `data-cfx-target-kind` and `
 
 Explicitly decimated series keep their original point identity. `data-cfx-point` remains the rendered ordinal, while the series source-index map and each host event's `sourcePoint` identify the caller's original point.
 
-Aggregate marks such as histogram bins, merged timeline runs, and pie slices expose contributing source observations through `target.sourcePoints`, a numeric array in hover and selection events. An empty histogram bin reports `[]`. For these marks, `target.sourcePoint` is `undefined` because one source observation cannot identify an aggregate. Target IDs include the interaction key and derivation kind. Histogram identities also retain interval bounds, terminal-boundary inclusion, aggregation, and encoding; matching intervals can synchronize across different bin ordinals, while different summary policies remain independent. Grouped pie slices use their contributing source indices, and merged timeline runs use their start/end interval. Derived summaries cannot select an unrelated observation or a different summary kind merely because their rendered ordinals match. Point legends share their mark's contributors and target ID. Hosts should route aggregate selection by the opaque `targetId` and read `sourcePoints` when they need the underlying observations.
+Aggregate marks such as histogram bins, merged timeline runs, and pie slices expose contributing source observations through `target.sourcePoints`, a numeric array in hover and selection events. An empty histogram bin reports `[]`. For these marks, `target.sourcePoint` is `undefined` because one source observation cannot identify an aggregate. Target IDs include the stable series ID and derivation kind. Histogram identities also retain interval bounds, terminal-boundary inclusion, aggregation, and encoding; matching intervals can synchronize across different bin ordinals, while different summary policies remain independent. Grouped pie slices use their contributing source indices, and merged timeline runs use their start/end interval. Derived summaries cannot select an unrelated observation or a different summary kind merely because their rendered ordinals match. Point legends share their mark's contributors and target ID. Hosts should route aggregate selection by the opaque `targetId` and read `sourcePoints` when they need the underlying observations.
 
 Point-legend muting and isolation use the same identity rules across charts. Zero-valued pie and donut legends retain their derived identity and contributors even when no slice is painted. Isolating a point keeps its mark at full strength, including a previously muted point; clearing isolation restores its prior mute state.
 
 Raw trend-line and box-plot summaries omit both singular `sourcePoint` and contributor arrays. Their source data remains available through the series' immutable `TrendLineSourcePoints` and `BoxPlotSourceSamples` collections. Migration: derived target IDs now include their derivation kind; use event-provided IDs instead of constructing IDs from point ordinals.
 
-Radar fills missing categories with zero geometry. Those categories are `region` targets identified by the series interaction key and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category.
+Radar fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category.
 
 ## Keyboard navigation
 
@@ -130,23 +130,61 @@ Delayed pointer readouts use the latest pointer and live anchor bounds when show
 
 ## Semantic Series Identity
 
-Series ordinals are local rendering details. Synchronized dashboards therefore match legend, hover, and selection state by `data-cfx-series-key`, never by an ordinal from a different chart. The series name is the automatic key, so charts with the same named measure work without extra configuration. Set an explicit key when display labels differ but the underlying measure is the same:
+Create a series with a `ChartSeriesId` when equivalent measures should synchronize across charts. Retain the series handle to configure it, then attach it with `AddSeries`. Each chart receives its own series instance; equivalent series share the same explicit ID:
 
 ```csharp
-var current = Chart.Create()
-    .AddLine("Current pass rate", points);
-current.Series[0].WithInteractionKey("quality.pass-rate");
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 
-var history = Chart.Create()
-    .AddSmoothArea("Pass rate history", historyPoints);
-history.Series[0].WithInteractionKey("quality.pass-rate");
+var passRateId = new ChartSeriesId("quality.pass-rate");
+var currentSeries = ChartSeries.CreateLine(passRateId, "Current pass rate",
+    ChartPoints.FromValues(96, 98, 99));
+var historySeries = ChartSeries.CreateArea(passRateId, "Pass rate history",
+    ChartPoints.FromValues(92, 96, 98)).WithInterpolation(ChartInterpolation.Smooth);
+
+var current = Chart.Create().AddSeries(currentSeries);
+var history = Chart.Create().AddSeries(historySeries);
+
+currentSeries.WithName("Pass rate today");
 ```
 
-Point-level legend entries retain their point identity, so toggling one pie or radial item does not mute the complete containing series. A peer chart that does not contain the semantic key is left unchanged. Call `UseAutomaticInteractionKey()` to return to name-based identity.
+`series.Id` is immutable. Renaming the display text with `WithName`, configuring the handle or moving it with `chart.MoveSeries` preserves its ID. Display names may repeat; IDs must be unique within a chart. `Chart.Series` is a read-only view of attached handles, with structural changes made through `AddSeries`, `RemoveSeries`, `MoveSeries` and `ClearSeries`.
 
-Interaction keys cannot contain only digits because numeric scenario targets are reserved for local zero-based series ordinals. Digits-only display names receive an automatic `series:` identity prefix; prefer an explicit domain key such as `quality.pass-rate` in public dashboards. Point legends are emitted only for chart families whose visible geometry is point-scoped. Connected line, area, radar, polar, and other aggregate paths retain a series legend so a point toggle never leaves the main shape visibly active.
+Fluent `chart.AddLine(...)`, `AddBar(...)` and other `Add*` helpers allocate deterministic chart-local IDs. These remain fixed through renaming and reordering, but do not synchronize series or observation interactions across charts. Equal display names do not connect charts. The `cfx:auto:` namespace is reserved for these automatic IDs; supply an explicit ID when connecting equivalent measures in a dashboard.
 
-Scenario routes use the same identity contract. `AddSeriesStep(...)` accepts a stable non-numeric interaction key or, for local legacy routes, a zero-based series ordinal. Prefer the interaction key when series can be reordered or reused across dashboards.
+Synchronized legend, hover and selection state uses `data-cfx-series-key`, which carries `series.Id.Value`. Series positions remain local rendering details. A peer without the explicit series ID remains unchanged. Point-level legends retain their observation identity, so toggling one pie or radial item affects that item. Connected line, area, radar, polar and other aggregate paths retain a series legend.
+
+### Observation identity
+
+Use `WithObservationId` when equivalent charts can present their source observations in a different order:
+
+```csharp
+var latency = ChartSeries.CreateScatter(new ChartSeriesId("service.latency"), "Latency",
+    new[] { new ChartPoint(1, 24), new ChartPoint(2, 31) })
+    .WithObservationId(0, new ChartObservationId("east"))
+    .WithObservationId(1, new ChartObservationId("west"));
+var latencyChart = Chart.Create().AddSeries(latency);
+```
+
+The index refers to the authored source observation, including an original observation retained by decimation. Assign the same observation ID to the corresponding source position in each peer chart. IDs are unique within a series. Typed `Update*` methods preserve the observation's ID; `Replace*` methods clear observation IDs when replacing the complete source.
+
+Prepared output captures explicit IDs in `data-cfx-observation-id`; host event targets expose `observationId`. Point legends carry their referenced observation's identity. Use the event's opaque `targetId` to address a rendered target, and `sourcePoint` to read its source position. Aggregate identities continue to describe their derivation and contributors.
+
+### Series scenario steps
+
+Pass the retained series ID to `AddSeriesStep`. The typed overload is available from `ChartForgeX.Interactivity.Html` and delegates to the host-neutral scenario contract:
+
+```csharp
+using ChartForgeX.Interactivity;
+using ChartForgeX.Interactivity.Html;
+
+current.SaveInteractiveHtml("pass-rate.html", options => {
+    options.Interaction.AddScenario("quality-review", "Quality review", scenario => scenario
+        .AddSeriesStep(currentSeries.Id, "Inspect pass rate"));
+});
+```
+
+The string overload also addresses an exact stable series ID. Numeric strings have the same meaning: `AddSeriesStep("0", ...)` targets the series created with `new ChartSeriesId("0")`, regardless of its position or display name. To target an automatically identified series in its own chart, pass that handle's `Id`.
 
 ## Host-Owned Assets
 
@@ -189,16 +227,19 @@ The adapter prepares a detached topology once and passes it to the SVG producer.
 
 ## Scenario Timelines
 
-Scenarios are ordered, host-neutral timelines rather than browser-only tours. Configure pacing and visual intent on the scenario model; adapters consume the same contract:
+Scenarios are ordered, host-neutral timelines. Configure pacing and visual intent on the scenario model; adapters consume the same contract. Retain the `pressure` and `success` series handles from chart construction and use their IDs in the route:
 
 ```csharp
+using ChartForgeX.Interactivity;
+using ChartForgeX.Interactivity.Html;
+
 interaction.AddScenario("recovery", "Recovery route", scenario => scenario
     .WithDescription("Inspect pressure, then confirm the recovered signal.")
     .WithPlayback(stepDurationMilliseconds: 1100, loop: false, autoPlay: false)
     .WithFocusMode(ChartInteractionScenarioFocusMode.Highlight)
-    .AddSeriesStep("incident-pressure", "Inspect pressure",
+    .AddSeriesStep(pressure.Id, "Inspect pressure",
         configure: step => step.WithDuration(1600))
-    .AddSeriesStep("probe-success", "Confirm recovery"));
+    .AddSeriesStep(success.Id, "Confirm recovery"));
 ```
 
 `Highlight` is the default: it emphasizes route members while preserving titles, axes, and surrounding data context. Use `Spotlight` only when dimming non-route data is intentional. Playback and autoplay are opt in, autoplay is suppressed when the browser requests reduced motion, and the HTML adapter exposes previous/next controls plus an accessible range scrubber for direct step selection. Individual step durations override the scenario default; both accept 200-60000 milliseconds.

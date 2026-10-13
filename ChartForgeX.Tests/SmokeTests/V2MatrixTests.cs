@@ -45,7 +45,7 @@ public sealed class V2MatrixTests {
         var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
         var offset = ((int)(cells[0].Bounds.Top + cells[0].Bounds.Height / 2) * image.Width + (int)(cells[0].Bounds.Left + cells[0].Bounds.Width / 2)) * 4;
         Assert.Equal(color.R, image.Pixels[offset]); Assert.Equal(color.G, image.Pixels[offset + 1]); Assert.Equal(color.B, image.Pixels[offset + 2]);
-        var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.Series.Clear(); chart.Options.XAxisLabels.Clear();
+        var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.ClearSeries(); chart.Options.XAxisLabels.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(640, image.Width); Assert.Equal(400, image.Height);
     }
@@ -107,7 +107,7 @@ public sealed class V2MatrixTests {
         var chart = Chart.Create().WithStateCategories(state).WithMarkBackdrop(ChartMarkBackdrop.Background)
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapCategoryRow("Service", new ChartHeatmapCell("quiet", "Ready"));
         var context = Context(VisualThemeMode.Dark); var prepared = chart.Prepare(context);
-        var svg = prepared.ToSvg(); chart.Options.Theme = ChartTheme.Light();
+        var svg = prepared.ToSvg(); chart.Options.Theme = VisualTheme.Report();
         Assert.Equal(svg, prepared.ToSvg());
         var colors = context.Theme.Resolve(context.ThemeMode);
         var ink = ChartMarkText.OnStateMark(chart, colors, context.Frame, ChartStateMark.For(state, colors.Background));
