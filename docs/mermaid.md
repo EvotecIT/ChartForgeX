@@ -1216,6 +1216,26 @@ var png = document.ToPng();
 
 The conversion target for packet diagrams is `PacketLayoutBlock`. Packet fields become contiguous labeled bit rectangles with start/end bit metadata in SVG output. The same reusable block can be used directly from ChartForgeX without Mermaid.
 
+Packet source configuration accepts `bitsPerRow` (an integer from 1 to 512), `showBits` (a Boolean) and `bitOrder` (`ascending` or `descending`) in frontmatter and initialization directives. The last declaration of each setting takes effect. Explicit host options override each source value independently; omitted values use the source setting, then the defaults of 32 bits per row, visible bit numbers and ascending order.
+
+```mermaid
+---
+config:
+  packet:
+    bitsPerRow: 16
+    bitOrder: descending
+---
+packet-beta
+0-3: "Flags"
++14: "Payload"
++1: "Ready"
++5: "Tail"
+```
+
+Descending order mirrors each row, including a partial final row, while fields retain their ascending source ranges. Fields that cross row boundaries keep their labels and split ranges. SVG and PNG use the same native layout. To override source order, set `MermaidPacketRenderOptions.BitOrder = PacketBitOrder.Ascending`; the native block exposes `WithBitOrder` and `BitOrder` directly.
+
+`MermaidPacketRenderOptions.BitsPerRow` and `ShowBitNumbers` are nullable so hosts can distinguish an omitted override from an explicit value. Callers that read these properties can use `?? 32` and `?? true` for the renderer defaults. Source `rowHeight`, `bitWidth`, `paddingX` and `paddingY` remain retained with unsupported-configuration warnings; the native renderer controls measured text spacing and fits the host viewport.
+
 ## Venn Diagrams
 
 Venn diagrams are parsed into `MermaidVennDocument` and converted to the reusable `VennDiagramBlock` visual block.

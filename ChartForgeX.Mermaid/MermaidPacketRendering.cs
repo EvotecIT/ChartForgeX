@@ -22,8 +22,9 @@ public static class MermaidPacketRendering {
             .WithSubtitle(ResolveSubtitle(document, options))
             .WithSize(options.Width, options.Height)
             .WithPadding(options.Padding)
-            .WithBitsPerRow(options.BitsPerRow)
-            .WithBitNumbers(options.ShowBitNumbers);
+            .WithBitsPerRow(options.BitsPerRow ?? document.Configuration.Packet?.BitsPerRow ?? 32)
+            .WithBitNumbers(options.ShowBitNumbers ?? document.Configuration.Packet?.ShowBits ?? true)
+            .WithBitOrder(options.BitOrder ?? document.Configuration.Packet?.BitOrder ?? PacketBitOrder.Ascending);
 
         foreach (var field in document.Fields) block.AddField(field.StartBit, field.EndBit, field.Label);
         return MermaidPresentation.Apply(block, document);
@@ -96,9 +97,12 @@ public sealed class MermaidPacketRenderOptions {
     /// <summary>Gets or sets the inner preview padding.</summary>
     public double Padding { get; set; } = 30;
 
-    /// <summary>Gets or sets how many bits are rendered per visual row.</summary>
-    public int BitsPerRow { get; set; } = 32;
+    /// <summary>Gets or sets the row width override; null uses source configuration, then 32 bits.</summary>
+    public int? BitsPerRow { get; set; }
 
-    /// <summary>Gets or sets whether bit numbers are rendered above fields.</summary>
-    public bool ShowBitNumbers { get; set; } = true;
+    /// <summary>Gets or sets bit-number visibility; null uses source configuration, then true.</summary>
+    public bool? ShowBitNumbers { get; set; }
+
+    /// <summary>Gets or sets bit direction within each row; null uses source configuration, then ascending.</summary>
+    public PacketBitOrder? BitOrder { get; set; }
 }
