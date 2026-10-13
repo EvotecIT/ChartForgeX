@@ -13,7 +13,7 @@ public static class PolarAreaRecipe {
                 .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
         }
         var points = (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
-            .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6));
+            .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
         var revenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.PolarArea, points);
         return Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other").AddSeries(revenue)
             .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));

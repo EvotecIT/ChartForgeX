@@ -5,7 +5,7 @@ public static class ProgressRingRecipe {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var points = (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
-            .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6));
+            .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
         var completion = new ChartSeries(new ChartSeriesId("completion"), "Completion", ChartSeriesKind.ProgressRing, points);
         var chart = Chart.Create().WithXLabels("Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete")
             .AddSeries(completion).WithProgressRingCenterLabel()

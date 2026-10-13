@@ -8,6 +8,29 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects the downloadable public-package recipe boundary and the data retained during extraction.</summary>
 public sealed class ExampleRecipeTests {
+    [Theory]
+    [InlineData(ChartSeriesKind.Bar)]
+    [InlineData(ChartSeriesKind.HorizontalBar)]
+    [InlineData(ChartSeriesKind.Lollipop)]
+    [InlineData(ChartSeriesKind.Pie)]
+    [InlineData(ChartSeriesKind.Donut)]
+    [InlineData(ChartSeriesKind.PolarArea)]
+    [InlineData(ChartSeriesKind.ProgressRing)]
+    [InlineData(ChartSeriesKind.Radar)]
+    public void SparseIndependentMarksOmitCategoriesAndRetainTheirValues(ChartSeriesKind kind) {
+        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            var chart = Assert.IsType<Chart>(ExampleRecipes.ForKind(kind, "sparse").Create("sparse", mode));
+            var source = chart.Series.First();
+            Assert.Equal(new[] { 1d, 3, 6 }, source.Points.Select(point => point.X));
+            Assert.Equal(new[] { 27d, 41, 33 }, source.Points.Select(point => point.Y));
+            Assert.All(chart.Series.SelectMany(series => series.Points), point => Assert.False(point.BreakBefore));
+            var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), themeMode: mode));
+            Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group =>
+                group.Metadata.TryGetValue("data-cfx-series-key", out var id) && id == source.Id.Value);
+            Assert.Equal(3, source.SourcePointCount);
+        }
+    }
+
     [Fact]
     public void EveryFamilyDownloadContainsOnlyItsCompiledFactoryAndDefaultFontPath() {
         Assert.Equal(Enum.GetValues<ChartSeriesKind>().Length, ExampleRecipes.ChartFamilies.Count());

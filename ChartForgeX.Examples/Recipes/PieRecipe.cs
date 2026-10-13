@@ -15,5 +15,5 @@ public static class PieRecipe {
     }
 
     private static ChartPoint[] Observations(string variant) => (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
-        .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6)).ToArray();
+        .Select(index => new ChartPoint(index, 20 + index * 7 % 29)).ToArray();
 }

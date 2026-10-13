@@ -21,7 +21,7 @@ public static class BarRecipe {
         }
         else {
             var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
-                .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6));
+                .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
             chart.WithXLabels("North", "South", "East", "West", "Central", "Online")
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", points));
         }
