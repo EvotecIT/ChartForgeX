@@ -12,6 +12,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class BlockTypographyCeilingTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -28,6 +29,7 @@ public sealed class BlockTypographyCeilingTests {
         await CaptureGit(session, block, "git-tall-tag-" + (graphite ? "graphite" : "classic"));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -52,6 +54,7 @@ public sealed class BlockTypographyCeilingTests {
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), block.ToPng());
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 320)]
     [InlineData(false, 960)]

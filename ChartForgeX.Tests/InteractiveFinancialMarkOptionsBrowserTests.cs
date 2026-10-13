@@ -109,8 +109,8 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
             + fragment + "</main></body></html>";
         await using var session = await OpenAsync(html, 350, 380);
         var target = session.Page.Locator(Point(0, 0));
-        Assert.Equal("rgba(0, 0, 0, 0)", await session.Page.Locator(".cfx-stage").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
-        Assert.Equal("rgba(0, 0, 0, 0)", await session.Page.Locator(".cfx-interactive-chart").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        await AssertCssColorsEqualAsync(session.Page, "rgba(0, 0, 0, 0)", await session.Page.Locator(".cfx-stage").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        await AssertCssColorsEqualAsync(session.Page, "rgba(0, 0, 0, 0)", await session.Page.Locator(".cfx-interactive-chart").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         Assert.Equal("none", await target.Locator("[data-cfx-role='candlestick-body']").GetAttributeAsync("fill"));
         await MoveToAsync(session.Page, Point(0, 0));
         Assert.Contains("cfx-hovered", await target.GetAttributeAsync("class"));

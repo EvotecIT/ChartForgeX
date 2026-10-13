@@ -47,6 +47,7 @@ public sealed class MermaidFlowchartEndpointTests {
             (parsed.Document.Edges[1].SourceId, parsed.Document.Edges[1].TargetId, parsed.Document.Edges[1].Label));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("-- \"x < y\" --o", VisualLinkDirection.Forward, "Circle")]
     [InlineData("-- \"x < y\" ---", VisualLinkDirection.None, "None")]
@@ -121,6 +122,7 @@ public sealed class MermaidFlowchartEndpointTests {
         Assert.Equal(op, edge.Operator);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class FishboneTypographyBaselineTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(10.5)]
     [InlineData(21)]

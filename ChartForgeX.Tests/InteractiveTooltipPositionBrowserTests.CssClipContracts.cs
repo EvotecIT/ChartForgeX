@@ -262,7 +262,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
                 visualViewport.removeEventListener=(name,listener,options)=>{visualListeners[name]?.delete(listener);remove(name,listener,options)};
             }
             """);
-        await cdp.SendAsync("Input.synthesizePinchGesture", new Dictionary<string, object> { ["x"] = 100, ["y"] = 250, ["scaleFactor"] = 2, ["relativeSpeed"] = 800, ["gestureSourceType"] = "touch" });
+        // Exercise native visual viewport movement independently of physical pinch recognition.
+        await cdp.SendAsync("Emulation.setPageScaleFactor", new Dictionary<string, object> { ["pageScaleFactor"] = 2 });
         await SettleObservedPositionAsync(page);
         await page.Locator(Point(0, 0)).EvaluateAsync("node=>node.focus({preventScroll:true})"); await page.Keyboard.PressAsync("Space");
         await SettleObservedPositionAsync(page);
@@ -271,6 +272,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await CaptureAsync(page, "css-mobile-visual-before", before, session);
         Assert.True(before.GetProperty("viewport").GetProperty("scale").GetDouble() > 1.5);
         Assert.False(before.GetProperty("source").GetProperty("hidden").GetBoolean());
+        Assert.True(before.GetProperty("source").GetProperty("pinned").GetBoolean());
         await cdp.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object> { ["type"] = "touchStart", ["touchPoints"] = new[] { new { x = 150, y = 20 } } });
         for (var step = 1; step <= 8; step++) {
             await cdp.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object> { ["type"] = "touchMove", ["touchPoints"] = new[] { new { x = 150 - step * 17, y = 20 } } });
@@ -283,6 +285,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         Assert.True(after.GetProperty("viewport").GetProperty("left").GetDouble() > after.GetProperty("source").GetProperty("node").GetProperty("right").GetDouble(), after.ToString());
         Assert.True(after.GetProperty("events").GetProperty("scroll").GetInt32() > 0);
         Assert.True(after.GetProperty("source").GetProperty("hidden").GetBoolean());
+        Assert.False(after.GetProperty("source").GetProperty("pinned").GetBoolean());
+        Assert.Equal("css-reading:0", after.GetProperty("source").GetProperty("selected").GetString());
         var card = before.GetProperty("source").GetProperty("card"); var visual = before.GetProperty("viewport");
         Assert.True(card.GetProperty("left").GetDouble() >= visual.GetProperty("left").GetDouble());
         Assert.True(card.GetProperty("right").GetDouble() <= visual.GetProperty("left").GetDouble() + visual.GetProperty("width").GetDouble());

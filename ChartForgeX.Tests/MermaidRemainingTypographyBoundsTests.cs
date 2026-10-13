@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidRemainingTypographyBoundsTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 320, false)]
     [InlineData(false, 960, false)]
@@ -35,6 +36,7 @@ public sealed class MermaidRemainingTypographyBoundsTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 320)]
     [InlineData(false, 960)]

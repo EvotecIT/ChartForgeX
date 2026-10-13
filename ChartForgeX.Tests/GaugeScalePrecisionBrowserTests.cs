@@ -69,7 +69,7 @@ public sealed class GaugeScalePrecisionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 0d, 360, 360)]
     [InlineData(false, .1, 360, 360)]
     [InlineData(false, .9, 360, 360)]
@@ -126,7 +126,7 @@ public sealed class GaugeScalePrecisionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartGaugeForm.Arc, false, 800, 440)]
     [InlineData(ChartGaugeForm.Needle, false, 800, 440)]
     [InlineData(ChartGaugeForm.Linear, false, 800, 440)]

@@ -13,6 +13,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class BlockTypographyWidthTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
@@ -31,6 +32,7 @@ public sealed class BlockTypographyWidthTests {
         await Capture(packet, "packet-long-" + (subtitle ? "subtitle-" : "title-") + (graphite ? "graphite" : "classic"));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 520)]
     [InlineData(true, 520)]
@@ -52,6 +54,7 @@ public sealed class BlockTypographyWidthTests {
         await Capture(packet, "packet-narrow-bits-" + (graphite ? "graphite-" : "classic-") + width);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -66,6 +69,7 @@ public sealed class BlockTypographyWidthTests {
         await Capture(packet, "packet-adjacent-bits-" + (graphite ? "graphite" : "classic"));
     }
 
+    [Trait("Category", "Browser")]
     [Fact]
     public async Task ClassicPacketFieldTextSharesTheSvgBaseline() {
         var theme = Theme(false); theme.DataLabelFontSize = 256;

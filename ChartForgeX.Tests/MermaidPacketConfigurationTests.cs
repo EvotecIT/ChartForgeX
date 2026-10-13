@@ -110,6 +110,7 @@ public sealed class MermaidPacketConfigurationTests {
         Assert.Equal(4, diagnostic.Span.Line);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 320)]
     [InlineData(false, 960)]

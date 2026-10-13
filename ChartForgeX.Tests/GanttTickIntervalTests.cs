@@ -31,6 +31,7 @@ public sealed class GanttTickIntervalTests {
 
     private static string Fixture(string extension) => Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "gantt-tick-interval." + extension);
 
+    [Trait("Category", "Browser")]
     [Fact]
     public async Task MermaidMillisecondTicksReachSvgPngAndStaticBrowserLabels() {
         var document = new MermaidParser().ParseGantt("gantt\ntickInterval 100millisecond\nTask :2026-01-01, 300ms").Document!;
@@ -142,6 +143,7 @@ public sealed class GanttTickIntervalTests {
             ChartTimeScale.GenerateFixed(new ChartAxis { TimeZone = offsetZone }, start, start + .000001, interval));
     }
 
+    [Trait("Category", "Browser")]
     [Fact]
     public async Task NativeMillisecondLabelsPreservePrecisionAndExplicitFormattingWins() {
         var start = new DateTime(2026, 1, 1);

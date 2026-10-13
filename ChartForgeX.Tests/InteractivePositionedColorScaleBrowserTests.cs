@@ -51,7 +51,7 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
         foreach (var value in kind == ChartSeriesKind.TileMap ? new[] { 0d, 2.5, 55 } : new[] { -30d, 0, 2.5, 55 }) {
             var fill = await page.Locator(Target(value)).EvaluateAsync<string>("node => getComputedStyle(node.querySelector('[data-cfx-role=\"tile-map-region\"], [data-cfx-role=\"heatmap-cell-shape\"], ellipse')).fill");
             var color = scale.ColorFor(value);
-            Assert.Equal(FormattableString.Invariant($"rgb({color.R}, {color.G}, {color.B})"), fill);
+            await AssertCssColorsEqualAsync(page, FormattableString.Invariant($"rgb({color.R}, {color.G}, {color.B})"), fill);
         }
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.positionedSelection = event.detail.target)");
         await MoveToAsync(page, clamped);

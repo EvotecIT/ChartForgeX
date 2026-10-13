@@ -7,6 +7,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class IconCaptionFontSizeTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(11)]
     [InlineData(32)]

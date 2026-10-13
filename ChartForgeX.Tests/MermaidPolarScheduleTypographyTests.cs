@@ -9,6 +9,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects native radial and schedule captions at the accepted source font ceiling.</summary>
 public sealed class MermaidPolarScheduleTypographyTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("radar", 320, false, 0)]
     [InlineData("radar", 960, false, 0)]

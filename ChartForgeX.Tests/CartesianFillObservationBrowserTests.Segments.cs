@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class CartesianFillObservationBrowserTests {
-    [BrowserTheory]
+    [Theory]
     [InlineData(ChartSeriesKind.Area, false)]
     [InlineData(ChartSeriesKind.StepArea, false)]
     [InlineData(ChartSeriesKind.StackedArea, false)]

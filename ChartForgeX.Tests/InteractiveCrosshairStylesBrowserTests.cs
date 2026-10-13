@@ -57,13 +57,13 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
             """, ChartColor.FromArgb(128, 37, 99, 235).ToCss());
         Assert.Equal(baseline.GetRawText(), configured.GetRawText());
         Assert.Equal(!showLabel, await page.Locator(".cfx-crosshair__label").IsHiddenAsync());
-        Assert.All(paint, line => {
+        foreach (var line in paint) {
             Assert.Equal(lineStyle.ToString().ToLowerInvariant(), line.GetProperty("pattern").GetString());
             Assert.Equal("2px", line.GetProperty("width").GetString());
-            Assert.Equal(expectedStroke, line.GetProperty("color").GetString());
+            await AssertCssColorsEqualAsync(page, expectedStroke, line.GetProperty("color").GetString()!);
             Assert.Equal("none", line.GetProperty("shadow").GetString());
-            Assert.Equal("rgba(0, 0, 0, 0)", line.GetProperty("background").GetString());
-        });
+            await AssertCssColorsEqualAsync(page, "rgba(0, 0, 0, 0)", line.GetProperty("background").GetString()!);
+        }
         await CaptureAsync(session, "crosshair-styled-" + Variant(graphite, dark, width) + "-" + lineStyle, new { configured, paint });
         AssertNoConsoleErrors(session);
     }
@@ -101,12 +101,12 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         }), 700, 720);
         var contract = await ObserveAsync(session.Page);
         var paint = await PaintAsync(session.Page);
-        Assert.All(paint, line => {
+        foreach (var line in paint) {
             Assert.Equal(graphite ? "dashed" : "solid", line.GetProperty("pattern").GetString());
             Assert.Equal(zeroWidth ? "0px" : "1px", line.GetProperty("width").GetString());
-            if (!zeroWidth) Assert.Equal("rgba(0, 0, 0, 0)", line.GetProperty("color").GetString());
+            if (!zeroWidth) await AssertCssColorsEqualAsync(session.Page, "rgba(0, 0, 0, 0)", line.GetProperty("color").GetString()!);
             Assert.Equal("none", line.GetProperty("shadow").GetString());
-        });
+        }
         Assert.False(await session.Page.Locator(".cfx-crosshair__label").IsHiddenAsync());
         Assert.True(await session.Page.Locator(".cfx-crosshair").EvaluateAsync<bool>("""
             c => { const b=c.getBoundingClientRect(), l=c.querySelector('[data-cfx-crosshair-label]').getBoundingClientRect();

@@ -15,6 +15,8 @@ public sealed class TileMapLabelFittingTests : IDisposable {
 
     public TileMapLabelFittingTests() {
         FontRegistry.Register(Family, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        FontRegistry.Register("CFX Proof Carlito", Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"), 400);
+        FontRegistry.Register("CFX Proof Carlito", Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Bold.ttf"), 700);
     }
 
     [Theory]
@@ -71,6 +73,35 @@ public sealed class TileMapLabelFittingTests : IDisposable {
         Assert.Equal(51, prepared.Regions.Count(region => region.Role == "tile-map-region"));
         Assert.Equal(51, prepared.Regions.Count(region => region.Role == "tile-map-label"));
         Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
+    [InlineData("cartesian")]
+    [InlineData("chart-grid")]
+    [InlineData("histogram")]
+    [InlineData("slope")]
+    [InlineData("radar")]
+    [InlineData("polar")]
+    public void GeneratedThumbnailAxesRetainReadableTypeAcrossCrowdedFamilies(string family) {
+        IVisualRenderable model = family switch {
+            "cartesian" => V2Examples.Create("cartesian", "wide"),
+            "chart-grid" => ChartGrid.Create().Add(Chart.Create().AddLine("Requests", new[] { new ChartPoint(1, 5), new ChartPoint(2, 10) })),
+            "histogram" => V2GalleryModels.CreateHistogram("wide"),
+            _ => V2GalleryModels.Create(Enum.Parse<ChartSeriesKind>(family, true), "wide", VisualThemeMode.Light)
+        };
+        var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-thumbnail-readability-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(output);
+        try {
+            var write = typeof(V2Examples).GetMethod("WriteThumbnail", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+            write.Invoke(null, new object?[] { output, model, "readable", "Readable overview", family, VisualThemeMode.Light, family != "histogram" });
+            var svg = XDocument.Load(Path.Combine(output, "readable.thumbnail.svg"));
+            var labels = svg.Descendants().Where(node => node.Name.LocalName == "text" && node.Ancestors().Any(owner =>
+                ((string?)owner.Attribute("data-cfx-role")) is "axis-y-label" or "radar-ring-label" or "polar-radius-label")).ToArray();
+            Assert.True(labels.Length >= 2, "The overview must retain useful value-axis captions.");
+            Assert.All(labels, label => Assert.True(double.Parse(label.Attribute("font-size")!.Value, System.Globalization.CultureInfo.InvariantCulture) >= 12,
+                "Overview axis type must remain readable when its 400 px SVG shrinks into a compact catalog tile."));
+            Assert.True(new FileInfo(Path.Combine(output, "readable.thumbnail.png")).Length > 0);
+        } finally { Directory.Delete(output, true); }
     }
 
     [Fact]

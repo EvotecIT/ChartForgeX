@@ -8,6 +8,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GanttDependencyArrowTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, 960, false)]
     [InlineData(true, false, 320, false)]

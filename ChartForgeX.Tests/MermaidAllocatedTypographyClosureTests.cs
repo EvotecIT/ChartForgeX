@@ -13,6 +13,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidAllocatedTypographyClosureTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(TopologyNodeDisplayMode.Card, false, TopologyEdgeRouting.Orthogonal)]
     [InlineData(TopologyNodeDisplayMode.Card, true, TopologyEdgeRouting.Orthogonal)]
@@ -51,6 +52,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         await Capture(svg, chart.ToPng(options), "actor-auto-" + mode + "-" + incoming + "-" + routing, 320, 280);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(360, 32, 0, false)]
     [InlineData(360, 32, 90, false)]
@@ -68,6 +70,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         await Capture(prepared.ToSvg(), prepared.ToPng(), "axis-" + size + "-" + angle, width, 420);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(TopologyNodeDisplayMode.Tile)]
     [InlineData(TopologyNodeDisplayMode.Icon)]
@@ -118,6 +121,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         Assert.Equal(18, fitted.FontSize);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(18)]
     [InlineData(18.0001)]
@@ -142,6 +146,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         await Capture(svg, png, "group-header-" + size, 960, 720, fontPath);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(32)]
     [InlineData(256)]
@@ -155,6 +160,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         await Capture(svg, png, "packet-narrow-" + size, 480, 280);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

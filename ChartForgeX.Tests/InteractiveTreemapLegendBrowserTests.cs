@@ -202,10 +202,10 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         foreach (var (id, expected) in new[] { ("low", "rgb(0, 255, 0)"), ("explicit", "rgb(255, 0, 255)"), ("missing", "rgb(255, 255, 0)") }) {
             var tile = page.Locator(Node(id) + " > [data-cfx-role=treemap-tile-mark]");
             var key = page.Locator(Key(id));
-            Assert.Equal(expected, await tile.EvaluateAsync<string>("node => getComputedStyle(node).fill"));
-            Assert.Equal(expected, await key.Locator("[data-cfx-role=legend-swatch]").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+            await AssertCssColorsEqualAsync(page, expected, await tile.EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+            await AssertCssColorsEqualAsync(page, expected, await key.Locator("[data-cfx-role=legend-swatch]").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
             await key.FocusAsync();
-            Assert.Equal(expected, await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+            await AssertCssColorsEqualAsync(page, expected, await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         }
         await Capture(page, html, "leaf-legend-host-palette-" + width + "-" + dark);
         AssertNoConsoleErrors(session);

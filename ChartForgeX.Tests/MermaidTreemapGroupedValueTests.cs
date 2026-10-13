@@ -10,6 +10,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidTreemapGroupedValueTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(320)]
     [InlineData(960)]

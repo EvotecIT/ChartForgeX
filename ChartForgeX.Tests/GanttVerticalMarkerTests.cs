@@ -174,6 +174,7 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Null(parsed.Document.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(1) }).Options.GanttToday);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
@@ -223,6 +224,7 @@ public sealed class GanttVerticalMarkerTests {
         Assert.Single(prepared.Regions, region => region.Role == "annotation");
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]

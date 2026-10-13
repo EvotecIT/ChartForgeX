@@ -46,7 +46,11 @@ public sealed class V2GalleryBrowserTests {
                         if (!text.textContent.trim()) continue;
                         const matrix = text.getScreenCTM();
                         const size = parseFloat(getComputedStyle(text).fontSize) * Math.hypot(matrix.a, matrix.b);
-                        if (size < 10) defects.push('Preview text below 10 CSS pixels: ' + text.textContent + ' (' + size.toFixed(2) + ')');
+                        if (size < 10) {
+                            const family = preview.closest('[data-gallery-family]')?.dataset.galleryFamily || 'unknown';
+                            const role = text.closest('[data-cfx-role]')?.getAttribute('data-cfx-role') || 'unknown';
+                            defects.push('Preview text below 10 CSS pixels [' + family + ', ' + role + ', ' + preview.getAttribute('href') + ']: ' + text.textContent + ' (' + size.toFixed(2) + ')');
+                        }
                     }
                 }
                 return defects;

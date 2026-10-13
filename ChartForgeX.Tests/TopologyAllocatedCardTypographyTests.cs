@@ -10,6 +10,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class TopologyAllocatedCardTypographyTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("Arial")]
     [InlineData("Inter, Segoe UI, system-ui, sans-serif")]
@@ -26,6 +27,7 @@ public sealed class TopologyAllocatedCardTypographyTests {
         await Capture(svg, chart.ToPng(options), "ordinary-pill-subtitle-" + (font == "Arial" ? "arial" : "system"));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(32)]
     [InlineData(256)]
@@ -44,6 +46,7 @@ public sealed class TopologyAllocatedCardTypographyTests {
         await Capture(svg, chart.ToPng(options), "geographic-callout-" + size);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 32)]
     [InlineData(false, 256)]
@@ -63,6 +66,7 @@ public sealed class TopologyAllocatedCardTypographyTests {
         await Capture(svg, chart.ToPng(), "subtitle-card-" + requirement + "-" + size);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(TopologyNodeDisplayMode.Card, 11)]
     [InlineData(TopologyNodeDisplayMode.Card, 32)]

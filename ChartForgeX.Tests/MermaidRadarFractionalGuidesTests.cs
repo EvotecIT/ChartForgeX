@@ -32,6 +32,7 @@ public sealed class MermaidRadarFractionalGuidesTests {
         Assert.Equal(original.ToPng(), prepared.ToPng());
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("circle", .5, 320)]
     [InlineData("polygon", .5, 960)]

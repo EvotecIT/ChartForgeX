@@ -150,7 +150,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         Assert.Equal("hidden", await page.Locator(series).EvaluateAsync<string>("node => getComputedStyle(node).visibility"));
         Assert.Equal("visible", await page.Locator(path).EvaluateAsync<string>("node => getComputedStyle(node).visibility"));
         Assert.Equal(new[] { "Current", "Baseline" }, restoredRows.Select(row => row[0]).ToArray());
-        Assert.Equal("rgb(123, 97, 232)", restoredRows[1][2]);
+        await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", restoredRows[1][2]);
         await page.Locator(path).EvaluateAsync("node => node.style.setProperty('visibility', 'hidden', 'important')");
         await page.Locator(Point(0, 1)).BlurAsync();
         await page.Locator(Point(0, 1)).FocusAsync();
@@ -173,7 +173,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         var visiblePathRows = await RowsAsync(page);
         await RecordAsync(page, "tooltip-hidden-line-marker-" + (dark ? "dark" : "light") + "-" + width, new { visiblePathRows });
         Assert.Equal(new[] { "Current", "Baseline" }, visiblePathRows.Select(row => row[0]).ToArray());
-        Assert.Equal("rgb(123, 97, 232)", visiblePathRows[1][2]);
+        await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", visiblePathRows[1][2]);
         Assert.Equal("none", await page.Locator(Point(1, 1) + " [data-cfx-role='marker']").EvaluateAsync<string>("node => getComputedStyle(node).display"));
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "[data-cfx-role='series'][data-cfx-series='1'] [data-cfx-role='line'] { display:none !important; }" });
         await page.Locator(Point(0, 1)).BlurAsync();
@@ -183,7 +183,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         Assert.Equal(new[] { "Current" }, hiddenPathRows.Select(row => row[0]).ToArray());
         // A visible legend remains independently usable even when this observation has no painted mark.
         await page.Locator(Legend(1)).FocusAsync();
-        Assert.Equal("rgb(123, 97, 232)", await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         AssertNoConsoleErrors(session);
     }
 

@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 /// Opens rendered interactive charts in headless Chromium through an HtmlTinkerX-owned session so tests can
 /// assert the runtime look (computed opacity, visibility, tooltip content) that string checks cannot observe.
 /// </summary>
-internal static class InteractiveChartBrowser {
+internal static partial class InteractiveChartBrowser {
     /// <summary>Environment switch shared with the other EvotecIT browser suites; optional browser tests are skipped unless it is "1".</summary>
     internal const string EnableVariable = "HFX_TEST_ENABLE_PLAYWRIGHT";
 
@@ -17,13 +17,15 @@ internal static class InteractiveChartBrowser {
 
     internal static bool Enabled => BrowserTestPrerequisites.IsEnabled();
 
-    internal static async Task<HtmlBrowserSession> OpenAsync(string html, int width = 700, int height = 460) {
+    internal static async Task<HtmlBrowserSession> OpenAsync(string html, int width = 700, int height = 460, bool touch = false) {
         var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
             Browser = HtmlBrowserEngine.Chromium,
             Headless = true,
             Timeout = 15000,
             ViewportWidth = width,
-            ViewportHeight = height
+            ViewportHeight = height,
+            HasTouch = touch,
+            IsMobile = touch
         });
         await session.Page.SetContentAsync(html);
         return session;

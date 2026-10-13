@@ -52,8 +52,9 @@
       // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
         let pointerFocus = false;
-        focusNode.addEventListener('pointerdown', (event) => { pointerFocus = event.button === 0; });
-        ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => focusNode.addEventListener(type, () => { pointerFocus = false; }));
+        // Touch compatibility mouse events can focus the mark after pointerup has already cleared the press.
+        ['pointerdown', 'mousedown'].forEach(type => focusNode.addEventListener(type, (event) => { pointerFocus = event.button === 0; }));
+        ['pointerup', 'pointercancel', 'pointerleave', 'mouseup'].forEach(type => focusNode.addEventListener(type, () => { pointerFocus = false; }));
         focusNode.addEventListener('focus', (event) => {
           refreshKeyboardNavigation(root, node);
           // Revealing a partly visible mark between pointer down and up retargets its native click.

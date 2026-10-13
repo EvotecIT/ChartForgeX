@@ -137,7 +137,7 @@ public sealed class InteractiveTopologyPresentationTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task PointerReleaseOutsideViewportDoesNotResumePanningOnReentry() {
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync(

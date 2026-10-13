@@ -13,6 +13,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class BlockTypographyBoundsTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, false)]
     [InlineData(false, true, false)]
@@ -65,6 +66,7 @@ public sealed class BlockTypographyBoundsTests {
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), PngWriter.WriteRgba(image));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(10.5)]
     [InlineData(21)]

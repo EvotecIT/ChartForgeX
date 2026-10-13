@@ -26,8 +26,11 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         await MoveToAsync(page, Point(0, 1));
         var hovered = await ObservationAsync(page, "observations");
         await RecordAsync(page, "tooltip-duplicate-x", new { focused, hovered });
-        Assert.Equal(new[] { "20", "1", "1", "rgb(123, 97, 232)" }, focused);
-        Assert.Equal(focused, hovered);
+        Assert.Equal(4, focused.Length); Assert.Equal(4, hovered.Length);
+        Assert.Equal(new[] { "20", "1", "1" }, focused.Take(3));
+        Assert.Equal(focused.Take(3), hovered.Take(3));
+        await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", focused[3]);
+        await AssertCssColorsEqualAsync(page, focused[3], hovered[3]);
         Assert.Equal("30", await page.Locator("dt[data-cfx-tooltip-series='1'] + dd").InnerTextAsync());
         await page.Locator(Point(0, 1)).FocusAsync();
         await page.Keyboard.PressAsync("ArrowUp");
@@ -54,7 +57,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         var colour = await page.Locator(swatch).EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor");
         await RecordAsync(page, "tooltip-solid-bar-" + (dark ? "dark" : "light") + "-" + mode + "-" + width, new { gradient, colour });
         Assert.StartsWith("url(", gradient[0], StringComparison.Ordinal);
-        Assert.Equal(gradient[1], colour);
+        await AssertCssColorsEqualAsync(page, gradient[1], colour);
         Assert.Equal(1, await page.Locator(Point(0, 1) + " [data-cfx-role='bar-highlight']").CountAsync());
         Assert.True(await page.Locator(Point(0, 1) + " [data-cfx-role='bar-pattern']").CountAsync() > 0);
         Assert.True(await page.EvaluateAsync<bool>("() => { const box = document.querySelector('.cfx-tooltip').getBoundingClientRect(); return box.left >= 0 && box.right <= innerWidth && box.top >= 0 && box.bottom <= innerHeight; }"));
@@ -79,7 +82,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         await page.Locator(mark).EvaluateAsync("node => document.getElementById(node.getAttribute('fill').slice(5, -1)).querySelector('stop').setAttribute('stop-opacity', '0')");
         await page.Locator(Point(0, 0)).FocusAsync();
         var gradient = await GradientPaintAsync(page, mark, 1);
-        Assert.Equal(gradient[1], await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        await AssertCssColorsEqualAsync(page, gradient[1], await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         Assert.Equal(0, await page.Locator("[data-cfx-role='legend-item']").CountAsync());
         AssertNoConsoleErrors(session);
     }

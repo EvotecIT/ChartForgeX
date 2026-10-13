@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class RadarCurveMarkupHostTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("circle", 0d)]
     [InlineData("polygon", .5)]

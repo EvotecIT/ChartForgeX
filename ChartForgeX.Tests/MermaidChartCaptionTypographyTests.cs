@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidChartCaptionTypographyTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("sankey", 320, false)]
     [InlineData("sankey", 900, false)]
@@ -21,6 +22,7 @@ public sealed class MermaidChartCaptionTypographyTests {
     public Task MaximumSourceFontKeepsCaptionsInTheirNativeLayout(string family, int width, bool graphite) =>
         VerifyCaptions(family, width, 460, graphite, false);
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("sankey", false)]
     [InlineData("sankey", true)]

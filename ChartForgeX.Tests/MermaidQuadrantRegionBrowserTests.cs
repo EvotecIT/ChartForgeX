@@ -42,7 +42,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
                 Assert.Equal(pixels[1], pixels[0]);
             }
             var ink = ChartForgeX.Rendering.ChartColorMath.AccessibleTextOnBackground(plate);
-            Assert.Equal($"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").Nth(index)
+            await AssertCssColorsEqualAsync(session.Page, $"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").Nth(index)
                 .EvaluateAsync<string>("node => getComputedStyle(node).fill"));
         }
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
@@ -91,7 +91,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
                 await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, $"quadrant-translucent-host-{width}-{initialAlpha}-{dark}.png") });
             }
             var ink = ChartForgeX.Rendering.ChartColorMath.AccessibleTextOnBackground(expected);
-            Assert.Equal($"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+            await AssertCssColorsEqualAsync(session.Page, $"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
         }
         AssertNoConsoleErrors(session);
     }

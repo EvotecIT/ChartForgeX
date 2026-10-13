@@ -11,7 +11,8 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class PatternClipAreaBrowserTests {
-    [BrowserTheory]
+    [Theory]
+    [Trait("Category", "Browser")]
     [InlineData(ChartSeriesKind.RangeBand, false)]
     [InlineData(ChartSeriesKind.RangeArea, false)]
     [InlineData(ChartSeriesKind.RangeArea, true)]
@@ -79,7 +80,8 @@ public sealed class PatternClipAreaBrowserTests {
         Assert.Equal(0, nativeVisiblePixels);
     }
 
-    [BrowserTheory]
+    [Theory]
+    [Trait("Category", "Browser")]
     [InlineData(ChartSeriesKind.RangeBand, false)]
     [InlineData(ChartSeriesKind.RangeArea, false)]
     [InlineData(ChartSeriesKind.RangeArea, true)]
@@ -116,7 +118,8 @@ public sealed class PatternClipAreaBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [BrowserFact]
+    [Fact]
+    [Trait("Category", "Browser")]
     public async Task VisibleRadarMarkerStrokeRetainsAnOtherwiseInvisibleObservation() {
         var chart = Create(ChartSeriesKind.Radar, collapsed: true);
         chart.Series[0].WithFillPattern(ChartFillPattern.None).WithMarkerRadius(6);

@@ -68,6 +68,7 @@ public sealed class MermaidGanttDateAnchorTests {
 
     private static string Fixture(string name) => Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", name);
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]

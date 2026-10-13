@@ -32,6 +32,7 @@ public sealed class GanttMarkerPaintTests {
         Assert.Equal(expected, line.Stroke);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("point", "--series", "rgb(0, 128, 0)")]
     [InlineData("series", "--series", "rgb(0, 128, 0)")]

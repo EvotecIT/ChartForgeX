@@ -8,6 +8,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidUpperTypographyRegressionTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 2)]
     [InlineData(false, 3)]
@@ -40,6 +41,7 @@ public sealed class MermaidUpperTypographyRegressionTests {
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), png);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 320, false)]
     [InlineData(false, 960, false)]

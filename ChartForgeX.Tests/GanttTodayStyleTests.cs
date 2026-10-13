@@ -115,6 +115,7 @@ public sealed class GanttTodayStyleTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(dash: new[] { .001, .001 }));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]

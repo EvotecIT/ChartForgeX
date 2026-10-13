@@ -7,6 +7,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class ExactPlotStrokeBoundsTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
@@ -38,6 +39,7 @@ public sealed class ExactPlotStrokeBoundsTests {
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), prepared.ToPng());
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -65,6 +67,7 @@ public sealed class ExactPlotStrokeBoundsTests {
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), actual.ToPng());
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]

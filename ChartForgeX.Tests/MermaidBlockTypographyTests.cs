@@ -30,6 +30,7 @@ public sealed class MermaidBlockTypographyTests {
         Assert.InRange(y, cy - radius, cy + radius);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("packet-basic.mmd")]
     [InlineData("block-basic.mmd")]

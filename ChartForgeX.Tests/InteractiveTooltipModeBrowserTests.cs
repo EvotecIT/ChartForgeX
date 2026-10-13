@@ -50,7 +50,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         await page.Locator(Point(0, 1)).FocusAsync();
         var colours = await page.EvaluateAsync<string[][]>("() => Array.from(document.querySelectorAll('.cfx-tooltip dt')).map(row => [getComputedStyle(row.querySelector('.cfx-tooltip__swatch')).backgroundColor, getComputedStyle(document.querySelector('[data-cfx-role=\"series\"][data-cfx-series=\"' + row.dataset.cfxTooltipSeries + '\"] [data-cfx-role=\"line\"]')).stroke])");
         Assert.Equal(2, colours.Length);
-        Assert.All(colours, colour => Assert.Equal(colour[1], colour[0]));
+        foreach (var colour in colours) await AssertCssColorsEqualAsync(page, colour[1], colour[0]);
         Assert.Equal(new[] { "1", "1" }, await OpacitiesAsync(page, ".cfx-tooltip dt"));
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.Equal(6, await page.Locator("[data-cfx-keyboard-component='data']").CountAsync());
@@ -73,10 +73,10 @@ public sealed class InteractiveTooltipModeBrowserTests {
         await page.Locator(Point(0, 1)).FocusAsync();
         var swatch = mode == HtmlChartTooltipMode.SharedX ? ".cfx-tooltip dt[data-cfx-tooltip-series='0'] .cfx-tooltip__swatch" : ".cfx-tooltip__title .cfx-tooltip__swatch";
         var colour = await page.Locator(swatch).EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor");
-        Assert.Equal("rgb(123, 97, 232)", colour);
-        Assert.Equal(colour, await page.Locator(Point(0, 1) + " [data-cfx-role='bar']").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+        await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", colour);
+        await AssertCssColorsEqualAsync(page, colour, await page.Locator(Point(0, 1) + " [data-cfx-role='bar']").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
         await page.Locator(Legend(0)).FocusAsync();
-        Assert.NotEqual(colour, await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        await AssertCssColorsDifferentAsync(page, colour, await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         AssertNoConsoleErrors(session);
     }
 

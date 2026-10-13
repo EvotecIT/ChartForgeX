@@ -10,6 +10,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidAxisTypographyBoundsTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, 900)]
     [InlineData(false, false, 320)]

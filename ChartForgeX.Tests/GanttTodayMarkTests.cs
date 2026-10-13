@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GanttTodayMarkTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, 960)]
     [InlineData(true, false, 320)]

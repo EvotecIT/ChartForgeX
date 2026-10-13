@@ -209,7 +209,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         var before = await CssClipFactsAsync(page);
         Assert.True(before.GetProperty("pinned").GetBoolean());
         await page.EvaluateAsync("()=>window.activeVisualResizes=0");
-        await cdp.SendAsync("Input.synthesizePinchGesture", new Dictionary<string, object> { ["x"] = 100, ["y"] = 100, ["scaleFactor"] = 2, ["relativeSpeed"] = 800, ["gestureSourceType"] = "touch" });
+        // Native page-scale emulation dispatches visualViewport events without depending on pinch recognition.
+        await cdp.SendAsync("Emulation.setPageScaleFactor", new Dictionary<string, object> { ["pageScaleFactor"] = 2 });
         await SettleObservedPositionAsync(page);
         var after = await CssClipFactsAsync(page);
         var native = await page.EvaluateAsync<JsonElement>("()=>({left:visualViewport.offsetLeft,top:visualViewport.offsetTop,width:visualViewport.width,height:visualViewport.height,scale:visualViewport.scale,resizes:activeVisualResizes})");
@@ -218,6 +219,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         Assert.True(native.GetProperty("resizes").GetInt32() > 0);
         Assert.True(after.GetProperty("pinned").GetBoolean());
         Assert.False(after.GetProperty("hidden").GetBoolean());
+        Assert.Equal(before.GetProperty("selected").GetString(), after.GetProperty("selected").GetString());
         var card = after.GetProperty("card");
         Assert.True(card.GetProperty("left").GetDouble() >= native.GetProperty("left").GetDouble());
         Assert.True(card.GetProperty("right").GetDouble() <= native.GetProperty("left").GetDouble() + native.GetProperty("width").GetDouble());

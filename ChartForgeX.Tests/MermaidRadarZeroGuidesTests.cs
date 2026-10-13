@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidRadarZeroGuidesTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("circle")]
     [InlineData("polygon")]

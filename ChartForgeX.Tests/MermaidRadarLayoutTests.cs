@@ -93,6 +93,7 @@ public sealed class MermaidRadarLayoutTests {
         Assert.True(shrink.HasErrors); Assert.Null(shrink.Artifact);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(320, false)]
     [InlineData(960, true)]

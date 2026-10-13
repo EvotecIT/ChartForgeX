@@ -10,6 +10,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class BlockLayoutCircleConnectionTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(BlockLayoutShape.Rectangle, BlockLayoutShape.Circle, 960, 0, false, false)]
     [InlineData(BlockLayoutShape.Circle, BlockLayoutShape.Rectangle, 960, 0, false, false)]

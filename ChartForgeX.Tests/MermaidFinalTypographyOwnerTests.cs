@@ -14,6 +14,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidFinalTypographyOwnerTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(10.5, 360, true, false)]
     [InlineData(16.79, 360, true, false)]
@@ -55,6 +56,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         }
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(420, 1800, ChartLegendPosition.Right)]
     [InlineData(420, 1800, ChartLegendPosition.Bottom)]
@@ -74,6 +76,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         await Capture(prepared.ToSvg(), prepared.ToPng(), "legend-" + width + "-" + height + "-" + position, width, height);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(360, 320, ChartDataLabelPlacement.Inside, false)]
     [InlineData(760, 420, ChartDataLabelPlacement.Inside, false)]
@@ -114,6 +117,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         await Capture(prepared.ToSvg(), prepared.ToPng(), "pie-" + width + "-" + placement + "-" + donut, width, height);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(32, false, false)]
     [InlineData(256, false, false)]
@@ -148,6 +152,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         await Capture(svg, artifact.ToPng(), "class-endpoints-" + size + "-" + fenced + "-" + padded, (int)width, (int)height);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(TopologyEdgeRouting.Curved)]
     [InlineData(TopologyEdgeRouting.Straight)]

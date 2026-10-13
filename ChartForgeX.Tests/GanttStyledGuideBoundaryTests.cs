@@ -25,6 +25,7 @@ public sealed class GanttStyledGuideBoundaryTests {
         Assert.InRange(guide.Commands[0].X, axis.Start.X + 10 - .001, axis.End.X - 10 + .001);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -65,6 +66,7 @@ public sealed class GanttStyledGuideBoundaryTests {
         Assert.InRange(annotation.Commands[0].X, axis.Start.X + 25, axis.End.X - 25);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(0, false)]
     [InlineData(0, true)]
@@ -157,6 +159,7 @@ public sealed class GanttStyledGuideBoundaryTests {
         Assert.Contains(Enumerable.Range(0, pixels.Length / 4), pixel => pixels[pixel * 4] == 255 && pixels[pixel * 4 + 1] == 0 && pixels[pixel * 4 + 2] == 255);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]

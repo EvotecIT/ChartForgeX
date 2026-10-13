@@ -25,6 +25,7 @@ public sealed class MermaidFontSizeTests {
         Assert.Equal("18", rendered.Artifact!.Metadata["mermaid.config.fontSize"]);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("participant A\nparticipant B\nparticipant C\nparticipant D\nD->>D: WWW")]
     [InlineData("participant A as i\nparticipant B as i\nparticipant C as i\nparticipant D as i\nparticipant E as i\nparticipant F as i\nparticipant G as i\nparticipant H as i\nautonumber\nA->>B: i")]
@@ -47,6 +48,7 @@ public sealed class MermaidFontSizeTests {
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), artifact.ToPng());
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(1)]
     [InlineData(256)]
@@ -183,7 +185,7 @@ public sealed class MermaidFontSizeTests {
         Assert.Contains(native.Descendants(), element => (string?)element.Parent?.Attribute("data-cfx-role") == "topology-node-label" && (string?)element.Attribute("font-size") == "18.5");
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task ExplicitFontSizeIsVisibleInBrowserAndNativeOutput(bool dark, int width) {

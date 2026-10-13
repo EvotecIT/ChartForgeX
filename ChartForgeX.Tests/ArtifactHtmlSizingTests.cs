@@ -101,6 +101,7 @@ public sealed class ArtifactHtmlSizingTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

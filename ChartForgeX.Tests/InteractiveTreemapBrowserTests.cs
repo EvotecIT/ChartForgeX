@@ -51,7 +51,7 @@ public sealed class InteractiveTreemapBrowserTests {
         if (variant == "options") {
             var warning = VisualTheme.Graphite().Resolve(mode).Status.Medium.Fill;
             Assert.Equal("Warning", await support.GetAttributeAsync("data-cfx-state"));
-            Assert.Equal($"rgb({warning.R}, {warning.G}, {warning.B})",
+            await AssertCssColorsEqualAsync(page, $"rgb({warning.R}, {warning.G}, {warning.B})",
                 await support.Locator(":scope > [data-cfx-role=treemap-tile-mark]").EvaluateAsync<string>("node => getComputedStyle(node).stroke"));
         }
         await support.FocusAsync(); await page.Keyboard.PressAsync("Space");
@@ -68,7 +68,7 @@ public sealed class InteractiveTreemapBrowserTests {
         Assert.Contains("Support", await TooltipTextAsync(page)); Assert.Contains("22", await TooltipTextAsync(page));
         var mark = await support.Locator(":scope > [data-cfx-role=treemap-tile-mark]").EvaluateAsync<string>("node => getComputedStyle(node).fill");
         var expected = chart.Options.Treemap.ColorScale!.ColorFor(8);
-        Assert.Equal($"rgb({expected.R}, {expected.G}, {expected.B})", mark);
+        await AssertCssColorsEqualAsync(page, $"rgb({expected.R}, {expected.G}, {expected.B})", mark);
         await Capture(chart, page, name + "-selection", html, native: false);
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }

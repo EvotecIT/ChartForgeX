@@ -7,6 +7,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class CartesianStyledAnnotationTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -35,6 +36,7 @@ public sealed class CartesianStyledAnnotationTests {
         await Capture(actual, "cartesian-joint-marker-guide-" + (horizontal ? "horizontal" : "vertical"));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -89,6 +91,7 @@ public sealed class CartesianStyledAnnotationTests {
         Assert.Equal(horizontal ? before.Commands[0].Y : before.Commands[0].X, horizontal ? after.Commands[0].Y : after.Commands[0].X, 6);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, ChartScaleKind.Linear)]
     [InlineData(false, true, ChartScaleKind.Linear)]

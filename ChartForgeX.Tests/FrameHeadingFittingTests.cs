@@ -8,6 +8,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class FrameHeadingFittingTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(18)]
     [InlineData(256)]
@@ -24,6 +25,7 @@ public sealed class FrameHeadingFittingTests {
         await Capture(chart, "dashboard-label-size-" + size, 520, 260);
     }
 
+    [Trait("Category", "Browser")]
     [Fact]
     public async Task LargeCompactTitleRetainsItsOrdinarySubtitle() {
         var theme = ChartTheme.DashboardLight();
@@ -37,6 +39,7 @@ public sealed class FrameHeadingFittingTests {
         await Capture(chart, "dashboard-large-title", 520, 260);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(520, 260, 80)]
     [InlineData(300, 210, 34)]

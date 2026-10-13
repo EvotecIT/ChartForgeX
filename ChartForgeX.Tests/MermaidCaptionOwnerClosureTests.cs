@@ -13,6 +13,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidCaptionOwnerClosureTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(80, 40, false)]
     [InlineData(40, 108, false)]
@@ -71,6 +72,7 @@ public sealed class MermaidCaptionOwnerClosureTests {
         Assert.Equal(MermaidDiagnosticCodes.InvalidConfiguration, Assert.Single(rendered.Diagnostics).Code);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, 320)]
     [InlineData(false, true, 960)]
@@ -94,6 +96,7 @@ public sealed class MermaidCaptionOwnerClosureTests {
         await Observe(svg, png, width, 460, "git-label-free-" + graphite + "-" + branches + "-" + width, false);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, 320)]
     [InlineData(false, true, 320)]

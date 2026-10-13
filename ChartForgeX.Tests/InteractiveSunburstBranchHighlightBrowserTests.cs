@@ -53,9 +53,9 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         await WaitState(page, "engineering-support", "item");
         Assert.Equal(new[] { "1", "0.55", "0.55", "0", "1" }, await PaintOpacities(page, "engineering-support", "platform", "engineering", "operations-support", "all"));
         Assert.Equal(ink, await NativeInk(page, "engineering-support"));
-        Assert.Equal("rgb(20, 180, 230)", await page.Locator(Node("engineering-support") + " [data-cfx-highlight-outline]").EvaluateAsync<string>("node => getComputedStyle(node).stroke"));
+        await AssertCssColorsEqualAsync(page, "rgb(20, 180, 230)", await page.Locator(Node("engineering-support") + " [data-cfx-highlight-outline]").EvaluateAsync<string>("node => getComputedStyle(node).stroke"));
         Assert.Equal(0, await page.Locator(Node("operations-support") + " [data-cfx-highlight-outline]").EvaluateAsync<double>("node => parseFloat(getComputedStyle(node).strokeWidth)"));
-        Assert.Equal("rgba(0, 0, 0, 0)", await page.Locator(Node("platform") + " [data-cfx-highlight-outline]").EvaluateAsync<string>("node => getComputedStyle(node).stroke"));
+        await AssertCssColorsEqualAsync(page, "rgba(0, 0, 0, 0)", await page.Locator(Node("platform") + " [data-cfx-highlight-outline]").EvaluateAsync<string>("node => getComputedStyle(node).stroke"));
         Assert.True(await page.Locator("[data-cfx-highlight-outline]").EvaluateAllAsync<bool>("nodes => nodes.every(n => !n.id && !n.hasAttribute('tabindex') && !n.hasAttribute('data-cfx-target-id') && getComputedStyle(n).pointerEvents === 'none')"));
         if (composed) {
             await page.WaitForFunctionAsync("() => { const tip=document.querySelector('.cfx-tooltip'); return !tip.hidden && tip.innerText.includes('Delivery team'); }");

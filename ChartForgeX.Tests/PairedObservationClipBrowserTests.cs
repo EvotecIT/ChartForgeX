@@ -142,6 +142,8 @@ public sealed class PairedObservationClipBrowserTests {
         if (!Enabled) return;
         // Both Y values are inside the plot: only the source X excludes the guide anchor.
         var chart = Create(ChartSeriesKind.DifferenceArea, 8, 2, visibleSibling: true, firstX: -.001);
+        // Keep enough endpoint ink inside the clip for a native DOM hit across browser pixel rounding.
+        chart.Series[0].WithStrokeWidth(6);
         var html = chart.ToInteractiveHtmlPage(options => options.Interaction.Features =
             ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection |
             ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Crosshair);
@@ -176,7 +178,7 @@ public sealed class PairedObservationClipBrowserTests {
               const radius=parseFloat(getComputedStyle(path).strokeWidth)*Math.hypot(matrix.a,matrix.b)/2,
                 visible=anchor.x+radius-left;
               if(!(visible>0))throw new Error('Expected a real round endpoint cap inside native clip');
-              const screen=new DOMPoint(left+Math.min(.1,visible/2),anchor.y),local=screen.matrixTransform(matrix.inverse());
+              const screen=new DOMPoint(left+visible/2,anchor.y),local=screen.matrixTransform(matrix.inverse());
               if(!(screen.x<right&&path.isPointInStroke(local)))throw new Error('Pointer must hit actual native boundary ink');
               return [screen.x,screen.y];
             }

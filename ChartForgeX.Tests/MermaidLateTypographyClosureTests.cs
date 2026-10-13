@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidLateTypographyClosureTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(32)]
     [InlineData(256)]
@@ -25,6 +26,7 @@ public sealed class MermaidLateTypographyClosureTests {
         await Capture(svg, png, "class-members-font-" + size, 960, 720);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(18, false)]
     [InlineData(18, true)]

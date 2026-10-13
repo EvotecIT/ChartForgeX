@@ -99,6 +99,7 @@ public sealed class MermaidFixedBlockTypographyTests {
         File.WriteAllBytes(Path.Combine(captures, "fishbone-management-" + size + "-native.png"), png);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]

@@ -7,7 +7,8 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class NativePolarCoordinateBrowserTests {
-    [BrowserTheory]
+    [Theory]
+    [Trait("Category", "Browser")]
     [InlineData(ChartSeriesKind.Pie)]
     [InlineData(ChartSeriesKind.Donut)]
     [InlineData(ChartSeriesKind.Radar)]
@@ -41,7 +42,7 @@ public sealed class NativePolarCoordinateBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [BrowserFact]
+    [Fact]
     public void LinearGaugeAndScalarCircleDoNotDeclarePolarObservationGeometry() {
         Assert.DoesNotContain("data-cfx-coordinate-system=\"polar\"", Chart.Create().AddLinearGauge("Linear", 80).ToSvg(), StringComparison.Ordinal);
         var circle = Chart.Create().AddCircle("Scalar", 80).Prepare(VisualExportRequest.ForChart(Chart.Create()).Context).Scene;

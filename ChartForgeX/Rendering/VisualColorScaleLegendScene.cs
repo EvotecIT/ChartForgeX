@@ -181,7 +181,7 @@ internal static partial class VisualColorScaleLegendScene {
     /// <summary>Fits bounded key captions using the same measured, readable size policy for every consumer.</summary>
     internal static TextStyle FitCaptionStyle(VisualSceneBuilder builder, string text, TextStyle style, double width) {
         if (builder.MeasureText(text, style).Width <= width) return style;
-        var fitted = style.Clone(); var minimum = Math.Min(8, style.EffectiveFontSize);
+        var fitted = style.Clone(); var minimum = Math.Min(VisualTextFitting.MinimumOrdinaryFontSize, style.EffectiveFontSize);
         fitted.FontSize = style.EffectiveFontSize; fitted.Baseline = TextBaseline.Normal;
         while (fitted.FontSize > minimum && builder.MeasureText(text, fitted).Width > width)
             fitted.FontSize = Math.Max(minimum, fitted.FontSize - .25);

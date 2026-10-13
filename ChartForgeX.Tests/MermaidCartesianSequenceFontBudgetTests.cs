@@ -10,6 +10,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidCartesianSequenceFontBudgetTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("quadrant", 18)]
     [InlineData("journey", 18)]
@@ -30,6 +31,7 @@ public sealed class MermaidCartesianSequenceFontBudgetTests {
         Assert.Equal(size, Assert.IsType<Chart>(artifact.Model).Options.Theme.DataLabelFontSize);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(18, 128)]
     [InlineData(256, 128)]

@@ -57,6 +57,19 @@ try {
     if ([int]$counters.total -eq 0 -or [int]$counters.notExecuted -ne 0 -or [int]$counters.executed -ne [int]$counters.total) {
         throw 'Required browser proof must discover and execute tests without skips.'
     }
+    $requiredContracts = @(
+        'V2GalleryBrowserMatrixTests.EveryFamilyKeepsReadableNativeSvgAndHealthyPairedPng',
+        'GaugeScalePrecisionBrowserTests.NeedleAtScaleEdgesClearsMeasuredSummaryInRenderedSvg',
+        'GaugeScalePrecisionBrowserTests.CloseGaugeBoundsRemainDistinctAndContainedInNativeSvgAndPairedPng',
+        'InteractiveTopologyPresentationTests.PointerReleaseOutsideViewportDoesNotResumePanningOnReentry',
+        'BrowserColorComparisonTests.EquivalentPaintKeepsExactRgbaAndDifferentOrInvalidPaintStillFails'
+    )
+    foreach ($contract in $requiredContracts) {
+        $observed = @($report.TestRun.Results.UnitTestResult | Where-Object { $_.testName.Contains($contract) })
+        if ($observed.Count -eq 0 -or @($observed | Where-Object outcome -ne 'Passed').Count) {
+            throw "Required browser contract did not execute successfully: $contract"
+        }
+    }
     if (-not (Test-Path -LiteralPath (Join-Path $captures 'native-family-matrix.json'))) { throw 'Native family matrix evidence is missing.' }
     Write-Host "Required browser proof passed: $($counters.total) executed tests. Evidence: $output"
 } finally {

@@ -8,6 +8,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class EmptyHorizontalLineCategoryCaptionTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, true, 360, true)]
     [InlineData(true, true, 800, false)]
