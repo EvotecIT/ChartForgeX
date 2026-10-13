@@ -11,24 +11,16 @@ internal static class MermaidFlowchartStatements {
             var openings = new Stack<char>();
             char quote = '\0';
             var pipe = false;
-            var exhaustedFamilies = new HashSet<char>();
+            var inlineLabels = new MermaidFlowchartInlineLabels(text);
             for (var index = start; index <= text.Length; index++) {
                 var end = index == text.Length;
                 if (!end) {
                     var c = text[index];
                     if (MermaidFlowchartText.ReadQuotedCharacter(text, ref index, ref quote, openings.Count > 0 && openings.Peek() == '@')) continue;
                     if (c == '|' && openings.Count == 0) { pipe = !pipe; continue; }
-                    if (openings.Count == 0 && !pipe) {
-                        var prefixEnd = MermaidFlowchartOperators.ReadLabelPrefixEnd(text, index);
-                        if (prefixEnd > index && !exhaustedFamilies.Contains(text[prefixEnd - 1])) {
-                            if (MermaidFlowchartOperators.TryReadInlineLabel(text, index, out _, out _, out var edgeEnd)) {
-                                index = edgeEnd - 1;
-                                continue;
-                            }
-                            // This family has no matching suffix anywhere in the remaining
-                            // line. Later prefixes cannot succeed; each family scans once.
-                            exhaustedFamilies.Add(text[prefixEnd - 1]);
-                        }
+                    if (openings.Count == 0 && !pipe && inlineLabels.TryRead(index, out _, out _, out var edgeEnd)) {
+                        index = edgeEnd - 1;
+                        continue;
                     }
                     if (openings.Count == 0 && !pipe && (c == '-' || c == '.' || c == '=' || c == '<')) {
                         var operatorEnd = MermaidFlowchartOperators.ReadEnd(text, index);

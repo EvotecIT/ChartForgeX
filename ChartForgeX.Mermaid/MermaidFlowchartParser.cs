@@ -37,7 +37,8 @@ internal static partial class MermaidFlowchartParser {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unsupported flowchart statement: " + text);
             return;
         }
-        while (TryParseEdgeOperator(text, ref position, out var edgeOperator, out var label)) {
+        var inlineLabels = new MermaidFlowchartInlineLabels(text);
+        while (TryParseEdgeOperator(text, ref position, inlineLabels, out var edgeOperator, out var label)) {
             if (!TryParseNodeGroup(document, nodes, text, ref position, span, subgraph, result, out var target)) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Flowchart edge operator '" + edgeOperator + "' is missing a target node.");
                 return;
@@ -266,7 +267,7 @@ internal static partial class MermaidFlowchartParser {
         return -1;
     }
 
-    private static bool TryParseEdgeOperator(string text, ref int position, out string edgeOperator, out string? label) {
+    private static bool TryParseEdgeOperator(string text, ref int position, MermaidFlowchartInlineLabels inlineLabels, out string edgeOperator, out string? label) {
         edgeOperator = string.Empty;
         label = null;
         SkipWhitespace(text, ref position);
@@ -274,7 +275,7 @@ internal static partial class MermaidFlowchartParser {
         if (start >= text.Length) return false;
 
         if (TryParsePipeLabelOperator(text, ref position, out edgeOperator, out label)) return true;
-        if (TryParseInlineLabelOperator(text, ref position, out edgeOperator, out label)) return true;
+        if (TryParseInlineLabelOperator(text, ref position, inlineLabels, out edgeOperator, out label)) return true;
 
         position = MermaidFlowchartOperators.ReadEnd(text, start);
         if (position == start) return false;
@@ -303,11 +304,11 @@ internal static partial class MermaidFlowchartParser {
         return true;
     }
 
-    private static bool TryParseInlineLabelOperator(string text, ref int position, out string edgeOperator, out string? label) {
+    private static bool TryParseInlineLabelOperator(string text, ref int position, MermaidFlowchartInlineLabels inlineLabels, out string edgeOperator, out string? label) {
         edgeOperator = string.Empty;
         label = null;
         var start = position;
-        if (!MermaidFlowchartOperators.TryReadInlineLabel(text, start, out var labelStart, out var labelEnd, out var end)) return false;
+        if (!inlineLabels.TryRead(start, out var labelStart, out var labelEnd, out var end)) return false;
         edgeOperator = text.Substring(start, end - start).Trim();
         label = Unquote(text.Substring(labelStart, labelEnd - labelStart).Trim());
         position = end;
