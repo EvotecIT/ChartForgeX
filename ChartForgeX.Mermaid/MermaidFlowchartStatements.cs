@@ -11,18 +11,24 @@ internal static class MermaidFlowchartStatements {
             var openings = new Stack<char>();
             char quote = '\0';
             var pipe = false;
+            var inlineLabels = new MermaidFlowchartInlineLabels(text);
             for (var index = start; index <= text.Length; index++) {
                 var end = index == text.Length;
                 if (!end) {
                     var c = text[index];
-                    if (quote != '\0') {
-                        if (c == quote && !IsEscaped(text, index)) quote = '\0';
+                    if (MermaidFlowchartText.ReadQuotedCharacter(text, ref index, ref quote, openings.Count > 0 && openings.Peek() == '@')) continue;
+                    if (c == '|' && openings.Count == 0) { pipe = !pipe; continue; }
+                    if (openings.Count == 0 && !pipe && inlineLabels.TryRead(index, out _, out _, out var edgeEnd)) {
+                        index = edgeEnd - 1;
                         continue;
                     }
-                    if (c == '"' || (c == '\'' && (index == start || char.IsWhiteSpace(text[index - 1]) || "[({=".IndexOf(text[index - 1]) >= 0))) { quote = c; continue; }
-                    if (c == '|' && openings.Count == 0) { pipe = !pipe; continue; }
-                    if (c == '[' || c == '(' || c == '{' || (c == '>' && index > start && char.IsLetterOrDigit(text[index - 1]))) openings.Push(c);
-                    else if (openings.Count > 0 && ((c == ']' && (openings.Peek() == '[' || openings.Peek() == '>')) || (c == ')' && openings.Peek() == '(') || (c == '}' && openings.Peek() == '{'))) openings.Pop();
+                    if (openings.Count == 0 && !pipe && (c == '-' || c == '.' || c == '=' || c == '<')) {
+                        var operatorEnd = MermaidFlowchartOperators.ReadEnd(text, index);
+                        if (operatorEnd > index) { index = operatorEnd - 1; continue; }
+                    }
+                    if (c == '[' || c == '(' || c == '{' || (c == '>' && index > start && char.IsLetterOrDigit(text[index - 1])))
+                        openings.Push(c == '{' && index > start && text[index - 1] == '@' ? '@' : c);
+                    else if (openings.Count > 0 && ((c == ']' && (openings.Peek() == '[' || openings.Peek() == '>')) || (c == ')' && openings.Peek() == '(') || (c == '}' && (openings.Peek() == '{' || openings.Peek() == '@')))) openings.Pop();
                     if (openings.Count != 0 || pipe) continue;
                     if (c == '%' && index + 1 < text.Length && text[index + 1] == '%') end = true;
                     else if (c != ';') continue;
@@ -38,9 +44,4 @@ internal static class MermaidFlowchartStatements {
         }
     }
 
-    internal static bool IsEscaped(string text, int index) {
-        var slashes = 0;
-        while (index > 0 && text[--index] == '\\') slashes++;
-        return (slashes & 1) != 0;
-    }
 }

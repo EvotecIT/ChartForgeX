@@ -111,7 +111,9 @@ Configuration is limited to 65,536 characters across the YAML `config` declarati
 
 `cynefin-beta` supports the five fixed domains, quoted domain items, titles, and labeled domain transitions. The static diagram shows four rectangular regions and an ellipse for confusion, with all authored items visible. Organic domain boundaries and the reference renderer's cliff treatment are not reproduced.
 
-Modern flowchart metadata (`A@{ shape: cloud, label: "API" }`) preserves node identity and label text. Fan-out groups (`A & B --> C & D`) emit every connection. Supported legacy shapes and the cloud, actor, and ellipse surfaces share SVG/PNG geometry; unsupported metadata has explicit warnings.
+Modern flowchart metadata (`A@{ shape: cloud, label: "API" }`) preserves node identity and label text. Apostrophes are literal text in ordinary node and edge captions, including leading forms such as `A -- 'til complete --> B`. Double-quoted captions protect embedded operators and statement separators. Fan-out groups (`A & B --> C & D`) emit every connection. Supported legacy shapes and the cloud, actor, and ellipse surfaces share SVG/PNG geometry; unsupported metadata has explicit warnings.
+
+Flowchart links preserve circle (`A ---o B`), cross (`A ---x B`) and bidirectional endpoints (`A o--o B`, `A x--x B`, `A <--> B`) in native SVG/PNG and interchange JSON. A leading `o` or `x` adds a source marker only when the target endpoint matches; mixed links such as `A o--x B` retain only the target cross. A compact link consumes one endpoint marker: `A---oxTarget` connects to `xTarget` with a circle, while `A--- xTarget` connects without a marker. Text inside an inline or pipe label does not introduce endpoint markers or reverse the inferred layers. The existing native backward-arrow interpretation of `A <-- B` is retained.
 
 The metadata shape names `fr-rect` and `framed-rectangle` select the native subprocess surface; `question` selects a decision diamond; `lean-right` and `lean-left` select the two input/output parallelograms. `manual` and `trapezoid-top` select the upper-base trapezoid, while `priority` and `trapezoid-bottom` select the lower-base trapezoid. `odd` selects the asymmetric surface. These names use the same geometry as their supported short names or bracket notation. Expanded shapes without a native owner retain a warning and rectangle fallback.
 
@@ -127,6 +129,7 @@ Supported flowchart parsing includes:
 - Common node references and labels.
 - Common node shapes, including rectangle, rounded, stadium, subroutine, cylinder, circle, double circle, rhombus, hexagon, and parallelogram variants.
 - Edge operators, pipe labels, inline labels, dotted operators, and chained edges.
+- Quoted pipe captions retain embedded pipes. Inline captions retain comparison signs, brackets, and semicolons. Node metadata decodes YAML single-quoted scalars, including doubled apostrophes and literal backslashes, while apostrophes in ordinary captions remain text.
 - `subgraph ... end` groups.
 - `classDef`, `class`, and inline `:::class` node classes.
 - `style` node declarations.

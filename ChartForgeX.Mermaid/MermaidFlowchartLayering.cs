@@ -27,7 +27,7 @@ internal static class MermaidFlowchartLayering {
         foreach (var edge in document.Edges) {
             var sourceId = edge.SourceId;
             var targetId = edge.TargetId;
-            if (IsBackwardOnly(edge.Operator)) {
+            if (MermaidFlowchartOperators.Direction(edge.Operator) == VisualLinkDirection.Backward) {
                 sourceId = edge.TargetId;
                 targetId = edge.SourceId;
             }
@@ -75,9 +75,6 @@ internal static class MermaidFlowchartLayering {
 
         return layers;
     }
-
-    private static bool IsBackwardOnly(string edgeOperator) =>
-        edgeOperator.IndexOf('<') >= 0 && edgeOperator.IndexOf('>') < 0;
 
     private readonly struct NodeOrder {
         public NodeOrder(string id, int order) {

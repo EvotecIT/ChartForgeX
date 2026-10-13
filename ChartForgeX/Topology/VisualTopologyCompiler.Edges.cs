@@ -208,6 +208,7 @@ internal sealed partial class VisualTopologyCompiler {
                 }
                 break;
             case TopologyMarkerKind.Circle: Circle(-3, true); break;
+            case TopologyMarkerKind.Cross: Stroke(-6, -3, 0, 3); Stroke(-6, 3, 0, -3); break;
             case TopologyMarkerKind.Diamond: Polygon(true, 0, 0, -5, -4, -10, 0, -5, 4); break;
             case TopologyMarkerKind.OpenDiamond: Polygon(false, 0, 0, -5, -4, -10, 0, -5, 4); break;
             case TopologyMarkerKind.OpenTriangle: Polygon(false, 0, 0, -9, -5, -9, 5); break;

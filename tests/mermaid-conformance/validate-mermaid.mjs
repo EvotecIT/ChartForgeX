@@ -164,8 +164,14 @@ for (const { folder, file, hasExpected } of files) {
       if (expected.nodes) {
         const vertices = diagram.db.getVertices();
         assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);
+        if (expected.nodeLabels) {
+          const labels = vertices instanceof Map ? [...vertices.values()] : Object.values(vertices);
+          assert.deepEqual(Object.fromEntries(labels.map(vertex => [vertex.id, vertex.text])), expected.nodeLabels);
+        }
         if (expected.referenceNodeShapes) assert.deepEqual((vertices instanceof Map ? [...vertices.values()] : Object.values(vertices)).map(vertex => vertex.type), expected.referenceNodeShapes);
         assert.deepEqual(diagram.db.getEdges().map(edge => [edge.start, edge.end]), expected.edges);
+        if (expected.referenceEdgeTypes) assert.deepEqual(diagram.db.getEdges().map(edge => edge.type), expected.referenceEdgeTypes);
+        if (expected.edgeLabels) assert.deepEqual(diagram.db.getEdges().map(edge => edge.text), expected.edgeLabels);
       }
       if (expected.sankey) {
         const graph = diagram.db.getGraph();

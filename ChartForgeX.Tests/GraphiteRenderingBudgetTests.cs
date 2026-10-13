@@ -7,10 +7,7 @@ using Xunit.Abstractions;
 
 namespace ChartForgeX.Tests;
 
-[CollectionDefinition(nameof(GraphiteRenderingBudgetTests), DisableParallelization = true)]
-public sealed class GraphiteRenderingBudgetCollection { }
-
-[Collection(nameof(GraphiteRenderingBudgetTests))]
+[Collection(nameof(RenderingBudgetCollection))]
 public sealed class GraphiteRenderingBudgetTests {
     private readonly ITestOutputHelper _output;
     public GraphiteRenderingBudgetTests(ITestOutputHelper output) => _output = output;

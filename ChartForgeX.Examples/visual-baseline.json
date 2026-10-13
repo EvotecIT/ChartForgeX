@@ -4898,6 +4898,54 @@
       }
     },
     {
+      "name": "mermaid-flowchart-closing-endpoints",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1420,
+      "height": 320,
+      "logicalWidth": 1420,
+      "logicalHeight": 320,
+      "svg": {
+        "minVisualNodes": 32,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 227200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 358,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-flowchart-endpoints",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 640,
+      "height": 510,
+      "logicalWidth": 640.0,
+      "logicalHeight": 510.0,
+      "svg": {
+        "minVisualNodes": 23,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 163200,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 474,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-flowchart-modern",
       "layout": {
         "heightMode": "fixed",

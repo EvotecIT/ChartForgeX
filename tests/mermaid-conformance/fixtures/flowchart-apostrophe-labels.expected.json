@@ -1,0 +1,6 @@
+{
+  "nodes": ["A", "B", "C", "D", "E", "F", "G", "H"],
+  "nodeLabels": {"A": "'til complete", "B": "B", "C": "'til ready", "D": "D", "E": "'til later", "F": "F", "G": "'hello", "H": "H"},
+  "edges": [["A", "B"], ["A", "B"], ["A", "B"], ["A", "B"], ["A", "B"], ["A", "B"], ["A", "B"], ["C", "D"], ["E", "F"], ["A", "B"], ["G", "H"]],
+  "edgeLabels": ["'til complete", "'til complete", "'til complete", "'til complete", "'go'", "don't stop", "'til complete", "", "", "'til complete", ""]
+}

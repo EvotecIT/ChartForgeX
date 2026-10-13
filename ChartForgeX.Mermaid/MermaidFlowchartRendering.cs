@@ -97,10 +97,12 @@ public static class MermaidFlowchartRendering {
                 edge.Label,
                 TopologyEdgeKind.Dependency,
                 TopologyHealthStatus.Unknown,
-                ToVisualLinkDirection(edge.Operator),
+                MermaidFlowchartOperators.Direction(edge.Operator),
                 TopologyEdgeRouting.Orthogonal);
 
             var target = chart.Edges[chart.Edges.Count - 1];
+            target.SourceMarker = MermaidFlowchartOperators.Marker(edge.Operator, true);
+            target.TargetMarker = MermaidFlowchartOperators.Marker(edge.Operator, false);
             target.LineStyle = ToLineStyle(edge.Operator);
             if (document.Kind == MermaidDiagramKind.UseCase) target.Routing = TopologyEdgeRouting.Straight;
             var edgeColor = StyleValue(edge.Styles, "stroke");
@@ -217,16 +219,9 @@ public static class MermaidFlowchartRendering {
         }
     }
 
-    private static VisualLinkDirection ToVisualLinkDirection(string edgeOperator) {
-        if (edgeOperator.IndexOf("<", StringComparison.Ordinal) >= 0 && edgeOperator.IndexOf(">", StringComparison.Ordinal) >= 0) return VisualLinkDirection.Bidirectional;
-        if (edgeOperator.IndexOf("<", StringComparison.Ordinal) >= 0) return VisualLinkDirection.Backward;
-        if (edgeOperator.IndexOf(">", StringComparison.Ordinal) >= 0 || edgeOperator.IndexOf("x", StringComparison.Ordinal) >= 0 || edgeOperator.IndexOf("o", StringComparison.Ordinal) >= 0) return VisualLinkDirection.Forward;
-        return VisualLinkDirection.None;
-    }
-
     private static TopologyEdgeLineStyle ToLineStyle(string edgeOperator) {
-        if (edgeOperator.IndexOf(".", StringComparison.Ordinal) >= 0) return TopologyEdgeLineStyle.Dotted;
-        if (edgeOperator.IndexOf("=", StringComparison.Ordinal) >= 0) return TopologyEdgeLineStyle.Solid;
+        var prefixEnd = MermaidFlowchartOperators.ReadEnd(edgeOperator, 0);
+        if (edgeOperator.IndexOf('.', 0, prefixEnd) >= 0) return TopologyEdgeLineStyle.Dotted;
         return TopologyEdgeLineStyle.Solid;
     }
 

@@ -4,8 +4,6 @@ using System.Collections.Generic;
 namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidFlowchartParser {
-    private static readonly string[] LabelSuffixOperators = { "-.->", "-->", "==>", "---", "--o", "--x" };
-
     public static void ParseStatements(MermaidFlowchartDocument document, string[] lines, int firstBodyLine, MermaidParseResult<MermaidDocument> result, int firstOffset = 0) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         if (lines == null) throw new ArgumentNullException(nameof(lines));
@@ -39,7 +37,8 @@ internal static partial class MermaidFlowchartParser {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Unsupported flowchart statement: " + text);
             return;
         }
-        while (TryParseEdgeOperator(text, ref position, out var edgeOperator, out var label)) {
+        var inlineLabels = new MermaidFlowchartInlineLabels(text);
+        while (TryParseEdgeOperator(text, ref position, inlineLabels, out var edgeOperator, out var label)) {
             if (!TryParseNodeGroup(document, nodes, text, ref position, span, subgraph, result, out var target)) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Flowchart edge operator '" + edgeOperator + "' is missing a target node.");
                 return;
@@ -227,12 +226,7 @@ internal static partial class MermaidFlowchartParser {
         var contentStart = position + 2;
         char quote = '\0';
         for (var index = contentStart; index < text.Length - 1; index++) {
-            var ch = text[index];
-            if (quote != '\0') {
-                if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, index)) quote = '\0';
-                continue;
-            }
-            if (ch == '"' || (ch == '\'' && index == contentStart)) { quote = ch; continue; }
+            if (MermaidFlowchartText.ReadQuotedCharacter(text, ref index, ref quote)) continue;
             if (text[index + 1] != ']') continue;
             if (text[index] != '/' && text[index] != '\\') continue;
 
@@ -251,15 +245,7 @@ internal static partial class MermaidFlowchartParser {
 
     private static bool ReadDelimited(string text, ref int position, string open, string close, MermaidFlowchartNodeShape nodeShape, out MermaidFlowchartNodeShape shape, out string? label) {
         var contentStart = position + open.Length;
-        var closeIndex = -1;
-        char quote = '\0';
-        for (var index = contentStart; index < text.Length; index++) {
-            var ch = text[index];
-            if (quote != '\0') {
-                if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, index)) quote = '\0';
-            } else if (ch == '"' || (ch == '\'' && index == contentStart)) quote = ch;
-            else if (StartsWith(text, index, close)) { closeIndex = index; break; }
-        }
+        var closeIndex = FindLabelDelimiter(text, contentStart, close);
         if (closeIndex < 0) {
             shape = MermaidFlowchartNodeShape.Default;
             label = null;
@@ -272,7 +258,16 @@ internal static partial class MermaidFlowchartParser {
         return true;
     }
 
-    private static bool TryParseEdgeOperator(string text, ref int position, out string edgeOperator, out string? label) {
+    private static int FindLabelDelimiter(string text, int start, string delimiter) {
+        char quote = '\0';
+        for (var index = start; index < text.Length; index++) {
+            if (MermaidFlowchartText.ReadQuotedCharacter(text, ref index, ref quote)) continue;
+            if (StartsWith(text, index, delimiter)) return index;
+        }
+        return -1;
+    }
+
+    private static bool TryParseEdgeOperator(string text, ref int position, MermaidFlowchartInlineLabels inlineLabels, out string edgeOperator, out string? label) {
         edgeOperator = string.Empty;
         label = null;
         SkipWhitespace(text, ref position);
@@ -280,9 +275,9 @@ internal static partial class MermaidFlowchartParser {
         if (start >= text.Length) return false;
 
         if (TryParsePipeLabelOperator(text, ref position, out edgeOperator, out label)) return true;
-        if (TryParseInlineLabelOperator(text, ref position, out edgeOperator, out label)) return true;
+        if (TryParseInlineLabelOperator(text, ref position, inlineLabels, out edgeOperator, out label)) return true;
 
-        while (position < text.Length && IsOperatorCharacter(text[position])) position++;
+        position = MermaidFlowchartOperators.ReadEnd(text, start);
         if (position == start) return false;
 
         edgeOperator = text.Substring(start, position - start);
@@ -295,41 +290,29 @@ internal static partial class MermaidFlowchartParser {
         edgeOperator = string.Empty;
         label = null;
         var start = position;
-        var firstPipe = text.IndexOf('|', start);
-        if (firstPipe < 0) return false;
-
-        var before = text.Substring(start, firstPipe - start).Trim();
-        if (before.Length == 0 || !LooksLikeOperator(before)) return false;
-        var secondPipe = text.IndexOf('|', firstPipe + 1);
+        var end = MermaidFlowchartOperators.ReadEnd(text, start);
+        if (end == start) return false;
+        var firstPipe = end;
+        SkipWhitespace(text, ref firstPipe);
+        if (firstPipe >= text.Length || text[firstPipe] != '|') return false;
+        var secondPipe = FindLabelDelimiter(text, firstPipe + 1, "|");
         if (secondPipe < 0) return false;
 
-        edgeOperator = before;
+        edgeOperator = text.Substring(start, end - start);
         label = Unquote(text.Substring(firstPipe + 1, secondPipe - firstPipe - 1).Trim());
         position = secondPipe + 1;
         return true;
     }
 
-    private static bool TryParseInlineLabelOperator(string text, ref int position, out string edgeOperator, out string? label) {
+    private static bool TryParseInlineLabelOperator(string text, ref int position, MermaidFlowchartInlineLabels inlineLabels, out string edgeOperator, out string? label) {
         edgeOperator = string.Empty;
         label = null;
         var start = position;
-        if (!StartsWith(text, start, "--") && !StartsWith(text, start, "==")) return false;
-        if (start + 2 < text.Length && IsOperatorCharacter(text[start + 2])) return false;
-
-        foreach (var suffix in LabelSuffixOperators) {
-            var suffixIndex = text.IndexOf(suffix, start + 2, StringComparison.Ordinal);
-            if (suffixIndex < 0) continue;
-
-            var candidateLabel = text.Substring(start + 2, suffixIndex - start - 2).Trim();
-            if (candidateLabel.Length == 0) continue;
-
-            edgeOperator = text.Substring(start, suffixIndex + suffix.Length - start).Trim();
-            label = Unquote(candidateLabel);
-            position = suffixIndex + suffix.Length;
-            return true;
-        }
-
-        return false;
+        if (!inlineLabels.TryRead(start, out var labelStart, out var labelEnd, out var end)) return false;
+        edgeOperator = text.Substring(start, end - start).Trim();
+        label = Unquote(text.Substring(labelStart, labelEnd - labelStart).Trim());
+        position = end;
+        return true;
     }
 
     private static bool LooksLikeOperator(string text) {

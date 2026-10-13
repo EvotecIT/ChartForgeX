@@ -166,6 +166,14 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/flowchart-apostrophe-labels.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored literal-apostrophe regressions for flowchart edge text, bracket captions and compact statements; verified against the pinned official Mermaid 10, 11 and 12 parsers and typed semantic facts."
+    },
     "fixtures/flowchart-basic.mmd": {
       "syntax": {
         "10": "accepted",
@@ -173,6 +181,22 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/flowchart-caption-boundaries.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored flowchart caption, quoted delimiter and compact statement examples; verified with the pinned official Mermaid parsers."
+    },
+    "fixtures/flowchart-closing-endpoints.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored native endpoint and caption boundary regression; checked against pinned official Mermaid parsers."
     },
     "fixtures/flowchart-compact.mmd": {
       "syntax": {
@@ -189,6 +213,30 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/flowchart-endpoints.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored endpoint and compact-id fixture based on the official Mermaid flowchart circle/cross and multidirectional link syntax; semantic types verified with pinned Mermaid 10.9.8, 11.17.2 and 12.1.0."
+    },
+    "fixtures/flowchart-inline-endpoints.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored inline-label fixture using the official flowchart link grammar; node identities, labels and endpoint types verified with pinned Mermaid 10.9.8, 11.17.2 and 12.1.0."
+    },
+    "fixtures/flowchart-metadata-scalars.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored flowchart node metadata scalar examples; modern node metadata is supported by the pinned Mermaid 11 and 12 parsers."
     },
     "fixtures/flowchart-modern.mmd": {
       "syntax": {

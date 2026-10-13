@@ -31,11 +31,10 @@ internal static partial class MermaidFlowchartParser {
         char quote = '\0';
         while (position < text.Length) {
             var ch = text[position];
-            if (quote != '\0') {
-                if (ch == quote && !MermaidFlowchartStatements.IsEscaped(text, position)) quote = '\0';
-            } else if (ch == '"' || ch == '\'') quote = ch;
-            else if (ch == ',' || ch == '}') {
-                AddNodeProperty(text.Substring(propertyStart, position - propertyStart), node, span, result);
+            if (MermaidFlowchartText.ReadQuotedCharacter(text, ref position, ref quote, metadata: true)) { position++; continue; }
+            if (ch == ',' || ch == '}') {
+                AddNodeProperty(text.Substring(propertyStart, position - propertyStart), node,
+                    new MermaidSourceSpan(span.Line, span.Column + propertyStart, position - propertyStart), result);
                 position++;
                 if (ch == '}') return;
                 propertyStart = position;
@@ -53,8 +52,21 @@ internal static partial class MermaidFlowchartParser {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Flowchart node properties require 'key: value' syntax.");
             return;
         }
-        var key = Unquote(property.Substring(0, colon).Trim());
-        var value = Unquote(property.Substring(colon + 1).Trim());
+        string key, value;
+        var scalar = property.Substring(0, colon);
+        var scalarStart = scalar.Length - scalar.TrimStart().Length;
+        scalar = scalar.Trim();
+        try {
+            key = ReadPropertyScalar(scalar);
+            scalar = property.Substring(colon + 1);
+            scalarStart = colon + 1 + scalar.Length - scalar.TrimStart().Length;
+            scalar = scalar.Trim();
+            value = ReadPropertyScalar(scalar);
+        } catch (ArgumentException exception) {
+            MermaidParserUtilities.Add(result, new MermaidSourceSpan(span.Line, span.Column + scalarStart, Math.Max(1, scalar.Length)),
+                MermaidDiagnosticSeverity.Error, exception.Message);
+            return;
+        }
         node.Properties[key] = value;
         if (key == "label") node.Text = value;
         else if (key == "shape") {
@@ -62,6 +74,9 @@ internal static partial class MermaidFlowchartParser {
             else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Flowchart shape '" + value + "' is retained but rendered as a rectangle.");
         } else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Flowchart node property '" + key + "' is retained but not rendered.");
     }
+
+    private static string ReadPropertyScalar(string value) => value.StartsWith("'", StringComparison.Ordinal)
+        ? MermaidYamlScalar.ReadSingleQuoted(value) : Unquote(value);
 
     private static bool TryResolveShape(string value, out MermaidFlowchartNodeShape shape) {
         shape = MermaidFlowchartNodeShape.Rectangle;
