@@ -5162,6 +5162,30 @@
       }
     },
     {
+      "name": "mermaid-quadrant-regions",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 22,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 1015,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-radar-circle",
       "layout": {
         "heightMode": "fixed",
@@ -5218,8 +5242,8 @@
       },
       "width": 760,
       "height": 620,
-      "logicalWidth": 760.0,
-      "logicalHeight": 620.0,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
       "svg": {
         "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
@@ -5362,8 +5386,8 @@
       },
       "width": 760,
       "height": 620,
-      "logicalWidth": 760.0,
-      "logicalHeight": 620.0,
+      "logicalWidth": 760,
+      "logicalHeight": 620,
       "svg": {
         "minVisualNodes": 13,
         "maxClippedTextNodes": 0,

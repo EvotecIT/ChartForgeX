@@ -120,7 +120,7 @@ internal static partial class VisualCartesianCompiler {
         if (xViewport != null && chart.Series.Any(series => series.Points.Any(point => !ChartMath.IsFinite(map.X(point.X)))))
             throw new ArgumentOutOfRangeException("viewport", "The X viewport cannot project the source coordinates into finite logical units.");
         var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);
-        DrawPlotRegionFills(builder, plotRegions);
+        DrawPlotRegionFills(builder, plotRegions, colors);
         using (builder.PushClip(viewport)) {
             if (horizontal) DrawHorizontalAxes(chart, context, builder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
             else DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
