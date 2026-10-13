@@ -91,7 +91,7 @@ Campaign A: [0.3, 0.6]";
         var document = result.Document ?? throw new InvalidOperationException("Mermaid quadrant parser should produce a document.");
         var chart = document.ToChart();
         var svg = document.ToSvg();
-        Assert(chart.Subtitle != null && chart.Subtitle.Contains("Q1: Expand", StringComparison.Ordinal) && chart.Subtitle.Contains("Q2: Promote", StringComparison.Ordinal), "Mermaid quadrant conversion should keep quadrant labels visible in rendered chart text.");
+        Assert(chart.PlotRegions.Count == 4 && chart.PlotRegions[0].Label == "Expand" && chart.PlotRegions[1].Label == "Promote", "Mermaid quadrant conversion should place authored labels in native quadrant regions.");
         Assert(svg.Contains("Expand", StringComparison.Ordinal) && svg.Contains("Promote", StringComparison.Ordinal), "Mermaid quadrant SVG rendering should include quadrant labels.");
     }
 }

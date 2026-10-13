@@ -188,6 +188,22 @@ for (const { folder, file, hasExpected } of files) {
         assert.deepEqual(diagram.db.getCurves().map(curve => [curve.name, curve.label, curve.entries]), expected.radar.curves);
         assert.deepEqual(diagram.db.getOptions(), expected.radar.options);
       }
+      if (expected.quadrant) {
+        const data = diagram.db.getQuadrantData();
+        assert.deepEqual(data.quadrants.map(region => region.text.text), expected.quadrant.labels);
+        const [one, two, three, four] = data.quadrants;
+        assert.ok(one.x > two.x && one.y === two.y && three.x === two.x && three.y > two.y
+          && four.x === one.x && four.y === three.y, 'Quadrants preserve top-right, top-left, bottom-left, bottom-right order.');
+        const points = data.points.map(point => [point.text.text,
+          (point.x - two.x) / (two.width * 2), 1 - (point.y - two.y) / (two.height * 2)])
+          .sort((a, b) => a[0].localeCompare(b[0]));
+        const expectedPoints = [...expected.quadrant.points].sort((a, b) => a[0].localeCompare(b[0]));
+        assert.deepEqual(points.map(point => point[0]), expectedPoints.map(point => point[0]));
+        points.forEach((point, index) => {
+          assert.ok(Math.abs(point[1] - expectedPoints[index][1]) < 1e-9);
+          assert.ok(Math.abs(point[2] - expectedPoints[index][2]) < 1e-9);
+        });
+      }
       if (expected.taskTimestamps) {
         const pad = (value, length = 2) => String(value).padStart(length, '0');
         const timestamp = value => `${pad(value.getFullYear(), 4)}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}.${pad(value.getMilliseconds(), 3)}`;

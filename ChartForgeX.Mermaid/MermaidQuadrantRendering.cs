@@ -12,7 +12,7 @@ namespace ChartForgeX.Mermaid;
 /// </summary>
 public static class MermaidQuadrantRendering {
     /// <summary>
-    /// Converts a Mermaid quadrant document into a renderer-independent ChartForgeX scatter chart.
+    /// Converts a Mermaid quadrant document into a scatter chart with four native background regions.
     /// </summary>
     public static Chart ToChart(this MermaidQuadrantDocument document, MermaidQuadrantRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
@@ -32,11 +32,20 @@ public static class MermaidQuadrantRendering {
         var series = chart.Series[0];
         series.SemanticRole = "mermaid-quadrant-point";
         for (var i = 0; i < document.Points.Count; i++) series.WithPointLabel(i, document.Points[i].Label);
-        return MermaidPresentation.Apply(chart, document);
+        MermaidPresentation.Apply(chart, document);
+        for (var quadrant = 1; quadrant <= 4; quadrant++) {
+            var right = quadrant == 1 || quadrant == 4;
+            var top = quadrant == 1 || quadrant == 2;
+            document.QuadrantLabels.TryGetValue(quadrant, out var label);
+            chart.AddPlotRegion(new ChartPlotRegion(quadrant - 1,
+                xMinimum: right ? .5 : 0, xMaximum: right ? 1 : .5,
+                yMinimum: top ? .5 : 0, yMaximum: top ? 1 : .5, label: label ?? string.Empty));
+        }
+        return chart;
     }
 
     /// <summary>
-    /// Wraps a Mermaid quadrant document in a visual artifact envelope backed by a ChartForgeX scatter chart.
+    /// Wraps a Mermaid quadrant document in an artifact backed by native scatter points and quadrant regions.
     /// </summary>
     public static VisualArtifact ToVisualArtifact(this MermaidQuadrantDocument document, MermaidQuadrantRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
@@ -72,11 +81,7 @@ public static class MermaidQuadrantRendering {
 
     private static string ResolveSubtitle(MermaidQuadrantDocument document, MermaidQuadrantRenderOptions options) {
         if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        if (document.QuadrantLabels.Count == 0) return document.Header;
-        var labels = document.QuadrantLabels
-            .OrderBy(item => item.Key)
-            .Select(item => "Q" + item.Key.ToString(CultureInfo.InvariantCulture) + ": " + item.Value);
-        return document.Header + " | " + string.Join(" | ", labels);
+        return document.Header;
     }
 
     private static string FormatAxis(string? start, string? end, string fallback) {
