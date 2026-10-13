@@ -5,6 +5,7 @@ using ChartForgeX.VisualArtifacts;
 internal static class MermaidExamples {
     internal static void Write(string output) {
         var examples = new Dictionary<string, string> {
+            ["mermaid-quadrant-regions"] = "quadrantChart\ntitle Work priorities\nx-axis Low effort --> High effort\ny-axis Low impact --> High impact\nquadrant-1 Plan\nquadrant-2 Prioritize\nquadrant-3 Consider\nquadrant-4 Reassess\nOpportunity: [0.2, 0.8]\nInvestment: [0.8, 0.8]\nRoutine: [0.2, 0.2]\nReview: [0.8, 0.2]\n",
             ["mermaid-flowchart-closing-endpoints"] = "flowchart LR\nA -- label o--o B\nB == label x==x C\nC -. label o-.-o D\nD -- label <--> E\nE == label <==> F\nF -. label <.-> G\n",
             ["mermaid-radar-layout"] = "---\nconfig:\n  radar:\n    width: 460\n    height: 350\n    marginLeft: 12\n    marginTop: 14\n    marginRight: 16\n    marginBottom: 18\n    axisScaleFactor: 0.8\n    axisLabelFactor: 1.2\n    curveTension: 0.25\n---\nradar-beta\ntitle Authored radar layout\naxis a[\"Coverage\"], b[\"Policy\"], c[\"Response\"], d[\"Recovery\"]\ncurve current[\"Current\"]{90,45,80,60}\nmin 0\nmax 100\ngraticule circle\n",
             ["mermaid-radar-curves"] = "---\nconfig:\n  radar:\n    curveTension: 0.25\n---\nradar-beta\ntitle Closed radar curves\naxis a[\"Coverage\"], b[\"Policy\"], c[\"Response\"], d[\"Recovery\"]\ncurve current[\"Current\"]{90, 45, 80, 60}\ncurve target[\"Target\"]{95, 85, 90, 80}\nmin 0\nmax 100\ngraticule circle\n",

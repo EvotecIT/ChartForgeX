@@ -1,19 +1,4 @@
 {
-  "schemaVersion": 1,
-  "references": {
-    "10": {
-      "package": "mermaid-10",
-      "version": "10.9.8"
-    },
-    "11": {
-      "package": "mermaid-11",
-      "version": "11.17.2"
-    },
-    "12": {
-      "package": "mermaid",
-      "version": "12.1.0"
-    }
-  },
   "fixtures": {
     "fixtures/accessibility-dark.mmd": {
       "syntax": {
@@ -484,6 +469,14 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/quadrant-no-points.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored no-point quadrant example based on the official Mermaid quadrantChart syntax; normalized region and label facts are checked with three pinned upstream engines."
+    },
     "fixtures/radar-basic.mmd": {
       "syntax": {
         "10": "rejected",
@@ -802,5 +795,20 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     }
-  }
+  },
+  "references": {
+    "10": {
+      "package": "mermaid-10",
+      "version": "10.9.8"
+    },
+    "11": {
+      "package": "mermaid-11",
+      "version": "11.17.2"
+    },
+    "12": {
+      "package": "mermaid",
+      "version": "12.1.0"
+    }
+  },
+  "schemaVersion": 1
 }

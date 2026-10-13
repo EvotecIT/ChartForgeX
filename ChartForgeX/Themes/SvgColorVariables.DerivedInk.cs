@@ -52,6 +52,10 @@ public sealed partial class SvgColorVariables {
         catch (FormatException) { return false; }
         bool Operand(string value, out ChartColor color) {
             color = default;
+            if (value.Length > 1 && value[0] == 'O' && variables.TryGetValue(value.Substring(1), out var source)) {
+                color = ChartColor.FromRgb(source.R, source.G, source.B);
+                return true;
+            }
             if (value.Length > 1 && value[0] == 'V') return variables.TryGetValue(value.Substring(1), out color) && color.A == 255;
             if (value.Length != 9 || value[0] != 'L') return false;
             if (!uint.TryParse(value.Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var rgba)) return false;

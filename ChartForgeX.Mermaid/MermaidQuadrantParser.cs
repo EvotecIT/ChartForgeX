@@ -36,9 +36,6 @@ internal static class MermaidQuadrantParser {
             ParsePoint(document, trimmed, span, result);
         }
 
-        if (document.Points.Count == 0) {
-            MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid quadrant charts require at least one point.");
-        }
     }
 
     private static void ParseAxis(string text, out string start, out string end) {

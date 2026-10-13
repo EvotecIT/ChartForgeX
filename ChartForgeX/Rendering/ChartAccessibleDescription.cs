@@ -7,8 +7,9 @@ namespace ChartForgeX.Rendering;
 /// <summary>Produces render-neutral facts for the automatic chart text alternative.</summary>
 internal static class ChartAccessibleDescription {
     internal static ChartDescriptionFacts Facts(Chart chart) {
+        var regionLabels = chart.PlotRegions.Select(region => region.Label).ToArray();
         if (chart.Series.Count == 0)
-            return new ChartDescriptionFacts(ChartDescriptionKind.NoSeries, chart.Title, Array.Empty<string>(), 0);
+            return new ChartDescriptionFacts(ChartDescriptionKind.NoSeries, chart.Title, Array.Empty<string>(), 0, plotRegionLabels: regionLabels);
         var calendar = ChartCalendarHeatmapModel.Build(chart);
         if (calendar != null) return calendar.DescriptionFacts();
         if (ChartSeriesKindTraits.IsSpatialMapKind(chart.Series[0].Kind))
@@ -16,6 +17,6 @@ internal static class ChartAccessibleDescription {
         var names = chart.Series.Where(series => series.HasSourceData && series.SemanticRole != "point-callout")
             .Select(series => series.Name).ToArray();
         return new ChartDescriptionFacts(names.Length == 0 ? ChartDescriptionKind.NoPoints : ChartDescriptionKind.Series,
-            chart.Title, names, names.Length);
+            chart.Title, names, names.Length, plotRegionLabels: regionLabels);
     }
 }
