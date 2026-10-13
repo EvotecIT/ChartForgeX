@@ -155,7 +155,7 @@ public sealed class TextLanguageTests {
     }
 
     [Fact]
-    public void SvgGridTrimmingKeepsLocalizedHeaderInsideItsAvailableWidth() {
+    public void SvgGridFittingKeepsLocalizedHeaderInsideItsAvailableWidth() {
         var path = Path.Combine(Path.GetTempPath(), "cfx-language-" + Guid.NewGuid().ToString("N") + ".ttf");
         File.WriteAllBytes(path, Bytes());
         try {
@@ -165,7 +165,11 @@ public sealed class TextLanguageTests {
             var doc = XDocument.Parse(grid.ToSvg());
             var header = doc.Descendants().First(e => (string?)e.Attribute("data-cfx-role") == "frame-heading");
             var width = double.Parse(doc.Root!.Attribute("width")!.Value, System.Globalization.CultureInfo.InvariantCulture) - grid.Padding * 2;
-            Assert.True(Font().WithLanguage("BGR ").Measure(header.Value, 100) <= width, "Localized header must be trimmed using shaped widths.");
+            var text = header.DescendantsAndSelf().First(element => element.Name.LocalName == "text");
+            var size = double.Parse(text.Attribute("font-size")!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            Assert.InRange(size, double.Epsilon, 100);
+            Assert.True(Font().WithLanguage("BGR ").Measure(text.Value, size) <= width,
+                "Localized header must fit using shaped widths at its displayed font size.");
         } finally { FontRegistry.Clear(); File.Delete(path); }
     }
 
