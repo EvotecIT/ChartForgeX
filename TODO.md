@@ -106,28 +106,15 @@ The compatibility goal is to adopt newer documented Mermaid syntax while preserv
 
 The stages set the default work order. Independent family fixes can proceed once their own fixtures and owner APIs are available; chart/calendar correctness does not depend on completing unrelated graph notation.
 
-### Active owner PRs
+### Implementation status
 
-These implementation PRs are open as of 13 October 2026. Reuse their existing owners for remaining work. Local qualification, merged source and public package availability are separate states; each published candidate retains its CI and review gates.
+Gantt support includes month/minute duration semantics, dependency/calendar resolution, input date fields and timestamps, English D3 axis directives, calendar tick intervals, vertical markers, explicit today-marker suppression and dependency arrows. Native sequence presentation and readable sequence HTML sizing preserve nested SVG constraints and support root-only host sizing.
 
-Merged support includes Gantt month/minute duration semantics, dependency/calendar resolution, input date fields and timestamps, English D3 axis directives, calendar tick intervals, vertical markers, explicit today-marker suppression and dependency arrows; native sequence presentation; source font families; readable sequence HTML sizing and root-only host sizing that preserves nested SVG constraints; treemap value-caption visibility; Sankey source geometry and value-caption controls; closed radar curves, dimensions, margins and axis layout; native quadrant regions with accessible host-palette captions; horizontal XY lines through the shared Cartesian orientation; and documented flowchart aliases over existing native shapes. Completed owners are removed from this table. Broader grammar and presentation work remains below.
+Source font families and logical-pixel sizes flow through the native chart, topology, sequence and visual-block owners. Oversized captions fit their measured bounds, dense sequence layouts respect raster allocation limits, and ordinary title/subtitle roles retain their theme sizes. Packet source configuration controls row width, bit visibility/direction, preferred dimensions and gaps through shared SVG/PNG geometry with independent host overrides.
 
-| Active owner | Reusable contribution | Remaining qualification or scope |
-| --- | --- | --- |
-| [#311](https://github.com/EvotecIT/ChartForgeX/pull/311) | Source font sizes across chart, topology, sequence and block output | CSS-length diagnostics retain source declarations and reject malformed values. Oversized axis, legend, Cartesian, radial, schedule, topology and block captions fit their native bounds. Dense sequence typography fits the default raster allocation limits while preserving the authored model. Wardley annotation circles stay inside the canvas and clear stage captions. Ordinary headings retain their size and tiny-frame diagnostics. Focused native/browser repairs and bounded review pass; finish the refreshed integrated quality gate, then settle current-head CI and reviews. |
-| [#318](https://github.com/EvotecIT/ChartForgeX/pull/318), [#321](https://github.com/EvotecIT/ChartForgeX/pull/321) | Packet row/bit-number settings and shared readable packet geometry | Descending rows mirror painted fields and clamped gaps through shared SVG/PNG geometry. Suppressed bit numbers release their unused label lane before preferred row gaps are fitted. The final font composition retains mirrored fields and gaps. Focused native/browser proof passes; finish the refreshed integrated font quality gate, then settle current-head CI and review. Readable cross-row fields and source/host precedence are retained. |
-| [#346](https://github.com/EvotecIT/ChartForgeX/pull/346) | Flowchart endpoints, literal captions and metadata source locations | Inline closing tokens retain source and target markers across normal, thick and dotted links. Failed inline-label searches are bounded in statement splitting and chained-edge parsing. Native/browser, full-suite, reference, gallery and unsigned package proof pass; settle current-head CI and reviews. |
+Further implemented support includes treemap value-caption visibility; Sankey source geometry and value-caption controls; closed radar curves, dimensions, margins and axis layout; native quadrant regions with accessible host-palette captions; horizontal XY lines through the shared Cartesian orientation; and flowchart circle/cross/bidirectional endpoints, literal captions and documented aliases over existing native shapes. Broader grammar and presentation work remains below. Source implementation and public package availability remain separate states.
 
-Two implementation candidates reuse these owners without duplicating their work: flowchart minimum edge lengths have full local versioned/render/export qualification and await #346; radar source-theme mapping awaits the settled font and radar owners. Neither candidate is counted as merged support.
-
-Outstanding PR settlement continues while new roadmap implementation is paused:
-
-- [x] Repair the Gantt fallback-date and nested-SVG sizing findings in their existing owners, including ID/no-ID, explicit-end, weekday dependency targets, compact-host and print contracts.
-- [x] Isolate rendering-budget measurements from parallel raster tests without changing their workload or thresholds. Retain the observed failures and isolated results.
-- [ ] Finish the refreshed Font/Packet quality gate after the final Cartesian, heading and sequence-budget repairs. Retain the completed Gantt, HTML, radar, quadrant, flowchart and XY qualification with focused/reference proof for subsequent owner compositions. Current-head hosted full CI remains the merge gate.
-- [ ] Settle current-head CI and review, merge independent owners and dependency-ordered layers, and remove verified task-owned worktrees/output.
-
-After an explicit roadmap resume, finish qualification and publish the minimum-edge-length and radar-theme candidates against settled owners, then continue the language and host-policy work below. Keep both local candidates unchanged while paused.
+New roadmap implementation remains paused. Two local candidates are preserved without publication: flowchart minimum edge lengths and radar source-theme mapping. After an explicit resume, qualify them against the settled owners, publish them, and continue the language and host-policy work below. Neither candidate is counted as implemented support here.
 
 ### 1. Compatibility evidence and honest results
 
@@ -148,7 +135,8 @@ Completion: every advertised feature has versioned positive and meaningful negat
 - [ ] Define a coherent precedence and policy for host presentation overrides, source settings and family defaults through the existing native export owners.
 - [x] Apply sequence source theme/font defaults through `SequenceArtifact` and its prepared scene. Explicit host contexts override authored defaults; portable presentation records the actual colors and font. Qualify direct rendering, typed conversion, Markdown fences and native/browser output.
 - [x] Map `themeVariables.fontFamily` into existing native typography defaults, retaining the original declarations and qualifying root/variable precedence and unsupported family-key diagnostics through direct and Markdown conversion.
-- [ ] Map remaining supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Source font stacks use the native owners; color variables, font sizes and further family options remain open.
+- [x] Apply source `themeVariables.fontSize` through native typography, preserving source declarations, independent host overrides and bounded SVG/PNG layout. Qualify ordinary and enlarged captions, dense sequence allocation and compact dashboard headings.
+- [ ] Map remaining supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Source font stacks and logical-pixel sizes use the native owners; color variables and further family options remain open.
 - [ ] Handle Mermaid 12 `theme`/`look`/`layout` changes deliberately. Preserve older `defaultRenderer` declarations with a documented diagnostic or mapping. Keep deterministic CFX layout and appearance explicit; reproducing ELK or browser paint is a separate fidelity goal.
 - [ ] Extend the existing safe label/text pipeline for escaped text, entities, multiline labels and Mermaid Markdown strings. Specify literal fallback and diagnostics for HTML labels and math until a native implementation has artifact proof.
 - [ ] Apply supported `classDef`, default classes, `class`, `style`, `linkStyle` and edge-ID styling consistently across families. Preserve inheritance and source order; report properties retained without visible effect.
@@ -162,7 +150,8 @@ Completion: source presentation produces consistent SVG/PNG scenes or specific d
 
 - [x] Map documented flowchart metadata aliases to the existing subprocess, decision, input/output, trapezoid and asymmetric native shapes, with versioned reference fixtures and SVG/PNG examples.
 - [ ] Qualify shape-only flowchart surfaces and centered captions. Inferred topology kinds currently add infrastructure glyphs to decision and other semantic shapes; source shape syntax should determine the diagram notation.
-- [ ] Settle the locally qualified endpoint owner listed above, then integrate the qualified minimum-edge-length candidate. Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
+- [x] Render flowchart circle, cross and bidirectional endpoints through shared topology markers, preserving compact target IDs and literal caption boundaries. Qualify normal, thick and dotted closing markers against Mermaid 10, 11 and 12.
+- [ ] Qualify and publish the preserved minimum-edge-length candidate after an explicit roadmap resume. Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
 - [ ] Complete sequence participant creation/destruction, participant boxes, supported message variants, nested parallel/critical branches, branch labels, notes, activations and autonumber behavior. Keep actor menus and links as safe host-facing data.
 - [ ] Complete class generics, visibility/static/abstract members, lollipop and two-way relationships, labeled/nested namespaces, notes, styling and safe link metadata.
 - [ ] Complete state choice/fork/join notation, concurrent regions, nested composites, multiline notes and classes; keep transition and start/end meaning visible.
@@ -197,7 +186,9 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [ ] Complete quadrant point/class styling, theme variables, source dimensions and separate axis endpoint labels. Native region captions use the shared bounded placement policy.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene and timeline sections/events in both directions. Keep the current score-bar/ordered-time mappings explicit until replaced.
 - [x] Map Sankey source dimensions, node geometry/alignment and value-label visibility/affixes through the native owners. Qualify direct/fence host overrides and the same node/flow facts across pinned Mermaid 10, 11 and 12; retain unsupported paint settings as diagnostics.
-- [ ] Broaden pie/show-data, XY named-series legend rules, per-point line labels, numeric/category axes and source configuration, Sankey CSV/configuration/colors, and packet row/label/configuration cases, including Mermaid 12 bit-numbering direction.
+- [ ] Broaden pie/show-data, XY named-series legend rules, per-point line labels, numeric/category axes and source configuration, Sankey CSV/configuration/colors, and remaining packet row/label cases.
+- [x] Apply packet source `bitsPerRow`, `showBits` and `bitOrder` through the native packet owner, with independent host overrides, mirrored partial rows and shared SVG/PNG bit labels. Pinned reference fixtures cover configuration retention and resolved row ranges.
+- [x] Apply packet source `bitWidth`, `rowHeight`, `paddingX` and `paddingY` through native dimensions and field/row gaps. Independent host overrides preserve explicit zero gaps; fixed preview bounds fit dense rows and reserve measured bit-label space. Reference, browser and packed-consumer checks cover the mapping.
 
 Completion: values, dates, hierarchy, direction and requested encodings survive conversion and are visibly represented. Existing owner PRs supply shared capability; they do not by themselves complete Mermaid configuration or compatibility proof.
 
