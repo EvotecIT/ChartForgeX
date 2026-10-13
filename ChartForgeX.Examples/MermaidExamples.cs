@@ -5,6 +5,7 @@ using ChartForgeX.VisualArtifacts;
 internal static class MermaidExamples {
     internal static void Write(string output) {
         var examples = new Dictionary<string, string> {
+            ["mermaid-flowchart-shape-aliases"] = "flowchart LR\nA@{ shape: fr-rect, label: \"Framed process\" } --> B@{ shape: framed-rectangle, label: \"Subprocess\" }\nC@{ shape: question, label: \"Decision\" } --> D@{ shape: odd, label: \"Asymmetric\" }\nE@{ shape: lean-right, label: \"Input\" } --> F@{ shape: lean-left, label: \"Output\" }\nG@{ shape: manual, label: \"Manual task\" } --> H@{ shape: trapezoid-top, label: \"Operation\" }\nI@{ shape: priority, label: \"Priority\" } --> J@{ shape: trapezoid-bottom, label: \"Action\" }\n",
             ["mermaid-quadrant-regions"] = "quadrantChart\ntitle Work priorities\nx-axis Low effort --> High effort\ny-axis Low impact --> High impact\nquadrant-1 Plan\nquadrant-2 Prioritize\nquadrant-3 Consider\nquadrant-4 Reassess\nOpportunity: [0.2, 0.8]\nInvestment: [0.8, 0.8]\nRoutine: [0.2, 0.2]\nReview: [0.8, 0.2]\n",
             ["mermaid-source-font-size-wardley-boundaries"] = "%%{init: {'themeVariables':{'fontSize':256}}}%%\nwardley-beta\ncomponent API [0.5, 0.5]\nannotation 1, [1, 1] \"\"\nannotation 2, [1, 0] \"\"\nannotation 3, [0, 1] \"\"\nannotation 4, [0, 0] \"\"\n",
             ["mermaid-source-font-size-icon-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':32}}}%%\nflowchart LR\napi[Payments API]\n",
