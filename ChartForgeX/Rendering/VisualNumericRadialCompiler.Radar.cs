@@ -83,11 +83,7 @@ internal static partial class VisualNumericRadialCompiler {
     private static (ChartPoint[] Points, int[] Sources) RadarPoints(Chart chart, RadialSeriesGeometry geometry, int seriesIndex,
         ChartBarCoordinateMap coordinates, ChartBarCoordinateKey[] categories, RadialValueScale scale) {
         var series = chart.Series[seriesIndex];
-        var raw = Enumerable.Repeat(-1, categories.Length).ToArray();
-        for (var source = 0; source < series.RenderPoints.Count; source++) {
-            var key = coordinates.Resolve(seriesIndex, source);
-            raw[Array.FindIndex(categories, category => category.Id == key.Id)] = source;
-        }
+        var raw = coordinates.SourcesFor(seriesIndex, categories);
         return (raw.Select((source, category) => On(geometry,
             CategoryAngle(chart.Options.XAxis, category, categories.Length, geometry.Start, geometry.Sweep, false),
             geometry.Inner + scale.Normalize(source >= 0 ? series.RenderPoints[source].Y : 0) * (geometry.Outer - geometry.Inner))).ToArray(), raw);

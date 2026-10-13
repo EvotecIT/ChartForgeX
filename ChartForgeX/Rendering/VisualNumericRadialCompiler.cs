@@ -100,9 +100,7 @@ internal static partial class VisualNumericRadialCompiler {
         }
     }
 
-    private static ChartBarCoordinateKey[] Categories(Chart chart, ChartBarCoordinateMap coordinates) =>
-        Enumerable.Range(0, chart.Series.Count).SelectMany(series => Enumerable.Range(0, chart.Series[series].RenderPoints.Count)
-            .Select(point => coordinates.Resolve(series, point))).Distinct().OrderBy(key => key.Value).ThenBy(key => key.Id).ToArray();
+    private static ChartBarCoordinateKey[] Categories(Chart chart, ChartBarCoordinateMap coordinates) => coordinates.Categories.ToArray();
 
     private static Dictionary<ChartAxisSide, RadialValueScale> Scales(Chart chart, ChartStackLayout stacks) =>
         RadialValueScale.ForAxes(chart, series => Enumerable.Range(0, chart.Series[series].RenderPoints.Count)

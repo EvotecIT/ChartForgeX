@@ -14,6 +14,21 @@ public sealed class V2ModelValidationTests {
         Reject(Chart.Create().AddPie("First", new[] { new ChartPoint(1, 2) }).AddDonut("Second", new[] { new ChartPoint(1, 2) }));
     }
 
+    [Theory]
+    [InlineData(0d)]
+    [InlineData(4e-16)]
+    public void RadarRejectsEquivalentCategoriesWithinOneSeriesBeforeAnyExport(double offset) {
+        Reject(Chart.Create().AddRadar("Ambiguous", new[] {
+            new ChartPoint(1, 10), new ChartPoint(1 + offset, 90), new ChartPoint(2, 40), new ChartPoint(3, 60)
+        }));
+    }
+
+    [Fact]
+    public void RadarMinimumCountsSharedCoordinateGroupsRatherThanDistinctDoubleSpellings() {
+        Reject(Chart.Create().AddRadar("First", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) })
+            .AddRadar("Second", new[] { new ChartPoint(1 + 4e-16, 30), new ChartPoint(2 + 8e-16, 50) }));
+    }
+
     [Fact]
     public void SharedMutableCollectionsAreValidatedForSpecializedFamilies() {
         var gauge = Chart.Create().AddGauge("Score", 70);

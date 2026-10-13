@@ -38,7 +38,9 @@ internal static partial class VisualPolarCompiler {
         var colors = context.Theme.Resolve(context.ThemeMode);
         if (kind == ChartSeriesKind.PolarArea) { Area(chart, context, builder, plot, colors); return; }
         var radar = kind == ChartSeriesKind.Radar;
-        var categories = radar ? chart.Series.SelectMany(series => series.RenderPoints).Select(point => point.X).Distinct().OrderBy(value => value).ToArray()
+        var coordinates = radar ? ChartBarCoordinateMap.Create(chart) : null;
+        var categoryKeys = coordinates?.Categories.ToArray();
+        var categories = radar ? categoryKeys!.Select(key => key.Value).ToArray()
             : Enumerable.Range(0, Math.Max(4, Math.Min(12, chart.Options.XAxis.TickCount))).Select(index => Math.PI * 2 * index / Math.Max(4, Math.Min(12, chart.Options.XAxis.TickCount))).ToArray();
         if (radar && categories.Length < 3) { builder.AddDiagnostic(new VisualDiagnostic("radar.insufficient-categories", "Radar polygons need at least three distinct categories.")); return; }
         var scales = RadialValueScale.ForAxes(chart, index => chart.Series[index].RenderPoints.Select(point => point.Y), radar ? "Radar" : "Polar");
@@ -49,7 +51,7 @@ internal static partial class VisualPolarCompiler {
         }
         var axes = categories.Select(CategoryText).ToArray();
         var geometry = Layout(chart, context, builder, plot, axes);
-        if (radar) geometry = FitRadarCurves(chart, geometry, categories, scales);
+        if (radar) geometry = FitRadarCurves(chart, geometry, coordinates!, categoryKeys!, scales);
         if (geometry.Radius <= 0) { builder.AddDiagnostic(new VisualDiagnostic("polar.insufficient-space", "No radius remains after fitting polar axis labels.")); return; }
         var labels = new List<PolarLabel>();
         using (builder.PushClip(plot)) {
@@ -59,7 +61,7 @@ internal static partial class VisualPolarCompiler {
                 if (series.RenderPoints.Count == 0) continue;
                 var scale = scales[series.YAxis];
                 var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
-                var raw = radar ? categories.Select(value => Find(series, value)).ToArray() : Enumerable.Range(0, series.RenderPoints.Count).ToArray();
+                var raw = radar ? coordinates!.SourcesFor(seriesIndex, categoryKeys!) : Enumerable.Range(0, series.RenderPoints.Count).ToArray();
                 var mapped = new ChartPoint[raw.Length];
                 for (var index = 0; index < raw.Length; index++) {
                     var value = raw[index] >= 0 ? series.RenderPoints[raw[index]].Y : 0;
@@ -114,10 +116,6 @@ internal static partial class VisualPolarCompiler {
 
     private static string Category(Chart chart, double value) => ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value)
         ?? ChartAxisValueFormatter.Format(chart.Options.XAxis, value);
-    private static int Find(ChartSeries series, double category) {
-        for (var index = 0; index < series.RenderPoints.Count; index++) if (ChartMath.SameCoordinate(series.RenderPoints[index].X, category)) return index;
-        return -1;
-    }
     private static ChartFillPattern Pattern(ChartSeries series, int index) => index >= 0 && index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern;
     private static ChartPoint On(PolarLayout geometry, double angle, double radius) => new(geometry.Cx + Math.Cos(angle) * radius, geometry.Cy + Math.Sin(angle) * radius);
     /// <summary>Places an ordinal radar vertex or polar-area sector start without reordering source observations.</summary>

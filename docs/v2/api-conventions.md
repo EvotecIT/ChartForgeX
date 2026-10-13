@@ -71,6 +71,8 @@ Use `theme.ToJson()` and `VisualTheme.FromJson(json)` for the versioned full-the
 
 ## Stable series handles and observations
 
+See [chart combinations, orientation and axes](chart-combinations.md) before combining families or selecting a horizontal/radial layout.
+
 Retain a `ChartSeries` when its configuration or data will change. Construct it with a `ChartSeriesId`, configure it, then attach it through `AddSeries`. Display names may repeat or change; reordering does not change identity.
 
 ```csharp

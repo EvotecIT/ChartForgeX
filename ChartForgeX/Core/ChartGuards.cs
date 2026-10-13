@@ -103,11 +103,7 @@ internal static class ChartGuards {
         }
 
         if (exclusiveKinds[0] == ChartSeriesKind.Radar) {
-            var categoryCount = chart.Series
-                .Where(series => series.Kind == ChartSeriesKind.Radar)
-                .SelectMany(series => series.RenderPoints.Select(point => point.X))
-                .Distinct()
-                .Count();
+            var categoryCount = ValidateUniqueRadialCategories(chart);
             if (categoryCount < 3 && (!preparing || categoryCount > 0)) throw new InvalidOperationException("Radar charts require at least three categories.");
         }
 
@@ -131,17 +127,20 @@ internal static class ChartGuards {
         var geometry = chart.Options.RadialGeometry;
         if (Math.Abs(geometry.EndAngleDegrees - geometry.StartAngleDegrees - 360) > 1e-9)
             throw new NotSupportedException("Mixed radial columns and radar series require a full-turn radial viewport.");
-        var categories = new List<double>();
+        var categoryCount = ValidateUniqueRadialCategories(chart);
+        if (categoryCount < 3 && chart.Series.Any(series => series.Kind == ChartSeriesKind.Radar && series.RenderPoints.Count > 0))
+            throw new InvalidOperationException("Radar charts require at least three categories.");
+    }
+
+    private static int ValidateUniqueRadialCategories(Chart chart) {
         foreach (var series in chart.Series) {
             var ordered = series.RenderPoints.Select(point => point.X).OrderBy(value => value).ToArray();
             for (var index = 0; index < ordered.Length; index++) {
                 if (index > 0 && ChartMath.SameCoordinate(ordered[index - 1], ordered[index]))
-                    throw new InvalidOperationException("Mixed radial series require unique categories within each series.");
-                if (!categories.Any(value => ChartMath.SameCoordinate(value, ordered[index]))) categories.Add(ordered[index]);
+                    throw new InvalidOperationException("Radar and mixed radial series require unique categories within each series.");
             }
         }
-        if (categories.Count < 3 && chart.Series.Any(series => series.Kind == ChartSeriesKind.Radar && series.RenderPoints.Count > 0))
-            throw new InvalidOperationException("Radar charts require at least three categories.");
+        return ChartBarCoordinateMap.Create(chart).Categories.Count;
     }
 
     private static void ValidateRenderableChart(Chart chart, bool preparing) {

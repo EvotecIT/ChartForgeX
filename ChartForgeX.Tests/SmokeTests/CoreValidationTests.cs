@@ -206,9 +206,8 @@ internal static partial class SmokeTests {
                 group.Metadata.TryGetValue("data-cfx-target-kind", out var targetKind) && (targetKind == "node" || targetKind == "link")),
                 "An empty relationship series does not invent interactive node or link targets.");
             Assert(!string.IsNullOrWhiteSpace(prepared.ToSvg()), "An empty relationship series still exports its native frame.");
-            raw.Points.Add(new ChartPoint(0, 1));
-            AssertThrows<InvalidOperationException>(() => incompatible.ToSvg(), "Relationship SVG exports reject added raw points.");
-            AssertThrows<InvalidOperationException>(() => incompatible.ToPng(), "Relationship PNG exports reject added raw points.");
+            AssertThrows<NotSupportedException>(() => raw.Points.Add(new ChartPoint(0, 1)), "Relationship series reject incompatible raw-point mutation immediately.");
+            Assert(!string.IsNullOrWhiteSpace(incompatible.ToSvg()) && incompatible.ToPng().Length > 64, "Rejected raw edits leave native no-data exports intact.");
         }
     }
 }

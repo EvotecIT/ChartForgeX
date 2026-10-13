@@ -33,11 +33,14 @@ public sealed class V2PolarTests {
     [Fact]
     public void RadarAlignsCategoriesAndRetainsMissingObservationsWithoutInventingSourcePointIds() {
         var chart = Chart.Create().AddRadar("First", new[] { new ChartPoint(1, 80), new ChartPoint(2, 60), new ChartPoint(3, 40) })
-            .AddRadar("Second", new[] { new ChartPoint(1, 30), new ChartPoint(3, 70), new ChartPoint(4, 50) }).WithXLabels("North", "East", "South", "West");
+            .AddRadar("Second", new[] { new ChartPoint(1 + 4e-16, 30), new ChartPoint(3, 70), new ChartPoint(4, 50) }).WithXLabels("North", "East", "South", "West");
         chart.Series[1].StateRole = ChartSeriesState.Warning;
         var scene = Compile(chart);
         Assert.Equal(2, scene.Nodes.Count(node => node.Role == "radar-area"));
         Assert.Equal(8, scene.Nodes.Count(node => node.Role == "radar-point"));
+        var authored = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "radar-point-source" && group.Metadata["data-cfx-missing"] == "false").ToArray();
+        Assert.Equal(6, authored.Length); Assert.Equal(6, authored.Select(group => group.Id).Distinct().Count());
+        Assert.Equal(1 + 4e-16, chart.Series[1].Points[0].X);
         var missing = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "radar-point-source" && group.Metadata["data-cfx-missing"] == "true").ToArray();
         Assert.Equal(2, missing.Length); Assert.All(missing, group => Assert.Equal("-1", group.Metadata["data-cfx-point"]));
         Assert.Contains(scene.Regions, region => region.Id == "series-1-missing-category-1" && region.Label == "East: 0");

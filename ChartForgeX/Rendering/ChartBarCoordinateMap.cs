@@ -6,7 +6,7 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 /// <summary>
-/// Assigns one stable category key to corresponding bar points and mixed radar observations,
+/// Assigns one stable category key to corresponding bar points and radar observations,
 /// while preserving distinct histogram bins. Stacking, range calculation, overlays and total
 /// labels share the same identity without repeated layout scans.
 /// </summary>
@@ -15,10 +15,11 @@ internal sealed class ChartBarCoordinateMap {
     private readonly Dictionary<int, HistogramSlot> _histogramSlots;
     private readonly Dictionary<int, int[]> _seriesIndices;
 
-    private ChartBarCoordinateMap(ChartBarCoordinateKey[][] keys, Dictionary<int, HistogramSlot> histogramSlots, Dictionary<int, int[]> seriesIndices) {
+    private ChartBarCoordinateMap(ChartBarCoordinateKey[][] keys, Dictionary<int, HistogramSlot> histogramSlots, Dictionary<int, int[]> seriesIndices, ChartBarCoordinateKey[] categories) {
         _keys = keys;
         _histogramSlots = histogramSlots;
         _seriesIndices = seriesIndices;
+        Categories = categories;
     }
 
     internal static ChartBarCoordinateMap Create(Chart chart) {
@@ -45,7 +46,19 @@ internal sealed class ChartBarCoordinateMap {
             .Where(group => group.RepresentativeHistogramNode.HasValue)
             .ToDictionary(group => group.Key.Id, group => new HistogramSlot(group.RepresentativeHistogramNode!.Value.Layout!, group.RepresentativeHistogramNode.Value.BinIndex));
         var seriesIndices = allGroups.ToDictionary(group => group.Key.Id, group => group.SeriesIndices.OrderBy(index => index).ToArray());
-        return new ChartBarCoordinateMap(keys, histogramSlots, seriesIndices);
+        var categories = allGroups.Select(group => group.Key).OrderBy(key => key.Value).ThenBy(key => key.Id).ToArray();
+        return new ChartBarCoordinateMap(keys, histogramSlots, seriesIndices, categories);
+    }
+
+    internal IReadOnlyList<ChartBarCoordinateKey> Categories { get; }
+
+    /// <summary>Resolves each category to its exact authored source index, without a second floating-point match.</summary>
+    internal int[] SourcesFor(int seriesIndex, IReadOnlyList<ChartBarCoordinateKey> categories) {
+        var slots = new Dictionary<int, int>();
+        for (var index = 0; index < categories.Count; index++) slots.Add(categories[index].Id, index);
+        var sources = Enumerable.Repeat(-1, categories.Count).ToArray();
+        for (var source = 0; source < _keys[seriesIndex].Length; source++) sources[slots[_keys[seriesIndex][source].Id]] = source;
+        return sources;
     }
 
     internal ChartBarCoordinateKey Resolve(int seriesIndex, int pointIndex) => _keys[seriesIndex][pointIndex];
@@ -65,11 +78,10 @@ internal sealed class ChartBarCoordinateMap {
     }
 
     private static IEnumerable<CoordinateNode> CreateNodes(Chart chart) {
-        var mixedRadial = ChartSeriesKindTraits.IsMixedNumericRadial(chart);
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
             if (series.Kind != ChartSeriesKind.Bar && series.Kind != ChartSeriesKind.RadialBar && series.Kind != ChartSeriesKind.RadialColumn
-                && !(series.Kind == ChartSeriesKind.Radar && mixedRadial)) continue;
+                && series.Kind != ChartSeriesKind.Radar) continue;
             for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
                 var layout = series.HistogramBinLayout;
                 var isHistogramBin = layout != null && layout.Minimum != layout.Maximum && pointIndex < layout.Count;
