@@ -66,9 +66,7 @@ internal static partial class VisualScheduleCompiler {
                     metadata["data-cfx-meta-start"] = model.FormatInstant(segment.Start); metadata["data-cfx-meta-end"] = model.FormatInstant(segment.End);
                     metadata["data-cfx-meta-duration"] = ChartStateTimelineModel.FormatDuration(segment.End - segment.Start);
                     if (!string.IsNullOrWhiteSpace(segment.Detail)) metadata["data-cfx-meta-detail"] = segment.Detail!;
-                    var sources = Enumerable.Range(0, series.RenderPoints.Count).Where(index => series.RenderPoints[index].X >= segment.Start && series.RenderPoints[index].Y <= segment.End &&
-                        series.PointLabels[index] == segment.State.Key).ToArray();
-                    metadata["data-cfx-source-points"] = string.Join(",", sources);
+                    metadata["data-cfx-source-points"] = string.Join(",", segment.SourceIndices);
                     metadata["data-cfx-derived"] = "timeline-run";
                     var id = VisualStateSceneTools.SourceId(lane.SeriesIndex, segment.PointIndex);
                     using (VisualStateSceneTools.Mark(builder, id, "state-timeline-segment", bounds, model.SegmentSummary(lane, segment), metadata)) {

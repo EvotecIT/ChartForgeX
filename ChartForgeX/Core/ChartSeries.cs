@@ -29,7 +29,7 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets mutable numeric X/Y observations. Typed observation families expose an empty read-only view here.
     /// </summary>
-    public IList<ChartPoint> Points => UsesTypedObservations ? Array.Empty<ChartPoint>() : _points;
+    public IList<ChartPoint> Points => UsesTypedObservations || IsRelationshipKind(Kind) || WaterfallItems.Count > 0 ? Array.Empty<ChartPoint>() : _points;
     private readonly List<ChartPoint> _points = new();
 
     /// <summary>Gets the authored source count, or the retained original-input count for explicit derivation APIs such as histogram, regression, raw-sample box plot and decimation.</summary>
@@ -87,20 +87,11 @@ public sealed partial class ChartSeries {
     /// </summary>
     internal int? HeatmapColumnCount { get; set; }
 
-    /// <summary>Gets categorical heatmap cells aligned with <see cref="Points"/>; empty for numeric heatmap rows.</summary>
-    internal List<ChartHeatmapCell> HeatmapCells { get; } = new();
-
     /// <summary>Gets or sets whether this heatmap row holds categorical cells; such a row may have no cells at all.</summary>
     internal bool IsCategoricalHeatmapRow { get; set; }
 
-    /// <summary>Gets optional per-segment tooltip details for state timeline lanes.</summary>
-    internal List<string?> StateTimelineDetails { get; } = new();
-
     /// <summary>Gets or sets the summary-column text for a state timeline or Gantt lane.</summary>
     internal string? LaneSummary { get; set; }
-
-    /// <summary>Gets the items of a Gantt lane, aligned with <see cref="Points"/>.</summary>
-    internal List<ChartGanttLaneItem> GanttLaneItems { get; } = new();
 
     /// <summary>Gets or sets the group header a Gantt lane is listed under.</summary>
     internal string? LaneGroup { get; set; }
@@ -544,7 +535,7 @@ public sealed partial class ChartSeries {
         _interpolation = kind == ChartSeriesKind.StepLine || kind == ChartSeriesKind.StepArea ? ChartInterpolation.Step : ChartInterpolation.Linear;
         _points.AddRange(ChartGuards.Points(points, nameof(points)));
         if (UsesTypedObservations && _points.Count > 0) throw new ArgumentException("This series kind requires typed observations. Use its typed series factory or chart Add method.", nameof(points));
-        if (IsRelationshipKind(kind) && Points.Count > 0) throw new ArgumentException("Relationship series use typed nodes, links or items. Use AddSankey, AddChord, AddTree, AddSunburst or AddTreemap.", nameof(points));
+        if (IsRelationshipKind(kind) && _points.Count > 0) throw new ArgumentException("Relationship series use typed nodes, links or items. Use AddSankey, AddChord, AddTree, AddSunburst or AddTreemap.", nameof(points));
         SourcePointCount = Points.Count;
     }
 

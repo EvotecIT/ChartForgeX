@@ -95,22 +95,26 @@ internal sealed class ChartStateTimelineModel {
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
             if (series.Kind != ChartSeriesKind.StateTimeline) continue;
-            var segments = new List<ChartStateTimelineResolvedSegment>(series.RenderPoints.Count);
-            for (var i = 0; i < series.RenderPoints.Count; i++) {
-                var key = series.PointLabels[i] ?? string.Empty;
-                var state = legend.Resolve(key);
-
-                var detail = i < series.StateTimelineDetails.Count ? series.StateTimelineDetails[i] : null;
+            var segments = new List<ChartStateTimelineResolvedSegment>(series.StateTimelineSegments.Count);
+            List<int>? runSources = null;
+            foreach (var entry in series.StateTimelineSegments.Select((segment, index) => (Segment: segment, Index: index))
+                .OrderBy(entry => entry.Segment.Start).ThenBy(entry => entry.Segment.End).ThenBy(entry => entry.Index)) {
+                var i = entry.Index;
+                var source = entry.Segment;
+                var state = legend.Resolve(source.State);
+                var detail = source.Detail;
                 var last = segments.Count - 1;
                 // Contiguous rollup buckets in the same state draw as one run so bucket seams do not read as state changes.
-                if (last >= 0 && ReferenceEquals(segments[last].State, state) && segments[last].End == series.RenderPoints[i].X && string.Equals(segments[last].Detail, detail, StringComparison.Ordinal)) {
-                    segments[last] = new ChartStateTimelineResolvedSegment(segments[last].PointIndex, segments[last].Start, series.RenderPoints[i].Y, state, detail);
+                if (last >= 0 && ReferenceEquals(segments[last].State, state) && segments[last].End == source.Start && string.Equals(segments[last].Detail, detail, StringComparison.Ordinal)) {
+                    runSources!.Add(i);
+                    segments[last] = new ChartStateTimelineResolvedSegment(segments[last].PointIndex, segments[last].Start, source.End, state, detail, runSources);
                 } else {
-                    segments.Add(new ChartStateTimelineResolvedSegment(i, series.RenderPoints[i].X, series.RenderPoints[i].Y, state, detail));
+                    runSources = new List<int> { i };
+                    segments.Add(new ChartStateTimelineResolvedSegment(i, source.Start, source.End, state, detail, runSources));
                 }
 
-                min = Math.Min(min, series.RenderPoints[i].X);
-                max = Math.Max(max, series.RenderPoints[i].Y);
+                min = Math.Min(min, source.Start);
+                max = Math.Max(max, source.End);
             }
 
             lanes.Add(new ChartStateTimelineLane(seriesIndex, series.Name, series.LaneSummary, segments, series.LaneGroup));
@@ -255,12 +259,13 @@ internal readonly struct ChartStateTimelineGroup {
 
 /// <summary>A lane segment with its state definition resolved from the chart's state map.</summary>
 internal readonly struct ChartStateTimelineResolvedSegment {
-    public ChartStateTimelineResolvedSegment(int pointIndex, double start, double end, ChartStateCategory state, string? detail) {
+    public ChartStateTimelineResolvedSegment(int pointIndex, double start, double end, ChartStateCategory state, string? detail, IReadOnlyList<int> sourceIndices) {
         PointIndex = pointIndex;
         Start = start;
         End = end;
         State = state;
         Detail = detail;
+        SourceIndices = sourceIndices;
     }
 
     public int PointIndex { get; }
@@ -272,4 +277,6 @@ internal readonly struct ChartStateTimelineResolvedSegment {
     public ChartStateCategory State { get; }
 
     public string? Detail { get; }
+
+    public IReadOnlyList<int> SourceIndices { get; }
 }

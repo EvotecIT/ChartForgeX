@@ -250,13 +250,13 @@ public sealed class GanttLaneTests {
     }
 
     [Fact]
-    public void Validation_RejectsInvalidItemsAndEmptyCharts() {
+    public void ValidationRejectsInvalidItemsAndRendersEmptyLanesAsNoData() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartGanttLaneItem(Start, Start, "low"));
         Assert.Throws<ArgumentException>(() => new ChartGanttLaneItem(Start, null, " "));
         Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Report()).AddGanttLane("A", new[] { default(ChartGanttLaneItem) }));
         var empty = Chart.Create().WithTheme(VisualTheme.Report()).AddGanttLane("A", Array.Empty<ChartGanttLaneItem>());
-        Assert.Throws<InvalidOperationException>(() => empty.ToSvg());
-        Assert.Throws<InvalidOperationException>(() => empty.ToPng());
+        Assert.Empty(ByRole(XDocument.Parse(empty.ToSvg()), "gantt-lane-item"));
+        Assert.True(empty.ToPng().Length > 64);
         var local = new DateTime(2026, 9, 24, 12, 0, 0, DateTimeKind.Local);
         Assert.Equal(local.ToUniversalTime().ToOADate(), new ChartGanttLaneItem(local, null, "low").Start, 9);
     }
@@ -277,18 +277,18 @@ public sealed class GanttLaneTests {
     }
 
     [Fact]
-    public void Validation_ReplacedPublicPoint_CannotDisagreeWithLaneItem() {
+    public void TypedLaneUpdateKeepsCompleteItemAndDerivedGeometryTogether() {
         var chart = CreateChart();
         ChartSeries lane = chart.Series[1];
-        ChartPoint original = lane.Points[0];
-        lane.Points[0] = new ChartPoint(original.X + 1, original.Y);
-        Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
-        Assert.Throws<InvalidOperationException>(() => chart.ToPng());
-
-        lane.Points[0] = original;
-        (lane.Points[0], lane.Points[1]) = (lane.Points[1], lane.Points[0]);
-        Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
-        Assert.Throws<InvalidOperationException>(() => chart.ToPng());
+        var original = lane.GanttLaneItems[0];
+        lane.WithObservationId(0, new ChartObservationId("incident"));
+        var before = chart.ToPng();
+        lane.UpdateGanttLaneItem(0, new ChartGanttLaneItem(original.Start, original.End, "info", "Updated", "Current detail"));
+        var svg = XDocument.Parse(chart.ToSvg());
+        var item = ByRole(svg, "gantt-lane-item").Single(mark => (string?)mark.Attribute("data-cfx-observation-id") == "incident");
+        Assert.Equal("info", (string?)item.Attribute("data-cfx-status"));
+        Assert.Contains("Current detail", Title(item), StringComparison.Ordinal);
+        Assert.NotEqual(before, chart.ToPng());
     }
 
     [Fact]

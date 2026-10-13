@@ -30,7 +30,7 @@ public sealed partial class ChartSeries {
     }
 
     internal void ValidateWaterfall() {
-        if (WaterfallItems.Count > 0 && Points.Count > 0)
+        if (WaterfallItems.Count > 0 && _points.Count > 0)
             throw new InvalidOperationException("Typed waterfall items own this series. Raw points cannot be added to a typed waterfall.");
     }
 }

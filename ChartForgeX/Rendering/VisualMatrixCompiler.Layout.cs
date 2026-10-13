@@ -113,8 +113,8 @@ internal static partial class VisualMatrixCompiler {
     }
 
     private static void CellLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series, int index,
-        ChartRect cellBounds, ChartRect viewport, ChartColorBlend ink, ChartHeatmapCell? cell, string id, ChartColorPresentation presentation) {
-        var text = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : presentation.Value(series.RenderPoints[index].Y);
+        ChartRect cellBounds, ChartRect viewport, ChartColorBlend ink, ChartHeatmapCell? cell, string id, ChartColorPresentation presentation, double value) {
+        var text = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : presentation.Value(value);
         if (cell.HasValue && (index >= series.PointLabels.Count || series.PointLabels[index] == null)) text = cell.Value.Text ?? text;
         var style = VisualStateSceneTools.DataStyle(chart, context, series, index, ink.Color);
         style.FontSize = Math.Max(8, style.FontSize);

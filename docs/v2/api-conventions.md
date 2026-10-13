@@ -83,7 +83,7 @@ completed.WithName("Completed orders");
 
 `Series` is a read-only view of paint order. Use `RemoveSeries`, `MoveSeries` and `ClearSeries` for membership changes; these operations validate ownership. A series can belong to one chart at a time, and IDs must be unique there. Fluent `Add*` conveniences allocate deterministic local IDs. Local IDs remain stable in that chart and are excluded from cross-chart synchronization; explicit IDs identify equivalent series across charts.
 
-Specialized observations remain in their typed collections: `Bubbles`, `FinancialValues`, `Ranges`, `Intervals`, `ErrorBars`, `BoxPlots`, `Dumbbells`, `DifferencePoints`, `GanttItems`, `GaugeValues` and `BulletValues`. Layered radial series expose `RadialLayers`. Each item represents one complete observation or layer. `Points` contains genuine numeric XY points and is an empty read-only view for these specialized families. Renderer projections are internal and do not define public source ordinals. Gauge and bullet series accept at most one value; empty replacements produce their no-data state.
+Specialized observations remain in their typed collections: `Bubbles`, `FinancialValues`, `Ranges`, `Intervals`, `ErrorBars`, `BoxPlots`, `Dumbbells`, `DifferencePoints`, `GanttItems`, `GaugeValues`, `BulletValues`, `StateTimelineSegments`, `GanttLaneItems` and categorical `HeatmapCells`. Layered radial series expose `RadialLayers`. Each item represents one complete observation or layer. `Points` contains genuine numeric XY points and is an empty read-only view for these specialized families. Renderer projections are internal and do not define public source ordinals. Gauge and bullet series accept at most one value; empty replacements produce their no-data state.
 
 ```csharp
 var samples = ChartSeries.CreateBubble(new ChartSeriesId("batch-samples"), "Batches",
@@ -95,7 +95,11 @@ samples.UpdateBubble(0, new ChartBubble(10, 26, 8));
 
 `Update*` replaces one complete item and preserves its ordinal, explicit observation ID and point styling. `Replace*` validates and snapshots the complete sequence before installation, then clears per-observation IDs, labels and paint overrides; series configuration remains. An invalid replacement leaves existing data and metadata intact. Empty replacement creates a no-data series. Row selectors run once during ingestion and do not retain application records or delegates.
 
-`ObservationCount` counts displayed authored observations. `SourcePointCount` retains original-input counts for explicit decimation, histograms, regressions and raw-sample box plots; ordinary typed financial/range/bubble inputs count typed items. Editing a raw box-plot summary clears its raw-sample provenance because the new summary is no longer derived from those samples.
+Lane factories and full replacements order items by start, end and input order. `UpdateStateTimelineSegment` and `UpdateGanttLaneItem` retain the observation index even when a changed time moves the item in the rendered order. State, category, label and detail stay with that complete item. Adjacent timeline intervals with the same state and detail may render as one run; its contributor metadata lists only the intervals actually combined. A combined run keeps derived identity; a one-interval run retains its authored observation ID.
+
+Categorical `HeatmapCells` includes null masked cells in column order. Observation indices and IDs refer to those columns. `UpdateHeatmapCell(index, null)` masks one cell while preserving later cells' identities; restoring the cell restores its existing ID. Use `CreateHeatmapCategoryRow` for categorical data and the numeric row APIs for numeric data.
+
+`ObservationCount` counts authored observations, including masked categorical columns. `SourcePointCount` retains original-input counts for explicit decimation, histograms, regressions and raw-sample box plots; ordinary typed inputs count typed items. Editing a raw box-plot summary clears its raw-sample provenance because the new summary is no longer derived from those samples.
 
 ## Configuration callback ownership
 

@@ -20,8 +20,8 @@ public sealed class StateTimelineSourceCountTests {
         var series = chart.Series[0];
         Assert.Equal(segments.Length, series.SourcePointCount);
         Assert.Equal(segments.Length, series.ObservationCount);
-        Assert.Equal(new[] { 1d, 2d, 3d }, series.Points.Select(point => point.X));
-        Assert.Equal(new[] { "First", "Middle", "Last" }, series.StateTimelineDetails);
+        Assert.Equal(new[] { 1d, 2d, 3d }, series.StateTimelineSegments.Select(segment => segment.Start));
+        Assert.Equal(new[] { "First", "Middle", "Last" }, series.StateTimelineSegments.Select(segment => segment.Detail));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var marks = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "state-timeline-segment").ToArray();
         Assert.Equal(segments.Length, marks.Length);

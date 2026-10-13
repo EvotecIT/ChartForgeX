@@ -42,9 +42,11 @@ public sealed partial class Chart {
     /// <param name="group">Optional group the lane is listed under. Consecutive lanes with the same group share one
     /// header row; a lane without a group after a grouped one is set apart by a small gap. Group names are lane labels and are
     /// hidden with the y-axis.</param>
+    /// <param name="id">Optional stable series identity. When omitted, the chart assigns a local ID.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments, string? summary = null, string? group = null) {
-        AppendSeries(ChartSeries.CreateStateTimelineLane(name, segments, summary, group));
+    public Chart AddStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments, string? summary = null, string? group = null, ChartSeriesId? id = null) {
+        AppendSeries(id.HasValue ? ChartSeries.CreateStateTimelineLane(id.Value, name, segments, summary, group)
+            : ChartSeries.CreateStateTimelineLane(name, segments, summary, group));
         return this;
     }
 }

@@ -28,9 +28,9 @@ internal sealed partial class VisualSceneBuilder {
     private static bool TryAuthoredObservationIndex(IReadOnlyDictionary<string, string> metadata, out int sourceIndex) {
         sourceIndex = -1;
         if (metadata.ContainsKey("data-cfx-derived") || metadata.ContainsKey("data-cfx-source-points")) {
-            // A direct radial slice retains contributor metadata, but still represents one authored observation.
-            // Other slices and summaries must keep their derived identity instead of borrowing a contributor's ID.
-            return metadata.TryGetValue("data-cfx-derived", out var derived) && derived == "radial-slice"
+            // A direct slice or one-interval run still represents exactly one authored observation.
+            // Aggregates retain their derived identity rather than borrowing a contributor's ID.
+            return metadata.TryGetValue("data-cfx-derived", out var derived) && (derived == "radial-slice" || derived == "timeline-run")
                 && metadata.TryGetValue("data-cfx-point", out var point)
                 && int.TryParse(point, NumberStyles.None, CultureInfo.InvariantCulture, out sourceIndex)
                 && metadata.TryGetValue("data-cfx-source-points", out var sources)

@@ -37,7 +37,7 @@ public sealed partial class ChartSeries {
     internal void SetRelationships(ChartRelationshipIndex relationships) => Relationships = relationships;
 
     internal void ValidateRelationships(bool preparing) {
-        if (Points.Count > 0) throw new InvalidOperationException("Relationship series use typed nodes, links or hierarchy items; raw relationship points are not supported.");
+        if (_points.Count > 0) throw new InvalidOperationException("Relationship series use typed nodes, links or hierarchy items; raw relationship points are not supported.");
         if (!preparing && Relationships == null) throw new InvalidOperationException("Relationship charts require explicit nodes and links or hierarchy items.");
     }
 }

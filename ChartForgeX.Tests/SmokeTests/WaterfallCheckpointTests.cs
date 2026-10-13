@@ -21,8 +21,8 @@ public sealed class WaterfallCheckpointTests {
         Assert.Null(series.WaterfallItems[1].Value);
         Assert.Equal(ChartWaterfallItemKind.Subtotal, series.WaterfallItems[1].Kind);
         Assert.Throws<NotSupportedException>(() => ((IList<ChartWaterfallItem>)series.WaterfallItems)[0] = items[0]);
-        series.Points.Add(new ChartPoint(90, 10));
-        Assert.Throws<InvalidOperationException>(() => chart.Prepare(new VisualRenderContext()));
+        Assert.Throws<NotSupportedException>(() => series.Points.Add(new ChartPoint(90, 10)));
+        Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Scene.Nodes);
     }
 
     [Fact]

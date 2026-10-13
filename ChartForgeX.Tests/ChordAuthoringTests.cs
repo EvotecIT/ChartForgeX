@@ -72,8 +72,9 @@ public sealed class ChordAuthoringTests {
         Assert.Throws<ArgumentException>(() => new ChartSeries(new ChartSeriesId("fixture-series"), "Raw", ChartSeriesKind.Chord, new[] { new ChartPoint(1, 2) }));
         var chart = Chart.Create().AddChord("Flows", new[] { new ChartNode("a", "A"), new ChartNode("b", "B") }, new[] { new ChartFlowLink("ab", "a", "b", 1) });
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(500, 350)));
-        chart.Series[0].Points.Add(new ChartPoint(1, 2)); Assert.Throws<InvalidOperationException>(() => chart.Prepare(context));
-        chart.Series[0].Points.Clear(); chart.AddLine("Other", new[] { new ChartPoint(1, 2) });
+        Assert.Throws<NotSupportedException>(() => chart.Series[0].Points.Add(new ChartPoint(1, 2)));
+        Assert.NotEmpty(chart.Prepare(context).Scene.Nodes);
+        chart.AddLine("Other", new[] { new ChartPoint(1, 2) });
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(context));
     }
 

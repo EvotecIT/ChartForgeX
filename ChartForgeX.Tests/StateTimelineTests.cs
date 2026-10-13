@@ -96,14 +96,14 @@ public sealed class StateTimelineTests {
     }
 
     [Fact]
-    public void Validation_RejectsInvalidSegmentsStatesAndEmptyCharts() {
+    public void ValidationRejectsInvalidSegmentsAndStatesAndRendersEmptyLanesAsNoData() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStateTimelineSegment(Day, Day, "up"));
         Assert.Throws<ArgumentException>(() => new ChartStateTimelineSegment(Day, Day.AddHours(1), " "));
         Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithStateCategories(new ChartStateCategory("up", "Up", Up), new ChartStateCategory("up", "Again", Down)));
         Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Report()).AddStateTimelineLane("DC01", new[] { default(ChartStateTimelineSegment) }));
         var empty = Chart.Create().WithTheme(VisualTheme.Report()).AddStateTimelineLane("DC01", Array.Empty<ChartStateTimelineSegment>());
-        Assert.Throws<InvalidOperationException>(() => empty.ToSvg());
-        Assert.Throws<InvalidOperationException>(() => empty.ToPng());
+        Assert.Empty(ByRole(XDocument.Parse(empty.ToSvg()), "state-timeline-segment"));
+        Assert.True(empty.ToPng().Length > 64);
     }
 
     [Fact]

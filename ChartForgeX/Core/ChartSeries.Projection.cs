@@ -8,7 +8,9 @@ public sealed partial class ChartSeries {
     internal bool UsesTypedObservations => Kind is ChartSeriesKind.Bubble or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc
         or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.RangeBar or ChartSeriesKind.ErrorBar
         or ChartSeriesKind.BoxPlot or ChartSeriesKind.Dumbbell or ChartSeriesKind.DifferenceArea
-        or ChartSeriesKind.Gantt or ChartSeriesKind.Gauge or ChartSeriesKind.Circle or ChartSeriesKind.Bullet or ChartSeriesKind.LayeredRadial;
+        or ChartSeriesKind.Gantt or ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane
+        or ChartSeriesKind.Gauge or ChartSeriesKind.Circle or ChartSeriesKind.Bullet or ChartSeriesKind.LayeredRadial
+        || IsCategoricalHeatmapRow;
 
     private IReadOnlyList<ChartPoint>? _renderPoints;
 
@@ -17,6 +19,10 @@ public sealed partial class ChartSeries {
 
     private IReadOnlyList<ChartPoint> ProjectObservations() {
         var points = new List<ChartPoint>();
+        for (var column = 0; column < HeatmapCells.Count; column++)
+            if (HeatmapCells[column].HasValue) points.Add(new ChartPoint(column + 1, 0));
+        foreach (var value in StateTimelineSegments) points.Add(new ChartPoint(value.Start, value.End));
+        foreach (var value in GanttLaneItems) points.Add(new ChartPoint(value.Start, value.End ?? value.Start));
         foreach (var value in Bubbles) {
             points.Add(new ChartPoint(value.X, value.Y).WithColorValue(value.ColorValue)); points.Add(new ChartPoint(value.X, value.Size));
         }

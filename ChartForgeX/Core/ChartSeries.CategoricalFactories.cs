@@ -28,20 +28,24 @@ public sealed partial class ChartSeries {
         StateTimeline(new ChartSeries(name, ChartSeriesKind.StateTimeline, Array.Empty<ChartPoint>()), segments, summary, group);
 
     private static ChartSeries StateTimeline(ChartSeries series, IEnumerable<ChartStateTimelineSegment> segments, string? summary, string? group) {
-        if (segments == null) throw new ArgumentNullException(nameof(segments));
-        var source = segments.ToArray();
-        foreach (var segment in source)
-            if (segment.State == null) throw new ArgumentException("Segments must be created with a state.", nameof(segments));
-        var ordered = source.Select((segment, index) => (Segment: segment, Index: index))
-            .OrderBy(item => item.Segment.Start).ThenBy(item => item.Segment.End).ThenBy(item => item.Index);
         series.ShowInLegend = false; series.LaneSummary = summary;
         series.LaneGroup = string.IsNullOrWhiteSpace(group) ? null : group;
-        foreach (var item in ordered) {
-            series.Points.Add(new ChartPoint(item.Segment.Start, item.Segment.End));
-            series.PointLabels.Add(item.Segment.State);
-            series.StateTimelineDetails.Add(item.Segment.Detail);
-        }
-        series.SourcePointCount = source.Length;
+        series.ReplaceStateTimelineSegments(segments);
+        return series;
+    }
+
+    /// <summary>Creates an independently configurable Gantt lane with an explicit stable ID and complete typed items.</summary>
+    public static ChartSeries CreateGanttLane(ChartSeriesId id, string name, IEnumerable<ChartGanttLaneItem> items,
+        string? group = null, string? summary = null) =>
+        GanttLane(new ChartSeries(id, name, ChartSeriesKind.GanttLane, Array.Empty<ChartPoint>()), items, group, summary);
+
+    internal static ChartSeries CreateGanttLane(string name, IEnumerable<ChartGanttLaneItem> items, string? group, string? summary) =>
+        GanttLane(new ChartSeries(name, ChartSeriesKind.GanttLane, Array.Empty<ChartPoint>()), items, group, summary);
+
+    private static ChartSeries GanttLane(ChartSeries series, IEnumerable<ChartGanttLaneItem> items, string? group, string? summary) {
+        series.ShowInLegend = false; series.LaneSummary = summary;
+        series.LaneGroup = string.IsNullOrWhiteSpace(group) ? null : group;
+        series.ReplaceGanttLaneItems(items);
         return series;
     }
 }

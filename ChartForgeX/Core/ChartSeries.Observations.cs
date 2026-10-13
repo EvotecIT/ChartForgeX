@@ -12,6 +12,7 @@ public sealed partial class ChartSeries {
     internal int AuthoredObservationCount {
         get {
             if (IsRelationshipKind(Kind)) return Nodes.Count;
+            if (IsCategoricalHeatmapRow) return HeatmapCells.Count;
             if (WaterfallItems.Count > 0) return WaterfallItems.Count;
             return Kind switch {
                 ChartSeriesKind.Bubble => Bubbles.Count,
@@ -23,6 +24,8 @@ public sealed partial class ChartSeries {
                 ChartSeriesKind.Dumbbell => Dumbbells.Count,
                 ChartSeriesKind.DifferenceArea => DifferencePoints.Count,
                 ChartSeriesKind.Gantt => GanttItems.Count,
+                ChartSeriesKind.StateTimeline => StateTimelineSegments.Count,
+                ChartSeriesKind.GanttLane => GanttLaneItems.Count,
                 ChartSeriesKind.Gauge or ChartSeriesKind.Circle => GaugeValues.Count,
                 ChartSeriesKind.Bullet => BulletValues.Count,
                 ChartSeriesKind.LayeredRadial => RadialLayers.Count,
