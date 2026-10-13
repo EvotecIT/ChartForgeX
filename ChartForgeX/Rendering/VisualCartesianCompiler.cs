@@ -57,13 +57,14 @@ internal static partial class VisualCartesianCompiler {
         BuildCore(chart, context, builder, plot, viewport ?? new ChartRect(0, 0, builder.Size.Width, builder.Size.Height), false, null, null, null, 0);
     }
 
-    internal static void BuildInViewport(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
-        ChartBubbleSizeScale? bubbleScale = null, ChartAxisValueFormatter.Cache? categoryLabels = null, ChartColorPresentationSet? colorScales = null, double legendHeight = 0)
-        => BuildCore(chart, context, builder, viewport, viewport, true, bubbleScale, categoryLabels, colorScales, legendHeight);
+    internal static ChartXProjection? BuildInViewport(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
+        ChartBubbleSizeScale? bubbleScale = null, ChartAxisValueFormatter.Cache? categoryLabels = null, ChartColorPresentationSet? colorScales = null, double legendHeight = 0, ChartXViewport? xViewport = null)
+        => BuildCore(chart, context, builder, viewport, viewport, true, bubbleScale, categoryLabels, colorScales, legendHeight, xViewport);
 
-    private static void BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport,
-        bool measureAxes, ChartBubbleSizeScale? bubbleScale, ChartAxisValueFormatter.Cache? categoryLabels, ChartColorPresentationSet? colorScales, double legendHeight) {
+    private static ChartXProjection? BuildCore(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport,
+        bool measureAxes, ChartBubbleSizeScale? bubbleScale, ChartAxisValueFormatter.Cache? categoryLabels, ChartColorPresentationSet? colorScales, double legendHeight, ChartXViewport? xViewport = null) {
         Validate(chart);
+        if (xViewport != null) ValidateXViewport(chart);
         if (bubbleScale == null && chart.Series.Any(series => series.Kind == ChartSeriesKind.Bubble)) bubbleScale = ChartBubbleSizeScale.Create(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
         colorScales ??= new ChartColorPresentationSet(chart);
@@ -75,7 +76,7 @@ internal static partial class VisualCartesianCompiler {
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.no-data", "The chart has no observations."));
             builder.Text(chart.Options.Labels.NoData, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
                 context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center, paint: SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text));
-            return;
+            return null;
         }
         foreach (var total in stacks.Totals.Where(total => total.NormalizedTo.HasValue && total.SourceValue == 0))
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.stack-zero-total", "Normalized stack '" + (total.Group ?? "default")
@@ -84,62 +85,40 @@ internal static partial class VisualCartesianCompiler {
         var range = ChartRange.FromChart(chart, coordinates, stacks);
         var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range, stacks) : null;
-        var dataRange = range.Clone();
-        var secondaryDataRange = secondaryRange?.Clone();
-        categoryLabels ??= new ChartAxisValueFormatter.Cache();
-        var axisLabels = new AxisLabelCache(categoryLabels);
-        var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
-        if (!horizontal) {
-            axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
-            if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+        var layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
+            stacks, bubbleScale, colors, categoryLabels, expandMarkers: true);
+        if (layout == null) {
+            if (xViewport != null) throw new InvalidOperationException("An X viewport requires a usable plot rectangle.");
+            return null;
         }
-        IReadOnlyDictionary<double, string>? categoryCaptions = null;
-        if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall) {
-            categoryCaptions = ChartWaterfallCategoryLabels.Resolve(chart, categoryLabels);
-        } else if (chart.Series.Any(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot)) {
-            categoryCaptions = ChartCartesianCategoryLabels.Resolve(chart,
-                chart.Series.Where(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot).SelectMany(series => series.Points.Select(point => point.X)), categoryLabels);
-        }
-        if (categoryCaptions != null) {
-            var categoryAxis = horizontal ? HorizontalAxes(chart, axisLabels).Category : chart.Options.XAxis;
-            if (horizontal || chart.Series.All(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.Waterfall))
-                axisLabels.SetTicks(categoryAxis, categoryCaptions.Keys.OrderBy(value => value).ToArray());
-            foreach (var category in categoryCaptions) axisLabels.Set(categoryAxis, category.Key, category.Value);
-        }
-        if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
-            : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
-        if (ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
-            if (!horizontal) {
-                axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
-                if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+        var fullMinimum = range.MinX; var fullMaximum = range.MaxX;
+        var hasProjection = SupportsXViewport(chart) && chart.Series.Any(series => series.HasSourceData)
+            && ChartMath.IsFinite(fullMinimum) && ChartMath.IsFinite(fullMaximum) && fullMaximum > fullMinimum;
+        if (xViewport != null) {
+            if (!hasProjection) throw new InvalidOperationException("An X viewport requires a finite increasing full X domain.");
+            if (xViewport.Minimum < fullMinimum || xViewport.Maximum > fullMaximum)
+                throw new ArgumentOutOfRangeException("viewport", "The X viewport must be contained in the resolved full X domain.");
+            if (xViewport.Minimum != fullMinimum || xViewport.Maximum != fullMaximum) {
+                // Copy resolved numbers only. Authored axes, full-data Y/color domains and source points remain untouched.
+                range = range.Copy(); range.SetXBounds(xViewport.Minimum, xViewport.Maximum);
+                secondaryRange = secondaryRange?.Copy(); secondaryRange?.SetXBounds(xViewport.Minimum, xViewport.Maximum);
+                layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
+                    stacks, bubbleScale, colors, categoryLabels, expandMarkers: false)
+                    ?? throw new InvalidOperationException("An X viewport requires a usable plot rectangle.");
             }
-            if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
-                : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         }
-        if (plot.Width <= 0 || plot.Height <= 0) {
-            builder.AddDiagnostic(new VisualDiagnostic("cartesian.insufficient-space", "No plotting area remains after measuring the frame and axes."));
-            return;
-        }
-        var labelBounds = plot;
-        var horizontalTotals = horizontal && chart.Options.ShowStackTotals && stacks.HasBarStacks
-            ? ResolveHorizontalTotals(chart, context, builder, colors, stacks) : Array.Empty<HorizontalStackTotal>();
-        var verticalTotals = !horizontal && chart.Options.ShowStackTotals && stacks.HasBarStacks
-            ? ResolveVerticalTotals(chart, context, builder, colors, stacks) : null;
-        if (horizontalTotals.Count > 0) plot = ReserveHorizontalTotalGutters(chart, plot, horizontalTotals, context.Theme.Spacing);
-        if (verticalTotals != null && verticalTotals.Count > 0) plot = ReserveVerticalTotalGutters(chart, plot, verticalTotals, context.Theme.Spacing);
-        // Refit from the original data bounds: a guide may no longer fit after total lanes.
-        range = dataRange;
-        secondaryRange = secondaryDataRange;
-        ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale);
-        if (!horizontal) {
-            axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
-            if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-        }
+        plot = layout.Plot;
+        var labelBounds = layout.LabelBounds; var axisLabels = layout.AxisLabels;
+        var horizontal = layout.Horizontal; var categoryCaptions = layout.CategoryCaptions;
+        var horizontalTotals = layout.HorizontalTotals; var verticalTotals = layout.VerticalTotals;
+        var clipMarks = xViewport != null || chart.Options.ClipMarksToPlot;
         // Capture the final mapping extent after every measured axis and total lane.
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
+        if (xViewport != null && chart.Series.Any(series => series.Points.Any(point => !ChartMath.IsFinite(map.X(point.X)))))
+            throw new ArgumentOutOfRangeException("viewport", "The X viewport cannot project the source coordinates into finite logical units.");
         var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);
         DrawPlotRegionFills(builder, plotRegions, colors);
         using (builder.PushClip(viewport)) {
@@ -154,14 +133,14 @@ internal static partial class VisualCartesianCompiler {
             ? new VisualSceneBuilder(builder.Size, context.Font) : builder;
         {
             if (ReferenceEquals(seriesBuilder, builder)) {
-                using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null)
-                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles);
+                using (clipMarks ? builder.PushClip(plot) : null)
+                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
             }
             foreach (var index in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[index];
                 var seriesMap = series.YAxis == ChartAxisSide.Secondary ? secondaryMap! : map;
                 var pointSeries = IsPointSeries(series.Kind);
-                using (chart.Options.ClipMarksToPlot && !pointSeries ? seriesBuilder.PushClip(plot) : null)
+                using (clipMarks && (!pointSeries || xViewport != null) ? seriesBuilder.PushClip(plot) : null)
                 using (seriesBuilder.PushGroup(SeriesId(index), "series", new Dictionary<string, string> {
                     ["data-cfx-coordinate-system"] = "cartesian",
                     ["data-cfx-series"] = Number(index), ["data-cfx-series-key"] = series.InteractionIdentityKey,
@@ -174,24 +153,27 @@ internal static partial class VisualCartesianCompiler {
                 })) {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
-                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index]);
+                        DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index], clipMarks, xViewport);
                     else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index]);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
-                using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null)
-                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles);
+                using (clipMarks ? builder.PushClip(plot) : null)
+                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
                 builder.Append(seriesBuilder.Build());
             }
-            using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null)
-                DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles);
+            using (clipMarks ? builder.PushClip(plot) : null)
+                DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
         }
         if (chart.Options.ShowStackTotals && stacks.HasBarStacks) {
             if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, stacks, labels);
             else AddStackTotals(chart, context, builder, plot, coordinates, stacks, map, secondaryMap, labels, verticalTotals!);
         }
         DrawPlotRegionLabels(context, builder, plotRegions, colors, obstacles);
-        DrawDataLabels(context, builder, labelBounds, labels, obstacles);
+        using (xViewport != null ? builder.PushClip(plot) : null)
+            DrawDataLabels(context, builder, labelBounds, labels, obstacles);
+        return hasProjection
+            ? new ChartXProjection(fullMinimum, fullMaximum, range.MinX, range.MaxX, plot, chart.Options.XAxis.Reversed) : null;
     }
 
     private static void Validate(Chart chart) {
@@ -225,6 +207,13 @@ internal static partial class VisualCartesianCompiler {
     private static string PointId(int series, int point) => SeriesId(series) + "-point-" + Number(point);
     private static string Number(int value) => value.ToString(CultureInfo.InvariantCulture);
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
+
+    // Non-paint ownership uses observation indexes, including one index per paired observation.
+    // Fill and hatch share the range even when disconnected segments repeat coordinates.
+    private static IDisposable FillSegment(VisualSceneBuilder builder, int start, int count) =>
+        builder.PushGroup(null, "fill-segment", new Dictionary<string, string> {
+            ["data-cfx-fill-point-start"] = Number(start), ["data-cfx-fill-point-count"] = Number(count)
+        });
 
     private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null) {
         var point = series.Points[pointIndex];

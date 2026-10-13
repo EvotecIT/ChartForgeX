@@ -149,7 +149,7 @@ Requested font weights retain their exact CSS value from 1 through 1000. Selecti
 
 ## Chart geometry
 
-`ChartSeries.Interpolation` selects `Linear`, `Smooth` or `Step` for connected line, area and range boundaries. `WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle)` places transitions halfway between mapped observations; `Start` and `End` place them at the preceding and following x positions. `AddStepLine` and `AddStepArea` default to End. Existing smooth helpers use the same setting. Explicit interpolation overrides a convenience entry point, and preparation rejects unsupported families or a step position without step interpolation. Regression and slope lines retain their straight-line meaning and reject non-linear interpolation. Segment breaks remain gaps in every mode.
+`ChartSeries.Interpolation` selects `Linear`, `Smooth` or `Step` for connected line, area and range boundaries. Difference areas support `Linear` and `Step` through the same setting. `WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle)` places transitions halfway between mapped observations; `Start` and `End` place them at the preceding and following x positions. `AddStepLine` and `AddStepArea` default to End. Existing smooth helpers use the same setting. Explicit interpolation overrides a convenience entry point, and preparation rejects unsupported families or a step position without step interpolation. Regression and slope lines retain their straight-line meaning and reject non-linear interpolation. Segment breaks remain gaps in every mode.
 
 `ChartSeries.StackGroup` assigns independent Cartesian bar, numeric radial bar/column or stacked-area groups. Named groups stack even with grouped bar mode, while unnamed grouped series remain separate. Stacks partition by series kind and axis. `WithNormalization(100)` normalizes positive and negative subtotals independently to +100 and -100. Every member of a stack must declare the same normalization target; unstacked normalization is rejected. Stacked-area members must also share interpolation and step placement so their touching boundaries align; use a separate group or axis for independent choices. All-zero coordinates stay at the baseline and report `cartesian.stack-zero-total` or `numeric-radial.stack-zero-total`.
 
@@ -197,7 +197,9 @@ chart.Series[0].ConfigureDifferenceArea(options => {
 
 Names default to First/Second. Null fill overrides inherit explicit series color or semantic-state paint; otherwise positive uses the series palette color and negative the next palette color. Null opacity inherits the area theme; opacity multiplies color alpha once. The series pattern applies to both fills, and a zero-opacity fill has no pattern. Point color/pattern overrides apply to boundary markers. The split legend swatch remains one series target. Both named values, authored source indices and breaks are retained in SVG facts, accessible labels and single/shared-X HTML readouts. Derived crossing vertices are paint geometry and never become source observations.
 
-Difference areas support Linear interpolation with numeric/time X and a linear primary or secondary Y axis. The DateTime constructor uses the existing UTC conversion policy. X must increase within each connected segment; explicit `BreakBefore` starts a new segment and cuts both boundaries and fill. A break on either raw encoded tuple member has the same effect. Either axis can be reversed without changing fill polarity. Bounds and clipping use both values and the selected value axis. Smooth/Step interpolation, nonlinear axes, duplicate/backtracking X within a segment, stacking and normalization are rejected. Nullable paired ingestion and automatic alignment of separately supplied series remain separate work; use finite pairs and explicit breaks for missing sections.
+Difference areas support Linear and Step interpolation with numeric/time X and a linear primary or secondary Y axis. Linear fills split where the two boundaries cross. For held observations, call `chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle)`. Both boundaries change together: Start uses the preceding X, Middle the mapped midpoint and End the following X. Each held interval takes the sign of its original pair. Vertical jumps have no filled width; ties have no filled area. These transitions do not add source observations or invent a diagonal crossing.
+
+The DateTime constructor uses the existing UTC conversion policy. X must increase within each connected segment; explicit `BreakBefore` starts a new segment and cuts both boundaries and fill. A break on either raw encoded tuple member has the same effect. Either axis can be reversed without changing fill polarity. Bounds and clipping use both values and the selected value axis. Smooth interpolation, nonlinear axes, duplicate/backtracking X within a segment, stacking and normalization are rejected. Nullable paired ingestion and automatic alignment of separately supplied series remain separate work; use finite pairs and explicit breaks for missing sections.
 
 ## Waterfall opening balances and checkpoints
 
@@ -521,6 +523,26 @@ The formatter runs once for each compiled node, including nodes with hidden capt
 Secondary typography inherits chart, series and ordinal node data-label styling at 80% of the primary font size, then applies `SecondaryLabelStyle`. Explicit secondary colors override inherited ink. `SecondaryLabelSpacing` defaults to two logical pixels and accepts finite, nonnegative values. Both runs share horizontal or upright tangential placement and fit inside the actual sector, including rounded corners. Primary content takes priority: secondary text wraps, shortens at text-element boundaries or is omitted before the primary caption loses content. Font sizes stay fixed; automatic shrinking and configurable sector padding are separate policies.
 
 Full secondary text remains in `data-cfx-secondary-label` and descriptive node regions even when no caption fits. The optional HTML adapter exposes it as plain text in pointer and keyboard tooltips, separately from size, color, supplied totals and remainders. IDs, numeric metadata and target counts stay unchanged. A non-null formatter on a populated non-Sunburst chart fails preparation; style or spacing configuration without a formatter remains inactive. Treemap retains its own label and numeric-value captions.
+
+## Numeric X viewports
+
+`Chart.Prepare(context, new ChartXViewport(minimum, maximum))` prepares a numeric X window for charts containing Line and StepLine series with linear or step interpolation on a linear X axis. Bounds must be finite, increasing and inside the resolved full X domain. Other families, smooth interpolation, nonlinear X scales, sparklines, charts without observations and layouts without a usable plot reject the viewport request explicitly. Ordinary preparation remains available for every supported chart family.
+
+```csharp
+var overview = chart.Prepare(context);
+var detail = chart.Prepare(context, new ChartXViewport(2, 8));
+var projection = detail.XProjection!;
+double logicalX = projection.Project(5);
+double sourceX = projection.Unproject(logicalX);
+string svg = detail.ToSvg("detail");
+byte[] png = detail.ToPng();
+```
+
+The immutable viewport is a preparation input. It does not change authored axis bounds, series, source indices or decimation settings. Preparation resolves the full-data primary and secondary Y domains, then lays out the requested X ticks and marks through the shared Cartesian compiler. Marks, annotations and labels clip to the visible plot even when ordinary mark clipping is disabled. Crossing segments remain visible when both source endpoints lie outside the window, while authored gaps stay disconnected. Plot regions intersect the visible domain and retain their authored bounds. Off-window reference annotations retain their source facts without guide or caption paint; partially visible bands use their visible intersection.
+
+`ChartXProjection` captures `FullMinimum`, `FullMaximum`, `Minimum`, `Maximum`, `PlotBounds` and `Reversed` as detached values. Supported ordinary preparation exposes the full-domain projection through `PreparedVisual.XProjection`; other charts and unusable plots return null. Source or axis mutations after preparation cannot change the projection or its SVG/PNG exports. Prepare the full domain again to reset the window. The available detail is the retained source model, including any earlier decimation.
+
+These native windows repeat Core layout for each request. The HTML adapter's existing geometry zoom keeps its current behavior; standalone data-domain interaction requires its own prepared tick/layer plan and lifecycle support.
 
 ## Enforcement boundary
 

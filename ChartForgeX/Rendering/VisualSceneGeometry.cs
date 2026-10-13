@@ -6,20 +6,11 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Flattens typed scene geometry at paint resolution, without parsing serialized path data.</summary>
-internal static class VisualSceneGeometry {
+internal static partial class VisualSceneGeometry {
     /// <summary>Whether closed numeric contours enclose any even-odd fill, including self-intersections and holes.</summary>
     /// <remarks>Cancel retraced edges before examining open scan bands; a positive box or signed area alone cannot establish fill.</remarks>
     internal static bool HasEvenOddFillArea(IReadOnlyList<List<ChartPoint>> contours) {
-        var edges = new HashSet<(double X1, double Y1, double X2, double Y2)>();
-        foreach (var contour in contours) {
-            for (var index = 0; index < contour.Count; index++) {
-                var first = contour[index]; var second = contour[(index + 1) % contour.Count];
-                if (first.Y == second.Y) continue;
-                var top = first.Y < second.Y ? first : second; var bottom = first.Y < second.Y ? second : first;
-                var edge = (top.X, top.Y, bottom.X, bottom.Y);
-                if (!edges.Add(edge)) edges.Remove(edge);
-            }
-        }
+        var edges = FillEdges(contours);
         if (edges.Count < 2) return false;
         var levels = new SortedSet<double>();
         foreach (var edge in edges) { levels.Add(edge.Y1); levels.Add(edge.Y2); }
@@ -44,6 +35,20 @@ internal static class VisualSceneGeometry {
             previous = level;
         }
         return false;
+    }
+
+    private static HashSet<(double X1, double Y1, double X2, double Y2)> FillEdges(IReadOnlyList<List<ChartPoint>> contours) {
+        var edges = new HashSet<(double X1, double Y1, double X2, double Y2)>();
+        foreach (var contour in contours) {
+            for (var index = 0; index < contour.Count; index++) {
+                var first = contour[index]; var second = contour[(index + 1) % contour.Count];
+                if (first.Y == second.Y) continue;
+                var top = first.Y < second.Y ? first : second; var bottom = first.Y < second.Y ? second : first;
+                var edge = (top.X, top.Y, bottom.X, bottom.Y);
+                if (!edges.Add(edge)) edges.Remove(edge);
+            }
+        }
+        return edges;
     }
 
     internal static List<List<ChartPoint>> Flatten(VisualScenePath path, double pixelsPerUnit) {

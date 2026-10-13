@@ -85,8 +85,10 @@
         const point = Number(data.cfxPoint);
         data.cfxSourcePoint = String(item.indices[point] === undefined ? point : item.indices[point]);
       }
-      if (data.cfxPoint !== undefined && !data.cfxXLabel) data.cfxXLabel = data.cfxCategoryLabel !== undefined
-        ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX)) || '';
+      if (data.cfxPoint !== undefined && data.cfxXLabel === undefined) {
+        const label = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX));
+        if (label !== undefined) data.cfxXLabel = label;
+      }
       if (data.cfxRole === 'legend-item') return;
       const region = regions.get(data.cfxSourceId || '');
       // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
@@ -94,6 +96,8 @@
         && !node.hasAttribute('aria-label') && !node.hasAttribute('data-cfx-label'))
         node.setAttribute('aria-label', region.label || item.name);
       if (!region || (data.cfxPoint === undefined && data.cfxRegion === undefined)) return;
+      node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
+      node._cfxFillInteriors = Object.freeze((region.fillInteriors || []).map(candidate => Object.freeze(candidate.slice())));
       if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {

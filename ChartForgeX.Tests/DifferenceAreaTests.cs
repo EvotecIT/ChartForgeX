@@ -7,9 +7,12 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects authored pair identities, supported coordinate policy and detached exports.</summary>
 public sealed partial class DifferenceAreaTests {
-    [Fact]
-    public void CrossingPairsKeepBothNamesValuesBreaksAndLogicalObservationIndices() {
+    [Theory]
+    [InlineData(ChartInterpolation.Linear)]
+    [InlineData(ChartInterpolation.Step)]
+    public void CrossingPairsKeepBothNamesValuesBreaksAndLogicalObservationIndices(ChartInterpolation interpolation) {
         var chart = Model(new(0, 8, 2), new(1, 2, 5), new(3, -4, -4, true));
+        chart.Series[0].WithInterpolation(interpolation, interpolation == ChartInterpolation.Step ? ChartStepPosition.Middle : ChartStepPosition.End);
         chart.Series[0].ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; });
         chart.Series[0].WithPointColor(2, Red);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].WithPointColor(3, Red));
@@ -25,6 +28,7 @@ public sealed partial class DifferenceAreaTests {
         var markers = prepared.Scene.Nodes.OfType<VisualSceneMark>().Where(node => node.Role == "difference-marker").ToArray();
         Assert.Equal(2, markers.Length); Assert.All(markers, marker => Assert.Equal(Red, marker.Fill));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
+        chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
         chart.Series[0].Points.Clear();
         chart.Series[0].DifferenceArea.FirstName = "Changed"; chart.Series[0].DifferenceArea.NegativeFill = Red;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
@@ -40,7 +44,6 @@ public sealed partial class DifferenceAreaTests {
     [InlineData("secondary-log-y")]
     [InlineData("sym-log-x")]
     [InlineData("smooth")]
-    [InlineData("step")]
     public void UnsupportedOrAmbiguousMutablePairsFailAtPreparation(string invalid) {
         var chart = Model(new(0, 8, 2), new(1, 2, 5)); var series = chart.Series[0];
         switch (invalid) {
@@ -53,7 +56,6 @@ public sealed partial class DifferenceAreaTests {
             case "secondary-log-y": series.UseSecondaryYAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; break;
             case "sym-log-x": chart.Options.XAxis.Scale = ChartScaleKind.SymmetricLogarithmic; break;
             case "smooth": series.Interpolation = ChartInterpolation.Smooth; break;
-            case "step": series.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle); break;
         }
         var error = Record.Exception(() => Prepare(chart));
         Assert.True(error is InvalidOperationException or NotSupportedException, error?.ToString());
