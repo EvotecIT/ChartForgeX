@@ -1,0 +1,7 @@
+{
+  "configuration": { "packet.bitsPerRow": 16, "packet.showBits": false },
+  "packetRows": [
+    [[0, 3, "Flags"], [4, 15, "Payload"]],
+    [[16, 17, "Payload"], [18, 18, "Ready"], [19, 23, "Tail"]]
+  ]
+}

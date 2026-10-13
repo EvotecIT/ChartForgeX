@@ -42,6 +42,14 @@ internal static class PackageAssertions {
         .AddEdge("api-db", "api", "db", "queries", TopologyEdgeKind.Dependency);
 
     internal static void CoreFixtures() {
+        var packet = PacketLayoutBlock.Create().WithSize(320, 200).WithBitsPerRow(16)
+            .WithBitOrder(PacketBitOrder.Descending).WithBitWidth(12).WithRowHeight(28).WithFieldGap(3).WithRowGap(7)
+            .AddField(0, 3, "Flags").AddField(4, 17, "Payload");
+        Require(packet.BitOrder == PacketBitOrder.Descending && Contains(packet.ToSvg(), "data-bit-start=\"16\""),
+            "Native descending packet API or row splitting is missing.");
+        Png(packet.ToPng());
+        Require(packet.BitWidth == 12 && packet.RowHeight == 28 && packet.FieldGap == 3 && packet.RowGap == 7,
+            "Native packet dimensions and spacing API is missing.");
         var core = typeof(Chart).Assembly;
         Require(core.GetManifestResourceNames().Contains("ChartForgeX.Themes.Tokens.evotec.chartforgex.tokens.json"),
             "Core theme resource is missing.");

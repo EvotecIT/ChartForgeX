@@ -148,7 +148,12 @@ public sealed partial class MermaidVisualMarkupBlockParser {
             Height = options.Height,
             Padding = options.Padding,
             BitsPerRow = options.BitsPerRow,
-            ShowBitNumbers = options.ShowBitNumbers
+            ShowBitNumbers = options.ShowBitNumbers,
+            BitOrder = options.BitOrder,
+            BitWidth = options.BitWidth,
+            RowHeight = options.RowHeight,
+            FieldGap = options.FieldGap,
+            RowGap = options.RowGap
         };
 
     private static MermaidBlockRenderOptions Clone(MermaidBlockRenderOptions options) =>
