@@ -7,6 +7,9 @@ namespace ChartForgeX.Core;
 /// Represents a static line or band annotation on a chart.
 /// </summary>
 public sealed class ChartAnnotation {
+    // Statistical helpers describe source Y values; preparation resolves their physical axis.
+    internal bool FollowsSeriesValueAxis { get; set; }
+
     /// <summary>
     /// Gets the annotation kind.
     /// </summary>

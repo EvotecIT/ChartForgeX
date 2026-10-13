@@ -11,22 +11,22 @@ namespace ChartForgeX.Rendering;
 internal static class VisualAnnotationCompiler {
     private static string Number(double value) => value.ToString("G17", CultureInfo.InvariantCulture);
     // A caller that already describes its mark can reuse annotation painting without a nested interaction target.
-    // Visibility suppresses paint while retaining the annotation's source facts and semantic region.
-    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true, SvgColorRole colorRole = SvgColorRole.Axis, Func<ChartAnnotation, bool>? isVisible = null) {
+    internal static void Draw(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<double, double> mapY, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? include = null, string overflowCode = "cartesian.annotation-label-overflow", string idPrefix = "annotation-", bool describeAnnotations = true, SvgColorRole colorRole = SvgColorRole.Axis, Func<ChartAnnotation, ChartAnnotationKind>? kindSelector = null, Func<ChartAnnotation, bool>? isVisible = null) {
         for (var index = 0; index < annotations.Count; index++) {
             var annotation = annotations[index];
             if (annotation.EndValue.HasValue != bands || (include != null && !include(annotation))) continue;
-            var horizontal = annotation.Kind == ChartAnnotationKind.HorizontalLine || annotation.Kind == ChartAnnotationKind.HorizontalBand;
+            var kind = kindSelector != null ? kindSelector(annotation) : annotation.Kind;
+            var horizontal = kind == ChartAnnotationKind.HorizontalLine || kind == ChartAnnotationKind.HorizontalBand;
             var visible = isVisible == null || isVisible(annotation);
             var position = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, mapY(annotation.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, mapX(annotation.Value)));
             var color = annotation.Color;
             var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
             var id = idPrefix + Number(index);
-            var description = annotation.Kind + ": " + Number(annotation.Value)
+            var description = kind + ": " + Number(annotation.Value)
                 + (annotation.EndValue.HasValue ? " to " + Number(annotation.EndValue.Value) : string.Empty)
                 + (annotation.Label.Length > 0 ? ": " + annotation.Label : string.Empty);
             using (describeAnnotations ? builder.PushGroup(id, "annotation", new Dictionary<string, string> {
-                ["data-cfx-kind"] = annotation.Kind.ToString(), ["data-cfx-value"] = Number(annotation.Value),
+                ["data-cfx-kind"] = kind.ToString(), ["data-cfx-value"] = Number(annotation.Value),
                 ["data-cfx-end-value"] = annotation.EndValue.HasValue ? Number(annotation.EndValue.Value) : string.Empty,
                 ["data-cfx-label"] = annotation.Label, ["data-cfx-show-label"] = annotation.ShowLabel ? "true" : "false", ["aria-label"] = description
             }) : null) {

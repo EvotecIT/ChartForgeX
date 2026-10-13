@@ -13,13 +13,16 @@ internal static partial class VisualCartesianCompiler {
         ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true,
         ChartXViewport? xViewport = null) {
         var series = chart.Series[index];
+        var horizontal = ChartCartesianOrientation.IsHorizontalLine(chart, series);
         var points = new List<ChartPoint>(series.Points.Count);
         var lower = new List<ChartPoint>(series.Points.Count);
         for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
             var point = series.Points[pointIndex];
             var stack = stacks.Point(index, pointIndex);
-            points.Add(new ChartPoint(map.X(point.X), map.Y(stack.End), point.BreakBefore));
-            lower.Add(new ChartPoint(map.X(point.X), series.Kind == ChartSeriesKind.StackedArea ? map.YOrBaseline(stack.Base) : map.YBaseline(), point.BreakBefore));
+            points.Add(horizontal ? new ChartPoint(map.X(point.Y), map.Y(point.X), point.BreakBefore)
+                : new ChartPoint(map.X(point.X), map.Y(stack.End), point.BreakBefore));
+            if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea)
+                lower.Add(new ChartPoint(map.X(point.X), series.Kind == ChartSeriesKind.StackedArea ? map.YOrBaseline(stack.Base) : map.YBaseline(), point.BreakBefore));
         }
         var color = Color(series, index, colors);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
@@ -47,7 +50,10 @@ internal static partial class VisualCartesianCompiler {
                         offset += segment.Count;
                     }
                 }
-                var linePath = ChartPathBuilder.FromPoints(points, series.Interpolation, series.StepPosition);
+                var linePath = horizontal && series.Interpolation == ChartInterpolation.Step
+                    ? ChartPathBuilder.FromPoints(points.Select(point => new ChartPoint(point.Y, point.X, point.BreakBefore)).ToArray(),
+                        series.Interpolation, series.StepPosition).Transpose()
+                    : ChartPathBuilder.FromPoints(points, series.Interpolation, series.StepPosition);
                 foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
                     if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
                         paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
@@ -88,7 +94,8 @@ internal static partial class VisualCartesianCompiler {
             var fill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, pointIndex, pointColor, pointPaint) : ((ChartColor Color, SvgPaint Paint)?)null;
             AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
                 calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null,
-                markFill: fill?.Color, markFillPaint: fill?.Paint);
+                barDirection: horizontal ? BarValueDirection(chart.Options.XAxis, series.Points[pointIndex].Y) : (double?)null,
+                horizontal: horizontal, markFill: fill?.Color, markFillPaint: fill?.Paint);
         }
     }
 
@@ -201,14 +208,14 @@ internal static partial class VisualCartesianCompiler {
         }
         else if (horizontal) {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
-            candidates.Add(new LabelCandidate(positive ? spacing : -spacing, 0, positive ? 0 : 1, .5));
-            candidates.Add(new LabelCandidate(positive ? -spacing : spacing, 0, positive ? 1 : 0, .5));
-            if (series.Kind == ChartSeriesKind.BoxPlot) {
-                // A median lies inside the quartile body; offer clear category-side lanes.
-                candidates.Add(new LabelCandidate(0, mark.Top - anchor.Y - spacing, .5, 1));
-                candidates.Add(new LabelCandidate(0, mark.Bottom - anchor.Y + spacing, .5, 0));
-                candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
-                candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
+            var left = bar ? -spacing : leftOffset; var right = bar ? spacing : rightOffset;
+            candidates.Add(new LabelCandidate(positive ? right : left, 0, positive ? 0 : 1, .5));
+            candidates.Add(new LabelCandidate(positive ? left : right, 0, positive ? 1 : 0, .5));
+            if (!bar) {
+                foreach (var alignment in new[] { .5, 0, 1 }) {
+                    candidates.Add(new LabelCandidate(0, mark.Top - anchor.Y - spacing, alignment, 1));
+                    candidates.Add(new LabelCandidate(0, mark.Bottom - anchor.Y + spacing, alignment, 0));
+                }
             }
         }
         else {

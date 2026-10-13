@@ -34,6 +34,8 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         foreach (var index in new[] { 0, 2 }) {
             // Readable plots may scroll; acquire each real mark without forcing an offscreen edge guide.
             await page.Locator(Point(0, index)).EvaluateAsync("node => { const s=node.closest('.cfx-stage'), m=node.getBoundingClientRect(), b=s.getBoundingClientRect(); s.scrollLeft+=m.x+m.width/2-b.x-b.width/2; }");
+            // Let scroll handlers discard the previous guide before acquiring the new mark.
+            await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
             var mark = await BoxAsync(page, Point(0, index));
             var native = new double[] { mark.X + mark.Width / 2, mark.Y + mark.Height / 2 };
             await page.Mouse.MoveAsync((float)native[0], (float)native[1]);
