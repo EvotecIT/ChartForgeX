@@ -10,6 +10,8 @@ internal static class MermaidExamples {
             ["mermaid-xychart-horizontal-bar"] = "xychart-beta horizontal\ntitle \"Monthly count\"\nx-axis Month [Jan, Feb, Mar]\ny-axis Count 0 --> 100\nbar [20, 50, 80]\n",
             ["mermaid-xychart-horizontal-line"] = "xychart-beta horizontal\ntitle \"Monthly count\"\nx-axis Month [Jan, Feb, Mar]\ny-axis Count 0 --> 100\nline [30, 60, 90]\n",
             ["mermaid-xychart-horizontal-mixed"] = "xychart-beta horizontal\ntitle \"Monthly count\"\nx-axis Month [Jan, Feb, Mar]\ny-axis Count 0 --> 100\nbar [20, 50, 80]\nline [30, 60, 90]\n",
+            ["mermaid-packet-descending"] = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    bitOrder: descending\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"\n+1: \"Ready\"\n+5: \"Tail\"\n",
+            ["mermaid-packet-source-options"] = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    showBits: false\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"\n+1: \"Ready\"\n+5: \"Tail\"\n",
             ["mermaid-source-font-size-wardley-boundaries"] = "%%{init: {'themeVariables':{'fontSize':256}}}%%\nwardley-beta\ncomponent API [0.5, 0.5]\nannotation 1, [1, 1] \"\"\nannotation 2, [1, 0] \"\"\nannotation 3, [0, 1] \"\"\nannotation 4, [0, 0] \"\"\n",
             ["mermaid-source-font-size-icon-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':32}}}%%\nflowchart LR\napi[Payments API]\n",
             ["mermaid-source-font-size-icon-maximum-fit"] = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\nflowchart LR\napi[Payments API]\n",
@@ -90,7 +92,7 @@ internal static class MermaidExamples {
             };
             var result = MermaidRenderer.Render(item.Value, options);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
-            if (item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
+            if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
                 block.Options.ShowCard = false;
             if (item.Key == "mermaid-source-font-size-wardley-boundaries" && result.Artifact.Model is ChartForgeX.VisualBlocks.WardleyMapBlock wardley) {
                 wardley.WithSize(420, 320);

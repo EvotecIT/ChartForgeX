@@ -22,22 +22,24 @@ public sealed partial class PngVisualBlockRenderer {
         for (var index = 0; index < slices.Count; index++) {
             var slice = slices[index];
             var rowY = y + slice.Row * (rowHeight + labelTop + rowGap) + labelTop;
-            var x = content.X + (slice.StartBit % packet.BitsPerRow) * bitWidth;
+            var x = content.X + VisualBlockRendering.PacketColumn(packet, slice) * bitWidth;
             var width = Math.Max(1, slice.BitLength * bitWidth - 1);
             var color = VisualBlockRendering.PaletteAt(theme, slice.FieldIndex);
             canvas.FillRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color.WithAlpha(48));
             canvas.StrokeRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color, 1);
-            if (packet.ShowBitNumbers && metrics.BitFontSize > 0) DrawPacketBitLabels(canvas, slice, x, rowY - metrics.BitBaselineOffset - canvas.TextAscent(metrics.BitFontSize, true), width, theme.MutedText, metrics.BitFontSize);
+            if (packet.ShowBitNumbers && metrics.BitFontSize > 0) DrawPacketBitLabels(canvas, packet, slice, x, rowY - metrics.BitBaselineOffset - canvas.TextAscent(metrics.BitFontSize, true), width, theme.MutedText, metrics.BitFontSize);
             var fontSize = Math.Min(metrics.FieldFontSize, VisualBlockRendering.PacketFieldFontSize(packet, slice, width, rowHeight));
             DrawAlignedTextAtBaseline(canvas, slice.Field.Label, x + 5, rowY + rowHeight * .58, Math.Max(1, width - 10), TextAlignment.Center, theme.Text, fontSize, true);
         }
     }
 
-    private static void DrawPacketBitLabels(RgbaCanvas canvas, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartColor color, double fontSize) {
+    private static void DrawPacketBitLabels(RgbaCanvas canvas, PacketLayoutBlock packet, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartColor color, double fontSize) {
         var inset = VisualBlockRendering.PacketBitInset(width);
-        canvas.DrawTextEmphasized(x + inset, y, slice.StartBit.ToString(CultureInfo.InvariantCulture), color, fontSize);
+        var left = VisualBlockRendering.PacketLeftBit(packet, slice).ToString(CultureInfo.InvariantCulture);
+        var singleDescending = slice.EndBit == slice.StartBit && packet.BitOrder == PacketBitOrder.Descending;
+        canvas.DrawTextEmphasized(singleDescending ? x + width - inset - canvas.MeasureTextEmphasizedWidth(left, fontSize) : x + inset, y, left, color, fontSize);
         if (slice.EndBit == slice.StartBit) return;
-        var end = slice.EndBit.ToString(CultureInfo.InvariantCulture);
+        var end = VisualBlockRendering.PacketRightBit(packet, slice).ToString(CultureInfo.InvariantCulture);
         var endWidth = canvas.MeasureTextEmphasizedWidth(end, fontSize);
         canvas.DrawTextEmphasized(x + width - inset - endWidth, y, end, color, fontSize);
     }

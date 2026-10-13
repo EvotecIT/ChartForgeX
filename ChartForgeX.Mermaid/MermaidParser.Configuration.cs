@@ -95,6 +95,7 @@ public sealed partial class MermaidParser {
         Regex.IsMatch(key, @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant) ? key : "[" + key + "]";
 
     private static bool IsConfigurationScalarPath(string path) {
+        if (MermaidPacketSettings.IsPath(path)) return true;
         var key = path.Substring(path.LastIndexOf('.') + 1);
         return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path) || MermaidSankeySettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path);
     }
@@ -129,6 +130,8 @@ public sealed partial class MermaidParser {
         configuration.FontFamily = ReadString("fontFamily");
         var fontSize = configuration.Last("themeVariables.fontSize");
         configuration.FontSize = ReadConfigurationFontSize(fontSize, result, out var invalidFontSize);
+        if (kind == MermaidDiagramKind.Packet) configuration.Packet = MermaidPacketSettings.Read(configuration,
+            (setting, reason) => ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' " + reason + "."));
         if (kind == MermaidDiagramKind.Radar)
             configuration.Radar = MermaidRadarSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Sankey)
@@ -136,6 +139,7 @@ public sealed partial class MermaidParser {
         if (kind == MermaidDiagramKind.Treemap)
             configuration.Treemap = MermaidTreemapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         foreach (var setting in configuration.Settings) {
+            if (kind == MermaidDiagramKind.Packet && MermaidPacketSettings.IsHandledPath(setting.Path)) continue;
             if (configuration.Radar?.Handles(setting.Path) == true) continue;
             if (configuration.Sankey?.Handles(setting.Path) == true || configuration.Treemap?.Handles(setting.Path) == true) continue;
             var theme = Selected("theme");

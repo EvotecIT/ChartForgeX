@@ -150,8 +150,8 @@ Completion: source presentation produces consistent SVG/PNG scenes or specific d
 
 - [x] Map documented flowchart metadata aliases to the existing subprocess, decision, input/output, trapezoid and asymmetric native shapes, with versioned reference fixtures and SVG/PNG examples.
 - [ ] Qualify shape-only flowchart surfaces and centered captions. Inferred topology kinds currently add infrastructure glyphs to decision and other semantic shapes; source shape syntax should determine the diagram notation.
-- [x] Render flowchart circle, cross and bidirectional endpoints through shared topology markers, preserving compact target IDs and literal caption boundaries. Qualify normal, thick and dotted closing markers against Mermaid 10, 11 and 12.
-- [ ] Qualify and publish the preserved minimum-edge-length candidate after an explicit roadmap resume. Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
+- [x] Render flowchart circle, cross and bidirectional endpoints through shared topology markers, preserving compact target IDs and label boundaries. Qualify endpoint semantics against Mermaid 10, 11 and 12 and retain the markers in SVG, PNG and interchange JSON.
+- [ ] Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, minimum edge lengths, nested subgraphs and local directions. Keep edge animation and callbacks in optional host adapters.
 - [ ] Complete sequence participant creation/destruction, participant boxes, supported message variants, nested parallel/critical branches, branch labels, notes, activations and autonumber behavior. Keep actor menus and links as safe host-facing data.
 - [ ] Complete class generics, visibility/static/abstract members, lollipop and two-way relationships, labeled/nested namespaces, notes, styling and safe link metadata.
 - [ ] Complete state choice/fork/join notation, concurrent regions, nested composites, multiline notes and classes; keep transition and start/end meaning visible.

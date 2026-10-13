@@ -45,6 +45,15 @@ internal static partial class VisualBlockRendering {
     public static double PacketBitInset(double width) => Math.Min(LabelPlacementService.DefaultGap / 2, width / 4);
     public static double PacketBitBaselineOffset(double labelTop, double fontSize) => Math.Min(labelTop * .25, Math.Max(4, fontSize * .3));
 
+    public static int PacketColumn(PacketLayoutBlock packet, PacketLayoutSlice slice) => packet.BitOrder == PacketBitOrder.Descending
+        ? packet.BitsPerRow - slice.StartBit % packet.BitsPerRow - slice.BitLength : slice.StartBit % packet.BitsPerRow;
+
+    public static int PacketLeftBit(PacketLayoutBlock packet, PacketLayoutSlice slice) =>
+        packet.BitOrder == PacketBitOrder.Descending ? slice.EndBit : slice.StartBit;
+
+    public static int PacketRightBit(PacketLayoutBlock packet, PacketLayoutSlice slice) =>
+        packet.BitOrder == PacketBitOrder.Descending ? slice.StartBit : slice.EndBit;
+
     // The same measured cell fitting serves both exporters; ordinary long fields keep truncation.
     public static double PacketFieldFontSize(PacketLayoutBlock packet, PacketLayoutSlice slice, double width, double height) =>
         FitBodyTextStyle(packet.Options.Theme, slice.Field.Label, Math.Max(9, Math.Min(13.5, height * .31)),
