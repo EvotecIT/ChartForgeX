@@ -44,6 +44,7 @@ public static partial class V2Examples {
         WriteDiagrams(output, artifacts);
         WriteFamilies(output, artifacts, curated);
         WriteHistograms(output, artifacts);
+        WriteViewports(output, artifacts);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);
     }

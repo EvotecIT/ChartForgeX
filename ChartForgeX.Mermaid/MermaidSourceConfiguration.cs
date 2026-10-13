@@ -6,7 +6,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>Retains bounded source configuration and the effective settings for the parsed diagram family.</summary>
 public sealed class MermaidSourceConfiguration {
     private readonly List<MermaidConfigurationSetting> _settings = new();
-    internal double? RadarCurveTension { get; set; }
+    internal MermaidRadarSettings? Radar { get; set; }
     internal MermaidSankeySettings? Sankey { get; set; }
     internal MermaidTreemapSettings? Treemap { get; set; }
 
