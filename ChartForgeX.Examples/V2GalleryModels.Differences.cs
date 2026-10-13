@@ -6,13 +6,14 @@ public static partial class V2GalleryModels {
     private static Chart? Differences(ChartSeriesKind kind, string variant) {
         if (kind != ChartSeriesKind.DifferenceArea) return null;
         var dated = variant is "dated-gaps" or "compact-dated-gaps";
+        var stepped = variant is "step-start" or "step-middle" or "step-end" or "compact-step-middle";
         var day = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
-        var first = new[] { 42d, 68, 48, 60, 74, 46, 62 };
-        var second = new[] { 56d, 54, 60, 60, 58, 64, 50 };
+        var first = new[] { 42d, 68, stepped ? 78 : 48, 60, 74, 46, 62 };
+        var second = new[] { 56d, 54, stepped ? 62 : 60, 60, 58, 64, 50 };
         var pairs = new ChartDifferencePoint[first.Length];
         for (var item = 0; item < pairs.Length; item++) pairs[item] = dated
             ? new ChartDifferencePoint(day.AddDays(item + (item >= 4 ? 2 : 0)), first[item], second[item], item == 4)
-            : new ChartDifferencePoint(item + 1, first[item], second[item]);
+            : new ChartDifferencePoint(item + 1, first[item], second[item], stepped && item == 5);
         var chart = Chart.Create().WithXAxis(dated ? "Observation date (UTC)" : "Observation")
             .WithYAxis(dated ? "Primary reference" : "Completed requests");
         if (dated) {
@@ -26,6 +27,11 @@ public static partial class V2GalleryModels {
             options.PositiveFill = ChartColor.FromHex("#267EAB"); options.NegativeFill = ChartColor.FromHex("#D47A34");
             options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
         }).WithMarkerRadius(3);
+        if (stepped) series.WithInterpolation(ChartInterpolation.Step, variant switch {
+            "step-start" => ChartStepPosition.Start,
+            "step-end" => ChartStepPosition.End,
+            _ => ChartStepPosition.Middle
+        });
         if (dated) {
             series.UseSecondaryYAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
             chart.WithSecondaryYAxis("Completed requests");

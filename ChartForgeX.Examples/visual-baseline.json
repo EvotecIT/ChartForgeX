@@ -5210,6 +5210,30 @@
       }
     },
     {
+      "name": "mermaid-radar-layout",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 460,
+      "height": 350,
+      "logicalWidth": 460.0,
+      "logicalHeight": 350.0,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 80498,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 725,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-radar-maximum-tension",
       "layout": {
         "heightMode": "fixed",
@@ -5786,6 +5810,30 @@
       }
     },
     {
+      "name": "mermaid-source-font-size-journey-captions",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960,
+      "logicalHeight": 560,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 760,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-source-font-size-packet",
       "layout": {
         "heightMode": "fixed",
@@ -5878,6 +5926,30 @@
         "minVisiblePixels": 188598,
         "minTransparentPixels": 2,
         "minDistinctColors": 748,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-source-font-size-quadrant-captions",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960,
+      "logicalHeight": 560,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 688,
         "maxEdgeInkPixels": 0
       }
     },

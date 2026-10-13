@@ -16,7 +16,45 @@ internal static partial class SequencePreparedCompiler {
 
     internal static PreparedVisual PrepareDefault(SequenceArtifact model) {
         if (model == null) throw new ArgumentNullException(nameof(model));
-        var theme = model.Theme;
+        var original = PrepareNatural(model, model.Theme);
+        var authoredSize = model.Theme.Typography.DataLabelSize;
+        if (authoredSize <= VisualTextFitting.MaximumOrdinaryFontSize || FitsDefaultRaster(original)) return original;
+        var minimum = VisualTextFitting.MaximumOrdinaryFontSize;
+        var fitted = PrepareNatural(model, FitSequenceTheme(model.Theme, minimum));
+        // Huge ordinary diagrams retain the existing raster guard. This policy only
+        // bounds the extra canvas growth caused by oversized authored typography.
+        if (!FitsDefaultRaster(fitted)) return original;
+        var maximum = authoredSize;
+        for (var pass = 0; pass < 12; pass++) {
+            var size = (minimum + maximum) / 2;
+            var candidate = PrepareNatural(model, FitSequenceTheme(model.Theme, size));
+            if (FitsDefaultRaster(candidate)) { minimum = size; fitted = candidate; }
+            else maximum = size;
+        }
+        return fitted;
+    }
+
+    private static bool FitsDefaultRaster(PreparedVisual visual) {
+        var options = new VisualRenderOptions();
+        try {
+            VisualSceneRasterRenderer.CalculateAllocation(visual.Size,
+                options.Scale, options.Supersampling, options.PixelBudget);
+            return true;
+        } catch (ArgumentOutOfRangeException exception) when (exception.ParamName is "pixelBudget" or "width") {
+            return false;
+        }
+    }
+
+    private static VisualTheme FitSequenceTheme(VisualTheme theme, double size) {
+        var typography = theme.Typography;
+        var factor = size / typography.DataLabelSize;
+        return theme.WithTypography(new VisualTypography(typography.Family,
+            typography.TitleSize * factor, typography.SubtitleSize * factor,
+            typography.AxisSize * factor, typography.LegendSize * factor, size,
+            typography.ScalarValueSize * factor, typography.CenterValueSize * factor));
+    }
+
+    private static PreparedVisual PrepareNatural(SequenceArtifact model, VisualTheme theme) {
         var measurements = new VisualSceneBuilder(new VisualSize(1, 1), new FontSpec { Family = theme.Typography.Family });
         var minimumLabelWidth = SequencePreparedLayout.MinimumLabelWidth(model, measurements, theme.Typography.DataLabelSize);
         var noteWidth = Math.Max(120, minimumLabelWidth + 24);

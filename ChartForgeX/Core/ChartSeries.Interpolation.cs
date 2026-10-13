@@ -50,12 +50,12 @@ public sealed partial class ChartSeries {
     internal void ValidateInterpolation() {
         if (Interpolation != ChartInterpolation.Step && StepPosition != ChartStepPosition.End)
             throw new InvalidOperationException("Series '" + Name + "' requires step interpolation for its step position.");
-        if (Kind == ChartSeriesKind.DifferenceArea && Interpolation != ChartInterpolation.Linear)
-            throw new NotSupportedException("Difference areas support only Linear interpolation.");
+        if (Kind == ChartSeriesKind.DifferenceArea && Interpolation == ChartInterpolation.Smooth)
+            throw new NotSupportedException("Difference areas support only Linear or Step interpolation.");
         if (Interpolation == ChartInterpolation.Linear) return;
         if (Kind != ChartSeriesKind.Line && Kind != ChartSeriesKind.StepLine && Kind != ChartSeriesKind.Area
             && Kind != ChartSeriesKind.StepArea && Kind != ChartSeriesKind.StackedArea
-            && Kind != ChartSeriesKind.RangeBand && Kind != ChartSeriesKind.RangeArea)
+            && Kind != ChartSeriesKind.RangeBand && Kind != ChartSeriesKind.RangeArea && Kind != ChartSeriesKind.DifferenceArea)
             throw new InvalidOperationException("Series '" + Name + "' does not support connected-path interpolation.");
     }
 }

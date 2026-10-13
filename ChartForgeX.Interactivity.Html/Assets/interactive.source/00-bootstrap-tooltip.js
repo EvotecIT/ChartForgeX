@@ -165,6 +165,9 @@
   };
   // Captured display text may deliberately be empty; only an absent attribute falls back to raw facts.
   const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
+  const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
+  // Source metadata stays exact; fallback captions use the browser's shortest round-trip number.
+  const numericDisplayText = (value) => tooltipNumber(value) ? String(Number(value)) : value;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
@@ -274,6 +277,11 @@
     const push = (name, value) => {
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
+    const pushX = () => {
+      const value = capturedText(data, 'cfxXLabel', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || data.cfxStart);
+      if (data.cfxXLabel !== undefined) rows.push({ name: 'X', value });
+      else push('X', value);
+    };
     push('Series', seriesLabel(node));
     const boxPlotRows = boxPlotTooltipRows(node);
     if (boxPlotRows) return rows.concat(boxPlotRows, metadataRows(node));
@@ -281,19 +289,19 @@
     if (rangeBarRows) return rows.concat(rangeBarRows, metadataRows(node));
     const differenceRows = differenceTooltipRows(node);
     if (differenceRows) {
-      push('X', data.cfxX);
+      pushX();
       differenceRows.forEach((row) => push(row.name, row.value));
       metadataRows(node).forEach((row) => push(row.name, row.value));
       return rows;
     }
     if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
-    else push('X', data.cfxX || data.cfxCategory || data.cfxDate || data.cfxStart);
+    else pushX();
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
     else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
     else if (data.cfxEmpty !== 'true') {
       const name = data.cfxValue !== undefined ? rowName(node, 'value', 'Value') : 'Y';
-      const value = capturedText(data, 'cfxFormattedValue', data.cfxValue !== undefined ? data.cfxValue : data.cfxY);
+      const value = capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue !== undefined ? data.cfxValue : data.cfxY));
       if (data.cfxFormattedValue !== undefined) rows.push({ name, value });
       else push(name, value);
       push('End', data.cfxEnd);

@@ -10,7 +10,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
-        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null) {
+        ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true,
+        ChartXViewport? xViewport = null) {
         var series = chart.Series[index];
         var points = new List<ChartPoint>(series.Points.Count);
         var lower = new List<ChartPoint>(series.Points.Count);
@@ -23,7 +24,7 @@ internal static partial class VisualCartesianCompiler {
         var color = Color(series, index, colors);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
         if (series.Kind != ChartSeriesKind.Scatter && points.Count > 0) {
-            using (chart.Options.ClipMarksToPlot ? builder.PushClip(plot) : null) {
+            using (clipMarks ? builder.PushClip(plot) : null) {
                 if (series.Kind == ChartSeriesKind.Area || series.Kind == ChartSeriesKind.StepArea || series.Kind == ChartSeriesKind.StackedArea) {
                     // Each disconnected segment closes independently; smoothing uses the existing path algorithm.
                     var offset = 0;
@@ -38,8 +39,10 @@ internal static partial class VisualCartesianCompiler {
                             for (var point = lowerPath.Count - 1; point >= 0; point--) commands.Add(ChartPathCommand.LineTo(lowerPath[point].X, lowerPath[point].Y));
                             var area = new ChartPath(commands);
                             var fill = ChartColorMath.WithOpacity(color, context.Theme.AreaOpacity);
-                            builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaOpacity)));
-                            DrawPattern(builder, area, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "area-pattern");
+                            using (FillSegment(builder, offset, segment.Count)) {
+                                builder.Path(area, fill, role: "area", close: true, paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color).WithOpacity(fill, context.Theme.AreaOpacity)));
+                                DrawPattern(builder, area, series.FillPattern, fill, ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "area-pattern");
+                            }
                         }
                         offset += segment.Count;
                     }
@@ -51,7 +54,7 @@ internal static partial class VisualCartesianCompiler {
                 if (chart.Series.Any(item => item.ShowDataLabels ?? chart.Options.ShowDataLabels)
                     || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)) {
                     var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
-                    obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, chart.Options.ClipMarksToPlot ? plot : null)));
+                    obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, clipMarks ? plot : null)));
                 }
             }
         }
@@ -59,9 +62,11 @@ internal static partial class VisualCartesianCompiler {
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
+            var sourceX = series.Points[pointIndex].X;
+            var insideSourceX = xViewport == null || sourceX >= xViewport.Minimum && sourceX <= xViewport.Maximum;
             var bounds = VisualMarkerScene.Bounds(point.X, point.Y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
-            var visible = radius > 0 && (!chart.Options.ClipMarksToPlot || inside)
+            var visible = radius > 0 && insideSourceX && (!clipMarks || inside)
                 && ShowMarker(chart, series, pointIndex);
             var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
             var pointColor = PointColor(series, index, pointIndex, colors);
@@ -78,6 +83,8 @@ internal static partial class VisualCartesianCompiler {
                 }
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
+            // Off-window observations keep their source group, but cannot compete for a visible label lane.
+            if (!insideSourceX) continue;
             var fill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, pointIndex, pointColor, pointPaint) : ((ChartColor Color, SvgPaint Paint)?)null;
             AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
                 calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null,
@@ -287,6 +294,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawDataLabels(VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        FitOversizedDataLabels(builder, plot, labels, obstacles);
         foreach (var request in labels) request.MeasuredSize ??= builder.MeasureText(request.Text, request.Style);
         var placed = new LabelPlacementService().Place(labels, plot, obstacles, 2, builder.MeasureText);
         if (placed.Any(label => label.IsDropped || label.IsEllipsized))

@@ -1,0 +1,18 @@
+{
+  "configuration": {
+    "radar.width": 460,
+    "radar.height": 350,
+    "radar.marginLeft": 12,
+    "radar.marginTop": 14,
+    "radar.marginRight": 16,
+    "radar.marginBottom": 18,
+    "radar.axisScaleFactor": 0.8,
+    "radar.axisLabelFactor": 1.2,
+    "radar.curveTension": 0.25
+  },
+  "radar": {
+    "axes": [["a", "Coverage"], ["b", "Policy"], ["c", "Response"], ["d", "Recovery"]],
+    "curves": [["current", "Current", [90, 45, 80, 60]]],
+    "options": {"showLegend": true, "ticks": 5, "min": 0, "max": 100, "graticule": "circle"}
+  }
+}
