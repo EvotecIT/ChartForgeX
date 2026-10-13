@@ -91,6 +91,7 @@ public sealed class V2GalleryBrowserTests {
         await page.Locator("[data-gallery-search]").FillAsync("heatmap");
         var example = page.Locator("[data-gallery-family]:visible a.preview:visible").First;
         await example.ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         Assert.Equal("dark", await page.Locator("html").GetAttributeAsync("data-theme"));
         Assert.Equal(1, await page.Locator(".full:visible").CountAsync());
         Assert.Equal(width <= 600 ? "360" : "800", await page.Locator(".full[data-output-format=svg]:visible > svg").GetAttributeAsync("width"));
@@ -98,9 +99,11 @@ public sealed class V2GalleryBrowserTests {
             Assert.Contains("-compact-", page.Url, StringComparison.Ordinal);
             // Compact is a navigation default, while the explicit Standard choice stays usable.
             await page.Locator(".variant-nav").GetByText("Standard", new LocatorGetByTextOptions { Exact = true }).ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
             Assert.Equal("800", await page.Locator(".full[data-output-format=svg]:visible > svg").GetAttributeAsync("width"));
         }
         await page.Locator(".variant-nav").GetByText("Compact", new LocatorGetByTextOptions { Exact = true }).ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         var compactSvg = page.Locator(".full[data-output-format=svg]:visible > svg");
         Assert.Equal("360", await compactSvg.GetAttributeAsync("width"));
         Assert.True(await compactSvg.EvaluateAsync<bool>("svg => svg.getBoundingClientRect().width <= Number(svg.getAttribute('width')) + .01"));
@@ -122,6 +125,7 @@ public sealed class V2GalleryBrowserTests {
         var lightDownloads = await page.Locator(".export-row a").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.getAttribute('href'))");
         Assert.All(lightDownloads, href => Assert.Contains("-light.", href, StringComparison.Ordinal));
         await page.Locator(".back-link").ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         Assert.Equal("heatmap", await page.Locator("[data-gallery-search]").InputValueAsync());
         Assert.True(await page.Locator("[data-gallery-family]:visible").CountAsync() > 0);
 
@@ -139,6 +143,7 @@ public sealed class V2GalleryBrowserTests {
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ColorScheme = ColorScheme.Light });
         await page.WaitForFunctionAsync("() => document.documentElement.dataset.theme === 'light'");
         await page.Locator(".back-link").ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         Assert.Equal("heatmap", await page.Locator("[data-gallery-search]").InputValueAsync());
         AssertNoConsoleErrors(session);
     }
