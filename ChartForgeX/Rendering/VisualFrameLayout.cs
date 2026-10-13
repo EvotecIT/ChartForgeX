@@ -87,9 +87,6 @@ internal static class VisualFrameLayout {
         var headingGaps = headingHeight > 0 ? gap * 5 / 6 + (!string.IsNullOrEmpty(context.Frame.Title) && !string.IsNullOrEmpty(context.Frame.Subtitle) ? gap / 6 : 0) : 0;
         var oversizedHeadings = titleStyle.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize
             || subtitleStyle.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize;
-        var headingScale = headingHeight / 2 + headingGaps >= bottom - top
-            || oversizedHeadings && headingHeight + headingGaps > (bottom - top) * .4
-            ? Math.Min(1, Math.Max(1, (bottom - top) * .4 - headingGaps) / headingHeight) : 1;
         // Normal headings retain bounded wrapping. Fit full text only when even a short
         // font sample cannot fit the line, independently of an ordinary companion heading.
         bool OversizedHeading(TextStyle style) => builder.MeasureText("Mg", style).Width > Math.Max(1, right - left);
@@ -101,6 +98,13 @@ internal static class VisualFrameLayout {
         }
         var headingWidthScale = Math.Min(HeadingWidthScale(context.Frame.Title, titleStyle),
             HeadingWidthScale(context.Frame.Subtitle, subtitleStyle));
+        // Account for width fitting before deciding whether the shared height needs
+        // reducing; a wide title alone must not unnecessarily shrink an ordinary subtitle.
+        var fittedHeadingHeight = HeadingHeight(context.Frame.Title, titleStyle) * (OversizedHeading(titleStyle) ? headingWidthScale : 1)
+            + HeadingHeight(context.Frame.Subtitle, subtitleStyle) * (OversizedHeading(subtitleStyle) ? headingWidthScale : 1);
+        var headingScale = fittedHeadingHeight / 2 + headingGaps >= bottom - top
+            || oversizedHeadings && fittedHeadingHeight + headingGaps > (bottom - top) * .4
+            ? Math.Min(1, Math.Max(1, (bottom - top) * .4 - headingGaps) / fittedHeadingHeight) : 1;
         using (builder.PushClip(new ChartRect(left, top, right - left, bottom - top))) {
             var headingTop = top;
             Header(context.Frame.Title, titleStyle, paints?.Foreground);
@@ -281,7 +285,7 @@ internal static class VisualFrameLayout {
 
         void Header(string? text, TextStyle style, SvgPaint? paint) {
             if (string.IsNullOrEmpty(text)) return;
-            var scale = OversizedHeading(style) ? Math.Min(headingScale, headingWidthScale) : headingScale;
+            var scale = (OversizedHeading(style) ? headingWidthScale : 1) * headingScale;
             if (scale < 1) { style = style.Clone(); style.FontSize *= scale; }
             var fontSize = style.EffectiveFontSize;
             var lineHeight = Math.Max(fontSize * 1.3, builder.MeasureText("Mg", style).Height);
