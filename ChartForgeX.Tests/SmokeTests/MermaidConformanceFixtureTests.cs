@@ -11,6 +11,7 @@ internal static partial class SmokeTests {
         var fixturesRoot = Path.Combine(FindRepositoryRoot(), "tests", "mermaid-conformance", "fixtures");
         var fixtures = new[] {
             ("flowchart-basic.mmd", typeof(MermaidFlowchartDocument)),
+            ("flowchart-native-shape-aliases.mmd", typeof(MermaidFlowchartDocument)),
             ("flowchart-advanced.mmd", typeof(MermaidFlowchartDocument)),
             ("flowchart-compact.mmd", typeof(MermaidFlowchartDocument)),
             ("flowchart-quoted-shapes.mmd", typeof(MermaidFlowchartDocument)),
