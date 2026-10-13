@@ -171,7 +171,8 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [x] Honor treemap value-caption visibility through the native hierarchy owner, source configuration and nullable host overrides while retaining semantic values and labels.
 - [ ] Reuse the stable Sankey identity work in PR #261 and the shared XY orientation work in #251, also integrated in #273. Qualify Mermaid label/configuration handling and all series orientations against the settled owner APIs.
 - [x] Render closed radar curves through shared path geometry, apply source curve tension and host overrides, and fit cubic overshoot without changing observation values.
-- [ ] Map radar spacing, scale, axis/label offsets and source theme variables through the shared polar owner. Reuse the layout owner in [#342](https://github.com/EvotecIT/ChartForgeX/pull/342) and complete authored theme mapping and upstream conformance.
+- [x] Map radar graticules, dimensions, margins and axis factors through the native chart and polar-grid owners, including curved-series fitting and source/host precedence.
+- [ ] Map radar theme variables through the existing native theme and series-style owners.
 - [x] Resolve Gantt `until` end references, merge repeated calendar declarations, apply the final diagram calendar/date format and preserve milestone ranges for dependencies. Shared upstream fixtures cover source order, earliest referenced starts and included/excluded dates.
 - [x] Resolve forward `after` references without reordering source rows, and render every predecessor through the shared native Gantt dependency owner. Qualify duplicate links, graph cycles, direct conversion and Markdown fences against pinned reference dates.
 - [x] Keep Gantt dependency arrowheads visible over successor bars and beside milestone boundaries, including automatic window endpoints; qualify the shared schedule scene in SVG and PNG.

@@ -19,14 +19,15 @@ public static class MermaidRadarRendering {
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(ResolveSubtitle(document, options))
-            .WithSize(options.Width, options.Height)
+            .WithSize(options.Width ?? document.Configuration.Radar?.Width ?? 760, options.Height ?? document.Configuration.Radar?.Height ?? 620)
             .WithLegend(document.ShowLegend)
             .WithXLabels(AxisLabels(document))
             .WithPolarGridShape(GraticuleShape(document));
         chart.Options.PolarGridRingCount = Math.Min(document.Ticks ?? 5, 32);
+        (document.Configuration.Radar ?? new MermaidRadarSettings()).Apply(chart, options);
         chart.WithYAxisBounds(document.Minimum ?? 0, document.Maximum ?? ResolveMaximum(document));
         var tension = options.CurveTension ?? (string.Equals(document.Graticule, "polygon", StringComparison.OrdinalIgnoreCase)
-            ? 0 : document.Configuration.RadarCurveTension ?? .17);
+            ? 0 : document.Configuration.Radar?.CurveTension ?? .17);
         foreach (var curve in document.Curves) {
             chart.AddRadar(curve.Label, Points(document, curve));
             chart.Series[chart.Series.Count - 1].Radar.CurveTension = tension;
@@ -119,6 +120,28 @@ public static class MermaidRadarRendering {
 /// </summary>
 public sealed class MermaidRadarRenderOptions {
     private double? _curveTension;
+    private double? _axisScaleFactor;
+    private double? _axisLabelFactor;
+
+    /// <summary>Gets or sets the host spoke-radius factor. Null uses source configuration or one. Finite nonnegative values override the source without changing observations or value bounds.</summary>
+    public double? AxisScaleFactor {
+        get => _axisScaleFactor;
+        set { ValidateFactor(value); _axisScaleFactor = value; }
+    }
+
+    /// <summary>Gets or sets the host category-label radius factor. Null uses source configuration or 1.05. Finite nonnegative values override the source; the native theme still supplies the label gap.</summary>
+    public double? AxisLabelFactor {
+        get => _axisLabelFactor;
+        set { ValidateFactor(value); _axisLabelFactor = value; }
+    }
+
+    /// <summary>Gets or sets host frame padding. Null applies authored source margins over the native frame defaults; an explicit padding overrides all four source margins.</summary>
+    public ChartPadding? Padding { get; set; }
+
+    private static void ValidateFactor(double? value) {
+        if (value.HasValue && (double.IsNaN(value.Value) || double.IsInfinity(value.Value) || value.Value < 0))
+            throw new ArgumentOutOfRangeException(nameof(value));
+    }
 
     /// <summary>Gets or sets host curve tension from zero through one. Null uses source configuration with circular graticules, or straight edges with polygonal graticules. An explicit value overrides either source policy.</summary>
     public double? CurveTension {
@@ -138,9 +161,9 @@ public sealed class MermaidRadarRenderOptions {
     /// <summary>Gets or sets the artifact subtitle.</summary>
     public string? Subtitle { get; set; }
 
-    /// <summary>Gets or sets the natural preview width.</summary>
-    public int Width { get; set; } = 760;
+    /// <summary>Gets or sets the host preview width. Null uses authored source width, then 760 pixels.</summary>
+    public int? Width { get; set; }
 
-    /// <summary>Gets or sets the natural preview height.</summary>
-    public int Height { get; set; } = 620;
+    /// <summary>Gets or sets the host preview height. Null uses authored source height, then 620 pixels.</summary>
+    public int? Height { get; set; }
 }
