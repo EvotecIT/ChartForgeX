@@ -124,7 +124,7 @@ public static partial class V2Examples {
                     : variant is "options" or "compact-options" && GeometryOptionFamilies.Contains(kind) ? GeometrySubtitle(kind)
                     : variant switch { "sparse" => "Missing observations remain visible as gaps", "options" => "Explore configured marks, scales and labels", "compact" => "The same data in a compact view", _ => "Explore the data, then download the chart" };
                 WriteModel(output, artifacts, chart, id, family, title, variant, subtitle, mode, width, height, legend,
-                    "V2GalleryModels.Create(ChartSeriesKind." + kind + ", " + Literal(variant) + ", VisualThemeMode." + mode + ")", chart.Series.Select(series => series.Kind.ToString()).Distinct().ToArray(), compact: compact);
+                    ExampleRecipes.ForKind(kind, variant), chart.Series.Select(series => series.Kind.ToString()).Distinct().ToArray(), compact: compact);
             }
             if (kind == ChartSeriesKind.RadialBar) WriteNumericRadialAxes(output, artifacts, mode);
         }
@@ -139,13 +139,13 @@ public static partial class V2Examples {
             if (curved) variant += "-curves";
             WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial(curved ? 1 : null), "family-radial-column-" + variant + "-" + mode.ToString().ToLowerInvariant(),
                 "radial-column", "Regional counts and targets", variant, "Columns, reference area and target line share categories and radius", mode,
-                compact ? 360 : 800, compact ? 360 : 440, true, curved ? "V2GalleryModels.CreateMixedRadial(curveTension: 1)" : "V2GalleryModels.CreateMixedRadial()", new[] { "RadialColumn", "Radar" }, compact: compact);
+                compact ? 360 : 800, compact ? 360 : 440, true, ExampleRecipes.Named("mixed-radial"), new[] { "RadialColumn", "Radar" }, compact: compact);
           }
             var reversedVariant = compact ? "compact-mixed-angular-reversal" : "mixed-angular-reversal";
             WriteModel(output, artifacts, V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal()),
                 "family-radial-column-" + reversedVariant + "-" + mode.ToString().ToLowerInvariant(), "radial-column", "Regional counts and targets", reversedVariant,
                 "Columns, reference area and target line share reversed category angles", mode, compact ? 360 : 800, compact ? 360 : 440, true,
-                "V2GalleryModels.CreateMixedRadial().ConfigureXAxis(axis => axis.WithReversal())", new[] { "RadialColumn", "Radar" }, compact: compact);
+                ExampleRecipes.Named("mixed-radial"), new[] { "RadialColumn", "Radar" }, compact: compact);
         }
     }
 
@@ -155,7 +155,7 @@ public static partial class V2Examples {
             var id = "family-radial-bar-" + variant + "-" + mode.ToString().ToLowerInvariant();
             WriteModel(output, artifacts, V2GalleryModels.CreateRadialBarScales(), id, "radial-bar", "Requests and resolution rate", variant,
                 "Request counts and percentages use independent scales", mode, compact ? 360 : 800, compact ? 360 : 440, true,
-                "V2GalleryModels.CreateRadialBarScales()", new[] { "RadialBar" }, compact: compact);
+                ExampleRecipes.Named("radial-bar-scales"), new[] { "RadialBar" }, compact: compact);
         }
     }
 
@@ -178,14 +178,14 @@ public static partial class V2Examples {
     };
 
     private static void WriteModel(string output, ICollection<ProofArtifact> artifacts, IVisualRenderable model, string id, string family, string title,
-        string variant, string subtitle, VisualThemeMode mode, int width, int height, bool? legend, string expression, string[]? kinds = null, bool compact = false) {
+        string variant, string subtitle, VisualThemeMode mode, int width, int height, bool? legend, ExampleRecipe recipe, string[]? kinds = null, bool compact = false) {
         var context = GalleryContext(width, height, mode, title, subtitle, legend);
         var prepared = model.Prepare(context);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
         File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
         WriteThumbnail(output, model, id, title, family, mode, legend);
         var artifactKind = family is "topology" or "flow" or "sequence" ? char.ToUpperInvariant(family[0]) + family.Substring(1) : "Chart";
-        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), ModelSnippet(expression, title, subtitle, mode, width, height, legend, artifactKind));
+        WriteRecipe(output, id, recipe, variant, title, subtitle, mode, width, height, legend, artifactKind);
         artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
             prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count, kinds,
             prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray(), compact));

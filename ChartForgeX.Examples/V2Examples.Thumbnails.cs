@@ -16,7 +16,7 @@ public static partial class V2Examples {
     // truthful overview of the same notation; their complete model stays on the example page.
     private static void WriteThumbnail(string output, IVisualRenderable model, string id, string title, string family, VisualThemeMode mode, bool? legend) {
         IVisualRenderable previewModel = family switch {
-            "sequence" => CreateSequence(),
+            "sequence" => SimpleSequenceRecipe.Create(),
             "topology" => ThumbnailTopology(),
             "flow" => ThumbnailFlow(),
             "chart-grid" => ChartGrid.Create().WithColumns(2).WithGap(12).WithPanelSize(184, 248)

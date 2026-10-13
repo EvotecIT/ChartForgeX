@@ -1,0 +1,28 @@
+/// <summary>Maps observed temperatures to explicitly positioned color stops.</summary>
+public static class ScatterPositionedColorScaleRecipe {
+    /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
+    public static Chart Create(string variant = "positioned-color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("positioned-color-scale" or "compact-positioned-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
+        return PositionedColorScale(mode).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static Chart PositionedColorScale(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var temperatures = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
+        var minutes = new[] { 24d, 36, 45, 20, 32, 50, 28, 41, 18, 35, 22, 48 };
+        var recorded = ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", temperatures.Select((value, index) =>
+            new ChartPoint((index + 1) * 8, minutes[index]).WithColorValue(value)));
+        recorded.WithColorScale(TemperatureScale().WithNoDataColor(colors.Border))
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+        return NumericAxes().ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; }).AddSeries(recorded);
+    }
+
+    private static Chart NumericAxes() => Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+
+    private static ChartColorScale TemperatureScale() => ChartColorScale.Diverging(new[] {
+        new ChartColorStop(-20, ChartColor.FromHex("#2166AC")), new ChartColorStop(-3, ChartColor.FromHex("#67A9CF"))
+    }, new ChartColorStop(0, ChartColor.FromHex("#D1D5DB")), new[] {
+        new ChartColorStop(5, ChartColor.FromHex("#D9A441")), new ChartColorStop(40, ChartColor.FromHex("#B2182B"))
+    }).WithLabels("Cold", "Freezing", "Warm");
+}

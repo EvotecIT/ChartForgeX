@@ -1,0 +1,34 @@
+/// <summary>Formats a temperature color dimension independently from processing time.</summary>
+public static class ScatterColorDimensionRecipe {
+    /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
+    public static Chart Create(string variant = "color-dimension", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("color-dimension" or "compact-color-dimension" or "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend")) throw new ArgumentOutOfRangeException(nameof(variant));
+        return ColorDimension(variant, mode);
+    }
+
+    private static Chart ColorDimension(string variant, VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var gradient = variant is "gradient-color-legend" or "compact-gradient-color-legend";
+        var swatches = variant is "swatch-color-legend" or "compact-swatch-color-legend";
+        var minutes = new[] { 18d, 30, 24, 44, 32 };
+        var temperatures = new double?[] { -12, 0, null, 2.5, 22.5 };
+        var recorded = ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", temperatures.Select((value, index) =>
+            new ChartPoint((index + 1) * 16, minutes[index]).WithColorValue(value)));
+        recorded.WithColorScale(TemperatureScale().WithNoDataColor(colors.Border)).ConfigureColorDimension(options => {
+            options.Name = "Temperature";
+            options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
+            options.LegendStyle = gradient ? ChartColorLegendStyle.Gradient : swatches ? ChartColorLegendStyle.Swatches : ChartColorLegendStyle.Auto;
+        });
+        return NumericAxes().ConfigureLabels(labels => labels.NoData = "Not sampled")
+            .WithValueFormat(ChartValueFormat.Number("0.0 'min'", CultureInfo.InvariantCulture)).AddSeries(recorded);
+    }
+
+    private static Chart NumericAxes() => Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+
+    private static ChartColorScale TemperatureScale() => ChartColorScale.Diverging(new[] {
+        new ChartColorStop(-20, ChartColor.FromHex("#2166AC")), new ChartColorStop(-3, ChartColor.FromHex("#67A9CF"))
+    }, new ChartColorStop(0, ChartColor.FromHex("#D1D5DB")), new[] {
+        new ChartColorStop(5, ChartColor.FromHex("#D9A441")), new ChartColorStop(40, ChartColor.FromHex("#B2182B"))
+    }).WithLabels("Cold", "Freezing", "Warm");
+}

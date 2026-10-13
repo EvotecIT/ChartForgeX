@@ -116,7 +116,7 @@ Charts and diagrams share the same theme, typography and chart area. These 400 Ã
   </tr>
 </table>
 
-Explore all chart families in the [gallery](https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Fcatalog.html). Each example includes light and dark themes, SVG and PNG previews, and C# source.
+Explore all chart families in the [gallery](https://preview.evotec.xyz/?url=https%3A%2F%2Fgithub.com%2FEvotecIT%2FChartForgeX%2Fblob%2Fmain%2FWebsite%2Fstatic%2Fexamples%2Fgenerated%2Fcatalog.html). Each example includes light and dark themes, SVG and PNG previews, and a standalone C# recipe. Add the `ChartForgeX` package to a console project, paste the recipe into `Program.cs`, and run it to write SVG, PNG and HTML. Configured variants have their own focused recipes; an optional gallery-font download reproduces the galleryâ€™s typography.
 
 ## Examples
 

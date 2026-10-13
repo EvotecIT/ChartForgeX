@@ -1,0 +1,35 @@
+/// <summary>Colors request-volume bubbles by temperature and overlays a target duration.</summary>
+public static class BubbleColorScaleRecipe {
+    /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
+    public static Chart Create(string variant = "color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
+        return NumericColorScale(mode).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static Chart NumericColorScale(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var samples = new[] {
+            new { Batch = 15d, Minutes = 28d, Requests = 9d, Temperature = (double?)-12 },
+            new { Batch = 30d, Minutes = 42d, Requests = 36d, Temperature = (double?)0 },
+            new { Batch = 45d, Minutes = 18d, Requests = 81d, Temperature = (double?)null },
+            new { Batch = 60d, Minutes = 35d, Requests = 36d, Temperature = (double?)12 },
+            new { Batch = 80d, Minutes = 22d, Requests = 120d, Temperature = (double?)35 }
+        };
+        var recorded = ChartSeries.CreateBubble(new ChartSeriesId("recorded-batches"), "Recorded batches",
+            samples.Select(sample => new ChartBubble(sample.Batch, sample.Minutes, sample.Requests).WithColorValue(sample.Temperature)));
+        recorded.WithColorScale(ChartColorScale.Discrete(new[] {
+                new ChartColorBand(0, colors.Palette[0], "Cold"),
+                new ChartColorBand(15, colors.Status.Medium.Fill, "Mild"),
+                new ChartColorBand(null, colors.Status.Critical.Fill, "Warm")
+            }).WithNoDataColor(colors.Border))
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+        var target = ChartSeries.CreateLine(new ChartSeriesId("target-duration"), "Target duration", new[] { new ChartPoint(0, 30), new ChartPoint(100, 30) })
+            .ConfigureMarkers(markers => markers.Enabled = false);
+        return NumericAxes().ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; })
+            .AddSeries(recorded).AddSeries(target)
+            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20; });
+    }
+
+    private static Chart NumericAxes() => Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+}

@@ -1,0 +1,39 @@
+/// <summary>Builds daily opening, high, low and closing prices as tick marks.</summary>
+public static class OhlcRecipe {
+    /// <summary>Creates the selected OHLC example with optional rising and falling stroke styles.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "dashed" or "compact-dashed"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant is "options" or "compact-options" or "dashed" or "compact-dashed") {
+            var prices = ChartSeries.CreateOhlc(new ChartSeriesId("daily-prices"), "Daily prices", new[] {
+                new ChartCandlestick(1, 44, 58, 38, 53), new ChartCandlestick(2, 53, 60, 42, 45),
+                new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
+                new ChartCandlestick(5, 47, 63, 44, 58)
+            });
+            prices.ConfigureFinancial(financial => {
+                financial.Rising.Stroke = ChartColor.FromHex("#2A967B");
+                financial.Rising.StrokeWidth = 2.4;
+                financial.Falling.Stroke = ChartColor.FromHex("#DB825B");
+                financial.Falling.StrokeWidth = 2.8;
+                financial.Falling.StrokeOpacity = .85;
+            }).WithPointColor(4, "#729BB7");
+            if (variant is "dashed" or "compact-dashed") prices.ConfigureFinancial(financial => {
+                financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
+                financial.Rising.DashOffset = -3;
+                financial.Falling.DashPattern = new[] { 4d, 4d };
+                financial.Falling.DashOffset = 2;
+            });
+            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Price")
+                .WithPointLegend().WithDataLabels(false).AddSeries(prices);
+        }
+        else {
+            var count = variant == "sparse" ? 2 : 5;
+            var values = Enumerable.Range(1, count).Select(index => new ChartCandlestick(index, 30 + index * 3,
+                44 + index * 3, 20 + index * 3, index % 2 == 0 ? 26 + index * 3 : 38 + index * 3));
+            var prices = ChartSeries.CreateOhlc(new ChartSeriesId("market-price"), "Market price", values);
+            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(prices);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

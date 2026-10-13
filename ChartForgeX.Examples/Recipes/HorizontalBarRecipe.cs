@@ -1,0 +1,32 @@
+/// <summary>Builds horizontal regional order bars and normalized grouped stacks.</summary>
+public static class HorizontalBarRecipe {
+    /// <summary>Creates the selected horizontal-bar example.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant is "options" or "compact-options") {
+            chart.WithXLabels("North", "South", "East", "West").WithXAxis("Share (%)");
+            var names = new[] { "First half · Completed", "First half · Remaining", "Second half · Completed", "Second half · Remaining" };
+            var ids = new[] { "first-half-completed", "first-half-remaining", "second-half-completed", "second-half-remaining" };
+            var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
+            for (var index = 0; index < names.Length; index++) {
+                var points = values[index].Select((value, point) => new ChartPoint(point + 1, value));
+                var series = new ChartSeries(new ChartSeriesId(ids[index]), names[index], ChartSeriesKind.HorizontalBar, points)
+                    .WithStackGroup(index < 2 ? "first-half" : "second-half").WithNormalization(100);
+                chart.AddSeries(series);
+            }
+            chart.Options.XAxis.WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == "compact-options");
+            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+        }
+        else {
+            var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
+                .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6));
+            var orders = new ChartSeries(new ChartSeriesId("orders"), "Orders", ChartSeriesKind.HorizontalBar, points);
+            chart.WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(orders);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";
+}
