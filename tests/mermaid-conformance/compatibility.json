@@ -190,6 +190,14 @@
       },
       "provenance": "Authored flowchart caption, quoted delimiter and compact statement examples; verified with the pinned official Mermaid parsers."
     },
+    "fixtures/flowchart-closing-endpoints.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored native endpoint and caption boundary regression; checked against pinned official Mermaid parsers."
+    },
     "fixtures/flowchart-compact.mmd": {
       "syntax": {
         "10": "accepted",

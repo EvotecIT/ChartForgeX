@@ -1,0 +1,79 @@
+{
+  "nodes": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G"
+  ],
+  "edges": [
+    [
+      "A",
+      "B"
+    ],
+    [
+      "B",
+      "C"
+    ],
+    [
+      "C",
+      "D"
+    ],
+    [
+      "D",
+      "E"
+    ],
+    [
+      "E",
+      "F"
+    ],
+    [
+      "F",
+      "G"
+    ]
+  ],
+  "edgeLabels": [
+    "label",
+    "label",
+    "label",
+    "label",
+    "label",
+    "label"
+  ],
+  "endpointKinds": [
+    [
+      "Circle",
+      "Circle"
+    ],
+    [
+      "Cross",
+      "Cross"
+    ],
+    [
+      "Circle",
+      "Circle"
+    ],
+    [
+      "Arrow",
+      "Arrow"
+    ],
+    [
+      "Arrow",
+      "Arrow"
+    ],
+    [
+      "Arrow",
+      "Arrow"
+    ]
+  ],
+  "referenceEdgeTypes": [
+    "double_arrow_circle",
+    "double_arrow_cross",
+    "double_arrow_circle",
+    "double_arrow_point",
+    "double_arrow_point",
+    "double_arrow_point"
+  ]
+}

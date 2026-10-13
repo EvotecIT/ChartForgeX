@@ -59,13 +59,14 @@ internal static class MermaidFlowchartOperators {
         for (var index = firstText; index < text.Length; index++) {
             if (MermaidFlowchartText.ReadQuotedCharacter(text, ref index, ref quote)) continue;
             var end = ReadLabelSuffixEnd(text, index, family);
-            if (end == index || index == firstText) {
+            if (end == index) {
                 // A run of dots without its terminating dash cannot contain a later
                 // valid dotted suffix. Skip it once instead of rescanning its tail.
                 if (family == '.' && text[index] == '.')
                     while (index + 1 < text.Length && text[index + 1] == '.') index++;
                 continue;
             }
+            if (index == firstText) continue;
             labelEnd = index;
             edgeEnd = end;
             return true;
