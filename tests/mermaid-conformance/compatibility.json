@@ -198,6 +198,14 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/flowchart-native-shape-aliases.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored native shape alias fixture based on the official Mermaid flowchart shape catalog. Metadata syntax is introduced in Mermaid 11.3; pinned parsers verify alias identities and relationships."
+    },
     "fixtures/flowchart-quoted-shapes.mmd": {
       "syntax": {
         "10": "accepted",
