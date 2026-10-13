@@ -166,7 +166,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         """);
 
     private static void AssertGuideGeometry(JsonElement guide, double[] native) {
-        Assert.True(guide.GetProperty("visible").GetBoolean());
+        Assert.True(guide.GetProperty("visible").GetBoolean(), guide.GetRawText());
         Assert.InRange(guide.GetProperty("x").GetDouble() - native[0], -1, 1);
         Assert.InRange(guide.GetProperty("y").GetDouble() - native[1], -1, 1);
         var plot = guide.GetProperty("plot");

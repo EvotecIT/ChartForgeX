@@ -11,6 +11,7 @@ public static partial class GalleryWriter {
     private static readonly HashSet<string> NaturalHeightExamples = new(StringComparer.Ordinal) {
         "advanced-topology",
         "brand-kit-showcase-grid",
+        "cartesian-automatic-category-margins",
         "chart-mark-surfaces-showcase-grid",
         "control-scorecards-grid",
         "data-label-placement-showcase-grid",

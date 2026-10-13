@@ -1,0 +1,6 @@
+{
+  "nodes": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"],
+  "edges": [["A", "B"], ["C", "D"], ["E", "F"], ["G", "H"], ["I", "J"]],
+  "referenceNodeShapes": ["fr-rect", "framed-rectangle", "question", "odd", "lean-right", "lean-left", "manual", "trapezoid-top", "priority", "trapezoid-bottom"],
+  "nativeShapes": ["Subroutine", "Subroutine", "Diamond", "Asymmetric", "Parallelogram", "ParallelogramAlt", "TrapezoidAlt", "TrapezoidAlt", "Trapezoid", "Trapezoid"]
+}

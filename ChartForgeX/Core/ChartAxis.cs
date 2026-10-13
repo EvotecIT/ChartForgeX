@@ -167,7 +167,7 @@ public sealed class ChartAxis {
 
     /// <summary>
     /// Gets or sets a value indicating whether time axes append the time-zone designator to the axis title,
-    /// or show it as the title when no title is set. Only the x-axis title is decorated.
+    /// or show it as the title when no title is set. Horizontal line charts also decorate their physical Y category title.
     /// </summary>
     public bool ShowTimeZone { get; set; }
 

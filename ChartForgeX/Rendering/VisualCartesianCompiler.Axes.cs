@@ -26,7 +26,7 @@ internal static partial class VisualCartesianCompiler {
             _ticks[axis] = ChartTicks.ForValueAxis(axis, minimum, maximum);
         }
         internal IReadOnlyList<double> Ticks(ChartAxis axis, double minimum, double maximum) {
-            var ticks = _ticks.TryGetValue(axis, out var authored) ? authored.Where(value => value >= minimum && value <= maximum).ToArray()
+            var ticks = _ticks.TryGetValue(axis, out var authored) ? ChartTicks.PreserveFormatting(authored, authored.Where(value => value >= minimum && value <= maximum).ToArray())
                 : ChartTicks.ForAxis(axis, minimum, maximum);
             if (!_captionTicks.TryGetValue(axis, out var previous) || !previous.SequenceEqual(ticks)) {
                 _captionTicks[axis] = ticks;
