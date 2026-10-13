@@ -442,6 +442,14 @@
         "11": "The pinned Mermaid 11 engine removes bitOrder and paints ascending rows. The pinned Mermaid 12 engine retains descending order; source ranges remain identical."
       }
     },
+    "fixtures/packet-geometry.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored field dimensions and spacing case from https://mermaid.js.org/config/schema-docs/config-defs-packet-diagram-config.html. Pinned references qualify typed configuration and inclusive field ranges; native preview fitting deliberately does not assert pixel equality."
+    },
     "fixtures/packet-source-options.mmd": {
       "syntax": {
         "10": "rejected",

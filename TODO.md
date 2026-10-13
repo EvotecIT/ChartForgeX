@@ -191,7 +191,8 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 - [ ] Render journey sections, actors and score paths as a reusable journey scene and timeline sections/events in both directions. Keep the current score-bar/ordered-time mappings explicit until replaced.
 - [x] Map Sankey source dimensions, node geometry/alignment and value-label visibility/affixes through the native owners. Qualify direct/fence host overrides and the same node/flow facts across pinned Mermaid 10, 11 and 12; retain unsupported paint settings as diagnostics.
 - [ ] Broaden pie/show-data, XY named-series legend rules, per-point line labels, numeric/category axes and source configuration, and Sankey CSV/configuration/colors.
-- [x] Apply packet source `bitsPerRow`, `showBits` and `bitOrder` through the native packet owner, with independent host overrides, mirrored partial rows and shared SVG/PNG bit labels. Pinned reference fixtures cover configuration retention and resolved row ranges; packet dimensions and padding remain open.
+- [x] Apply packet source `bitsPerRow`, `showBits` and `bitOrder` through the native packet owner, with independent host overrides, mirrored partial rows and shared SVG/PNG bit labels. Pinned reference fixtures cover configuration retention and resolved row ranges.
+- [x] Apply packet source `bitWidth`, `rowHeight`, `paddingX` and `paddingY` through native dimensions and field/row gaps. Independent host overrides preserve explicit zero gaps; fixed preview bounds fit dense rows and reserve measured bit-label space. Reference, browser and packed-consumer checks cover the mapping.
 
 Completion: values, dates, hierarchy, direction and requested encodings survive conversion and are visibly represented. Existing owner PRs supply shared capability; they do not by themselves complete Mermaid configuration or compatibility proof.
 

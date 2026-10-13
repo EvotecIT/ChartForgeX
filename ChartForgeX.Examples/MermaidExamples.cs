@@ -10,6 +10,8 @@ internal static class MermaidExamples {
             ["mermaid-xychart-horizontal-bar"] = "xychart-beta horizontal\ntitle \"Monthly count\"\nx-axis Month [Jan, Feb, Mar]\ny-axis Count 0 --> 100\nbar [20, 50, 80]\n",
             ["mermaid-xychart-horizontal-line"] = "xychart-beta horizontal\ntitle \"Monthly count\"\nx-axis Month [Jan, Feb, Mar]\ny-axis Count 0 --> 100\nline [30, 60, 90]\n",
             ["mermaid-xychart-horizontal-mixed"] = "xychart-beta horizontal\ntitle \"Monthly count\"\nx-axis Month [Jan, Feb, Mar]\ny-axis Count 0 --> 100\nbar [20, 50, 80]\nline [30, 60, 90]\n",
+            ["mermaid-packet-geometry"] = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    bitWidth: 24\n    rowHeight: 40\n    paddingX: 3\n    paddingY: 7\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"\n+6: \"Tail\"\n",
+            ["mermaid-packet-preferred-row-gap"] = "---\nconfig:\n  packet:\n    bitsPerRow: 8\n    rowHeight: 20\n    paddingY: 100\n    showBits: false\n---\npacket-beta\n0-7: \"Header\"\n8-15: \"Payload\"\n",
             ["mermaid-packet-descending"] = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    bitOrder: descending\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"\n+1: \"Ready\"\n+5: \"Tail\"\n",
             ["mermaid-packet-source-options"] = "---\nconfig:\n  packet:\n    bitsPerRow: 16\n    showBits: false\n---\npacket-beta\n0-3: \"Flags\"\n+14: \"Payload\"\n+1: \"Ready\"\n+5: \"Tail\"\n",
             ["mermaid-source-font-size-wardley-boundaries"] = "%%{init: {'themeVariables':{'fontSize':256}}}%%\nwardley-beta\ncomponent API [0.5, 0.5]\nannotation 1, [1, 1] \"\"\nannotation 2, [1, 0] \"\"\nannotation 3, [0, 1] \"\"\nannotation 4, [0, 0] \"\"\n",
