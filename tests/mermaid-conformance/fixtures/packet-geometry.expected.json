@@ -1,0 +1,13 @@
+{
+  "configuration": {
+    "packet.bitsPerRow": 16,
+    "packet.bitWidth": 24,
+    "packet.rowHeight": 40,
+    "packet.paddingX": 3,
+    "packet.paddingY": 7
+  },
+  "packetRows": [
+    [[0, 3, "Flags"], [4, 15, "Payload"]],
+    [[16, 17, "Payload"], [18, 23, "Tail"]]
+  ]
+}

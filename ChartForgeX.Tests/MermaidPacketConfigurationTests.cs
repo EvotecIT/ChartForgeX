@@ -21,6 +21,7 @@ public sealed class MermaidPacketConfigurationTests {
     [Theory]
     [InlineData("packet-source-options", false, PacketBitOrder.Ascending)]
     [InlineData("packet-descending", true, PacketBitOrder.Descending)]
+    [InlineData("packet-geometry", true, PacketBitOrder.Ascending)]
     public void RenderedRowsMatchSharedUpstreamFieldExpectations(string name, bool showBits, PacketBitOrder order) {
         var root = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures");
         var parsed = new MermaidParser().ParsePacket(File.ReadAllText(Path.Combine(root, name + ".mmd")));
@@ -136,7 +137,7 @@ public sealed class MermaidPacketConfigurationTests {
         for (var index = 0; index < fields.Length; index++) {
             // Each row is mirrored across the same content rectangle, including partial final rows.
             Assert.Equal(width + block.Options.Padding.Left - block.Options.Padding.Right,
-                Number(fields[index], "x") + Number(ascending[index], "x") + Number(fields[index], "width") + 1, 2);
+                Number(fields[index], "x") + Number(ascending[index], "x") + Number(fields[index], "width"), 2);
         }
         Assert.False(native.SequenceEqual(block.ToPng()));
         block.BitOrder = PacketBitOrder.Descending;

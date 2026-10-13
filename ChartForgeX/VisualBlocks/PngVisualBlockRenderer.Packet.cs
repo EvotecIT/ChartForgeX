@@ -18,18 +18,18 @@ public sealed partial class PngVisualBlockRenderer {
         if (rowCount == 0) return;
         var metrics = VisualBlockRendering.PacketRows(packet, content, y, rowCount, slices);
         var labelTop = metrics.LabelTop; var rowGap = metrics.Gap; var rowHeight = metrics.Height;
-        var bitWidth = content.Width / packet.BitsPerRow;
         for (var index = 0; index < slices.Count; index++) {
             var slice = slices[index];
             var rowY = y + slice.Row * (rowHeight + labelTop + rowGap) + labelTop;
-            var x = content.X + VisualBlockRendering.PacketColumn(packet, slice) * bitWidth;
-            var width = Math.Max(1, slice.BitLength * bitWidth - 1);
+            var x = content.X + VisualBlockRendering.PacketFieldLeft(packet, slice, metrics);
+            var width = metrics.FieldWidth(slice.BitLength);
             var color = VisualBlockRendering.PaletteAt(theme, slice.FieldIndex);
             canvas.FillRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color.WithAlpha(48));
             canvas.StrokeRoundedRect(x, rowY, width, rowHeight, Math.Min(7, rowHeight * 0.22), color, 1);
             if (packet.ShowBitNumbers && metrics.BitFontSize > 0) DrawPacketBitLabels(canvas, packet, slice, x, rowY - metrics.BitBaselineOffset - canvas.TextAscent(metrics.BitFontSize, true), width, theme.MutedText, metrics.BitFontSize);
             var fontSize = Math.Min(metrics.FieldFontSize, VisualBlockRendering.PacketFieldFontSize(packet, slice, width, rowHeight));
-            DrawAlignedTextAtBaseline(canvas, slice.Field.Label, x + 5, rowY + rowHeight * .58, Math.Max(1, width - 10), TextAlignment.Center, theme.Text, fontSize, true);
+            var inset = VisualBlockRendering.PacketFieldInset(width);
+            DrawAlignedTextAtBaseline(canvas, slice.Field.Label, x + inset, rowY + rowHeight * .58, Math.Max(1, width - 2 * inset), TextAlignment.Center, theme.Text, fontSize, true);
         }
     }
 
