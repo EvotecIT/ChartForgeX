@@ -20,6 +20,7 @@ internal static class Program {
     private static void Main() {
         PackageAssertions.CoreFixtures();
         NativeViewportSection();
+        RadarSourcePaint();
         var values = ChartSeries.CreateLine(new ChartSeriesId("package-values"), "Values",
             new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
         var bubble = ChartSeries.CreateBubble(new ChartSeriesId("0"), "Values", new[] { new ChartBubble(1.5, 2.5, 7) })
@@ -165,5 +166,18 @@ internal static class Program {
         PackageAssertions.Png(narrowed.PreparedVisual.ToPng());
         PackageAssertions.Require(renderer.PrepareSection(chart).Html == full.Html && chart.Options.XAxis.Minimum == 0 && chart.Options.XAxis.Maximum == 10,
             "Packed native reset did not recover the full section or mutated authored bounds.");
+    }
+    private static void RadarSourcePaint() {
+        const string source = "%%{init: {'themeVariables': {'cScale0': '#2563EB', 'radar': {'curveStrokeWidth': 0, 'curveOpacity': 0, 'axisStrokeWidth': 3}}}}%%\nradar-beta\naxis A,B,C\ncurve c{20,40,30}\nmax 100";
+        var parsed = new MermaidParser().ParseRadar(source);
+        PackageAssertions.Require(!parsed.HasErrors && parsed.Diagnostics.Count == 0, "Packed radar style parser failed.");
+        var chart = parsed.Document!.ToChart();
+        PackageAssertions.Require(chart.Series[0].Color?.Equals(ChartColor.FromHex("#2563EB")) == true
+            && chart.Series[0].Radar.OutlineStroke!.Width == 0 && chart.Options.PolarAxisStroke!.Width == 3,
+            "Packed radar theme settings did not reach native owners.");
+        var markup = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        PackageAssertions.Require(!markup.HasErrors && markup.Artifacts.Count == 1
+            && markup.Artifacts[0].ToSvg() == parsed.Document!.ToVisualArtifact().ToSvg(), "Packed radar fence changed source paint.");
+        PackageAssertions.Png(markup.Artifacts[0].ToPng());
     }
 }

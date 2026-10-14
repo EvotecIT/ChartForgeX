@@ -103,7 +103,7 @@ JSON configuration numbers must use JSON number syntax and fit the native reader
 
 Configuration is limited to 65,536 characters across the YAML `config` declarations and legacy declarations, 256 retained settings, eight JSON/mapping levels and 4,096 characters for each latest global or active-family theme/layout/look value and effective font string. Effective presentation strings contain complete Unicode characters; font names also use XML-compatible characters so native artifacts can export to SVG. Unsupported sequence bodies, including indentless items, count toward the configuration budget. Unrelated frontmatter metadata, whole YAML comment lines and blank lines outside scalar content do not consume it. Physical block-scalar and quoted flow-scalar bodies count, including lines beginning with `#` and whitespace-only lines. Comments do not end the active mapping; following indented settings remain subject to its limits. Over-budget declarations are omitted from the bounded directive collection; the original source remains available. YAML has an additional 256-key limit. Duplicate keys within one supported mapping, inconsistent sibling indentation, invalid supported values and over-limit input report `CFXM006` and prevent the shared renderer from producing an artifact. Repeated legacy declarations remain valid and merge in order.
 
-`layout`, `look`, `defaultRenderer`, theme variables and other family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
+Unmapped `layout`, `look`, `defaultRenderer`, theme variables and family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. Supported radar paint and typography settings are documented under [Radar Diagrams](#radar-diagrams). A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
 
 ## Process diagrams
 
@@ -131,6 +131,7 @@ Supported flowchart parsing includes:
 - Common node references and labels.
 - Common node shapes, including rectangle, rounded, stadium, subroutine, cylinder, circle, double circle, rhombus, hexagon, and parallelogram variants.
 - Edge operators, pipe labels, inline labels, dotted operators, and chained edges.
+- Longer normal, thick and dotted operators request larger minimum rank spans; caption punctuation does not affect spacing.
 - Quoted pipe captions retain embedded pipes. Inline captions retain comparison signs, brackets, and semicolons. Node metadata decodes YAML single-quoted scalars, including doubled apostrophes and literal backslashes, while apostrophes in ordinary captions remain text.
 - `subgraph ... end` groups.
 - `classDef`, `class`, and inline `:::class` node classes.
@@ -171,6 +172,8 @@ var png = document.ToPng();
 ```
 
 The conversion target for flowcharts is `TopologyChart`. Subgraphs become topology groups. Nodes become topology nodes. Edges become topology edges. Hrefs, tooltips, class names, source lines, Mermaid ids, and style metadata are retained where the topology model can carry them.
+
+Link length is a native rank constraint: `A --> B` requests one rank, `A ---> B` requests two, and `A ----> B` requests three. Thick and dotted links use the same rank-spacing owner, and inline labels take their length from the closing operator. Hyphens or dots within labels remain label text. Swimlane conversion applies the same rule. Longer links can cause the fitted canvas to grow; they do not request a fixed pixel distance. Shared routing reserves a corridor for links that skip intermediate ranks while preserving explicit native ports and waypoints.
 
 ## Class Diagrams
 
@@ -1041,7 +1044,7 @@ The conversion target for radar diagrams is `Chart`. Axis labels, curve values, 
 
 Nonnegative decimal `ticks` selects equal radial intervals, with five by default. `ticks 0` hides concentric guides while retaining spokes, labels and data points. Fractional values retain the authored spacing divisor: `ticks 2.5` draws three guides at 0.4, 0.8 and 1.2 times the value-axis radius; `ticks 0.5` draws one guide at twice that radius. The shared scene fits the outer guide inside the viewport while preserving the value domain and observations. Counts above 32 render 32 guides with a source warning and retain the authored count in the AST. Tick numerals require digits on both sides of a decimal point; negative, signed, exponent and shorthand decimal spellings produce located errors.
 
-Native C# radar charts keep their polygon default and can select circular guides with `WithPolarGridShape(ChartPolarGridShape.Circle)`. Set `Options.PolarGridRingCount` from 0 through 100 for integer or fractional intervals, or leave it null to use the radial axis's generated ticks. Integer counts preserve data-point coordinates; fractional intervals fit the extended outer guide without changing source values or series forms. `PolarGridRingCount` and `MermaidRadarDocument.Ticks` use `double?`; code that reads them into `int?` must use `double?` to retain fractional values. Source radar theme variables remain unmapped.
+Native C# radar charts keep their polygon default and can select circular guides with `WithPolarGridShape(ChartPolarGridShape.Circle)`. Set `Options.PolarGridRingCount` from 0 through 100 for integer or fractional intervals, or leave it null to use the radial axis's generated ticks. Integer counts preserve data-point coordinates; fractional intervals fit the extended outer guide without changing source values or series forms. `PolarGridRingCount` and `MermaidRadarDocument.Ticks` use `double?`; code that reads them into `int?` must use `double?` to retain fractional values.
 
 Static SVG and PNG share the same radar path geometry. Circular graticules, including the default, select closed cubic curves with tension `0.17`; polygonal graticules select straight edges.
 
@@ -1065,6 +1068,24 @@ Radar configuration also maps `width`, `height`, `marginLeft`, `marginTop`, `mar
 `axisScaleFactor` changes spoke length relative to the value-axis radius; `axisLabelFactor` changes category-label anchors. They default to one and 1.05 respectively for Mermaid sources. The native theme supplies the caption gap. Long visible spokes, label anchors, fractional guides and curved outlines share the available plot space without changing observation values or the selected value domains. Direct native radar and polar charts expose `Options.PolarAxisScaleFactor` and `Options.PolarAxisLabelFactor`, both with a default of one. These options apply to the dedicated radar/polar projection; radial-column compositions retain their shared numeric radial layout.
 
 `MermaidRadarRenderOptions.Width` and `Height` are nullable host overrides: null uses the authored source dimension, then the native preview default of 760 by 620 pixels. Callers reading either property into an `int` can use `Width ?? 760` or `Height ?? 620`, or read the converted chart's resolved size. `AxisScaleFactor`, `AxisLabelFactor` and `Padding` provide explicit host overrides; padding replaces all four source margins, including zero values. Unspecified source margins retain the native 24-pixel frame defaults. Markdown fences preserve the captured host options, and explicit fence dimensions override source dimensions. Source labels now use the 1.05 anchor factor by default; callers retaining the earlier native anchor placement can set the host `AxisLabelFactor` to one. Native heading, legend and measured-label spacing still determines the final plot, so source margins do not promise browser-renderer pixel identity.
+
+Radar source paint uses `config.themeVariables`. `titleColor` sets the title color, and `cScale0` through `cScale11` set series colors in source order. These are explicit native style values over the active paired theme; changing light/dark mode preserves authored paint. The series palette repeats after twelve slots, and omitted slots use the native theme palette.
+
+The following nested `themeVariables.radar` settings apply through the same chart and series owners in direct and Markdown-fence rendering:
+
+| Source setting | Native owner | Accepted value |
+| --- | --- | --- |
+| `axisColor` | Spoke stroke and axis-label color | Supported native color string |
+| `axisStrokeWidth` | `Options.PolarAxisStroke` | Finite width from 0 through 1024; zero hides spoke ink |
+| `axisLabelFontSize` | Tick-label style | Finite logical-pixel size from 1 through 256 |
+| `graticuleColor` | Guide stroke and authored guide fill | Supported native color string |
+| `graticuleStrokeWidth` | `Options.PolarGridStroke` | Finite width from 0 through 1024; zero hides guide outlines |
+| `graticuleOpacity` | `Options.PolarGridFillOpacity` | Finite opacity from 0 through 1 |
+| `curveOpacity` | Per-series radar fill opacity | Finite opacity from 0 through 1 |
+| `curveStrokeWidth` | Per-series radar `OutlineStroke` | Finite width from 0 through 1024; zero hides the outline |
+| `legendFontSize` | Legend text style | Finite logical-pixel size from 1 through 256 |
+
+Invalid supported values produce located configuration errors. Frontmatter/directive precedence follows the shared configuration rules. Native callers can configure each retained radar series through `ConfigureRadar`, including `OutlineStroke` with the existing immutable `ChartStrokeStyle`; guide strokes use that same type. SVG and PNG share the resolved plot, guide and legend paint, including color alpha. Authored nested guide fills composite in drawing order. Unmapped theme variables retain diagnostics rather than selecting another renderer.
 
 ## Treemap Diagrams
 
@@ -1418,6 +1439,7 @@ Flowchart rendering maps Mermaid concepts into the ChartForgeX topology visual v
 | Subgraph | Topology group. |
 | Node label | Topology node label. |
 | Edge label | Topology edge label. |
+| Link length | Native `TopologyEdge.MinimumRankSpan`, also used by swimlane diagrams. |
 | `click` href and tooltip | Topology node href and tooltip. |
 | `classDef`, `class`, `style` colors | Node style metadata and supported color fields. |
 | `linkStyle stroke` | Edge color. |

@@ -56,9 +56,11 @@ public sealed class MermaidFlowchartLengthTests {
         Assert.Equal(expected, Assert.Single(parsed.Document!.ToTopologyChart().Edges).MinimumRankSpan);
     }
 
-    [Fact]
-    public void VersionedFixtureSharesNativeAndReferenceRankFacts() {
-        var fixture = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "flowchart-link-lengths.mmd");
+    [Theory]
+    [InlineData("flowchart-link-lengths")]
+    [InlineData("flowchart-minimum-lengths")]
+    public void VersionedFixtureSharesNativeAndReferenceRankFacts(string name) {
+        var fixture = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", name + ".mmd");
         var parsed = new MermaidParser().ParseFlowchart(File.ReadAllText(fixture));
         Assert.Empty(parsed.Diagnostics);
         using var expected = JsonDocument.Parse(File.ReadAllText(Path.ChangeExtension(fixture, ".expected.json")));

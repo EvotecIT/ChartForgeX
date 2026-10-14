@@ -4005,7 +4005,7 @@
         "outputScale": 2,
         "minVisiblePixels": 979670,
         "minTransparentPixels": 50730,
-        "minDistinctColors": 1464,
+        "minDistinctColors": 1539,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4789,7 +4789,7 @@
       "logicalWidth": 640.0,
       "logicalHeight": 320.0,
       "svg": {
-        "minVisualNodes": 7,
+        "minVisualNodes": 6,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4797,7 +4797,7 @@
         "outputScale": 1,
         "minVisiblePixels": 102400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 261,
+        "minDistinctColors": 178,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4813,7 +4813,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 10,
+        "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4821,7 +4821,7 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 838,
+        "minDistinctColors": 765,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4837,7 +4837,7 @@
       "logicalWidth": 1002.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 12,
+        "minVisualNodes": 11,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4845,7 +4845,7 @@
         "outputScale": 1,
         "minVisiblePixels": 280560,
         "minTransparentPixels": 0,
-        "minDistinctColors": 363,
+        "minDistinctColors": 277,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4861,7 +4861,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 21,
+        "minVisualNodes": 20,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4869,7 +4869,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 450,
+        "minDistinctColors": 382,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4901,13 +4901,13 @@
       "name": "mermaid-er-direction",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "29C8ABAA1434A26E0220AF7B75D7F8411D502DE9267C62BED49C95A13E4DFE48"
+        "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
+        "frameFontFingerprint": "0D0D556327E2D43D53FDF08EE21307294160A0B2CFFA09CA56E0F706731C57F6"
       },
       "width": 960,
-      "height": 645,
+      "height": 644,
       "logicalWidth": 960.0,
-      "logicalHeight": 644.65,
+      "logicalHeight": 644.1,
       "svg": {
         "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
@@ -4917,7 +4917,7 @@
         "outputScale": 1,
         "minVisiblePixels": 309600,
         "minTransparentPixels": 0,
-        "minDistinctColors": 411,
+        "minDistinctColors": 347,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4933,7 +4933,7 @@
       "logicalWidth": 1002.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 13,
+        "minVisualNodes": 12,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -4941,7 +4941,7 @@
         "outputScale": 1,
         "minVisiblePixels": 280560,
         "minTransparentPixels": 0,
-        "minDistinctColors": 404,
+        "minDistinctColors": 331,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4965,7 +4965,7 @@
         "outputScale": 1,
         "minVisiblePixels": 227200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 328,
+        "minDistinctColors": 247,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4989,7 +4989,31 @@
         "outputScale": 1,
         "minVisiblePixels": 163200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 416,
+        "minDistinctColors": 361,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-flowchart-lengths",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 766,
+      "height": 320,
+      "logicalWidth": 766.0,
+      "logicalHeight": 320.0,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 122560,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 272,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5013,7 +5037,7 @@
         "outputScale": 1,
         "minVisiblePixels": 102400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 441,
+        "minDistinctColors": 350,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5029,7 +5053,7 @@
       "logicalWidth": 640.0,
       "logicalHeight": 612.0,
       "svg": {
-        "minVisualNodes": 28,
+        "minVisualNodes": 26,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5037,7 +5061,31 @@
         "outputScale": 1,
         "minVisiblePixels": 195840,
         "minTransparentPixels": 0,
-        "minDistinctColors": 505,
+        "minDistinctColors": 406,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-flowchart-shape-captions",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 640,
+      "height": 326,
+      "logicalWidth": 640.0,
+      "logicalHeight": 326.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 104320,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 431,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5053,7 +5101,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 16,
+        "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5061,7 +5109,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 420,
+        "minDistinctColors": 412,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5085,7 +5133,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 546,
+        "minDistinctColors": 544,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5109,7 +5157,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 559,
+        "minDistinctColors": 553,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5125,7 +5173,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 27,
+        "minVisualNodes": 26,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5133,7 +5181,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 471,
+        "minDistinctColors": 472,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5157,7 +5205,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 521,
+        "minDistinctColors": 515,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5173,7 +5221,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 25,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5181,7 +5229,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 581,
+        "minDistinctColors": 565,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5205,7 +5253,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 571,
+        "minDistinctColors": 557,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5229,7 +5277,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 516,
+        "minDistinctColors": 511,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5253,7 +5301,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 489,
+        "minDistinctColors": 478,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5277,7 +5325,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 437,
+        "minDistinctColors": 436,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5301,7 +5349,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 513,
+        "minDistinctColors": 497,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5325,7 +5373,7 @@
         "outputScale": 1,
         "minVisiblePixels": 382480,
         "minTransparentPixels": 0,
-        "minDistinctColors": 743,
+        "minDistinctColors": 679,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5349,7 +5397,7 @@
         "outputScale": 1,
         "minVisiblePixels": 382480,
         "minTransparentPixels": 0,
-        "minDistinctColors": 768,
+        "minDistinctColors": 686,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5373,7 +5421,7 @@
         "outputScale": 1,
         "minVisiblePixels": 382480,
         "minTransparentPixels": 0,
-        "minDistinctColors": 809,
+        "minDistinctColors": 744,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5397,7 +5445,7 @@
         "outputScale": 1,
         "minVisiblePixels": 382480,
         "minTransparentPixels": 0,
-        "minDistinctColors": 826,
+        "minDistinctColors": 744,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5421,7 +5469,7 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 755,
+        "minDistinctColors": 723,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5437,7 +5485,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 10,
+        "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5445,7 +5493,7 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 582,
+        "minDistinctColors": 542,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5461,7 +5509,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 4,
+        "minVisualNodes": 3,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5469,7 +5517,7 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 375,
+        "minDistinctColors": 284,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5485,7 +5533,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 7,
+        "minVisualNodes": 6,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5493,7 +5541,7 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 619,
+        "minDistinctColors": 522,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5509,7 +5557,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 22,
+        "minVisualNodes": 21,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5517,7 +5565,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 1014,
+        "minDistinctColors": 965,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5533,7 +5581,7 @@
       "logicalWidth": 760.0,
       "logicalHeight": 620.0,
       "svg": {
-        "minVisualNodes": 15,
+        "minVisualNodes": 14,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5541,7 +5589,7 @@
         "outputScale": 1,
         "minVisiblePixels": 235598,
         "minTransparentPixels": 2,
-        "minDistinctColors": 1220,
+        "minDistinctColors": 1215,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5557,7 +5605,7 @@
       "logicalWidth": 760.0,
       "logicalHeight": 620.0,
       "svg": {
-        "minVisualNodes": 14,
+        "minVisualNodes": 13,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5589,7 +5637,7 @@
         "outputScale": 1,
         "minVisiblePixels": 235598,
         "minTransparentPixels": 2,
-        "minDistinctColors": 1115,
+        "minDistinctColors": 1122,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5613,7 +5661,7 @@
         "outputScale": 1,
         "minVisiblePixels": 235598,
         "minTransparentPixels": 2,
-        "minDistinctColors": 973,
+        "minDistinctColors": 964,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5629,7 +5677,7 @@
       "logicalWidth": 460.0,
       "logicalHeight": 350.0,
       "svg": {
-        "minVisualNodes": 11,
+        "minVisualNodes": 10,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5637,7 +5685,7 @@
         "outputScale": 1,
         "minVisiblePixels": 80498,
         "minTransparentPixels": 2,
-        "minDistinctColors": 725,
+        "minDistinctColors": 704,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5661,7 +5709,7 @@
         "outputScale": 1,
         "minVisiblePixels": 235598,
         "minTransparentPixels": 2,
-        "minDistinctColors": 789,
+        "minDistinctColors": 772,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5685,36 +5733,12 @@
         "outputScale": 1,
         "minVisiblePixels": 235598,
         "minTransparentPixels": 2,
-        "minDistinctColors": 1152,
+        "minDistinctColors": 1136,
         "maxEdgeInkPixels": 0
       }
     },
     {
       "name": "mermaid-radar-polygon-curves",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 760,
-      "height": 620,
-      "logicalWidth": 760.0,
-      "logicalHeight": 620.0,
-      "svg": {
-        "minVisualNodes": 14,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 1,
-        "minVisiblePixels": 235598,
-        "minTransparentPixels": 2,
-        "minDistinctColors": 653,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "mermaid-radar-zero-guides",
       "layout": {
         "heightMode": "fixed",
         "frameFontRequest": "",
@@ -5733,7 +5757,55 @@
         "outputScale": 1,
         "minVisiblePixels": 235598,
         "minTransparentPixels": 2,
-        "minDistinctColors": 990,
+        "minDistinctColors": 636,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-radar-theme",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760.0,
+      "logicalHeight": 620.0,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 2048,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-radar-zero-guides",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 620,
+      "logicalWidth": 760.0,
+      "logicalHeight": 620.0,
+      "svg": {
+        "minVisualNodes": 12,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 235598,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 982,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5757,7 +5829,7 @@
         "outputScale": 1,
         "minVisiblePixels": 191998,
         "minTransparentPixels": 2,
-        "minDistinctColors": 773,
+        "minDistinctColors": 697,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5781,7 +5853,7 @@
         "outputScale": 1,
         "minVisiblePixels": 191998,
         "minTransparentPixels": 2,
-        "minDistinctColors": 1055,
+        "minDistinctColors": 982,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5797,7 +5869,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 10,
+        "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5805,7 +5877,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 447,
+        "minDistinctColors": 333,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5821,7 +5893,7 @@
       "logicalWidth": 640.0,
       "logicalHeight": 320.0,
       "svg": {
-        "minVisualNodes": 7,
+        "minVisualNodes": 6,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5829,7 +5901,7 @@
         "outputScale": 1,
         "minVisiblePixels": 102400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 410,
+        "minDistinctColors": 332,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5845,7 +5917,7 @@
       "logicalWidth": 640.0,
       "logicalHeight": 320.0,
       "svg": {
-        "minVisualNodes": 7,
+        "minVisualNodes": 6,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5853,7 +5925,7 @@
         "outputScale": 1,
         "minVisiblePixels": 102400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 391,
+        "minDistinctColors": 266,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5925,7 +5997,7 @@
         "outputScale": 1,
         "minVisiblePixels": 233998,
         "minTransparentPixels": 2,
-        "minDistinctColors": 555,
+        "minDistinctColors": 533,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5941,7 +6013,7 @@
       "logicalWidth": 360.0,
       "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 12,
+        "minVisualNodes": 11,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5949,7 +6021,7 @@
         "outputScale": 1,
         "minVisiblePixels": 75598,
         "minTransparentPixels": 2,
-        "minDistinctColors": 626,
+        "minDistinctColors": 615,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5965,7 +6037,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 8,
+        "minVisualNodes": 7,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5973,7 +6045,7 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 915,
+        "minDistinctColors": 790,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5989,7 +6061,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 5,
+        "minVisualNodes": 4,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -5997,7 +6069,7 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 733,
+        "minDistinctColors": 613,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6013,7 +6085,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 5,
+        "minVisualNodes": 4,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6021,7 +6093,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 451,
+        "minDistinctColors": 351,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6037,7 +6109,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 520.0,
       "svg": {
-        "minVisualNodes": 11,
+        "minVisualNodes": 10,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6045,7 +6117,7 @@
         "outputScale": 1,
         "minVisiblePixels": 234000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 781,
+        "minDistinctColors": 776,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6069,7 +6141,7 @@
         "outputScale": 1,
         "minVisiblePixels": 234000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 679,
+        "minDistinctColors": 583,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6109,7 +6181,7 @@
       "logicalWidth": 980.0,
       "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 17,
+        "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6117,7 +6189,7 @@
         "outputScale": 1,
         "minVisiblePixels": 225400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 612,
+        "minDistinctColors": 571,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6133,7 +6205,7 @@
       "logicalWidth": 980.0,
       "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 10,
+        "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6141,7 +6213,7 @@
         "outputScale": 1,
         "minVisiblePixels": 225400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 521,
+        "minDistinctColors": 446,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6165,7 +6237,7 @@
         "outputScale": 1,
         "minVisiblePixels": 111360,
         "minTransparentPixels": 0,
-        "minDistinctColors": 448,
+        "minDistinctColors": 421,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6189,7 +6261,7 @@
         "outputScale": 1,
         "minVisiblePixels": 43200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 224,
+        "minDistinctColors": 201,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6213,7 +6285,7 @@
         "outputScale": 1,
         "minVisiblePixels": 43200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 224,
+        "minDistinctColors": 201,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6237,7 +6309,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 774,
+        "minDistinctColors": 782,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6253,7 +6325,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 10,
+        "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6261,7 +6333,7 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1186,
+        "minDistinctColors": 1127,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6277,7 +6349,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 420.0,
       "svg": {
-        "minVisualNodes": 6,
+        "minVisualNodes": 5,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6285,7 +6357,7 @@
         "outputScale": 1,
         "minVisiblePixels": 189000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 748,
+        "minDistinctColors": 723,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6301,7 +6373,7 @@
       "logicalWidth": 640.0,
       "logicalHeight": 280.0,
       "svg": {
-        "minVisualNodes": 6,
+        "minVisualNodes": 5,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6309,7 +6381,7 @@
         "outputScale": 1,
         "minVisiblePixels": 89600,
         "minTransparentPixels": 0,
-        "minDistinctColors": 637,
+        "minDistinctColors": 621,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6325,7 +6397,7 @@
       "logicalWidth": 820.0,
       "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 10,
+        "minVisualNodes": 9,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6333,7 +6405,7 @@
         "outputScale": 1,
         "minVisiblePixels": 188598,
         "minTransparentPixels": 2,
-        "minDistinctColors": 950,
+        "minDistinctColors": 960,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6357,7 +6429,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 859,
+        "minDistinctColors": 862,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6381,7 +6453,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 493,
+        "minDistinctColors": 388,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6405,7 +6477,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 569,
+        "minDistinctColors": 453,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6429,7 +6501,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 478,
+        "minDistinctColors": 330,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6469,7 +6541,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 8,
+        "minVisualNodes": 7,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6477,7 +6549,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 979,
+        "minDistinctColors": 858,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6493,7 +6565,7 @@
       "logicalWidth": 780.0,
       "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 7,
+        "minVisualNodes": 6,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6501,7 +6573,7 @@
         "outputScale": 1,
         "minVisiblePixels": 179400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1748,
+        "minDistinctColors": 1629,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6517,7 +6589,7 @@
       "logicalWidth": 780.0,
       "logicalHeight": 460.0,
       "svg": {
-        "minVisualNodes": 5,
+        "minVisualNodes": 4,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6525,7 +6597,7 @@
         "outputScale": 1,
         "minVisiblePixels": 179400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1177,
+        "minDistinctColors": 1070,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6541,7 +6613,7 @@
       "logicalWidth": 900.0,
       "logicalHeight": 600.0,
       "svg": {
-        "minVisualNodes": 26,
+        "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6549,7 +6621,7 @@
         "outputScale": 1,
         "minVisiblePixels": 270000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 750,
+        "minDistinctColors": 712,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6573,7 +6645,7 @@
         "outputScale": 1,
         "minVisiblePixels": 67200,
         "minTransparentPixels": 0,
-        "minDistinctColors": 509,
+        "minDistinctColors": 475,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6597,7 +6669,7 @@
         "outputScale": 1,
         "minVisiblePixels": 270000,
         "minTransparentPixels": 0,
-        "minDistinctColors": 625,
+        "minDistinctColors": 600,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6605,15 +6677,15 @@
       "name": "mermaid-state-direction",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "29C8ABAA1434A26E0220AF7B75D7F8411D502DE9267C62BED49C95A13E4DFE48"
+        "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
+        "frameFontFingerprint": "0D0D556327E2D43D53FDF08EE21307294160A0B2CFFA09CA56E0F706731C57F6"
       },
       "width": 960,
-      "height": 645,
+      "height": 644,
       "logicalWidth": 960.0,
-      "logicalHeight": 644.65,
+      "logicalHeight": 644.1,
       "svg": {
-        "minVisualNodes": 15,
+        "minVisualNodes": 12,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6621,7 +6693,7 @@
         "outputScale": 1,
         "minVisiblePixels": 309600,
         "minTransparentPixels": 0,
-        "minDistinctColors": 431,
+        "minDistinctColors": 328,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6629,23 +6701,23 @@
       "name": "mermaid-swimlane-basic",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "29C8ABAA1434A26E0220AF7B75D7F8411D502DE9267C62BED49C95A13E4DFE48"
+        "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
+        "frameFontFingerprint": "0D0D556327E2D43D53FDF08EE21307294160A0B2CFFA09CA56E0F706731C57F6"
       },
-      "width": 1034,
-      "height": 456,
-      "logicalWidth": 1034.0,
-      "logicalHeight": 455.65,
+      "width": 1032,
+      "height": 436,
+      "logicalWidth": 1032.0,
+      "logicalHeight": 436.1,
       "svg": {
-        "minVisualNodes": 17,
+        "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 235752,
+        "minVisiblePixels": 225492,
         "minTransparentPixels": 0,
-        "minDistinctColors": 487,
+        "minDistinctColors": 337,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6661,7 +6733,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 7,
+        "minVisualNodes": 6,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6669,7 +6741,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 493,
+        "minDistinctColors": 395,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6685,7 +6757,7 @@
       "logicalWidth": 960.0,
       "logicalHeight": 560.0,
       "svg": {
-        "minVisualNodes": 14,
+        "minVisualNodes": 13,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6693,7 +6765,7 @@
         "outputScale": 1,
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
-        "minDistinctColors": 889,
+        "minDistinctColors": 807,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6701,13 +6773,13 @@
       "name": "mermaid-usecase-basic",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "29C8ABAA1434A26E0220AF7B75D7F8411D502DE9267C62BED49C95A13E4DFE48"
+        "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
+        "frameFontFingerprint": "0D0D556327E2D43D53FDF08EE21307294160A0B2CFFA09CA56E0F706731C57F6"
       },
-      "width": 1003,
-      "height": 498,
-      "logicalWidth": 1003.0,
-      "logicalHeight": 497.65,
+      "width": 984,
+      "height": 478,
+      "logicalWidth": 984.0,
+      "logicalHeight": 478.1,
       "svg": {
         "minVisualNodes": 17,
         "maxClippedTextNodes": 0,
@@ -6715,9 +6787,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 249747,
+        "minVisiblePixels": 235668,
         "minTransparentPixels": 0,
-        "minDistinctColors": 567,
+        "minDistinctColors": 449,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6741,7 +6813,7 @@
         "outputScale": 1,
         "minVisiblePixels": 119040,
         "minTransparentPixels": 0,
-        "minDistinctColors": 381,
+        "minDistinctColors": 324,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6765,7 +6837,7 @@
         "outputScale": 1,
         "minVisiblePixels": 233998,
         "minTransparentPixels": 2,
-        "minDistinctColors": 402,
+        "minDistinctColors": 361,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6789,7 +6861,7 @@
         "outputScale": 1,
         "minVisiblePixels": 233998,
         "minTransparentPixels": 2,
-        "minDistinctColors": 493,
+        "minDistinctColors": 418,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6813,7 +6885,7 @@
         "outputScale": 1,
         "minVisiblePixels": 233998,
         "minTransparentPixels": 2,
-        "minDistinctColors": 627,
+        "minDistinctColors": 580,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6837,7 +6909,7 @@
         "outputScale": 1,
         "minVisiblePixels": 233998,
         "minTransparentPixels": 2,
-        "minDistinctColors": 501,
+        "minDistinctColors": 478,
         "maxEdgeInkPixels": 0
       }
     },
@@ -8037,7 +8109,7 @@
         "outputScale": 2,
         "minVisiblePixels": 979670,
         "minTransparentPixels": 50730,
-        "minDistinctColors": 1521,
+        "minDistinctColors": 1664,
         "maxEdgeInkPixels": 0
       }
     },
@@ -8685,7 +8757,7 @@
         "outputScale": 1,
         "minVisiblePixels": 330400,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1151,
+        "minDistinctColors": 1171,
         "maxEdgeInkPixels": 0
       }
     },
@@ -9165,7 +9237,7 @@
         "outputScale": 1,
         "minVisiblePixels": 460040,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1356,
+        "minDistinctColors": 1331,
         "maxEdgeInkPixels": 0
       }
     },
@@ -9357,7 +9429,7 @@
         "outputScale": 1,
         "minVisiblePixels": 504450,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1043,
+        "minDistinctColors": 1042,
         "maxEdgeInkPixels": 0
       }
     },

@@ -313,7 +313,7 @@ chart.SaveInteractiveHtml("explore.html", options => {
 });
 ```
 
-The adapter also offers legend controls, crosshairs, brushing, synchronized charts, and zoom/pan. Current standalone zoom transforms the rendered SVG; native numeric X viewports are a separate core contract with narrower family support. See [interactivity](docs/interactivity.md) for feature policies and [graph explorer](docs/graph-explorer.md) for large topology navigation.
+The adapter also offers legend controls, crosshairs, brushing, synchronized charts, and zoom/pan. Connected applications can request native numeric X windows for supported vertical Line and StepLine charts: C# prepares fresh ticks and geometry, preserves full-data Y bounds, and returns the matching HTML section and detached scene. Standalone zoom transforms the rendered SVG. See [interactivity](docs/interactivity.md#connected-native-x-windows) for the connected callback and feature policies, and [graph explorer](docs/graph-explorer.md) for large topology navigation.
 
 For a page that refreshes data, prepare a new chart section in C# and pass it to the adapter's `ChartForgeXCharts` controller. Its `mount`, `update`, `resize` and `dispose` methods manage the browser view and its resources. Updates retain surviving explicit series and observation IDs; see the [chart lifecycle example](docs/interactivity.md#updating-embedded-charts).
 

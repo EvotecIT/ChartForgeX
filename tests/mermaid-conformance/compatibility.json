@@ -246,6 +246,14 @@
       },
       "provenance": "Authored ChartForgeX conformance example for documented link-length syntax; verified with the pinned official Mermaid parsers."
     },
+    "fixtures/flowchart-minimum-lengths.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example covering minimum link lengths across supported stroke and endpoint families; verified with the pinned official Mermaid parsers."
+    },
     "fixtures/flowchart-modern.mmd": {
       "syntax": {
         "10": "rejected",

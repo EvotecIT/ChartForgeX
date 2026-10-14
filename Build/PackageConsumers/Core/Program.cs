@@ -13,6 +13,7 @@ internal static class Program {
         ThemeSnapshots();
         TypedSeriesLifecycle();
         CallbackOwnership();
+        PolarPaint();
         PackageAssertions.Payload("ChartForgeX");
         Console.WriteLine("Core package boundaries, typed ownership, themes and static exports passed.");
     }
@@ -95,5 +96,19 @@ internal static class Program {
         } catch (InvalidOperationException) { threw = true; }
         PackageAssertions.Require(threw && chart.Options.XAxis.Minimum == 0 && chart.Options.XAxis.Labels.Count == 1 && chart.ToSvg() == svg,
             "A throwing axis callback partially installed its candidate.");
+    }
+    private static void PolarPaint() {
+        var red = ChartColor.FromHex("#DC2626");
+        var chart = Chart.Create().WithSize(520, 380).WithHeader(false).WithLegend(true)
+            .AddRadarArea("Signal", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40), new ChartPoint(3, 30) });
+        chart.Options.PolarAxisStroke = new ChartStrokeStyle(width: 3);
+        chart.Options.PolarGridStroke = new ChartStrokeStyle(width: 0);
+        chart.Options.PolarGridFill = ChartColor.FromHex("#64748B");
+        chart.Options.PolarGridFillOpacity = .1;
+        chart.Series[0].ConfigureRadar(options => options.OutlineStroke = new ChartStrokeStyle(red, 4));
+        chart.WithSvgColorVariables(new SvgColorVariables().Add("--outline", red, SvgColorRole.Series));
+        var outline = XDocument.Parse(chart.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "radar-outline");
+        PackageAssertions.Require((string?)outline.Attribute("stroke") == "#DC2626", "Packed radar outline lost literal paint provenance.");
+        PackageAssertions.Png(chart.ToPng());
     }
 }

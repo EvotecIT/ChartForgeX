@@ -265,18 +265,21 @@ internal static partial class SmokeTests {
         Assert(HtmlInteractiveChartRenderer.BuildInteractionScript().Contains("cfxRuntimeBound", StringComparison.Ordinal), "Host-registered interactive chart runtime should keep duplicate binding guards.");
         Assert(!HtmlInteractiveChartRenderer.BuildInteractionScript().Contains("<script>", StringComparison.Ordinal), "Host-registered interactive chart runtime should return raw JavaScript for library registration.");
 
-        var noReset = SampleChart().ToInteractiveHtmlPage(options => {
+        Action<HtmlChartInteractionOptions> tooltipOnlyOptions = options => {
             options.IncludeResetButton = false;
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;
-        });
-        Assert(!noReset.Contains("data-cfx-reset=\"true\"", StringComparison.Ordinal), "Interactive HTML should allow reset controls to be suppressed.");
-        Assert(!noReset.Contains("data-cfx-zoom=\"in\"", StringComparison.Ordinal), "Interactive HTML should hide zoom controls when zoom is disabled.");
-        Assert(!noReset.Contains("data-cfx-mode-button=\"pan\"", StringComparison.Ordinal), "Interactive HTML should hide pan controls when pan is disabled.");
-        Assert(!noReset.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal), "Interactive HTML should hide brush controls when brush is disabled.");
-        Assert(!noReset.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-export=\"svg\" title=\"Download SVG\">SVG</button>", StringComparison.Ordinal), "Interactive HTML should hide SVG export controls when export is disabled.");
-        Assert(!noReset.Contains("<button class=\"cfx-tool\" type=\"button\" data-cfx-export=\"png\" title=\"Download PNG\">PNG</button>", StringComparison.Ordinal), "Interactive HTML should hide PNG export controls when export is disabled.");
-        Assert(!noReset.Contains("data-cfx-compare-tray=\"true\"", StringComparison.Ordinal), "Interactive HTML should hide compare trays when compare markers are disabled.");
+        };
+        var noResetChart = SampleChart();
+        var noReset = noResetChart.ToInteractiveHtmlPage(tooltipOnlyOptions);
+        var noResetSection = noResetChart.ToInteractiveHtmlFragmentWithoutAssets(tooltipOnlyOptions);
+        Assert(!noResetSection.Contains("data-cfx-reset=\"true\"", StringComparison.Ordinal), "Interactive HTML should allow reset controls to be suppressed.");
+        Assert(!noResetSection.Contains("data-cfx-zoom=", StringComparison.Ordinal), "Interactive HTML should hide zoom controls when zoom is disabled.");
+        Assert(!noResetSection.Contains("data-cfx-mode-button=\"pan\"", StringComparison.Ordinal), "Interactive HTML should hide pan controls when pan is disabled.");
+        Assert(!noResetSection.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal), "Interactive HTML should hide brush controls when brush is disabled.");
+        Assert(!noResetSection.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal), "Interactive HTML should hide SVG export controls when export is disabled.");
+        Assert(!noResetSection.Contains("data-cfx-export=\"png\"", StringComparison.Ordinal), "Interactive HTML should hide PNG export controls when export is disabled.");
+        Assert(!noResetSection.Contains("data-cfx-compare-tray=\"true\"", StringComparison.Ordinal), "Interactive HTML should hide compare trays when compare markers are disabled.");
         Assert(noReset.Contains("data-cfx-interaction-features=\"Tooltips\"", StringComparison.Ordinal), "Interactive HTML should honor narrowed feature profiles.");
         Assert(noReset.Contains("data-cfx-responsive-layout=\"fit\"", StringComparison.Ordinal), "Interactive HTML should allow hosts to opt back into whole-chart fitting.");
         var fitRuleStart = noReset.IndexOf(".cfx-interactive-chart[data-cfx-responsive-layout=\"fit\"] .cfx-stage svg {", StringComparison.Ordinal);
