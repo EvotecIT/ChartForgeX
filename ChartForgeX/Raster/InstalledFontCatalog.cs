@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ChartForgeX.Raster;
 
-/// <summary>One installed OpenType face (TrueType or CFF outlines), as described by its own name and OS/2 tables.</summary>
+/// <summary>One installed OpenType face with outlines or supported colour bitmaps, as described by its own name and OS/2 tables.</summary>
 internal sealed class InstalledFontFace {
     public InstalledFontFace(string? path, int? collectionIndex, string family, string? legacyFamily, int weight, int width, bool italic, TrueTypeFont? memoryFont = null) {
         Path = path;
@@ -145,7 +145,7 @@ internal static class InstalledFontCatalog {
         }
     }
 
-    /// <summary>Reads the faces a font file declares. A file without TrueType or CFF outlines adds nothing.</summary>
+    /// <summary>Reads the faces a font file declares when they have supported outlines or colour bitmap data.</summary>
     internal static void ReadFaces(string path, List<InstalledFontFace> faces) {
         try {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -179,6 +179,9 @@ internal static class InstalledFontCatalog {
         long nameOffset = -1, os2Offset = -1, headOffset = -1;
         long nameLength = 0, os2Length = 0;
         var hasOutlines = false;
+        var hasSbix = false;
+        var hasCbdt = false;
+        var hasCblc = false;
         for (var i = 0; i < tableCount; i++) {
             var record = i * 16;
             var tag = Encoding.ASCII.GetString(records, record, 4);
@@ -188,9 +191,12 @@ internal static class InstalledFontCatalog {
             else if (tag == "OS/2") { os2Offset = offset; os2Length = length; }
             else if (tag == "head") headOffset = offset;
             else if (tag == "glyf" || tag == "CFF " || tag == "CFF2") hasOutlines = true;
+            else if (tag == "sbix") hasSbix = true;
+            else if (tag == "CBDT") hasCbdt = true;
+            else if (tag == "CBLC") hasCblc = true;
         }
 
-        if (!hasOutlines || nameOffset < 0 || nameLength < 6 || nameLength > MaximumNameTableBytes) return null;
+        if (!(hasOutlines || hasSbix || hasCbdt && hasCblc) || nameOffset < 0 || nameLength < 6 || nameLength > MaximumNameTableBytes) return null;
         var names = Read(stream, nameOffset, (int)nameLength);
         if (names == null) return null;
         var legacyFamily = Name(names, 1);
