@@ -1,0 +1,37 @@
+name: Website Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Website/**"
+      - ".github/workflows/website-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-deploy
+  cancel-in-progress: false
+
+jobs:
+  website-deploy:
+    permissions:
+      actions: write
+      contents: read
+      deployments: read
+      packages: read
+      pages: write
+      id-token: write
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-deploy.yml@a0ccc28293a517e6236f79e8332ed26d6012649e
+    with:
+      website_root: Website
+      source_ref: ${{ github.sha }}
+      pipeline_config: Website/pipeline.json
+      site_output_path: Website/_site
+      powerforge_lock_path: ./Website/.powerforge/engine-lock.json
+      powerforge_repository_override: ${{ vars.POWERFORGE_REPOSITORY }}
+      powerforge_ref_override: ${{ vars.POWERFORGE_REF }}
+    secrets:
+      indexnow_key: ${{ secrets.INDEXNOW_KEY }}
